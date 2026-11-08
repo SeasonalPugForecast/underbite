@@ -1,0 +1,414 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-11-08T14:24:20Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 739082412,
+  "lat": 40.7484532,
+  "lon": -74.0236637,
+  "tags": {
+    "access": "yes",
+    "fee": "no",
+    "leisure": "slipway",
+    "surface": "sand"
+  }
+},
+{
+  "type": "node",
+  "id": 1655111599,
+  "lat": 40.6974902,
+  "lon": -74.0652665,
+  "tags": {
+    "leisure": "slipway",
+    "survey:date": "2021-12-19"
+  }
+},
+{
+  "type": "node",
+  "id": 1907754150,
+  "lat": 40.7006563,
+  "lon": -73.9969645,
+  "tags": {
+    "access": "yes",
+    "canoe": "yes",
+    "fee": "no",
+    "leisure": "slipway",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "node",
+  "id": 3351031215,
+  "lat": 40.6987400,
+  "lon": -73.9975792,
+  "tags": {
+    "leisure": "slipway"
+  }
+},
+{
+  "type": "node",
+  "id": 4085774794,
+  "lat": 40.7293483,
+  "lon": -74.1009298,
+  "tags": {
+    "leisure": "slipway"
+  }
+},
+{
+  "type": "node",
+  "id": 5717826484,
+  "lat": 40.7484831,
+  "lon": -74.0224621,
+  "tags": {
+    "access": "yes",
+    "fee": "no",
+    "leisure": "slipway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "node",
+  "id": 6135965021,
+  "lat": 40.6975840,
+  "lon": -74.0652909,
+  "tags": {
+    "leisure": "slipway",
+    "survey:date": "2021-12-19"
+  }
+},
+{
+  "type": "node",
+  "id": 6427460877,
+  "lat": 40.7411415,
+  "lon": -74.0260766,
+  "tags": {
+    "access": "yes",
+    "fee": "no",
+    "leisure": "slipway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "node",
+  "id": 6433396429,
+  "lat": 40.6768361,
+  "lon": -73.9898693,
+  "tags": {
+    "description": "boat launch for canoes and kayaks",
+    "leisure": "slipway"
+  }
+},
+{
+  "type": "node",
+  "id": 6631768645,
+  "lat": 40.6561807,
+  "lon": -73.9644851,
+  "tags": {
+    "access": "private",
+    "canoe": "private",
+    "description": "No private boats are allowed on Prospect Lake",
+    "leisure": "slipway",
+    "source": "https://www.prospectpark.org/wp-content/uploads/2025/07/Boating-Rules-Guidelines_R3-1.pdf"
+  }
+},
+{
+  "type": "node",
+  "id": 9595610463,
+  "lat": 40.7383186,
+  "lon": -73.9602375,
+  "tags": {
+    "access": "yes",
+    "canoe": "put_in",
+    "fee": "no",
+    "leisure": "slipway"
+  }
+},
+{
+  "type": "node",
+  "id": 11246012820,
+  "lat": 40.7392256,
+  "lon": -74.0111552,
+  "tags": {
+    "access": "yes",
+    "fee": "no",
+    "leisure": "slipway",
+    "name": "Kayak Access",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "node",
+  "id": 13778178306,
+  "lat": 40.7251691,
+  "lon": -73.9581559,
+  "tags": {
+    "leisure": "slipway"
+  }
+},
+{
+  "type": "way",
+  "id": 160901442,
+  "center": {
+    "lat": 40.7012417,
+    "lon": -74.0085897
+  },
+  "tags": {
+    "addr:city": "New York",
+    "addr:state": "NY",
+    "aerodrome:type": "public",
+    "aeroway": "heliport",
+    "alt_name": "Downtown Manhattan/Wall St. Heliport",
+    "area": "yes",
+    "ele": "1",
+    "faa": "JRB",
+    "iata": "JRB",
+    "icao": "KJRB",
+    "man_made": "pier",
+    "name": "Downtown Manhattan Heliport",
+    "operator": "New York City Economic Development Corporation",
+    "operator:type": "public",
+    "website": "https://www.downtownmanhattanheliport.com/",
+    "wikidata": "Q1575175",
+    "wikipedia": "en:Downtown Manhattan Heliport"
+  }
+},
+{
+  "type": "way",
+  "id": 232065082,
+  "center": {
+    "lat": 40.6975070,
+    "lon": -74.0651365
+  },
+  "tags": {
+    "highway": "service",
+    "leisure": "slipway",
+    "service": "slipway"
+  }
+},
+{
+  "type": "way",
+  "id": 232197001,
+  "center": {
+    "lat": 40.6910410,
+    "lon": -74.0120301
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "Pier 102"
+  }
+},
+{
+  "type": "way",
+  "id": 245320702,
+  "center": {
+    "lat": 40.7036083,
+    "lon": -73.9956019
+  },
+  "tags": {
+    "area": "yes",
+    "floating": "yes",
+    "lit": "yes",
+    "man_made": "pier",
+    "mooring": "ferry",
+    "name": "Fulton Ferry Landing",
+    "surface": "paved"
+  }
+},
+{
+  "type": "way",
+  "id": 277924002,
+  "center": {
+    "lat": 40.7044116,
+    "lon": -74.0179139
+  },
+  "tags": {
+    "addr:city": "New York",
+    "addr:housenumber": "22",
+    "addr:postcode": "10004",
+    "addr:state": "NY",
+    "addr:street": "Battery Place",
+    "building": "yes",
+    "building:levels": "3",
+    "man_made": "pier",
+    "name": "City Pier A",
+    "nycdoitt:bin": "1085492",
+    "wikidata": "Q5123366",
+    "wikipedia": "en:City Pier A"
+  }
+},
+{
+  "type": "way",
+  "id": 328274835,
+  "center": {
+    "lat": 40.6998941,
+    "lon": -73.9979094
+  },
+  "tags": {
+    "area": "yes",
+    "floating": "yes",
+    "man_made": "pier",
+    "name": "Pier 2 Kayak Dock"
+  }
+},
+{
+  "type": "way",
+  "id": 406519844,
+  "center": {
+    "lat": 40.7293789,
+    "lon": -74.1010422
+  },
+  "tags": {
+    "highway": "service",
+    "leisure": "slipway",
+    "service": "slipway"
+  }
+},
+{
+  "type": "way",
+  "id": 424972751,
+  "center": {
+    "lat": 40.6948855,
+    "lon": -74.0016484
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "Pier 5"
+  }
+},
+{
+  "type": "way",
+  "id": 424974230,
+  "center": {
+    "lat": 40.6994922,
+    "lon": -73.9987646
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "Pier 2"
+  }
+},
+{
+  "type": "way",
+  "id": 424974232,
+  "center": {
+    "lat": 40.6932329,
+    "lon": -74.0026431
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "Pier 6"
+  }
+},
+{
+  "type": "way",
+  "id": 424977974,
+  "center": {
+    "lat": 40.6979609,
+    "lon": -73.9996961
+  },
+  "tags": {
+    "alt_name": "Brooklyn Bridge Park Pier 3",
+    "landuse": "recreation_ground",
+    "man_made": "pier",
+    "name": "Pier 3",
+    "website": "https://www.brooklynbridgepark.org/park/pier-3"
+  }
+},
+{
+  "type": "way",
+  "id": 700244957,
+  "center": {
+    "lat": 40.7033471,
+    "lon": -73.9950894
+  },
+  "tags": {
+    "area": "yes",
+    "floating": "no",
+    "man_made": "pier",
+    "name": "Fulton Ferry Landing",
+    "surface": "wood"
+  }
+},
+{
+  "type": "way",
+  "id": 700246018,
+  "center": {
+    "lat": 40.6923212,
+    "lon": -74.0019858
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "Governors Island Ferry"
+  }
+},
+{
+  "type": "way",
+  "id": 700593248,
+  "center": {
+    "lat": 40.7171259,
+    "lon": -74.0314247
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "South Pier"
+  }
+},
+{
+  "type": "way",
+  "id": 718436921,
+  "center": {
+    "lat": 40.7150035,
+    "lon": -74.0177418
+  },
+  "tags": {
+    "area": "yes",
+    "floating": "yes",
+    "man_made": "pier",
+    "mooring": "ferry",
+    "name": "Battery Park City Ferry Terminal",
+    "surface": "paving_stones",
+    "wikidata": "Q4869871",
+    "wikipedia": "en:Battery Park City Ferry Terminal"
+  }
+},
+{
+  "type": "way",
+  "id": 987494385,
+  "center": {
+    "lat": 40.6903331,
+    "lon": -74.0043317
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "Pier 8"
+  }
+},
+{
+  "type": "way",
+  "id": 987494386,
+  "center": {
+    "lat": 40.6915690,
+    "lon": -74.0025581
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "Pier 7"
+  }
+}
+
+  ]
+}
