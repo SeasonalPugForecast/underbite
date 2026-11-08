@@ -1,0 +1,43 @@
+{
+  "count": 1,
+  "units": null,
+  "stations": [
+    {
+      "currentpredictionoffsets": {
+        "id": "ACT3646",
+        "refStationId": "n03020",
+        "refStationBin": 7,
+        "meanFloodDir": 31.0,
+        "meanEbbDir": 205.0,
+        "mfcTimeAdjMin": 58,
+        "sbeTimeAdjMin": 53,
+        "mecTimeAdjMin": 60,
+        "sbfTimeAdjMin": 80,
+        "mfcAmpAdj": 1.05,
+        "mecAmpAdj": 1.19,
+        "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/ACT3646_1/currentpredictionoffsets.json"
+      },
+      "currbin": 1,
+      "type": "S",
+      "depth": null,
+      "depthType": "U",
+      "timezone_offset": "-5",
+      "harmonicConstituents": {
+        "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/ACT3646/harcon.json"
+      },
+      "id": "ACT3646",
+      "name": "Statue of Liberty, east of",
+      "lat": 40.689998626708984,
+      "lng": -74.02999877929688,
+      "affiliations": "",
+      "portscode": "",
+      "products": null,
+      "disclaimers": null,
+      "notices": null,
+      "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/ACT3646.json",
+      "expand": "currentpredictionoffsets,harcon",
+      "tideType": ""
+    }
+  ],
+  "self": null
+}

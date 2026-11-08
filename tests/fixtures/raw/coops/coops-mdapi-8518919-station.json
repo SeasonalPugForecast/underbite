@@ -1,0 +1,36 @@
+{
+  "count": 1,
+  "units": null,
+  "stations": [
+    {
+      "state": "NY",
+      "tidepredoffsets": {
+        "refStationId": "8518750",
+        "type": "S",
+        "heightOffsetHighTide": 0.7,
+        "heightOffsetLowTide": 0.7,
+        "timeOffsetHighTide": 109,
+        "timeOffsetLowTide": 117,
+        "heightAdjustedType": "R",
+        "self": null
+      },
+      "type": "S",
+      "timemeridian": -75,
+      "reference_id": "8518750",
+      "timezonecorr": -5,
+      "id": "8518919",
+      "name": "Tarrytown",
+      "lat": 41.0783,
+      "lng": -73.87,
+      "affiliations": "",
+      "portscode": "",
+      "products": null,
+      "disclaimers": null,
+      "notices": null,
+      "self": null,
+      "expand": null,
+      "tideType": ""
+    }
+  ],
+  "self": null
+}

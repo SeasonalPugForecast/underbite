@@ -1,0 +1,123 @@
+{
+  "nbr_of_bins": 14,
+  "max_pics_bin": 14,
+  "units": "meters",
+  "bin_size": 1.0,
+  "center_bin_1_dist": 2.11,
+  "real_time_bin": null,
+  "bins": [
+    {
+      "num": 1,
+      "depth": 13.99,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 2,
+      "depth": 12.98,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 3,
+      "depth": 11.98,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 4,
+      "depth": 11.0,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 5,
+      "depth": 10.0,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 6,
+      "depth": 8.99,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 7,
+      "depth": 7.99,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 8,
+      "depth": 6.98,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 9,
+      "depth": 6.0,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 10,
+      "depth": 5.0,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 11,
+      "depth": 3.99,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 12,
+      "depth": 2.99,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 13,
+      "depth": 1.98,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    },
+    {
+      "num": 14,
+      "depth": 0.98,
+      "distance": null,
+      "qc_flag": 1,
+      "ping_int": null,
+      "is_pics": false
+    }
+  ],
+  "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/NYH1927/bins.json"
+}

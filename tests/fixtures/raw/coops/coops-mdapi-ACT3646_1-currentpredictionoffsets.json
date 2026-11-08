@@ -1,0 +1,14 @@
+{
+  "id": "ACT3646",
+  "refStationId": "n03020",
+  "refStationBin": 7,
+  "meanFloodDir": 31.0,
+  "meanEbbDir": 205.0,
+  "mfcTimeAdjMin": 58,
+  "sbeTimeAdjMin": 53,
+  "mecTimeAdjMin": 60,
+  "sbfTimeAdjMin": 80,
+  "mfcAmpAdj": 1.05,
+  "mecAmpAdj": 1.19,
+  "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/ACT3646_1/currentpredictionoffsets.json"
+}
