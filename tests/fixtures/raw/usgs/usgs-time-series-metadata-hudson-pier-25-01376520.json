@@ -1,0 +1,541 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "0217cb5b577d41398811866c1935e061",
+        "unit_of_measure": "_FNU",
+        "parameter_name": "Turbidity, FNU",
+        "parameter_code": "63680",
+        "statistic_id": "00011",
+        "last_modified": "2026-06-17T17:04:36.617328",
+        "begin": "2019-07-30T19:15:00+00:00",
+        "end": "2026-04-01T04:45:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": "HRECOS",
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light, 780-900 nm, detection angle 90 +-2.5 degrees, formazin nephelometric units (FNU)",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H16M",
+        "statistics_begin": null
+      },
+      "id": "0217cb5b577d41398811866c1935e061",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "05e5cf409e094617bdc2d87f688d7bc1",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C",
+        "parameter_code": "00095",
+        "statistic_id": "00011",
+        "last_modified": "2026-06-17T15:58:32.205518",
+        "begin": "2019-07-30T19:15:00+00:00",
+        "end": "2026-04-01T04:45:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [
+          {
+            "Name": "very high",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "2024-01-13T00:00:00.0000000-05:00",
+                "StartTime": "0001-01-01T00:00:00.0000000+00:00",
+                "AppliedTime": "2020-04-08T17:29:34.0076048Z",
+                "SuppressData": true,
+                "ReferenceValue": 60000
+              },
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2024-01-13T00:00:00.0000000-05:00",
+                "AppliedTime": "2024-06-05T19:50:22.7069805Z",
+                "SuppressData": true,
+                "ReferenceValue": 75000
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "Lower",
+            "Type": "ThresholdBelow",
+            "Periods": [
+              {
+                "EndTime": "2024-01-13T00:00:00.0000000-05:00",
+                "StartTime": "2019-12-02T00:00:00.0000000-05:00",
+                "AppliedTime": "2019-12-04T13:52:25.45859Z",
+                "SuppressData": true,
+                "ReferenceValue": 500
+              },
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2024-01-13T00:00:00.0000000-05:00",
+                "AppliedTime": "2024-06-05T19:49:50.174728Z",
+                "SuppressData": true,
+                "ReferenceValue": 0
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": "HRECOS",
+        "parameter_description": "Specific conductance, water, unfiltered, microsiemens per centimeter at 25 degrees Celsius",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": null
+      },
+      "id": "05e5cf409e094617bdc2d87f688d7bc1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "33559340fd6d4bf0837a36a6db5e8bea",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water",
+        "parameter_code": "00010",
+        "statistic_id": "00002",
+        "last_modified": "2026-06-08T14:57:12.156376",
+        "begin": "2019-07-31T04:00:00+00:00",
+        "end": "2026-03-31T04:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Min",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": null,
+        "parameter_description": "Temperature, water, degrees Celsius",
+        "parent_time_series_id": "d4efcd2aa6144cc1b9e47896bdb0aa06",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "33559340fd6d4bf0837a36a6db5e8bea",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "363c40e0b36b4adea9b44e198db1b90b",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C",
+        "parameter_code": "00095",
+        "statistic_id": "00003",
+        "last_modified": "2026-06-17T15:58:32.275076",
+        "begin": "2019-07-31T04:00:00+00:00",
+        "end": "2026-03-31T04:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Mean",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": null,
+        "parameter_description": "Specific conductance, water, unfiltered, microsiemens per centimeter at 25 degrees Celsius",
+        "parent_time_series_id": "05e5cf409e094617bdc2d87f688d7bc1",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "363c40e0b36b4adea9b44e198db1b90b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "41e5c231aef84cdaa41916d362f31720",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C",
+        "parameter_code": "00095",
+        "statistic_id": "00002",
+        "last_modified": "2026-06-17T15:58:32.262830",
+        "begin": "2019-07-31T04:00:00+00:00",
+        "end": "2026-03-31T04:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Min",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": null,
+        "parameter_description": "Specific conductance, water, unfiltered, microsiemens per centimeter at 25 degrees Celsius",
+        "parent_time_series_id": "05e5cf409e094617bdc2d87f688d7bc1",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "41e5c231aef84cdaa41916d362f31720",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "459fd1d965264449acd9428836040eb6",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water",
+        "parameter_code": "00010",
+        "statistic_id": "00003",
+        "last_modified": "2026-06-08T14:57:12.170999",
+        "begin": "2019-07-31T04:00:00+00:00",
+        "end": "2026-03-31T04:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Mean",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": null,
+        "parameter_description": "Temperature, water, degrees Celsius",
+        "parent_time_series_id": "d4efcd2aa6144cc1b9e47896bdb0aa06",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "459fd1d965264449acd9428836040eb6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "96bf89d2753d4f42bc2fc6dcc689c0d0",
+        "unit_of_measure": "pH Units",
+        "parameter_name": "pH",
+        "parameter_code": "00400",
+        "statistic_id": "00011",
+        "last_modified": "2026-06-17T17:27:41.929350",
+        "begin": "2019-07-30T19:15:00+00:00",
+        "end": "2026-04-01T04:45:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [
+          {
+            "Name": "very high",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "2024-01-13T00:00:00.0000000-05:00",
+                "StartTime": "0001-01-01T00:00:00.0000000+00:00",
+                "AppliedTime": "2020-04-08T17:30:01.5358517Z",
+                "SuppressData": true,
+                "ReferenceValue": 11
+              },
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2024-01-13T00:00:00.0000000-05:00",
+                "AppliedTime": "2024-06-05T20:10:26.9558666Z",
+                "SuppressData": true,
+                "ReferenceValue": 12
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "Lower",
+            "Type": "ThresholdBelow",
+            "Periods": [
+              {
+                "EndTime": "2024-01-13T00:00:00.0000000-05:00",
+                "StartTime": "2019-11-25T00:00:00.0000000-05:00",
+                "AppliedTime": "2019-12-02T12:29:02.7229003Z",
+                "SuppressData": true,
+                "ReferenceValue": 4
+              },
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2024-01-13T00:00:00.0000000-05:00",
+                "AppliedTime": "2024-06-05T20:11:00.5035917Z",
+                "SuppressData": true,
+                "ReferenceValue": 1
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": "HRECOS",
+        "parameter_description": "pH, water, unfiltered, field, standard units",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": null
+      },
+      "id": "96bf89d2753d4f42bc2fc6dcc689c0d0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "ca1c245ae2c54d5f8015ed8c755e46dc",
+        "unit_of_measure": "mg/l",
+        "parameter_name": "Dissolved oxygen",
+        "parameter_code": "00300",
+        "statistic_id": "00011",
+        "last_modified": "2026-06-17T16:42:59.770473",
+        "begin": "2019-07-30T19:15:00+00:00",
+        "end": "2026-04-01T04:45:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [
+          {
+            "Name": "Lower",
+            "Type": "ThresholdBelow",
+            "Periods": [
+              {
+                "EndTime": "2023-09-01T00:00:00.0000000-05:00",
+                "StartTime": "2019-12-02T00:00:00.0000000-05:00",
+                "AppliedTime": "2019-12-04T14:00:20.7556621Z",
+                "SuppressData": true,
+                "ReferenceValue": 3
+              },
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2023-09-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2024-06-05T20:12:46.8357795Z",
+                "SuppressData": true,
+                "ReferenceValue": 0
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "very high",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "0001-01-01T00:00:00.0000000+00:00",
+                "AppliedTime": "2020-04-08T17:32:05.8990043Z",
+                "SuppressData": true,
+                "ReferenceValue": 20
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": "HRECOS",
+        "parameter_description": "Dissolved oxygen, water, unfiltered, milligrams per liter",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": null
+      },
+      "id": "ca1c245ae2c54d5f8015ed8c755e46dc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "d4efcd2aa6144cc1b9e47896bdb0aa06",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water",
+        "parameter_code": "00010",
+        "statistic_id": "00011",
+        "last_modified": "2026-06-08T14:57:12.122019",
+        "begin": "2019-07-30T19:15:00+00:00",
+        "end": "2026-04-01T04:45:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [
+          {
+            "Name": "Lower",
+            "Type": "ThresholdBelow",
+            "Periods": [
+              {
+                "EndTime": "2024-01-13T00:00:00.0000000-05:00",
+                "StartTime": "2019-12-02T00:00:00.0000000-05:00",
+                "AppliedTime": "2019-12-04T13:58:57.69199Z",
+                "SuppressData": true,
+                "ReferenceValue": 0.1
+              },
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2024-01-13T00:00:00.0000000-05:00",
+                "AppliedTime": "2024-06-05T19:47:41.5146902Z",
+                "SuppressData": true,
+                "ReferenceValue": -2
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "very high",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "0001-01-01T00:00:00.0000000+00:00",
+                "AppliedTime": "2020-04-08T17:27:22.7161556Z",
+                "SuppressData": true,
+                "ReferenceValue": 40
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": "HRECOS",
+        "parameter_description": "Temperature, water, degrees Celsius",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": null
+      },
+      "id": "d4efcd2aa6144cc1b9e47896bdb0aa06",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "df38fcde15ce436ab92612eb686e928b",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water",
+        "parameter_code": "00010",
+        "statistic_id": "00001",
+        "last_modified": "2026-06-08T14:57:12.141499",
+        "begin": "2019-07-31T04:00:00+00:00",
+        "end": "2026-03-31T04:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Max",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": null,
+        "parameter_description": "Temperature, water, degrees Celsius",
+        "parent_time_series_id": "d4efcd2aa6144cc1b9e47896bdb0aa06",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "df38fcde15ce436ab92612eb686e928b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "e1871af6814c4a9e8c1ccb2b6079e142",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C",
+        "parameter_code": "00095",
+        "statistic_id": "00001",
+        "last_modified": "2026-06-17T15:58:32.234281",
+        "begin": "2019-07-31T04:00:00+00:00",
+        "end": "2026-03-31T04:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Max",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": null,
+        "parameter_description": "Specific conductance, water, unfiltered, microsiemens per centimeter at 25 degrees Celsius",
+        "parent_time_series_id": "05e5cf409e094617bdc2d87f688d7bc1",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "e1871af6814c4a9e8c1ccb2b6079e142",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "efbde10177d740a68c5d78f41e9545a3",
+        "unit_of_measure": "None",
+        "parameter_name": "Salinity, wu, at 25C",
+        "parameter_code": "90860",
+        "statistic_id": "00011",
+        "last_modified": "2026-06-17T15:58:59.080508",
+        "begin": "2019-07-30T19:15:00+00:00",
+        "end": "2026-04-01T04:45:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01376520",
+        "web_description": "HRECOS",
+        "parameter_description": "Salinity, water, unfiltered, practical salinity units at 25 degrees Celsius",
+        "parent_time_series_id": "05e5cf409e094617bdc2d87f688d7bc1",
+        "data_gap_interval": "PT2H",
+        "statistics_begin": null
+      },
+      "id": "efbde10177d740a68c5d78f41e9545a3",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 12,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=json&monitoring_location_id=USGS-01376520&limit=100&skipGeometry=true"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=jsonld&monitoring_location_id=USGS-01376520&limit=100&skipGeometry=true"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=html&monitoring_location_id=USGS-01376520&limit=100&skipGeometry=true"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=csv&monitoring_location_id=USGS-01376520&limit=100&skipGeometry=true"
+    },
+    {
+      "type": "application/json",
+      "title": "Time series metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-08T14:30:24.171522Z"
+}

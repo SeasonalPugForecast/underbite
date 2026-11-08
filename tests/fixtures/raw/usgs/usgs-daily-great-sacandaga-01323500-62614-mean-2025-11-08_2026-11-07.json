@@ -1,0 +1,5516 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-08",
+        "value": "753.06",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "e46787fa-aa3d-4e7d-ac81-9f470f4be67d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-09",
+        "value": "752.98",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "4d83eef9-2048-475a-9fdc-58729f96bee2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-10",
+        "value": "753.13",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "9072df2f-93b8-4187-90dd-97894a74a2b6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-11",
+        "value": "753.23",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "2655e4e5-c417-4d5f-997e-b3d9d6cfd8e1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-12",
+        "value": "753.23",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "efa22fd4-d2d6-4269-919e-b7779658dd19",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-13",
+        "value": "753.23",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d7becd49-352d-4c44-bc00-496815728507",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-14",
+        "value": "753.21",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "443b3582-f76d-4108-ae33-9146df56b97b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-15",
+        "value": "753.19",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c2ab775c-33bb-43ca-8820-eb3c004846e6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-16",
+        "value": "753.31",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "dfb84270-6055-48a5-97cb-62fff225ac83",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-17",
+        "value": "753.46",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "72180502-dfed-4336-bd21-b0b411699c82",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-18",
+        "value": "753.51",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "da0d052e-38e4-481b-9a06-923cc723112e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-19",
+        "value": "753.51",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "7f91a13c-2a8f-4dac-be33-8c95352e2005",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-20",
+        "value": "753.53",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "9f1e590d-09c1-428a-b0bb-e0d69958d969",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-21",
+        "value": "753.55",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "ae076562-af23-4daa-942e-7ac1cd0f014e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-22",
+        "value": "753.55",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "3f16ae16-ff70-4f39-ad1d-65e2fd8ec2fd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-23",
+        "value": "753.55",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c6617bb7-49c0-4ff4-9e9b-693a996fe1ff",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-24",
+        "value": "753.55",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "81bc60ca-b62e-4986-b029-1f635187f42f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-25",
+        "value": "753.50",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "60d059d1-5a40-4fc9-b11d-f0a0deb43dd8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-26",
+        "value": "753.58",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "4338c762-4468-4477-8788-dacf82512d66",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-27",
+        "value": "753.73",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "aef3dbd2-6bbc-44d9-9670-924e9d1bcd5c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-28",
+        "value": "753.84",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c09ed4e5-1c95-4ed0-be8f-5d2629afb2d9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-29",
+        "value": "753.85",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "793c34ab-c2db-4cd9-8187-ee846b7870e5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-11-30",
+        "value": "753.87",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "5960faed-58bb-4665-871b-174ed5c12a4e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-01",
+        "value": "753.94",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "37e0bef8-4a53-42bd-b67b-76a9ced9cb80",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-02",
+        "value": "753.90",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "cd43ae86-9e61-4c18-b79d-3d1736dc7f8d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-03",
+        "value": "753.95",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "e4551067-1fd1-433e-a89b-73ed657e57dd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-04",
+        "value": "754.01",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "7f00d486-748e-4f47-84c3-8d99cd0bf048",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-05",
+        "value": "753.92",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "b74b130b-6da8-4ce9-88a6-b0fea3ea746a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-06",
+        "value": "753.89",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c7fa0271-b45b-4892-80ec-e8b4740b4a09",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-07",
+        "value": "753.88",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "28b64d3c-7bb4-4300-b9e9-f3a11d8cd646",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-08",
+        "value": "753.85",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "2082eaf7-a46b-4a86-88b7-4e0b110deb5d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-09",
+        "value": "753.78",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c7d571d9-bc41-4385-911e-79f1c5ac1705",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-10",
+        "value": "753.75",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "e9f1e1d0-f47b-4b0b-876a-8606ddc6d89f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-11",
+        "value": "753.80",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "3dbcdffe-b761-4155-a493-9fabff0b4922",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-12",
+        "value": "753.76",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "a54b59fa-3b24-460d-85b6-2e7f5c9b3f23",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-13",
+        "value": "753.67",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0a4b6d68-331c-4e7e-92e8-aa7bfc72e9c3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-14",
+        "value": "753.63",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "2e3b9cab-a036-41f8-8545-7b0272f48bf7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-15",
+        "value": "753.59",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "15f08ddb-5a46-445b-9584-46d15d716ee3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-16",
+        "value": "753.54",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "2dcecca1-8e9d-4b35-855e-a73830104765",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-17",
+        "value": "753.50",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "33b8839c-6c0d-4be2-8503-d357da54530f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-18",
+        "value": "753.43",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "053d26ca-a52e-4810-a721-6d79721de0d6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-19",
+        "value": "753.49",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "abfd1878-75f0-46f8-8846-e80eb5fd2d00",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-20",
+        "value": "753.68",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "5fe46974-a35c-405e-989b-fca773fc3564",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-21",
+        "value": "753.85",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0eddfac7-87ce-42da-8718-be154a4b7961",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-22",
+        "value": "753.93",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c2d3fc3c-46c0-4498-83a7-ba277131e79c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-23",
+        "value": "753.97",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d5f6b6ae-7cbf-4afb-a9f6-085dbe8e4ecb",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-24",
+        "value": "754.00",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "b386bd77-14a0-4236-954f-67fd18677667",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-25",
+        "value": "753.92",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "fbfa5943-5ae4-4cd6-b3a0-2581ebb93edd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-26",
+        "value": "753.82",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "7ba74519-39c3-4339-ba7b-184151ff1bfd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-27",
+        "value": "753.72",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "ff2b3209-2472-49af-badb-2b070c25d742",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-28",
+        "value": "753.54",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "6c5553f3-dfa1-4091-afff-a8f3ec50c846",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-29",
+        "value": "753.44",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": [
+          "ESTIMATED"
+        ]
+      },
+      "id": "3fdd852f-4517-43f1-8bca-7481b6b707c0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-30",
+        "value": "753.44",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "48a027db-2747-4e68-ad3a-f8fb31e92683",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2025-12-31",
+        "value": "753.37",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0cc975e1-4e7b-4281-aa5f-f15e2441aac6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-01",
+        "value": "753.31",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "a5d90775-aaab-49fd-9ec6-67f1cc92f6ab",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-02",
+        "value": "753.25",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "6eb3f55f-840d-49c8-8d27-6070f6e2a0a3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-03",
+        "value": "753.21",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "106dca44-4900-4ca1-a1d6-925c1f8be287",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-04",
+        "value": "753.13",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "9292231c-5fbd-4d0b-af5c-19f81f8936f0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-05",
+        "value": "753.05",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "f6590555-0a95-4f82-a346-d636c1e7b39f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-06",
+        "value": "752.97",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d54641a4-6076-457a-b5a3-bf511e8f4753",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-07",
+        "value": "752.94",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d3a03e81-f8b6-44ac-b7f2-1d2c5584efa4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-08",
+        "value": "752.86",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "e28a6fd5-ab47-4c93-9b6f-02a61aea7813",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-09",
+        "value": "752.79",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "4efdf66e-536b-4119-a02d-80b325e5c356",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-10",
+        "value": "752.75",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "52a41c52-f698-46ca-ae98-5328550ac235",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-11",
+        "value": "752.89",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "77bffe95-58fb-4f09-8f60-1e114e4d1010",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-12",
+        "value": "753.07",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "91078378-86b8-4343-8545-a0d8d994fc06",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-13",
+        "value": "753.16",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "1555ab9a-27b4-47e8-847b-b433b1aa9092",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-14",
+        "value": "753.22",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "5a43eacc-4d4e-4cbd-8305-7e3cfbe35837",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-15",
+        "value": "753.33",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "515a3fc7-954f-4c99-9e0b-f705e49e5373",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-16",
+        "value": "753.40",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "632b693c-a635-46a4-9513-7ac2bde77d32",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-17",
+        "value": "753.36",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "b43bdd34-9f38-4945-9977-cdf40181a63f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-18",
+        "value": "753.28",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "2bfc0f39-06a4-48df-bfdc-956bd32873bf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-19",
+        "value": "753.17",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "f98102a3-fee0-4e39-b404-69e54dbe568c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-20",
+        "value": "753.03",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "44b41648-4e1a-4509-9ba3-2e389503ca0a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-21",
+        "value": "752.84",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "cc00c0d3-ecc4-459b-ac8d-998a5c3345d4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-22",
+        "value": "752.68",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0de737dc-d584-48b5-8a0b-ce16782fc230",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-23",
+        "value": "752.51",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "cf3f35a3-b4e6-4104-8326-8ecf3f7e9f77",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-24",
+        "value": "752.29",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "f2c59718-bce4-479f-8856-23fe57792526",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-25",
+        "value": "752.11",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "3fb74d6d-d19c-43e8-85df-54d14b1a8e8f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-26",
+        "value": "752.05",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "17e92965-03a6-41c0-9640-6f2d95a68cbe",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-27",
+        "value": "751.94",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "3ae55779-4acb-41e8-89ac-6026834d8f45",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-28",
+        "value": "751.83",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "56d87e30-3c18-4f36-8a45-cf254d519ba0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-29",
+        "value": "751.72",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "bc71ffc6-8367-4db8-81d9-1e0fe21ac2d0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-30",
+        "value": "751.60",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "b4caa775-3b6e-47b8-885d-22aa843a4ca4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-01-31",
+        "value": "751.48",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "8f5b1bd3-3fe8-441b-aad7-009c3b7cfeee",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-01",
+        "value": "751.39",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "a3900683-119a-477a-bbf1-fa7c63a05e98",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-02",
+        "value": "751.29",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d86ddfe0-9768-4ac6-b21c-b62b46e319f0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-03",
+        "value": "751.19",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "de126a13-3256-41ec-b699-e3c92a074c8c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-04",
+        "value": "751.11",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "f77465ee-575e-4fff-a8e1-afb399b4156d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-05",
+        "value": "751.01",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "75fb3eab-7a91-4da0-a870-42cd8e4427dc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-06",
+        "value": "750.93",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "34706793-fbf7-40de-a53b-a119df1a098e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-07",
+        "value": "750.91",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "6c4a422f-d593-4a44-813d-935cee26d18a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-08",
+        "value": "750.82",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "151d4122-285b-46c7-90bd-db1828ac9ecf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-09",
+        "value": "750.75",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c164d94c-66e2-415f-83c8-d742ea56dd29",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-10",
+        "value": "750.68",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d7c32295-3851-4a0e-a5f8-d828ede2cfbc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-11",
+        "value": "750.66",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "8e1272b3-918c-4756-a3e7-84f1ffcfdc36",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-12",
+        "value": "750.61",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "29617599-28d8-4dc6-a6aa-0ff149b423dc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-13",
+        "value": "750.56",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "14597557-d4ee-400d-a1e0-1cf45e78d63b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-14",
+        "value": "750.52",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "5cb64d46-08b3-4cfa-baf8-fddd93316f15",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-15",
+        "value": "750.44",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "5effb588-055e-4002-8979-9526da728b84",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-16",
+        "value": "750.40",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "eb7e63ee-aae4-4e35-a7e1-2b6857a6e7d4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-17",
+        "value": "750.36",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "8cd7e4a0-3f5b-4bc9-b9da-1dd2c975aa5a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-18",
+        "value": "750.29",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "39abc5d2-d923-4d9c-99b8-db5994f85438",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-19",
+        "value": "750.23",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "f24ae8eb-b474-43c7-8316-e9e40e644551",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-20",
+        "value": "750.22",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "71b9bec4-95ab-4da3-b843-7cf3fee5190e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-21",
+        "value": "750.23",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c90116f9-dd21-444b-87d6-4509f4395eec",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-22",
+        "value": "750.18",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c82026f3-bbd5-4f4f-84f9-b0fa78f05865",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-23",
+        "value": "750.15",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "7a8264d3-6546-472c-897e-b0eb3fadba41",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-24",
+        "value": "750.13",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "9a5c5f62-73f8-44e6-bdac-99632aecd6e3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-25",
+        "value": "750.07",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "8b317c58-3e5b-4c44-9ce0-9b818d33ffc3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-26",
+        "value": "750.04",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "59082812-fce5-476c-9a90-2ba999d7cdad",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-27",
+        "value": "749.97",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "965cb3b7-7dfe-4800-aef4-387ecd69cdb9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-02-28",
+        "value": "749.92",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "a8e04a2f-7cfb-4f91-8506-023a0374b3f0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-01",
+        "value": "749.87",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d3e9474c-9571-4197-8eef-7d2bf73911c4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-02",
+        "value": "749.80",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "b8261875-eaff-45c5-b261-de3e342d001c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-03",
+        "value": "749.74",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d92a5d54-2cd3-4b2c-bb71-06f6487d641c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-04",
+        "value": "749.72",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "24304b21-79c5-40b0-a15c-e822f6ad6990",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-05",
+        "value": "749.65",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d81335a3-4dfc-4a25-8940-eea27a51faee",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-06",
+        "value": "749.67",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "8aaef049-31c8-4cdc-8d33-9b7df0b65f19",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-07",
+        "value": "749.67",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d0d19317-d35c-429f-9cec-85063be6700a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-08",
+        "value": "749.75",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "88d40f86-ec6d-40f0-9067-43f440a0e11a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-09",
+        "value": "750.02",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "dbd7917a-cbfd-4e37-901a-497360a03f0f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-10",
+        "value": "750.47",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0eafd4b3-b133-4564-a5b8-affd1938102f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-11",
+        "value": "751.28",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "3366106a-f47b-4d9f-a736-ebd1cf32c251",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-12",
+        "value": "752.70",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "3bb1d15b-8d02-4aad-9170-158c623d73ec",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-13",
+        "value": "753.90",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "95131228-1e65-4841-aa38-e01de0075865",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-14",
+        "value": "754.59",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "f514ce8c-2974-4eb3-ae68-102b3db73a1e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-15",
+        "value": "754.98",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "b63eabdd-882b-499b-8f26-aa4f66037a91",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-16",
+        "value": "755.34",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "7464187f-7d02-4afa-9251-ed76003a8ccc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-17",
+        "value": "756.35",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "2eac499a-01dd-4a71-aa48-53ac1bb095f0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-18",
+        "value": "757.26",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "760cac63-c9c9-4785-b5e7-fbd80b82b9ee",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-19",
+        "value": "757.78",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "3d38bfea-3b91-4d36-8681-a9bccde0c2c3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-20",
+        "value": "758.16",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "a77db5f3-e4ad-40be-b0f1-0c26c567436b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-21",
+        "value": "758.53",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "4a58e767-714a-4a9b-b8ee-94f94fb124a1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-22",
+        "value": "758.83",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "79877cb3-0218-4bfa-89e4-387a7193b392",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-23",
+        "value": "759.08",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "346f65f8-a9b1-4c78-8b56-f564ca56f85e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-24",
+        "value": "759.28",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "88d7d8b1-eb5a-4243-9975-9bea1b0c4fdd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-25",
+        "value": "759.40",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "68122832-d37a-4275-9899-ad3177f9765c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-26",
+        "value": "759.52",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "bcc023b3-dd0d-401e-adca-bc342cdc8892",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-27",
+        "value": "759.94",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "e1c846df-d669-4f1e-b7fd-3f39ad493d24",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-28",
+        "value": "760.43",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "3cf6a63e-aa4c-4e12-b127-1e9d73f7948c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-29",
+        "value": "760.69",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d01b9529-f25c-41b2-b9f2-02ce4d0d0f70",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-30",
+        "value": "760.87",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d75f48b9-e453-4fd4-8d32-c8c6cafa8916",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-03-31",
+        "value": "761.30",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "feaf7b11-d00f-4e00-be50-6443aa048482",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-01",
+        "value": "762.92",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d89c4930-17d0-422c-9062-d03fbf266ca1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-02",
+        "value": "764.20",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "fbd75897-2774-4a1f-b67d-fbd453ba06d9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-03",
+        "value": "765.00",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "69598393-d1b5-4cc8-8b00-0209ad41e217",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-04",
+        "value": "765.66",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "18909c24-ae19-4128-84c3-48628e6ffdf0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-05",
+        "value": "766.27",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d9544a93-a20e-49d3-aa29-b5f1c411e1b6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-06",
+        "value": "766.81",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "fb857a4f-f8ff-4dc6-8d5b-ef943167c818",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-07",
+        "value": "767.23",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "9749da0c-d7bf-4e2c-8a02-a00d8a0c33c0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-08",
+        "value": "767.52",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "aa69b767-bc1c-4893-83d6-00496ae8fc39",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-09",
+        "value": "767.79",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c173f6c4-622a-4d3e-b05a-e973de7c4b59",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-10",
+        "value": "768.00",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "89536474-c989-4eee-a9d9-565dd3f6f1cd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-11",
+        "value": "768.12",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "7d63281b-e083-4bf2-8fde-b797b439a9d1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-12",
+        "value": "768.19",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "37c3e7be-f9f5-405e-b421-89c01937ae6f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-13",
+        "value": "768.33",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "b0b23e90-a205-409b-a582-29aae33ce600",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-14",
+        "value": "768.45",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0261f202-7cbb-4463-93d9-697e4f8d44d2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-15",
+        "value": "768.58",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c52e641c-8bb4-4b88-aae3-482ccc8030d0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-16",
+        "value": "768.74",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "5424413e-e48c-47b6-8e4c-5693e85d2f51",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-17",
+        "value": "768.87",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "101b6f2c-af6a-4417-9d0a-9456f15f5d91",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-18",
+        "value": "768.95",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d3a68a47-bf27-408e-9af1-a4e0ae16f265",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-19",
+        "value": "769.09",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0314111f-d620-423d-8140-6b1c434189ef",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-20",
+        "value": "769.20",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "790ced74-43ab-49ef-b1a6-1724a2bfc4dd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-21",
+        "value": "769.25",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "a866998d-4409-45e7-be8a-083bbf154c74",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-22",
+        "value": "769.23",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "186acca7-2d27-4f7b-8657-cbc41bbf29ab",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-23",
+        "value": "769.19",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "67faacf9-4307-4057-95ae-1976a7afe4f5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-24",
+        "value": "769.02",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "1daac393-00a1-4ae4-aa77-0bef1784db10",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-25",
+        "value": "768.85",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "f56202f0-21a0-4233-a0b5-5d3c4f175417",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-26",
+        "value": "768.65",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "f0345575-2b52-4c83-829c-539dbb1324ef",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-27",
+        "value": "768.43",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "b04b5e0f-f335-44a6-93a4-ce12ec842e05",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-28",
+        "value": "768.22",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "bf28837d-dd5e-4b4c-9a85-01f04ba3e67b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-29",
+        "value": "768.04",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "51e1739d-9096-4b85-ae6b-a1fe19b051c0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-04-30",
+        "value": "768.06",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "221f4e78-2554-464c-805e-d83aebbfb70f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-01",
+        "value": "768.12",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "dc888295-c7fe-4c94-a994-4ba901848f5a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-02",
+        "value": "768.20",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "ce2a5c03-b233-4239-b5c6-f1683afaa2f7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-03",
+        "value": "768.23",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "6bed6e46-3e95-4ca5-a62e-3fe81a7630e8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-04",
+        "value": "768.27",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "b329d548-ae44-45fd-a0ed-1110ff3cddd8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-05",
+        "value": "768.32",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "a9b89b81-9306-4724-9e52-d59b89569167",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-06",
+        "value": "768.36",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c12e9e1f-6164-4c23-b223-790b97ffbf96",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-07",
+        "value": "768.43",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "45cad79d-3247-4091-9bef-a612867d40bd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-08",
+        "value": "768.38",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "66894a2d-71c7-4d82-b400-e840bd25c802",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-09",
+        "value": "768.28",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c2ed7da3-0c88-49dd-a41c-ee6d306d4941",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-10",
+        "value": "768.25",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "4bc6ef8e-c544-49af-bd80-de0d4a4d7c60",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-11",
+        "value": "768.14",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "cfedde3f-faf9-40bf-ae85-6667729fa694",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-12",
+        "value": "768.01",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "66597d8d-f81d-4a27-938f-bda7f4624e7b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-13",
+        "value": "767.89",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "546070b4-a0aa-4e74-8e41-b3d30411c3f1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-14",
+        "value": "767.87",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "9b3f5a3f-91d0-41b4-9d01-8db258f56a5a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-15",
+        "value": "768.00",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "3b13067a-c0d7-4f5f-af4d-401714262565",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-16",
+        "value": "768.12",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c7ddcb79-2e40-447d-ada5-09e18aea4334",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-17",
+        "value": "768.20",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "57c7ccf8-3a10-4329-be86-cb20e1d66ff8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-18",
+        "value": "768.25",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c0106cbb-6fe7-400d-a750-331063269803",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-19",
+        "value": "768.30",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "cee30950-a7d1-487b-a10e-df61f759eade",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-20",
+        "value": "768.35",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d631e3f8-82c8-4ebd-8a62-0b4620be26d4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-21",
+        "value": "768.28",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "9a99f7d1-418e-41d2-bc4e-aa175dc6c0be",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-22",
+        "value": "768.23",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "8621e54b-4d1b-4753-801e-213158278644",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-23",
+        "value": "768.19",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "39eb2801-92ba-400e-aad9-074ab4df6280",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-24",
+        "value": "768.21",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "e7f867be-1f13-4454-9884-620f2f234c2e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-25",
+        "value": "768.43",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "bc76dd6c-680a-49b0-b033-bdace18bd03d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-26",
+        "value": "768.72",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0cd2c52a-46ec-45f4-bcd2-120994635199",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-27",
+        "value": "768.83",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "8085e875-8a00-415b-83f8-fd6af632ae31",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-28",
+        "value": "768.78",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0776cb3b-18f6-467b-8ad5-87ed47bbc779",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-29",
+        "value": "768.73",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "ff013d01-1891-4e9e-a1b1-fac20ea498d0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-30",
+        "value": "768.51",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "14f7437d-ec96-459b-b64e-408b637bd85a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-05-31",
+        "value": "768.34",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "f3c605e8-035f-4d82-a80c-13c88ed4c67e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-01",
+        "value": "768.09",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "9abf0bb5-1e61-4abf-9ef2-e1239ea84023",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-02",
+        "value": "767.86",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "4dbf226c-1058-4e0a-afec-3ff57c696f0d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-03",
+        "value": "767.77",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "5fc1a473-8ee6-455e-a6fb-356bb1c0d0e0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-04",
+        "value": "767.75",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "a7f7cd0a-7837-4326-a2c3-12430f54fb64",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-05",
+        "value": "767.72",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "45d99333-6288-41dd-96fb-a0389e137c66",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-06",
+        "value": "767.70",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "db65976e-84b9-47c0-84c9-43230a19c259",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-07",
+        "value": "767.62",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "66a245cf-94f6-4ced-b17a-8a7d498d83b8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-08",
+        "value": "767.54",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "19afa1f0-5027-4f5f-8892-b0f3a69c1f4c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-09",
+        "value": "767.49",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d3dfebf1-d3a2-4dba-8f04-d47a533a5779",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-10",
+        "value": "767.41",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "6696d797-1593-495d-943f-e467148975ac",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-11",
+        "value": "767.37",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c1c1df8c-1943-4b2b-bb1e-00073b9eac2d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-12",
+        "value": "767.33",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "a25c2304-5db9-45aa-92cc-54fc09df7387",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-13",
+        "value": "767.24",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "f27b8ff7-d9b6-43ac-aa1a-16a41c4dbcb2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-14",
+        "value": "767.16",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "8b7c9d53-4a36-4041-a2ca-49d4698d219a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-15",
+        "value": "767.20",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "e365072e-d4bb-4a9c-a4bd-047ec34ff863",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-16",
+        "value": "767.13",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "7ed95893-326b-4956-9dcc-880c9ce0d10e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-17",
+        "value": "767.06",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0eb712e2-1f5e-43cb-bacd-271bd6899c23",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-18",
+        "value": "767.12",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d6ab078d-9ee2-45be-b8a7-09290f5827f9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-19",
+        "value": "767.15",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "f14a5113-934a-4742-8254-2032c837400f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-20",
+        "value": "767.07",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "942e4f79-41f1-4c0a-b89f-618e37a772d7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-21",
+        "value": "766.97",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "5574b4e5-055a-4040-9350-523df6a89ecf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-22",
+        "value": "766.92",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "db885cdb-821c-4b95-9e0d-dc79654fa60a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-23",
+        "value": "766.95",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c0044578-0be9-4720-b5fd-8d9fcf137bff",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-24",
+        "value": "766.93",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0401c0ff-f13f-436d-a68e-49b52d382b41",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-25",
+        "value": "766.85",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "eeda9215-512d-4cbc-932b-6488950c957c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-26",
+        "value": "766.81",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d3fe033c-8ac9-45b6-9bfc-d15d5d63352c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-27",
+        "value": "766.72",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "dc75078e-e765-4bd7-96fc-9eaf3a261819",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-28",
+        "value": "766.64",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "9d34be61-0ac5-488c-a3da-8524d0bdd9cc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-29",
+        "value": "766.54",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "ee35a71f-1030-4bb6-a02c-33e9a047915e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-06-30",
+        "value": "766.45",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "ce6f5ee7-dfe0-4555-887c-6224d50159ff",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-01",
+        "value": "766.39",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "600e72c2-f2e5-4327-902a-6be9e3231f07",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-02",
+        "value": "766.31",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "29c45030-cee9-491a-979a-7735bd6c487e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-03",
+        "value": "766.20",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "5097dfa2-483a-4fdb-8c31-df2f814c6693",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-04",
+        "value": "766.08",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "a6d7ea9f-ffb1-4199-b389-2c4bccdf7b72",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-05",
+        "value": "765.94",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "6bf2d903-96de-4c34-b460-5d515953a49f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-06",
+        "value": "765.82",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "70a038aa-dc77-4abb-ae90-6d762e301fef",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-07",
+        "value": "765.72",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0b6a8862-5355-455a-b39d-4f7bee9435c1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-08",
+        "value": "765.63",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "5842228c-eb1f-4766-b773-d8be1d6e48be",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-09",
+        "value": "765.51",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "b0e42e58-2292-4865-b9fb-f2311bf1e5be",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-10",
+        "value": "765.37",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "a321326a-8aad-4c43-b7d5-a436c1012956",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-11",
+        "value": "765.23",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d3acbcd1-4865-4a9f-a125-48cfe4453bb0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-12",
+        "value": "765.10",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "4263857f-f71f-4963-bbbe-a7e1c8cbeb33",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-13",
+        "value": "764.98",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "433510bc-878f-4f59-bc35-6b66c840c4bb",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-14",
+        "value": "764.87",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "8bcddea4-0826-47c8-ba26-3336f8ee454e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-15",
+        "value": "764.71",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "07cace8a-b044-4210-a010-8fb39e04134a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-16",
+        "value": "764.58",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "2528203e-88f3-4a7f-89f6-5867d3909440",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-17",
+        "value": "764.42",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "05879bb2-a057-44bc-9e00-546c1749e039",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-18",
+        "value": "764.32",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "0210a656-1726-47ac-b071-3fa18c79f1d2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-19",
+        "value": "764.21",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "424e1ed9-866b-422f-91e2-08b1d8af3f00",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-20",
+        "value": "764.08",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "fc372885-bb53-4ed4-846e-1ec50c537e9e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-21",
+        "value": "763.93",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "32a0023e-b598-48f3-a3de-4a40932f0564",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-22",
+        "value": "763.87",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "228df406-6db8-4346-bae3-d064ea38b75b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-23",
+        "value": "763.68",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "27e243a6-212b-4b59-a928-d036ae25e883",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-24",
+        "value": "763.54",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d0f5f20a-d478-4e04-8519-2b0fe29e49fc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-25",
+        "value": "763.39",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "7f0c0c0a-385c-4fad-8e2b-fb8ed4783509",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-26",
+        "value": "763.25",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "446ec772-9c0a-437b-8ef5-5124fef5b185",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-27",
+        "value": "763.13",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "d7ce65cf-70d5-4806-a296-e8a04a34e6cb",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-28",
+        "value": "763.01",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "c982801b-46de-4443-971a-1ae20d7d7f85",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-29",
+        "value": "763.22",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "007c101f-957e-48fa-9baa-277a86ef8b9c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-30",
+        "value": "763.79",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "b8ab60df-3dfc-4987-b9fc-2de4c7ef55dc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-07-31",
+        "value": "763.95",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "2caa1f8c-82a2-4394-9c58-86ea02571450",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-01",
+        "value": "763.96",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "79f0ae18-a218-4f2e-a8a7-7688836d92b2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-02",
+        "value": "763.91",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "9344d4a7-79e2-4ebd-b565-7a10ec5bd15a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-03",
+        "value": "764.04",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null
+      },
+      "id": "580c394f-25a2-4895-be80-8b0b3a7f4bb7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-04",
+        "value": "764.05",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3670325c-2bb1-4503-a490-1c638170a878",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-05",
+        "value": "763.99",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4f43d8de-c0d8-4a38-be6d-4061f153acc9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-06",
+        "value": "763.92",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a1e7b7b9-6770-4adb-8e58-c34530c3e0ec",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-07",
+        "value": "763.84",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "08a3314b-e833-4a7d-8e88-887593fe9a53",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-08",
+        "value": "763.76",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a62ae9a8-b9b9-4f05-99bf-0e8f5aa80dee",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-09",
+        "value": "763.69",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8ca868a4-399f-43e3-a649-675233c679a7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-10",
+        "value": "763.57",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8ae1f7c9-3aae-4ac2-8274-34b601063255",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-11",
+        "value": "763.46",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "bc8d5141-d5bb-4599-8c84-604539a9bde0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-12",
+        "value": "763.36",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "eea56c71-5085-43ce-9ce6-c002d43f5e7f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-13",
+        "value": "763.24",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8e55dc96-4d51-435d-8885-f303d402974d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-14",
+        "value": "763.13",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ae5e15b0-33ba-450c-a40f-eea2ebf5d88b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-15",
+        "value": "763.02",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "220c4791-854c-4caf-9065-5ef5dfd8d6ef",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-16",
+        "value": "762.90",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a91ce57d-5de9-4377-9f85-10bcb1418f10",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-17",
+        "value": "762.79",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "639fccab-63c7-4f1d-9d8a-20405f2bbe84",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-18",
+        "value": "762.66",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c2a0bcb4-b2bf-4b87-a012-632026d8ab10",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-19",
+        "value": "762.55",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2bcb37f0-b732-4e28-9f92-51524732ac19",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-20",
+        "value": "762.41",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2d96fcbe-deb5-49d5-8b33-10b1ae3d5752",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-21",
+        "value": "762.25",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c4cbf439-4c50-46f6-9cda-181b1b362149",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-22",
+        "value": "762.13",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "fce19c15-40e3-4cd3-bd9d-5da0dd1c7a9a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-23",
+        "value": "762.03",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8cdda6eb-8bb2-47f1-8218-11484f033f37",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-24",
+        "value": "761.94",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2324f5d3-60d8-44f5-897d-c38cccfcb103",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-25",
+        "value": "761.81",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8196b70b-d093-4d44-8a63-6338d1bd73a5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-26",
+        "value": "761.66",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "08b73ff3-29be-4a3f-aafb-efbbdf0d5223",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-27",
+        "value": "761.56",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "46eb5319-3bf7-4bf1-bcb7-07d0eb064079",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-28",
+        "value": "761.53",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "49af3716-1d5a-4f39-8980-551f9f8d3930",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-29",
+        "value": "761.41",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e40a6a8c-be7b-4f02-a6ab-bacc4f7e2501",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-30",
+        "value": "761.28",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "dab58fd4-bc4e-4221-b14e-02fcefeebe11",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-08-31",
+        "value": "761.15",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "100cde3a-9f30-46c5-a01a-8442b6ea5967",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-01",
+        "value": "761.09",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "534b55c8-a833-4462-a9bb-7ca310c51ca8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-02",
+        "value": "761.06",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2ef7cd96-e52c-4a9d-9fdf-17db56229210",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-03",
+        "value": "760.98",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "de48e9c2-2dcd-436f-8510-052b6be0f3c7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-04",
+        "value": "760.88",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4c40fffe-177f-4b38-b20f-f69bca4a8174",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-05",
+        "value": "760.75",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d8d80a35-0c00-4e1d-baa0-9f5b61727501",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-06",
+        "value": "760.62",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5ee398ff-e01d-4cda-ba99-65cb50c3f177",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-07",
+        "value": "760.52",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "dcbd0f31-4d67-4f8f-824e-26d47977781d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-08",
+        "value": "760.39",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c95fa23a-084f-401d-82c5-5faf33984182",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-09",
+        "value": "760.30",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "85a37520-08be-4789-8fe4-14b1707cb44f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-10",
+        "value": "760.29",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2a77fc9c-7043-4d4e-a4cb-a5efe947e7ab",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-11",
+        "value": "760.17",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a80fa9c5-6f24-4645-b183-b23defe9f6fe",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-12",
+        "value": "760.08",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "dd6b7f81-a518-472e-9437-9041bf466818",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-13",
+        "value": "760.03",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "94b3af96-4328-42dd-8f67-f3569d04e2e0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-14",
+        "value": "759.96",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ae9dfaa8-dfaa-4e0e-9d0d-58d9eb83b4ad",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-15",
+        "value": "759.86",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "dfa6ead9-569e-40f7-a645-d68ad3587fe4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-16",
+        "value": "759.77",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "045d576d-f310-4a23-afec-3a76c9a6eef3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-17",
+        "value": "759.68",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d19308bb-22ec-4747-bb12-82b8d0f8cdfb",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-18",
+        "value": "759.61",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c9be2c9f-ca63-4672-aae8-e580448facd3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-19",
+        "value": "759.52",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f9969d0e-8c37-4a2e-ad73-cef4098bf871",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-20",
+        "value": "759.44",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e7028838-cd21-4b23-8085-80924b45f13f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-21",
+        "value": "759.37",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1f535b38-62b6-4703-b0ea-eeb6d770f244",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-22",
+        "value": "759.27",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "bb59f513-2c6a-46d9-b238-a8f0591396ac",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-23",
+        "value": "759.16",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "68a75834-369a-4466-b5a0-2fda3cfb627c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-24",
+        "value": "759.06",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b8ac434d-911e-4755-8086-a857a1370628",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-25",
+        "value": "758.93",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1e98ff8f-3f6d-4043-9724-63669259713b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-26",
+        "value": "758.79",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "90dec49e-46a6-4c6f-9535-b98f0f0b2315",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-27",
+        "value": "758.61",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b1769565-9a96-4998-ba2a-95ebfd642ae8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-28",
+        "value": "758.59",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ef4f7b26-77ba-4648-956d-d16cd554ebf4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-29",
+        "value": "758.51",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1b981fa8-1127-4520-ba6e-5f54f90c3c84",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-09-30",
+        "value": "758.41",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "be010ba7-e184-4daf-8a94-0979950c2f30",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-01",
+        "value": "758.32",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "eb21b247-6288-449c-aa38-9cc6722588e3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-02",
+        "value": "758.21",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f44b5cd0-d9d8-42fb-a70c-1707f286ac53",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-03",
+        "value": "758.07",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b92caaad-ab9e-4cdb-b424-1a4fc426dfb6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-04",
+        "value": "757.96",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "fa71371c-b668-490e-b1a1-3fa5dff90b7c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-05",
+        "value": "757.88",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b94b8389-cd5c-40a1-9910-7a04d362e5f7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-06",
+        "value": "757.73",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7d465411-41d8-486a-9008-09d1e1e81b46",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-07",
+        "value": "757.58",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "04607d7b-b555-4e02-b56b-0cd541557571",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-08",
+        "value": "757.49",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c2ac7920-8508-41e3-8324-e6340c981a3e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-09",
+        "value": "757.36",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "064760a5-c88c-47f1-807f-fd3c162a640b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-10",
+        "value": "757.18",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "17a2883f-0aa0-46c0-b7a8-ec186b3c1d5c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-11",
+        "value": "757.05",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b578481b-da39-406f-ba3d-440d86a0d56c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-12",
+        "value": "757.00",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a1eaf61e-0cb9-4dfe-9b93-b3170d75f682",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-13",
+        "value": "756.88",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "82f70ec6-5485-4018-b5ba-4849b33ab108",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-14",
+        "value": "756.89",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "87ac5823-cf39-49a9-b96b-1077fac33aa9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-15",
+        "value": "756.81",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "02a38dce-4f16-48f1-9347-f3189ddcc4b4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-16",
+        "value": "756.82",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2df710b6-e1e7-4aad-b871-9523b8208ef9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-17",
+        "value": "756.81",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1ea84e02-af7b-4747-8bdf-16949e4118a1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-18",
+        "value": "756.86",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e7727642-cfd9-4775-9366-70ccb09280e3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-19",
+        "value": "756.88",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "65d46e5d-919f-4c22-8aaf-77ef13917f09",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-20",
+        "value": "756.82",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ef8f214b-fc24-42f7-9622-41066bcf6951",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-21",
+        "value": "756.83",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8ca92020-bb1a-44f9-a3f5-c04c72fca8ba",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-22",
+        "value": "756.84",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "62f6c069-84df-4fc4-ac7b-a4893c5c8de2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-23",
+        "value": "756.81",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "66f02269-abc7-4af9-a3c0-dfb4d48c44c2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-24",
+        "value": "756.77",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a873bfa4-f3a1-4187-8ea5-e80452379ff6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-25",
+        "value": "756.70",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c2a6f27a-a603-40cd-903b-db09b528b3b5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-26",
+        "value": "756.63",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1b33a95c-a1b3-45ae-9117-b36accaea79f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-27",
+        "value": "756.49",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f28bd56e-f284-4c12-9c22-6567cc040101",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-28",
+        "value": "756.40",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "6555bb18-8218-48f3-bf98-4a9a392408a8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-29",
+        "value": "756.32",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ca021ce3-c965-4d97-919e-c4a697aac77b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-30",
+        "value": "756.25",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "fe34b929-0cd7-4a5f-82be-51a1c2dfd863",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-10-31",
+        "value": "756.11",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "21e5c840-771b-418d-9762-7b6b4182de7f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-11-01",
+        "value": "756.03",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "fabea5e9-9375-4346-b57e-31320eb1c72f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-11-02",
+        "value": "755.92",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f27eac50-cd3e-43dc-af39-5ae5537e0303",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-11-03",
+        "value": "755.82",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9ba58288-05e9-4e79-9412-95b6a5de0aac",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-11-04",
+        "value": "755.71",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "abcb8a45-532f-4b57-898e-5d8a383c53a7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-11-05",
+        "value": "755.62",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f4367596-2dba-4170-9f17-dfc29f5f2404",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-11-06",
+        "value": "755.54",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4556f63b-3046-4070-a019-49764ec89991",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "b88e05b75dc14152944b3e7533c9fb45",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "time": "2026-11-07",
+        "value": "755.48",
+        "unit_of_measure": "ft",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "14d59586-1edf-467c-aa87-35a310227b10",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 365,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01323500&parameter_code=62614&statistic_id=00003&datetime=2025-11-08%2F2026-11-07&skipGeometry=true&sortby=time&limit=1000&properties=time_series_id,parameter_code,statistic_id,time,value,unit_of_measure,approval_status,qualifier"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=jsonld&monitoring_location_id=USGS-01323500&parameter_code=62614&statistic_id=00003&datetime=2025-11-08%2F2026-11-07&skipGeometry=true&sortby=time&limit=1000&properties=time_series_id,parameter_code,statistic_id,time,value,unit_of_measure,approval_status,qualifier"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=html&monitoring_location_id=USGS-01323500&parameter_code=62614&statistic_id=00003&datetime=2025-11-08%2F2026-11-07&skipGeometry=true&sortby=time&limit=1000&properties=time_series_id,parameter_code,statistic_id,time,value,unit_of_measure,approval_status,qualifier"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=csv&monitoring_location_id=USGS-01323500&parameter_code=62614&statistic_id=00003&datetime=2025-11-08%2F2026-11-07&skipGeometry=true&sortby=time&limit=1000&properties=time_series_id,parameter_code,statistic_id,time,value,unit_of_measure,approval_status,qualifier"
+    },
+    {
+      "type": "application/json",
+      "title": "Daily values",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily"
+    }
+  ],
+  "timeStamp": "2026-11-08T14:26:53.700093Z"
+}

@@ -1,0 +1,380 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "00010",
+        "parameter_name": "Temperature, water",
+        "unit_of_measure": "deg C",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Temperature, water, degrees Celsius",
+        "medium": "Water",
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "Agree"
+      },
+      "id": "00010",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "00060",
+        "parameter_name": "Discharge",
+        "unit_of_measure": "ft3/s",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Discharge, cubic feet per second",
+        "medium": "Water",
+        "statistical_basis": "Mean",
+        "time_basis": "1 Day",
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "Not checked"
+      },
+      "id": "00060",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "00062",
+        "parameter_name": "Elevation, reservoir",
+        "unit_of_measure": "ft",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Elevation of reservoir water surface above datum, feet",
+        "medium": "Water",
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "Agree"
+      },
+      "id": "00062",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "00065",
+        "parameter_name": "Gage height",
+        "unit_of_measure": "ft",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Gage height, feet",
+        "medium": null,
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "Agree"
+      },
+      "id": "00065",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "00095",
+        "parameter_name": "Specific cond at 25C",
+        "unit_of_measure": "uS/cm @25C",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Specific conductance, water, unfiltered, microsiemens per centimeter at 25 degrees Celsius",
+        "medium": "Water",
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": "Total",
+        "temperature_basis": "25 deg C",
+        "epa_equivalence": "Agree"
+      },
+      "id": "00095",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "00300",
+        "parameter_name": "Dissolved oxygen",
+        "unit_of_measure": "mg/l",
+        "parameter_group_code": "INN",
+        "parameter_description": "Dissolved oxygen, water, unfiltered, milligrams per liter",
+        "medium": "Water",
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": "Dissolved",
+        "temperature_basis": null,
+        "epa_equivalence": "Agree"
+      },
+      "id": "00300",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "00400",
+        "parameter_name": "pH",
+        "unit_of_measure": "std units",
+        "parameter_group_code": "PHY",
+        "parameter_description": "pH, water, unfiltered, field, standard units",
+        "medium": "Water",
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": "Total",
+        "temperature_basis": null,
+        "epa_equivalence": "Agree"
+      },
+      "id": "00400",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "62614",
+        "parameter_name": "Elevation, lake/res, NGVD29",
+        "unit_of_measure": "ft",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Lake or reservoir water surface elevation above NGVD 1929, feet",
+        "medium": "Water",
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "USGS use and no use by EPA"
+      },
+      "id": "62614",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "62615",
+        "parameter_name": "Elevation, lake/res, NAVD88",
+        "unit_of_measure": "ft",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Lake or reservoir water surface elevation above NAVD 1988, feet",
+        "medium": "Water",
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "USGS use and no use by EPA"
+      },
+      "id": "62615",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "62616",
+        "parameter_name": "Elevation, lake/res, NGVD29",
+        "unit_of_measure": "m",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Lake or reservoir water surface elevation above NGVD 1929, meters",
+        "medium": "Water",
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "USGS use and no use by EPA"
+      },
+      "id": "62616",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "62619",
+        "parameter_name": "Elevation, ocean/est, NGVD29",
+        "unit_of_measure": "ft",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Estuary or ocean water surface elevation above NGVD 1929, feet",
+        "medium": null,
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "USGS use and no use by EPA"
+      },
+      "id": "62619",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "62620",
+        "parameter_name": "Elevation, ocean/est, NAVD88",
+        "unit_of_measure": "ft",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Estuary or ocean water surface elevation above NAVD 1988, feet",
+        "medium": null,
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "USGS use and no use by EPA"
+      },
+      "id": "62620",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "63680",
+        "parameter_name": "Turbidity, Form Neph",
+        "unit_of_measure": "FNU",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light, 780-900 nm, detection angle 90 +-2.5 degrees, formazin nephelometric units (FNU)",
+        "medium": "Water",
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": "Total",
+        "temperature_basis": null,
+        "epa_equivalence": "USGS use and no use by EPA"
+      },
+      "id": "63680",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "72020",
+        "parameter_name": "Elevation, NGVD29",
+        "unit_of_measure": "ft",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Elevation above NGVD 1929, feet",
+        "medium": null,
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "Not checked"
+      },
+      "id": "72020",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "72036",
+        "parameter_name": "Reservoir storage",
+        "unit_of_measure": "Kac-ft",
+        "parameter_group_code": "INF",
+        "parameter_description": "Reservoir storage, thousand acre feet",
+        "medium": null,
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "Agree"
+      },
+      "id": "72036",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "72254",
+        "parameter_name": "Sensor velocity",
+        "unit_of_measure": "ft/sec",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Water velocity reading from field sensor, feet per second",
+        "medium": "Water",
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": null,
+        "temperature_basis": null,
+        "epa_equivalence": "Not checked"
+      },
+      "id": "72254",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "90860",
+        "parameter_name": "Salinity, at 25C",
+        "unit_of_measure": "PSU",
+        "parameter_group_code": "PHY",
+        "parameter_description": "Salinity, water, unfiltered, practical salinity units at 25 degrees Celsius",
+        "medium": "Water",
+        "statistical_basis": null,
+        "time_basis": null,
+        "weight_basis": null,
+        "particle_size_basis": null,
+        "sample_fraction": "Total",
+        "temperature_basis": "25 deg C",
+        "epa_equivalence": "USGS use and no use by EPA"
+      },
+      "id": "90860",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 17,
+  "numberMatched": 17,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=json&id=00060,00065,00010,63680,00300,00095,00400,62614,62615,62616,62619,62620,00062,72020,72036,90860,72254&skipGeometry=true&limit=50"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=jsonld&id=00060,00065,00010,63680,00300,00095,00400,62614,62615,62616,62619,62620,00062,72020,72036,90860,72254&skipGeometry=true&limit=50"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=html&id=00060,00065,00010,63680,00300,00095,00400,62614,62615,62616,62619,62620,00062,72020,72036,90860,72254&skipGeometry=true&limit=50"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=csv&id=00060,00065,00010,63680,00300,00095,00400,62614,62615,62616,62619,62620,00062,72020,72036,90860,72254&skipGeometry=true&limit=50"
+    },
+    {
+      "type": "application/json",
+      "title": "Parameter codes",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes"
+    }
+  ],
+  "timeStamp": "2026-11-08T14:26:10.323309Z"
+}

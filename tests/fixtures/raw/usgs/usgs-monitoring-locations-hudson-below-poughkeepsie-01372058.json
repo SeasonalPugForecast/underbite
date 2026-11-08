@@ -1,0 +1,94 @@
+{
+    "type":"Feature",
+    "properties":{
+        "id":"USGS-01372058",
+        "agency_code":"USGS",
+        "agency_name":"U.S. Geological Survey",
+        "monitoring_location_number":"01372058",
+        "monitoring_location_name":"HUDSON RIVER BELOW POUGHKEEPSIE NY",
+        "district_code":"36",
+        "country_code":"US",
+        "country_name":"United States of America",
+        "state_code":"36",
+        "state_name":"New York",
+        "county_code":"027",
+        "county_name":"Dutchess County",
+        "minor_civil_division_code":"59652",
+        "site_type_code":"ES",
+        "site_type":"Estuary",
+        "hydrologic_unit_code":"020200080106",
+        "basin_code":null,
+        "altitude":null,
+        "altitude_accuracy":null,
+        "altitude_method_code":null,
+        "altitude_method_name":null,
+        "vertical_datum":null,
+        "vertical_datum_name":null,
+        "horizontal_positional_accuracy_code":"1",
+        "horizontal_positional_accuracy":"Accurate to + or - .1 sec (Differentially-Corrected GPS).",
+        "horizontal_position_method_code":"N",
+        "horizontal_position_method_name":"Interpolated from Digital MAP.",
+        "original_horizontal_datum":"NAD83",
+        "original_horizontal_datum_name":"North American Datum of 1983",
+        "drainage_area":11876.0,
+        "contributing_drainage_area":null,
+        "time_zone_abbreviation":"EST",
+        "uses_daylight_savings":"N",
+        "construction_date":null,
+        "aquifer_code":null,
+        "national_aquifer_code":null,
+        "aquifer_type_code":null,
+        "well_constructed_depth":null,
+        "hole_constructed_depth":null,
+        "depth_source_code":null,
+        "revision_note":"WDR NY-97-1: 1996.&nbsp;Drainage area was revised on Aug. 30, 2023, from 11,740 sq mi to 11,876 sq mi, based on better definition methods.",
+        "revision_created":"2017-11-13T06:00:00+00:00",
+        "revision_modified":"2023-08-30T11:55:45.383000+00:00"
+    },
+    "id":"USGS-01372058",
+    "geometry":{
+        "type":"Point",
+        "coordinates":[
+            -73.95341666666667,
+            41.65247222222222
+        ]
+    },
+    "links":[
+        {
+            "type":"application/json",
+            "rel":"root",
+            "title":"The landing page of this server as JSON",
+            "href":"https://api.waterdata.usgs.gov/ogcapi/v1?f=json"
+        },
+        {
+            "type":"text/html",
+            "rel":"root",
+            "title":"The landing page of this server as HTML",
+            "href":"https://api.waterdata.usgs.gov/ogcapi/v1?f=html"
+        },
+        {
+            "rel":"self",
+            "type":"application/geo+json",
+            "title":"This document as JSON",
+            "href":"https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items/USGS-01372058?f=json"
+        },
+        {
+            "rel":"alternate",
+            "type":"application/ld+json",
+            "title":"This document as RDF (JSON-LD)",
+            "href":"https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items/USGS-01372058?f=jsonld"
+        },
+        {
+            "rel":"alternate",
+            "type":"text/html",
+            "title":"This document as HTML",
+            "href":"https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items/USGS-01372058?f=html"
+        },
+        {
+            "rel":"collection",
+            "type":"application/json",
+            "title":"Monitoring locations",
+            "href":"https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations"
+        }
+    ]
+}

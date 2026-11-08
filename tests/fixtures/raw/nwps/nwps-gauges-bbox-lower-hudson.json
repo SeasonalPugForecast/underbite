@@ -1,0 +1,1284 @@
+{
+  "gauges": [
+    {
+      "lid": "HAMN6",
+      "name": "Hutchinson River at Pelham",
+      "rfc": {
+        "abbreviation": "NERFC",
+        "name": "Northeast River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NY",
+        "name": "New York"
+      },
+      "latitude": 40.911388888889,
+      "longitude": -73.813611111111,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "out_of_service",
+          "validTime": "0001-01-01T00:00:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "out_of_service",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "HOHN4",
+      "name": "Hohokus Brook at Ho-Ho-Kus",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.997777777778,
+      "longitude": -74.113333333333,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 1.41,
+          "primaryUnit": "ft",
+          "secondary": 0.0219,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:30:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "KTNN6",
+      "name": "Cross River at Katonah",
+      "rfc": {
+        "abbreviation": "NERFC",
+        "name": "Northeast River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NY",
+        "name": "New York"
+      },
+      "latitude": 41.266111111111,
+      "longitude": -73.666111111111,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": ""
+      },
+      "status": {
+        "observed": {
+          "primary": 1.36,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "not_defined",
+          "validTime": "2026-11-08T13:30:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "LNPN4",
+      "name": "Beaver Dam Brook at Lincoln Park",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "PHI",
+        "name": "Mount Holly"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.924722222222,
+      "longitude": -74.3025,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 3.84,
+          "primaryUnit": "ft",
+          "secondary": 2,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "not_defined",
+          "validTime": "2026-11-08T13:15:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "MAWN4",
+      "name": "Ramapo River at Mahwah",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 41.0975,
+      "longitude": -74.16333333333333,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 2.74,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:30:00Z"
+        },
+        "forecast": {
+          "primary": 2.7,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T18:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "MOLN4",
+      "name": "Molly Ann Brook at N. Haledon",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.95,
+      "longitude": -74.183333333333,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 3.15,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:00:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "MWLN4",
+      "name": "at Midwood",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "PHI",
+        "name": "Mount Holly"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.916944444444,
+      "longitude": -74.278333333333,
+      "pedts": {
+        "observed": "HGIRR",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "out_of_service",
+          "validTime": "0001-01-01T00:00:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "out_of_service",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "NMLN4",
+      "name": "Hackensack River at New Milford",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.948333333333,
+      "longitude": -74.026666666667,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 1.55,
+          "primaryUnit": "ft",
+          "secondary": 0.0134,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:15:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "OKLN4",
+      "name": "Ramapo River at Oakland",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 41.0275,
+      "longitude": -74.25,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": ""
+      },
+      "status": {
+        "observed": {
+          "primary": 4.44,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:00:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "PARN4",
+      "name": "Saddle River at Paramus",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.9552,
+      "longitude": -74.0997,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": ""
+      },
+      "status": {
+        "observed": {
+          "primary": 1.8,
+          "primaryUnit": "ft",
+          "secondary": 0.078,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:15:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "PKRN4",
+      "name": "Pascack River at Park Ridge",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 41.036666666667,
+      "longitude": -74.039166666667,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": ""
+      },
+      "status": {
+        "observed": {
+          "primary": 2.8,
+          "primaryUnit": "ft",
+          "secondary": 0.012,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:55:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "PLUN4",
+      "name": "Ramapo River at Pompton Lakes Dam",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "PHI",
+        "name": "Mount Holly"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.9925,
+      "longitude": -74.278888888889,
+      "pedts": {
+        "observed": "HPIRG",
+        "forecast": "HPIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 10.26,
+          "primaryUnit": "ft",
+          "secondary": 0.0671,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:30:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "PMPN4",
+      "name": "Ramapo River at Lakseside Ave at Pompton Lakes",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "PHI",
+        "name": "Mount Holly"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 41.007222222222,
+      "longitude": -74.274444444444,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 10.5,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "not_defined",
+          "validTime": "2026-11-08T13:15:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "PMTN6",
+      "name": "Hudson River at Piermont (IN MLLW)",
+      "rfc": {
+        "abbreviation": "NERFC",
+        "name": "Northeast River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NY",
+        "name": "New York"
+      },
+      "latitude": 41.04305,
+      "longitude": -73.8961,
+      "pedts": {
+        "observed": "HMIRG",
+        "forecast": "HMIFE"
+      },
+      "status": {
+        "observed": {
+          "primary": 3.82,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:30:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "POMN4",
+      "name": "Ramapo River at Dawes Highway at Pompton Lakes",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "PHI",
+        "name": "Mount Holly"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.985555555556,
+      "longitude": -74.279444444444,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 0.71,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "not_defined",
+          "validTime": "2026-11-08T13:50:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "PPPN4",
+      "name": "Pompton River at Pompton Plains",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "PHI",
+        "name": "Mount Holly"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.969722222222,
+      "longitude": -74.281944444444,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 7.92,
+          "primaryUnit": "ft",
+          "secondary": 0.153,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:15:00Z"
+        },
+        "forecast": {
+          "primary": 7.8,
+          "primaryUnit": "ft",
+          "secondary": 0.13,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T18:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "PPTN4",
+      "name": "Ramapo River at Pompton Lakes",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "PHI",
+        "name": "Mount Holly"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.991944444444,
+      "longitude": -74.28,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 7.13,
+          "primaryUnit": "ft",
+          "secondary": 0.0915,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:15:00Z"
+        },
+        "forecast": {
+          "primary": 7,
+          "primaryUnit": "ft",
+          "secondary": 0.071,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T18:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "RAMN6",
+      "name": "Ramapo River at Ramapo",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NY",
+        "name": "New York"
+      },
+      "latitude": 41.140277777778,
+      "longitude": -74.168888888889,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 1.98,
+          "primaryUnit": "ft",
+          "secondary": 0.0121,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:45:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "RDLN4",
+      "name": "Pequannock River at Riverdale",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "PHI",
+        "name": "Mount Holly"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.998611111111,
+      "longitude": -74.298055555556,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 2.03,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:30:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "RIVN4",
+      "name": "Hackensack River at Rivervale",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.999166666667,
+      "longitude": -73.989722222222,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 1.67,
+          "primaryUnit": "ft",
+          "secondary": 0.0336,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:15:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "RRLN4",
+      "name": "at Ryerson",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "PHI",
+        "name": "Mount Holly"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.924722222222,
+      "longitude": -74.289166666667,
+      "pedts": {
+        "observed": "HGIRR",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "out_of_service",
+          "validTime": "0001-01-01T00:00:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "out_of_service",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "RWDN4",
+      "name": "Saddle River at Ridgewood",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.985,
+      "longitude": -74.091388888889,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 0.81,
+          "primaryUnit": "ft",
+          "secondary": 0.0166,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:15:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "RYPN6",
+      "name": "Long Island Sound at Rye (IN MLLW)",
+      "rfc": {
+        "abbreviation": "NERFC",
+        "name": "Northeast River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NY",
+        "name": "New York"
+      },
+      "latitude": 40.9623,
+      "longitude": -73.6726,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HMIFE"
+      },
+      "status": {
+        "observed": {
+          "primary": 7.14,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:42:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "SADN4",
+      "name": "Saddle River at Upper Saddle River",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 41.058888888889,
+      "longitude": -74.095277777778,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 1.9,
+          "primaryUnit": "ft",
+          "secondary": 0.005,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:15:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "SFFN6",
+      "name": "Ramapo River at Suffern",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NY",
+        "name": "New York"
+      },
+      "latitude": 41.112777777778,
+      "longitude": -74.157222222222,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 2.83,
+          "primaryUnit": "ft",
+          "secondary": 0.0554,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:15:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "SUFN6",
+      "name": "Mahwah River at Suffern",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NY",
+        "name": "New York"
+      },
+      "latitude": 41.140833333333,
+      "longitude": -74.116944444444,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 1.82,
+          "primaryUnit": "ft",
+          "secondary": 0.0106,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:30:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "WNQN4",
+      "name": "Wanaque River at Wanaque",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "PHI",
+        "name": "Mount Holly"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 41.044166666667,
+      "longitude": -74.293055555556,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 1.38,
+          "primaryUnit": "ft",
+          "secondary": 0.0184,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:10:00Z"
+        },
+        "forecast": {
+          "primary": 1.4,
+          "primaryUnit": "ft",
+          "secondary": 0.02,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T18:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "WNYN6",
+      "name": "Hackensack River at West Nyack",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NY",
+        "name": "New York"
+      },
+      "latitude": 41.095555555556,
+      "longitude": -73.964444444444,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": ""
+      },
+      "status": {
+        "observed": {
+          "primary": 2.46,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:45:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "WPTN6",
+      "name": "Hudson River at West Point",
+      "rfc": {
+        "abbreviation": "NERFC",
+        "name": "Northeast River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NY",
+        "name": "New York"
+      },
+      "latitude": 41.39055555555556,
+      "longitude": -73.96083333333333,
+      "pedts": {
+        "observed": "HMIRG",
+        "forecast": ""
+      },
+      "status": {
+        "observed": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "obs_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "WRDN4",
+      "name": "Wanaque River at Wanaque Reservoir elevation",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "PHI",
+        "name": "Mount Holly"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 41.045,
+      "longitude": -74.29527778,
+      "pedts": {
+        "observed": "HPIRG",
+        "forecast": "HPIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 289.17,
+          "primaryUnit": "ft",
+          "secondary": -999,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:15:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "WSDN4",
+      "name": "Pascack River at Westwood",
+      "rfc": {
+        "abbreviation": "MARFC",
+        "name": "Middle Atlantic River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NJ",
+        "name": "New Jersey"
+      },
+      "latitude": 40.992777777778,
+      "longitude": -74.021388888889,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": "HGIFF"
+      },
+      "status": {
+        "observed": {
+          "primary": 1.48,
+          "primaryUnit": "ft",
+          "secondary": 0.0204,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "no_flooding",
+          "validTime": "2026-11-08T13:55:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "lid": "XRVN6",
+      "name": "Cross River near Cross River",
+      "rfc": {
+        "abbreviation": "NERFC",
+        "name": "Northeast River Forecast Center"
+      },
+      "wfo": {
+        "abbreviation": "OKX",
+        "name": "Upton"
+      },
+      "state": {
+        "abbreviation": "NY",
+        "name": "New York"
+      },
+      "latitude": 41.260277777778,
+      "longitude": -73.601944444444,
+      "pedts": {
+        "observed": "HGIRG",
+        "forecast": ""
+      },
+      "status": {
+        "observed": {
+          "primary": 1.79,
+          "primaryUnit": "ft",
+          "secondary": 0.0058,
+          "secondaryUnit": "kcfs",
+          "floodCategory": "not_defined",
+          "validTime": "2026-11-08T13:30:00Z"
+        },
+        "forecast": {
+          "primary": -999,
+          "primaryUnit": "",
+          "secondary": -999,
+          "secondaryUnit": "",
+          "floodCategory": "fcst_not_current",
+          "validTime": "0001-01-01T00:00:00Z"
+        }
+      }
+    }
+  ]
+}

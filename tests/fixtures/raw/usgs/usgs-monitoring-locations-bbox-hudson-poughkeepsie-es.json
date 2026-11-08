@@ -1,0 +1,1005 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01372043",
+        "monitoring_location_name": "HUDSON RIVER NEAR POUGHKEEPSIE NY",
+        "monitoring_location_number": "01372043",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080104",
+        "drainage_area": 11833.0,
+        "altitude": 0.0,
+        "vertical_datum": "NAVD88",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01372043",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.93875,
+          41.72058333333334
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01372046",
+        "monitoring_location_name": "HUDSON RIVER AT HIGHLAND NY",
+        "monitoring_location_number": "01372046",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": 11712.0,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01372046",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9481932890175,
+          41.715649024862
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01372055",
+        "monitoring_location_name": "HUDSON RIVER AT POUGHKEEPSIE NY",
+        "monitoring_location_number": "01372055",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": 11732.0,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01372055",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9409708143508,
+          41.7023157199116
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01372057",
+        "monitoring_location_name": "HUDSON RIVER AT MILTON NY",
+        "monitoring_location_number": "01372057",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01372057",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.952082409582,
+          41.6564824171149
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01372058",
+        "monitoring_location_name": "HUDSON RIVER BELOW POUGHKEEPSIE NY",
+        "monitoring_location_number": "01372058",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": 11876.0,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01372058",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.95341666666667,
+          41.65247222222222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01372059",
+        "monitoring_location_name": "HUDSON R AT CLINTON POINT NEAR NEW HAMBURG NY",
+        "monitoring_location_number": "01372059",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": 11745.0,
+        "altitude": 15.21,
+        "vertical_datum": "NGVD29",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01372059",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9481934286527,
+          41.6234269003993
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413701073572701",
+        "monitoring_location_name": "HUDSON R TRANSECT 17 POINT 1 AT CLINTON POINT NY",
+        "monitoring_location_number": "413701073572701",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413701073572701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.95748333333334,
+          41.617019444444445
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413702073570401",
+        "monitoring_location_name": "HUDSON R TRANSECT 17 POINT 7 AT CLINTON POINT NY",
+        "monitoring_location_number": "413702073570401",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413702073570401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.95115,
+          41.617352777777775
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413702073571201",
+        "monitoring_location_name": "HUDSON R TRANSECT 17 POINT 5 AT CLINTON POINT NY",
+        "monitoring_location_number": "413702073571201",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413702073571201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.95326111111112,
+          41.617241666666665
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413702073571601",
+        "monitoring_location_name": "HUDSON R TRANSECT 17 POINT 4 AT CLINTON POINT NY",
+        "monitoring_location_number": "413702073571601",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413702073571601",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.95431388888889,
+          41.61718611111111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413702073571901",
+        "monitoring_location_name": "HUDSON R TRANSECT 17 POINT 3 AT CLINTON POINT NY",
+        "monitoring_location_number": "413702073571901",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413702073571901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.95537222222222,
+          41.617130555555555
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413724073565601",
+        "monitoring_location_name": "HUDSON RIVER NR LEW AT CLINTON POINT NY",
+        "monitoring_location_number": "413724073565601",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413724073565601",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9484712163371,
+          41.6234269003274
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413724073570901",
+        "monitoring_location_name": "HUDSON R NR CENTER CHANNEL AT CLINTON POINT NY",
+        "monitoring_location_number": "413724073570901",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413724073570901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9520824562337,
+          41.6234268993929
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413724073572201",
+        "monitoring_location_name": "HUDSON RIVER NR REW AT CLINTON POINT NY",
+        "monitoring_location_number": "413724073572201",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413724073572201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9556936961304,
+          41.6234268984584
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413726073571001",
+        "monitoring_location_name": "HUDSON R APPROX 1350FT FROM REW NR NEW HAMBURG NY",
+        "monitoring_location_number": "413726073571001",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413726073571001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9523602431381,
+          41.6239824542374
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413726073571301",
+        "monitoring_location_name": "HUDSON R NR CENTER CHANNEL NR NEW HAMBURG NY",
+        "monitoring_location_number": "413726073571301",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413726073571301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9531936062034,
+          41.6239824540117
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413726073571701",
+        "monitoring_location_name": "HUDSON R APPROX 700 FT FROM REW NR NEW HAMBURG NY",
+        "monitoring_location_number": "413726073571701",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413726073571701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9543047569572,
+          41.6239824537107
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413726073572201",
+        "monitoring_location_name": "HUDSON RIVER AT REW NR NEW HAMBURG NY",
+        "monitoring_location_number": "413726073572201",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413726073572201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9556936953994,
+          41.6239824533345
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413727073565701",
+        "monitoring_location_name": "HUDSON RIVER AT LEW NR NEW HAMBURG NY",
+        "monitoring_location_number": "413727073565701",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413727073565701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9487490027719,
+          41.6242602326954
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413727073570301",
+        "monitoring_location_name": "HUDSON R APPROX 1800FT FROM REW NR NEW HAMBURG NY",
+        "monitoring_location_number": "413727073570301",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413727073570301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9504157289148,
+          41.6242602322339
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413906073563901",
+        "monitoring_location_name": "Hudson River IBM Pier aprx 50 ft lew nr Milton, NY",
+        "monitoring_location_number": "413906073563901",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413906073563901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9441666666667,
+          41.6516666666667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413907073564301",
+        "monitoring_location_name": "Hudson R IBM Pier approx 350 ft lew nr Milton, NY",
+        "monitoring_location_number": "413907073564301",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413907073564301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9452777777778,
+          41.6519444444444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413908073565501",
+        "monitoring_location_name": "Hudson River IBM Pier nr ctr chnl nr Milton, NY",
+        "monitoring_location_number": "413908073565501",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413908073565501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9486111111111,
+          41.6522222222222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413909073571001",
+        "monitoring_location_name": "Hudson R IBM Pier aprx 340 ft from rew nr Milton,",
+        "monitoring_location_number": "413909073571001",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413909073571001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9527777777778,
+          41.6525
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-413938073565101",
+        "monitoring_location_name": "Hudson River near center channel at Milton, NY",
+        "monitoring_location_number": "413938073565101",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-413938073565101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9475,
+          41.6605555555556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414016073564801",
+        "monitoring_location_name": "Hudson R Pirate Canoe Clb nr ctr chnl blw Poughkee",
+        "monitoring_location_number": "414016073564801",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414016073564801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9466666666667,
+          41.6711111111111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414050073563501",
+        "monitoring_location_name": "Hudson River near center channel at Mine Pt, NY",
+        "monitoring_location_number": "414050073563501",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414050073563501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9430555555556,
+          41.6805555555556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414115073564701",
+        "monitoring_location_name": "Hudson R CHPC Tank Farm 260 ft rew nr Poughkeep, N",
+        "monitoring_location_number": "414115073564701",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414115073564701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9463888888889,
+          41.6875
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414116073563501",
+        "monitoring_location_name": "Hudson R CHPC Tank Farm nr ctr chnl nr Poughkeep,",
+        "monitoring_location_number": "414116073563501",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414116073563501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9430555555556,
+          41.6877777777778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414117073562401",
+        "monitoring_location_name": "Hudson R CHPC Tank Farm 350 ft lew nr Poughkeep, N",
+        "monitoring_location_number": "414117073562401",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414117073562401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.94,
+          41.6880555555556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414120073564801",
+        "monitoring_location_name": "HUDSON R TRANSECT 16 POINT 2 NEAR POUGHKEEPSIE NY",
+        "monitoring_location_number": "414120073564801",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414120073564801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.94670277777779,
+          41.68892777777778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414125073563101",
+        "monitoring_location_name": "HUDSON R TRANSECT 16 POINT 7 NEAR POUGHKEEPSIE NY",
+        "monitoring_location_number": "414125073563101",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414125073563101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.94188333333334,
+          41.690241666666665
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414126073562701",
+        "monitoring_location_name": "HUDSON R TRANSECT 16 POINT 8 NEAR POUGHKEEPSIE NY",
+        "monitoring_location_number": "414126073562701",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414126073562701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.94091944444445,
+          41.69050555555555
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414127073562401",
+        "monitoring_location_name": "HUDSON R TRANSECT 16 POINT 9 NEAR POUGHKEEPSIE NY",
+        "monitoring_location_number": "414127073562401",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414127073562401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.93995555555556,
+          41.69076944444444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414241073564201",
+        "monitoring_location_name": "HUDSON R NR CENTER CHANNEL AT POUGHKEEPSIE NY",
+        "monitoring_location_number": "414241073564201",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414241073564201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9445820470238,
+          41.7114823704559
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414242073563201",
+        "monitoring_location_name": "HUDSON RIVER NR LEW AT POUGHKEEPSIE NY",
+        "monitoring_location_number": "414242073563201",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414242073563201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9418041632467,
+          41.7117601540115
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414242073565101",
+        "monitoring_location_name": "HUDSON RIVER NR REW AT POUGHKEEPSIE NY",
+        "monitoring_location_number": "414242073565101",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080106",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414242073565101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9470821415738,
+          41.7117601425157
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414303073562001",
+        "monitoring_location_name": "HUDSON RIVER NEAR POUGHKEEPSIE, HAY STATION 1",
+        "monitoring_location_number": "414303073562001",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080104",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414303073562001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9388888888889,
+          41.7175
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414308073562501",
+        "monitoring_location_name": "HUDSON RIVER NEAR POUGHKEEPSIE, HAY STATION 2",
+        "monitoring_location_number": "414308073562501",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080104",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414308073562501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9402777777778,
+          41.7188888888889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414312073562701",
+        "monitoring_location_name": "HUDSON RIVER NEAR POUGHKEEPSIE, HAY STATION 3",
+        "monitoring_location_number": "414312073562701",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080104",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414312073562701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9408333333333,
+          41.72
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414317073562901",
+        "monitoring_location_name": "HUDSON RIVER NEAR POUGHKEEPSIE, HAY STATION 4",
+        "monitoring_location_number": "414317073562901",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080104",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414317073562901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9413888888889,
+          41.7213888888889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-414419073563101",
+        "monitoring_location_name": "Hudson R Boat Basin nr ctr chnl abv Poughkeepsie,",
+        "monitoring_location_number": "414419073563101",
+        "site_type_code": "ES",
+        "hydrologic_unit_code": "020200080104",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414419073563101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9419444444444,
+          41.7386111111111
+        ]
+      }
+    }
+  ],
+  "numberReturned": 42,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=json&bbox=-73.97,41.60,-73.90,41.75&site_type_code=ES&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=jsonld&bbox=-73.97,41.60,-73.90,41.75&site_type_code=ES&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=html&bbox=-73.97,41.60,-73.90,41.75&site_type_code=ES&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=csv&bbox=-73.97,41.60,-73.90,41.75&site_type_code=ES&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "type": "application/json",
+      "title": "Monitoring locations",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations"
+    }
+  ],
+  "timeStamp": "2026-11-08T14:25:24.942059Z"
+}

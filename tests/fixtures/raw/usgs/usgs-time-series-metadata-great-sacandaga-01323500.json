@@ -1,0 +1,273 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "1b0dac4956eb4f0c9128dbaa7a48b92d",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, lake/res, NAVD88",
+        "parameter_code": "62615",
+        "statistic_id": "00003",
+        "last_modified": "2026-11-08T05:38:04.028958",
+        "begin": "1930-01-01T05:00:00+00:00",
+        "end": "2026-11-07T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Mean",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01323500",
+        "web_description": null,
+        "parameter_description": "Lake or reservoir water surface elevation above NAVD 1988, feet",
+        "parent_time_series_id": "efbfa586883e4000b58409fe9ae32c1d",
+        "data_gap_interval": "P1D",
+        "statistics_begin": null
+      },
+      "id": "1b0dac4956eb4f0c9128dbaa7a48b92d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "a5014b9ace1a42c19eeea6c5885f4e4c",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, lake/res, NGVD29",
+        "parameter_code": "62614",
+        "statistic_id": "00011",
+        "last_modified": "2026-11-08T08:36:01.629471",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2026-11-08T08:30:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [
+          {
+            "Name": "VERY LOW intake elevation",
+            "Type": "ThresholdBelow",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T21:42:38.8765986Z",
+                "SuppressData": true,
+                "ReferenceValue": 736.2
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#800000",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "Streamgage shelter floor - above which flood water may impact data",
+            "Type": "None",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "0001-01-01T00:00:00Z",
+                "SuppressData": false,
+                "ReferenceValue": 778.5,
+                "SecondaryReferenceValue": 776.5
+              }
+            ],
+            "Severity": 0,
+            "Description": "Display reference value",
+            "DisplayColor": "#00CCFF",
+            "ReferenceCode": "NWISWeb ref level - Public",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "HIGH",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T21:42:38.4494644Z",
+                "SuppressData": false,
+                "ReferenceValue": 770
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#FF9933",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "National Weather Service Flood Stage",
+            "Type": "None",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "0001-01-01T00:00:00Z",
+                "SuppressData": false,
+                "ReferenceValue": 773,
+                "SecondaryReferenceValue": 771
+              }
+            ],
+            "Severity": 0,
+            "Description": "Display reference value",
+            "DisplayColor": "#00CCFF",
+            "ReferenceCode": "NWISWeb ref level - Public",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "VERY HIGH",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T21:42:38.5898662Z",
+                "SuppressData": true,
+                "ReferenceValue": 780
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#FF0000",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "LOW",
+            "Type": "ThresholdBelow",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T21:42:38.5058173Z",
+                "SuppressData": false,
+                "ReferenceValue": 745
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#CC6600",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "Spillway",
+            "Type": "None",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "0001-01-01T00:00:00.0000000+00:00",
+                "AppliedTime": "2019-05-21T14:58:05.2927813Z",
+                "SuppressData": false,
+                "ReferenceValue": 771,
+                "SecondaryReferenceValue": 770
+              }
+            ],
+            "Severity": 0,
+            "Description": "Display reference value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "NWISWeb ref level - Public",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01323500",
+        "web_description": null,
+        "parameter_description": "Lake or reservoir water surface elevation above NGVD 1929, feet",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": "1930"
+      },
+      "id": "a5014b9ace1a42c19eeea6c5885f4e4c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "b88e05b75dc14152944b3e7533c9fb45",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, lake/res, NGVD29",
+        "parameter_code": "62614",
+        "statistic_id": "00003",
+        "last_modified": "2026-11-08T05:37:37.244046",
+        "begin": "1930-01-01T05:00:00+00:00",
+        "end": "2026-11-06T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Mean",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01323500",
+        "web_description": null,
+        "parameter_description": "Lake or reservoir water surface elevation above NGVD 1929, feet",
+        "parent_time_series_id": "a5014b9ace1a42c19eeea6c5885f4e4c",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "b88e05b75dc14152944b3e7533c9fb45",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "efbfa586883e4000b58409fe9ae32c1d",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, lake/res, NAVD88",
+        "parameter_code": "62615",
+        "statistic_id": "00011",
+        "last_modified": "2026-11-08T08:36:12.823312",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2026-11-08T08:30:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01323500",
+        "web_description": null,
+        "parameter_description": "Lake or reservoir water surface elevation above NAVD 1988, feet",
+        "parent_time_series_id": "a5014b9ace1a42c19eeea6c5885f4e4c",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "efbfa586883e4000b58409fe9ae32c1d",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 4,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=json&monitoring_location_id=USGS-01323500&limit=100&skipGeometry=true"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=jsonld&monitoring_location_id=USGS-01323500&limit=100&skipGeometry=true"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=html&monitoring_location_id=USGS-01323500&limit=100&skipGeometry=true"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=csv&monitoring_location_id=USGS-01323500&limit=100&skipGeometry=true"
+    },
+    {
+      "type": "application/json",
+      "title": "Time series metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-08T14:25:32.664613Z"
+}

@@ -1,0 +1,426 @@
+{
+  "lid": "BATN6",
+  "usgsId": "",
+  "reachId": "",
+  "name": "New York Harbor at The Battery (IN MLLW)",
+  "description": "",
+  "rfc": {
+    "abbreviation": "NERFC",
+    "name": "Northeast River Forecast Center"
+  },
+  "wfo": {
+    "abbreviation": "OKX",
+    "name": "Upton"
+  },
+  "state": {
+    "abbreviation": "NY",
+    "name": "New York"
+  },
+  "county": "New York",
+  "timeZone": "EST5EDT",
+  "latitude": 40.700556,
+  "longitude": -74.014167,
+  "pedts": {
+    "observed": "HMIRG",
+    "forecast": "HMIFE"
+  },
+  "status": {
+    "observed": {
+      "primary": 4.98,
+      "primaryUnit": "ft",
+      "secondary": -999,
+      "secondaryUnit": "kcfs",
+      "floodCategory": "no_flooding",
+      "validTime": "2026-11-08T13:36:00Z"
+    },
+    "forecast": {
+      "primary": 5.5,
+      "primaryUnit": "ft",
+      "secondary": -999,
+      "secondaryUnit": "kcfs",
+      "floodCategory": "no_flooding",
+      "validTime": "2026-11-10T13:00:00Z"
+    }
+  },
+  "flood": {
+    "stageUnits": "ft",
+    "flowUnits": "cfs",
+    "categories": {
+      "major": {
+        "stage": 9.4,
+        "flow": -9999
+      },
+      "moderate": {
+        "stage": 8.3,
+        "flow": -9999
+      },
+      "minor": {
+        "stage": 7,
+        "flow": -9999
+      },
+      "action": {
+        "stage": 7,
+        "flow": -9999
+      }
+    },
+    "lro": null,
+    "crests": {
+      "historic": [
+        {
+          "occurredTime": "2012-10-29T00:00:00Z",
+          "stage": 13.88,
+          "flow": 0,
+          "preliminary": "R",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1960-09-12T00:00:00Z",
+          "stage": 10.02,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1992-12-11T00:00:00Z",
+          "stage": 9.7,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2011-08-28T00:00:00Z",
+          "stage": 9.51,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1950-11-25T00:00:00Z",
+          "stage": 9.12,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1962-03-06T00:00:00Z",
+          "stage": 8.92,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1991-10-31T00:00:00Z",
+          "stage": 8.73,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1984-03-29T00:00:00Z",
+          "stage": 8.53,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2010-03-14T00:00:00Z",
+          "stage": 8.51,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1993-03-14T00:00:00Z",
+          "stage": 8.36,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1996-03-20T00:00:00Z",
+          "stage": 8.29,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1985-09-27T00:00:00Z",
+          "stage": 8.23,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1966-01-23T00:00:00Z",
+          "stage": 8.12,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        }
+      ],
+      "recent": [
+        {
+          "occurredTime": "2012-10-29T00:00:00Z",
+          "stage": 13.88,
+          "flow": 0,
+          "preliminary": "R",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2011-08-28T00:00:00Z",
+          "stage": 9.51,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2010-03-14T00:00:00Z",
+          "stage": 8.51,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1996-03-20T00:00:00Z",
+          "stage": 8.29,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1993-03-14T00:00:00Z",
+          "stage": 8.36,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1992-12-11T00:00:00Z",
+          "stage": 9.7,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1991-10-31T00:00:00Z",
+          "stage": 8.73,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1985-09-27T00:00:00Z",
+          "stage": 8.23,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1984-03-29T00:00:00Z",
+          "stage": 8.53,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1966-01-23T00:00:00Z",
+          "stage": 8.12,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1962-03-06T00:00:00Z",
+          "stage": 8.92,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1960-09-12T00:00:00Z",
+          "stage": 10.02,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1950-11-25T00:00:00Z",
+          "stage": 9.12,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        }
+      ]
+    },
+    "lowWaters": {
+      "historic": []
+    },
+    "impacts": [
+      {
+        "stage": 14.2,
+        "statement": "Level reached during Superstorm Sandy. Three to four feet of inundation along Avenue C in Manhattan. Several feet of inundation along 1st Avenue and on the FDR/Harlem River Drive for much of it's length. Three to five feet of inundation along the West Side Drive, Battery Park, and FDR Drive with flooding extending several blocks inland. Several feet of inundation into Battery Park underpass at Battery tunnel and South Street Seaport.Red Hook and Hunter's Point experience 3 to 6 feet of inundation."
+      },
+      {
+        "stage": 9.7,
+        "statement": "Inundation of three to four feet on water on the FDR drive occurs and portions of the West Side highway close. Flooding of parking lots and passenger waiting areas near ferry terminal. Inundation of the Belt Parkway closes parts of the road and flooding of several major roads near JFK Airport. Flood water inundates Neptune Avenue in Coney Island."
+      },
+      {
+        "stage": 9.5,
+        "statement": "Red Hook, Brooklyn, along portions of the Gowanus Bay/Canal becomes inundated by one to three feet of water approximately 100 yards inland. Inundataion occurs along the promenade in Battery Park City with one to two feet of water and at the marina in front of Marcatile exchange.The FDR Drive closes in both directions at Houston Street, and approximately one foot of inundation at South Street Seaport.The southbound side of the Henry Hudson Drive becomes inundated with three feet of water."
+      },
+      {
+        "stage": 8.5,
+        "statement": "Water reaches, covers, and washes over the Battery Park seawall and reaches the Battery Tide gague house. Flooding begins on the Boardwalk, covering it by nearly one foot. "
+      },
+      {
+        "stage": 7.7,
+        "statement": "Inundation on the East Shore of Staten Island in the Midland Beach area near Hempstead Avenue"
+      },
+      {
+        "stage": 7.5,
+        "statement": "Near the South Street Seaport along the East River, water spills over the lower walkway near Maiden Lane and South Street. "
+      },
+      {
+        "stage": 6.8,
+        "statement": "Inundation on Staten Island in the Fresh Kills area near Travis Avenue and Victory Boulevard. "
+      },
+      {
+        "stage": 6.7,
+        "statement": "Major flooding of one to three feet on the FDR Drive in several spots enhanced due to heavy rain. "
+      }
+    ]
+  },
+  "images": {
+    "probability": {
+      "weekint": {
+        "stage": "",
+        "flow": "",
+        "volume": ""
+      },
+      "entperiod": {
+        "stage": "",
+        "flow": "",
+        "volume": ""
+      },
+      "shortrange": ""
+    },
+    "hydrograph": {
+      "default": "https://water.noaa.gov/resources/hydrographs/batn6_hg.png",
+      "floodcat": "https://water.noaa.gov/resources/hydrographs/batn6_record.png"
+    },
+    "photos": [
+      {
+        "id": "524940720791949806",
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            40.700556,
+            -74.014167
+          ]
+        },
+        "properties": {
+          "image": "https://water.noaa.gov/resources/photos/batn6/524940720791949806.jpeg",
+          "caption": "Tidal Gage at Battery, NY"
+        }
+      }
+    ]
+  },
+  "dataAttribution": [
+    {
+      "abbrev": "NOAA National Ocean Service",
+      "text": "NOAA National Ocean Service",
+      "title": "NOAA National Ocean Service",
+      "url": "https://oceanservice.noaa.gov/"
+    }
+  ],
+  "impactsLowWaters": [],
+  "normalThreshold": {
+    "value": 0,
+    "units": "ft"
+  },
+  "hydronotes": [
+    {
+      "statement": "<head>\r\n<style type=\"text/css\">\r\n.style1 {\r\n\tbackground-color: #FFFF00;\r\n}\r\n</style>\r\n</head>\r\n\r\nTide Forecasts are a total water level forecast referenced to mean lower low \r\nwater.&nbsp;Please refer to<span class=\"style1\">&nbsp;</span><a href=\"http://forecast.weather.gov/product.php?site=NWS&amp;product=CFW&amp;issuedby=OKX\"><span class=\"style1\">Coastal \r\nFlood Advisories and Warnings</span> </a>for official water level forecasts \r\nduring periods of coastal flooding.  During tropical cyclones, please refer<a href=\"https://forecast.weather.gov/product.php?site=NWS&amp;issuedby=OKX&amp;product=TCV&amp;format=CI&amp;version=1&amp;glossary=1\"><span class=\"style1\"> \r\nhere</span></a> for additional storm surge information. Click<span class=\"style1\"> </span> \r\n<a href=\"https://www.weather.gov/images/okx/coastalflood/Coastal%2520Flood%2520Threshold%2520Definitions.png\">\r\n<span class=\"style1\">here for Flood Category definitions</span></a>.",
+      "effective": "0101",
+      "expiration": "1231"
+    }
+  ],
+  "datums": {
+    "vertical": {
+      "value": [
+        {
+          "label": "Mean Lower Low Water",
+          "abbrev": "MLLW*",
+          "description": "The average of the lower low water height of each tidal day observed over the National Tidal Datum Epoch. For stations with shorter series, comparison of simultaneous observations with a control tide station is made in order to derive the equivalent datum of the National Tidal Datum Epoch.",
+          "value": 0
+        },
+        {
+          "label": "Mean Low Water",
+          "abbrev": "MLW",
+          "description": "The average of all the low water heights observed over the National Tidal Datum Epoch. For stations with shorter series, comparison of simultaneous observations with a control tide station is made in order to derive the equivalent datum of the National Tidal Datum Epoch.",
+          "value": -0.2
+        },
+        {
+          "label": "Mean Sea Level",
+          "abbrev": "MSL",
+          "description": "The arithmetic mean of hourly heights observed over the National Tidal Datum Epoch. Shorter series are specified in the name; e.g. monthly mean sea level and yearly mean sea level.",
+          "value": -2.57
+        },
+        {
+          "label": "Mean High Water",
+          "abbrev": "MHW",
+          "description": "The average of all the high water heights observed over the National Tidal Datum Epoch. For stations with shorter series, comparison of simultaneous observations with a control tide station is made in order to derive the equivalent datum of the National Tidal Datum Epoch.",
+          "value": -4.73
+        },
+        {
+          "label": "Mean Higher High Water",
+          "abbrev": "MHHW*",
+          "description": "The average of the higher high water height of each tidal day observed over the National Tidal Datum Epoch. For stations with shorter series, comparison of simultaneous observations with a control tide station is made in order to derive the equivalent datum of the National Tidal Datum Epoch.",
+          "value": -5.05
+        },
+        {
+          "label": "Highest Astronomical Tide",
+          "abbrev": "HAT",
+          "description": "The elevation of the highest predicted astronomical tide expected to occur at a specific tide station over the National Tidal Datum Epoch.",
+          "value": -6.48
+        },
+        {
+          "label": "North American Vertical Datum of 1988",
+          "abbrev": "NAVD88",
+          "description": "A fixed reference for elevations determined by geodetic leveling. The datum was derived from a general adjustment of the first-order terrestrial leveling nets of the United States, Canada, and Mexico. In the adjustment, only the height of the primary tidal bench mark, referenced to the International Great Lakes Datum of 1985 (IGLD 85) local mean sea level height value, at Father Point, Rimouski, Quebec, Canada was held fixed, thus providing minimum constraint. NAVD 88 and IGLD 85 are identical. However, NAVD 88 bench mark values are given in Helmert orthometric height units while IGLD 85 values are in dynamic heights. See International Great Lakes Datum of 1985, National Geodetic Vertical Datum of 1929, and geopotential difference. NAVD 88 should not be used as Mean Sea Level.",
+          "value": -2.77
+        }
+      ]
+    },
+    "horizontal": {
+      "value": []
+    },
+    "notes": {
+      "value": []
+    }
+  },
+  "inundation": {
+    "enabled": false,
+    "url": "",
+    "zeroDatum": null,
+    "downloads": null,
+    "siteSpecificInfo": "",
+    "dataAttribution": []
+  },
+  "upstreamLid": "",
+  "downstreamLid": "",
+  "inService": {
+    "enabled": true,
+    "message": ""
+  },
+  "lowThreshold": {
+    "units": "ft",
+    "value": -1.8
+  },
+  "forecastReliability": "Forecasts are issued routinely year-round.",
+  "TruncateObs": "-1",
+  "TruncateFcst": "3",
+  "ObservedFloodCategory": "no_flooding",
+  "ForecastFloodCategory": "no_flooding"
+}

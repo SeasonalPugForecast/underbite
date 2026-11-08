@@ -1,0 +1,85 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01376515",
+        "monitoring_location_name": "HUDSON RIVER AT PIER 84 AT NEW YORK NY",
+        "monitoring_location_number": "01376515",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010405",
+        "drainage_area": null,
+        "altitude": 0.0,
+        "vertical_datum": "NAVD88",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01376515",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.003194,
+          40.764639
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01376520",
+        "monitoring_location_name": "HUDSON RIVER AT PIER 25 AT NEW YORK NY",
+        "monitoring_location_number": "01376520",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010405",
+        "drainage_area": null,
+        "altitude": 0.0,
+        "vertical_datum": "NAVD88",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01376520",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.015611,
+          40.721528
+        ]
+      }
+    }
+  ],
+  "numberReturned": 2,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=json&bbox=-74.05,40.68,-73.95,40.80&site_type_code=ST&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=jsonld&bbox=-74.05,40.68,-73.95,40.80&site_type_code=ST&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=html&bbox=-74.05,40.68,-73.95,40.80&site_type_code=ST&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=csv&bbox=-74.05,40.68,-73.95,40.80&site_type_code=ST&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "type": "application/json",
+      "title": "Monitoring locations",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations"
+    }
+  ],
+  "timeStamp": "2026-11-08T14:25:24.544411Z"
+}

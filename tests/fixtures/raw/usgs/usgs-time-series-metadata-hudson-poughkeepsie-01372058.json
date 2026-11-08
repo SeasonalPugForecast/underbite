@@ -1,0 +1,984 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "2ddc9d290be3439185fd68633b03754d",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, ocean/est, NGVD29",
+        "parameter_code": "62619",
+        "statistic_id": "00011",
+        "last_modified": "2025-08-28T15:40:49.006397",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2019-11-06T17:30:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [
+          {
+            "Name": "HIGH",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T22:31:56.5966341Z",
+                "SuppressData": false,
+                "ReferenceValue": 5
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#FF9933",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "VERY LOW",
+            "Type": "ThresholdBelow",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T22:31:56.799425Z",
+                "SuppressData": true,
+                "ReferenceValue": -5
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#800000",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "VERY HIGH",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T22:31:56.7736376Z",
+                "SuppressData": true,
+                "ReferenceValue": 14
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#FF0000",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "Streamgage shelter floor - above which flood water may impact data",
+            "Type": "None",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "0001-01-01T00:00:00Z",
+                "SuppressData": false,
+                "ReferenceValue": 5.5,
+                "SecondaryReferenceValue": 3.5
+              }
+            ],
+            "Severity": 0,
+            "Description": "Display reference value",
+            "DisplayColor": "#00CCFF",
+            "ReferenceCode": "NWISWeb ref level - Public",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "National Weather Service Flood Stage",
+            "Type": "None",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "0001-01-01T00:00:00Z",
+                "SuppressData": false,
+                "ReferenceValue": 5,
+                "SecondaryReferenceValue": 3
+              }
+            ],
+            "Severity": 0,
+            "Description": "Display reference value",
+            "DisplayColor": "#00CCFF",
+            "ReferenceCode": "NWISWeb ref level - Public",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "North American Vertical Datum of 1988",
+            "Type": "None",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "0001-01-01T00:00:00.0000000+00:00",
+                "AppliedTime": "2019-03-01T16:55:33.800745Z",
+                "SuppressData": false,
+                "ReferenceValue": 0.88
+              }
+            ],
+            "Severity": 0,
+            "Description": "Display reference value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "NWISWeb ref level - Public",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Estuary or ocean water surface elevation above NGVD 1929, feet",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": "1992"
+      },
+      "id": "2ddc9d290be3439185fd68633b03754d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "334185e6f8ef4272afcbd99461892eba",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, ocean/est, NGVD29",
+        "parameter_code": "62619",
+        "statistic_id": "00023",
+        "last_modified": "2025-08-28T15:41:03.505189",
+        "begin": "2002-10-01T04:00:00+00:00",
+        "end": "2019-11-05T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "TidalHigherLow",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Estuary or ocean water surface elevation above NGVD 1929, feet",
+        "parent_time_series_id": "2ddc9d290be3439185fd68633b03754d",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "334185e6f8ef4272afcbd99461892eba",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "3ce3a59ba071480299c4c4b5324b344a",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, ocean/est, NGVD29",
+        "parameter_code": "62619",
+        "statistic_id": "00003",
+        "last_modified": "2025-08-28T15:41:03.825282",
+        "begin": "1992-05-12T04:00:00+00:00",
+        "end": "2019-11-05T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Mean",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Estuary or ocean water surface elevation above NGVD 1929, feet",
+        "parent_time_series_id": "2ddc9d290be3439185fd68633b03754d",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "3ce3a59ba071480299c4c4b5324b344a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "3dfba43401ef449b9fe62f1f4a42770e",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C",
+        "parameter_code": "00095",
+        "statistic_id": "00002",
+        "last_modified": "2021-05-04T17:32:10.749146",
+        "begin": "1992-05-01T04:00:00+00:00",
+        "end": "2019-11-05T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Min",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Specific conductance, water, unfiltered, microsiemens per centimeter at 25 degrees Celsius",
+        "parent_time_series_id": "8f993f9266674f93bf6d84346d7f00be",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "3dfba43401ef449b9fe62f1f4a42770e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "450b5059cad1404aafd27d01b5e46312",
+        "unit_of_measure": "ft/s",
+        "parameter_name": "Sensor velocity",
+        "parameter_code": "72254",
+        "statistic_id": "00011",
+        "last_modified": "2026-11-08T07:42:49.749053",
+        "begin": "2026-07-06T00:00:00+00:00",
+        "end": "2026-11-08T07:30:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": null,
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": "X-Velocity",
+        "parameter_description": "Water velocity reading from field sensor, feet per second",
+        "parent_time_series_id": null,
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "450b5059cad1404aafd27d01b5e46312",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "4b1143c7a15b45748d4c4f5a939d1f8e",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C",
+        "parameter_code": "00095",
+        "statistic_id": "00001",
+        "last_modified": "2021-05-04T17:32:10.738288",
+        "begin": "1992-05-01T04:00:00+00:00",
+        "end": "2019-11-05T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Max",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Specific conductance, water, unfiltered, microsiemens per centimeter at 25 degrees Celsius",
+        "parent_time_series_id": "8f993f9266674f93bf6d84346d7f00be",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "4b1143c7a15b45748d4c4f5a939d1f8e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "549604f100be4fdf984ca3ab22425cf7",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, ocean/est, NAVD88",
+        "parameter_code": "62620",
+        "statistic_id": "00011",
+        "last_modified": "2026-11-08T07:42:51.427832",
+        "begin": "2025-08-06T22:15:00+00:00",
+        "end": "2026-11-08T07:30:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [
+          {
+            "Name": "Streamgage shelter floor -  above which flood water may impact data",
+            "Type": "None",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "0001-01-01T00:00:00.0000000+00:00",
+                "AppliedTime": "2019-03-01T16:24:05.8571102Z",
+                "SuppressData": false,
+                "ReferenceValue": 4.62
+              }
+            ],
+            "Severity": 0,
+            "Description": "Display reference value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "NWISWeb ref level - Public",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "National Geodetic Vertical Datum of 1929",
+            "Type": "None",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "0001-01-01T00:00:00.0000000+00:00",
+                "AppliedTime": "2019-03-01T16:56:25.9877455Z",
+                "SuppressData": false,
+                "ReferenceValue": -0.88
+              }
+            ],
+            "Severity": 0,
+            "Description": "Display reference value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "NWISWeb ref level - Public",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "National Weather Service Flood Stage",
+            "Type": "None",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "0001-01-01T00:00:00.0000000+00:00",
+                "AppliedTime": "2019-03-01T16:24:44.8420246Z",
+                "SuppressData": false,
+                "ReferenceValue": 4.12
+              }
+            ],
+            "Severity": 0,
+            "Description": "Display reference value",
+            "DisplayColor": "#990600",
+            "ReferenceCode": "NWISWeb ref level - Public",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Estuary or ocean water surface elevation above NAVD 1988, feet",
+        "parent_time_series_id": "2dd20d37f6c749a98b1e5167300fbd22",
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": null
+      },
+      "id": "549604f100be4fdf984ca3ab22425cf7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "5d7d013c71464b5098b75cbd6b31923c",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "last_modified": "2020-09-21T17:13:57.727713",
+        "begin": null,
+        "end": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [],
+        "sublocation_identifier": "Unfiltered",
+        "primary": null,
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Discharge, cubic feet per second",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": null
+      },
+      "id": "5d7d013c71464b5098b75cbd6b31923c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "5f19717adfeb4f1792f60673d5ca202d",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C",
+        "parameter_code": "00095",
+        "statistic_id": "00003",
+        "last_modified": "2021-05-04T17:32:10.756843",
+        "begin": "1992-05-01T04:00:00+00:00",
+        "end": "2019-11-05T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Mean",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Specific conductance, water, unfiltered, microsiemens per centimeter at 25 degrees Celsius",
+        "parent_time_series_id": "8f993f9266674f93bf6d84346d7f00be",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "5f19717adfeb4f1792f60673d5ca202d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "633849d0c196405c80e019153b08efe2",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, ocean/est, NGVD29",
+        "parameter_code": "62619",
+        "statistic_id": "00024",
+        "last_modified": "2025-08-28T15:41:03.676922",
+        "begin": "2002-10-01T04:00:00+00:00",
+        "end": "2019-11-05T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "TidalLow",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Estuary or ocean water surface elevation above NGVD 1929, feet",
+        "parent_time_series_id": "2ddc9d290be3439185fd68633b03754d",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "633849d0c196405c80e019153b08efe2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "661885097e96401c813442950805d1d8",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge,tide fltrd",
+        "parameter_code": "72137",
+        "statistic_id": "00011",
+        "last_modified": "2026-01-22T13:20:14.285741",
+        "begin": "2008-08-26T05:00:00+00:00",
+        "end": "2019-09-05T13:00:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Discharge, tidally filtered, cubic feet per second",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": "2002"
+      },
+      "id": "661885097e96401c813442950805d1d8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "69b9329f19c74d9d83de2f3885e75f58",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge",
+        "parameter_code": "00060",
+        "statistic_id": null,
+        "last_modified": "2025-09-24T20:04:30.416853",
+        "begin": "2003-03-23T05:00:00+00:00",
+        "end": "2019-04-16T04:00:00+00:00",
+        "computation_period_identifier": "Water Year",
+        "computation_identifier": "Max At Event Time",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Discharge, cubic feet per second",
+        "parent_time_series_id": null,
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "69b9329f19c74d9d83de2f3885e75f58",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "6f3800b84271461fbfda6cb15abdfe6d",
+        "unit_of_measure": "tons/day",
+        "parameter_name": "Suspnd sedmnt disch",
+        "parameter_code": "80155",
+        "statistic_id": "00003",
+        "last_modified": "2019-11-01T18:21:11.263260",
+        "begin": "2002-03-15T05:00:00+00:00",
+        "end": "2011-08-23T04:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Mean",
+        "thresholds": [],
+        "sublocation_identifier": "Filtered",
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Suspended sediment discharge, short tons per day",
+        "parent_time_series_id": "fff4a87e38704e4fbe88a89fea464b32",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "6f3800b84271461fbfda6cb15abdfe6d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "8f993f9266674f93bf6d84346d7f00be",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C",
+        "parameter_code": "00095",
+        "statistic_id": "00011",
+        "last_modified": "2021-05-04T17:32:10.726602",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2019-11-06T17:15:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [
+          {
+            "Name": "VERY HIGH",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2015-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T22:32:07.678483Z",
+                "SuppressData": true,
+                "ReferenceValue": 60000
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#FF0000",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "VERY LOW",
+            "Type": "ThresholdBelow",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2015-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T22:32:08.0060809Z",
+                "SuppressData": true,
+                "ReferenceValue": -10
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#800000",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Specific conductance, water, unfiltered, microsiemens per centimeter at 25 degrees Celsius",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": null
+      },
+      "id": "8f993f9266674f93bf6d84346d7f00be",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "9ea0bd19e6c8477c9965f0c01b1ed539",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, ocean/est, NGVD29",
+        "parameter_code": "62619",
+        "statistic_id": "00021",
+        "last_modified": "2025-08-28T15:41:03.815832",
+        "begin": "2002-10-01T04:00:00+00:00",
+        "end": "2019-11-05T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "TidalHigh",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Estuary or ocean water surface elevation above NGVD 1929, feet",
+        "parent_time_series_id": "2ddc9d290be3439185fd68633b03754d",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "9ea0bd19e6c8477c9965f0c01b1ed539",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "a114da1b42a4489fa8ad77c80ff97b80",
+        "unit_of_measure": "_FNU",
+        "parameter_name": "Turbidity, FNU",
+        "parameter_code": "63680",
+        "statistic_id": "00003",
+        "last_modified": "2019-11-20T15:47:22.626036",
+        "begin": "2012-08-31T04:00:00+00:00",
+        "end": "2019-06-03T04:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Mean",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light, 780-900 nm, detection angle 90 +-2.5 degrees, formazin nephelometric units (FNU)",
+        "parent_time_series_id": "a5815bd681b6468e91eb44389d2aa02d",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "a114da1b42a4489fa8ad77c80ff97b80",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "a2f703737bca43b3a86c21b0d4debf0e",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water",
+        "parameter_code": "00010",
+        "statistic_id": "00003",
+        "last_modified": "2021-05-04T17:27:59.286939",
+        "begin": "1992-05-01T04:00:00+00:00",
+        "end": "2019-11-05T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Mean",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Temperature, water, degrees Celsius",
+        "parent_time_series_id": "d22a15998970458cb8d397b19418a6d3",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "a2f703737bca43b3a86c21b0d4debf0e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "a5815bd681b6468e91eb44389d2aa02d",
+        "unit_of_measure": "_FNU",
+        "parameter_name": "Turbidity, FNU",
+        "parameter_code": "63680",
+        "statistic_id": "00011",
+        "last_modified": "2020-09-21T17:06:02.409337",
+        "begin": "2012-08-30T18:15:00+00:00",
+        "end": "2019-06-04T15:15:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [
+          {
+            "Name": "VERY HIGH",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "0001-01-01T00:00:00.0000000+00:00",
+                "AppliedTime": "2017-01-16T22:33:21.8086925Z",
+                "SuppressData": true,
+                "ReferenceValue": 3000
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#FF0000",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "VERY LOW",
+            "Type": "ThresholdBelow",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "0001-01-01T00:00:00.0000000+00:00",
+                "AppliedTime": "2017-01-16T22:33:22.0367629Z",
+                "SuppressData": true,
+                "ReferenceValue": 0
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#800000",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light, 780-900 nm, detection angle 90 +-2.5 degrees, formazin nephelometric units (FNU)",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": null
+      },
+      "id": "a5815bd681b6468e91eb44389d2aa02d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "b269046aee65402faf28ed848873ee13",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge,tide fltrd",
+        "parameter_code": "72137",
+        "statistic_id": "00003",
+        "last_modified": "2020-06-20T14:18:10.276607",
+        "begin": "2002-03-15T05:00:00+00:00",
+        "end": "2019-09-04T04:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Mean",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Discharge, tidally filtered, cubic feet per second",
+        "parent_time_series_id": "661885097e96401c813442950805d1d8",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "b269046aee65402faf28ed848873ee13",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "c6bbe79f681f4c98bb1bd2646538d003",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water",
+        "parameter_code": "00010",
+        "statistic_id": "00002",
+        "last_modified": "2021-05-04T17:27:59.275018",
+        "begin": "1992-05-01T04:00:00+00:00",
+        "end": "2019-11-05T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Min",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Temperature, water, degrees Celsius",
+        "parent_time_series_id": "d22a15998970458cb8d397b19418a6d3",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "c6bbe79f681f4c98bb1bd2646538d003",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "d22a15998970458cb8d397b19418a6d3",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water",
+        "parameter_code": "00010",
+        "statistic_id": "00011",
+        "last_modified": "2021-05-04T17:27:59.246765",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2019-11-06T17:00:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [
+          {
+            "Name": "HIGH",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2015-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T22:31:50.247719Z",
+                "SuppressData": false,
+                "ReferenceValue": 30
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#FF9933",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "VERY LOW",
+            "Type": "ThresholdBelow",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2015-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T22:31:50.627277Z",
+                "SuppressData": true,
+                "ReferenceValue": -0.5
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#800000",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          },
+          {
+            "Name": "VERY HIGH",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2015-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-01-16T22:31:50.3252025Z",
+                "SuppressData": true,
+                "ReferenceValue": 35
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#FF0000",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Temperature, water, degrees Celsius",
+        "parent_time_series_id": null,
+        "data_gap_interval": "PT1H12M",
+        "statistics_begin": "1992"
+      },
+      "id": "d22a15998970458cb8d397b19418a6d3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "e260e82f48ba4d88b1ce47a19989fc6a",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water",
+        "parameter_code": "00010",
+        "statistic_id": "00001",
+        "last_modified": "2021-05-04T17:27:59.262901",
+        "begin": "1992-05-01T04:00:00+00:00",
+        "end": "2019-11-05T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Max",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Temperature, water, degrees Celsius",
+        "parent_time_series_id": "d22a15998970458cb8d397b19418a6d3",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "e260e82f48ba4d88b1ce47a19989fc6a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "ed8d63eeb76b4cb78db8a86bd62b96bf",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, ocean/est, NGVD29",
+        "parameter_code": "62619",
+        "statistic_id": "00022",
+        "last_modified": "2025-08-28T15:41:03.536570",
+        "begin": "2002-10-01T04:00:00+00:00",
+        "end": "2019-11-05T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "TidalLowerHigh",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Estuary or ocean water surface elevation above NGVD 1929, feet",
+        "parent_time_series_id": "2ddc9d290be3439185fd68633b03754d",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "ed8d63eeb76b4cb78db8a86bd62b96bf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "f54a9a1a369c43a887c976f2f4578411",
+        "unit_of_measure": "mg/l",
+        "parameter_name": "Susp sediment,wu,est",
+        "parameter_code": "99409",
+        "statistic_id": "00011",
+        "last_modified": "2023-06-20T16:51:31.138246",
+        "begin": "2008-08-26T05:00:00+00:00",
+        "end": "2011-08-24T14:15:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [],
+        "sublocation_identifier": "Filtered",
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Suspended sediment concentration, water, unfiltered, estimated by regression equation, milligrams per liter",
+        "parent_time_series_id": null,
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "f54a9a1a369c43a887c976f2f4578411",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "fff4a87e38704e4fbe88a89fea464b32",
+        "unit_of_measure": "tons/day",
+        "parameter_name": "Suspnd sedmnt disch",
+        "parameter_code": "80155",
+        "statistic_id": "00011",
+        "last_modified": "2023-06-20T16:52:01.930779",
+        "begin": "2008-08-26T05:00:00+00:00",
+        "end": "2011-08-24T04:45:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [],
+        "sublocation_identifier": "Filtered",
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01372058",
+        "web_description": null,
+        "parameter_description": "Suspended sediment discharge, short tons per day",
+        "parent_time_series_id": null,
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "fff4a87e38704e4fbe88a89fea464b32",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 25,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=json&monitoring_location_id=USGS-01372058&limit=100&skipGeometry=true"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=jsonld&monitoring_location_id=USGS-01372058&limit=100&skipGeometry=true"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=html&monitoring_location_id=USGS-01372058&limit=100&skipGeometry=true"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=csv&monitoring_location_id=USGS-01372058&limit=100&skipGeometry=true"
+    },
+    {
+      "type": "application/json",
+      "title": "Time series metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-08T14:25:32.259798Z"
+}

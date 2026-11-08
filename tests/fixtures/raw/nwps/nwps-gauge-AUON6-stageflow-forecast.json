@@ -1,0 +1,84 @@
+{
+  "pedts": "HGIFF",
+  "issuedTime": "2026-11-07T16:45:00Z",
+  "wfo": "BGM",
+  "timeZone": "EST5EDT",
+  "primaryName": "Stage",
+  "primaryUnits": "ft",
+  "secondaryName": "Flow",
+  "secondaryUnits": "kcfs",
+  "data": [
+    {
+      "validTime": "2026-11-07T18:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    },
+    {
+      "validTime": "2026-11-08T00:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    },
+    {
+      "validTime": "2026-11-08T06:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    },
+    {
+      "validTime": "2026-11-08T12:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    },
+    {
+      "validTime": "2026-11-08T18:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    },
+    {
+      "validTime": "2026-11-09T00:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    },
+    {
+      "validTime": "2026-11-09T06:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    },
+    {
+      "validTime": "2026-11-09T12:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    },
+    {
+      "validTime": "2026-11-09T18:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    },
+    {
+      "validTime": "2026-11-10T00:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    },
+    {
+      "validTime": "2026-11-10T06:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    },
+    {
+      "validTime": "2026-11-10T12:00:00Z",
+      "generatedTime": "2026-11-07T16:54:22Z",
+      "primary": 1.8,
+      "secondary": 0.204
+    }
+  ]
+}
