@@ -1,0 +1,6 @@
+/target/
+/remote.local.toml
+.env
+.DS_Store
+/CLAUDE.md
+/.claude/
