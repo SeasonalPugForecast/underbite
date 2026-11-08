@@ -1,0 +1,60 @@
+{
+    "@context": {
+        "@version": "1.1"
+    },
+    "zone": "https://api.weather.gov/zones/forecast/ANZ383",
+    "geometry": "POLYGON((-72.810001 39.670008,-72.810003 39.670004,-72.810009 39.670013,-73.225948 40.288706,-73.196165 40.291059,-73.162323 40.295263,-73.150288 40.297106,-73.135172 40.299665,-73.119350 40.302385,-73.100740 40.305822,-73.091997 40.307617,-73.077272 40.310640,-73.058153 40.314997,-73.041624 40.319132,-72.937988 40.342154,-72.930114 40.344079,-72.921439 40.346201,-72.914732 40.347841,-72.897934 40.352156,-72.879158 40.357313,-72.871521 40.359596,-72.861185 40.362684,-72.836843 40.370287,-72.803366 40.381453,-72.779255 40.390215,-72.758883 40.398008,-72.742247 40.404585,-72.717749 40.413553,-72.708373 40.416613,-72.686409 40.423780,-72.675684 40.427050,-72.664165 40.430562,-72.655462 40.433216,-72.654109 40.433628,-72.644971 40.436414,-72.638758 40.438308,-72.634837 40.439504,-72.634794 40.439517,-72.296004 39.827007,-72.809289 39.670226,-72.809999 39.670009,-72.810001 39.670008))",
+    "updated": "2026-11-08T01:57:00-05:00",
+    "periods": [
+        {
+            "number": 1,
+            "name": "Today",
+            "detailedForecast": "W winds 20 to 25 kt. Seas 5 to 8 ft, occasionally to 10 ft. Wave Detail: NW 7 ft at 6 seconds and SE 3 ft at 9 seconds."
+        },
+        {
+            "number": 2,
+            "name": "Tonight",
+            "detailedForecast": "W winds 20 to 25 kt with gusts up to 30 kt. Seas 5 to 7 ft, occasionally to 9 ft. Wave Detail: W 7 ft at 6 seconds and SE 3 ft at 11 seconds."
+        },
+        {
+            "number": 3,
+            "name": "Mon",
+            "detailedForecast": "W winds 20 to 25 kt with gusts up to 30 kt. Seas 6 to 8 ft, occasionally to 10 ft. Wave Detail: W 8 ft at 6 seconds and SE 3 ft at 11 seconds. Slight chance of showers."
+        },
+        {
+            "number": 4,
+            "name": "Mon Night",
+            "detailedForecast": "NW winds 20 to 25 kt, diminishing to 15 to 20 kt after midnight. Seas 6 to 8 ft, occasionally to 10 ft, subsiding to 5 to 6 ft, occasionally to 8 ft after midnight. Wave Detail: NW 8 ft at 6 seconds and SE 2 ft at 11 seconds, becoming NW 6 ft at 6 seconds and SE 3 ft at 11 seconds."
+        },
+        {
+            "number": 5,
+            "name": "Tue",
+            "detailedForecast": "W winds 15 to 20 kt with gusts up to 30 kt. Seas 4 to 6 ft, occasionally to 8 ft. Wave Detail: W 5 ft at 5 seconds and SE 2 ft at 11 seconds."
+        },
+        {
+            "number": 6,
+            "name": "Tue Night",
+            "detailedForecast": "W winds 15 to 20 kt with gusts up to 30 kt. Seas 4 to 6 ft, occasionally to 8 ft. Wave Detail: W 5 ft at 6 seconds and SE 2 ft at 11 seconds."
+        },
+        {
+            "number": 7,
+            "name": "Wed",
+            "detailedForecast": "NW winds 10 to 15 kt with gusts up to 20 kt. Seas 3 to 4 ft, occasionally to 5 ft."
+        },
+        {
+            "number": 8,
+            "name": "Wed Night",
+            "detailedForecast": "N winds 5 to 10 kt. Seas 2 to 3 ft."
+        },
+        {
+            "number": 9,
+            "name": "Thu",
+            "detailedForecast": "NE winds 10 to 15 kt with gusts up to 20 kt. Seas 2 to 3 ft. Chance of rain."
+        },
+        {
+            "number": 10,
+            "name": "Thu Night",
+            "detailedForecast": "NE winds 25 to 30 kt. Seas 5 to 7 ft, occasionally to 9 ft. Rain likely."
+        }
+    ]
+}

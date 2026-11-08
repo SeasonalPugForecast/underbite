@@ -1,0 +1,37 @@
+{
+    "@context": {
+        "@version": "1.1"
+    },
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "id": "https://api.weather.gov/zones/forecast/ANZ338",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/zones/forecast/ANZ338",
+                "@type": "wx:Zone",
+                "id": "ANZ338",
+                "type": "coastal",
+                "name": "New York Harbor",
+                "effectiveDate": "2026-04-16T18:00:00+00:00",
+                "expirationDate": "2200-01-01T00:00:00+00:00",
+                "state": null,
+                "forecastOffice": "https://api.weather.gov/offices/OKX",
+                "gridIdentifier": "OKX",
+                "awipsLocationIdentifier": "OKX",
+                "cwa": [
+                    "OKX"
+                ],
+                "forecastOffices": [
+                    "https://api.weather.gov/offices/OKX"
+                ],
+                "timeZone": [
+                    "America/New_York"
+                ],
+                "observationStations": [],
+                "radarStation": null
+            }
+        }
+    ]
+}

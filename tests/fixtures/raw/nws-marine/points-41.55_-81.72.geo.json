@@ -1,0 +1,110 @@
+{
+    "@context": [
+        "https://geojson.org/geojson-ld/geojson-context.jsonld",
+        {
+            "@version": "1.1",
+            "wx": "https://api.weather.gov/ontology#",
+            "s": "https://schema.org/",
+            "geo": "http://www.opengis.net/ont/geosparql#",
+            "unit": "http://codes.wmo.int/common/unit/",
+            "@vocab": "https://api.weather.gov/ontology#",
+            "geometry": {
+                "@id": "s:GeoCoordinates",
+                "@type": "geo:wktLiteral"
+            },
+            "city": "s:addressLocality",
+            "state": "s:addressRegion",
+            "distance": {
+                "@id": "s:Distance",
+                "@type": "s:QuantitativeValue"
+            },
+            "bearing": {
+                "@type": "s:QuantitativeValue"
+            },
+            "value": {
+                "@id": "s:value"
+            },
+            "unitCode": {
+                "@id": "s:unitCode",
+                "@type": "@id"
+            },
+            "forecastOffice": {
+                "@type": "@id"
+            },
+            "forecastGridData": {
+                "@type": "@id"
+            },
+            "publicZone": {
+                "@type": "@id"
+            },
+            "county": {
+                "@type": "@id"
+            }
+        }
+    ],
+    "id": "https://api.weather.gov/points/41.55,-81.72",
+    "type": "Feature",
+    "geometry": {
+        "type": "Point",
+        "coordinates": [
+            -81.72,
+            41.55
+        ]
+    },
+    "properties": {
+        "@id": "https://api.weather.gov/points/41.55,-81.72",
+        "@type": "wx:Point",
+        "cwa": "CLE",
+        "type": "marine",
+        "forecastOffice": "https://api.weather.gov/offices/CLE",
+        "gridId": "CLE",
+        "gridX": 82,
+        "gridY": 67,
+        "forecast": "https://api.weather.gov/gridpoints/CLE/82,67/forecast",
+        "forecastHourly": "https://api.weather.gov/gridpoints/CLE/82,67/forecast/hourly",
+        "forecastGridData": "https://api.weather.gov/gridpoints/CLE/82,67",
+        "observationStations": "https://api.weather.gov/gridpoints/CLE/82,67/stations",
+        "relativeLocation": {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -81.6794351,
+                    41.4784623
+                ]
+            },
+            "properties": {
+                "city": "Cleveland",
+                "state": "OH",
+                "distance": {
+                    "unitCode": "wmoUnit:m",
+                    "value": 3811.3100638587
+                },
+                "bearing": {
+                    "unitCode": "wmoUnit:degree_(angle)",
+                    "value": 337
+                }
+            }
+        },
+        "forecastZone": "https://api.weather.gov/zones/forecast/LEZ146",
+        "timeZone": "America/New_York",
+        "radarStation": "KCLE",
+        "astronomicalData": {
+            "sunrise": "2026-11-08T07:07:27-05:00",
+            "sunset": "2026-11-08T17:13:48-05:00",
+            "transit": "2026-11-08T12:10:38-05:00",
+            "civilTwilightBegin": "2026-11-08T06:38:17-05:00",
+            "civilTwilightEnd": "2026-11-08T17:42:59-05:00",
+            "nauticalTwilightBegin": "2026-11-08T06:05:09-05:00",
+            "nauticalTwilightEnd": "2026-11-08T18:16:06-05:00",
+            "astronomicalTwilightBegin": "2026-11-08T05:32:39-05:00",
+            "astronomicalTwilightEnd": "2026-11-08T18:48:36-05:00"
+        },
+        "nwr": {
+            "transmitter": null,
+            "sameCode": null,
+            "areaBroadcast": null,
+            "pointBroadcast": "https://api.weather.gov/points/41.55,-81.72/radio"
+        }
+    }
+}

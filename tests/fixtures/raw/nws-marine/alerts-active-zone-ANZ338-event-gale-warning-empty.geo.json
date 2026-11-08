@@ -1,0 +1,9 @@
+{
+    "@context": {
+        "@version": "1.1"
+    },
+    "type": "FeatureCollection",
+    "features": [],
+    "title": "Current Gale Warning events for ANZ338",
+    "updated": "2026-11-08T14:22:15+00:00"
+}

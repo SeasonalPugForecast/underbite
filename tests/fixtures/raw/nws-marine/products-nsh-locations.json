@@ -1,0 +1,16 @@
+{
+    "@context": [],
+    "locations": {
+        "APX": "Gaylord, MI",
+        "BUF": "Buffalo, NY",
+        "CLE": "Cleveland, OH",
+        "DLH": "Duluth, MN",
+        "DTX": "Detroit/Pontiac, MI",
+        "GRB": "Green Bay, WI",
+        "GRR": "Grand Rapids, MI",
+        "IWX": "Northern Indiana",
+        "LOT": "Chicago, IL",
+        "MKX": "Milwaukee/Sullivan, WI",
+        "MQT": "Marquette, MI"
+    }
+}

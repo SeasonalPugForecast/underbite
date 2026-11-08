@@ -1,0 +1,37 @@
+{
+    "@context": {
+        "@version": "1.1"
+    },
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "id": "https://api.weather.gov/zones/forecast/ANZ815",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/zones/forecast/ANZ815",
+                "@type": "wx:Zone",
+                "id": "ANZ815",
+                "type": "offshore",
+                "name": "South of Long Island between Montauk Point and Sandy Hook to 1000 FM",
+                "effectiveDate": "2026-04-16T18:00:00+00:00",
+                "expirationDate": "2200-01-01T00:00:00+00:00",
+                "state": null,
+                "forecastOffice": "https://api.weather.gov/offices/ONA",
+                "gridIdentifier": "ONA",
+                "awipsLocationIdentifier": "ONA",
+                "cwa": [
+                    "ONA"
+                ],
+                "forecastOffices": [
+                    "https://api.weather.gov/offices/ONA"
+                ],
+                "timeZone": [
+                    "America/New_York"
+                ],
+                "observationStations": [],
+                "radarStation": null
+            }
+        }
+    ]
+}

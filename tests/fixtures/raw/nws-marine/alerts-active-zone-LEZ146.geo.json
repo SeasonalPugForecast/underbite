@@ -1,0 +1,107 @@
+{
+    "@context": [
+        "https://geojson.org/geojson-ld/geojson-context.jsonld",
+        {
+            "@version": "1.1",
+            "wx": "https://api.weather.gov/ontology#",
+            "@vocab": "https://api.weather.gov/ontology#"
+        }
+    ],
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3c166c7bbec39d781dfc07887dbbdf4d092fff05.004.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3c166c7bbec39d781dfc07887dbbdf4d092fff05.004.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.3c166c7bbec39d781dfc07887dbbdf4d092fff05.004.1",
+                "areaDesc": "Avon Point to Willowick OH; Willowick to Geneva-on-the Lake OH; Geneva-on-the-Lake to Conneaut OH",
+                "geocode": {
+                    "SAME": [
+                        "096146",
+                        "096147",
+                        "096148"
+                    ],
+                    "UGC": [
+                        "LEZ146",
+                        "LEZ147",
+                        "LEZ148"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/LEZ146",
+                    "https://api.weather.gov/zones/forecast/LEZ147",
+                    "https://api.weather.gov/zones/forecast/LEZ148"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f2dec8928c736855010b26de4d9eb17f212be0c2.004.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.f2dec8928c736855010b26de4d9eb17f212be0c2.004.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-07T21:36:00-05:00"
+                    }
+                ],
+                "sent": "2026-11-08T02:35:00-05:00",
+                "effective": "2026-11-08T02:35:00-05:00",
+                "onset": "2026-11-08T02:35:00-05:00",
+                "expires": "2026-11-08T10:45:00-05:00",
+                "ends": "2026-11-09T15:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Cleveland OH",
+                "headline": "Small Craft Advisory issued November 8 at 2:35AM EST until November 9 at 3:00PM EST by NWS Cleveland OH",
+                "description": "* WHAT...West winds 20 to 30 knots and waves 6 to 9 feet.\n\n* WHERE...The nearshore waters of Lake Erie from Avon Point to\nConneaut OH.\n\n* WHEN...Until 3 PM EST Monday.\n\n* IMPACTS...Conditions will be hazardous to small craft.",
+                "instruction": "Inexperienced mariners, especially those operating smaller\nvessels, should avoid navigating in hazardous conditions.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "MWWCLE"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS71 KCLE 080735"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY REMAINS IN EFFECT UNTIL 3 PM EST MONDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KCLE.SC.Y.0053.000000T0000Z-261109T2000Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-09T15:00:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.bde121f7bdd68214087968d3fba6acd540de0187.004.1,2026-11-07T14:48:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.67757a30af2872f778687f6bb030a325c04e44d8.003.1,2026-11-07T09:50:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.087340a98c8bbb1ac85196bdb97eb73178e701df.002.1,2026-11-07T02:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fb400a46201c96a51f728dfb692118cb0028129b.002.1,2026-11-06T21:36:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.a01ea0b82ea380a1560f36b6c5f367111250f7fb.002.1,2026-11-06T14:39:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.90fbb43110368c5e4acf9c210a52cc2dfa44c1b3.002.1,2026-11-06T09:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.7ab3d095d6e15c4b8ce3d867082d3b26e3f1d3bf.002.1,2026-11-06T06:15:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        }
+    ],
+    "title": "Current watches, warnings, and advisories for LEZ146",
+    "updated": "2026-11-08T14:22:15+00:00"
+}
