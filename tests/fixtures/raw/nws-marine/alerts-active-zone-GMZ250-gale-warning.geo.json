@@ -1,0 +1,107 @@
+{
+    "@context": [
+        "https://geojson.org/geojson-ld/geojson-context.jsonld",
+        {
+            "@version": "1.1",
+            "wx": "https://api.weather.gov/ontology#",
+            "@vocab": "https://api.weather.gov/ontology#"
+        }
+    ],
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.be9dd3bbb14007e994682fa6efbe97d7a0bb2de5.001.2",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.be9dd3bbb14007e994682fa6efbe97d7a0bb2de5.001.2",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.be9dd3bbb14007e994682fa6efbe97d7a0bb2de5.001.2",
+                "areaDesc": "Coastal waters from Baffin Bay to Port Aransas out 20 NM; Coastal waters from Port Aransas to Matagorda Ship Channel out 20 NM; Waters from Baffin Bay to Port Aransas from 20 to 60 NM; Waters from Port Aransas to Matagorda Ship Channel from 20 to 60 NM",
+                "geocode": {
+                    "SAME": [
+                        "077250",
+                        "077255",
+                        "077270",
+                        "077275"
+                    ],
+                    "UGC": [
+                        "GMZ250",
+                        "GMZ255",
+                        "GMZ270",
+                        "GMZ275"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/GMZ250",
+                    "https://api.weather.gov/zones/forecast/GMZ255",
+                    "https://api.weather.gov/zones/forecast/GMZ270",
+                    "https://api.weather.gov/zones/forecast/GMZ275"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ffacc611f036516e4a6fab0fd9f10d03cab0f011.002.3",
+                        "identifier": "urn:oid:2.49.0.1.840.0.ffacc611f036516e4a6fab0fd9f10d03cab0f011.002.3",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-14T23:59:00-06:00"
+                    }
+                ],
+                "sent": "2026-11-15T13:55:00-06:00",
+                "effective": "2026-11-15T13:55:00-06:00",
+                "onset": "2026-11-16T00:00:00-06:00",
+                "expires": "2026-11-15T22:00:00-06:00",
+                "ends": "2026-11-16T18:00:00-06:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Gale Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Corpus Christi TX",
+                "headline": "Gale Warning issued November 15 at 1:55PM CST until November 16 at 6:00PM CST by NWS Corpus Christi TX",
+                "description": "* WHAT...For the Small Craft Advisory, southeast winds around 20\nknots with gusts up to 25 knots. For the Gale Warning, northeast\nwinds 20 to 30 knots with gusts up to 35 knots and seas 8 to 13\nfeet expected.\n\n* WHERE...Coastal waters from Baffin Bay to Port Aransas out 20\nNM, Coastal waters from Port Aransas to Matagorda Ship Channel\nout 20 NM, Waters from Baffin Bay to Port Aransas from 20 to\n60 NM and Waters from Port Aransas to Matagorda Ship Channel\nfrom 20 to 60 NM.\n\n* WHEN...For the Small Craft Advisory, until midnight CST\ntonight. For the Gale Warning, from midnight tonight to 6 PM\nCST Monday.\n\n* IMPACTS...Gale force winds and high seas will result in\ndangerous marine conditions which could result in capsized or\ndamaged vessels.",
+                "instruction": "Mariners should consider altering plans to avoid possible\nhazardous conditions.  Remain in port, seek safe harbor, alter\ncourse, and/or secure the vessel for severe wind and seas.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "MWWCRP"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS74 KCRP 151955"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY REMAINS IN EFFECT UNTIL MIDNIGHT CST TONIGHT... ...GALE WARNING REMAINS IN EFFECT FROM MIDNIGHT TONIGHT TO 6 PM CST MONDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KCRP.GL.W.0007.261116T0600Z-261117T0000Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-16T18:00:00-06:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "GLW"
+                    ]
+                }
+            }
+        }
+    ],
+    "title": "Current Gale Warning events for GMZ250",
+    "updated": "2026-11-15T22:22:17+00:00"
+}

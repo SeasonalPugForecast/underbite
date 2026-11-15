@@ -35,3 +35,7 @@ Alert, zone-forecast and product contents are live and change; the recording is 
 | `products-nsh-locations.json` | `A/products/types/NSH/locations` | 2026-11-08 |
 | `products-off-locations.json` | `A/products/types/OFF/locations` | 2026-11-08 |
 | `products-off-nt2-latest.json` | `A/products/types/OFF/locations/NT2/latest` (Offshore Waters Forecast, covers ANZ820 to ANZ835) | 2026-11-08 |
+| `products-glf-locations.json` | `A/products/types/GLF/locations` (LE LH LM LO LS SC SL) | 2026-11-15 |
+| `products-glf-le-latest.json` | `A/products/types/GLF/locations/LE/latest` (Open Lake Forecast for Lake Erie, KCLE, FZUS61; LEZ161 to LEZ169 sections) | 2026-11-15 |
+| `products-glf-lo-latest.json` | `A/products/types/GLF/locations/LO/latest` (Lake Ontario, KBUF, FZUS61; LOZ061 to LOZ065) | 2026-11-15 |
+| `alerts-active-zone-GMZ250-gale-warning.geo.json` | `A/alerts/active?zone=GMZ250&event=Gale%20Warning` (one live Gale Warning, NWS Corpus Christi, Gulf of America) | 2026-11-15 |
