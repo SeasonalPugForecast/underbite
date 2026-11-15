@@ -1,0 +1,4276 @@
+---
+source: crates/underbite-core/src/model/snapshot.rs
+expression: schemas
+---
+{
+  "Requirements": {
+    "$defs": {
+      "Measurement": {
+        "description": "A kind of value the app can show; the key of source chains, discovery and requirements.",
+        "enum": [
+          "water_temperature",
+          "discharge",
+          "gage_height",
+          "lake_level",
+          "turbidity",
+          "dissolved_oxygen",
+          "conductivity",
+          "salinity",
+          "ph",
+          "chlorophyll",
+          "clarity",
+          "cyanobacteria",
+          "tide",
+          "tidal_current",
+          "ocean_current",
+          "waves",
+          "waves_forecast",
+          "sea_surface_temp",
+          "sea_surface_temp_forecast",
+          "marine_forecast",
+          "marine_alerts",
+          "flood_categories",
+          "flow_forecast",
+          "observed_wind",
+          "observed_pressure"
+        ],
+        "type": "string"
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "What a refresh must fetch: the measurements wanted and how far back and ahead.",
+    "properties": {
+      "future_days": {
+        "default": 7,
+        "description": "Future window in days, for predictions.",
+        "format": "uint8",
+        "maximum": 255,
+        "minimum": 0,
+        "type": "integer"
+      },
+      "measurements": {
+        "items": {
+          "$ref": "#/$defs/Measurement"
+        },
+        "type": "array",
+        "uniqueItems": true
+      },
+      "past_hours": {
+        "default": 168,
+        "description": "Past window in hours, for sparklines (7 days by default).",
+        "format": "uint32",
+        "minimum": 0,
+        "type": "integer"
+      }
+    },
+    "title": "Requirements",
+    "type": "object"
+  },
+  "SpotSnapshot": {
+    "$defs": {
+      "AirQuality": {
+        "description": "Air quality now. Pollutants are in µg/m³.",
+        "properties": {
+          "co": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "european_aqi": {
+            "format": "uint16",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "no2": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "o3": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "owm_index": {
+            "description": "OpenWeather's 1–5 index.",
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "pm10": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "pm2_5": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "so2": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime"
+          },
+          "us_aqi": {
+            "format": "uint16",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "time"
+        ],
+        "type": "object"
+      },
+      "Alert": {
+        "description": "An official weather warning.",
+        "properties": {
+          "checked_at": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the provider last sent this alert's details (`None` when unknown, as in\ncaches written before this change). A fetch re-requests details older than an hour\nso updates reach the app while the alert lasts."
+          },
+          "description": {
+            "type": "string"
+          },
+          "end": {
+            "$ref": "#/$defs/UnixTime"
+          },
+          "id": {
+            "description": "The provider's identifier, when it has one: deduplicates alerts and lets a\nlater fetch reuse details it already has.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "severity": {
+            "$ref": "#/$defs/Level"
+          },
+          "source": {
+            "type": "string"
+          },
+          "start": {
+            "$ref": "#/$defs/UnixTime"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "description": "A page with the alert's details, when the source gives one.\nCaches written earlier have none.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "severity",
+          "start",
+          "end",
+          "source"
+        ],
+        "type": "object"
+      },
+      "AlertSeverity": {
+        "description": "NWS alert severity.",
+        "enum": [
+          "extreme",
+          "severe",
+          "moderate",
+          "minor",
+          "unknown"
+        ],
+        "type": "string"
+      },
+      "Attribution": {
+        "description": "The credit a display owes a source.",
+        "properties": {
+          "credit": {
+            "description": "Credit text as the source requires it.",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/$defs/SourceId",
+            "description": "The source credited."
+          },
+          "url": {
+            "description": "Link to the source or its terms.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "source",
+          "credit"
+        ],
+        "type": "object"
+      },
+      "Basin": {
+        "description": "The NHC basin a cyclone is in.",
+        "oneOf": [
+          {
+            "const": "atlantic",
+            "description": "The North Atlantic, the Caribbean and the Gulf (`al`).",
+            "type": "string"
+          },
+          {
+            "const": "east_pacific",
+            "description": "The eastern North Pacific (`ep`).",
+            "type": "string"
+          },
+          {
+            "const": "central_pacific",
+            "description": "The central North Pacific (`cp`).",
+            "type": "string"
+          }
+        ]
+      },
+      "Celsius": {
+        "description": "Temperature in degrees Celsius.",
+        "format": "float",
+        "type": "number"
+      },
+      "Condition": {
+        "description": "Sky and precipitation state, normalized across WMO codes, OpenWeather ids and\nMET Norway symbol codes.",
+        "oneOf": [
+          {
+            "enum": [
+              "clear",
+              "mainly_clear",
+              "partly_cloudy",
+              "cloudy",
+              "overcast",
+              "fog",
+              "haze",
+              "smoke",
+              "dust",
+              "snow_grains",
+              "squall",
+              "tornado",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "drizzle": {
+                "$ref": "#/$defs/Intensity"
+              }
+            },
+            "required": [
+              "drizzle"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "freezing_drizzle": {
+                "$ref": "#/$defs/Intensity"
+              }
+            },
+            "required": [
+              "freezing_drizzle"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "rain": {
+                "$ref": "#/$defs/Intensity"
+              }
+            },
+            "required": [
+              "rain"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "freezing_rain": {
+                "$ref": "#/$defs/Intensity"
+              }
+            },
+            "required": [
+              "freezing_rain"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "rain_showers": {
+                "$ref": "#/$defs/Intensity"
+              }
+            },
+            "required": [
+              "rain_showers"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "sleet": {
+                "$ref": "#/$defs/Intensity"
+              }
+            },
+            "required": [
+              "sleet"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "sleet_showers": {
+                "$ref": "#/$defs/Intensity"
+              }
+            },
+            "required": [
+              "sleet_showers"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "snow": {
+                "$ref": "#/$defs/Intensity"
+              }
+            },
+            "required": [
+              "snow"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "snow_showers": {
+                "$ref": "#/$defs/Intensity"
+              }
+            },
+            "required": [
+              "snow_showers"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "thunderstorm": {
+                "$ref": "#/$defs/Intensity"
+              }
+            },
+            "required": [
+              "thunderstorm"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "thunderstorm_hail": {
+                "$ref": "#/$defs/Intensity"
+              }
+            },
+            "required": [
+              "thunderstorm_hail"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Current": {
+        "description": "Conditions now.",
+        "properties": {
+          "apparent": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Celsius"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cloud_cover": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Percent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "condition": {
+            "$ref": "#/$defs/Condition"
+          },
+          "dew_point": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Celsius"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "humidity": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Percent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_day": {
+            "type": "boolean"
+          },
+          "precipitation": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Mm"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pressure_msl": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Hpa"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Celsius"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime"
+          },
+          "uv_index": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "visibility": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Meters"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wind_dir": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Degrees"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wind_gust": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Mps"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wind_speed": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Mps"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "time",
+          "is_day",
+          "condition"
+        ],
+        "type": "object"
+      },
+      "CurrentEvent": {
+        "properties": {
+          "kind": {
+            "$ref": "#/$defs/CurrentKind"
+          },
+          "speed_ms": {
+            "description": "Signed along the major axis, positive toward flood.",
+            "format": "float",
+            "type": "number"
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime"
+          }
+        },
+        "required": [
+          "time",
+          "kind",
+          "speed_ms"
+        ],
+        "type": "object"
+      },
+      "CurrentKind": {
+        "enum": [
+          "max_flood",
+          "max_ebb",
+          "slack"
+        ],
+        "type": "string"
+      },
+      "CurrentSeries": {
+        "description": "Tidal current predictions and observations at a station.",
+        "properties": {
+          "bin": {
+            "format": "uint16",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "curve": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Signed major-axis speed in m/s, positive toward flood."
+          },
+          "depth_m": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ebb_dir_deg": {
+            "description": "Direction the ebb sets toward, degrees true.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "events": {
+            "items": {
+              "$ref": "#/$defs/CurrentEvent"
+            },
+            "type": "array"
+          },
+          "flood_dir_deg": {
+            "description": "Direction the flood sets toward, degrees true.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "observed": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series3"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provenance": {
+            "$ref": "#/$defs/Provenance"
+          }
+        },
+        "required": [
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "Daily": {
+        "description": "One local calendar day.",
+        "properties": {
+          "apparent_max": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Celsius"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The day's highest and lowest \"feels like\" temperatures."
+          },
+          "apparent_min": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Celsius"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "condition": {
+            "$ref": "#/$defs/Condition"
+          },
+          "date": {
+            "$ref": "#/$defs/LocalDate"
+          },
+          "daylight_s": {
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "moon_phase": {
+            "description": "Phase fraction: 0 new, 0.5 full.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "moonrise": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "moonset": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "precip_probability_max": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Percent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "precip_sum": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Mm"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sunrise": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sunset": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "temp_max": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Celsius"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "temp_min": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Celsius"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "uv_index_max": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "wind_dir_dominant": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Degrees"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wind_gust_max": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Mps"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wind_speed_max": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Mps"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "date",
+          "condition"
+        ],
+        "type": "object"
+      },
+      "Degrees": {
+        "description": "An angle in degrees; for wind, the direction the wind blows *from*.",
+        "format": "float",
+        "type": "number"
+      },
+      "EnsembleSeries": {
+        "description": "One ensemble's members at the place.\n\nMember 0 is the control run. Each member's vector has one entry per entry\nof `times`.",
+        "properties": {
+          "model": {
+            "description": "The Open-Meteo Ensemble API `models` id, e.g. `gfs025`.",
+            "type": "string"
+          },
+          "precipitation_mm": {
+            "description": "Precipitation in the hour before each time, in millimetres, as\n`[member][time]`.",
+            "items": {
+              "items": {
+                "format": "float",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "run": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ModelRun"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The run the members come from, when known."
+          },
+          "snowfall_cm": {
+            "description": "Snowfall in the hour before each time, in centimetres, as\n`[member][time]`.",
+            "items": {
+              "items": {
+                "format": "float",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "times": {
+            "description": "Ascending, hourly.",
+            "items": {
+              "$ref": "#/$defs/UnixTime"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "model",
+          "times",
+          "precipitation_mm",
+          "snowfall_cm"
+        ],
+        "type": "object"
+      },
+      "FarHurricane": {
+        "description": "An active cyclone whose official forecast, as of one forecast advisory,\nstays too far from the place to be drawn: it need not be looked at again\nuntil NHC's next forecast advisory.",
+        "properties": {
+          "forecast_advisory_time": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the forecast advisory it was judged by was issued."
+          },
+          "id": {
+            "description": "NHC's id, e.g. `al102026`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "forecast_advisory_time"
+        ],
+        "type": "object"
+      },
+      "FloodCategories": {
+        "description": "NWPS flood stage thresholds, each absent when the gauge does not define it.",
+        "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Height"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "major": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Height"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "minor": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Height"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "moderate": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Height"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ForecastPeriod": {
+        "description": "One named period of a text forecast.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "text"
+        ],
+        "type": "object"
+      },
+      "Height": {
+        "description": "A height in metres above a datum.",
+        "properties": {
+          "datum": {
+            "$ref": "#/$defs/VerticalDatum",
+            "description": "The datum the height is measured from."
+          },
+          "metres": {
+            "description": "Height above the datum, metres.",
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "required": [
+          "datum",
+          "metres"
+        ],
+        "type": "object"
+      },
+      "Heights": {
+        "description": "A series of heights, metres above one datum.",
+        "properties": {
+          "datum": {
+            "$ref": "#/$defs/VerticalDatum",
+            "description": "The datum of every sample."
+          },
+          "series": {
+            "$ref": "#/$defs/Series",
+            "description": "Heights above the datum, metres."
+          }
+        },
+        "required": [
+          "datum",
+          "series"
+        ],
+        "type": "object"
+      },
+      "Hourly": {
+        "description": "One forecast step (1 h; 3 h for OpenWeather's free API).",
+        "properties": {
+          "apparent": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Celsius"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cloud_cover": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Percent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "condition": {
+            "$ref": "#/$defs/Condition"
+          },
+          "humidity": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Percent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_day": {
+            "type": "boolean"
+          },
+          "precip_probability": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Percent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "precipitation": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Mm"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pressure_msl": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Hpa"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Celsius"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime"
+          },
+          "uv_index": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "visibility": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Meters"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wind_dir": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Degrees"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wind_gust": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Mps"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wind_speed": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Mps"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "time",
+          "is_day",
+          "condition"
+        ],
+        "type": "object"
+      },
+      "Hpa": {
+        "description": "Pressure in hectopascals.",
+        "format": "float",
+        "type": "number"
+      },
+      "Hurricane": {
+        "description": "One active cyclone: NHC's latest advisory with its tracks.",
+        "properties": {
+          "advisory_time": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the latest public advisory was issued."
+          },
+          "advisory_url": {
+            "description": "The latest public advisory's web page.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "aids": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/$defs/TrackFix"
+              },
+              "type": "array"
+            },
+            "default": {},
+            "description": "The guidance models' latest tracks by ATCF aid code (see\n[`DRAWN_AIDS`]).",
+            "type": "object"
+          },
+          "basin": {
+            "$ref": "#/$defs/Basin",
+            "description": "The basin."
+          },
+          "classification": {
+            "description": "NHC's classification code: `HU` (hurricane), `TS` (tropical storm),\n`TD` (tropical depression), `STS` and `STD` (subtropical storm and\ndepression), `PTC` (post-tropical cyclone), `PC` (potential tropical\ncyclone) or `TY` (typhoon).",
+            "type": "string"
+          },
+          "forecast_advisory_time": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "When NHC issued the forecast advisory the tracks belong with: the\nofficial forecast changes only with it (public advisories between\ntwo keep it). `None` in outlooks from before it was kept."
+          },
+          "id": {
+            "description": "NHC's id: basin, number and year, e.g. `al102026`.",
+            "type": "string"
+          },
+          "latitude": {
+            "description": "The centre's latitude, in degrees.",
+            "format": "double",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "The centre's longitude, in degrees, in `-180.0..180.0`.",
+            "format": "double",
+            "type": "number"
+          },
+          "movement_deg": {
+            "description": "Where the centre is heading, in degrees clockwise from north.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "movement_kt": {
+            "description": "How fast the centre moves, in knots.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "name": {
+            "description": "The name, e.g. \"Josephine\", or the number for an unnamed depression.",
+            "type": "string"
+          },
+          "official": {
+            "default": [],
+            "description": "NHC's official forecast track, from the advisory's position on.",
+            "items": {
+              "$ref": "#/$defs/TrackFix"
+            },
+            "type": "array"
+          },
+          "official_init": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "When the official forecast's run started (`None` without one):\nthe synoptic hour before its forecast advisory, so an older one is\nan earlier advisory's (see [`Hurricane::official_is_current`])."
+          },
+          "past": {
+            "default": [],
+            "description": "The observed (best) track, oldest first.",
+            "items": {
+              "$ref": "#/$defs/TrackFix"
+            },
+            "type": "array"
+          },
+          "pressure_hpa": {
+            "description": "The central pressure, in hPa.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "wind_kt": {
+            "description": "The maximum sustained wind, in knots.",
+            "format": "uint16",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "classification",
+          "basin",
+          "latitude",
+          "longitude",
+          "advisory_time"
+        ],
+        "type": "object"
+      },
+      "Intensity": {
+        "description": "Strength of precipitation or a storm.",
+        "enum": [
+          "light",
+          "moderate",
+          "heavy"
+        ],
+        "type": "string"
+      },
+      "Level": {
+        "description": "One severity scale that every display maps to colors (UV, air quality, alerts).",
+        "enum": [
+          "good",
+          "fair",
+          "moderate",
+          "poor",
+          "very_poor",
+          "extreme"
+        ],
+        "type": "string"
+      },
+      "LocalDate": {
+        "description": "A calendar date in the location's local time.",
+        "properties": {
+          "day": {
+            "description": "Day of the month, 1–31.",
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "month": {
+            "description": "Month, 1–12.",
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "year": {
+            "description": "Proleptic Gregorian year.",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "year",
+          "month",
+          "day"
+        ],
+        "type": "object"
+      },
+      "MarineAlert": {
+        "properties": {
+          "ends": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "event": {
+            "description": "NWS event name, for example `Small Craft Advisory`.",
+            "type": "string"
+          },
+          "expires": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "headline": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "onset": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "severity": {
+            "$ref": "#/$defs/AlertSeverity"
+          },
+          "vtec_key": {
+            "description": "Office, phenomenon, significance and number, to de-duplicate with land alerts.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "zones": {
+            "description": "UGC zone ids.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "event",
+          "severity"
+        ],
+        "type": "object"
+      },
+      "MarineConditions": {
+        "description": "Everything about the water's surface and the sea at the spot.",
+        "properties": {
+          "marine_alerts": {
+            "items": {
+              "$ref": "#/$defs/MarineAlert"
+            },
+            "type": "array"
+          },
+          "marine_forecast": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ZoneForecast"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "observed_pressure_hpa": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "observed_wind": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series5"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Wind observed at a station, apart from whether's weather."
+          },
+          "ocean_current": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series3"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sea_surface_temp_c": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sea_surface_temp_forecast_c": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tidal_current": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/CurrentSeries"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tide": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/TideSeries"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "waves": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series4"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Observed waves (a buoy)."
+          },
+          "waves_forecast": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series4"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Modelled waves ahead."
+          }
+        },
+        "type": "object"
+      },
+      "Measurement": {
+        "description": "A kind of value the app can show; the key of source chains, discovery and requirements.",
+        "enum": [
+          "water_temperature",
+          "discharge",
+          "gage_height",
+          "lake_level",
+          "turbidity",
+          "dissolved_oxygen",
+          "conductivity",
+          "salinity",
+          "ph",
+          "chlorophyll",
+          "clarity",
+          "cyanobacteria",
+          "tide",
+          "tidal_current",
+          "ocean_current",
+          "waves",
+          "waves_forecast",
+          "sea_surface_temp",
+          "sea_surface_temp_forecast",
+          "marine_forecast",
+          "marine_alerts",
+          "flood_categories",
+          "flow_forecast",
+          "observed_wind",
+          "observed_pressure"
+        ],
+        "type": "string"
+      },
+      "Meters": {
+        "description": "Distance in metres.",
+        "format": "float",
+        "type": "number"
+      },
+      "Minutely": {
+        "description": "One 15-minute precipitation step (nowcast).",
+        "properties": {
+          "precipitation": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Mm"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime"
+          }
+        },
+        "required": [
+          "time"
+        ],
+        "type": "object"
+      },
+      "Mm": {
+        "description": "Precipitation depth in millimetres.",
+        "format": "float",
+        "type": "number"
+      },
+      "ModelRun": {
+        "description": "One model run: when it started and when its data became available.",
+        "properties": {
+          "available": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the run's data became available."
+          },
+          "init": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "The run's initialisation time (its \"12z\")."
+          },
+          "model": {
+            "description": "The Open-Meteo domain the run belongs to, e.g. `ncep_gfs025`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "init",
+          "available"
+        ],
+        "type": "object"
+      },
+      "MoonDay": {
+        "description": "The moon on one local day.",
+        "properties": {
+          "illuminated_fraction": {
+            "description": "Illuminated fraction, 0 to 1.",
+            "format": "float",
+            "type": "number"
+          },
+          "lower_transit": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nearest_principal": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PrincipalPhaseTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phase": {
+            "$ref": "#/$defs/MoonPhase"
+          },
+          "phase_angle_deg": {
+            "description": "Sun-moon elongation, 0 at new moon and 180 at full.",
+            "format": "float",
+            "type": "number"
+          },
+          "rise": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "set": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "upper_transit": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "phase_angle_deg",
+          "illuminated_fraction",
+          "phase"
+        ],
+        "type": "object"
+      },
+      "MoonPhase": {
+        "enum": [
+          "new",
+          "waxing_crescent",
+          "first_quarter",
+          "waxing_gibbous",
+          "full",
+          "waning_gibbous",
+          "last_quarter",
+          "waning_crescent"
+        ],
+        "type": "string"
+      },
+      "Mps": {
+        "description": "Speed in metres per second.",
+        "format": "float",
+        "type": "number"
+      },
+      "OffsetChange": {
+        "description": "From `at` on, local times use `offset`.",
+        "properties": {
+          "at": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the new offset takes effect."
+          },
+          "offset": {
+            "$ref": "#/$defs/UtcOffset",
+            "description": "The offset from then on."
+          }
+        },
+        "required": [
+          "at",
+          "offset"
+        ],
+        "type": "object"
+      },
+      "PastRun": {
+        "description": "One earlier run's totals at the place over an event window.",
+        "properties": {
+          "model": {
+            "description": "The Open-Meteo `models` id.",
+            "type": "string"
+          },
+          "run": {
+            "$ref": "#/$defs/ModelRun",
+            "description": "The earlier run."
+          },
+          "window_end": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "The window's end (exclusive)."
+          },
+          "window_snow_cm": {
+            "description": "Snowfall over the window, in centimetres.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "window_start": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "The window's start (inclusive)."
+          },
+          "window_total_mm": {
+            "description": "Precipitation over the window, in millimetres; `None` when the run had\nno values for it.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "model",
+          "run",
+          "window_start",
+          "window_end"
+        ],
+        "type": "object"
+      },
+      "Percent": {
+        "description": "A percentage in `0.0..=100.0`.",
+        "format": "float",
+        "type": "number"
+      },
+      "Percentile": {
+        "description": "A current value placed among the normals for its day of year. Values are in the\ncanonical unit of the quantity (m³/s for discharge, metres for level).",
+        "properties": {
+          "approved_only": {
+            "type": "boolean"
+          },
+          "basis": {
+            "$ref": "#/$defs/PercentileBasis"
+          },
+          "class": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PercentileClass"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "day_of_year": {
+            "description": "Day of year as `MM-DD`.",
+            "type": "string"
+          },
+          "max": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "mean": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "min": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "rank": {
+            "description": "Percentile rank of `value` (0 to 100), interpolated between the thresholds.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "sample_count": {
+            "description": "Number of years in the sample.",
+            "format": "uint32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "thresholds": {
+            "$ref": "#/$defs/PercentileThresholds"
+          },
+          "value": {
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "required": [
+          "day_of_year",
+          "thresholds",
+          "value",
+          "basis",
+          "sample_count",
+          "approved_only"
+        ],
+        "type": "object"
+      },
+      "PercentileBasis": {
+        "description": "Where a [`Percentile`] came from.",
+        "oneOf": [
+          {
+            "const": "statistics_api",
+            "description": "The USGS Statistics API's day-of-year normals.",
+            "type": "string"
+          },
+          {
+            "additionalProperties": false,
+            "description": "Computed on the device from the daily record of `years` years.",
+            "properties": {
+              "computed_from_daily": {
+                "properties": {
+                  "years": {
+                    "format": "uint32",
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "years"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "computed_from_daily"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "PercentileClass": {
+        "description": "WaterWatch-style class of a value among its day-of-year percentiles. The bounds live in\nthe derivation, not here.",
+        "enum": [
+          "much_below_normal",
+          "below_normal",
+          "normal",
+          "above_normal",
+          "much_above_normal"
+        ],
+        "type": "string"
+      },
+      "PercentileThresholds": {
+        "description": "The 5, 10, 25, 50, 75, 90 and 95th percentile values for a day of year.",
+        "properties": {
+          "p05": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "p10": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "p25": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "p50": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "p75": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "p90": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "p95": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "PointSeries": {
+        "description": "One deterministic model's hourly forecast at the place.\n\nEvery value vector has one entry per entry of `times`; `None` is a value\nthe model did not supply.",
+        "properties": {
+          "gust_kmh": {
+            "description": "Wind gusts at 10 m, in kilometres per hour.",
+            "items": {
+              "format": "float",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "type": "array"
+          },
+          "model": {
+            "description": "The Open-Meteo `models` id, e.g. `ecmwf_ifs025`.",
+            "type": "string"
+          },
+          "precipitation_mm": {
+            "description": "Precipitation (rain, showers and snow as water) in the hour before\neach time, in millimetres.",
+            "items": {
+              "format": "float",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "type": "array"
+          },
+          "pressure_hpa": {
+            "description": "Mean sea-level pressure, in hectopascals.",
+            "items": {
+              "format": "float",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "type": "array"
+          },
+          "run": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ModelRun"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The run the series comes from, when known."
+          },
+          "snowfall_cm": {
+            "description": "Snowfall in the hour before each time, in centimetres of snow.",
+            "items": {
+              "format": "float",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "type": "array"
+          },
+          "times": {
+            "description": "Ascending, hourly.",
+            "items": {
+              "$ref": "#/$defs/UnixTime"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "model",
+          "times",
+          "precipitation_mm",
+          "snowfall_cm",
+          "gust_kmh",
+          "pressure_hpa"
+        ],
+        "type": "object"
+      },
+      "PressureGrid": {
+        "description": "One model's sea-level pressure on a regular grid around the place.\n\nPoints are stored row by row: the point at `row` (an index into `lats`)\nand `col` (an index into `lons`) is `row * lons.len() + col`.",
+        "properties": {
+          "lats": {
+            "description": "Row latitudes in degrees, south to north.",
+            "items": {
+              "format": "float",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "lons": {
+            "description": "Column longitudes in degrees, west to east, each in `-180.0..180.0`;\na grid across the antimeridian wraps from 180 to -180 between two\ncolumns.",
+            "items": {
+              "format": "float",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "model": {
+            "description": "The Open-Meteo `models` id.",
+            "type": "string"
+          },
+          "pressure_hpa": {
+            "description": "Mean sea-level pressure in hectopascals, as `[time][point]`.",
+            "items": {
+              "items": {
+                "format": "float",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "run": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ModelRun"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The run the grid comes from, when known."
+          },
+          "times": {
+            "description": "Ascending, usually 6 hours apart.",
+            "items": {
+              "$ref": "#/$defs/UnixTime"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "model",
+          "lats",
+          "lons",
+          "times",
+          "pressure_hpa"
+        ],
+        "type": "object"
+      },
+      "PrincipalPhase": {
+        "enum": [
+          "new",
+          "first_quarter",
+          "full",
+          "last_quarter"
+        ],
+        "type": "string"
+      },
+      "PrincipalPhaseTime": {
+        "description": "A principal phase and the instant it happens.",
+        "properties": {
+          "phase": {
+            "$ref": "#/$defs/PrincipalPhase"
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime"
+          }
+        },
+        "required": [
+          "phase",
+          "time"
+        ],
+        "type": "object"
+      },
+      "Provenance": {
+        "description": "Where one value or series came from.",
+        "properties": {
+          "distance_m": {
+            "description": "Distance from the spot to the station, metres.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "kind": {
+            "$ref": "#/$defs/ValueKind",
+            "description": "Observed, predicted, modelled, satellite or computed."
+          },
+          "observed_at": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the value was observed, predicted for or issued."
+          },
+          "quality": {
+            "$ref": "#/$defs/Quality",
+            "description": "Source-reported quality."
+          },
+          "relation": {
+            "$ref": "#/$defs/Relation",
+            "description": "How the station relates to the spot."
+          },
+          "source": {
+            "$ref": "#/$defs/SourceId",
+            "description": "The data source."
+          },
+          "station": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/StationRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The station, when the value comes from one."
+          }
+        },
+        "required": [
+          "source",
+          "relation",
+          "observed_at",
+          "kind",
+          "quality"
+        ],
+        "type": "object"
+      },
+      "ProviderId": {
+        "description": "A weather data provider.",
+        "oneOf": [
+          {
+            "const": "openweather",
+            "description": "OpenWeather (openweathermap.org).",
+            "type": "string"
+          },
+          {
+            "const": "open-meteo",
+            "description": "Open-Meteo (open-meteo.com).",
+            "type": "string"
+          },
+          {
+            "const": "met-norway",
+            "description": "MET Norway (api.met.no).",
+            "type": "string"
+          },
+          {
+            "const": "nws",
+            "description": "The US National Weather Service (api.weather.gov): official alerts as a\nsupplement, and the forecast as a primary provider.",
+            "type": "string"
+          },
+          {
+            "const": "acis",
+            "description": "NOAA's Regional Climate Centers (data.rcc-acis.org): station history,\nnormals and records for US places; never a forecast.",
+            "type": "string"
+          },
+          {
+            "const": "pirate-weather",
+            "description": "Pirate Weather (pirateweather.net): a keyed Dark Sky-style forecast from a\nblend of NOAA and other models, billed per month.",
+            "type": "string"
+          }
+        ]
+      },
+      "Quality": {
+        "description": "Quality of a value, as far as the source says.",
+        "oneOf": [
+          {
+            "const": "provisional",
+            "description": "Subject to revision.",
+            "type": "string"
+          },
+          {
+            "const": "approved",
+            "description": "Reviewed and approved.",
+            "type": "string"
+          },
+          {
+            "const": "estimated",
+            "description": "Estimated by the source (USGS `ESTIMATED`).",
+            "type": "string"
+          },
+          {
+            "const": "ice_affected",
+            "description": "Affected by ice (USGS `ICE`).",
+            "type": "string"
+          },
+          {
+            "const": "flagged",
+            "description": "Unreliable: equipment or maintenance (USGS `EQUIP`, `MAINT`).",
+            "type": "string"
+          }
+        ]
+      },
+      "Relation": {
+        "description": "How the station relates to the spot.",
+        "oneOf": [
+          {
+            "const": "same_water_body",
+            "description": "On the same water body as the spot.",
+            "type": "string"
+          },
+          {
+            "const": "upstream",
+            "description": "Upstream of the spot on the same river.",
+            "type": "string"
+          },
+          {
+            "const": "downstream",
+            "description": "Downstream of the spot on the same river.",
+            "type": "string"
+          },
+          {
+            "const": "nearby",
+            "description": "Close by, water body not established.",
+            "type": "string"
+          },
+          {
+            "const": "gridded",
+            "description": "A model grid cell.",
+            "type": "string"
+          },
+          {
+            "const": "satellite",
+            "description": "A satellite pixel.",
+            "type": "string"
+          }
+        ]
+      },
+      "ResolvedLocation": {
+        "description": "A location resolved to coordinates and a UTC offset.",
+        "properties": {
+          "elevation_m": {
+            "description": "Elevation in metres.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "latitude": {
+            "description": "Latitude in degrees.",
+            "format": "double",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude in degrees.",
+            "format": "double",
+            "type": "number"
+          },
+          "name": {
+            "description": "Display name, e.g. \"New York\".",
+            "type": "string"
+          },
+          "region": {
+            "description": "Region line, e.g. \"New York, US\".",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "station": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Station"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The weather station whose observation gave the current conditions\n(the NWS); `None` when they are a forecast."
+          },
+          "tz_abbrev": {
+            "description": "Time-zone abbreviation, e.g. \"EDT\".",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tz_name": {
+            "description": "IANA time-zone name, when known.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utc_offset": {
+            "$ref": "#/$defs/UtcOffset",
+            "description": "The location's UTC offset at fetch time."
+          }
+        },
+        "required": [
+          "name",
+          "latitude",
+          "longitude",
+          "utc_offset"
+        ],
+        "type": "object"
+      },
+      "Sample": {
+        "description": "One value at one instant.",
+        "properties": {
+          "quality": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Quality"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per-sample quality, overriding the series provenance (USGS qualifiers vary per value)."
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the value applies, UTC."
+          },
+          "value": {
+            "description": "The value, in canonical units.",
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "required": [
+          "time",
+          "value"
+        ],
+        "type": "object"
+      },
+      "Sample2": {
+        "description": "One value at one instant.",
+        "properties": {
+          "quality": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Quality"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per-sample quality, overriding the series provenance (USGS qualifiers vary per value)."
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the value applies, UTC."
+          },
+          "value": {
+            "$ref": "#/$defs/Turbidity",
+            "description": "The value, in canonical units."
+          }
+        },
+        "required": [
+          "time",
+          "value"
+        ],
+        "type": "object"
+      },
+      "Sample3": {
+        "description": "One value at one instant.",
+        "properties": {
+          "quality": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Quality"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per-sample quality, overriding the series provenance (USGS qualifiers vary per value)."
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the value applies, UTC."
+          },
+          "value": {
+            "$ref": "#/$defs/Vector",
+            "description": "The value, in canonical units."
+          }
+        },
+        "required": [
+          "time",
+          "value"
+        ],
+        "type": "object"
+      },
+      "Sample4": {
+        "description": "One value at one instant.",
+        "properties": {
+          "quality": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Quality"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per-sample quality, overriding the series provenance (USGS qualifiers vary per value)."
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the value applies, UTC."
+          },
+          "value": {
+            "$ref": "#/$defs/WaveSample",
+            "description": "The value, in canonical units."
+          }
+        },
+        "required": [
+          "time",
+          "value"
+        ],
+        "type": "object"
+      },
+      "Sample5": {
+        "description": "One value at one instant.",
+        "properties": {
+          "quality": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Quality"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per-sample quality, overriding the series provenance (USGS qualifiers vary per value)."
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the value applies, UTC."
+          },
+          "value": {
+            "$ref": "#/$defs/Wind",
+            "description": "The value, in canonical units."
+          }
+        },
+        "required": [
+          "time",
+          "value"
+        ],
+        "type": "object"
+      },
+      "Series": {
+        "description": "Samples of one quantity from one provenance.\n\nSamples are sorted ascending by time with no duplicate times; [`Series::new`] and\ndeserialization enforce this.",
+        "properties": {
+          "provenance": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "samples": {
+            "items": {
+              "$ref": "#/$defs/Sample"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "provenance",
+          "samples"
+        ],
+        "type": "object"
+      },
+      "Series2": {
+        "description": "Samples of one quantity from one provenance.\n\nSamples are sorted ascending by time with no duplicate times; [`Series::new`] and\ndeserialization enforce this.",
+        "properties": {
+          "provenance": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "samples": {
+            "items": {
+              "$ref": "#/$defs/Sample2"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "provenance",
+          "samples"
+        ],
+        "type": "object"
+      },
+      "Series3": {
+        "description": "Samples of one quantity from one provenance.\n\nSamples are sorted ascending by time with no duplicate times; [`Series::new`] and\ndeserialization enforce this.",
+        "properties": {
+          "provenance": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "samples": {
+            "items": {
+              "$ref": "#/$defs/Sample3"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "provenance",
+          "samples"
+        ],
+        "type": "object"
+      },
+      "Series4": {
+        "description": "Samples of one quantity from one provenance.\n\nSamples are sorted ascending by time with no duplicate times; [`Series::new`] and\ndeserialization enforce this.",
+        "properties": {
+          "provenance": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "samples": {
+            "items": {
+              "$ref": "#/$defs/Sample4"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "provenance",
+          "samples"
+        ],
+        "type": "object"
+      },
+      "Series5": {
+        "description": "Samples of one quantity from one provenance.\n\nSamples are sorted ascending by time with no duplicate times; [`Series::new`] and\ndeserialization enforce this.",
+        "properties": {
+          "provenance": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "samples": {
+            "items": {
+              "$ref": "#/$defs/Sample5"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "provenance",
+          "samples"
+        ],
+        "type": "object"
+      },
+      "SkyConditions": {
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/$defs/SkyDay"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SkyDay": {
+        "properties": {
+          "date": {
+            "$ref": "#/$defs/LocalDate"
+          },
+          "moon": {
+            "$ref": "#/$defs/MoonDay"
+          },
+          "solunar": {
+            "items": {
+              "$ref": "#/$defs/SolunarPeriod"
+            },
+            "type": "array"
+          },
+          "sun": {
+            "$ref": "#/$defs/SunTimes"
+          }
+        },
+        "required": [
+          "date",
+          "sun",
+          "moon"
+        ],
+        "type": "object"
+      },
+      "SolunarCause": {
+        "description": "What a solunar period is centred on.",
+        "enum": [
+          "upper_transit",
+          "lower_transit",
+          "rise",
+          "set"
+        ],
+        "type": "string"
+      },
+      "SolunarKind": {
+        "enum": [
+          "major",
+          "minor"
+        ],
+        "type": "string"
+      },
+      "SolunarPeriod": {
+        "properties": {
+          "cause": {
+            "$ref": "#/$defs/SolunarCause"
+          },
+          "end": {
+            "$ref": "#/$defs/UnixTime"
+          },
+          "kind": {
+            "$ref": "#/$defs/SolunarKind"
+          },
+          "start": {
+            "$ref": "#/$defs/UnixTime"
+          }
+        },
+        "required": [
+          "kind",
+          "start",
+          "end",
+          "cause"
+        ],
+        "type": "object"
+      },
+      "SourceError": {
+        "description": "A source that failed, with a plain message (\"USGS: rate limited, used NWPS stage\").",
+        "properties": {
+          "kind": {
+            "$ref": "#/$defs/SourceErrorKind"
+          },
+          "measurement": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Measurement"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/$defs/SourceId"
+          }
+        },
+        "required": [
+          "source",
+          "kind",
+          "message"
+        ],
+        "type": "object"
+      },
+      "SourceErrorKind": {
+        "description": "Why a source did not deliver.",
+        "enum": [
+          "rate_limited",
+          "not_found",
+          "no_data",
+          "stale",
+          "parse",
+          "transport",
+          "other"
+        ],
+        "type": "string"
+      },
+      "SourceId": {
+        "description": "Identifier of a data source, such as `usgs` or `open-meteo-marine`.\n\nA string newtype rather than an enum so a new source does not change the contract; the\nconfiguration validates ids against the provider registry. Values are kebab-case.",
+        "type": "string"
+      },
+      "Spot": {
+        "description": "A saved place.",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "latitude": {
+            "format": "double",
+            "type": "number"
+          },
+          "longitude": {
+            "format": "double",
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "time_zone": {
+            "description": "IANA time-zone name, for example `America/New_York`.",
+            "type": "string"
+          },
+          "water_body": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/WaterBodyRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "water_type": {
+            "$ref": "#/$defs/WaterType"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "latitude",
+          "longitude",
+          "water_type",
+          "time_zone"
+        ],
+        "type": "object"
+      },
+      "Station": {
+        "description": "A weather station that reported the current conditions.",
+        "properties": {
+          "distance_m": {
+            "description": "How far it is from the place, in metres.",
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Its identifier, e.g. \"KNYC\".",
+            "type": "string"
+          },
+          "name": {
+            "description": "Its name, e.g. \"Central Park\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "StationKind": {
+        "description": "What kind of station a [`StationRef`] names.",
+        "oneOf": [
+          {
+            "const": "tide_harmonic",
+            "description": "CO-OPS harmonic tide prediction station.",
+            "type": "string"
+          },
+          {
+            "const": "tide_subordinate",
+            "description": "CO-OPS subordinate tide prediction station.",
+            "type": "string"
+          },
+          {
+            "const": "current_harmonic",
+            "description": "CO-OPS harmonic current prediction station (`H`).",
+            "type": "string"
+          },
+          {
+            "const": "current_subordinate",
+            "description": "CO-OPS subordinate current prediction station (`S`).",
+            "type": "string"
+          },
+          {
+            "const": "current_weak_variable",
+            "description": "CO-OPS weak-and-variable current station (`W`).",
+            "type": "string"
+          },
+          {
+            "const": "water_level",
+            "description": "A water-level gauge.",
+            "type": "string"
+          },
+          {
+            "const": "ports_current_meter",
+            "description": "A PORTS current meter.",
+            "type": "string"
+          },
+          {
+            "const": "buoy",
+            "description": "A moored or drifting buoy.",
+            "type": "string"
+          },
+          {
+            "const": "cman",
+            "description": "A C-MAN coastal station.",
+            "type": "string"
+          },
+          {
+            "additionalProperties": false,
+            "description": "A USGS site with its site type.",
+            "properties": {
+              "usgs_site": {
+                "$ref": "#/$defs/UsgsSiteType"
+              }
+            },
+            "required": [
+              "usgs_site"
+            ],
+            "type": "object"
+          },
+          {
+            "const": "nwps_gauge",
+            "description": "An NWPS river gauge.",
+            "type": "string"
+          }
+        ]
+      },
+      "StationRef": {
+        "description": "A station as its source describes it.",
+        "properties": {
+          "bin": {
+            "description": "CO-OPS current bin.",
+            "format": "uint16",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "The id exactly as the source writes it (`8518750`, `NYH1927`, `USGS-01375000`, `44025`).",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/$defs/StationKind",
+            "description": "Station type."
+          },
+          "latitude": {
+            "description": "Latitude, degrees north.",
+            "format": "double",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude, degrees east.",
+            "format": "double",
+            "type": "number"
+          },
+          "name": {
+            "description": "Display name.",
+            "type": "string"
+          },
+          "reference_id": {
+            "description": "Reference station of a subordinate station.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "$ref": "#/$defs/SourceId",
+            "description": "The source that owns the station."
+          }
+        },
+        "required": [
+          "source",
+          "id",
+          "name",
+          "kind",
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      },
+      "StormOutlook": {
+        "description": "Everything the storms view is built from, for one place.",
+        "properties": {
+          "ensembles": {
+            "description": "The ensembles at the place.",
+            "items": {
+              "$ref": "#/$defs/EnsembleSeries"
+            },
+            "type": "array"
+          },
+          "far_hurricanes": {
+            "description": "Active cyclones found too far from the place by their official\nforecast, so their tracks aren't read again until their next forecast\nadvisory; empty when none was.",
+            "items": {
+              "$ref": "#/$defs/FarHurricane"
+            },
+            "type": "array"
+          },
+          "fetched_at": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the data was received."
+          },
+          "grids": {
+            "description": "Pressure grids around the place, one per model.",
+            "items": {
+              "$ref": "#/$defs/PressureGrid"
+            },
+            "type": "array"
+          },
+          "hurricanes": {
+            "description": "Active tropical cyclones, in NHC's order; empty outside the hurricane\nseason or when none was fetched.",
+            "items": {
+              "$ref": "#/$defs/Hurricane"
+            },
+            "type": "array"
+          },
+          "offset_changes": {
+            "description": "UTC offset changes (DST) within the period, ascending; empty when\n`place.utc_offset` applies throughout.",
+            "items": {
+              "$ref": "#/$defs/OffsetChange"
+            },
+            "type": "array"
+          },
+          "past_runs": {
+            "description": "Earlier runs' totals fetched with the outlook.",
+            "items": {
+              "$ref": "#/$defs/PastRun"
+            },
+            "type": "array"
+          },
+          "place": {
+            "$ref": "#/$defs/ResolvedLocation",
+            "description": "The place."
+          },
+          "points": {
+            "description": "The deterministic models at the place, in display order.",
+            "items": {
+              "$ref": "#/$defs/PointSeries"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "place",
+          "points",
+          "ensembles",
+          "grids",
+          "fetched_at"
+        ],
+        "type": "object"
+      },
+      "StormWatch": {
+        "description": "The storm-ahead subset of whether's storm data and nearby NHC hurricanes.",
+        "properties": {
+          "checked_at": {
+            "$ref": "#/$defs/UnixTime"
+          },
+          "hurricanes": {
+            "description": "Active NHC storms whose cone or track comes within the alert distance.",
+            "items": {
+              "$ref": "#/$defs/Hurricane"
+            },
+            "type": "array"
+          },
+          "point": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/StormOutlook"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Point series and run times only: no ensembles, grids or past runs."
+          }
+        },
+        "required": [
+          "checked_at"
+        ],
+        "type": "object"
+      },
+      "SunTimes": {
+        "description": "Sun times on one local day. Each is absent when the sun never crosses that altitude.",
+        "properties": {
+          "civil_dawn": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "civil_dusk": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "golden_evening_start": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Start of the evening golden hour."
+          },
+          "golden_morning_end": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End of the morning golden hour."
+          },
+          "nautical_dawn": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nautical_dusk": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sunrise": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sunset": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TideEvent": {
+        "properties": {
+          "height_m": {
+            "description": "Absent for `ModelMean`, whose curve has no datum heights.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "kind": {
+            "$ref": "#/$defs/TideKind"
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime"
+          }
+        },
+        "required": [
+          "time",
+          "kind"
+        ],
+        "type": "object"
+      },
+      "TideKind": {
+        "enum": [
+          "high",
+          "low"
+        ],
+        "type": "string"
+      },
+      "TideSeries": {
+        "description": "Tide predictions (or a modelled curve) with the datum their heights are against.",
+        "properties": {
+          "curve": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "datum": {
+            "$ref": "#/$defs/VerticalDatum"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/$defs/TideEvent"
+            },
+            "type": "array"
+          },
+          "observed": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Observed water level in the same datum."
+          },
+          "provenance": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "source_kind": {
+            "$ref": "#/$defs/TideSourceKind"
+          }
+        },
+        "required": [
+          "source_kind",
+          "datum",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "TideSourceKind": {
+        "description": "How a tide series was produced.",
+        "oneOf": [
+          {
+            "enum": [
+              "harmonic_station",
+              "subordinate_station",
+              "computed"
+            ],
+            "type": "string"
+          },
+          {
+            "const": "model_mean",
+            "description": "A model's sea level relative to its own mean: shown without heights.",
+            "type": "string"
+          }
+        ]
+      },
+      "TrackFix": {
+        "description": "One position of a cyclone: observed (past track) or forecast.",
+        "properties": {
+          "latitude": {
+            "description": "Latitude in degrees.",
+            "format": "double",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude in degrees, in `-180.0..180.0`.",
+            "format": "double",
+            "type": "number"
+          },
+          "pressure_hpa": {
+            "description": "The central sea-level pressure, in hPa, when given.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "time": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the centre is there."
+          },
+          "wind_kt": {
+            "description": "The maximum sustained wind, in knots, when given.",
+            "format": "uint16",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "time",
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      },
+      "Turbidity": {
+        "description": "One turbidity reading with the unit it was measured in.",
+        "properties": {
+          "unit": {
+            "$ref": "#/$defs/TurbidityUnit"
+          },
+          "value": {
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "required": [
+          "value",
+          "unit"
+        ],
+        "type": "object"
+      },
+      "TurbidityUnit": {
+        "description": "The unit a turbidity was measured in. The units are different methods and never convert.",
+        "enum": [
+          "fnu",
+          "ftu",
+          "ntu"
+        ],
+        "type": "string"
+      },
+      "UnixTime": {
+        "description": "Seconds since 1970-01-01T00:00:00Z.",
+        "format": "int64",
+        "type": "integer"
+      },
+      "UsgsSiteType": {
+        "description": "Type of a USGS monitoring site (`site_type_code`).",
+        "oneOf": [
+          {
+            "const": "stream",
+            "description": "`ST`: stream.",
+            "type": "string"
+          },
+          {
+            "const": "estuary",
+            "description": "`ES`: estuary.",
+            "type": "string"
+          },
+          {
+            "const": "lake",
+            "description": "`LK`: lake or reservoir.",
+            "type": "string"
+          },
+          {
+            "const": "tidal_stream",
+            "description": "`ST-TS`: tidal stream.",
+            "type": "string"
+          },
+          {
+            "const": "other",
+            "description": "Any other site type code.",
+            "type": "string"
+          }
+        ]
+      },
+      "UtcOffset": {
+        "description": "A fixed offset from UTC, in seconds east of UTC.",
+        "format": "int32",
+        "type": "integer"
+      },
+      "ValueKind": {
+        "description": "How the value was obtained.",
+        "oneOf": [
+          {
+            "const": "observed",
+            "description": "Measured.",
+            "type": "string"
+          },
+          {
+            "const": "predicted",
+            "description": "Predicted from harmonics or tables.",
+            "type": "string"
+          },
+          {
+            "const": "modelled",
+            "description": "Output of a forecast or analysis model.",
+            "type": "string"
+          },
+          {
+            "const": "satellite",
+            "description": "Retrieved from satellite imagery.",
+            "type": "string"
+          },
+          {
+            "const": "computed",
+            "description": "Derived on device from other values.",
+            "type": "string"
+          }
+        ]
+      },
+      "Vector": {
+        "description": "A flow or drift: speed and the direction the water moves **toward**.\n\nThe \"toward\" convention is that of CO-OPS `d` and `meanFloodDir` and Open-Meteo\n`ocean_current_direction`. Wind and waves use \"from\" directions and are separate types.",
+        "properties": {
+          "speed_ms": {
+            "description": "Speed, m/s.",
+            "format": "float",
+            "type": "number"
+          },
+          "toward_deg": {
+            "description": "Direction the water flows toward, degrees clockwise from true north.",
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "required": [
+          "speed_ms",
+          "toward_deg"
+        ],
+        "type": "object"
+      },
+      "VerticalDatum": {
+        "description": "The reference surface a height is measured from.",
+        "oneOf": [
+          {
+            "const": "mllw",
+            "description": "Mean lower-low water, the usual US chart datum.",
+            "type": "string"
+          },
+          {
+            "const": "mlw",
+            "description": "Mean low water.",
+            "type": "string"
+          },
+          {
+            "const": "msl",
+            "description": "Mean sea level.",
+            "type": "string"
+          },
+          {
+            "const": "mtl",
+            "description": "Mean tide level.",
+            "type": "string"
+          },
+          {
+            "const": "navd88",
+            "description": "North American Vertical Datum of 1988.",
+            "type": "string"
+          },
+          {
+            "const": "ngvd29",
+            "description": "National Geodetic Vertical Datum of 1929.",
+            "type": "string"
+          },
+          {
+            "const": "igld85",
+            "description": "International Great Lakes Datum 1985.",
+            "type": "string"
+          },
+          {
+            "const": "gauge",
+            "description": "A station's own datum (CO-OPS `STND`, a USGS gage datum).",
+            "type": "string"
+          },
+          {
+            "const": "model_mean",
+            "description": "A model's mean sea level.",
+            "type": "string"
+          }
+        ]
+      },
+      "WaterBodyRef": {
+        "description": "A named water body in a source's own identifier space (for example a 3DHP feature).",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "$ref": "#/$defs/SourceId"
+          }
+        },
+        "required": [
+          "source",
+          "id"
+        ],
+        "type": "object"
+      },
+      "WaterConditions": {
+        "description": "Water conditions at the spot's stations. Every series carries its own provenance.",
+        "properties": {
+          "chlorophyll_ug_l": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "clarity_kd490_per_m": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Diffuse attenuation coefficient at 490 nm, per metre."
+          },
+          "conductivity_us_cm": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cyanobacteria_cells_ml": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discharge_forecast_m3s": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discharge_m3s": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discharge_percentile_for_date": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Percentile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dissolved_oxygen_mg_l": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "flood_categories": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/FloodCategories"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "gage_height": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Heights"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stage above the gauge's datum (`Gauge`, `Ngvd29` or `Navd88` as reported)."
+          },
+          "level": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Heights"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lake or reservoir level."
+          },
+          "level_percentile_for_date": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Percentile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ph": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "salinity_psu": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stage_forecast": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Heights"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "temperature_c": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "turbidity": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series2"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "WaterType": {
+        "description": "What kind of water a spot is on. It picks the default cards and source chains.",
+        "enum": [
+          "river_stream",
+          "lake_reservoir",
+          "tidal_river_estuary",
+          "bay_inshore",
+          "surf",
+          "nearshore",
+          "offshore",
+          "great_lakes",
+          "pond",
+          "ice"
+        ],
+        "type": "string"
+      },
+      "WaveDirection": {
+        "description": "A wave direction: degrees, or a compass point where the source gives only text (NDBC).",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "description": "Degrees true the waves come from.",
+            "properties": {
+              "degrees": {
+                "format": "float",
+                "type": "number"
+              }
+            },
+            "required": [
+              "degrees"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "description": "A compass point such as `SSE` the waves come from.",
+            "properties": {
+              "compass": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "compass"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "WaveSample": {
+        "description": "The sea state at one time.",
+        "properties": {
+          "direction_from_deg": {
+            "description": "Degrees true the waves come from.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "dominant_period_s": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "mean_period_s": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "significant_height_m": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "steepness": {
+            "description": "NDBC's steepness text (`VERY_STEEP`, `STEEP`, `AVERAGE`, `N/A`).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "swells": {
+            "description": "Zero to three swell trains.",
+            "items": {
+              "$ref": "#/$defs/WaveTrain"
+            },
+            "type": "array"
+          },
+          "wind_waves": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/WaveTrain"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "WaveTrain": {
+        "description": "One wave train: wind waves or a swell.",
+        "properties": {
+          "direction_from": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/WaveDirection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "height_m": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "period_s": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "WeatherSnapshot": {
+        "description": "Everything known about one location's weather from one fetch.",
+        "properties": {
+          "air_quality": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/AirQuality"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Air quality now."
+          },
+          "alerts": {
+            "description": "Official warnings.",
+            "items": {
+              "$ref": "#/$defs/Alert"
+            },
+            "type": "array"
+          },
+          "current": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Current"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Conditions now."
+          },
+          "daily": {
+            "description": "Ascending local days.",
+            "items": {
+              "$ref": "#/$defs/Daily"
+            },
+            "type": "array"
+          },
+          "fetched_at": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the data was received."
+          },
+          "hourly": {
+            "description": "Ascending forecast steps.",
+            "items": {
+              "$ref": "#/$defs/Hourly"
+            },
+            "type": "array"
+          },
+          "location": {
+            "$ref": "#/$defs/ResolvedLocation",
+            "description": "Where the data applies."
+          },
+          "minutely_1": {
+            "description": "Ascending one-minute precipitation steps for the next hour, from a minute\nnowcast the app adds (Apple's WeatherKit on the iPhone); usually\nempty.",
+            "items": {
+              "$ref": "#/$defs/Minutely"
+            },
+            "type": "array"
+          },
+          "minutely_15": {
+            "description": "Ascending 15-minute precipitation steps; may be empty.",
+            "items": {
+              "$ref": "#/$defs/Minutely"
+            },
+            "type": "array"
+          },
+          "models": {
+            "description": "The weather models that supplied the forecast, in priority order (Open-Meteo\nids); empty when the provider chose its own.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "offset_changes": {
+            "default": [],
+            "description": "UTC offset changes (DST) within the forecast period, ascending; empty when\none offset (`location.utc_offset`) applies throughout.",
+            "items": {
+              "$ref": "#/$defs/OffsetChange"
+            },
+            "type": "array"
+          },
+          "provider": {
+            "$ref": "#/$defs/ProviderId",
+            "description": "The primary source."
+          },
+          "supplemented_by": {
+            "description": "Providers that filled gaps; all are credited.",
+            "items": {
+              "$ref": "#/$defs/ProviderId"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "location",
+          "provider",
+          "supplemented_by",
+          "fetched_at",
+          "hourly",
+          "daily",
+          "minutely_15",
+          "alerts"
+        ],
+        "type": "object"
+      },
+      "Wind": {
+        "description": "Wind at a station.",
+        "properties": {
+          "from_deg": {
+            "description": "Degrees true the wind blows from.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "gust_ms": {
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "speed_ms": {
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "required": [
+          "speed_ms"
+        ],
+        "type": "object"
+      },
+      "ZoneForecast": {
+        "description": "An NWS marine zone forecast: text only, never parsed into numbers.",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "issued": {
+            "$ref": "#/$defs/UnixTime"
+          },
+          "kind": {
+            "$ref": "#/$defs/ZoneKind"
+          },
+          "name": {
+            "type": "string"
+          },
+          "periods": {
+            "items": {
+              "$ref": "#/$defs/ForecastPeriod"
+            },
+            "type": "array"
+          },
+          "product": {
+            "$ref": "#/$defs/ZoneProduct"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "issued",
+          "product",
+          "periods"
+        ],
+        "type": "object"
+      },
+      "ZoneKind": {
+        "enum": [
+          "coastal",
+          "great_lakes_nearshore",
+          "great_lakes_open",
+          "offshore"
+        ],
+        "type": "string"
+      },
+      "ZoneProduct": {
+        "description": "The NWS product a forecast came from.",
+        "enum": [
+          "zone_api",
+          "cwf",
+          "nsh",
+          "glf",
+          "off"
+        ],
+        "type": "string"
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "Everything known about one spot at one moment.",
+    "properties": {
+      "attribution": {
+        "items": {
+          "$ref": "#/$defs/Attribution"
+        },
+        "type": "array"
+      },
+      "errors": {
+        "items": {
+          "$ref": "#/$defs/SourceError"
+        },
+        "type": "array"
+      },
+      "fetched_at": {
+        "$ref": "#/$defs/UnixTime"
+      },
+      "marine": {
+        "$ref": "#/$defs/MarineConditions"
+      },
+      "sky": {
+        "$ref": "#/$defs/SkyConditions"
+      },
+      "spot": {
+        "$ref": "#/$defs/Spot"
+      },
+      "stations": {
+        "description": "The stations the values came from.",
+        "items": {
+          "$ref": "#/$defs/StationRef"
+        },
+        "type": "array"
+      },
+      "storm": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/StormWatch"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "water": {
+        "$ref": "#/$defs/WaterConditions"
+      },
+      "weather": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/WeatherSnapshot"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "spot",
+      "fetched_at"
+    ],
+    "title": "SpotSnapshot",
+    "type": "object"
+  },
+  "StationCandidate": {
+    "$defs": {
+      "Coverage": {
+        "description": "What a station offers for one measurement.",
+        "properties": {
+          "last_value_at": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnixTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "primary": {
+            "description": "The station's primary product for this measurement.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "primary"
+        ],
+        "type": "object"
+      },
+      "SourceId": {
+        "description": "Identifier of a data source, such as `usgs` or `open-meteo-marine`.\n\nA string newtype rather than an enum so a new source does not change the contract; the\nconfiguration validates ids against the provider registry. Values are kebab-case.",
+        "type": "string"
+      },
+      "StationKind": {
+        "description": "What kind of station a [`StationRef`] names.",
+        "oneOf": [
+          {
+            "const": "tide_harmonic",
+            "description": "CO-OPS harmonic tide prediction station.",
+            "type": "string"
+          },
+          {
+            "const": "tide_subordinate",
+            "description": "CO-OPS subordinate tide prediction station.",
+            "type": "string"
+          },
+          {
+            "const": "current_harmonic",
+            "description": "CO-OPS harmonic current prediction station (`H`).",
+            "type": "string"
+          },
+          {
+            "const": "current_subordinate",
+            "description": "CO-OPS subordinate current prediction station (`S`).",
+            "type": "string"
+          },
+          {
+            "const": "current_weak_variable",
+            "description": "CO-OPS weak-and-variable current station (`W`).",
+            "type": "string"
+          },
+          {
+            "const": "water_level",
+            "description": "A water-level gauge.",
+            "type": "string"
+          },
+          {
+            "const": "ports_current_meter",
+            "description": "A PORTS current meter.",
+            "type": "string"
+          },
+          {
+            "const": "buoy",
+            "description": "A moored or drifting buoy.",
+            "type": "string"
+          },
+          {
+            "const": "cman",
+            "description": "A C-MAN coastal station.",
+            "type": "string"
+          },
+          {
+            "additionalProperties": false,
+            "description": "A USGS site with its site type.",
+            "properties": {
+              "usgs_site": {
+                "$ref": "#/$defs/UsgsSiteType"
+              }
+            },
+            "required": [
+              "usgs_site"
+            ],
+            "type": "object"
+          },
+          {
+            "const": "nwps_gauge",
+            "description": "An NWPS river gauge.",
+            "type": "string"
+          }
+        ]
+      },
+      "StationRef": {
+        "description": "A station as its source describes it.",
+        "properties": {
+          "bin": {
+            "description": "CO-OPS current bin.",
+            "format": "uint16",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "The id exactly as the source writes it (`8518750`, `NYH1927`, `USGS-01375000`, `44025`).",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/$defs/StationKind",
+            "description": "Station type."
+          },
+          "latitude": {
+            "description": "Latitude, degrees north.",
+            "format": "double",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude, degrees east.",
+            "format": "double",
+            "type": "number"
+          },
+          "name": {
+            "description": "Display name.",
+            "type": "string"
+          },
+          "reference_id": {
+            "description": "Reference station of a subordinate station.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "$ref": "#/$defs/SourceId",
+            "description": "The source that owns the station."
+          }
+        },
+        "required": [
+          "source",
+          "id",
+          "name",
+          "kind",
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      },
+      "UnixTime": {
+        "description": "Seconds since 1970-01-01T00:00:00Z.",
+        "format": "int64",
+        "type": "integer"
+      },
+      "UsgsSiteType": {
+        "description": "Type of a USGS monitoring site (`site_type_code`).",
+        "oneOf": [
+          {
+            "const": "stream",
+            "description": "`ST`: stream.",
+            "type": "string"
+          },
+          {
+            "const": "estuary",
+            "description": "`ES`: estuary.",
+            "type": "string"
+          },
+          {
+            "const": "lake",
+            "description": "`LK`: lake or reservoir.",
+            "type": "string"
+          },
+          {
+            "const": "tidal_stream",
+            "description": "`ST-TS`: tidal stream.",
+            "type": "string"
+          },
+          {
+            "const": "other",
+            "description": "Any other site type code.",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "A station found near a spot and what it offers.",
+    "properties": {
+      "offers": {
+        "additionalProperties": false,
+        "properties": {
+          "chlorophyll": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "clarity": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "conductivity": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "cyanobacteria": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "discharge": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "dissolved_oxygen": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "flood_categories": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "flow_forecast": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "gage_height": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "lake_level": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "marine_alerts": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "marine_forecast": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "observed_pressure": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "observed_wind": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "ocean_current": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "ph": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "salinity": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "sea_surface_temp": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "sea_surface_temp_forecast": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "tidal_current": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "tide": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "turbidity": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "water_temperature": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "waves": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "waves_forecast": {
+            "$ref": "#/$defs/Coverage"
+          }
+        },
+        "type": "object"
+      },
+      "station": {
+        "$ref": "#/$defs/StationRef"
+      }
+    },
+    "required": [
+      "station",
+      "offers"
+    ],
+    "title": "StationCandidate",
+    "type": "object"
+  }
+}
