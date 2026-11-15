@@ -1,0 +1,81 @@
+---
+source: crates/underbite-providers/src/ndbc/realtime.rs
+expression: "waves.samples().iter().take(3).collect::<Vec<_>>()"
+---
+[
+  {
+    "time": 1793877000,
+    "value": {
+      "significant_height_m": 0.9,
+      "mean_period_s": 4.9,
+      "direction_from_deg": 149.0,
+      "wind_waves": {
+        "height_m": 0.7,
+        "period_s": 5.9,
+        "direction_from": {
+          "compass": "SSE"
+        }
+      },
+      "swells": [
+        {
+          "height_m": 0.6,
+          "period_s": 9.1,
+          "direction_from": {
+            "compass": "SSE"
+          }
+        }
+      ],
+      "steepness": "AVERAGE"
+    }
+  },
+  {
+    "time": 1793878800,
+    "value": {
+      "significant_height_m": 1.0,
+      "mean_period_s": 4.8,
+      "direction_from_deg": 146.0,
+      "wind_waves": {
+        "height_m": 0.7,
+        "period_s": 5.9,
+        "direction_from": {
+          "compass": "SSE"
+        }
+      },
+      "swells": [
+        {
+          "height_m": 0.7,
+          "period_s": 7.7,
+          "direction_from": {
+            "compass": "SE"
+          }
+        }
+      ],
+      "steepness": "AVERAGE"
+    }
+  },
+  {
+    "time": 1793880600,
+    "value": {
+      "significant_height_m": 0.9,
+      "mean_period_s": 4.7,
+      "direction_from_deg": 141.0,
+      "wind_waves": {
+        "height_m": 0.7,
+        "period_s": 5.9,
+        "direction_from": {
+          "compass": "SSE"
+        }
+      },
+      "swells": [
+        {
+          "height_m": 0.7,
+          "period_s": 7.7,
+          "direction_from": {
+            "compass": "SE"
+          }
+        }
+      ],
+      "steepness": "AVERAGE"
+    }
+  }
+]

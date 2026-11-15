@@ -1,0 +1,41 @@
+---
+source: crates/underbite-providers/src/ndbc/realtime.rs
+expression: "serde_json::json!({\n    \"wind\": wind.latest(), \"waves\": waves.latest(), \"provenance\":\n    wind.provenance(),\n})"
+---
+{
+  "provenance": {
+    "distance_m": 1000.0,
+    "kind": "observed",
+    "observed_at": 1794145800,
+    "quality": "provisional",
+    "relation": "nearby",
+    "source": "ndbc",
+    "station": {
+      "bin": null,
+      "id": "44065",
+      "kind": "buoy",
+      "latitude": 40.0,
+      "longitude": -73.0,
+      "name": "44065",
+      "reference_id": null,
+      "source": "ndbc"
+    }
+  },
+  "waves": {
+    "time": 1794145800,
+    "value": {
+      "direction_from_deg": 296.0,
+      "dominant_period_s": 4.0,
+      "mean_period_s": 3.700000047683716,
+      "significant_height_m": 1.100000023841858
+    }
+  },
+  "wind": {
+    "time": 1794145800,
+    "value": {
+      "from_deg": 280.0,
+      "gust_ms": 15.0,
+      "speed_ms": 12.0
+    }
+  }
+}
