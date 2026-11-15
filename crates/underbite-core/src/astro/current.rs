@@ -13,7 +13,9 @@
 //!
 //! Events follow B. B. Parker, *Tidal Analysis and Prediction* (NOAA, 2007), §3.9.2: a slack is a
 //! zero crossing of `v` (mean included, so slacks are not where the tidal part vanishes), and
-//! between two slacks the strongest extremum is the maximum flood or ebb.
+//! between two slacks the strongest extremum is the maximum flood or ebb. A subordinate station
+//! has no constituents; its events are those of its reference station and bin, shifted by the
+//! published time offsets and scaled by the speed ratios.
 //!
 //! Weak-and-variable stations (CO-OPS type `W`) have neither constituents nor offsets and get no
 //! predictions.
@@ -65,6 +67,36 @@ pub struct CurrentHarmonics {
     /// Direction the flood sets toward, degrees true (`meanFloodDir`).
     pub flood_dir_deg: Option<f32>,
     /// Direction the ebb sets toward, degrees true (`meanEbbDir`).
+    pub ebb_dir_deg: Option<f32>,
+}
+
+/// The offsets of a subordinate current station from its reference station and bin, in the
+/// names of the CO-OPS `currentpredictionoffsets` resource.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SubordinateCurrentOffsets {
+    /// Station id, such as `ACT3646`.
+    pub station: String,
+    /// The station's own bin, when it has one.
+    pub bin: Option<u16>,
+    /// Reference station id (`refStationId`).
+    pub reference_id: String,
+    /// Reference bin (`refStationBin`).
+    pub reference_bin: u16,
+    /// Minutes added to the reference maximum flood (`mfcTimeAdjMin`).
+    pub mfc_time_adj_min: i32,
+    /// Minutes added to the reference maximum ebb (`mecTimeAdjMin`).
+    pub mec_time_adj_min: i32,
+    /// Minutes added to the reference slack before flood (`sbfTimeAdjMin`).
+    pub sbf_time_adj_min: i32,
+    /// Minutes added to the reference slack before ebb (`sbeTimeAdjMin`).
+    pub sbe_time_adj_min: i32,
+    /// Ratio applied to the reference maximum flood speed (`mfcAmpAdj`).
+    pub mfc_amp_adj: f64,
+    /// Ratio applied to the reference maximum ebb speed (`mecAmpAdj`).
+    pub mec_amp_adj: f64,
+    /// Direction the flood sets toward at the subordinate station, degrees true.
+    pub flood_dir_deg: Option<f32>,
+    /// Direction the ebb sets toward at the subordinate station, degrees true.
     pub ebb_dir_deg: Option<f32>,
 }
 
@@ -166,6 +198,35 @@ impl CurrentPredictor {
             .collect()
     }
 
+    /// Events from `start` through `end` at a subordinate station of this reference station.
+    ///
+    /// The caller pairs the offsets with the predictor of their reference station and bin.
+    pub fn subordinate_events(
+        &self,
+        offsets: &SubordinateCurrentOffsets,
+        start: UnixTime,
+        end: UnixTime,
+    ) -> Vec<CurrentEvent> {
+        let adjustments = [
+            offsets.mfc_time_adj_min,
+            offsets.mec_time_adj_min,
+            offsets.sbf_time_adj_min,
+            offsets.sbe_time_adj_min,
+        ];
+        let earliest = adjustments.iter().copied().min().unwrap_or(0);
+        let latest = adjustments.iter().copied().max().unwrap_or(0);
+        // Half a day more on each side gives every edge slack a neighbouring maximum.
+        let margin = 43_200;
+        let reference = self.events(
+            UnixTime(start.0 - i64::from(latest) * 60 - margin),
+            UnixTime(end.0 - i64::from(earliest) * 60 + margin),
+        );
+        subordinate(&reference, offsets)
+            .into_iter()
+            .filter(|e| (start..=end).contains(&e.time))
+            .collect()
+    }
+
     /// The station's predictions from `start` through `end`: events and a curve every `step_s`
     /// seconds, with the bin, its depth and the mean directions.
     pub fn series(
@@ -193,6 +254,73 @@ impl CurrentPredictor {
     /// The station id.
     pub fn station(&self) -> &str {
         &self.station
+    }
+}
+
+/// Applies a subordinate station's offsets to its reference station's events.
+///
+/// Maximum floods and ebbs are shifted and scaled; a slack is before flood when the next maximum
+/// is a flood (or, at the end, the previous one an ebb), and is shifted by the matching offset.
+/// A slack with no neighbouring maximum cannot be classified and is dropped. The result is in
+/// time order.
+pub fn subordinate(
+    reference: &[CurrentEvent],
+    offsets: &SubordinateCurrentOffsets,
+) -> Vec<CurrentEvent> {
+    let shifted = |e: &CurrentEvent, minutes: i32, speed_ms: f64| CurrentEvent {
+        time: UnixTime(e.time.0 + i64::from(minutes) * 60),
+        kind: e.kind,
+        speed_ms: speed_ms as f32,
+    };
+    let mut out: Vec<CurrentEvent> = reference
+        .iter()
+        .enumerate()
+        .filter_map(|(i, e)| match e.kind {
+            CurrentKind::MaxFlood => Some(shifted(
+                e,
+                offsets.mfc_time_adj_min,
+                f64::from(e.speed_ms) * offsets.mfc_amp_adj,
+            )),
+            CurrentKind::MaxEbb => Some(shifted(
+                e,
+                offsets.mec_time_adj_min,
+                f64::from(e.speed_ms) * offsets.mec_amp_adj,
+            )),
+            CurrentKind::Slack => {
+                let is_max = |e: &&CurrentEvent| e.kind != CurrentKind::Slack;
+                let before_flood = match reference[i + 1..].iter().find(is_max) {
+                    Some(next) => next.kind == CurrentKind::MaxFlood,
+                    None => reference[..i].iter().rev().find(is_max)?.kind == CurrentKind::MaxEbb,
+                };
+                let minutes = if before_flood {
+                    offsets.sbf_time_adj_min
+                } else {
+                    offsets.sbe_time_adj_min
+                };
+                Some(shifted(e, minutes, 0.0))
+            }
+        })
+        .collect();
+    out.sort_by_key(|e| e.time);
+    out
+}
+
+/// The events of a subordinate station as a series: events only (CO-OPS gives subordinate
+/// stations no curve), with the station's own directions and bin.
+pub fn subordinate_series(
+    reference: &[CurrentEvent],
+    offsets: &SubordinateCurrentOffsets,
+    provenance: Provenance,
+) -> CurrentSeries {
+    CurrentSeries {
+        events: subordinate(reference, offsets),
+        curve: None,
+        flood_dir_deg: offsets.flood_dir_deg,
+        ebb_dir_deg: offsets.ebb_dir_deg,
+        bin: offsets.bin,
+        depth_m: None,
+        observed: None,
+        provenance,
     }
 }
 
@@ -372,6 +500,8 @@ mod tests {
     const NYH1927_EVENTS: &str = fixture!("coops-NYH1927-bin13-max-slack-2026-11-08.json");
     const N03020_HARCON: &str = fixture!("coops-mdapi-n03020-harcon-bin7.json");
     const N03020_EVENTS: &str = fixture!("coops-n03020-bin7-max-slack-2026-11-08.json");
+    const ACT3646_OFFSETS: &str = fixture!("coops-mdapi-ACT3646_1-currentpredictionoffsets.json");
+    const ACT3646_EVENTS: &str = fixture!("coops-ACT3646-bin1-max-slack-2026-11-08.json");
 
     /// Tolerances for currents: slack times, maximum times and maximum speeds.
     const SLACK_TOLERANCE_S: i64 = 10 * 60;
@@ -446,6 +576,25 @@ mod tests {
             .collect()
     }
 
+    fn act3646_offsets() -> SubordinateCurrentOffsets {
+        let v: serde_json::Value = serde_json::from_str(ACT3646_OFFSETS).unwrap();
+        let minutes = |key: &str| i32::try_from(v[key].as_i64().unwrap()).unwrap();
+        SubordinateCurrentOffsets {
+            station: v["id"].as_str().unwrap().into(),
+            bin: Some(1),
+            reference_id: v["refStationId"].as_str().unwrap().into(),
+            reference_bin: u16::try_from(v["refStationBin"].as_u64().unwrap()).unwrap(),
+            mfc_time_adj_min: minutes("mfcTimeAdjMin"),
+            mec_time_adj_min: minutes("mecTimeAdjMin"),
+            sbf_time_adj_min: minutes("sbfTimeAdjMin"),
+            sbe_time_adj_min: minutes("sbeTimeAdjMin"),
+            mfc_amp_adj: v["mfcAmpAdj"].as_f64().unwrap(),
+            mec_amp_adj: v["mecAmpAdj"].as_f64().unwrap(),
+            flood_dir_deg: v["meanFloodDir"].as_f64().map(|d| d as f32),
+            ebb_dir_deg: v["meanEbbDir"].as_f64().map(|d| d as f32),
+        }
+    }
+
     /// Asserts the same sequence of kinds within the tolerances and prints the worst slack time,
     /// maximum time and maximum speed errors.
     fn compare_events(label: &str, ours: &[CurrentEvent], theirs: &[CurrentEvent]) {
@@ -517,6 +666,42 @@ mod tests {
         let theirs = coops_events(N03020_EVENTS);
         assert_eq!(theirs.len(), 54);
         compare_events("n03020 bin 7", &predictor.events(start, end), &theirs);
+    }
+
+    #[test]
+    fn act3646_offsets_on_recorded_reference_events_reproduce_coops() {
+        let offsets = act3646_offsets();
+        assert_eq!(
+            (offsets.reference_id.as_str(), offsets.reference_bin),
+            ("n03020", 7)
+        );
+        let ours = subordinate(&coops_events(N03020_EVENTS), &offsets);
+        let theirs = coops_events(ACT3646_EVENTS);
+        assert_eq!(theirs.len(), 55);
+        // The week's first event comes from a reference maximum on the evening before the week,
+        // which the reference fixture does not hold.
+        assert_eq!(theirs[0].time, utc(2026, 11, 8, 0, 17));
+        assert_eq!(ours.len(), 54);
+        for (a, b) in ours.iter().zip(&theirs[1..]) {
+            assert_eq!((a.time, a.kind), (b.time, b.kind));
+            assert!((a.speed_ms - b.speed_ms).abs() <= 0.002, "{a:?} vs {b:?}");
+        }
+        assert_eq!(ours[3].time, utc(2026, 11, 8, 12, 32));
+        // 88.2 cm/s · 1.05 and -88.0 cm/s · 1.19.
+        assert!((ours[3].speed_ms * 1e4 - 9_261.0).abs() < 0.1);
+        assert!((ours[5].speed_ms * 1e4 + 10_472.0).abs() < 0.1);
+    }
+
+    #[test]
+    fn act3646_from_reference_harmonics_matches_coops_week() {
+        let reference = CurrentPredictor::new(&harmonics(N03020_HARCON, "n03020", 7)).unwrap();
+        let (start, end) = week();
+        let ours = reference.subordinate_events(&act3646_offsets(), start, end);
+        compare_events(
+            "ACT3646 from n03020 bin 7",
+            &ours,
+            &coops_events(ACT3646_EVENTS),
+        );
     }
 
     fn pure(mean_cms: f64, constituents: &[(&str, f64, f64)]) -> CurrentHarmonics {
@@ -606,6 +791,30 @@ mod tests {
         );
     }
 
+    #[test]
+    fn a_trailing_slack_is_classified_by_the_maximum_before_it() {
+        let offsets = act3646_offsets();
+        let event = |minute: i64, kind, speed_ms| CurrentEvent {
+            time: UnixTime(minute * 60),
+            kind,
+            speed_ms,
+        };
+        let reference = [
+            event(0, CurrentKind::Slack, 0.0),
+            event(100, CurrentKind::MaxFlood, 1.0),
+            event(200, CurrentKind::Slack, 0.0),
+            event(300, CurrentKind::MaxEbb, -1.0),
+            event(400, CurrentKind::Slack, 0.0),
+        ];
+        let minutes: Vec<i64> = subordinate(&reference, &offsets)
+            .iter()
+            .map(|e| e.time.0 / 60)
+            .collect();
+        assert_eq!(minutes, [80, 158, 253, 360, 480]);
+        // A lone slack cannot be classified.
+        assert_eq!(subordinate(&reference[..1], &offsets), Vec::new());
+    }
+
     fn provenance() -> Provenance {
         Provenance {
             source: SourceId::COOPS_HARMONICS,
@@ -635,5 +844,13 @@ mod tests {
             (Some(11.0), Some(183.0))
         );
         assert_eq!(predictor.station(), "TEST");
+
+        let sub = subordinate_series(&series.events, &act3646_offsets(), provenance());
+        assert_eq!(sub.events.len(), series.events.len());
+        assert!(sub.curve.is_none());
+        assert_eq!(
+            (sub.bin, sub.flood_dir_deg, sub.ebb_dir_deg),
+            (Some(1), Some(31.0), Some(205.0))
+        );
     }
 }
