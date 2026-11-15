@@ -284,6 +284,18 @@ pub enum SourceUnit {
     DegF,
     /// Hectopascals.
     Hpa,
+    /// Microsiemens per centimetre.
+    MicroSiemensPerCm,
+    /// Millisiemens per centimetre.
+    MilliSiemensPerCm,
+    /// Practical salinity units.
+    Psu,
+    /// Milligrams per litre.
+    MgPerL,
+    /// Micrograms per litre.
+    UgPerL,
+    /// pH, dimensionless.
+    Ph,
     /// Turbidity: a label, never converted.
     Turbidity(TurbidityUnit),
 }
@@ -301,6 +313,16 @@ pub enum Canonical {
     Temperature(f32),
     /// hPa.
     Pressure(f32),
+    /// Specific conductance in µS/cm.
+    Conductivity(f32),
+    /// Salinity in PSU.
+    Salinity(f32),
+    /// Dissolved-oxygen style concentration in mg/L.
+    ConcentrationMgPerL(f32),
+    /// Chlorophyll style concentration in µg/L.
+    ConcentrationUgPerL(f32),
+    /// pH, dimensionless.
+    Ph(f32),
     /// Turbidity as written, with its unit label.
     Turbidity(f32, TurbidityUnit),
 }
@@ -311,8 +333,10 @@ pub enum Canonical {
 pub struct UnknownUnit(pub String);
 
 impl SourceUnit {
-    /// Parses a unit string from a source (`ft^3/s`, `ft3/s`, `ft³/s`, `degC`, `deg C`, `_FNU`,
-    /// `kcfs`, `km/h`, `mp/h`, `kn`, ...). Surrounding whitespace is ignored.
+    /// Parses a unit string exactly as a source writes it (`ft^3/s`, `ft3/s`, `ft³/s`, `degC`,
+    /// `deg C`, `_FNU`, `kcfs`, `km/h`, `mp/h`, `kn`, `uS/cm`, `mg/l`, `pH Units`, ...). Matching is
+    /// case-sensitive and surrounding whitespace is ignored. Display-unit names from the
+    /// configuration (`TempUnit`'s `C` and `F`) are not source strings.
     ///
     /// # Errors
     /// [`UnknownUnit`] for any string not listed, including `undefined`.
@@ -320,18 +344,24 @@ impl SourceUnit {
         Ok(match s.trim() {
             "ft^3/s" | "ft3/s" | "ft³/s" | "cfs" => Self::Cfs,
             "kcfs" => Self::Kcfs,
-            "m^3/s" | "m3/s" | "m³/s" | "cms" => Self::M3s,
+            "m3/s" | "m³/s" => Self::M3s,
             "ft" => Self::Ft,
             "m" => Self::M,
             "nmi" => Self::Nmi,
             "cm/s" => Self::Cms,
             "m/s" => Self::Ms,
-            "km/h" | "kmh" | "kph" => Self::Kmh,
-            "mp/h" | "mph" | "mi/h" => Self::Mph,
-            "kn" | "kt" | "kts" => Self::Kn,
-            "degC" | "deg C" | "°C" | "C" => Self::DegC,
-            "degF" | "deg F" | "°F" | "F" => Self::DegF,
-            "hPa" | "mb" | "mbar" => Self::Hpa,
+            "km/h" => Self::Kmh,
+            "mp/h" | "mph" => Self::Mph,
+            "kn" => Self::Kn,
+            "degC" | "deg C" | "°C" => Self::DegC,
+            "degF" | "deg F" | "°F" => Self::DegF,
+            "hPa" => Self::Hpa,
+            "uS/cm" | "uS/cm @25C" => Self::MicroSiemensPerCm,
+            "mS/cm" => Self::MilliSiemensPerCm,
+            "psu" | "PSU" => Self::Psu,
+            "mg/l" => Self::MgPerL,
+            "ug/l" => Self::UgPerL,
+            "pH Units" | "std units" => Self::Ph,
             "_FNU" | "FNU" => Self::Turbidity(TurbidityUnit::Fnu),
             "_FTU" | "FTU" => Self::Turbidity(TurbidityUnit::Ftu),
             "_NTU" | "NTU" => Self::Turbidity(TurbidityUnit::Ntu),
@@ -356,6 +386,12 @@ impl SourceUnit {
             Self::DegC => Canonical::Temperature(v),
             Self::DegF => Canonical::Temperature(TempUnit::F.to_canonical(v)),
             Self::Hpa => Canonical::Pressure(v),
+            Self::MicroSiemensPerCm => Canonical::Conductivity(v),
+            Self::MilliSiemensPerCm => Canonical::Conductivity(narrow(wide(v) * 1000.0)),
+            Self::Psu => Canonical::Salinity(v),
+            Self::MgPerL => Canonical::ConcentrationMgPerL(v),
+            Self::UgPerL => Canonical::ConcentrationUgPerL(v),
+            Self::Ph => Canonical::Ph(v),
             Self::Turbidity(t) => Canonical::Turbidity(v, t),
         }
     }
@@ -438,8 +474,79 @@ mod tests {
 
     #[test]
     fn unknown_strings_are_errors() {
-        for s in ["undefined", "furlongs", "", "uS/cm"] {
-            assert!(SourceUnit::parse(s).is_err(), "{s}");
+        for s in [
+            "undefined",
+            "furlongs",
+            "",
+            "cms",
+            "C",
+            "F",
+            "kt",
+            "kts",
+            "kph",
+            "kmh",
+            "mb",
+            "mbar",
+            "mi/h",
+            "m^3/s",
+            "us/cm",
+            "MG/L",
+            "PH Units",
+        ] {
+            assert_eq!(SourceUnit::parse(s), Err(UnknownUnit(s.to_owned())), "{s}");
+        }
+    }
+
+    #[test]
+    fn water_quality_strings() {
+        for (s, u) in [
+            ("uS/cm", SourceUnit::MicroSiemensPerCm),
+            ("uS/cm @25C", SourceUnit::MicroSiemensPerCm),
+            ("mS/cm", SourceUnit::MilliSiemensPerCm),
+            ("psu", SourceUnit::Psu),
+            ("PSU", SourceUnit::Psu),
+            ("mg/l", SourceUnit::MgPerL),
+            ("ug/l", SourceUnit::UgPerL),
+            ("pH Units", SourceUnit::Ph),
+            ("std units", SourceUnit::Ph),
+            ("FTU", SourceUnit::Turbidity(TurbidityUnit::Ftu)),
+        ] {
+            assert_eq!(SourceUnit::parse(s), Ok(u), "{s}");
+        }
+        assert_eq!(
+            to_canonical(880.0, "uS/cm"),
+            Ok(Canonical::Conductivity(880.0))
+        );
+        assert_eq!(
+            to_canonical(4.2, "mS/cm"),
+            Ok(Canonical::Conductivity(4200.0))
+        );
+        assert_eq!(to_canonical(31.5, "psu"), Ok(Canonical::Salinity(31.5)));
+        assert_eq!(
+            to_canonical(5.7, "mg/l"),
+            Ok(Canonical::ConcentrationMgPerL(5.7))
+        );
+        assert_eq!(
+            to_canonical(1.3, "ug/l"),
+            Ok(Canonical::ConcentrationUgPerL(1.3))
+        );
+        assert_eq!(to_canonical(7.4, "pH Units"), Ok(Canonical::Ph(7.4)));
+    }
+
+    #[test]
+    fn remaining_documented_strings() {
+        for (s, u) in [
+            ("ft", SourceUnit::Ft),
+            ("m", SourceUnit::M),
+            ("kcfs", SourceUnit::Kcfs),
+            ("cm/s", SourceUnit::Cms),
+            ("m/s", SourceUnit::Ms),
+            ("degF", SourceUnit::DegF),
+            ("°C", SourceUnit::DegC),
+            ("_FNU", SourceUnit::Turbidity(TurbidityUnit::Fnu)),
+            ("FNU", SourceUnit::Turbidity(TurbidityUnit::Fnu)),
+        ] {
+            assert_eq!(SourceUnit::parse(s), Ok(u), "{s}");
         }
     }
 
