@@ -1,0 +1,517 @@
+---
+source: crates/underbite-core/src/provenance.rs
+expression: schemas
+---
+{
+  "Attribution": {
+    "$defs": {
+      "SourceId": {
+        "description": "Identifier of a data source, such as `usgs` or `open-meteo-marine`.\n\nA string newtype rather than an enum so a new source does not change the contract; the\nconfiguration validates ids against the provider registry. Values are kebab-case.",
+        "type": "string"
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "The credit a display owes a source.",
+    "properties": {
+      "credit": {
+        "description": "Credit text as the source requires it.",
+        "type": "string"
+      },
+      "source": {
+        "$ref": "#/$defs/SourceId",
+        "description": "The source credited."
+      },
+      "url": {
+        "description": "Link to the source or its terms.",
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "source",
+      "credit"
+    ],
+    "title": "Attribution",
+    "type": "object"
+  },
+  "Provenance": {
+    "$defs": {
+      "Quality": {
+        "description": "Quality of a value, as far as the source says.",
+        "oneOf": [
+          {
+            "const": "provisional",
+            "description": "Subject to revision.",
+            "type": "string"
+          },
+          {
+            "const": "approved",
+            "description": "Reviewed and approved.",
+            "type": "string"
+          },
+          {
+            "const": "estimated",
+            "description": "Estimated by the source (USGS `ESTIMATED`).",
+            "type": "string"
+          },
+          {
+            "const": "ice_affected",
+            "description": "Affected by ice (USGS `ICE`).",
+            "type": "string"
+          },
+          {
+            "const": "flagged",
+            "description": "Unreliable: equipment or maintenance (USGS `EQUIP`, `MAINT`).",
+            "type": "string"
+          }
+        ]
+      },
+      "Relation": {
+        "description": "How the station relates to the spot.",
+        "oneOf": [
+          {
+            "const": "same_water_body",
+            "description": "On the same water body as the spot.",
+            "type": "string"
+          },
+          {
+            "const": "upstream",
+            "description": "Upstream of the spot on the same river.",
+            "type": "string"
+          },
+          {
+            "const": "downstream",
+            "description": "Downstream of the spot on the same river.",
+            "type": "string"
+          },
+          {
+            "const": "nearby",
+            "description": "Close by, water body not established.",
+            "type": "string"
+          },
+          {
+            "const": "gridded",
+            "description": "A model grid cell.",
+            "type": "string"
+          },
+          {
+            "const": "satellite",
+            "description": "A satellite pixel.",
+            "type": "string"
+          }
+        ]
+      },
+      "SourceId": {
+        "description": "Identifier of a data source, such as `usgs` or `open-meteo-marine`.\n\nA string newtype rather than an enum so a new source does not change the contract; the\nconfiguration validates ids against the provider registry. Values are kebab-case.",
+        "type": "string"
+      },
+      "StationKind": {
+        "description": "What kind of station a [`StationRef`] names.",
+        "oneOf": [
+          {
+            "const": "tide_harmonic",
+            "description": "CO-OPS harmonic tide prediction station.",
+            "type": "string"
+          },
+          {
+            "const": "tide_subordinate",
+            "description": "CO-OPS subordinate tide prediction station.",
+            "type": "string"
+          },
+          {
+            "const": "current_harmonic",
+            "description": "CO-OPS harmonic current prediction station (`H`).",
+            "type": "string"
+          },
+          {
+            "const": "current_subordinate",
+            "description": "CO-OPS subordinate current prediction station (`S`).",
+            "type": "string"
+          },
+          {
+            "const": "current_weak_variable",
+            "description": "CO-OPS weak-and-variable current station (`W`).",
+            "type": "string"
+          },
+          {
+            "const": "water_level",
+            "description": "A water-level gauge.",
+            "type": "string"
+          },
+          {
+            "const": "ports_current_meter",
+            "description": "A PORTS current meter.",
+            "type": "string"
+          },
+          {
+            "const": "buoy",
+            "description": "A moored or drifting buoy.",
+            "type": "string"
+          },
+          {
+            "const": "cman",
+            "description": "A C-MAN coastal station.",
+            "type": "string"
+          },
+          {
+            "additionalProperties": false,
+            "description": "A USGS site with its site type.",
+            "properties": {
+              "usgs_site": {
+                "$ref": "#/$defs/UsgsSiteType"
+              }
+            },
+            "required": [
+              "usgs_site"
+            ],
+            "type": "object"
+          },
+          {
+            "const": "nwps_gauge",
+            "description": "An NWPS river gauge.",
+            "type": "string"
+          }
+        ]
+      },
+      "StationRef": {
+        "description": "A station as its source describes it.",
+        "properties": {
+          "bin": {
+            "description": "CO-OPS current bin.",
+            "format": "uint16",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "The id exactly as the source writes it (`8518750`, `NYH1927`, `USGS-01375000`, `44025`).",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/$defs/StationKind",
+            "description": "Station type."
+          },
+          "latitude": {
+            "description": "Latitude, degrees north.",
+            "format": "double",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude, degrees east.",
+            "format": "double",
+            "type": "number"
+          },
+          "name": {
+            "description": "Display name.",
+            "type": "string"
+          },
+          "reference_id": {
+            "description": "Reference station of a subordinate station.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "$ref": "#/$defs/SourceId",
+            "description": "The source that owns the station."
+          }
+        },
+        "required": [
+          "source",
+          "id",
+          "name",
+          "kind",
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      },
+      "UnixTime": {
+        "description": "Seconds since 1970-01-01T00:00:00Z.",
+        "format": "int64",
+        "type": "integer"
+      },
+      "UsgsSiteType": {
+        "description": "Type of a USGS monitoring site (`site_type_code`).",
+        "oneOf": [
+          {
+            "const": "stream",
+            "description": "`ST`: stream.",
+            "type": "string"
+          },
+          {
+            "const": "estuary",
+            "description": "`ES`: estuary.",
+            "type": "string"
+          },
+          {
+            "const": "lake",
+            "description": "`LK`: lake or reservoir.",
+            "type": "string"
+          },
+          {
+            "const": "tidal_stream",
+            "description": "`ST-TS`: tidal stream.",
+            "type": "string"
+          },
+          {
+            "const": "other",
+            "description": "Any other site type code.",
+            "type": "string"
+          }
+        ]
+      },
+      "ValueKind": {
+        "description": "How the value was obtained.",
+        "oneOf": [
+          {
+            "const": "observed",
+            "description": "Measured.",
+            "type": "string"
+          },
+          {
+            "const": "predicted",
+            "description": "Predicted from harmonics or tables.",
+            "type": "string"
+          },
+          {
+            "const": "modelled",
+            "description": "Output of a forecast or analysis model.",
+            "type": "string"
+          },
+          {
+            "const": "satellite",
+            "description": "Retrieved from satellite imagery.",
+            "type": "string"
+          },
+          {
+            "const": "computed",
+            "description": "Derived on device from other values.",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "Where one value or series came from.",
+    "properties": {
+      "distance_m": {
+        "description": "Distance from the spot to the station, metres.",
+        "format": "float",
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "kind": {
+        "$ref": "#/$defs/ValueKind",
+        "description": "Observed, predicted, modelled, satellite or computed."
+      },
+      "observed_at": {
+        "$ref": "#/$defs/UnixTime",
+        "description": "When the value was observed, predicted for or issued."
+      },
+      "quality": {
+        "$ref": "#/$defs/Quality",
+        "description": "Source-reported quality."
+      },
+      "relation": {
+        "$ref": "#/$defs/Relation",
+        "description": "How the station relates to the spot."
+      },
+      "source": {
+        "$ref": "#/$defs/SourceId",
+        "description": "The data source."
+      },
+      "station": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/StationRef"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "The station, when the value comes from one."
+      }
+    },
+    "required": [
+      "source",
+      "relation",
+      "observed_at",
+      "kind",
+      "quality"
+    ],
+    "title": "Provenance",
+    "type": "object"
+  },
+  "StationRef": {
+    "$defs": {
+      "SourceId": {
+        "description": "Identifier of a data source, such as `usgs` or `open-meteo-marine`.\n\nA string newtype rather than an enum so a new source does not change the contract; the\nconfiguration validates ids against the provider registry. Values are kebab-case.",
+        "type": "string"
+      },
+      "StationKind": {
+        "description": "What kind of station a [`StationRef`] names.",
+        "oneOf": [
+          {
+            "const": "tide_harmonic",
+            "description": "CO-OPS harmonic tide prediction station.",
+            "type": "string"
+          },
+          {
+            "const": "tide_subordinate",
+            "description": "CO-OPS subordinate tide prediction station.",
+            "type": "string"
+          },
+          {
+            "const": "current_harmonic",
+            "description": "CO-OPS harmonic current prediction station (`H`).",
+            "type": "string"
+          },
+          {
+            "const": "current_subordinate",
+            "description": "CO-OPS subordinate current prediction station (`S`).",
+            "type": "string"
+          },
+          {
+            "const": "current_weak_variable",
+            "description": "CO-OPS weak-and-variable current station (`W`).",
+            "type": "string"
+          },
+          {
+            "const": "water_level",
+            "description": "A water-level gauge.",
+            "type": "string"
+          },
+          {
+            "const": "ports_current_meter",
+            "description": "A PORTS current meter.",
+            "type": "string"
+          },
+          {
+            "const": "buoy",
+            "description": "A moored or drifting buoy.",
+            "type": "string"
+          },
+          {
+            "const": "cman",
+            "description": "A C-MAN coastal station.",
+            "type": "string"
+          },
+          {
+            "additionalProperties": false,
+            "description": "A USGS site with its site type.",
+            "properties": {
+              "usgs_site": {
+                "$ref": "#/$defs/UsgsSiteType"
+              }
+            },
+            "required": [
+              "usgs_site"
+            ],
+            "type": "object"
+          },
+          {
+            "const": "nwps_gauge",
+            "description": "An NWPS river gauge.",
+            "type": "string"
+          }
+        ]
+      },
+      "UsgsSiteType": {
+        "description": "Type of a USGS monitoring site (`site_type_code`).",
+        "oneOf": [
+          {
+            "const": "stream",
+            "description": "`ST`: stream.",
+            "type": "string"
+          },
+          {
+            "const": "estuary",
+            "description": "`ES`: estuary.",
+            "type": "string"
+          },
+          {
+            "const": "lake",
+            "description": "`LK`: lake or reservoir.",
+            "type": "string"
+          },
+          {
+            "const": "tidal_stream",
+            "description": "`ST-TS`: tidal stream.",
+            "type": "string"
+          },
+          {
+            "const": "other",
+            "description": "Any other site type code.",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "A station as its source describes it.",
+    "properties": {
+      "bin": {
+        "description": "CO-OPS current bin.",
+        "format": "uint16",
+        "maximum": 65535,
+        "minimum": 0,
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "id": {
+        "description": "The id exactly as the source writes it (`8518750`, `NYH1927`, `USGS-01375000`, `44025`).",
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/$defs/StationKind",
+        "description": "Station type."
+      },
+      "latitude": {
+        "description": "Latitude, degrees north.",
+        "format": "double",
+        "type": "number"
+      },
+      "longitude": {
+        "description": "Longitude, degrees east.",
+        "format": "double",
+        "type": "number"
+      },
+      "name": {
+        "description": "Display name.",
+        "type": "string"
+      },
+      "reference_id": {
+        "description": "Reference station of a subordinate station.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "source": {
+        "$ref": "#/$defs/SourceId",
+        "description": "The source that owns the station."
+      }
+    },
+    "required": [
+      "source",
+      "id",
+      "name",
+      "kind",
+      "latitude",
+      "longitude"
+    ],
+    "title": "StationRef",
+    "type": "object"
+  }
+}
