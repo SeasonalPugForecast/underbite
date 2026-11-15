@@ -1,5 +1,6 @@
 ---
 source: crates/underbite-core/src/model/snapshot.rs
+assertion_line: 644
 expression: schemas
 ---
 {
@@ -1647,7 +1648,7 @@ expression: schemas
             "$ref": "#/$defs/MoonPhase"
           },
           "phase_angle_deg": {
-            "description": "Sun-moon elongation, 0 at new moon and 180 at full.",
+            "description": "The moon's apparent longitude minus the sun's, 0 to 360 degrees: 0 new, 90 first quarter,\n180 full, 270 last quarter, so it also tells waxing from waning.",
             "format": "float",
             "type": "number"
           },

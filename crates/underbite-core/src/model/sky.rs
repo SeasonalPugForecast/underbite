@@ -81,7 +81,8 @@ pub struct MoonDay {
     pub upper_transit: Option<UnixTime>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lower_transit: Option<UnixTime>,
-    /// Sun-moon elongation, 0 at new moon and 180 at full.
+    /// The moon's apparent longitude minus the sun's, 0 to 360 degrees: 0 new, 90 first quarter,
+    /// 180 full, 270 last quarter, so it also tells waxing from waning.
     pub phase_angle_deg: f32,
     /// Illuminated fraction, 0 to 1.
     pub illuminated_fraction: f32,
