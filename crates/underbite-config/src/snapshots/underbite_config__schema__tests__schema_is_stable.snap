@@ -1,0 +1,1126 @@
+---
+source: crates/underbite-config/src/schema.rs
+expression: json_schema()
+---
+{
+  "$defs": {
+    "CardsConfig": {
+      "additionalProperties": false,
+      "description": "`[cards]`; a `[cards.<water type>]` table overrides the base layout for that water type.",
+      "properties": {
+        "bay": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawLayout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "great_lakes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawLayout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hidden": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "ice": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawLayout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lake": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawLayout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nearshore": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawLayout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "offshore": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawLayout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "order": {
+          "default": null,
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "pond": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawLayout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "river": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawLayout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "surf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawLayout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tidal": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawLayout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "CopernicusConfig": {
+      "additionalProperties": false,
+      "description": "`[providers.copernicus]`: opt-in, needs the user's own free account.",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "DischargeUnit": {
+      "description": "Discharge display unit.",
+      "oneOf": [
+        {
+          "const": "cfs",
+          "description": "Cubic feet per second.",
+          "type": "string"
+        },
+        {
+          "const": "m3s",
+          "description": "Cubic metres per second.",
+          "type": "string"
+        }
+      ]
+    },
+    "DistanceUnit": {
+      "description": "Distance display unit (visibility).",
+      "oneOf": [
+        {
+          "const": "km",
+          "description": "Kilometres.",
+          "type": "string"
+        },
+        {
+          "const": "mi",
+          "description": "Miles.",
+          "type": "string"
+        }
+      ]
+    },
+    "HeightUnit": {
+      "description": "Height and depth display unit.",
+      "oneOf": [
+        {
+          "const": "ft",
+          "description": "Feet.",
+          "type": "string"
+        },
+        {
+          "const": "m",
+          "description": "Metres.",
+          "type": "string"
+        }
+      ]
+    },
+    "LimitsProfile": {
+      "additionalProperties": false,
+      "description": "One `[[limits]]` go/no-go profile: the hard limits for a way of fishing. A limit left out\nis not checked.",
+      "properties": {
+        "max_current_kn": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "max_gust_kn": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "max_wave_m": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "max_wind_kn": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "min_air_temp_c": {
+          "description": "Coldest air temperature, °C.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "min_visibility_km": {
+          "description": "Least visibility, km.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "no_lightning": {
+          "default": true,
+          "description": "No-go with lightning near the spot.",
+          "type": "boolean"
+        },
+        "no_small_craft_advisory": {
+          "default": false,
+          "description": "No-go while a small-craft advisory is in force.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "MapConfig": {
+      "additionalProperties": false,
+      "description": "`[map]`.",
+      "properties": {
+        "offline_max_mb": {
+          "default": 1500,
+          "description": "Most storage offline packs may use, in megabytes.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "preset": {
+          "default": "Inshore flats",
+          "description": "The layer preset shown first, by name.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PresentationConfig": {
+      "additionalProperties": false,
+      "description": "`[presentation]`: how the app speaks and shows time.",
+      "properties": {
+        "clock": {
+          "$ref": "#/$defs/TimeFormat",
+          "default": "12h",
+          "description": "`12h` or `24h`."
+        },
+        "timeline_hours": {
+          "default": 48,
+          "description": "Hours the timeline and charts reach.",
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "timeline_step_minutes": {
+          "default": 30,
+          "description": "Minutes between timeline points.",
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "voice": {
+          "$ref": "#/$defs/Voice",
+          "default": "luna",
+          "description": "Playful labels (`luna`) or plain ones (`plain`); safety text is always plain."
+        }
+      },
+      "type": "object"
+    },
+    "PressureUnit": {
+      "description": "Pressure display unit.",
+      "oneOf": [
+        {
+          "const": "hPa",
+          "description": "Hectopascals.",
+          "type": "string"
+        },
+        {
+          "const": "inHg",
+          "description": "Inches of mercury.",
+          "type": "string"
+        },
+        {
+          "const": "mmHg",
+          "description": "Millimetres of mercury.",
+          "type": "string"
+        },
+        {
+          "const": "kPa",
+          "description": "Kilopascals.",
+          "type": "string"
+        }
+      ]
+    },
+    "ProvidersConfig": {
+      "additionalProperties": false,
+      "description": "`[providers]`.",
+      "properties": {
+        "copernicus": {
+          "$ref": "#/$defs/CopernicusConfig",
+          "default": {
+            "enabled": false
+          }
+        },
+        "usgs": {
+          "$ref": "#/$defs/UsgsConfig",
+          "default": {}
+        }
+      },
+      "type": "object"
+    },
+    "RawLayout": {
+      "additionalProperties": false,
+      "description": "A card order and hidden cards, by card id; ids this version does not know are dropped.",
+      "properties": {
+        "hidden": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "order": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RiverRange": {
+      "additionalProperties": false,
+      "description": "One `[[rivers]]` entry; discharge in cubic feet per second, as USGS reports it.",
+      "properties": {
+        "best_cfs": {
+          "description": "The discharge range the user likes best: `[low, high]`.",
+          "items": {
+            "format": "double",
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "blown_out_above_cfs": {
+          "description": "Blown out above this discharge.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "site": {
+          "description": "The gauge as `usgs:<site number>`, for example `usgs:01420500`.",
+          "type": "string"
+        },
+        "wadeable_below_cfs": {
+          "description": "Wadeable below this discharge.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "site"
+      ],
+      "type": "object"
+    },
+    "SourceGroup": {
+      "additionalProperties": false,
+      "description": "One `[sources.<group>]`: an ordered chain (the first source that answers wins, the rest fill\ngaps) and the limits past which a value is greyed.",
+      "properties": {
+        "chain": {
+          "description": "Source ids in order of preference.",
+          "items": {
+            "$ref": "#/$defs/SourceId"
+          },
+          "type": "array"
+        },
+        "max_age_minutes": {
+          "description": "Observations older than this are greyed; none means no limit.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "max_distance_km": {
+          "description": "Stations farther than this are greyed; none means no limit.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "chain"
+      ],
+      "type": "object"
+    },
+    "SourceId": {
+      "description": "Identifier of a data source, such as `usgs` or `open-meteo-marine`.\n\nA string newtype rather than an enum so a new source does not change the contract; the\nconfiguration validates ids against the provider registry. Values are kebab-case.",
+      "type": "string"
+    },
+    "SourcesConfig": {
+      "additionalProperties": false,
+      "description": "`[sources]`: one chain per measurement group.",
+      "properties": {
+        "clarity": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "usgs",
+              "copernicus"
+            ]
+          }
+        },
+        "coordinate_precision": {
+          "default": 2,
+          "description": "Decimals of latitude and longitude sent to data providers: 0, 1 or 2.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "currents": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "coops",
+              "hf-radar",
+              "copernicus",
+              "open-meteo-marine"
+            ]
+          }
+        },
+        "flow": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "usgs",
+              "nwps"
+            ]
+          },
+          "description": "Discharge, gage height, flow forecast and flood categories."
+        },
+        "lake_level": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "usgs",
+              "coops",
+              "glerl"
+            ]
+          }
+        },
+        "marine_forecast": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "nws"
+            ]
+          },
+          "description": "Marine forecast and alerts."
+        },
+        "sst": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "mur-sst",
+              "open-meteo-marine"
+            ]
+          },
+          "description": "Sea surface temperature."
+        },
+        "storm": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "open-meteo-storm",
+              "nhc"
+            ]
+          },
+          "description": "The storm-ahead check and hurricane tracks."
+        },
+        "tide": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "coops",
+              "coops-harmonics",
+              "open-meteo-marine"
+            ]
+          }
+        },
+        "water_quality": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "usgs"
+            ]
+          }
+        },
+        "water_temperature": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "usgs",
+              "coops",
+              "ndbc",
+              "glerl",
+              "open-meteo-marine",
+              "mur-sst"
+            ],
+            "max_age_minutes": 180,
+            "max_distance_km": 25.0
+          }
+        },
+        "waves": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "ndbc",
+              "open-meteo-marine"
+            ]
+          }
+        },
+        "weather": {
+          "$ref": "#/$defs/SourceGroup",
+          "default": {
+            "chain": [
+              "nws",
+              "open-meteo"
+            ]
+          },
+          "description": "Weather providers, by their ids in the weather library."
+        }
+      },
+      "type": "object"
+    },
+    "SpeedUnit": {
+      "description": "Speed display unit for currents and wind (each has its own setting).",
+      "oneOf": [
+        {
+          "const": "kn",
+          "description": "Knots.",
+          "type": "string"
+        },
+        {
+          "const": "mph",
+          "description": "Miles per hour.",
+          "type": "string"
+        },
+        {
+          "const": "kmh",
+          "description": "Kilometres per hour.",
+          "type": "string"
+        },
+        {
+          "const": "ms",
+          "description": "Metres per second.",
+          "type": "string"
+        }
+      ]
+    },
+    "StormsConfig": {
+      "additionalProperties": false,
+      "description": "`[storms]`.",
+      "properties": {
+        "hurricane_distance_km": {
+          "default": 3000.0,
+          "description": "Hurricanes farther than this from the spot are ignored, km.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "TempUnit": {
+      "description": "Temperature display unit for water and air.",
+      "oneOf": [
+        {
+          "const": "C",
+          "description": "Degrees Celsius.",
+          "type": "string"
+        },
+        {
+          "const": "F",
+          "description": "Degrees Fahrenheit.",
+          "type": "string"
+        }
+      ]
+    },
+    "Thresholds": {
+      "additionalProperties": false,
+      "description": "`[thresholds]`: levels where fish or fishing change.",
+      "properties": {
+        "trout_stress_c": {
+          "default": 20.0,
+          "description": "Water temperature above which trout fishing is discouraged, °C.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "TimeFormat": {
+      "description": "Clock style for times of day.",
+      "oneOf": [
+        {
+          "const": "24h",
+          "description": "`14:00`.",
+          "type": "string"
+        },
+        {
+          "const": "12h",
+          "description": "`2 PM`.",
+          "type": "string"
+        }
+      ]
+    },
+    "UnitsConfig": {
+      "additionalProperties": false,
+      "description": "`[units]`.",
+      "properties": {
+        "air_temp": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TempUnit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Air temperature, if it differs from the water's."
+        },
+        "current": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SpeedUnit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Current speed."
+        },
+        "discharge": {
+          "$ref": "#/$defs/DischargeUnit",
+          "default": "cfs",
+          "description": "River discharge."
+        },
+        "distance": {
+          "$ref": "#/$defs/DistanceUnit",
+          "default": "mi",
+          "description": "Station distances."
+        },
+        "height": {
+          "$ref": "#/$defs/HeightUnit",
+          "default": "ft",
+          "description": "Every height unless overridden: stage, lake level, tide and waves."
+        },
+        "lake_level": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HeightUnit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Lake level."
+        },
+        "pressure": {
+          "$ref": "#/$defs/PressureUnit",
+          "default": "inHg",
+          "description": "Air pressure."
+        },
+        "speed": {
+          "$ref": "#/$defs/SpeedUnit",
+          "default": "kn",
+          "description": "Every speed unless overridden: current and wind."
+        },
+        "stage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HeightUnit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "River stage (gage height)."
+        },
+        "tide": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HeightUnit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Tide heights."
+        },
+        "water_temp": {
+          "$ref": "#/$defs/TempUnit",
+          "default": "F",
+          "description": "Water temperature, and air temperature unless `air_temp` is set."
+        },
+        "waves": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HeightUnit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Wave heights."
+        },
+        "wind": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SpeedUnit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Wind speed."
+        }
+      },
+      "type": "object"
+    },
+    "UsgsConfig": {
+      "additionalProperties": false,
+      "description": "`[providers.usgs]`. It has no keys: an optional API key lives only in the keychain (iOS) or\n`USGS_API_KEY` (CLI), never in a file or an export.",
+      "type": "object"
+    },
+    "Voice": {
+      "description": "The words of the playful labels; safety text ignores it.",
+      "enum": [
+        "luna",
+        "plain"
+      ],
+      "type": "string"
+    },
+    "WindowFactors": {
+      "additionalProperties": false,
+      "description": "Weights of the factors that line up into a fishing window; 0 turns a factor off.",
+      "properties": {
+        "low_light": {
+          "default": 1.0,
+          "format": "double",
+          "type": "number"
+        },
+        "pressure_falling": {
+          "default": 0.7,
+          "format": "double",
+          "type": "number"
+        },
+        "solunar": {
+          "default": 0.5,
+          "format": "double",
+          "type": "number"
+        },
+        "tide_stage": {
+          "default": 1.0,
+          "format": "double",
+          "type": "number"
+        },
+        "water_temp": {
+          "default": 1.0,
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "WindowsConfig": {
+      "additionalProperties": false,
+      "description": "`[windows]`.",
+      "properties": {
+        "factors": {
+          "$ref": "#/$defs/WindowFactors",
+          "default": {
+            "low_light": 1.0,
+            "pressure_falling": 0.7,
+            "solunar": 0.5,
+            "tide_stage": 1.0,
+            "water_temp": 1.0
+          }
+        },
+        "show_solunar": {
+          "default": true,
+          "description": "Whether the solunar periods are shown at all.",
+          "type": "boolean"
+        },
+        "solunar_major_minutes": {
+          "default": 120,
+          "description": "Major solunar period length in minutes.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "solunar_minor_minutes": {
+          "default": 60,
+          "description": "Minor solunar period length in minutes.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The whole configuration.",
+  "properties": {
+    "cards": {
+      "$ref": "#/$defs/CardsConfig",
+      "default": {
+        "hidden": [],
+        "ice": {
+          "hidden": [],
+          "order": [
+            "flow",
+            "water_temp",
+            "clarity",
+            "windows",
+            "wind",
+            "sun_moon",
+            "stocking",
+            "sources"
+          ]
+        },
+        "order": [
+          "windows",
+          "storm_ahead",
+          "tide",
+          "current",
+          "wind",
+          "water_temp",
+          "flow",
+          "waves",
+          "sun_moon",
+          "sources"
+        ],
+        "pond": {
+          "hidden": [],
+          "order": [
+            "flow",
+            "water_temp",
+            "clarity",
+            "windows",
+            "wind",
+            "sun_moon",
+            "stocking",
+            "sources"
+          ]
+        },
+        "river": {
+          "hidden": [],
+          "order": [
+            "flow",
+            "water_temp",
+            "clarity",
+            "windows",
+            "wind",
+            "sun_moon",
+            "stocking",
+            "sources"
+          ]
+        }
+      }
+    },
+    "limits": {
+      "default": [
+        {
+          "max_current_kn": 2.0,
+          "max_gust_kn": 18.0,
+          "max_wave_m": 0.6,
+          "max_wind_kn": 12.0,
+          "name": "Kayak",
+          "no_lightning": true,
+          "no_small_craft_advisory": true
+        },
+        {
+          "max_gust_kn": 25.0,
+          "max_wave_m": 1.2,
+          "max_wind_kn": 20.0,
+          "name": "20 ft boat",
+          "no_lightning": true,
+          "no_small_craft_advisory": true
+        },
+        {
+          "max_current_kn": 1.5,
+          "max_gust_kn": 22.0,
+          "max_wave_m": 0.3,
+          "max_wind_kn": 15.0,
+          "name": "Wading",
+          "no_lightning": true,
+          "no_small_craft_advisory": true
+        }
+      ],
+      "description": "Go/no-go profiles.",
+      "items": {
+        "$ref": "#/$defs/LimitsProfile"
+      },
+      "type": "array"
+    },
+    "map": {
+      "$ref": "#/$defs/MapConfig",
+      "default": {
+        "offline_max_mb": 1500,
+        "preset": "Inshore flats"
+      }
+    },
+    "presentation": {
+      "$ref": "#/$defs/PresentationConfig",
+      "default": {
+        "clock": "12h",
+        "timeline_hours": 48,
+        "timeline_step_minutes": 30,
+        "voice": "luna"
+      }
+    },
+    "providers": {
+      "$ref": "#/$defs/ProvidersConfig",
+      "default": {
+        "copernicus": {
+          "enabled": false
+        },
+        "usgs": {}
+      }
+    },
+    "rivers": {
+      "default": [],
+      "description": "The user's own flow ranges, by gauge.",
+      "items": {
+        "$ref": "#/$defs/RiverRange"
+      },
+      "type": "array"
+    },
+    "sources": {
+      "$ref": "#/$defs/SourcesConfig",
+      "default": {
+        "clarity": {
+          "chain": [
+            "usgs",
+            "copernicus"
+          ]
+        },
+        "coordinate_precision": 2,
+        "currents": {
+          "chain": [
+            "coops",
+            "hf-radar",
+            "copernicus",
+            "open-meteo-marine"
+          ]
+        },
+        "flow": {
+          "chain": [
+            "usgs",
+            "nwps"
+          ]
+        },
+        "lake_level": {
+          "chain": [
+            "usgs",
+            "coops",
+            "glerl"
+          ]
+        },
+        "marine_forecast": {
+          "chain": [
+            "nws"
+          ]
+        },
+        "sst": {
+          "chain": [
+            "mur-sst",
+            "open-meteo-marine"
+          ]
+        },
+        "storm": {
+          "chain": [
+            "open-meteo-storm",
+            "nhc"
+          ]
+        },
+        "tide": {
+          "chain": [
+            "coops",
+            "coops-harmonics",
+            "open-meteo-marine"
+          ]
+        },
+        "water_quality": {
+          "chain": [
+            "usgs"
+          ]
+        },
+        "water_temperature": {
+          "chain": [
+            "usgs",
+            "coops",
+            "ndbc",
+            "glerl",
+            "open-meteo-marine",
+            "mur-sst"
+          ],
+          "max_age_minutes": 180,
+          "max_distance_km": 25.0
+        },
+        "waves": {
+          "chain": [
+            "ndbc",
+            "open-meteo-marine"
+          ]
+        },
+        "weather": {
+          "chain": [
+            "nws",
+            "open-meteo"
+          ]
+        }
+      }
+    },
+    "storms": {
+      "$ref": "#/$defs/StormsConfig",
+      "default": {
+        "hurricane_distance_km": 3000.0
+      }
+    },
+    "thresholds": {
+      "$ref": "#/$defs/Thresholds",
+      "default": {
+        "trout_stress_c": 20.0
+      }
+    },
+    "units": {
+      "$ref": "#/$defs/UnitsConfig",
+      "default": {
+        "discharge": "cfs",
+        "distance": "mi",
+        "height": "ft",
+        "pressure": "inHg",
+        "speed": "kn",
+        "water_temp": "F"
+      }
+    },
+    "version": {
+      "default": 1,
+      "description": "Schema version, for migration.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "windows": {
+      "$ref": "#/$defs/WindowsConfig",
+      "default": {
+        "factors": {
+          "low_light": 1.0,
+          "pressure_falling": 0.7,
+          "solunar": 0.5,
+          "tide_stage": 1.0,
+          "water_temp": 1.0
+        },
+        "show_solunar": true,
+        "solunar_major_minutes": 120,
+        "solunar_minor_minutes": 60
+      }
+    }
+  },
+  "title": "Underbite configuration",
+  "type": "object"
+}
