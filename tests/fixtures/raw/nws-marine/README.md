@@ -39,3 +39,4 @@ Alert, zone-forecast and product contents are live and change; the recording is 
 | `products-glf-le-latest.json` | `A/products/types/GLF/locations/LE/latest` (Open Lake Forecast for Lake Erie, KCLE, FZUS61; LEZ161 to LEZ169 sections) | 2026-11-15 |
 | `products-glf-lo-latest.json` | `A/products/types/GLF/locations/LO/latest` (Lake Ontario, KBUF, FZUS61; LOZ061 to LOZ065) | 2026-11-15 |
 | `alerts-active-zone-GMZ250-gale-warning.geo.json` | `A/alerts/active?zone=GMZ250&event=Gale%20Warning` (one live Gale Warning, NWS Corpus Christi, Gulf of America) | 2026-11-15 |
+| `products-off-nt1-latest.json` | `A/products/types/OFF/locations/NT1/latest` (Offshore Waters Forecast, New England waters, ANZ898 synopsis plus ANZ800 to ANZ815 and ANZ900) | 2026-11-15 |
