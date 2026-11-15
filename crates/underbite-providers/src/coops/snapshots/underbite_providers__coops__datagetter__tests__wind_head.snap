@@ -1,0 +1,22 @@
+---
+source: crates/underbite-providers/src/coops/datagetter.rs
+expression: "series.samples().iter().take(2).collect::<Vec<_>>()"
+---
+[
+  {
+    "time": 1794009600,
+    "value": {
+      "speed_ms": 3.9,
+      "gust_ms": 4.3,
+      "from_deg": 308.0
+    }
+  },
+  {
+    "time": 1794009960,
+    "value": {
+      "speed_ms": 3.4,
+      "gust_ms": 4.7,
+      "from_deg": 308.0
+    }
+  }
+]

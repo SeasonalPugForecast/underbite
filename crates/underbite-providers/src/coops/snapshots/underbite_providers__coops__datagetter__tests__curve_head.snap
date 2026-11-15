@@ -1,0 +1,18 @@
+---
+source: crates/underbite-providers/src/coops/datagetter.rs
+expression: head
+---
+[
+  {
+    "time": 1794096000,
+    "value": 1.453
+  },
+  {
+    "time": 1794096360,
+    "value": 1.447
+  },
+  {
+    "time": 1794096720,
+    "value": 1.439
+  }
+]

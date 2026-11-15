@@ -1,0 +1,46 @@
+---
+source: crates/underbite-providers/src/coops/datagetter.rs
+expression: on_day
+---
+[
+  {
+    "time": 1794096540,
+    "kind": "max_flood",
+    "speed_ms": 0.601
+  },
+  {
+    "time": 1794106800,
+    "kind": "slack",
+    "speed_ms": -0.001
+  },
+  {
+    "time": 1794119400,
+    "kind": "max_ebb",
+    "speed_ms": -1.175
+  },
+  {
+    "time": 1794130800,
+    "kind": "slack",
+    "speed_ms": 0.001
+  },
+  {
+    "time": 1794141000,
+    "kind": "max_flood",
+    "speed_ms": 0.911
+  },
+  {
+    "time": 1794152460,
+    "kind": "slack",
+    "speed_ms": -0.001
+  },
+  {
+    "time": 1794164880,
+    "kind": "max_ebb",
+    "speed_ms": -1.3410001
+  },
+  {
+    "time": 1794177600,
+    "kind": "slack",
+    "speed_ms": 0.002
+  }
+]

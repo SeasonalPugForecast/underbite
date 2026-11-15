@@ -1,0 +1,14 @@
+---
+source: crates/underbite-providers/src/coops/datagetter.rs
+expression: "pressure.samples().iter().take(2).collect::<Vec<_>>()"
+---
+[
+  {
+    "time": 1794009600,
+    "value": 1009.9
+  },
+  {
+    "time": 1794009960,
+    "value": 1009.6
+  }
+]

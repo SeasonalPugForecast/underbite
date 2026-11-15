@@ -1,0 +1,141 @@
+---
+source: crates/underbite-providers/src/coops/datagetter.rs
+expression: series.events
+---
+[
+  {
+    "time": 1794117540,
+    "kind": "low",
+    "height_m": 0.017
+  },
+  {
+    "time": 1794139620,
+    "kind": "high",
+    "height_m": 1.711
+  },
+  {
+    "time": 1794162840,
+    "kind": "low",
+    "height_m": 0.012
+  },
+  {
+    "time": 1794184020,
+    "kind": "high",
+    "height_m": 1.432
+  },
+  {
+    "time": 1794206400,
+    "kind": "low",
+    "height_m": 0.053
+  },
+  {
+    "time": 1794228240,
+    "kind": "high",
+    "height_m": 1.702
+  },
+  {
+    "time": 1794251880,
+    "kind": "low",
+    "height_m": 0.013
+  },
+  {
+    "time": 1794272820,
+    "kind": "high",
+    "height_m": 1.387
+  },
+  {
+    "time": 1794295140,
+    "kind": "low",
+    "height_m": 0.099
+  },
+  {
+    "time": 1794316860,
+    "kind": "high",
+    "height_m": 1.664
+  },
+  {
+    "time": 1794340800,
+    "kind": "low",
+    "height_m": 0.035
+  },
+  {
+    "time": 1794361620,
+    "kind": "high",
+    "height_m": 1.33
+  },
+  {
+    "time": 1794383820,
+    "kind": "low",
+    "height_m": 0.153
+  },
+  {
+    "time": 1794405480,
+    "kind": "high",
+    "height_m": 1.604
+  },
+  {
+    "time": 1794429600,
+    "kind": "low",
+    "height_m": 0.076
+  },
+  {
+    "time": 1794450600,
+    "kind": "high",
+    "height_m": 1.266
+  },
+  {
+    "time": 1794472380,
+    "kind": "low",
+    "height_m": 0.212
+  },
+  {
+    "time": 1794494280,
+    "kind": "high",
+    "height_m": 1.531
+  },
+  {
+    "time": 1794518340,
+    "kind": "low",
+    "height_m": 0.131
+  },
+  {
+    "time": 1794539820,
+    "kind": "high",
+    "height_m": 1.204
+  },
+  {
+    "time": 1794560880,
+    "kind": "low",
+    "height_m": 0.277
+  },
+  {
+    "time": 1794583200,
+    "kind": "high",
+    "height_m": 1.455
+  },
+  {
+    "time": 1794607080,
+    "kind": "low",
+    "height_m": 0.194
+  },
+  {
+    "time": 1794629340,
+    "kind": "high",
+    "height_m": 1.156
+  },
+  {
+    "time": 1794649260,
+    "kind": "low",
+    "height_m": 0.343
+  },
+  {
+    "time": 1794672480,
+    "kind": "high",
+    "height_m": 1.387
+  },
+  {
+    "time": 1794696060,
+    "kind": "low",
+    "height_m": 0.251
+  }
+]
