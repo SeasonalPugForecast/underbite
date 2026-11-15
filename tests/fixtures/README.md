@@ -10,6 +10,7 @@ request URL and the recording date:
 - [coops](raw/coops/README.md)
 - [ndbc](raw/ndbc/README.md)
 - [usgs](raw/usgs/README.md)
+- [usno](raw/usno/README.md)
 - [nwps](raw/nwps/README.md)
 - [open-meteo-marine](raw/open-meteo-marine/README.md)
 - [nws-marine](raw/nws-marine/README.md)
