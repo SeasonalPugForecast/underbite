@@ -1,0 +1,519 @@
+---
+source: crates/underbite-core/src/view/cards/current.rs
+expression: build(&nyh1927()).unwrap()
+---
+{
+  "chrome": {
+    "id": "current",
+    "title": "Current",
+    "footnote": "Current Flood 1.1 kn toward N 11° · The Narrows, bin 13 · 2.5 mi",
+    "credits": [
+      {
+        "source": "NOAA CO-OPS",
+        "text": "NOAA CO-OPS",
+        "link": "https://tidesandcurrents.noaa.gov",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "not_for_navigation",
+        "text": "Not for navigation."
+      }
+    ],
+    "accessibility": "Flood 1.1 kn toward N 11°. Next slack 10:41 AM."
+  },
+  "compact": {
+    "headline": {
+      "value": 1.0807775,
+      "text": "1.1",
+      "unit": "kn"
+    },
+    "lines": [
+      "Flood 1.1 kn toward N 11°",
+      "Next slack 10:41 AM"
+    ],
+    "spark": []
+  },
+  "full": {
+    "phase": "flood",
+    "phase_label": "Flood",
+    "speed_now": {
+      "value": 1.0807775,
+      "text": "1.1",
+      "unit": "kn"
+    },
+    "direction_now": "N 11°",
+    "next_slack": {
+      "t": 1794152460,
+      "time": "10:41 AM",
+      "kind": "slack",
+      "label": "Slack",
+      "speed": null
+    },
+    "events": [
+      {
+        "t": 1794152460,
+        "time": "10:41 AM",
+        "kind": "slack",
+        "label": "Slack",
+        "speed": null
+      },
+      {
+        "t": 1794164880,
+        "time": "2:08 PM",
+        "kind": "max_ebb",
+        "label": "Max ebb",
+        "speed": {
+          "value": 2.6066957,
+          "text": "2.6",
+          "unit": "kn"
+        }
+      },
+      {
+        "t": 1794177600,
+        "time": "5:40 PM",
+        "kind": "slack",
+        "label": "Slack",
+        "speed": null
+      },
+      {
+        "t": 1794185640,
+        "time": "7:54 PM",
+        "kind": "max_flood",
+        "label": "Max flood",
+        "speed": {
+          "value": 1.0302376,
+          "text": "1.0",
+          "unit": "kn"
+        }
+      },
+      {
+        "t": 1794195420,
+        "time": "10:37 PM",
+        "kind": "slack",
+        "label": "Slack",
+        "speed": null
+      },
+      {
+        "t": 1794208140,
+        "time": "2:09 AM",
+        "kind": "max_ebb",
+        "label": "Max ebb",
+        "speed": {
+          "value": 2.1732183,
+          "text": "2.2",
+          "unit": "kn"
+        }
+      },
+      {
+        "t": 1794219240,
+        "time": "5:14 AM",
+        "kind": "slack",
+        "label": "Slack",
+        "speed": null
+      },
+      {
+        "t": 1794229560,
+        "time": "8:06 AM",
+        "kind": "max_flood",
+        "label": "Max flood",
+        "speed": {
+          "value": 1.7922246,
+          "text": "1.8",
+          "unit": "kn"
+        }
+      }
+    ],
+    "flood_direction": "N 11°",
+    "ebb_direction": "S 183°",
+    "bin_depth": "Bin 13 at 6.9 ft",
+    "chart": {
+      "title": "Current",
+      "unit": "kn",
+      "x_ticks": [
+        {
+          "t": 1794139200,
+          "label": "7 AM",
+          "major": false
+        },
+        {
+          "t": 1794142800,
+          "label": "8 AM",
+          "major": false
+        },
+        {
+          "t": 1794146400,
+          "label": "9 AM",
+          "major": true
+        },
+        {
+          "t": 1794150000,
+          "label": "10 AM",
+          "major": false
+        },
+        {
+          "t": 1794153600,
+          "label": "11 AM",
+          "major": false
+        },
+        {
+          "t": 1794157200,
+          "label": "12 PM",
+          "major": true
+        },
+        {
+          "t": 1794160800,
+          "label": "1 PM",
+          "major": false
+        },
+        {
+          "t": 1794164400,
+          "label": "2 PM",
+          "major": false
+        },
+        {
+          "t": 1794168000,
+          "label": "3 PM",
+          "major": true
+        },
+        {
+          "t": 1794171600,
+          "label": "4 PM",
+          "major": false
+        },
+        {
+          "t": 1794175200,
+          "label": "5 PM",
+          "major": false
+        },
+        {
+          "t": 1794178800,
+          "label": "6 PM",
+          "major": true
+        },
+        {
+          "t": 1794182400,
+          "label": "7 PM",
+          "major": false
+        },
+        {
+          "t": 1794186000,
+          "label": "8 PM",
+          "major": false
+        },
+        {
+          "t": 1794189600,
+          "label": "9 PM",
+          "major": true
+        },
+        {
+          "t": 1794193200,
+          "label": "10 PM",
+          "major": false
+        },
+        {
+          "t": 1794196800,
+          "label": "11 PM",
+          "major": false
+        },
+        {
+          "t": 1794200400,
+          "label": "12 AM",
+          "major": true
+        },
+        {
+          "t": 1794204000,
+          "label": "1 AM",
+          "major": false
+        },
+        {
+          "t": 1794207600,
+          "label": "2 AM",
+          "major": false
+        },
+        {
+          "t": 1794211200,
+          "label": "3 AM",
+          "major": true
+        },
+        {
+          "t": 1794214800,
+          "label": "4 AM",
+          "major": false
+        },
+        {
+          "t": 1794218400,
+          "label": "5 AM",
+          "major": false
+        },
+        {
+          "t": 1794222000,
+          "label": "6 AM",
+          "major": true
+        },
+        {
+          "t": 1794225600,
+          "label": "7 AM",
+          "major": false
+        },
+        {
+          "t": 1794229200,
+          "label": "8 AM",
+          "major": false
+        },
+        {
+          "t": 1794232800,
+          "label": "9 AM",
+          "major": true
+        }
+      ],
+      "series": [
+        {
+          "label": "Predicted",
+          "role": "predicted",
+          "style": "line",
+          "points": [
+            {
+              "t": 1794139200,
+              "value": 1.7203023,
+              "label": "1.7 kn",
+              "major": true
+            },
+            {
+              "t": 1794142800,
+              "value": 1.7222462,
+              "label": "1.7 kn",
+              "major": true
+            },
+            {
+              "t": 1794146400,
+              "value": 1.3820734,
+              "label": "1.4 kn",
+              "major": true
+            },
+            {
+              "t": 1794150000,
+              "value": 0.68228936,
+              "label": "0.7 kn",
+              "major": true
+            },
+            {
+              "t": 1794153600,
+              "value": -0.35377973,
+              "label": "-0.4 kn",
+              "major": true
+            },
+            {
+              "t": 1794157200,
+              "value": -1.4403888,
+              "label": "-1.4 kn",
+              "major": true
+            },
+            {
+              "t": 1794160800,
+              "value": -2.2548594,
+              "label": "-2.3 kn",
+              "major": true
+            },
+            {
+              "t": 1794164400,
+              "value": -2.6028078,
+              "label": "-2.6 kn",
+              "major": true
+            },
+            {
+              "t": 1794168000,
+              "value": -2.3850973,
+              "label": "-2.4 kn",
+              "major": true
+            },
+            {
+              "t": 1794171600,
+              "value": -1.6522678,
+              "label": "-1.7 kn",
+              "major": true
+            },
+            {
+              "t": 1794175200,
+              "value": -0.6511879,
+              "label": "-0.7 kn",
+              "major": true
+            },
+            {
+              "t": 1794178800,
+              "value": 0.2896328,
+              "label": "0.3 kn",
+              "major": true
+            },
+            {
+              "t": 1794182400,
+              "value": 0.87861776,
+              "label": "0.9 kn",
+              "major": true
+            },
+            {
+              "t": 1794186000,
+              "value": 1.0282938,
+              "label": "1.0 kn",
+              "major": true
+            },
+            {
+              "t": 1794189600,
+              "value": 0.85917926,
+              "label": "0.9 kn",
+              "major": true
+            },
+            {
+              "t": 1794193200,
+              "value": 0.4237581,
+              "label": "0.4 kn",
+              "major": true
+            },
+            {
+              "t": 1794196800,
+              "value": -0.3110151,
+              "label": "-0.3 kn",
+              "major": true
+            },
+            {
+              "t": 1794200400,
+              "value": -1.1779698,
+              "label": "-1.2 kn",
+              "major": true
+            },
+            {
+              "t": 1794204000,
+              "value": -1.862203,
+              "label": "-1.9 kn",
+              "major": true
+            },
+            {
+              "t": 1794207600,
+              "value": -2.1673865,
+              "label": "-2.2 kn",
+              "major": true
+            },
+            {
+              "t": 1794211200,
+              "value": -1.9807776,
+              "label": "-2.0 kn",
+              "major": true
+            },
+            {
+              "t": 1794214800,
+              "value": -1.2829374,
+              "label": "-1.3 kn",
+              "major": true
+            },
+            {
+              "t": 1794218400,
+              "value": -0.25658748,
+              "label": "-0.3 kn",
+              "major": true
+            },
+            {
+              "t": 1794222000,
+              "value": 0.7775378,
+              "label": "0.8 kn",
+              "major": true
+            },
+            {
+              "t": 1794225600,
+              "value": 1.5161986,
+              "label": "1.5 kn",
+              "major": true
+            },
+            {
+              "t": 1794229200,
+              "value": 1.7902808,
+              "label": "1.8 kn",
+              "major": true
+            },
+            {
+              "t": 1794232800,
+              "value": 1.650324,
+              "label": "1.7 kn",
+              "major": true
+            }
+          ]
+        }
+      ],
+      "bands": [
+        {
+          "kind": "slack",
+          "start_t": 1794152160,
+          "end_t": 1794152520,
+          "label": "Slack"
+        },
+        {
+          "kind": "slack",
+          "start_t": 1794177360,
+          "end_t": 1794177720,
+          "label": "Slack"
+        },
+        {
+          "kind": "slack",
+          "start_t": 1794195000,
+          "end_t": 1794195720,
+          "label": "Slack"
+        },
+        {
+          "kind": "slack",
+          "start_t": 1794219120,
+          "end_t": 1794219480,
+          "label": "Slack"
+        }
+      ],
+      "rules": [],
+      "markers": [
+        {
+          "kind": "slack",
+          "t": 1794152460,
+          "value": null,
+          "label": "Slack 10:41 AM"
+        },
+        {
+          "kind": "slack",
+          "t": 1794177600,
+          "value": null,
+          "label": "Slack 5:40 PM"
+        },
+        {
+          "kind": "slack",
+          "t": 1794195420,
+          "value": null,
+          "label": "Slack 10:37 PM"
+        },
+        {
+          "kind": "slack",
+          "t": 1794219240,
+          "value": null,
+          "label": "Slack 5:14 AM"
+        }
+      ],
+      "now_t": 1794148200,
+      "accessibility": "Current speed: slack at 10:41 AM, max ebb at 2:08 PM, slack at 5:40 PM, max flood at 7:54 PM, slack at 10:37 PM, max ebb at 2:09 AM, slack at 5:14 AM, max flood at 8:06 AM."
+    },
+    "sections": [
+      {
+        "title": "Station",
+        "rows": [
+          {
+            "label": "Station",
+            "value": "The Narrows, bin 13",
+            "detail": "2.5 mi"
+          },
+          {
+            "label": "Depth",
+            "value": "Bin 13 at 6.9 ft",
+            "detail": null
+          }
+        ]
+      }
+    ]
+  }
+}
