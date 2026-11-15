@@ -1,0 +1,52 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+# Internal crates.
+underbite-core = { path = "crates/underbite-core" }
+underbite-providers = { path = "crates/underbite-providers" }
+underbite-config = { path = "crates/underbite-config" }
+
+# whether's crates, pinned by revision. They opt into features explicitly, so each
+# consumer here names the features it needs.
+whether-core = { git = "ssh://git@nas.local:2222/savery/whether.git", rev = "34bb5c081614aec442f79c6ac9fef8db124a1e97", default-features = false }
+whether-providers = { git = "ssh://git@nas.local:2222/savery/whether.git", rev = "34bb5c081614aec442f79c6ac9fef8db124a1e97", default-features = false }
+
+# External crates: the versions whether pins, with std enabled.
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+thiserror = "2.0.21"
+toml = "1.1.6"
+schemars = { version = "1.2.2", features = ["derive"] }
+jiff = "0.2.37"
+ureq = "3.4.2"
+clap = { version = "4.6.7", features = ["derive"] }
+tracing = "0.1.44"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+cast_precision_loss = "allow"
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "debuginfo"

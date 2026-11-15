@@ -1,0 +1,7 @@
+[alias]
+xtask = "run --quiet --package xtask --"
+
+# whether is fetched from Gitea over SSH on port 2222; the system git handles that
+# (and the SSH agent) where libgit2 does not.
+[net]
+git-fetch-with-cli = true
