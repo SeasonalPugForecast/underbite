@@ -1,7 +1,9 @@
 //! Underbite's command-line tool.
 
 mod cli;
+mod commands;
 mod logging;
+mod runtime;
 
 use std::process::ExitCode;
 
@@ -9,22 +11,14 @@ use clap::Parser;
 
 use cli::{Cli, Cmd};
 
-/// Exit status of a command that is not implemented yet.
-const NOT_IMPLEMENTED: u8 = 2;
-
-fn not_implemented(name: &str) -> ExitCode {
-    eprintln!("underbite {name}: not implemented yet");
-    ExitCode::from(NOT_IMPLEMENTED)
-}
-
 fn run(cli: &Cli) -> anyhow::Result<ExitCode> {
-    logging::init(&logging::level(cli.verbose, None), None)?;
-    Ok(match &cli.command {
-        Cmd::Spot { .. } => not_implemented("spot"),
-        Cmd::Stations { .. } => not_implemented("stations"),
-        Cmd::Tides { .. } => not_implemented("tides"),
-        Cmd::Record { .. } => not_implemented("record"),
-    })
+    logging::init(&logging::level(cli.global.verbose, None), None)?;
+    match &cli.command {
+        Cmd::Spot(args) => commands::spot::run(args, &cli.global),
+        Cmd::Stations(args) => commands::stations::run(args, &cli.global),
+        Cmd::Tides(args) => commands::tides::run(args, &cli.global),
+        Cmd::Record(args) => commands::record::run(args, &cli.global),
+    }
 }
 
 fn main() -> ExitCode {

@@ -8,6 +8,15 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+underbite-core.workspace = true
+underbite-providers.workspace = true
+underbite-config.workspace = true
+whether-core = { workspace = true, features = ["serde"] }
+whether-providers = { workspace = true, features = ["serde"] }
+ureq.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+jiff.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 tracing.workspace = true
@@ -15,6 +24,7 @@ tracing-subscriber.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
+insta = { workspace = true, features = ["yaml", "json"] }
 
 [lints]
 workspace = true

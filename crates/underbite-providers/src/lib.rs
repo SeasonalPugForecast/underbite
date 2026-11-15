@@ -9,6 +9,7 @@
 pub(crate) mod testutil;
 
 pub mod coops;
+pub mod hydro;
 pub mod ndbc;
 pub mod nwps;
 pub mod nws_marine;
