@@ -1848,6 +1848,10 @@ expression: schemas
               "null"
             ]
           },
+          "rank_clamped": {
+            "description": "True when the true rank lies beyond `rank`: the value is outside the 5th to 95th\npercentile band and no `min` or `max` bounds it.",
+            "type": "boolean"
+          },
           "sample_count": {
             "description": "Number of years in the sample.",
             "format": "uint32",
@@ -1912,7 +1916,9 @@ expression: schemas
           "below_normal",
           "normal",
           "above_normal",
-          "much_above_normal"
+          "much_above_normal",
+          "record_low",
+          "record_high"
         ],
         "type": "string"
       },

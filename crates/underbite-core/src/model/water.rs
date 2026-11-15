@@ -60,6 +60,10 @@ pub enum PercentileClass {
     Normal,
     AboveNormal,
     MuchAboveNormal,
+    // Below the lowest value on record for this day of the year.
+    RecordLow,
+    // Above the highest value on record for this day of the year.
+    RecordHigh,
 }
 
 /// The 5, 10, 25, 50, 75, 90 and 95th percentile values for a day of year.
@@ -98,6 +102,10 @@ pub struct Percentile {
     /// Percentile rank of `value` (0 to 100), interpolated between the thresholds.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rank: Option<f32>,
+    /// True when the true rank lies beyond `rank`: the value is outside the 5th to 95th
+    /// percentile band and no `min` or `max` bounds it.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub rank_clamped: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub class: Option<PercentileClass>,
     pub basis: PercentileBasis,
@@ -173,6 +181,14 @@ mod tests {
         assert_eq!(
             serde_json::to_string(&PercentileClass::MuchAboveNormal).unwrap(),
             "\"much_above_normal\""
+        );
+        assert_eq!(
+            serde_json::to_string(&PercentileClass::RecordLow).unwrap(),
+            "\"record_low\""
+        );
+        assert_eq!(
+            serde_json::to_string(&PercentileClass::RecordHigh).unwrap(),
+            "\"record_high\""
         );
         assert_eq!(
             serde_json::to_string(&PercentileBasis::ComputedFromDaily { years: 16 }).unwrap(),

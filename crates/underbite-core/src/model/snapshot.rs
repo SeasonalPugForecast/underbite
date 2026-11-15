@@ -286,6 +286,7 @@ pub(crate) mod testdata {
             mean: Some(5.0),
             value: 0.35,
             rank: Some(48.0),
+            rank_clamped: false,
             class: Some(PercentileClass::Normal),
             basis,
             sample_count: 93,

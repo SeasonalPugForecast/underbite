@@ -53,6 +53,18 @@ pub fn rank(
     min: Option<f32>,
     max: Option<f32>,
 ) -> Option<f32> {
+    rank_detail(value, thresholds, min, max).map(|(rank, _)| rank)
+}
+
+/// [`rank`] together with whether it was clamped: `true` when `value` lies outside the lowest to
+/// highest threshold and no `min` or `max` bounds it, so the true rank lies beyond the reported
+/// one (it is at most the reported rank below the band, at least above it).
+pub fn rank_detail(
+    value: f32,
+    thresholds: &PercentileThresholds,
+    min: Option<f32>,
+    max: Option<f32>,
+) -> Option<(f32, bool)> {
     if !value.is_finite() {
         return None;
     }
@@ -65,33 +77,48 @@ pub fn rank(
         .map(|(p, _)| *p)
         .collect();
     if !equal.is_empty() {
-        return Some(equal.iter().sum::<f32>() / equal.len() as f32);
+        return Some((equal.iter().sum::<f32>() / equal.len() as f32, false));
     }
     if value < low {
         return Some(match min.filter(|m| m.is_finite() && *m < low) {
-            Some(m) if value <= m => 0.0,
-            Some(m) => low_rank * (value - m) / (low - m),
-            None => low_rank,
+            Some(m) if value <= m => (0.0, false),
+            Some(m) => (low_rank * (value - m) / (low - m), false),
+            None => (low_rank, true),
         });
     }
     if value > high {
         return Some(match max.filter(|m| m.is_finite() && *m > high) {
-            Some(m) if value >= m => 100.0,
-            Some(m) => high_rank + (100.0 - high_rank) * (value - high) / (m - high),
-            None => high_rank,
+            Some(m) if value >= m => (100.0, false),
+            Some(m) => (
+                high_rank + (100.0 - high_rank) * (value - high) / (m - high),
+                false,
+            ),
+            None => (high_rank, true),
         });
     }
-    knots.windows(2).find_map(|w| {
-        let ((p0, v0), (p1, v1)) = (w[0], w[1]);
-        (value > v0 && value < v1).then(|| p0 + (p1 - p0) * (value - v0) / (v1 - v0))
-    })
+    knots
+        .windows(2)
+        .find_map(|w| {
+            let ((p0, v0), (p1, v1)) = (w[0], w[1]);
+            (value > v0 && value < v1).then(|| p0 + (p1 - p0) * (value - v0) / (v1 - v0))
+        })
+        .map(|r| (r, false))
 }
 
-/// The class of a percentile rank; see the module documentation for the bounds. `None` for a
-/// rank outside 0 to 100 or not a number.
-pub fn class(rank: f32) -> Option<PercentileClass> {
+/// The class of `value`, which has percentile `rank`; see the module documentation for the
+/// bounds. A `value` below the record minimum `min` is [`PercentileClass::RecordLow`] and one
+/// above the record maximum `max` is [`PercentileClass::RecordHigh`], when those are known.
+/// `None` for a rank outside 0 to 100 or not a number.
+pub fn class(
+    rank: f32,
+    value: f32,
+    min: Option<f32>,
+    max: Option<f32>,
+) -> Option<PercentileClass> {
     Some(match rank {
         r if !(0.0..=100.0).contains(&r) => return None,
+        _ if min.is_some_and(|m| value < m) => PercentileClass::RecordLow,
+        _ if max.is_some_and(|m| value > m) => PercentileClass::RecordHigh,
         r if r < 10.0 => PercentileClass::MuchBelowNormal,
         r if r < 25.0 => PercentileClass::BelowNormal,
         r if r < 76.0 => PercentileClass::Normal,
@@ -176,7 +203,8 @@ pub fn from_daily(
     };
     let (min, max) = (sorted[0], sorted[sorted.len() - 1]);
     let mean = (sorted.iter().map(|v| f64::from(*v)).sum::<f64>() / sorted.len() as f64) as f32;
-    let rank = rank(value, &thresholds, Some(min), Some(max));
+    let ranked = rank_detail(value, &thresholds, Some(min), Some(max));
+    let rank = ranked.map(|(r, _)| r);
     Some(Percentile {
         day_of_year: format!("{month:02}-{dom:02}"),
         thresholds,
@@ -185,7 +213,8 @@ pub fn from_daily(
         mean: Some(mean),
         value,
         rank,
-        class: rank.and_then(class),
+        rank_clamped: ranked.is_some_and(|(_, clamped)| clamped),
+        class: rank.and_then(|r| class(r, value, Some(min), Some(max))),
         basis: PercentileBasis::ComputedFromDaily { years },
         sample_count: years,
         approved_only: false,
@@ -243,7 +272,7 @@ mod tests {
         assert_eq!(t.p95, Some(1180.0));
         let r = rank(12.4, &t, None, None).unwrap();
         assert!(r > 25.0 && r < 50.0, "{r}");
-        assert_eq!(class(r), Some(PercentileClass::Normal));
+        assert_eq!(class(r, 12.4, None, None), Some(PercentileClass::Normal));
     }
 
     #[test]
@@ -306,11 +335,33 @@ mod tests {
             (90.0, MuchAboveNormal),
             (100.0, MuchAboveNormal),
         ] {
-            assert_eq!(class(r), Some(c), "{r}");
+            assert_eq!(class(r, 1.0, None, None), Some(c), "{r}");
         }
-        assert_eq!(class(-1.0), None);
-        assert_eq!(class(100.5), None);
-        assert_eq!(class(f32::NAN), None);
+        assert_eq!(class(-1.0, 1.0, None, None), None);
+        assert_eq!(class(100.5, 1.0, None, None), None);
+        assert_eq!(class(f32::NAN, 1.0, None, None), None);
+    }
+
+    #[test]
+    fn record_classes_need_known_extremes() {
+        let (min, max) = (Some(2.0), Some(9.0));
+        assert_eq!(class(0.0, 1.0, min, max), Some(PercentileClass::RecordLow));
+        assert_eq!(class(0.0, 2.0, min, max), Some(PercentileClass::MuchBelowNormal));
+        assert_eq!(class(100.0, 10.0, min, max), Some(PercentileClass::RecordHigh));
+        assert_eq!(class(100.0, 9.0, min, max), Some(PercentileClass::MuchAboveNormal));
+        assert_eq!(class(100.0, 10.0, min, None), Some(PercentileClass::MuchAboveNormal));
+    }
+
+    #[test]
+    fn clamp_is_reported_only_without_bounds() {
+        let t = PercentileThresholds {
+            p05: Some(10.0),
+            ..Default::default()
+        };
+        assert_eq!(rank_detail(1.0, &t, None, None), Some((5.0, true)));
+        assert_eq!(rank_detail(10.0, &t, None, None), Some((5.0, false)));
+        assert_eq!(rank_detail(20.0, &t, None, None), Some((5.0, true)));
+        assert_eq!(rank_detail(1.0, &t, Some(0.0), None), Some((0.5, false)));
     }
 
     /// Twenty years of one value each, 1 to 20, on `month-day`.
@@ -345,7 +396,7 @@ mod tests {
         assert_eq!(p.class, Some(PercentileClass::Normal));
         // A value above the record ranks 100.
         let high = from_daily(&values, (6, 15), 99.0, 10).unwrap();
-        assert_eq!(high.class, Some(PercentileClass::MuchAboveNormal));
+        assert_eq!(high.class, Some(PercentileClass::RecordHigh));
         assert_eq!(high.rank, Some(100.0));
     }
 
@@ -356,6 +407,19 @@ mod tests {
         assert!(from_daily(&values, (6, 14), 5.0, 1).is_none());
         assert!(from_daily(&values, (2, 30), 5.0, 1).is_none());
         assert!(from_daily(&values, (6, 15), f32::NAN, 10).is_none());
+    }
+
+    #[test]
+    fn computed_percentile_flags_records() {
+        let values = twenty_years(6, 15);
+        let high = from_daily(&values, (6, 15), 25.0, 10).unwrap();
+        assert_eq!(high.class, Some(PercentileClass::RecordHigh));
+        assert_eq!(high.rank, Some(100.0));
+        assert!(!high.rank_clamped);
+        let low = from_daily(&values, (6, 15), 0.5, 10).unwrap();
+        assert_eq!(low.class, Some(PercentileClass::RecordLow));
+        let inside = from_daily(&values, (6, 15), 10.5, 10).unwrap();
+        assert_eq!(inside.class, Some(PercentileClass::Normal));
     }
 
     #[test]
