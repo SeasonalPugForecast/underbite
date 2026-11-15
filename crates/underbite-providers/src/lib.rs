@@ -7,3 +7,14 @@
 
 #[cfg(test)]
 pub(crate) mod testutil;
+
+pub mod coops;
+pub mod ndbc;
+pub mod nwps;
+pub mod nws_marine;
+pub mod open_meteo_marine;
+pub mod request;
+pub mod session;
+pub mod source;
+pub mod storms;
+pub mod usgs;

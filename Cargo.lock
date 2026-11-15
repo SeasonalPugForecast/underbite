@@ -774,7 +774,10 @@ dependencies = [
 name = "underbite-providers"
 version = "0.1.0"
 dependencies = [
+ "insta",
+ "serde",
  "serde_json",
+ "thiserror",
  "underbite-core",
  "whether-core",
  "whether-providers",

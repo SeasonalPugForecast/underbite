@@ -1,0 +1,1 @@
+//! NDBC active station list.
