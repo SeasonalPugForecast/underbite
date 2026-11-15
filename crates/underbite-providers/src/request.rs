@@ -259,6 +259,9 @@ pub struct Request {
     pub metered: bool,
     /// How the host may cache the response.
     pub cache: CacheHint,
+    /// Text a source carries from one response to the parse of a follow-up (see
+    /// [`Request::with_carry`]).
+    carry: Option<String>,
 }
 
 impl Request {
@@ -276,7 +279,23 @@ impl Request {
                 no_store,
                 ..CacheHint::default()
             },
+            carry: None,
         }
+    }
+
+    /// Carries `text` to [`Source::parse`](crate::source::Source::parse) of this request:
+    /// a source sets it in `follow_up` with what it read from the earlier response (compact
+    /// JSON the source owns), since sources keep no state. The host never sends it, and it
+    /// does not affect caching.
+    #[must_use]
+    pub fn with_carry(mut self, text: impl Into<String>) -> Self {
+        self.carry = Some(text.into());
+        self
+    }
+
+    /// The text carried from an earlier response, if any.
+    pub fn carry(&self) -> Option<&str> {
+        self.carry.as_deref()
     }
 
     /// Adds a header; a secret header (a key) also marks the response not to be stored.
@@ -338,6 +357,7 @@ impl fmt::Debug for Request {
             .field("required", &self.required)
             .field("metered", &self.metered)
             .field("cache", &self.cache)
+            .field("carry_len", &self.carry.as_ref().map(String::len))
             .finish()
     }
 }
@@ -520,6 +540,25 @@ mod tests {
         let mut late = plain.clone();
         late.url.push_str("&token=T");
         assert!(!late.cache.no_store && !late.may_store_on_disk());
+    }
+
+    #[test]
+    fn request_carry_stays_out_of_url_headers_cache_and_debug() {
+        let plain = Request::new(
+            "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/8518750/datums.json?units=metric".into(),
+            Resource::CoopsDatums,
+            station_target(),
+        );
+        assert_eq!(plain.carry(), None);
+        let carried = plain.clone().with_carry(r#"{"harcon":"CARRIED-TEXT"}"#);
+        assert_eq!(carried.carry(), Some(r#"{"harcon":"CARRIED-TEXT"}"#));
+        assert_eq!(carried.url, plain.url);
+        assert_eq!(carried.headers, plain.headers);
+        assert_eq!(carried.cache, plain.cache);
+        assert_eq!(carried.may_store_on_disk(), plain.may_store_on_disk());
+        let debug = format!("{carried:?}");
+        assert!(!debug.contains("CARRIED-TEXT"), "{debug}");
+        assert!(debug.contains("carry_len: Some(25)"), "{debug}");
     }
 
     #[test]

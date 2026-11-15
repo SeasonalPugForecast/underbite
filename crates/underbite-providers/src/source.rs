@@ -575,12 +575,14 @@ pub(crate) mod fake {
     use super::*;
     use crate::request::{Place, Resource, Window};
 
-    /// A request the fake plans: its URL and flags; the target is the planned one.
+    /// A request the fake plans: its URL and flags; the target is the planned one. A
+    /// follow-up that `carries` takes the earlier response's values along in its carry.
     #[derive(Clone, Debug, PartialEq, Eq)]
     pub(crate) struct FakeRequest {
         pub(crate) url: String,
         pub(crate) required: bool,
         pub(crate) metered: bool,
+        pub(crate) carries: bool,
     }
 
     impl FakeRequest {
@@ -589,6 +591,7 @@ pub(crate) mod fake {
                 url: url.to_string(),
                 required: true,
                 metered: false,
+                carries: false,
             }
         }
 
@@ -605,6 +608,12 @@ pub(crate) mod fake {
             self
         }
 
+        #[must_use]
+        pub(crate) fn carrying(mut self) -> Self {
+            self.carries = true;
+            self
+        }
+
         fn build(&self, target: &Target) -> Request {
             let mut request = Request::new(self.url.clone(), Resource::Fake, target.clone());
             request.required = self.required;
@@ -615,7 +624,8 @@ pub(crate) mod fake {
 
     /// A source that plans fixed URLs, follows up by URL, and parses bodies of the form
     /// `{"water_temperature": [[unix_seconds, value], …], …}` into series (heights in the
-    /// gauge datum for gage height, lake level and tide) for the target's measurements.
+    /// gauge datum for gage height, lake level and tide) for the target's measurements,
+    /// together with the values a carrying follow-up brought along.
     #[derive(Clone, Debug)]
     pub(crate) struct FakeSource {
         pub(crate) id: SourceId,
@@ -727,14 +737,23 @@ pub(crate) mod fake {
         fn follow_up(
             &self,
             request: &Request,
-            _response: &Response<'_>,
+            response: &Response<'_>,
             _ctx: &FetchContext,
         ) -> Result<Vec<Request>, SourceError> {
-            Ok(self
-                .follow_ups
-                .get(&request.url)
-                .map(|next| next.iter().map(|r| r.build(&request.target)).collect())
-                .unwrap_or_default())
+            let Some(next) = self.follow_ups.get(&request.url) else {
+                return Ok(Vec::new());
+            };
+            let mut requests = Vec::with_capacity(next.len());
+            for r in next {
+                let built = r.build(&request.target);
+                requests.push(if r.carries {
+                    let body = check_response(request, response)?;
+                    built.with_carry(String::from_utf8_lossy(body))
+                } else {
+                    built
+                });
+            }
+            Ok(requests)
         }
 
         fn parse(
@@ -745,8 +764,16 @@ pub(crate) mod fake {
             out: &mut Fragments,
         ) -> Result<(), SourceError> {
             let body = check_response(request, response)?;
-            let values: BTreeMap<Measurement, Vec<(i64, f32)>> =
-                serde_json::from_slice(body).map_err(|e| SourceError::Parse(e.to_string()))?;
+            let decode = |bytes: &[u8]| {
+                serde_json::from_slice::<BTreeMap<Measurement, Vec<(i64, f32)>>>(bytes)
+                    .map_err(|e| SourceError::Parse(e.to_string()))
+            };
+            let mut values = decode(body)?;
+            if let Some(carry) = request.carry() {
+                for (measurement, points) in decode(carry.as_bytes())? {
+                    values.entry(measurement).or_default().extend(points);
+                }
+            }
             for (measurement, points) in values {
                 if !request.target.measurements.contains(&measurement) {
                     continue;
@@ -1306,6 +1333,67 @@ mod tests {
         for m in all {
             assert!(shapes.iter().any(|s| s.fits(m)), "{m:?}");
         }
+    }
+
+    #[test]
+    fn source_fake_chain_carries_a_value_into_the_follow_up_parse() {
+        let src = FakeSource::new("fake-chain", &[Measurement::WaterTemperature])
+            .plans(FakeRequest::required("https://fake.test/first"))
+            .follows(
+                "https://fake.test/first",
+                FakeRequest::required("https://fake.test/second").carrying(),
+            );
+        let source: &dyn Source = &src;
+        let ctx = fake::ctx(NOW);
+        let target = fake::target("1", &[Measurement::WaterTemperature], NOW);
+        let first = source
+            .plan(&target, &Requirements::default(), &ctx)
+            .unwrap()
+            .remove(0);
+        assert_eq!(first.carry(), None);
+
+        // The first response holds a value the second does not.
+        let first_body = br#" {"water_temperature":[[1793999000,14.5]]} "#;
+        let next = source
+            .follow_up(&first, &Response::new(200, first_body), &ctx)
+            .unwrap();
+        assert_eq!(next.len(), 1);
+        let second = &next[0];
+        assert_eq!(second.url, "https://fake.test/second");
+        assert_eq!(
+            second.carry(),
+            Some(r#"{"water_temperature":[[1793999000,14.5]]}"#)
+        );
+        assert!(!second.url.contains("14.5") && second.headers.is_empty());
+
+        let mut out = Fragments::new();
+        let second_body = br#"{"water_temperature":[[1793999600,14.6]]}"#;
+        source
+            .parse(second, &Response::new(200, second_body), &ctx, &mut out)
+            .unwrap();
+        let [fragment] = out.fragments() else {
+            panic!("one fragment, got {:?}", out.fragments());
+        };
+        let FragmentValue::Series(series) = &fragment.value else {
+            panic!("temperature is a series");
+        };
+        let values: Vec<(i64, f32)> = series
+            .samples()
+            .iter()
+            .map(|s| (s.time.0, s.value))
+            .collect();
+        assert_eq!(values, [(1_793_999_000, 14.5), (1_793_999_600, 14.6)]);
+
+        // A follow-up that does not carry gets nothing from the first response.
+        let src = src.follows(
+            "https://fake.test/first",
+            FakeRequest::required("https://fake.test/other"),
+        );
+        let next = src
+            .follow_up(&first, &Response::new(200, first_body), &ctx)
+            .unwrap();
+        assert_eq!(next[1].url, "https://fake.test/other");
+        assert_eq!(next[1].carry(), None);
     }
 
     #[test]
