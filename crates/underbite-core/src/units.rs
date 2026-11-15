@@ -8,6 +8,8 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::model::TurbidityUnit;
+
 pub use whether_core::units::{DistanceUnit, PressureUnit, WindUnit};
 
 /// Metres per international foot: exactly 0.3048 by definition.
@@ -238,17 +240,6 @@ fn hpa_per(unit: PressureUnit) -> f64 {
         PressureUnit::MmHg => HPA_PER_MMHG,
         PressureUnit::Kpa => HPA_PER_KPA,
     }
-}
-
-/// A turbidity unit label.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
-pub enum TurbidityUnit {
-    /// Formazin nephelometric units.
-    Fnu,
-    /// Formazin turbidity units.
-    Ftu,
-    /// Nephelometric turbidity units.
-    Ntu,
 }
 
 impl TurbidityUnit {
