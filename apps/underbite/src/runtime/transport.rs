@@ -13,6 +13,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Duration;
 
+use serde::Deserialize;
 use underbite_core::time::UnixTime;
 use underbite_providers::request::{
     CacheHint, Request, Response, is_secret_header, redact_url, secret_values,
@@ -180,32 +181,22 @@ impl Fetched {
         }
     }
 }
-
 /// Why a call got no response. Messages never contain secrets.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
 pub(crate) enum TransportError {
     /// The request or connection timed out.
+    #[error("timed out: {0}")]
     Timeout(String),
     /// The body was larger than the cap.
+    #[error("response larger than {0} bytes")]
     TooLarge(u64),
     /// DNS, TLS, connection or protocol failure.
+    #[error("{0}")]
     Failed(String),
     /// Replay has no route for this (redacted) URL.
+    #[error("no replay route for {0}")]
     NoRoute(String),
 }
-
-impl fmt::Display for TransportError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Timeout(which) => write!(f, "timed out: {which}"),
-            Self::TooLarge(cap) => write!(f, "response larger than {cap} bytes"),
-            Self::Failed(message) => f.write_str(message),
-            Self::NoRoute(url) => write!(f, "no replay route for {url}"),
-        }
-    }
-}
-
-impl std::error::Error for TransportError {}
 
 /// Performs HTTP calls. Implemented by [`UreqTransport`] and [`Replay`].
 pub(crate) trait Transport: Send + Sync {
@@ -369,16 +360,9 @@ pub(crate) struct Route {
 }
 
 /// Why a routes file could not be read.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Debug, thiserror::Error)]
+#[error("{0}")]
 pub(crate) struct RoutesError(String);
-
-impl fmt::Display for RoutesError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.0)
-    }
-}
-
-impl std::error::Error for RoutesError {}
 
 /// A transport that answers from `<dir>/routes.toml` (first matching route wins) and records
 /// the redacted URLs it was asked for. An unmatched URL is an error, so a missing route fails
@@ -458,94 +442,40 @@ fn guess_content_type(file: &Path) -> &'static str {
     }
 }
 
-#[derive(Default)]
-struct Draft {
-    matches: Option<String>,
-    file: Option<String>,
+/// The `[[route]]` tables of a routes file.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RoutesFile {
+    #[serde(default)]
+    route: Vec<RouteEntry>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RouteEntry {
+    #[serde(rename = "match")]
+    matches: String,
+    file: PathBuf,
     status: Option<u16>,
     content_type: Option<String>,
-    line: usize,
 }
 
-impl Draft {
-    fn finish(self) -> Result<Route, RoutesError> {
-        let missing =
-            |what: &str| RoutesError(format!("route at line {}: missing {what}", self.line));
-        let file = PathBuf::from(self.file.clone().ok_or_else(|| missing("file"))?);
-        Ok(Route {
-            matches: self.matches.clone().ok_or_else(|| missing("match"))?,
-            content_type: self
-                .content_type
-                .clone()
-                .unwrap_or_else(|| guess_content_type(&file).to_string()),
-            file,
-            status: self.status.unwrap_or(200),
-        })
-    }
-}
-
-/// Parses the `[[route]]` tables of a routes file: `match`, `file` and optionally `status`
-/// and `content_type`. Only this shape is accepted; anything else is an error.
+/// Parses a routes file: `[[route]]` tables with `match`, `file` and optionally `status` and
+/// `content_type`.
 fn parse_routes(text: &str) -> Result<Vec<Route>, RoutesError> {
-    let mut routes = Vec::new();
-    let mut draft: Option<Draft> = None;
-    for (index, raw) in text.lines().enumerate() {
-        let line_no = index + 1;
-        let bad = |what: &str| RoutesError(format!("line {line_no}: {what}"));
-        let line = raw.trim();
-        if line.is_empty() || line.starts_with('#') {
-            continue;
-        }
-        if line == "[[route]]" {
-            if let Some(done) = draft.take() {
-                routes.push(done.finish()?);
-            }
-            draft = Some(Draft {
-                line: line_no,
-                ..Draft::default()
-            });
-            continue;
-        }
-        let current = draft.as_mut().ok_or_else(|| bad("expected [[route]]"))?;
-        let (key, value) = line
-            .split_once('=')
-            .ok_or_else(|| bad("expected key = value"))?;
-        let (key, value) = (key.trim(), value.trim());
-        if key == "status" {
-            current.status = Some(value.parse().map_err(|_| bad("status is not a number"))?);
-            continue;
-        }
-        let text = parse_string(value).ok_or_else(|| bad("expected a quoted string"))?;
-        match key {
-            "match" => current.matches = Some(text),
-            "file" => current.file = Some(text),
-            "content_type" => current.content_type = Some(text),
-            other => return Err(bad(&format!("unknown key {other}"))),
-        }
-    }
-    if let Some(done) = draft {
-        routes.push(done.finish()?);
-    }
-    Ok(routes)
-}
-
-/// A double-quoted string with `\"` and `\\` escapes, then nothing but a comment.
-fn parse_string(value: &str) -> Option<String> {
-    let mut chars = value.strip_prefix('"')?.chars();
-    let mut out = String::new();
-    loop {
-        match chars.next()? {
-            '"' => break,
-            '\\' => out.push(match chars.next()? {
-                '"' => '"',
-                '\\' => '\\',
-                _ => return None,
-            }),
-            c => out.push(c),
-        }
-    }
-    let rest = chars.as_str().trim();
-    (rest.is_empty() || rest.starts_with('#')).then_some(out)
+    let parsed: RoutesFile = toml::from_str(text).map_err(|e| RoutesError(e.to_string()))?;
+    Ok(parsed
+        .route
+        .into_iter()
+        .map(|entry| Route {
+            content_type: entry
+                .content_type
+                .unwrap_or_else(|| guess_content_type(&entry.file).to_string()),
+            matches: entry.matches,
+            status: entry.status.unwrap_or(200),
+            file: entry.file,
+        })
+        .collect())
 }
 
 #[cfg(test)]
