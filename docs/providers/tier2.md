@@ -605,7 +605,7 @@ Result columns used: `ActivityStartDate` (YYYY-MM-DD), `ActivityStartTime/Time`,
 
 ## USGS 3DHP (National Map hydrography)
 
-Verdict: **usable** (2026-11-08).
+Verdict: **usable** (2026-11-08). Geometry, flow direction, waterbodies and query limits are in `docs/providers/hydro.md`.
 
 - Base: `https://hydro.nationalmap.gov/arcgis/rest/services`. Services listed: `3DHP_all`
   (`FeatureServer` and `MapServer`), `nhd`, `NHDPlus_HR`, `wbd` (`FeatureServer` and `MapServer`).
