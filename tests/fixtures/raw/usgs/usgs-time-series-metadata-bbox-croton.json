@@ -1,0 +1,231 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01375000",
+        "parameter_code": "00065",
+        "parameter_name": "Gage height",
+        "statistic_id": "00011",
+        "computation_identifier": "Instantaneous",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2026-11-15T05:45:00+00:00",
+        "unit_of_measure": "ft",
+        "primary": "Primary"
+      },
+      "id": "1d9a520f9f5d468099e5726040bfe317",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01375000",
+        "parameter_code": "00060",
+        "parameter_name": "Discharge",
+        "statistic_id": null,
+        "computation_identifier": "Max At Event Time",
+        "begin": "1934-03-05T05:00:00+00:00",
+        "end": "2025-05-10T04:00:00+00:00",
+        "unit_of_measure": "ft^3/s",
+        "primary": "Primary"
+      },
+      "id": "2a4a2a25e0ad4aa08c8600ef14e0e89e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01375500",
+        "parameter_code": "00060",
+        "parameter_name": "Discharge",
+        "statistic_id": "00003",
+        "computation_identifier": "Mean",
+        "begin": null,
+        "end": null,
+        "unit_of_measure": "ft^3/s",
+        "primary": "Primary"
+      },
+      "id": "4de6c79cc2374e739656a28ac2c34b7f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-0137499350",
+        "parameter_code": "00060",
+        "parameter_name": "Discharge",
+        "statistic_id": "00011",
+        "computation_identifier": "Instantaneous",
+        "begin": "1999-06-11T05:00:00+00:00",
+        "end": "2009-07-01T04:45:00+00:00",
+        "unit_of_measure": "ft^3/s",
+        "primary": "Primary"
+      },
+      "id": "4f674eda8ab24c86b4d5b6bdce9d062a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01375000",
+        "parameter_code": "00060",
+        "parameter_name": "Discharge",
+        "statistic_id": "00003",
+        "computation_identifier": "Mean",
+        "begin": "1933-07-29T04:00:00+00:00",
+        "end": "2026-11-13T05:00:00+00:00",
+        "unit_of_measure": "ft^3/s",
+        "primary": "Primary"
+      },
+      "id": "64e423a35a4a4a45baebc4312f802c58",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-0137499350",
+        "parameter_code": "00060",
+        "parameter_name": "Discharge",
+        "statistic_id": "00003",
+        "computation_identifier": "Mean",
+        "begin": "1999-06-11T04:00:00+00:00",
+        "end": "2009-06-29T04:00:00+00:00",
+        "unit_of_measure": "ft^3/s",
+        "primary": "Primary"
+      },
+      "id": "69cebb42d4594469be4a238296a6efed",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01375500",
+        "parameter_code": "00065",
+        "parameter_name": "Gage height",
+        "statistic_id": null,
+        "computation_identifier": "Max At Event Time",
+        "begin": "1934-05-03T04:00:00+00:00",
+        "end": "1941-02-07T05:00:00+00:00",
+        "unit_of_measure": "ft",
+        "primary": "Primary"
+      },
+      "id": "8b1eb4c5e8984cd2b8d4d1b9573f6c1c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-0137499350",
+        "parameter_code": "00065",
+        "parameter_name": "Gage height",
+        "statistic_id": null,
+        "computation_identifier": "Max At Event Time",
+        "begin": "1999-09-16T04:00:00+00:00",
+        "end": "2008-03-08T05:00:00+00:00",
+        "unit_of_measure": "ft",
+        "primary": "Primary"
+      },
+      "id": "ad9e466981dd42aaac7d6f01638f37d6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01375500",
+        "parameter_code": "00060",
+        "parameter_name": "Discharge",
+        "statistic_id": null,
+        "computation_identifier": "Max At Event Time",
+        "begin": "1934-05-03T04:00:00+00:00",
+        "end": "1941-02-07T05:00:00+00:00",
+        "unit_of_measure": "ft^3/s",
+        "primary": "Primary"
+      },
+      "id": "b3ee8ed602624e11ac49e43791eb2b30",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01375000",
+        "parameter_code": "00065",
+        "parameter_name": "Gage height",
+        "statistic_id": null,
+        "computation_identifier": "Max At Event Time",
+        "begin": "1934-03-05T05:00:00+00:00",
+        "end": "2025-05-10T04:00:00+00:00",
+        "unit_of_measure": "ft",
+        "primary": "Primary"
+      },
+      "id": "b6ad27161d6443968ae9c2b4d6b3db8b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-0137499350",
+        "parameter_code": "00060",
+        "parameter_name": "Discharge",
+        "statistic_id": null,
+        "computation_identifier": "Max At Event Time",
+        "begin": "1999-09-16T04:00:00+00:00",
+        "end": "2008-03-08T05:00:00+00:00",
+        "unit_of_measure": "ft^3/s",
+        "primary": "Primary"
+      },
+      "id": "bf5320f9433a43769901d913b7c5a7b7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01375000",
+        "parameter_code": "00060",
+        "parameter_name": "Discharge",
+        "statistic_id": "00011",
+        "computation_identifier": "Instantaneous",
+        "begin": "1989-10-11T05:00:00+00:00",
+        "end": "2026-11-15T05:45:00+00:00",
+        "unit_of_measure": "ft^3/s",
+        "primary": "Primary"
+      },
+      "id": "e32aab5ccc774c11b172102b97abc0d8",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 12,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=json&bbox=-73.91,41.19,-73.81,41.29&limit=100&skipGeometry=true&properties=monitoring_location_id,parameter_code,parameter_name,statistic_id,computation_identifier,begin,end,unit_of_measure,primary"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=jsonld&bbox=-73.91,41.19,-73.81,41.29&limit=100&skipGeometry=true&properties=monitoring_location_id,parameter_code,parameter_name,statistic_id,computation_identifier,begin,end,unit_of_measure,primary"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=html&bbox=-73.91,41.19,-73.81,41.29&limit=100&skipGeometry=true&properties=monitoring_location_id,parameter_code,parameter_name,statistic_id,computation_identifier,begin,end,unit_of_measure,primary"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=csv&bbox=-73.91,41.19,-73.81,41.29&limit=100&skipGeometry=true&properties=monitoring_location_id,parameter_code,parameter_name,statistic_id,computation_identifier,begin,end,unit_of_measure,primary"
+    },
+    {
+      "type": "application/json",
+      "title": "Time series metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-15T23:26:01.268508Z"
+}

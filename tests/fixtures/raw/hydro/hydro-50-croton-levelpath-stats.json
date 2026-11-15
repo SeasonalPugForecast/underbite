@@ -1,0 +1,1 @@
+{"displayFieldName":"","fieldAliases":{"km":"km","minhs":"minhs","maxhs":"maxhs"},"fields":[{"name":"km","type":"esriFieldTypeDouble","alias":"km"},{"name":"minhs","type":"esriFieldTypeDouble","alias":"minhs"},{"name":"maxhs","type":"esriFieldTypeDouble","alias":"maxhs"}],"features":[{"attributes":{"km":82.299289279999996,"minhs":3767999,"maxhs":6884337}}]}

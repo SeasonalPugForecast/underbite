@@ -1,0 +1,407 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01374390",
+        "monitoring_location_name": "FURNACE BROOK NEAR PEEKSKILL NY",
+        "monitoring_location_number": "01374390",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010105",
+        "drainage_area": 5.45,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01374390",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8981930351293,
+          41.2395385984803
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01374398",
+        "monitoring_location_name": "FURNACE BROOK NEAR CROTON-ON-HUDSON NY",
+        "monitoring_location_number": "01374398",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010105",
+        "drainage_area": 7.21,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01374398",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9062487766059,
+          41.2309276028554
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01374400",
+        "monitoring_location_name": "FURNACE BROOK AT OSCAWANA NY",
+        "monitoring_location_number": "01374400",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010105",
+        "drainage_area": 7.33,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01374400",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9087488469257,
+          41.2298165050316
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01374993",
+        "monitoring_location_name": "HUNTER BROOK BELOW MILL POND NEAR YORKTOWN NY",
+        "monitoring_location_number": "01374993",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 5.82,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01374993",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8337464630628,
+          41.2803717719077
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-0137499350",
+        "monitoring_location_name": "HUNTER BROOK SOUTH OF YORKTOWN NY",
+        "monitoring_location_number": "0137499350",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 7.42,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-0137499350",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8427777777778,
+          41.2619444444444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-0137499355",
+        "monitoring_location_name": "HUNTER BROOK AT MOUTH NEAR YORKTOWN NY",
+        "monitoring_location_number": "0137499355",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 7.47,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-0137499355",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8429135162365,
+          41.2603718152476
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-0137499370",
+        "monitoring_location_name": "TWIN LAKES AT DAM NEAR CROTON-ON-HUDSON NY",
+        "monitoring_location_number": "0137499370",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 0.81,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-0137499370",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8548583380819,
+          41.262038466525
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-0137499375",
+        "monitoring_location_name": "TWIN LAKES OUTLET AT MOUTH NEAR CROTON-ON-HUDSON",
+        "monitoring_location_number": "0137499375",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 1.12,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-0137499375",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8504137756193,
+          41.2564829283477
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-0137499405",
+        "monitoring_location_name": "BAILEY BROOK AT MOUTH NEAR CROTON-ON-HUDSON",
+        "monitoring_location_number": "0137499405",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 2.76,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-0137499405",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8401355268492,
+          41.2264832957428
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-0137499455",
+        "monitoring_location_name": "PURDY BROOK AT MOUTH NEAR CROTON-ON-HUDSON",
+        "monitoring_location_number": "0137499455",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 0.43,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-0137499455",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8468024054262,
+          41.2264832883697
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01375000",
+        "monitoring_location_name": "CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY",
+        "monitoring_location_number": "01375000",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 378.0,
+        "altitude": 43.12,
+        "vertical_datum": "NAVD88",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01375000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8588888888889,
+          41.2250277777778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01375497",
+        "monitoring_location_name": "GLENDALE LAKE AT DAM AT CROTON-ON-HUDSON NY",
+        "monitoring_location_number": "01375497",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 0.15,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01375497",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8573581865555,
+          41.2117612670319
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01375499",
+        "monitoring_location_name": "BIRD BROOK NORTH-EAST OF CROTON-ON-HUDSON NY",
+        "monitoring_location_number": "01375499",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 0.31,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01375499",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8626361348654,
+          41.2123168087457
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-01375500",
+        "monitoring_location_name": "BIRD BROOK NEAR CROTON NY",
+        "monitoring_location_number": "01375500",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 0.4,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-01375500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8663888888889,
+          41.2119444444444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-0137552105",
+        "monitoring_location_name": "INDIAN BROOK AT MOUTH AT CROTON-ON-HUDSON NY",
+        "monitoring_location_number": "0137552105",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": 1.29,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-0137552105",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8720807093485,
+          41.1906504445542
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "USGS-411707073500900",
+        "monitoring_location_name": "MILL POND TRIB OFF HUNTER BROOK RD AT YORKTOWN",
+        "monitoring_location_number": "411707073500900",
+        "site_type_code": "ST",
+        "hydrologic_unit_code": "020301010307",
+        "drainage_area": null,
+        "altitude": null,
+        "vertical_datum": null,
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-411707073500900",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8354131607084,
+          41.2853717578381
+        ]
+      }
+    }
+  ],
+  "numberReturned": 16,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=json&bbox=-73.91,41.19,-73.81,41.29&site_type_code=ST&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=jsonld&bbox=-73.91,41.19,-73.81,41.29&site_type_code=ST&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=html&bbox=-73.91,41.19,-73.81,41.29&site_type_code=ST&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=csv&bbox=-73.91,41.19,-73.81,41.29&site_type_code=ST&limit=50&properties=id,monitoring_location_name,monitoring_location_number,site_type_code,hydrologic_unit_code,drainage_area,altitude,vertical_datum,time_zone_abbreviation,uses_daylight_savings"
+    },
+    {
+      "type": "application/json",
+      "title": "Monitoring locations",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations"
+    }
+  ],
+  "timeStamp": "2026-11-15T23:26:00.381968Z"
+}

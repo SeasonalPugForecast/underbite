@@ -19,6 +19,8 @@ request URL and the recording date:
 - [ncds](raw/ncds/README.md)
 - [bathymetry](raw/bathymetry/README.md)
 - [tier2](raw/tier2/README.md)
+- [hydro](raw/hydro/README.md)
+- [weather](raw/weather/README.md)
 
 ## Conventions
 
