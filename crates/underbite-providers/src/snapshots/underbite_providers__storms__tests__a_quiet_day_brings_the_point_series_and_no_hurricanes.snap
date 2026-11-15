@@ -1,0 +1,10 @@
+---
+source: crates/underbite-providers/src/storms.rs
+expression: listed
+---
+- "open-meteo-storm https://api.open-meteo.com/data/ecmwf_ifs025/static/meta.json fresh=false metered=false"
+- "open-meteo-storm https://api.open-meteo.com/data/ncep_gfs025/static/meta.json fresh=false metered=false"
+- "open-meteo-storm https://api.open-meteo.com/data/cmc_gem_gdps_15km/static/meta.json fresh=false metered=false"
+- "open-meteo-storm https://api.open-meteo.com/data/dwd_icon/static/meta.json fresh=false metered=false"
+- "open-meteo-storm https://api.open-meteo.com/v1/forecast?latitude=40.7&longitude=-74.01&models=ecmwf_ifs025,gfs_seamless,gem_seamless,icon_seamless&hourly=precipitation,snowfall,wind_gusts_10m,pressure_msl&forecast_days=10&timezone=auto&timeformat=unixtime&wind_speed_unit=kmh&precipitation_unit=mm fresh=false metered=true"
+- "nhc https://www.nhc.noaa.gov/CurrentStorms.json fresh=true metered=false"
