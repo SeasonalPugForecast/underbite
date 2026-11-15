@@ -1,0 +1,52 @@
+---
+source: crates/underbite-providers/src/request.rs
+expression: req
+---
+Request {
+    url: "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&station=8518750&datum=MLLW&interval=hilo",
+    headers: [],
+    resource: CoopsTideHighLow,
+    target: Target {
+        place: Station {
+            station: StationRef {
+                source: SourceId(
+                    "coops",
+                ),
+                id: "8518750",
+                name: "The Battery",
+                kind: TideHarmonic,
+                latitude: 40.7003,
+                longitude: -74.0142,
+                bin: None,
+                reference_id: None,
+            },
+            distance_m: Some(
+                640.0,
+            ),
+            relation: SameWaterBody,
+        },
+        measurements: {
+            Tide,
+        },
+        window: Window {
+            from: UnixTime(
+                1794000000,
+            ),
+            to: UnixTime(
+                1794086400,
+            ),
+        },
+        datum: Some(
+            Mllw,
+        ),
+    },
+    required: false,
+    metered: false,
+    cache: CacheHint {
+        fresh: false,
+        no_store: false,
+        max_age: Some(
+            3600,
+        ),
+    },
+}
