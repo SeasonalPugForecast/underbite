@@ -1,0 +1,10 @@
+{
+  "refStationId": "",
+  "type": "R",
+  "heightOffsetHighTide": 0.0,
+  "heightOffsetLowTide": 0.0,
+  "timeOffsetHighTide": 0,
+  "timeOffsetLowTide": 0,
+  "heightAdjustedType": "",
+  "self": null
+}
