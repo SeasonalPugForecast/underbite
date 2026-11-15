@@ -53,8 +53,17 @@ pub enum Key {
     PercentileNormal,
     PercentileAbove,
     PercentileMuchAbove,
-    /// `{band}`, `{ordinal}`, `{date}`.
+    /// `{band}`, `{rank}` (a rank text), `{date}`.
     PercentileText,
+    /// `{band}`, `{date}`.
+    PercentileNoRank,
+    /// `{ordinal}`.
+    PercentileRank,
+    PercentileRankBelow,
+    PercentileRankAbove,
+    /// `{date}`.
+    PercentileRecordLow,
+    PercentileRecordHigh,
     WaterRiver,
     WaterLake,
     WaterTidal,
@@ -117,7 +126,7 @@ impl From<NoticeKind> for SafetyKey {
 
 impl Key {
     /// Every key, for tests and for a later localisation.
-    pub const ALL: [Self; 47] = [
+    pub const ALL: [Self; 53] = [
         Self::UpdatedJustNow,
         Self::UpdatedMinutes,
         Self::UpdatedHours,
@@ -153,6 +162,12 @@ impl Key {
         Self::PercentileAbove,
         Self::PercentileMuchAbove,
         Self::PercentileText,
+        Self::PercentileNoRank,
+        Self::PercentileRank,
+        Self::PercentileRankBelow,
+        Self::PercentileRankAbove,
+        Self::PercentileRecordLow,
+        Self::PercentileRecordHigh,
         Self::WaterRiver,
         Self::WaterLake,
         Self::WaterTidal,
@@ -222,10 +237,19 @@ impl Key {
             Self::PercentileNormal => ("normal", "normal"),
             Self::PercentileAbove => ("above normal", "above normal"),
             Self::PercentileMuchAbove => ("much above normal", "much above normal"),
-            Self::PercentileText => (
-                "{band}, {ordinal} percentile for {date}",
-                "{band}, {ordinal} percentile for {date}",
+            Self::PercentileText => ("{band}, {rank} for {date}", "{band}, {rank} for {date}"),
+            Self::PercentileNoRank => ("{band} for {date}", "{band} for {date}"),
+            Self::PercentileRank => ("{ordinal} percentile", "{ordinal} percentile"),
+            Self::PercentileRankBelow => (
+                "below the {ordinal} percentile",
+                "below the {ordinal} percentile",
             ),
+            Self::PercentileRankAbove => (
+                "above the {ordinal} percentile",
+                "above the {ordinal} percentile",
+            ),
+            Self::PercentileRecordLow => ("record low for {date}", "record low for {date}"),
+            Self::PercentileRecordHigh => ("record high for {date}", "record high for {date}"),
             Self::WaterRiver => ("River or stream", "River or stream"),
             Self::WaterLake => ("Lake or reservoir", "Lake or reservoir"),
             Self::WaterTidal => ("Tidal river or estuary", "Tidal river or estuary"),

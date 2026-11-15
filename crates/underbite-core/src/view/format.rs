@@ -9,7 +9,7 @@ use jiff::tz::TimeZone;
 use whether_core::presentation::TimeFormat;
 
 use crate::datum::{Height, VerticalDatum};
-use crate::model::{TurbidityUnit, WaterType};
+use crate::model::{PercentileClass, TurbidityUnit, WaterType};
 use crate::provenance::{Provenance, Relation, ValueKind};
 use crate::time::{LocalDate, UnixTime, UtcOffset, zone};
 use crate::units::PressureUnit;
@@ -299,29 +299,53 @@ impl Formatter {
         self.strings.fmt(key, &[("n", &n.to_string())])
     }
 
-    /// "normal, 45th percentile for Nov 8".
-    pub fn percentile(&self, percentile: f32, on: LocalDate) -> String {
-        let p = percentile.clamp(0.0, 100.0);
-        let band = if p < 10.0 {
-            Key::PercentileMuchBelow
-        } else if p < 25.0 {
-            Key::PercentileBelow
-        } else if p <= 75.0 {
-            Key::PercentileNormal
-        } else if p <= 90.0 {
-            Key::PercentileAbove
-        } else {
-            Key::PercentileMuchAbove
+    /// "normal, 45th percentile for Nov 8". The class comes from the model (it is decided in the
+    /// derivation, not here); `rank` adds the percentile. A clamped rank reads "below the 5th
+    /// percentile" or "above the 95th percentile". Without a class there is no text.
+    pub fn percentile(
+        &self,
+        class: Option<PercentileClass>,
+        rank: Option<f32>,
+        rank_clamped: bool,
+        on: LocalDate,
+    ) -> Option<String> {
+        let s = self.strings;
+        let date = self.date(on);
+        let band = match class? {
+            PercentileClass::RecordLow => {
+                return Some(s.fmt(Key::PercentileRecordLow, &[("date", &date)]));
+            }
+            PercentileClass::RecordHigh => {
+                return Some(s.fmt(Key::PercentileRecordHigh, &[("date", &date)]));
+            }
+            PercentileClass::MuchBelowNormal => Key::PercentileMuchBelow,
+            PercentileClass::BelowNormal => Key::PercentileBelow,
+            PercentileClass::Normal => Key::PercentileNormal,
+            PercentileClass::AboveNormal => Key::PercentileAbove,
+            PercentileClass::MuchAboveNormal => Key::PercentileMuchAbove,
         };
-        let whole = round_u32(p);
-        self.strings.fmt(
+        let band = s.get(band);
+        let Some(rank) = rank else {
+            return Some(s.fmt(Key::PercentileNoRank, &[("band", band), ("date", &date)]));
+        };
+        let rank = rank.clamp(0.0, 100.0);
+        let text = if rank_clamped {
+            let (key, bound) = if rank < 50.0 {
+                (Key::PercentileRankBelow, 5)
+            } else {
+                (Key::PercentileRankAbove, 95)
+            };
+            s.fmt(key, &[("ordinal", &ordinal(bound))])
+        } else {
+            s.fmt(
+                Key::PercentileRank,
+                &[("ordinal", &ordinal(round_u32(rank)))],
+            )
+        };
+        Some(s.fmt(
             Key::PercentileText,
-            &[
-                ("band", self.strings.get(band)),
-                ("ordinal", &ordinal(whole)),
-                ("date", &self.date(on)),
-            ],
-        )
+            &[("band", band), ("rank", &text), ("date", &date)],
+        ))
     }
 
     // -- provenance ------------------------------------------------------------------------
@@ -647,20 +671,55 @@ mod tests {
 
     #[test]
     fn percentile_text() {
+        use crate::derive::percentile::class;
         let f = fmt(us(), Voice::Plain, TimeFormat::H12);
         let day = LocalDate {
             year: 2026,
             month: 11,
             day: 8,
         };
-        assert_eq!(f.percentile(45.0, day), "normal, 45th percentile for Nov 8");
+        let p = |c, r, clamped| f.percentile(c, r, clamped, day).unwrap();
+        let c = Some(PercentileClass::Normal);
+        assert_eq!(p(c, Some(45.0), false), "normal, 45th percentile for Nov 8");
+        assert_eq!(p(c, None, false), "normal for Nov 8");
         assert_eq!(
-            f.percentile(4.0, day),
+            p(Some(PercentileClass::MuchBelowNormal), Some(4.0), false),
             "much below normal, 4th percentile for Nov 8"
         );
         assert_eq!(
-            f.percentile(92.0, day),
-            "much above normal, 92nd percentile for Nov 8"
+            p(Some(PercentileClass::MuchAboveNormal), Some(95.0), true),
+            "much above normal, above the 95th percentile for Nov 8"
+        );
+        assert_eq!(
+            p(Some(PercentileClass::MuchBelowNormal), Some(5.0), true),
+            "much below normal, below the 5th percentile for Nov 8"
+        );
+        assert_eq!(
+            p(Some(PercentileClass::RecordLow), Some(0.0), true),
+            "record low for Nov 8"
+        );
+        assert_eq!(
+            p(Some(PercentileClass::RecordHigh), Some(100.0), true),
+            "record high for Nov 8"
+        );
+        assert_eq!(f.percentile(None, Some(45.0), false, day), None);
+        // Records come from the model's class, decided against the record min and max.
+        assert_eq!(
+            p(class(0.0, 1.0, Some(2.0), None), Some(0.0), true),
+            "record low for Nov 8"
+        );
+        assert_eq!(
+            p(class(100.0, 9.0, None, Some(8.0)), Some(100.0), true),
+            "record high for Nov 8"
+        );
+        // The boundary between normal and above normal is the derivation's: 76.0, not 75.9.
+        assert_eq!(
+            p(class(75.9, 10.0, None, None), Some(75.9), false),
+            "normal, 76th percentile for Nov 8"
+        );
+        assert_eq!(
+            p(class(76.0, 10.0, None, None), Some(76.0), false),
+            "above normal, 76th percentile for Nov 8"
         );
     }
 
@@ -771,7 +830,8 @@ mod tests {
                 .full(),
                 f.wind_speed(Some(5.0)).full() + " from " + &wind,
                 f.pressure(Some(1013.25)).full(),
-                f.percentile(45.0, day),
+                f.percentile(Some(PercentileClass::Normal), Some(45.0), false, day)
+                    .unwrap_or_default(),
                 f.updated(UnixTime(now.0 - 360), now),
                 f.strings.get(Key::GoNoGoGood),
                 f.strings
