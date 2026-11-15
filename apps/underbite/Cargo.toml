@@ -16,6 +16,8 @@ whether-providers = { workspace = true, features = ["serde"] }
 ureq.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+toml = { workspace = true, features = ["serde", "parse"] }
+thiserror.workspace = true
 jiff.workspace = true
 anyhow.workspace = true
 clap.workspace = true
