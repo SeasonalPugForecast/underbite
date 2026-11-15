@@ -18,6 +18,7 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
+use crate::model::{WaterType, ZoneKind};
 use crate::provenance::{Relation, SourceId, StationKind, StationRef, UsgsSiteType};
 
 /// Mean Earth radius (IUGG), metres.
@@ -675,6 +676,146 @@ pub fn relations(
     Hydro::new(flowlines, waterbodies, options).relations(spot, stations)
 }
 
+/// Why a water type was suggested.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "reason", rename_all = "snake_case")]
+pub enum WaterTypeReason {
+    /// The NWS marine zone the spot lies in.
+    MarineZone { kind: ZoneKind },
+    /// The waterbody the spot is on; area of all parts, km², to 0.01.
+    Waterbody {
+        name: Option<String>,
+        kind: WaterbodyKind,
+        area_km2: f64,
+    },
+    /// A bay, harbour, sound or similar name.
+    BayName { name: String },
+    /// The stream the spot is on.
+    Stream {
+        name: Option<String>,
+        stream_order: Option<u8>,
+    },
+    /// The type of the nearest USGS site.
+    UsgsSite { site_type: UsgsSiteType },
+}
+
+/// A suggested water type with its reasons. The spot's stored choice always wins.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct WaterTypeSuggestion {
+    pub water_type: WaterType,
+    pub reasons: Vec<WaterTypeReason>,
+}
+
+/// Suggests a water type from the spot's hydrography, the nearest USGS site's type and the NWS
+/// marine zone it lies in. `None` when nothing points anywhere.
+pub fn infer_water_type(
+    spot: &HydroPosition,
+    nearest_usgs_site: Option<UsgsSiteType>,
+    zone: Option<ZoneKind>,
+    options: HydroOptions,
+) -> Option<WaterTypeSuggestion> {
+    let mut reasons = Vec::new();
+    let done = |water_type, reasons| {
+        Some(WaterTypeSuggestion {
+            water_type,
+            reasons,
+        })
+    };
+    if let Some(kind) = zone {
+        reasons.push(WaterTypeReason::MarineZone { kind });
+        match kind {
+            ZoneKind::Offshore => return done(WaterType::Offshore, reasons),
+            ZoneKind::GreatLakesNearshore | ZoneKind::GreatLakesOpen => {
+                return done(WaterType::GreatLakes, reasons);
+            }
+            ZoneKind::Coastal => {}
+        }
+    }
+    let coastal = zone == Some(ZoneKind::Coastal);
+    let tidal_site = matches!(
+        nearest_usgs_site,
+        Some(UsgsSiteType::Estuary | UsgsSiteType::TidalStream)
+    );
+    if tidal_site {
+        reasons.extend(nearest_usgs_site.map(|site_type| WaterTypeReason::UsgsSite { site_type }));
+    }
+    // Salt or tidal water, as far as the zone and the nearest USGS site tell.
+    let tidal = coastal || tidal_site;
+    if let Some(w) = &spot.waterbody {
+        reasons.push(WaterTypeReason::Waterbody {
+            name: w.name.clone(),
+            kind: w.kind,
+            area_km2: (w.area_km2 * 100.0).round() / 100.0,
+        });
+        let bay = w.name.as_deref().filter(|n| tidal && bay_like(n));
+        if let Some(name) = bay {
+            reasons.push(WaterTypeReason::BayName {
+                name: name.to_owned(),
+            });
+            return done(WaterType::BayInshore, reasons);
+        }
+        let water_type = match w.kind {
+            WaterbodyKind::Lake | WaterbodyKind::Reservoir
+                if w.area_km2 < options.pond_max_area_km2 =>
+            {
+                WaterType::Pond
+            }
+            WaterbodyKind::Lake | WaterbodyKind::Reservoir => WaterType::LakeReservoir,
+            WaterbodyKind::Estuary => WaterType::TidalRiverEstuary,
+            WaterbodyKind::River | WaterbodyKind::Other if tidal => WaterType::TidalRiverEstuary,
+            WaterbodyKind::River | WaterbodyKind::Other => WaterType::RiverStream,
+        };
+        return done(water_type, reasons);
+    }
+    if let Some(s) = &spot.stream {
+        reasons.push(WaterTypeReason::Stream {
+            name: s.name.clone(),
+            stream_order: s.stream_order,
+        });
+        return done(
+            if tidal {
+                WaterType::TidalRiverEstuary
+            } else {
+                WaterType::RiverStream
+            },
+            reasons,
+        );
+    }
+    if tidal {
+        return done(
+            if coastal {
+                WaterType::Nearshore
+            } else {
+                WaterType::TidalRiverEstuary
+            },
+            reasons,
+        );
+    }
+    let site_type = nearest_usgs_site?;
+    let water_type = match site_type {
+        UsgsSiteType::Stream => WaterType::RiverStream,
+        UsgsSiteType::Lake => WaterType::LakeReservoir,
+        UsgsSiteType::Estuary | UsgsSiteType::TidalStream | UsgsSiteType::Other => return None,
+    };
+    done(water_type, vec![WaterTypeReason::UsgsSite { site_type }])
+}
+
+/// The water type to use: the spot's stored choice, else the suggestion.
+pub fn choose_water_type(
+    stored: Option<WaterType>,
+    suggestion: Option<&WaterTypeSuggestion>,
+) -> Option<WaterType> {
+    stored.or(suggestion.map(|s| s.water_type))
+}
+
+fn bay_like(name: &str) -> bool {
+    const WORDS: [&str; 8] = [
+        "bay", "harbor", "harbour", "sound", "inlet", "cove", "lagoon", "bight",
+    ];
+    name.split(|c: char| !c.is_alphanumeric())
+        .any(|w| WORDS.iter().any(|k| w.eq_ignore_ascii_case(k)))
+}
+
 fn closer(pos: &StreamPosition, than: Option<&StreamPosition>) -> bool {
     than.is_none_or(|t| {
         pos.offset_m
@@ -1118,5 +1259,184 @@ mod tests {
             ("U", SnapBasis::Nearest)
         );
         assert!(hydro.snap(Point::new(41.01, -73.995)).is_none());
+    }
+
+    fn infer(
+        at: &HydroPosition,
+        site: Option<UsgsSiteType>,
+        zone: Option<ZoneKind>,
+    ) -> Option<WaterType> {
+        infer_water_type(at, site, zone, HydroOptions::default()).map(|s| s.water_type)
+    }
+
+    #[test]
+    fn the_croton_below_the_dam_is_a_river() {
+        let lines = flowlines("hydro-50-croton-envelope.json", None);
+        let at = Hydro::new(&lines, &[], HydroOptions::default()).locate_spot(BELOW_GAUGE);
+        let s = infer_water_type(
+            &at,
+            Some(UsgsSiteType::Stream),
+            None,
+            HydroOptions::default(),
+        )
+        .unwrap();
+        assert_eq!(s.water_type, WaterType::RiverStream);
+        assert_eq!(
+            s.reasons,
+            [WaterTypeReason::Stream {
+                name: Some("Croton River".into()),
+                stream_order: Some(7),
+            }]
+        );
+    }
+
+    #[test]
+    fn reservoirs_and_lakes_in_parts_are_lakes() {
+        let lines = flowlines("hydro-50-croton-envelope.json", None);
+        let lakes = waterbodies("hydro-60-new-croton-reservoir-geom.json", |_| Vec::new());
+        let at = Hydro::new(&lines, &lakes, HydroOptions::default()).locate_spot(ON_RESERVOIR);
+        let s = infer_water_type(&at, Some(UsgsSiteType::Lake), None, HydroOptions::default());
+        let s = s.unwrap();
+        assert_eq!(s.water_type, WaterType::LakeReservoir);
+        assert_eq!(
+            s.reasons,
+            [WaterTypeReason::Waterbody {
+                name: Some("New Croton Reservoir".into()),
+                kind: WaterbodyKind::Lake,
+                area_km2: 8.74,
+            }]
+        );
+
+        let parts = sacandaga();
+        let at = Hydro::new(&[], &parts, HydroOptions::default()).locate_spot(ON_SACANDAGA);
+        assert_eq!(infer(&at, None, None), Some(WaterType::LakeReservoir));
+    }
+
+    /// The Battery's waterbodies: attributes from the fixture, outlines synthetic. "Upper Bay"
+    /// south of the Battery, the unnamed River polygon over the Hudson, two tiny lakes inland.
+    fn harbor() -> Vec<Waterbody> {
+        waterbodies("hydro-60-battery-envelope.json", |id| match id {
+            "J09NV" => vec![rect(40.63, -74.07, 40.70, -74.00)],
+            "JGLZF" => vec![rect(40.70, -74.03, 40.80, -74.00)],
+            "JFXO1" => vec![rect(40.7100, -73.9960, 40.7103, -73.9955)],
+            _ => vec![rect(40.7200, -73.9960, 40.7201, -73.9958)],
+        })
+    }
+
+    #[test]
+    fn the_battery_is_tidal_river_or_bay() {
+        let water = harbor();
+        let hydro = Hydro::new(&[], &water, HydroOptions::default());
+        let coastal = Some(ZoneKind::Coastal);
+
+        let battery = hydro.locate_spot(Point::new(40.7003, -74.0142));
+        let s = infer_water_type(&battery, None, coastal, HydroOptions::default()).unwrap();
+        assert_eq!(s.water_type, WaterType::TidalRiverEstuary);
+        assert_eq!(
+            s.reasons,
+            [
+                WaterTypeReason::MarineZone {
+                    kind: ZoneKind::Coastal
+                },
+                WaterTypeReason::Waterbody {
+                    name: None,
+                    kind: WaterbodyKind::River,
+                    area_km2: 175.6,
+                },
+            ]
+        );
+        // Without a marine zone, an estuary site nearby still makes it tidal.
+        let estuary = Some(UsgsSiteType::Estuary);
+        assert_eq!(
+            infer(&battery, estuary, None),
+            Some(WaterType::TidalRiverEstuary)
+        );
+        // An inland river polygon with no tidal hint is a river.
+        assert_eq!(infer(&battery, None, None), Some(WaterType::RiverStream));
+
+        let bay = hydro.locate_spot(Point::new(40.69, -74.03));
+        let s = infer_water_type(&bay, None, coastal, HydroOptions::default()).unwrap();
+        assert_eq!(s.water_type, WaterType::BayInshore);
+        assert_eq!(
+            s.reasons.last(),
+            Some(&WaterTypeReason::BayName {
+                name: "Upper Bay".into()
+            })
+        );
+    }
+
+    #[test]
+    fn small_lakes_are_ponds() {
+        let water = harbor();
+        let hydro = Hydro::new(&[], &water, HydroOptions::default());
+        let at = hydro.locate_spot(Point::new(40.71015, -73.99575));
+        assert_eq!(
+            at.waterbody.as_ref().unwrap().key,
+            WaterbodyKey::Feature("JFXO1".into())
+        );
+        assert_eq!(infer(&at, None, None), Some(WaterType::Pond));
+    }
+
+    #[test]
+    fn marine_zones_and_sites_decide_off_the_mapped_water() {
+        let none = HydroPosition::default();
+        let cases = [
+            (None, Some(ZoneKind::Offshore), Some(WaterType::Offshore)),
+            (
+                None,
+                Some(ZoneKind::GreatLakesOpen),
+                Some(WaterType::GreatLakes),
+            ),
+            (
+                None,
+                Some(ZoneKind::GreatLakesNearshore),
+                Some(WaterType::GreatLakes),
+            ),
+            (None, Some(ZoneKind::Coastal), Some(WaterType::Nearshore)),
+            (
+                Some(UsgsSiteType::TidalStream),
+                None,
+                Some(WaterType::TidalRiverEstuary),
+            ),
+            (
+                Some(UsgsSiteType::Lake),
+                None,
+                Some(WaterType::LakeReservoir),
+            ),
+            (
+                Some(UsgsSiteType::Stream),
+                None,
+                Some(WaterType::RiverStream),
+            ),
+            (Some(UsgsSiteType::Other), None, None),
+            (None, None, None),
+        ];
+        for (site, zone, expected) in cases {
+            assert_eq!(infer(&none, site, zone), expected, "{site:?} {zone:?}");
+        }
+    }
+
+    #[test]
+    fn the_stored_choice_wins() {
+        let suggestion = WaterTypeSuggestion {
+            water_type: WaterType::TidalRiverEstuary,
+            reasons: Vec::new(),
+        };
+        assert_eq!(
+            choose_water_type(Some(WaterType::Surf), Some(&suggestion)),
+            Some(WaterType::Surf)
+        );
+        assert_eq!(
+            choose_water_type(None, Some(&suggestion)),
+            Some(WaterType::TidalRiverEstuary)
+        );
+        assert_eq!(choose_water_type(None, None), None);
+    }
+
+    #[test]
+    fn bay_names_are_whole_words() {
+        assert!(bay_like("Upper Bay"));
+        assert!(bay_like("Long Island Sound"));
+        assert!(!bay_like("Bayonne Creek"));
     }
 }
