@@ -1,0 +1,52 @@
+---
+source: crates/underbite-core/src/view/format.rs
+expression: out
+---
+[us luna]
+Water 54 °F · Hudson R at Battery, NY · 0.4 mi · 6 min ago
+Luna's watching Hudson R at Battery, NY, 0.4 mi
+1,201 cfs
+4.2 ft MLLW
+11 mph from SW 225°
+29.92 inHg
+normal, 45th percentile for Nov 8
+updated 6 min ago
+Luna approves.
+Luna's not impressed: gusts to 25 kn
+Tidal river or estuary
+[us plain]
+Water 54 °F · Hudson R at Battery, NY · 0.4 mi · 6 min ago
+Hudson R at Battery, NY, 0.4 mi
+1,201 cfs
+4.2 ft MLLW
+11 mph from SW 225°
+29.92 inHg
+normal, 45th percentile for Nov 8
+updated 6 min ago
+Good conditions.
+Not recommended: gusts to 25 kn
+Tidal river or estuary
+[metric luna]
+Water 12.2 °C · Hudson R at Battery, NY · 0.6 km · 6 min ago
+Luna's watching Hudson R at Battery, NY, 0.6 km
+34.0 m³/s
+1.3 m MLLW
+18 km/h from SW 225°
+1013 hPa
+normal, 45th percentile for Nov 8
+updated 6 min ago
+Luna approves.
+Luna's not impressed: gusts to 25 kn
+Tidal river or estuary
+[metric plain]
+Water 12.2 °C · Hudson R at Battery, NY · 0.6 km · 6 min ago
+Hudson R at Battery, NY, 0.6 km
+34.0 m³/s
+1.3 m MLLW
+18 km/h from SW 225°
+1013 hPa
+normal, 45th percentile for Nov 8
+updated 6 min ago
+Good conditions.
+Not recommended: gusts to 25 kn
+Tidal river or estuary
