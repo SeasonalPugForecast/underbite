@@ -1,0 +1,90 @@
+---
+source: crates/underbite-providers/src/session.rs
+expression: "(&out.sources, &out.errors, &out.attempts)"
+---
+(
+    {
+        WaterTemperature: SourceId(
+            "coops",
+        ),
+    },
+    [
+        SourceError {
+            source: SourceId(
+                "usgs",
+            ),
+            measurement: Some(
+                WaterTemperature,
+            ),
+            kind: Transport,
+            message: "usgs: network: connection reset, used coops",
+        },
+        SourceError {
+            source: SourceId(
+                "usgs",
+            ),
+            measurement: Some(
+                Discharge,
+            ),
+            kind: Transport,
+            message: "usgs: network: connection reset",
+        },
+        SourceError {
+            source: SourceId(
+                "coops",
+            ),
+            measurement: Some(
+                Tide,
+            ),
+            kind: NoData,
+            message: "coops: no data",
+        },
+    ],
+    [
+        Attempt {
+            source: SourceId(
+                "usgs",
+            ),
+            resource: Fake,
+            url: "https://usgs.test/latest",
+            measurements: {
+                WaterTemperature,
+            },
+            required: true,
+            outcome: Failed(
+                Transport(
+                    "connection reset",
+                ),
+            ),
+        },
+        Attempt {
+            source: SourceId(
+                "usgs",
+            ),
+            resource: Fake,
+            url: "https://usgs.test/latest",
+            measurements: {
+                Discharge,
+            },
+            required: true,
+            outcome: Failed(
+                Transport(
+                    "connection reset",
+                ),
+            ),
+        },
+        Attempt {
+            source: SourceId(
+                "coops",
+            ),
+            resource: Fake,
+            url: "https://coops.test/temp",
+            measurements: {
+                WaterTemperature,
+                Tide,
+            },
+            required: true,
+            outcome: Ok,
+        },
+    ],
+)
