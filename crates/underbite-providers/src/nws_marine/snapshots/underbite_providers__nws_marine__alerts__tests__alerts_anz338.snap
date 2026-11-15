@@ -1,0 +1,24 @@
+---
+source: crates/underbite-providers/src/nws_marine/alerts.rs
+expression: a
+---
+[
+  {
+    "id": "urn:oid:2.49.0.1.840.0.59e16cc8ba4c86b00bee7c5e08c327085a29588b.003.1",
+    "event": "Small Craft Advisory",
+    "headline": "Small Craft Advisory issued November 8 at 1:48AM EST until November 9 at 6:00PM EST by NWS Upton NY",
+    "onset": 1794120480,
+    "ends": 1794265200,
+    "expires": 1794168000,
+    "severity": "minor",
+    "zones": [
+      "ANZ331",
+      "ANZ332",
+      "ANZ335",
+      "ANZ338",
+      "ANZ340",
+      "ANZ345"
+    ],
+    "vtec_key": "KOKX.SC.Y.0100"
+  }
+]
