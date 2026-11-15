@@ -1,0 +1,195 @@
+# Recorded responses for the New York Harbor scenario (The Battery, CO-OPS 8518750, NDBC 44025
+# and BATN6). Each route answers the first request whose URL contains `match`; `file` is
+# relative to this file. A request with no route fails with its redacted URL.
+
+# CO-OPS data: the max/slack and high/low routes come before the 6-minute curves, which share
+# their product names.
+[[route]]
+match = "interval=max_slack"
+file = "../../raw/coops/coops-NYH1927-bin13-max-slack-2026-11-08.json"
+
+[[route]]
+match = "interval=hilo&format=json"
+file = "../../raw/coops/coops-8518750-hilo-2026-11-08.json"
+
+[[route]]
+match = "product=predictions"
+file = "../../raw/coops/coops-8518750-predictions-6min-2026-11-08.json"
+
+[[route]]
+match = "product=water_level"
+file = "../../raw/coops/coops-8518750-water-level-2026-11-07.json"
+
+[[route]]
+match = "product=water_temperature"
+file = "../../raw/coops/coops-8518750-water-temperature-2026-11-07.json"
+
+[[route]]
+match = "product=air_temperature"
+file = "../../raw/coops/coops-8518750-air-temperature-2026-11-07.json"
+
+[[route]]
+match = "product=air_pressure"
+file = "../../raw/coops/coops-8518750-air-pressure-2026-11-07.json"
+
+[[route]]
+match = "product=wind"
+file = "../../raw/coops/coops-8518750-wind-2026-11-07-error-nodata.json"
+
+[[route]]
+match = "product=currents_predictions"
+file = "../../raw/coops/coops-NYH1927-bin13-currents-predictions-6min-2026-11-08.json"
+
+# CO-OPS metadata.
+[[route]]
+match = "stations/8518750/datums.json"
+file = "../../raw/coops/coops-mdapi-8518750-datums-metric.json"
+
+[[route]]
+match = "stations/8518750/harcon.json"
+file = "../../raw/coops/coops-mdapi-8518750-harcon-metric.json"
+
+[[route]]
+match = "stations/8518750.json"
+file = "../../raw/coops/coops-mdapi-8518750-station.json"
+
+[[route]]
+match = "stations/NYH1927/bins.json"
+file = "../../raw/coops/coops-mdapi-NYH1927-bins-metric.json"
+
+[[route]]
+match = "stations/NYH1927/harcon.json"
+file = "../../raw/coops/coops-mdapi-NYH1927-harcon.json"
+
+[[route]]
+match = "stations/NYH1927.json"
+file = "../../raw/coops/coops-mdapi-NYH1927-station.json"
+
+[[route]]
+match = "stations.json?type=tidepredictions"
+file = "../../raw/coops/coops-mdapi-stations-tidepredictions-newyork-trimmed.json"
+
+[[route]]
+match = "stations.json?type=waterlevels"
+file = "../../raw/coops/coops-mdapi-stations-waterlevels-newyork-trimmed.json"
+
+[[route]]
+match = "stations.json?type=currentpredictions"
+file = "../../raw/coops/coops-mdapi-stations-currentpredictions-newyork-trimmed.json"
+
+# NDBC.
+[[route]]
+match = "realtime2/44025.txt"
+file = "../../raw/ndbc/ndbc-44025.txt"
+
+[[route]]
+match = "realtime2/44025.spec"
+file = "../../raw/ndbc/ndbc-44025.spec"
+
+[[route]]
+match = "realtime2/44025.ocean"
+file = "../../raw/ndbc/ndbc-44025.ocean-404.html"
+status = 404
+
+[[route]]
+match = "realtime2/BATN6.txt"
+file = "../../raw/ndbc/ndbc-BATN6-head300.txt"
+
+[[route]]
+match = "ndbc.noaa.gov/activestations.xml"
+file = "../../raw/ndbc/ndbc-activestations.xml"
+
+# USGS: streams around the Battery and the Hudson at Pier 25.
+[[route]]
+match = "collections/time-series-metadata"
+file = "../../raw/usgs/usgs-time-series-metadata-hudson-pier-25-01376520.json"
+
+[[route]]
+match = "collections/monitoring-locations"
+file = "../../raw/usgs/usgs-monitoring-locations-bbox-manhattan-st.json"
+
+# NWS marine zones, alerts and text products.
+[[route]]
+match = "api.weather.gov/points/40.7,-74.02"
+file = "../../raw/nws-marine/points-40.7033_-74.0170.geo.json"
+
+[[route]]
+match = "api.weather.gov/zones?type=coastal&point="
+file = "../../raw/nws-marine/zones-coastal-point-40.7033_-74.0170.geo.json"
+
+[[route]]
+match = "zones/coastal/ANZ338/forecast"
+file = "../../raw/nws-marine/zone-forecast-ANZ338.ld.json"
+
+[[route]]
+match = "zones/coastal/ANZ338"
+file = "../../raw/nws-marine/zone-coastal-ANZ338.ld.json"
+
+[[route]]
+match = "alerts/active?zone=ANZ338"
+file = "../../raw/nws-marine/alerts-active-zone-ANZ338.geo.json"
+
+[[route]]
+match = "products/types/CWF/locations/OKX/latest"
+file = "../../raw/nws-marine/products-cwf-okx-latest.json"
+
+# NWPS gauges.
+[[route]]
+match = "nwps/v1/gauges/BATN6"
+file = "../../raw/nwps/nwps-gauge-BATN6.json"
+
+[[route]]
+match = "nwps/v1/gauges?bbox"
+file = "../../raw/nwps/nwps-gauges-bbox-lower-hudson.json"
+
+# Open-Meteo Marine: the 15-minute currents come before the hourly waves.
+[[route]]
+match = "marine-api.open-meteo.com/v1/marine?latitude=40.7&longitude=-74.02&minutely_15"
+file = "../../raw/open-meteo-marine/marine-40.70_-74.02-minutely15-1d.json"
+
+[[route]]
+match = "marine-api.open-meteo.com/v1/marine"
+file = "../../raw/open-meteo-marine/marine-40.70_-74.02-hourly-2d.json"
+
+# 3DHP hydrography.
+[[route]]
+match = "3DHP_all/MapServer/50/query"
+file = "../../raw/hydro/hydro-50-battery-envelope.json"
+
+[[route]]
+match = "3DHP_all/MapServer/60/query"
+file = "../../raw/hydro/hydro-60-battery-envelope.json"
+
+# Storms: NHC and the Open-Meteo run metadata, then the point series (before the plain forecast).
+[[route]]
+match = "nhc.noaa.gov/CurrentStorms.json"
+file = "../../raw/storms/nhc-current-storms-2026-11-15.json"
+
+[[route]]
+match = "ecmwf_ifs025/static/meta.json"
+file = "../../raw/storms/open-meteo-meta-ecmwf_ifs025-2026-11-15.json"
+
+[[route]]
+match = "ncep_gfs025/static/meta.json"
+file = "../../raw/storms/open-meteo-meta-ncep_gfs025-2026-11-15.json"
+
+[[route]]
+match = "dwd_icon/static/meta.json"
+file = "../../raw/storms/open-meteo-meta-dwd_icon-2026-11-15.json"
+
+[[route]]
+match = "cmc_gem_gdps_15km/static/meta.json"
+file = "../../raw/storms/open-meteo-meta-cmc_gem_gdps_15km-2026-11-15.json"
+
+[[route]]
+match = "api.open-meteo.com/v1/forecast?models="
+file = "../../raw/storms/whether-open-meteo-storm-point-10001.json"
+
+# Weather copies.
+[[route]]
+match = "api.open-meteo.com/v1/forecast"
+file = "../../raw/weather/forecast_full_10001.json"
+
+[[route]]
+match = "api.weather.gov/alerts/active?point="
+file = "../../raw/weather/alerts_10001.json"

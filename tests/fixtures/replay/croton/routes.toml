@@ -1,0 +1,92 @@
+# Recorded responses for the Croton River scenario (USGS 01375000 and the lower Hudson). Each
+# route answers the first request whose URL contains `match`; `file` is relative to this file.
+# A request with no route fails with its redacted URL.
+
+# USGS water data: the specific collections first, the site lookup last.
+[[route]]
+match = "collections/latest-continuous"
+file = "../../raw/usgs/usgs-latest-continuous-croton-01375000.json"
+
+[[route]]
+match = "collections/continuous/items"
+file = "../../raw/usgs/usgs-continuous-croton-01375000-00060-2026-11-01_2026-11-08.json"
+
+[[route]]
+match = "collections/daily/items"
+file = "../../raw/usgs/usgs-daily-croton-01375000-00060-mean-2025-11-08_2026-11-07.json"
+
+[[route]]
+match = "observationNormals"
+file = "../../raw/usgs/usgs-statistics-normals-croton-01375000-00060-doy-percentile-11-05_11-10.json"
+
+[[route]]
+match = "site_type_code=ST"
+file = "../../raw/usgs/usgs-monitoring-locations-bbox-croton-st.json"
+
+[[route]]
+match = "site_type_code=LK"
+file = "../../raw/usgs/usgs-monitoring-locations-bbox-croton-lk.json"
+
+[[route]]
+match = "collections/time-series-metadata"
+file = "../../raw/usgs/usgs-time-series-metadata-croton-01375000.json"
+
+[[route]]
+match = "USGS-01375000"
+file = "../../raw/usgs/usgs-monitoring-locations-croton-01375000.json"
+
+# NWPS gauges around the lower Hudson.
+[[route]]
+match = "nwps/v1/gauges/AUON6/stageflow/forecast"
+file = "../../raw/nwps/nwps-gauge-AUON6-stageflow-forecast.json"
+
+[[route]]
+match = "nwps/v1/gauges/AUON6"
+file = "../../raw/nwps/nwps-gauge-AUON6.json"
+
+[[route]]
+match = "nwps/v1/gauges?bbox"
+file = "../../raw/nwps/nwps-gauges-bbox-lower-hudson.json"
+
+# 3DHP hydrography.
+[[route]]
+match = "3DHP_all/MapServer/50/query"
+file = "../../raw/hydro/hydro-50-croton-point-distance.json"
+
+[[route]]
+match = "3DHP_all/MapServer/60/query"
+file = "../../raw/hydro/hydro-60-new-croton-reservoir-point.json"
+
+# Storms: NHC and the Open-Meteo run metadata, then the point series (before the plain forecast).
+[[route]]
+match = "nhc.noaa.gov/CurrentStorms.json"
+file = "../../raw/storms/nhc-current-storms-2026-11-15.json"
+
+[[route]]
+match = "ecmwf_ifs025/static/meta.json"
+file = "../../raw/storms/open-meteo-meta-ecmwf_ifs025-2026-11-15.json"
+
+[[route]]
+match = "ncep_gfs025/static/meta.json"
+file = "../../raw/storms/open-meteo-meta-ncep_gfs025-2026-11-15.json"
+
+[[route]]
+match = "dwd_icon/static/meta.json"
+file = "../../raw/storms/open-meteo-meta-dwd_icon-2026-11-15.json"
+
+[[route]]
+match = "cmc_gem_gdps_15km/static/meta.json"
+file = "../../raw/storms/open-meteo-meta-cmc_gem_gdps_15km-2026-11-15.json"
+
+[[route]]
+match = "api.open-meteo.com/v1/forecast?models="
+file = "../../raw/storms/whether-open-meteo-storm-point-10001.json"
+
+# Weather copies.
+[[route]]
+match = "api.open-meteo.com/v1/forecast"
+file = "../../raw/weather/forecast_full_10001.json"
+
+[[route]]
+match = "api.weather.gov/alerts/active?point="
+file = "../../raw/weather/alerts_10001.json"
