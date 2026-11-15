@@ -1,0 +1,16 @@
+[package]
+name = "underbite-providers"
+description = "Sans-IO request builders and parsers for Underbite's data sources"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+underbite-core.workspace = true
+whether-core = { workspace = true, features = ["serde"] }
+whether-providers = { workspace = true, features = ["serde"] }
+
+[lints]
+workspace = true
