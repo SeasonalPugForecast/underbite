@@ -563,13 +563,14 @@ pub fn build_view(input: &ViewInput) -> SpotView {
             | CardId::Species => None,
         })
         .collect();
+    let f = format::Formatter::for_input(input);
     SpotView {
         header: SpotHeader {
             name: snapshot.spot.name.clone(),
             water_type: snapshot.spot.water_type,
-            water_type_label: String::new(),
+            water_type_label: f.water_type_label(snapshot.spot.water_type),
             updated_at: snapshot.fetched_at.0,
-            updated: String::new(),
+            updated: f.updated(snapshot.fetched_at, input.now),
         },
         cards,
         timeline: None,
