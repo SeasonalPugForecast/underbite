@@ -109,6 +109,21 @@ pub enum CurrentError {
     /// A constituent listed twice, as when entries of several bins are mixed.
     #[error("tidal constituent {0:?} listed twice (are bins mixed?)")]
     DuplicateConstituent(String),
+    /// The offsets name another reference station or bin than the predictor's.
+    #[error(
+        "offsets refer to station {expected_station} bin {expected_bin}, \
+         not {actual_station} bin {actual_bin}"
+    )]
+    ReferenceMismatch {
+        /// The reference station the offsets name.
+        expected_station: String,
+        /// The reference bin the offsets name.
+        expected_bin: u16,
+        /// The station of the predictor.
+        actual_station: String,
+        /// The bin of the predictor.
+        actual_bin: u16,
+    },
 }
 
 /// A validated set of current harmonics, ready to predict.
@@ -200,13 +215,22 @@ impl CurrentPredictor {
 
     /// Events from `start` through `end` at a subordinate station of this reference station.
     ///
-    /// The caller pairs the offsets with the predictor of their reference station and bin.
+    /// Fails with [`CurrentError::ReferenceMismatch`] when the offsets' reference station or bin
+    /// is not this predictor's.
     pub fn subordinate_events(
         &self,
         offsets: &SubordinateCurrentOffsets,
         start: UnixTime,
         end: UnixTime,
-    ) -> Vec<CurrentEvent> {
+    ) -> Result<Vec<CurrentEvent>, CurrentError> {
+        if offsets.reference_id != self.station || offsets.reference_bin != self.bin {
+            return Err(CurrentError::ReferenceMismatch {
+                expected_station: offsets.reference_id.clone(),
+                expected_bin: offsets.reference_bin,
+                actual_station: self.station.clone(),
+                actual_bin: self.bin,
+            });
+        }
         let adjustments = [
             offsets.mfc_time_adj_min,
             offsets.mec_time_adj_min,
@@ -221,10 +245,10 @@ impl CurrentPredictor {
             UnixTime(start.0 - i64::from(latest) * 60 - margin),
             UnixTime(end.0 - i64::from(earliest) * 60 + margin),
         );
-        subordinate(&reference, offsets)
+        Ok(subordinate(&reference, offsets)
             .into_iter()
             .filter(|e| (start..=end).contains(&e.time))
-            .collect()
+            .collect())
     }
 
     /// The station's predictions from `start` through `end`: events and a curve every `step_s`
@@ -263,6 +287,11 @@ impl CurrentPredictor {
 /// is a flood (or, at the end, the previous one an ebb), and is shifted by the matching offset.
 /// A slack with no neighbouring maximum cannot be classified and is dropped. The result is in
 /// time order.
+///
+/// This works on bare events, which carry no station or bin, so it cannot check that they come
+/// from the offsets' reference station and bin; the caller must pair them. Prefer
+/// [`CurrentPredictor::subordinate_events`], which checks. [`subordinate_series`] is unchecked
+/// for the same reason.
 pub fn subordinate(
     reference: &[CurrentEvent],
     offsets: &SubordinateCurrentOffsets,
@@ -696,12 +725,31 @@ mod tests {
     fn act3646_from_reference_harmonics_matches_coops_week() {
         let reference = CurrentPredictor::new(&harmonics(N03020_HARCON, "n03020", 7)).unwrap();
         let (start, end) = week();
-        let ours = reference.subordinate_events(&act3646_offsets(), start, end);
+        let ours = reference
+            .subordinate_events(&act3646_offsets(), start, end)
+            .unwrap();
         compare_events(
             "ACT3646 from n03020 bin 7",
             &ours,
             &coops_events(ACT3646_EVENTS),
         );
+    }
+
+    #[test]
+    fn offsets_for_another_reference_station_or_bin_are_rejected() {
+        let (start, end) = week();
+        let mut other_bin = harmonics(N03020_HARCON, "n03020", 7);
+        other_bin.bin = 8;
+        for h in [harmonics(NYH1927_HARCON, "NYH1927", 13), other_bin] {
+            let predictor = CurrentPredictor::new(&h).unwrap();
+            let err = predictor
+                .subordinate_events(&act3646_offsets(), start, end)
+                .unwrap_err();
+            assert!(
+                matches!(err, CurrentError::ReferenceMismatch { .. }),
+                "{err}"
+            );
+        }
     }
 
     fn pure(mean_cms: f64, constituents: &[(&str, f64, f64)]) -> CurrentHarmonics {
