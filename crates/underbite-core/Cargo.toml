@@ -12,7 +12,7 @@ whether-core = { workspace = true, features = ["serde", "schema"] }
 serde.workspace = true
 schemars.workspace = true
 thiserror.workspace = true
-jiff.workspace = true
+jiff = { workspace = true, features = ["tzdb-bundle-always"] }
 
 [dev-dependencies]
 whether-core = { workspace = true, features = ["serde", "schema", "testdata"] }
