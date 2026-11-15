@@ -8,8 +8,10 @@
 pub mod astro;
 pub mod datum;
 pub mod derive;
+pub mod discover;
 pub mod model;
 pub mod provenance;
 pub mod series;
 pub mod time;
 pub mod units;
+pub mod view;
