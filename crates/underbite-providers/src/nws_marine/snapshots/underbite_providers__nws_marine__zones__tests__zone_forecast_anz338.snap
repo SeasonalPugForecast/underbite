@@ -1,0 +1,53 @@
+---
+source: crates/underbite-providers/src/nws_marine/zones.rs
+expression: f
+---
+{
+  "id": "ANZ338",
+  "name": "New York Harbor",
+  "kind": "coastal",
+  "issued": 1794121020,
+  "product": "zone_api",
+  "periods": [
+    {
+      "name": "Today",
+      "text": "W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 3 seconds."
+    },
+    {
+      "name": "Tonight",
+      "text": "W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 2 seconds."
+    },
+    {
+      "name": "Mon",
+      "text": "NW winds 15 to 20 kt with gusts up to 25 kt. Waves 2 to 3 ft. Wave Detail: W 2 ft at 3 seconds."
+    },
+    {
+      "name": "Mon Night",
+      "text": "NW winds 15 to 20 kt, becoming W 10 to 15 kt after midnight. Waves around 2 ft. Wave Detail: NW 2 ft at 2 seconds."
+    },
+    {
+      "name": "Tue",
+      "text": "W winds 10 to 15 kt with gusts up to 20 kt. Waves around 2 ft. Wave Detail: W 1 ft at 2 seconds."
+    },
+    {
+      "name": "Tue Night",
+      "text": "W winds 10 to 15 kt. Waves 1 to 2 ft. Wave Detail: W 1 ft at 2 seconds."
+    },
+    {
+      "name": "Wed",
+      "text": "W winds 5 to 10 kt. Waves 1 to 2 ft."
+    },
+    {
+      "name": "Wed Night",
+      "text": "N winds 5 to 10 kt. Waves 1 ft or less."
+    },
+    {
+      "name": "Thu",
+      "text": "NE winds 5 to 10 kt. Waves 1 ft or less. Chance of rain."
+    },
+    {
+      "name": "Thu Night",
+      "text": "NE winds 20 to 25 kt with gusts up to 30 kt. Waves 2 to 3 ft. Rain likely."
+    }
+  ]
+}
