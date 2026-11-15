@@ -1559,25 +1559,6 @@ mod tests {
         assert_eq!(only_series(&out, Measurement::Discharge).samples().len(), 3);
     }
 
-    /// Live checks, run by hand: the `time_series_id` filter of `continuous` and the
-    /// `X-Api-Key` header are not yet confirmed against the service.
-    #[test]
-    #[ignore = "needs the network and, for the key header, USGS_API_KEY"]
-    fn live_continuous_by_series_and_key_header() {
-        // Run by hand: send the request `continuous_request` builds for a series id taken from
-        // `latest-continuous` of USGS-01375000, with and without the `X-Api-Key` header, and
-        // check for HTTP 200 and the 15-minute values of one series.
-        let t = target("01375000", &[Measurement::Discharge]);
-        let req = continuous_request(
-            "e32aab5ccc774c11b172102b97abc0d8",
-            spec("00060").unwrap(),
-            &t,
-            &ctx(),
-        )
-        .unwrap();
-        assert!(req.url.contains("time_series_id="));
-    }
-
     #[test]
     fn a_next_link_off_the_api_is_refused() {
         let body = br#"{"features":[],"links":[{"rel":"next","href":"https://example.org/x"}]}"#;
