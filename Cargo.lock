@@ -765,6 +765,16 @@ dependencies = [
 [[package]]
 name = "underbite-config"
 version = "0.1.0"
+dependencies = [
+ "insta",
+ "schemars",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "toml",
+ "underbite-core",
+ "whether-core",
+]
 
 [[package]]
 name = "underbite-core"
