@@ -1,0 +1,22 @@
+---
+source: crates/underbite-providers/src/open_meteo_marine.rs
+expression: "t.events.iter().map(|e| (e.time.0, e.kind)).collect::<Vec<_>>()"
+---
+[
+  [
+    1794111750,
+    "low"
+  ],
+  [
+    1794132450,
+    "high"
+  ],
+  [
+    1794157050,
+    "low"
+  ],
+  [
+    1794178800,
+    "high"
+  ]
+]
