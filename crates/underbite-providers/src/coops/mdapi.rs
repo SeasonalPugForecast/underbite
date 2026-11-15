@@ -960,39 +960,4 @@ mod tests {
         let err = parse(&req, &Response::new(404, b"Not Found")).unwrap_err();
         assert!(matches!(err, SourceError::NotFound(_)), "{err}");
     }
-
-    /// Whether additive height offsets are feet (the assumption in [`ADDITIVE_OFFSET_UNIT`]):
-    /// finds a station with `heightAdjustedType` `F` and reports its offsets with and without
-    /// `units=metric`. Needs `curl` and the network; run by hand.
-    #[test]
-    #[ignore = "live: needs the network"]
-    fn live_tide_offsets_additive_unit() {
-        let get = |url: &str| {
-            let out = std::process::Command::new("curl")
-                .args(["-sfL", url])
-                .output()
-                .expect("curl");
-            assert!(out.status.success(), "curl failed for {url}");
-            out.stdout
-        };
-        let list = get(&format!("{BASE}/stations.json?type=tidepredictions"));
-        let c = parse_station_list(StationList::TidePredictions, &list).unwrap();
-        for s in c
-            .iter()
-            .filter(|c| c.station.kind == StationKind::TideSubordinate)
-        {
-            let url = format!("{BASE}/stations/{}/tidepredoffsets.json", s.station.id);
-            let plain = get(&url);
-            let text = String::from_utf8_lossy(&plain);
-            if text.contains("\"heightAdjustedType\": \"F\"") {
-                let metric = get(&format!("{url}?units=metric"));
-                panic!(
-                    "station {}: default {text} vs metric {}",
-                    s.station.id,
-                    String::from_utf8_lossy(&metric)
-                );
-            }
-        }
-        panic!("no station with additive offsets found");
-    }
 }
