@@ -109,12 +109,7 @@ pub fn rank_detail(
 /// bounds. A `value` below the record minimum `min` is [`PercentileClass::RecordLow`] and one
 /// above the record maximum `max` is [`PercentileClass::RecordHigh`], when those are known.
 /// `None` for a rank outside 0 to 100 or not a number.
-pub fn class(
-    rank: f32,
-    value: f32,
-    min: Option<f32>,
-    max: Option<f32>,
-) -> Option<PercentileClass> {
+pub fn class(rank: f32, value: f32, min: Option<f32>, max: Option<f32>) -> Option<PercentileClass> {
     Some(match rank {
         r if !(0.0..=100.0).contains(&r) => return None,
         _ if min.is_some_and(|m| value < m) => PercentileClass::RecordLow,
@@ -346,10 +341,22 @@ mod tests {
     fn record_classes_need_known_extremes() {
         let (min, max) = (Some(2.0), Some(9.0));
         assert_eq!(class(0.0, 1.0, min, max), Some(PercentileClass::RecordLow));
-        assert_eq!(class(0.0, 2.0, min, max), Some(PercentileClass::MuchBelowNormal));
-        assert_eq!(class(100.0, 10.0, min, max), Some(PercentileClass::RecordHigh));
-        assert_eq!(class(100.0, 9.0, min, max), Some(PercentileClass::MuchAboveNormal));
-        assert_eq!(class(100.0, 10.0, min, None), Some(PercentileClass::MuchAboveNormal));
+        assert_eq!(
+            class(0.0, 2.0, min, max),
+            Some(PercentileClass::MuchBelowNormal)
+        );
+        assert_eq!(
+            class(100.0, 10.0, min, max),
+            Some(PercentileClass::RecordHigh)
+        );
+        assert_eq!(
+            class(100.0, 9.0, min, max),
+            Some(PercentileClass::MuchAboveNormal)
+        );
+        assert_eq!(
+            class(100.0, 10.0, min, None),
+            Some(PercentileClass::MuchAboveNormal)
+        );
     }
 
     #[test]

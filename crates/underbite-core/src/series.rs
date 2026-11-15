@@ -19,6 +19,7 @@ pub struct Sample<T> {
     /// The value, in canonical units.
     pub value: T,
     /// Per-sample quality, overriding the series provenance (USGS qualifiers vary per value).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub quality: Option<Quality>,
 }
 
@@ -164,6 +165,23 @@ mod tests {
                 .map(|&(t, v)| Sample::new(UnixTime(t), v))
                 .collect(),
         )
+    }
+
+    #[test]
+    fn missing_quality_is_left_out_and_null_still_decodes() {
+        let s = Sample::new(UnixTime(5), 1.5_f32);
+        assert_eq!(
+            serde_json::to_string(&s).unwrap(),
+            r#"{"time":5,"value":1.5}"#
+        );
+        let old: Sample<f32> =
+            serde_json::from_str(r#"{"time":5,"value":1.5,"quality":null}"#).unwrap();
+        assert_eq!(old, s);
+        let json = serde_json::to_string(&prov()).unwrap();
+        assert!(
+            !json.contains("station") && !json.contains("distance_m"),
+            "{json}"
+        );
     }
 
     #[test]

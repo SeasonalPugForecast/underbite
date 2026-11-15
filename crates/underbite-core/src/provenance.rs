@@ -191,8 +191,10 @@ pub struct Provenance {
     /// The data source.
     pub source: SourceId,
     /// The station, when the value comes from one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub station: Option<StationRef>,
     /// Distance from the spot to the station, metres.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub distance_m: Option<f32>,
     /// How the station relates to the spot.
     pub relation: Relation,
