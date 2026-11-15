@@ -196,9 +196,10 @@ impl SpotSnapshot {
     }
 }
 
-#[cfg(test)]
-#[allow(clippy::too_many_lines)]
-pub(crate) mod testdata {
+/// Sample snapshots and sections for tests, here and in other crates (feature `testdata`).
+#[cfg(any(test, feature = "testdata"))]
+#[allow(clippy::too_many_lines, clippy::wildcard_imports)]
+pub mod testdata {
     use super::*;
     use crate::datum::{Height, Heights, VerticalDatum};
     use crate::model::marine::*;
@@ -211,7 +212,7 @@ pub(crate) mod testdata {
 
     const T0: i64 = 1_794_000_000;
 
-    pub(crate) fn station() -> StationRef {
+    pub fn station() -> StationRef {
         StationRef {
             source: SourceId::COOPS,
             id: "8518750".into(),
@@ -224,7 +225,7 @@ pub(crate) mod testdata {
         }
     }
 
-    pub(crate) fn spot() -> Spot {
+    pub fn spot() -> Spot {
         Spot {
             id: "battery".into(),
             name: "The Battery".into(),
@@ -317,7 +318,7 @@ pub(crate) mod testdata {
         series(source, kind, vec![sample.clone(), sample])
     }
 
-    fn sample_water() -> WaterConditions {
+    pub fn sample_water() -> WaterConditions {
         WaterConditions {
             temperature_c: Some(f32s(SourceId::USGS, ValueKind::Observed, &[14.5, 14.6])),
             discharge_m3s: Some(f32s(SourceId::USGS, ValueKind::Observed, &[0.35, 0.34])),
@@ -380,7 +381,7 @@ pub(crate) mod testdata {
         }
     }
 
-    fn sample_marine() -> MarineConditions {
+    pub fn sample_marine() -> MarineConditions {
         MarineConditions {
             tide: Some(TideSeries {
                 source_kind: TideSourceKind::HarmonicStation,
@@ -484,7 +485,7 @@ pub(crate) mod testdata {
         }
     }
 
-    fn sample_sky() -> SkyConditions {
+    pub fn sample_sky() -> SkyConditions {
         SkyConditions {
             days: vec![SkyDay {
                 date: LocalDate {
@@ -526,7 +527,7 @@ pub(crate) mod testdata {
         }
     }
 
-    pub(crate) fn sample_snapshot() -> SpotSnapshot {
+    pub fn sample_snapshot() -> SpotSnapshot {
         let storm = StormWatch::from_outlook(
             at(0),
             whether_core::storm::testdata::noreaster(),

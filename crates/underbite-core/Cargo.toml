@@ -7,6 +7,10 @@ rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 
+[features]
+# Sample snapshots for other crates' tests.
+testdata = ["whether-core/testdata"]
+
 [dependencies]
 whether-core = { workspace = true, features = ["serde", "schema"] }
 serde.workspace = true
