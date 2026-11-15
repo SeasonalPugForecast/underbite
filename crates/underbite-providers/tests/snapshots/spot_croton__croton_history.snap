@@ -1,0 +1,78 @@
+---
+source: crates/underbite-providers/tests/spot_croton.rs
+expression: "replay::summary(&outcome, &served)"
+---
+{
+  "attribution": [
+    {
+      "credit": "U.S. Geological Survey",
+      "source": "usgs",
+      "url": "https://waterdata.usgs.gov"
+    },
+    {
+      "credit": "Provisional data from the U.S. Geological Survey are subject to revision",
+      "source": "usgs",
+      "url": "https://waterdata.usgs.gov/provisional-data-statement/"
+    }
+  ],
+  "errors": [],
+  "marine": {},
+  "served": [
+    "200 https://api.waterdata.usgs.gov/ogcapi/v1/collections/latest-continuous/items?f=json&monitoring_location_id=USGS-01375000&parameter_code=00060&skipGeometry=true&properties=time_series_id,monitoring_location_id,parameter_code,statistic_id,time,value,unit_of_measure,approval_status,qualifier&limit=1000 <- usgs-latest-continuous-croton-01375000.json",
+    "200 https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous/items?f=json&time_series_id=e32aab5ccc774c11b172102b97abc0d8&datetime=2026-11-01T14%3A30%3A00Z%2F2026-11-15T14%3A30%3A00Z&skipGeometry=true&sortby=time&limit=2000&properties=time_series_id,parameter_code,time,value,unit_of_measure,approval_status,qualifier <- usgs-continuous-croton-01375000-00060-2026-11-01_2026-11-08.json"
+  ],
+  "sources": {
+    "discharge": "usgs"
+  },
+  "stations": [
+    {
+      "bin": null,
+      "id": "USGS-01375000",
+      "kind": {
+        "usgs_site": "stream"
+      },
+      "latitude": 41.2247,
+      "longitude": -73.8592,
+      "name": "Croton River at New Croton Dam near Croton-on-Hudson NY",
+      "reference_id": null,
+      "source": "usgs"
+    }
+  ],
+  "water": {
+    "discharge_m3s": {
+      "provenance": {
+        "distance_m": 1000.0,
+        "kind": "observed",
+        "observed_at": 1794096000,
+        "quality": "provisional",
+        "relation": "same_water_body",
+        "source": "usgs",
+        "station": {
+          "bin": null,
+          "id": "USGS-01375000",
+          "kind": {
+            "usgs_site": "stream"
+          },
+          "latitude": 41.2247,
+          "longitude": -73.8592,
+          "name": "Croton River at New Croton Dam near Croton-on-Hudson NY",
+          "reference_id": null,
+          "source": "usgs"
+        }
+      },
+      "samples": {
+        "first": {
+          "quality": "provisional",
+          "time": 1793491200,
+          "value": 4.615645885467529
+        },
+        "last": {
+          "quality": "provisional",
+          "time": 1794096000,
+          "value": 0.36528730392456055
+        },
+        "len": 673
+      }
+    }
+  }
+}

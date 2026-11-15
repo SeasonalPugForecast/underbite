@@ -1,0 +1,551 @@
+---
+source: crates/underbite-providers/tests/spot_battery.rs
+expression: "replay::summary(&outcome, &served)"
+---
+{
+  "attribution": [
+    {
+      "credit": "Buoy observations: NOAA National Data Buoy Center",
+      "source": "ndbc",
+      "url": "https://www.ndbc.noaa.gov/"
+    },
+    {
+      "credit": "Tide, water-level and current data: NOAA/NOS CO-OPS",
+      "source": "coops",
+      "url": "https://tidesandcurrents.noaa.gov/"
+    },
+    {
+      "credit": "Weather data by Open-Meteo.com. Marine models: Copernicus Marine Service, ECMWF, NOAA NCEP, DWD, Copernicus Climate Change Service. Modelled, not suitable for coastal navigation.",
+      "source": "open-meteo-marine",
+      "url": "https://open-meteo.com/"
+    },
+    {
+      "credit": "NOAA National Weather Service",
+      "source": "nws",
+      "url": "https://www.weather.gov/"
+    }
+  ],
+  "errors": [
+    {
+      "kind": "stale",
+      "measurement": "water_temperature",
+      "message": "coops: no recent data, used ndbc",
+      "source": "coops"
+    }
+  ],
+  "marine": {
+    "marine_alerts": [
+      {
+        "ends": 1794265200,
+        "event": "Small Craft Advisory",
+        "expires": 1794168000,
+        "headline": "Small Craft Advisory issued November 8 at 1:48AM EST until November 9 at 6:00PM EST by NWS Upton NY",
+        "id": "urn:oid:2.49.0.1.840.0.59e16cc8ba4c86b00bee7c5e08c327085a29588b.003.1",
+        "onset": 1794120480,
+        "severity": "minor",
+        "vtec_key": "KOKX.SC.Y.0100",
+        "zones": {
+          "first": "ANZ331",
+          "last": "ANZ345",
+          "len": 6
+        }
+      }
+    ],
+    "marine_forecast": {
+      "id": "ANZ338",
+      "issued": 1794121020,
+      "kind": "coastal",
+      "name": "New York Harbor",
+      "periods": {
+        "first": {
+          "name": "Today",
+          "text": "W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 3 seconds."
+        },
+        "last": {
+          "name": "Thu Night",
+          "text": "NE winds 20 to 25 kt with gusts up to 30 kt. Waves 2 to 3 ft. Rain likely."
+        },
+        "len": 10
+      },
+      "product": "zone_api"
+    },
+    "observed_pressure_hpa": {
+      "provenance": {
+        "distance_m": 1000.0,
+        "kind": "observed",
+        "observed_at": 1794145800,
+        "quality": "provisional",
+        "relation": "nearby",
+        "source": "ndbc",
+        "station": {
+          "bin": null,
+          "id": "44065",
+          "kind": "buoy",
+          "latitude": 40.369,
+          "longitude": -73.703,
+          "name": "New York Harbor Entrance",
+          "reference_id": null,
+          "source": "ndbc"
+        }
+      },
+      "samples": {
+        "first": {
+          "time": 1793965200,
+          "value": 1011.5
+        },
+        "last": {
+          "time": 1794145800,
+          "value": 1012.2000122070313
+        },
+        "len": 293
+      }
+    },
+    "observed_wind": {
+      "provenance": {
+        "distance_m": 1000.0,
+        "kind": "observed",
+        "observed_at": 1794145800,
+        "quality": "provisional",
+        "relation": "nearby",
+        "source": "ndbc",
+        "station": {
+          "bin": null,
+          "id": "44065",
+          "kind": "buoy",
+          "latitude": 40.369,
+          "longitude": -73.703,
+          "name": "New York Harbor Entrance",
+          "reference_id": null,
+          "source": "ndbc"
+        }
+      },
+      "samples": {
+        "first": {
+          "time": 1793965200,
+          "value": {
+            "from_deg": 200.0,
+            "gust_ms": 6.0,
+            "speed_ms": 4.0
+          }
+        },
+        "last": {
+          "time": 1794145800,
+          "value": {
+            "from_deg": 280.0,
+            "gust_ms": 15.0,
+            "speed_ms": 12.0
+          }
+        },
+        "len": 293
+      }
+    },
+    "sea_surface_temp_forecast_c": {
+      "provenance": {
+        "distance_m": 8537.40625,
+        "kind": "modelled",
+        "observed_at": 1794148200,
+        "quality": "provisional",
+        "relation": "gridded",
+        "source": "open-meteo-marine"
+      },
+      "samples": {
+        "first": {
+          "time": 1794096000,
+          "value": 15.5
+        },
+        "last": {
+          "time": 1794265200,
+          "value": 14.899999618530273
+        },
+        "len": 48
+      }
+    },
+    "tidal_current": {
+      "bin": 13,
+      "curve": {
+        "provenance": {
+          "distance_m": 1000.0,
+          "kind": "predicted",
+          "observed_at": 1794148200,
+          "quality": "approved",
+          "relation": "same_water_body",
+          "source": "coops",
+          "station": {
+            "bin": 13,
+            "id": "NYH1927",
+            "kind": "current_harmonic",
+            "latitude": 40.6998,
+            "longitude": -74.0167,
+            "name": "The Battery Reach",
+            "reference_id": null,
+            "source": "coops"
+          }
+        },
+        "samples": {
+          "first": {
+            "time": 1794096000,
+            "value": 0.5990000367164612
+          },
+          "last": {
+            "time": 1794700440,
+            "value": -0.9940000176429749
+          },
+          "len": 1680
+        }
+      },
+      "depth_m": 2.0999999046325684,
+      "ebb_dir_deg": 183.0,
+      "events": {
+        "first": {
+          "kind": "max_flood",
+          "speed_ms": 0.6010000109672546,
+          "time": 1794096540
+        },
+        "last": {
+          "kind": "max_ebb",
+          "speed_ms": -1.0219999551773071,
+          "time": 1794698340
+        },
+        "len": 55
+      },
+      "flood_dir_deg": 11.0,
+      "provenance": {
+        "distance_m": 1000.0,
+        "kind": "predicted",
+        "observed_at": 1794148200,
+        "quality": "approved",
+        "relation": "same_water_body",
+        "source": "coops",
+        "station": {
+          "bin": 13,
+          "id": "NYH1927",
+          "kind": "current_harmonic",
+          "latitude": 40.6998,
+          "longitude": -74.0167,
+          "name": "The Battery Reach",
+          "reference_id": null,
+          "source": "coops"
+        }
+      }
+    },
+    "tide": {
+      "curve": {
+        "provenance": {
+          "distance_m": 1000.0,
+          "kind": "predicted",
+          "observed_at": 1794148200,
+          "quality": "approved",
+          "relation": "same_water_body",
+          "source": "coops",
+          "station": {
+            "bin": null,
+            "id": "8518750",
+            "kind": "tide_harmonic",
+            "latitude": 40.7001,
+            "longitude": -74.0142,
+            "name": "The Battery",
+            "reference_id": null,
+            "source": "coops"
+          }
+        },
+        "samples": {
+          "first": {
+            "time": 1794096000,
+            "value": 1.4529999494552612
+          },
+          "last": {
+            "time": 1794700440,
+            "value": 0.35600000619888306
+          },
+          "len": 1680
+        }
+      },
+      "datum": "mllw",
+      "events": {
+        "first": {
+          "height_m": 0.017000000923871994,
+          "kind": "low",
+          "time": 1794117540
+        },
+        "last": {
+          "height_m": 0.25099998712539673,
+          "kind": "low",
+          "time": 1794696060
+        },
+        "len": 27
+      },
+      "observed": {
+        "provenance": {
+          "distance_m": 1000.0,
+          "kind": "observed",
+          "observed_at": 1794095640,
+          "quality": "provisional",
+          "relation": "same_water_body",
+          "source": "coops",
+          "station": {
+            "bin": null,
+            "id": "8518750",
+            "kind": "tide_harmonic",
+            "latitude": 40.7001,
+            "longitude": -74.0142,
+            "name": "The Battery",
+            "reference_id": null,
+            "source": "coops"
+          }
+        },
+        "samples": {
+          "first": {
+            "quality": "provisional",
+            "time": 1794009600,
+            "value": 1.5640000104904175
+          },
+          "last": {
+            "quality": "provisional",
+            "time": 1794095640,
+            "value": 1.4730000495910645
+          },
+          "len": 240
+        }
+      },
+      "provenance": {
+        "distance_m": 1000.0,
+        "kind": "predicted",
+        "observed_at": 1794148200,
+        "quality": "approved",
+        "relation": "same_water_body",
+        "source": "coops",
+        "station": {
+          "bin": null,
+          "id": "8518750",
+          "kind": "tide_harmonic",
+          "latitude": 40.7001,
+          "longitude": -74.0142,
+          "name": "The Battery",
+          "reference_id": null,
+          "source": "coops"
+        }
+      },
+      "source_kind": "harmonic_station"
+    },
+    "waves": {
+      "provenance": {
+        "distance_m": 1000.0,
+        "kind": "observed",
+        "observed_at": 1794145200,
+        "quality": "provisional",
+        "relation": "nearby",
+        "source": "ndbc",
+        "station": {
+          "bin": null,
+          "id": "44025",
+          "kind": "buoy",
+          "latitude": 40.251,
+          "longitude": -73.164,
+          "name": "Long Island, 30 NM south of Islip",
+          "reference_id": null,
+          "source": "ndbc"
+        }
+      },
+      "samples": {
+        "first": {
+          "time": 1793544000,
+          "value": {
+            "direction_from_deg": 119.0,
+            "mean_period_s": 3.9000000953674316,
+            "significant_height_m": 0.699999988079071,
+            "steepness": "N/A"
+          }
+        },
+        "last": {
+          "time": 1794145200,
+          "value": {
+            "direction_from_deg": 281.0,
+            "mean_period_s": 4.599999904632568,
+            "significant_height_m": 1.7999999523162842,
+            "steepness": "VERY_STEEP"
+          }
+        },
+        "len": 244
+      }
+    },
+    "waves_forecast": {
+      "provenance": {
+        "distance_m": 8537.40625,
+        "kind": "modelled",
+        "observed_at": 1794148200,
+        "quality": "provisional",
+        "relation": "gridded",
+        "source": "open-meteo-marine"
+      },
+      "samples": {
+        "first": {
+          "time": 1794096000,
+          "value": {
+            "direction_from_deg": 145.0,
+            "mean_period_s": 6.5,
+            "significant_height_m": 0.25999999046325684,
+            "swells": [
+              {
+                "direction_from": {
+                  "degrees": 139.0
+                },
+                "height_m": 0.23999999463558197,
+                "period_s": 6.400000095367432
+              },
+              {
+                "direction_from": {
+                  "degrees": 252.0
+                },
+                "height_m": 0.07999999821186066,
+                "period_s": 1.899999976158142
+              }
+            ],
+            "wind_waves": {
+              "direction_from": {
+                "degrees": 279.0
+              },
+              "height_m": 0.07999999821186066,
+              "period_s": 1.5499999523162842
+            }
+          }
+        },
+        "last": {
+          "time": 1794265200,
+          "value": {
+            "direction_from_deg": 264.0,
+            "mean_period_s": 5.050000190734863,
+            "significant_height_m": 0.25999999046325684,
+            "swells": [
+              {
+                "direction_from": {
+                  "degrees": 231.0
+                },
+                "height_m": 0.14000000059604645,
+                "period_s": 5.949999809265137
+              },
+              {
+                "direction_from": {
+                  "degrees": 164.0
+                },
+                "height_m": 0.10000000149011612,
+                "period_s": 8.5
+              }
+            ],
+            "wind_waves": {
+              "direction_from": {
+                "degrees": 297.0
+              },
+              "height_m": 0.14000000059604645,
+              "period_s": 1.75
+            }
+          }
+        },
+        "len": 48
+      }
+    }
+  },
+  "served": [
+    "200 https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=underbite&begin_date=20261101&end_date=20261115&datum=MLLW&station=8518750&time_zone=gmt&units=metric&interval=hilo&format=json <- coops-8518750-hilo-2026-11-08.json",
+    "200 https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=underbite&begin_date=20261101&end_date=20261115&datum=MLLW&station=8518750&time_zone=gmt&units=metric&interval=6&format=json <- coops-8518750-predictions-6min-2026-11-08.json",
+    "200 https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=water_level&application=underbite&begin_date=20261101&end_date=20261108&datum=MLLW&station=8518750&time_zone=gmt&units=metric&format=json <- coops-8518750-water-level-2026-11-07.json",
+    "200 https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=water_temperature&application=underbite&begin_date=20261101&end_date=20261108&station=8518750&time_zone=gmt&units=metric&format=json <- coops-8518750-water-temperature-2026-11-07.json",
+    "200 https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=currents_predictions&application=underbite&begin_date=20261101&end_date=20261115&station=NYH1927&time_zone=gmt&units=metric&interval=max_slack&format=json&bin=13 <- coops-NYH1927-bin13-max-slack-2026-11-08.json",
+    "200 https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=currents_predictions&application=underbite&begin_date=20261101&end_date=20261115&station=NYH1927&time_zone=gmt&units=metric&interval=6&format=json&bin=13 <- coops-NYH1927-bin13-currents-predictions-6min-2026-11-08.json",
+    "200 https://www.ndbc.noaa.gov/data/realtime2/44025.txt <- ndbc-44025.txt",
+    "200 https://www.ndbc.noaa.gov/data/realtime2/44025.spec <- ndbc-44025.spec",
+    "200 https://marine-api.open-meteo.com/v1/marine?latitude=40.7&longitude=-74.02&hourly=wave_height,wave_direction,wave_period,wind_wave_height,wind_wave_direction,wind_wave_period,swell_wave_height,swell_wave_direction,swell_wave_period,secondary_swell_wave_height,secondary_swell_wave_period,secondary_swell_wave_direction,sea_surface_temperature&forecast_days=7&past_days=7&timezone=GMT&wind_speed_unit=ms <- marine-40.70_-74.02-hourly-2d.json",
+    "200 https://api.weather.gov/points/40.7,-74.02 <- points-40.7033_-74.0170.geo.json",
+    "200 https://api.weather.gov/zones?point=40.7,-74.02 <- zones-coastal-point-40.7033_-74.0170.geo.json",
+    "200 https://api.weather.gov/zones/coastal/ANZ338/forecast <- zone-forecast-ANZ338.ld.json",
+    "200 https://api.weather.gov/alerts/active?zone=ANZ338 <- alerts-active-zone-ANZ338.geo.json",
+    "200 https://www.ndbc.noaa.gov/data/realtime2/44065.txt <- ndbc-44065-head300.txt",
+    "200 https://www.ndbc.noaa.gov/data/realtime2/44025.txt <- ndbc-44025.txt"
+  ],
+  "sources": {
+    "marine_alerts": "nws",
+    "marine_forecast": "nws",
+    "observed_pressure": "ndbc",
+    "observed_wind": "ndbc",
+    "sea_surface_temp_forecast": "open-meteo-marine",
+    "tidal_current": "coops",
+    "tide": "coops",
+    "water_temperature": "ndbc",
+    "waves": "ndbc",
+    "waves_forecast": "open-meteo-marine"
+  },
+  "stations": [
+    {
+      "bin": null,
+      "id": "44025",
+      "kind": "buoy",
+      "latitude": 40.251,
+      "longitude": -73.164,
+      "name": "Long Island, 30 NM south of Islip",
+      "reference_id": null,
+      "source": "ndbc"
+    },
+    {
+      "bin": null,
+      "id": "8518750",
+      "kind": "tide_harmonic",
+      "latitude": 40.7001,
+      "longitude": -74.0142,
+      "name": "The Battery",
+      "reference_id": null,
+      "source": "coops"
+    },
+    {
+      "bin": 13,
+      "id": "NYH1927",
+      "kind": "current_harmonic",
+      "latitude": 40.6998,
+      "longitude": -74.0167,
+      "name": "The Battery Reach",
+      "reference_id": null,
+      "source": "coops"
+    },
+    {
+      "bin": null,
+      "id": "44065",
+      "kind": "buoy",
+      "latitude": 40.369,
+      "longitude": -73.703,
+      "name": "New York Harbor Entrance",
+      "reference_id": null,
+      "source": "ndbc"
+    }
+  ],
+  "water": {
+    "temperature_c": {
+      "provenance": {
+        "distance_m": 1000.0,
+        "kind": "observed",
+        "observed_at": 1794145200,
+        "quality": "provisional",
+        "relation": "nearby",
+        "source": "ndbc",
+        "station": {
+          "bin": null,
+          "id": "44025",
+          "kind": "buoy",
+          "latitude": 40.251,
+          "longitude": -73.164,
+          "name": "Long Island, 30 NM south of Islip",
+          "reference_id": null,
+          "source": "ndbc"
+        }
+      },
+      "samples": {
+        "first": {
+          "time": 1793544000,
+          "value": 15.899999618530273
+        },
+        "last": {
+          "time": 1794145200,
+          "value": 15.899999618530273
+        },
+        "len": 233
+      }
+    }
+  }
+}

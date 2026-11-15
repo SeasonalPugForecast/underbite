@@ -1,0 +1,110 @@
+---
+source: crates/underbite-providers/tests/spot_battery.rs
+expression: "replay::summary(&outcome, &served)"
+---
+{
+  "attribution": [
+    {
+      "credit": "Tide and current predictions computed from NOAA/NOS CO-OPS harmonic constants",
+      "source": "coops-harmonics",
+      "url": "https://tidesandcurrents.noaa.gov/"
+    }
+  ],
+  "errors": [
+    {
+      "kind": "other",
+      "measurement": "tide",
+      "message": "coops: HTTP 503: Wrong Product : Product cannot be null or empty, used coops-harmonics",
+      "source": "coops"
+    }
+  ],
+  "marine": {
+    "tide": {
+      "curve": {
+        "provenance": {
+          "distance_m": 1000.0,
+          "kind": "computed",
+          "observed_at": 1794148200,
+          "quality": "approved",
+          "relation": "same_water_body",
+          "source": "coops-harmonics",
+          "station": {
+            "bin": null,
+            "id": "8518750",
+            "kind": "tide_harmonic",
+            "latitude": 40.7001,
+            "longitude": -74.0142,
+            "name": "The Battery",
+            "reference_id": null,
+            "source": "coops"
+          }
+        },
+        "samples": {
+          "first": {
+            "time": 1793543400,
+            "value": 0.8081504106521606
+          },
+          "last": {
+            "time": 1794753000,
+            "value": 1.1279642581939697
+          },
+          "len": 3361
+        }
+      },
+      "datum": "mllw",
+      "events": {
+        "first": {
+          "height_m": 1.560241460800171,
+          "kind": "high",
+          "time": 1793556660
+        },
+        "last": {
+          "height_m": 0.40702617168426514,
+          "kind": "low",
+          "time": 1794737940
+        },
+        "len": 54
+      },
+      "provenance": {
+        "distance_m": 1000.0,
+        "kind": "computed",
+        "observed_at": 1794148200,
+        "quality": "approved",
+        "relation": "same_water_body",
+        "source": "coops-harmonics",
+        "station": {
+          "bin": null,
+          "id": "8518750",
+          "kind": "tide_harmonic",
+          "latitude": 40.7001,
+          "longitude": -74.0142,
+          "name": "The Battery",
+          "reference_id": null,
+          "source": "coops"
+        }
+      },
+      "source_kind": "computed"
+    }
+  },
+  "served": [
+    "503 https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=underbite&begin_date=20261101&end_date=20261115&datum=MLLW&station=8518750&time_zone=gmt&units=metric&interval=hilo&format=json <- coops-error-no-product.txt",
+    "200 https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/8518750/datums.json?units=metric <- coops-mdapi-8518750-datums-metric.json",
+    "200 https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/8518750/harcon.json?units=metric <- coops-mdapi-8518750-harcon-metric.json"
+  ],
+  "sources": {
+    "tide": "coops-harmonics"
+  },
+  "stations": [
+    {
+      "bin": null,
+      "id": "8518750",
+      "kind": "tide_harmonic",
+      "latitude": 40.7001,
+      "longitude": -74.0142,
+      "name": "The Battery",
+      "reference_id": null,
+      "source": "coops"
+    }
+  ],
+  "water": {}
+}

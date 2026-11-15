@@ -1,0 +1,216 @@
+---
+source: crates/underbite-providers/tests/spot_croton.rs
+expression: "replay::summary(&outcome, &served)"
+---
+{
+  "attribution": [
+    {
+      "credit": "U.S. Geological Survey",
+      "source": "usgs",
+      "url": "https://waterdata.usgs.gov"
+    },
+    {
+      "credit": "Provisional data from the U.S. Geological Survey are subject to revision",
+      "source": "usgs",
+      "url": "https://waterdata.usgs.gov/provisional-data-statement/"
+    },
+    {
+      "credit": "NOAA National Water Prediction Service",
+      "source": "nwps",
+      "url": "https://water.noaa.gov/"
+    },
+    {
+      "credit": "US Geological Survey",
+      "source": "nwps",
+      "url": "https://waterdata.usgs.gov/nwis"
+    },
+    {
+      "credit": "Observations courtesy of U.S. Geological Survey",
+      "source": "nwps",
+      "url": "https://waterdata.usgs.gov/nwis/inventory/?site_no=01357500"
+    }
+  ],
+  "errors": [],
+  "marine": {},
+  "served": [
+    "200 https://api.waterdata.usgs.gov/ogcapi/v1/collections/latest-continuous/items?f=json&monitoring_location_id=USGS-01375000&parameter_code=00060,00065&skipGeometry=true&properties=time_series_id,monitoring_location_id,parameter_code,statistic_id,time,value,unit_of_measure,approval_status,qualifier&limit=1000 <- usgs-latest-continuous-croton-01375000.json",
+    "200 https://api.water.noaa.gov/nwps/v1/gauges/COHN6 <- nwps-gauge-COHN6.json",
+    "200 https://api.water.noaa.gov/nwps/v1/gauges/COHN6/stageflow/forecast <- nwps-gauge-COHN6-stageflow-forecast.json"
+  ],
+  "sources": {
+    "discharge": "usgs",
+    "flood_categories": "nwps",
+    "flow_forecast": "nwps",
+    "gage_height": "usgs"
+  },
+  "stations": [
+    {
+      "bin": null,
+      "id": "USGS-01375000",
+      "kind": {
+        "usgs_site": "stream"
+      },
+      "latitude": 41.2247,
+      "longitude": -73.8592,
+      "name": "Croton River at New Croton Dam near Croton-on-Hudson NY",
+      "reference_id": null,
+      "source": "usgs"
+    },
+    {
+      "bin": null,
+      "id": "COHN6",
+      "kind": "nwps_gauge",
+      "latitude": 42.7733,
+      "longitude": -73.7078,
+      "name": "Mohawk River at Cohoes NY",
+      "reference_id": null,
+      "source": "nwps"
+    }
+  ],
+  "water": {
+    "discharge_forecast_m3s": {
+      "provenance": {
+        "distance_m": 163000.0,
+        "kind": "modelled",
+        "observed_at": 1794069900,
+        "quality": "provisional",
+        "relation": "nearby",
+        "source": "nwps",
+        "station": {
+          "bin": null,
+          "id": "COHN6",
+          "kind": "nwps_gauge",
+          "latitude": 42.7733,
+          "longitude": -73.7078,
+          "name": "Mohawk River at Cohoes NY",
+          "reference_id": null,
+          "source": "nwps"
+        }
+      },
+      "samples": {
+        "first": {
+          "time": 1794074400,
+          "value": 45.02378845214844
+        },
+        "last": {
+          "time": 1794312000,
+          "value": 51.25349044799805
+        },
+        "len": 12
+      }
+    },
+    "discharge_m3s": {
+      "provenance": {
+        "distance_m": 1000.0,
+        "kind": "observed",
+        "observed_at": 1794145500,
+        "quality": "provisional",
+        "relation": "same_water_body",
+        "source": "usgs",
+        "station": {
+          "bin": null,
+          "id": "USGS-01375000",
+          "kind": {
+            "usgs_site": "stream"
+          },
+          "latitude": 41.2247,
+          "longitude": -73.8592,
+          "name": "Croton River at New Croton Dam near Croton-on-Hudson NY",
+          "reference_id": null,
+          "source": "usgs"
+        }
+      },
+      "samples": [
+        {
+          "quality": "provisional",
+          "time": 1794145500,
+          "value": 0.35112887620925903
+        }
+      ]
+    },
+    "flood_categories": {
+      "action": {
+        "datum": "gauge",
+        "metres": 5.181600093841553
+      },
+      "major": {
+        "datum": "gauge",
+        "metres": 6.705599784851074
+      },
+      "minor": {
+        "datum": "gauge",
+        "metres": 6.0960001945495605
+      },
+      "moderate": {
+        "datum": "gauge",
+        "metres": 6.4008002281188965
+      }
+    },
+    "gage_height": {
+      "datum": "gauge",
+      "series": {
+        "provenance": {
+          "distance_m": 1000.0,
+          "kind": "observed",
+          "observed_at": 1794145500,
+          "quality": "provisional",
+          "relation": "same_water_body",
+          "source": "usgs",
+          "station": {
+            "bin": null,
+            "id": "USGS-01375000",
+            "kind": {
+              "usgs_site": "stream"
+            },
+            "latitude": 41.2247,
+            "longitude": -73.8592,
+            "name": "Croton River at New Croton Dam near Croton-on-Hudson NY",
+            "reference_id": null,
+            "source": "usgs"
+          }
+        },
+        "samples": [
+          {
+            "quality": "provisional",
+            "time": 1794145500,
+            "value": 0.33528000116348267
+          }
+        ]
+      }
+    },
+    "stage_forecast": {
+      "datum": "gauge",
+      "series": {
+        "provenance": {
+          "distance_m": 163000.0,
+          "kind": "modelled",
+          "observed_at": 1794069900,
+          "quality": "provisional",
+          "relation": "nearby",
+          "source": "nwps",
+          "station": {
+            "bin": null,
+            "id": "COHN6",
+            "kind": "nwps_gauge",
+            "latitude": 42.7733,
+            "longitude": -73.7078,
+            "name": "Mohawk River at Cohoes NY",
+            "reference_id": null,
+            "source": "nwps"
+          }
+        },
+        "samples": {
+          "first": {
+            "time": 1794074400,
+            "value": 2.6212801933288574
+          },
+          "last": {
+            "time": 1794312000,
+            "value": 2.6822400093078613
+          },
+          "len": 12
+        }
+      }
+    }
+  }
+}
