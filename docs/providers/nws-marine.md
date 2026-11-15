@@ -319,3 +319,24 @@ payload recorded earlier. The unfiltered `/alerts/active?event=Gale%20Warning` r
 - The documented status code for rate limiting (the API documentation does not state one; none was
   provoked).
 - GLF for `LH LM LS SC SL`, and LEZ166 on a day with a Gale Warning on the Great Lakes.
+
+### Addendum 2026-11-15: offshore bulletin mapping (NT1)
+
+`GET https://api.weather.gov/products/types/OFF/locations/NT1/latest` with `User-Agent` and
+`Accept: application/ld+json` returned 200 (`wmoCollectiveId` `FZNT21`, `issuingOffice` `KWBC`,
+`issuanceTime` `2026-11-15T20:25:00+00:00`, header `OFFNT1`). Recorded as
+`tests/fixtures/raw/nws-marine/products-off-nt1-latest.json`.
+
+Offshore mapping as observed in the two recordings:
+
+- `NT1` (New England continental shelf and slope waters) carries these UGC lines, in this order:
+  `ANZ898` (the synopsis, with no forecast periods), `ANZ800`, `ANZ805`, `ANZ900`, `ANZ810`, `ANZ815`.
+- `NT2` (recorded 2026-11-08) carries `ANZ899` (synopsis), `ANZ820`, `ANZ825`, `ANZ828`, `ANZ830`,
+  `ANZ833`, `ANZ835`, `ANZ905`, `ANZ910`, `ANZ915`, `ANZ920`, `ANZ925`, `ANZ930`, `ANZ935`.
+- The zone lines are not in numeric order and a zone's name is the line after its UGC line, so the parser
+  must split on `$$` and key each section by the UGC code rather than rely on position.
+- Every offshore zone's metadata office (`ONA` in the offshore zone listing `zones-offshore-area-AN.geo.json`)
+  is not an `OFF` location, so the bulletin cannot be chosen from the zone's office. It is chosen by zone
+  id through a fixed table: `ANZ800` to `ANZ815`, `ANZ898` and `ANZ900` to `NT1`; `ANZ820` to `ANZ835`,
+  `ANZ899` and `ANZ905` to `ANZ935` to `NT2`. Other offshore zones (`NT3` to `NT5`) were not fetched and
+  are **unverified**.
