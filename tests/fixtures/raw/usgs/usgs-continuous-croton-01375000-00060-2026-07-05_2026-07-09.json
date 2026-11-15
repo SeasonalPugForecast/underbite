@@ -1,0 +1,5235 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T00:00:00+00:00",
+        "value": "99.5",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "378534be-27fc-4978-8b1a-81f316547bb2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T00:15:00+00:00",
+        "value": "106",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f83abc0f-6feb-4fdd-8fc5-38c20c4cda21",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T00:30:00+00:00",
+        "value": "79.7",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b80cbe5c-2f13-40cd-9327-a905d3594141",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T00:45:00+00:00",
+        "value": "77.9",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "24b8a993-1719-465e-a75d-c9e6e52184fb",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T01:00:00+00:00",
+        "value": "177",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3c94e6e7-2b5c-45d5-b70f-ff3e6626c1bd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T01:15:00+00:00",
+        "value": "184",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5caba7f9-4023-4962-8fd0-4148c8a115c2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T01:30:00+00:00",
+        "value": "130",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b25b3c8c-1591-4cb1-917e-a3af6ea52d21",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T01:45:00+00:00",
+        "value": "91.2",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4140cb77-6b08-4eeb-a81d-9e290137c583",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T02:00:00+00:00",
+        "value": "111",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9636c85e-dc7e-4266-9697-7b63fda20c0d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T02:15:00+00:00",
+        "value": "184",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e6b0967c-17f2-480b-a2ea-c1b140fa279f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T02:30:00+00:00",
+        "value": "170",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "721c0d0a-008c-4e0a-abe2-b81a8123d4ab",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T02:45:00+00:00",
+        "value": "125",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "920119c4-bff4-4352-a942-6c63a2b691e5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T03:00:00+00:00",
+        "value": "106",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e9aa2f15-2919-4c8a-85c2-5fc2d5d9e54d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T03:15:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "35d216f1-37b3-4c6a-b437-7bf93a5b63c8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T03:30:00+00:00",
+        "value": "164",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "65de3629-2551-4ae1-82a2-d1e9ef9c086d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T03:45:00+00:00",
+        "value": "151",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f70fed7f-6d53-49a1-b41e-adb7329c1826",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T04:00:00+00:00",
+        "value": "102",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f23df327-8c2c-438b-b889-ff44efdfd81e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T04:15:00+00:00",
+        "value": "118",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e72b7af4-6548-4a3b-9327-bc0dbf8f6ff6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T04:30:00+00:00",
+        "value": "181",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7e71e976-b0ad-4ed2-9afa-3e19e9c849bf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T04:45:00+00:00",
+        "value": "188",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e46efdf9-83b0-4e8e-af0f-005a6d5221a9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T05:00:00+00:00",
+        "value": "136",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b83d7a44-49f4-4f93-b092-993e41d92759",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T05:15:00+00:00",
+        "value": "111",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c1f59b01-743e-4f6e-b129-212b03ab9a14",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T05:30:00+00:00",
+        "value": "139",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "eddf26e2-feb6-46d6-9735-e109465d3111",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T05:45:00+00:00",
+        "value": "188",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f395f632-dab5-4f64-99f9-145ce2795026",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T06:00:00+00:00",
+        "value": "174",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8fa84830-3d14-41e6-a1fc-a9866a187285",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T06:15:00+00:00",
+        "value": "130",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "47208e1e-ec4b-4c72-a7e4-5a21e3a81abc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T06:30:00+00:00",
+        "value": "118",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "80223b10-5852-48d0-bdb2-3ebee00dcbb6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T06:45:00+00:00",
+        "value": "148",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f4e01ba7-e98e-4525-865d-1b83d331581e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T07:00:00+00:00",
+        "value": "181",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "20c4aff8-f886-4d6e-a149-8a7e6f231979",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T07:15:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "6329fba1-8ee1-494f-8d87-bdc8ecf2d0a6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T07:30:00+00:00",
+        "value": "133",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "0641a064-cfa2-4e45-8f70-dbd446931093",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T07:45:00+00:00",
+        "value": "130",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b4b533b2-ee3a-4ea0-9ec6-488954d85399",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T08:00:00+00:00",
+        "value": "167",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "853559b7-991a-4ab9-89ed-c66f5bb3bd76",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T08:15:00+00:00",
+        "value": "174",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "02523fdb-fa75-4c71-b1ff-3f9aff7fbe81",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T08:30:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "65773c7c-dca0-4f1a-b772-91a53c4b6342",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T08:45:00+00:00",
+        "value": "133",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "730e3e6f-22cc-4162-8988-dbb62c99b070",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T09:00:00+00:00",
+        "value": "145",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "28c94a56-2acc-4096-8979-8607cefb36a5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T09:15:00+00:00",
+        "value": "170",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a6da57ab-e496-408d-9ad2-e554fe596a86",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T09:30:00+00:00",
+        "value": "170",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "51ad5de6-99d2-4acf-b984-adaf33d2110c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T09:45:00+00:00",
+        "value": "151",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "42eec404-8ff3-4ff6-a792-5bfcf554fb18",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T10:00:00+00:00",
+        "value": "142",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5492a47d-3287-4ec6-8866-a8330a54b6b6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T10:15:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "09ac5aac-40da-46a5-8544-f083d51fffdd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T10:30:00+00:00",
+        "value": "170",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d2c92c85-8887-47af-a0b6-cd3a0dce7333",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T10:45:00+00:00",
+        "value": "167",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5cdce41d-2221-48d6-8f77-8cf517318c71",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T11:00:00+00:00",
+        "value": "148",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ba31cd25-861c-4062-88c0-89389b9fe350",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T11:15:00+00:00",
+        "value": "151",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9ffd1929-2301-4f62-8812-57b65b854ac7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T11:30:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "0cc83f1f-be11-4dc1-8f9f-4b5db0cf5c86",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T11:45:00+00:00",
+        "value": "174",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "237c2918-6b71-4f20-8f23-3bb11f93a2b4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T12:00:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "832c5dfe-8f1a-4515-ad6b-c30ace69706d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T12:15:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "09c18000-f77b-41d0-857e-b20fe07b1adf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T12:30:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "14ca4e94-ba36-4093-a3f0-8ce0d42785eb",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T12:45:00+00:00",
+        "value": "170",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ed3a2089-95ff-4f5d-ab81-44b2ade4acaf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T13:00:00+00:00",
+        "value": "170",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f05d90cc-6694-4fc3-ba1c-f46269df4463",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T13:15:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b0c8eb68-9da7-4f16-9141-370dd3022203",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T13:30:00+00:00",
+        "value": "151",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "00a8bdfc-87e2-48e0-8955-04a35ed8f281",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T13:45:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8f2f6a99-e40f-454c-9717-4d9ffb3f9c4b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T14:00:00+00:00",
+        "value": "174",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "11216e3b-6635-428a-b03a-92b98297b074",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T14:15:00+00:00",
+        "value": "170",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "662670e9-9604-4b3c-9db1-0ad279a37fbe",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T14:30:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "33d22513-d306-46b8-8cec-251031a4d6fa",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T14:45:00+00:00",
+        "value": "151",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ed892a1e-4d9e-4c83-8f93-3c4aee927cfd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T15:00:00+00:00",
+        "value": "164",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a7174524-1ebf-4a23-bf50-91907f6e8098",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T15:15:00+00:00",
+        "value": "174",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "6dcd5296-3da2-4d6a-8de9-14d89b319db5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T15:30:00+00:00",
+        "value": "167",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "6f5fa151-a06c-475e-832b-64b48275bc9e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T15:45:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "06099ecb-771e-4c49-b7c8-a933aebdedc9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T16:00:00+00:00",
+        "value": "151",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e1cc3a9a-494c-41da-97f9-67e3767a41c5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T16:15:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "fcedcd72-99d1-44b3-92e6-5f5725449ac1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T16:30:00+00:00",
+        "value": "167",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "dff68d71-1971-4b68-ab0a-bbca7769da89",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T16:45:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d4dce6f5-b742-456c-9737-446f910a6390",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T17:00:00+00:00",
+        "value": "151",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2eebd897-3c1b-45fc-8f25-cdd473e41052",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T17:15:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7230ba34-b445-4734-adfe-5f66e74ba8ba",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T17:30:00+00:00",
+        "value": "164",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9cae080e-ace8-44a3-8c1b-5378857a79cd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T17:45:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8710b050-f91e-4c31-893b-fb8d2ea5f743",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T18:00:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4850cf33-c43f-4d3b-8567-6b7a5a9f2f01",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T18:15:00+00:00",
+        "value": "151",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f7d1608d-21f1-4633-8196-967293db1590",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T18:30:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1618dd6f-ea90-47d1-a099-259621c879f7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T18:45:00+00:00",
+        "value": "164",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e66ee017-7545-4fe5-b865-1bf47ef53451",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T19:00:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "40095b98-d46b-40a8-bc2b-713223ef49ec",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T19:15:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "753b1369-44f1-470d-81d9-4ba56a0ae484",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T19:30:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9d44f301-f3b9-49ae-a9c1-d5964bb6a20d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T19:45:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9fdba6de-774c-4114-92b1-d6bea507ea45",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T20:00:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "601d3cf8-d7d5-4e80-90b5-46c3de229aab",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T20:15:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ba704c84-70fc-4781-bdc9-3cf5b1bb89d5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T20:30:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5b2ea017-2330-4594-a1df-c916996b5181",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T20:45:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7526dd79-0576-4542-9363-a2eb57b0c1c5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T21:00:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d5e1c76d-7a62-4ee8-bafb-212861a032e6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T21:15:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8ca2e4ad-507e-4925-b3de-7858c65d7ba9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T21:30:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e313bc67-c3ba-440c-9cb1-204feefc112e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T21:45:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ee1bff3c-afc4-4861-a75a-0e7957d91a54",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T22:00:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "da1f28ef-fb75-40b3-b7d4-3d46f7ac8de2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T22:15:00+00:00",
+        "value": "164",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a0f31dc5-5d64-435e-a891-af442de66530",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T22:30:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f17d60ba-ec01-4fbf-8232-55d3c6df8e3f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T22:45:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "21330256-4c25-49e0-9ea1-6cf899022931",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T23:00:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5c2df7f4-1557-4cc8-b377-d3a34251c4ee",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T23:15:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "0fa713db-c244-47ad-ada3-6e09dc75ed4d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T23:30:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b049e19e-ae9e-44fb-9ea1-afb674df811a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-05T23:45:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "37492939-85eb-44c9-8270-c800ca361c60",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T00:00:00+00:00",
+        "value": "151",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "73f46cfe-ecde-480c-962b-e338c8d1ac61",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T00:15:00+00:00",
+        "value": "154",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "165c50df-255d-4632-b9b0-12391210dbd2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T00:30:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4f72a079-2635-4532-8b81-33e7c202b4c3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T00:45:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9492ae74-96ea-40a5-b1fa-9c20f39952d5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T01:00:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1833bd5c-992e-4deb-a525-7829637322b4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T01:15:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "eb8c78ac-8068-4fb4-89c9-9577aaa74da8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T01:30:00+00:00",
+        "value": "157",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2a20a1dd-a1c0-4fac-b8eb-23f031dc34e8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T01:45:00+00:00",
+        "value": "160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4c5b4d28-db69-4ce4-8c36-b7b8f5b9b11e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T02:00:00+00:00",
+        "value": "167",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2ac56732-552a-4f96-8f89-375ff4e4030a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T02:15:00+00:00",
+        "value": "167",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b4477006-75ed-4dba-9770-3fe2a1b053f9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T02:30:00+00:00",
+        "value": "181",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "745cb65d-eda2-4540-b3c1-6f14860354e1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T02:45:00+00:00",
+        "value": "174",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2440f3ad-af1c-4fb2-80be-0bc02e642f42",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T03:00:00+00:00",
+        "value": "219",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "702d8e1d-b309-4b1c-becb-9e3ce1a1267f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T03:15:00+00:00",
+        "value": "258",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "43f9e336-59d3-4286-8dee-415fec025372",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T03:30:00+00:00",
+        "value": "254",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f50c65ce-aefb-4e4c-ae10-45278e8882f8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T03:45:00+00:00",
+        "value": "227",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "71e56105-2f57-4516-a007-b333ebbf796f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T04:00:00+00:00",
+        "value": "231",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "024e2bff-5a9e-4edf-90dd-2094c5e045ee",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T04:15:00+00:00",
+        "value": "249",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f882f2b5-0d17-4ddc-b234-1e72ee09653d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T04:30:00+00:00",
+        "value": "268",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d00b4890-02b1-4f3f-8585-f7ed7303a7b0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T04:45:00+00:00",
+        "value": "258",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f470a798-c17d-428f-a25d-cb58f03fdee0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T05:00:00+00:00",
+        "value": "254",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9851c1f5-fe98-4bd8-a638-021ac431be96",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T05:15:00+00:00",
+        "value": "273",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "54081cc9-14e2-4908-8d66-dec5bd621de8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T05:30:00+00:00",
+        "value": "305",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a7e7eb76-1073-4e07-b6b8-08e241b3d4fb",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T05:45:00+00:00",
+        "value": "305",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7594e766-f587-4db4-94f8-cc01d5cd990b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T06:00:00+00:00",
+        "value": "289",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "6532a984-43d4-4e25-bebd-579f3dddfb6e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T06:15:00+00:00",
+        "value": "278",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "078a3af5-1ecf-45dd-8301-7e95e93567d5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T06:30:00+00:00",
+        "value": "317",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7e3ec07b-c3e3-41fd-940a-ace52080597a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T06:45:00+00:00",
+        "value": "334",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f2e348b4-992a-4a25-ab90-178750a5fd0c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T07:00:00+00:00",
+        "value": "347",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "de62bb72-5df6-4682-b2e8-d46799c7fc6b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T07:15:00+00:00",
+        "value": "328",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "dd2b34a2-4356-40a7-ba75-f146e4de8751",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T07:30:00+00:00",
+        "value": "353",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "80612950-326b-4293-827a-ab118df6709d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T07:45:00+00:00",
+        "value": "428",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "da805710-ce55-48ce-8468-18e125c87dd0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T08:00:00+00:00",
+        "value": "474",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b0cccf47-7a2b-4e42-bfe9-18e11c111460",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T08:15:00+00:00",
+        "value": "466",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9081ba8f-dfcc-4032-a444-6e330a601fee",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T08:30:00+00:00",
+        "value": "451",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "19981cc9-9fb0-47aa-b6e2-5e010dd94424",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T08:45:00+00:00",
+        "value": "482",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "de7b2dc5-91ba-4974-a53c-fdeabc41b531",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T09:00:00+00:00",
+        "value": "523",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "15d2a17c-0d4f-4446-9adb-2c2b27829411",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T09:15:00+00:00",
+        "value": "515",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "0cf53607-a870-4332-847b-7517778669aa",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T09:30:00+00:00",
+        "value": "515",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "28197e6b-78c1-44bf-bc64-bb9ba78fdb2b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T09:45:00+00:00",
+        "value": "541",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3607cf57-ff34-4a83-9ab0-8c8e1e4a920b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T10:00:00+00:00",
+        "value": "567",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3c77022d-f0c4-4b5c-bf46-b97ea81b30ec",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T10:15:00+00:00",
+        "value": "586",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a9ced394-8c65-4bcf-900f-cc1f5bbad617",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T10:30:00+00:00",
+        "value": "558",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "05cc2108-196f-4d04-9530-c18ea097bd3f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T10:45:00+00:00",
+        "value": "558",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c61a42de-9f2a-4398-af7e-a98b2ce606b4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T11:00:00+00:00",
+        "value": "567",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b0568f6e-5626-47ce-8e17-7913cf56ca6d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T11:15:00+00:00",
+        "value": "605",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b231f9d6-d234-4b92-868c-e2af4afa5c8d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T11:30:00+00:00",
+        "value": "624",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ed250228-5718-4957-95d8-bde5d8728f4b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T11:45:00+00:00",
+        "value": "634",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "6d4cdf61-c133-4727-9977-76b5a9cc6dff",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T12:00:00+00:00",
+        "value": "586",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "0007c59f-aca1-44f6-b5fc-8576b7f5136b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T12:15:00+00:00",
+        "value": "567",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b73418c7-18f7-4709-9c6f-b7fa1410eb6f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T12:30:00+00:00",
+        "value": "595",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5113c9db-9182-41fe-93e6-a8b5c7d4c295",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T12:45:00+00:00",
+        "value": "634",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7d093022-4262-429c-9d44-8582bc8f3234",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T13:00:00+00:00",
+        "value": "644",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d85f7053-45be-4919-b1e2-5aed0c31dbea",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T13:15:00+00:00",
+        "value": "614",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b8dcf9dc-b63b-452f-a6cb-57d292f215f0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T13:30:00+00:00",
+        "value": "595",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "576299b2-a181-4775-a976-f7893f06ec51",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T13:45:00+00:00",
+        "value": "624",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4b05e0f7-76b7-4d9f-97a6-af1569491b36",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T14:00:00+00:00",
+        "value": "674",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5be9f5d8-9c8d-4bdf-ae04-fcaab4ab6c19",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T14:15:00+00:00",
+        "value": "685",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d7bf0ae1-15ca-4148-becc-184b24f3d1fa",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T14:30:00+00:00",
+        "value": "664",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "0d968be2-5923-458a-9904-6f625541ab45",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T14:45:00+00:00",
+        "value": "654",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e42a0a93-2cbc-47bd-929a-c106882676bf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T15:00:00+00:00",
+        "value": "706",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4bae838c-53ad-45d4-b8c6-bb9f2b249170",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T15:15:00+00:00",
+        "value": "727",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "cbf3884c-e26b-4624-af04-c0c185f550f6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T15:30:00+00:00",
+        "value": "739",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7491b9b1-bd9e-4e7e-bb43-3fdbc2a0b7fd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T15:45:00+00:00",
+        "value": "695",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8298ab2d-d334-48ba-a82f-e69bef37b9b3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T16:00:00+00:00",
+        "value": "706",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b2dbe194-0b37-4df8-9900-c67aa6235732",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T16:15:00+00:00",
+        "value": "727",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "67e7ca5d-09a3-46cd-83ad-90f426435d1e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T16:30:00+00:00",
+        "value": "750",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "efb0a267-ca44-4555-b72e-25853891dbf1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T16:45:00+00:00",
+        "value": "750",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "05daef60-0ca1-44cf-9e32-82184eb65ee4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T17:00:00+00:00",
+        "value": "750",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "866fba56-4ac3-430d-9398-51ecd181cca1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T17:15:00+00:00",
+        "value": "761",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2fbf381a-f40a-49cc-a78b-95adcd94c974",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T17:30:00+00:00",
+        "value": "800",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c5239078-3036-42a8-92e1-5e7aca200700",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T17:45:00+00:00",
+        "value": "835",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3b194326-a7af-4e39-8dba-86cb053dea0f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T18:00:00+00:00",
+        "value": "857",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "99d037b2-1d0d-4b4e-89f6-82b88e2a0ecd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T18:15:00+00:00",
+        "value": "857",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8924c395-3d1a-4651-b5b6-ffb1a9e0ec55",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T18:30:00+00:00",
+        "value": "872",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "67aed15b-e5a5-4080-9156-0debdde1d36f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T18:45:00+00:00",
+        "value": "879",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b260c6d6-0b9d-413e-a286-1c4c36ef38bb",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T19:00:00+00:00",
+        "value": "894",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a0f61c1c-b83e-4b9e-9439-a5df2091477d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T19:15:00+00:00",
+        "value": "924",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "56685c7c-4dd4-4c44-b335-eb710be78817",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T19:30:00+00:00",
+        "value": "979",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "54231169-d03e-436c-ab0c-0c106470a9c6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T19:45:00+00:00",
+        "value": "1020",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2952efa0-8b54-457a-84bf-5df45d4b1929",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T20:00:00+00:00",
+        "value": "1030",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "893a4cf6-434a-43ab-bedf-8083d127b788",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T20:15:00+00:00",
+        "value": "1030",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "62157e72-4994-4b0e-9a9b-39e6e5d98446",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T20:30:00+00:00",
+        "value": "1080",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "17939b9a-1346-4594-9ef8-689b99da6d68",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T20:45:00+00:00",
+        "value": "1140",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "88006a54-353b-4eb8-88af-8a8fe59741de",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T21:00:00+00:00",
+        "value": "1190",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "cec70170-2121-4922-8cae-8cc681dc0800",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T21:15:00+00:00",
+        "value": "1230",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d7e190c8-992e-4837-b3c8-bacb61f32f4e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T21:30:00+00:00",
+        "value": "1260",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "20f05f59-abc0-4ddb-9385-052dc9125386",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T21:45:00+00:00",
+        "value": "1310",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "10c0c15d-2f6c-4b86-81c3-473cba7178f9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T22:00:00+00:00",
+        "value": "1370",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a095ba11-bad2-43e5-a672-94ed1bb00075",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T22:15:00+00:00",
+        "value": "1410",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a3dd465b-bbf3-47c0-8e70-20754535d9f0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T22:30:00+00:00",
+        "value": "1450",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1fd1ea8e-41d8-4125-9c50-e039b66f618a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T22:45:00+00:00",
+        "value": "1490",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3223dbf0-c050-453e-9360-8e3de4a55626",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T23:00:00+00:00",
+        "value": "1560",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "6717eeb2-823a-419f-aa3a-42ea59e3ffe4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T23:15:00+00:00",
+        "value": "1630",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "6e2bcf87-e94e-4d3c-8206-4674ba38d5ce",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T23:30:00+00:00",
+        "value": "1690",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "56ee8b3d-875e-439d-93de-af040af5188e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-06T23:45:00+00:00",
+        "value": "1740",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "76f07527-94b4-4627-90ae-1c472b477ed8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T00:00:00+00:00",
+        "value": "1800",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8dbb9db5-3cee-4645-aeb3-4b0cba8ff5c5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T00:15:00+00:00",
+        "value": "1870",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f0adce08-52ad-4b5d-b2bb-d93308a0f5f4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T00:30:00+00:00",
+        "value": "1950",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d48ed7ba-6092-4e9f-8010-8d5d02872999",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T00:45:00+00:00",
+        "value": "2000",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "996ef74b-4bf1-443b-ae33-7cfc5dfd3b06",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T01:00:00+00:00",
+        "value": "2060",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7233bc92-0f8c-4ef5-a5ba-004d11ab5386",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T01:15:00+00:00",
+        "value": "2120",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7c989df9-96e2-499a-95f9-c72c225cfdd5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T01:30:00+00:00",
+        "value": "2170",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "58016cde-1359-4850-abe8-dda4101fe87d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T01:45:00+00:00",
+        "value": "2250",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d9a11c0f-a3c7-4430-acc3-553f4086f6d7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T02:00:00+00:00",
+        "value": "2290",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a2f2661f-58a6-45cc-9fb7-3d3161b4e1d3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T02:15:00+00:00",
+        "value": "2330",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "da78023b-1692-4c2b-ab9d-c596629a106f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T02:30:00+00:00",
+        "value": "2370",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "472c32dd-816c-4295-9e38-340d304e1011",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T02:45:00+00:00",
+        "value": "2440",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a9168e32-0798-4d62-ae5a-9633175d5144",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T03:00:00+00:00",
+        "value": "2490",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5cf98eff-7cec-46e7-b4f3-edc8af7949ea",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T03:15:00+00:00",
+        "value": "2550",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "29d29c2a-2984-4a6d-a2e9-cf365821618e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T03:30:00+00:00",
+        "value": "2590",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "efffc933-ec6d-4ff8-bdd5-6b98cc0a545c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T03:45:00+00:00",
+        "value": "2630",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "974a5915-4ef2-40b3-8c12-a80fa2f19217",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T04:00:00+00:00",
+        "value": "2700",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4c833a80-9be6-4e6c-9e3e-0c69b010381e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T04:15:00+00:00",
+        "value": "2740",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "aa081fed-ab2e-4819-ae2b-2c5ad3116838",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T04:30:00+00:00",
+        "value": "2780",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d28d9064-c857-4b5e-b2c1-6859e3a94204",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T04:45:00+00:00",
+        "value": "2830",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "214f3f4d-112c-419b-9dd7-8ada6020c569",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T05:00:00+00:00",
+        "value": "2880",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f58472d3-bfd3-4016-a467-4c05d91a0960",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T05:15:00+00:00",
+        "value": "2890",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "aba69556-0d75-4515-b4fe-0a5125cc8d99",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T05:30:00+00:00",
+        "value": "2900",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "bb61ad2c-205e-437c-8710-f7d142b6d84c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T05:45:00+00:00",
+        "value": "2930",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ab864829-f7a6-430d-a8b5-3cb8cd0055ab",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T06:00:00+00:00",
+        "value": "2960",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b4cdd383-ddf2-44a4-addb-b618de7e7547",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T06:15:00+00:00",
+        "value": "2990",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b3c96e59-d28a-40b4-be31-f462b67db98f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T06:30:00+00:00",
+        "value": "2990",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9dbca350-cb21-43e8-b259-6d2cdeaa3467",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T06:45:00+00:00",
+        "value": "3020",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c9da48f0-ac2f-47f8-b212-0e31f4337a32",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T07:00:00+00:00",
+        "value": "3040",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "0c9ec2ca-c72e-4d1d-a4cd-1a46dfb0b7e8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T07:15:00+00:00",
+        "value": "3030",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e241d328-fbad-4536-adee-400301c759b0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T07:30:00+00:00",
+        "value": "3060",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d59e45b2-84ed-4d77-86e7-5d3f6ab88899",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T07:45:00+00:00",
+        "value": "3070",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "365765a0-7af6-40a3-9dcc-2376f83512c6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T08:00:00+00:00",
+        "value": "3060",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d66b0c7b-4656-4632-bce8-4cd2de8b6d49",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T08:15:00+00:00",
+        "value": "3080",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "208c2a57-f196-4823-85e1-6bf303d29e1c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T08:30:00+00:00",
+        "value": "3080",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c1b0e5d1-9627-4cfc-b525-54de1d87a21e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T08:45:00+00:00",
+        "value": "3090",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "fdd90983-57d4-49b0-87d5-8708d0f3633e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T09:00:00+00:00",
+        "value": "3100",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "afed75fe-f8c4-4059-8ad1-689c17232bbd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T09:15:00+00:00",
+        "value": "3090",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d2e15c79-192f-43d6-99cb-180cec804f9e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T09:30:00+00:00",
+        "value": "3070",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "84681ee5-e5e4-4257-a92b-24dd5bd35a62",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T09:45:00+00:00",
+        "value": "3050",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b25c4fb6-5a7b-43a5-a3e7-3167047a7a6b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T10:00:00+00:00",
+        "value": "3080",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5025261a-ddbe-47f7-9c4e-27b78144f222",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T10:15:00+00:00",
+        "value": "3090",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "41a5a72e-6c37-42c6-9f07-dd616ffb6064",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T10:30:00+00:00",
+        "value": "3050",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b9fac39a-f2b0-49d6-99ae-685dc1bc1cd5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T10:45:00+00:00",
+        "value": "3020",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "487bb693-d9b9-4148-9710-e67f4ded6041",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T11:00:00+00:00",
+        "value": "3010",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ac4b6572-37a2-4e2f-bf41-ea75a1ce5d44",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T11:15:00+00:00",
+        "value": "3020",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2d15981a-5ab4-4c99-819d-e8751a19ac8b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T11:30:00+00:00",
+        "value": "3000",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e5634a5b-0549-4323-bd78-83b51e4e8459",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T11:45:00+00:00",
+        "value": "2980",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "66f14c33-d24f-4e3c-b1ab-1536d3e84206",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T12:00:00+00:00",
+        "value": "2950",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "069f31cd-142c-4051-943d-1ea325d0faf9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T12:15:00+00:00",
+        "value": "2940",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9a2e9b50-3bf0-41a9-b21d-cea53b295ff8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T12:30:00+00:00",
+        "value": "2940",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "10d626a6-d04c-4940-8b35-f6b67ef15532",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T12:45:00+00:00",
+        "value": "2910",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "80acc8b7-cccd-4b6b-836c-2c3bf7df149f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T13:00:00+00:00",
+        "value": "2890",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "6c2d8174-98d0-4c29-bc21-f6f72dd14536",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T13:15:00+00:00",
+        "value": "2880",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "fcbaeafb-59eb-49f1-b80f-2df94bb0c483",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T13:30:00+00:00",
+        "value": "2890",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ca6b26b7-03e0-4ad6-8292-5354bb16d28c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T13:45:00+00:00",
+        "value": "2860",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a6be1f11-beac-4d4c-9609-fa0d376fa7b4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T14:00:00+00:00",
+        "value": "2830",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "10a6877e-b9f6-4402-a198-6667d12ced1f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T14:15:00+00:00",
+        "value": "2800",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4b3cb3b6-ccda-4932-a6fe-af5af9abd1ca",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T14:30:00+00:00",
+        "value": "2790",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9e3769ee-f49b-47d1-b76d-9dc360636d67",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T14:45:00+00:00",
+        "value": "2780",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "827cc9ca-4cc6-4411-8154-096afe691f22",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T15:00:00+00:00",
+        "value": "2760",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "172abd85-1c87-4596-a6af-a51c6801fcfe",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T15:15:00+00:00",
+        "value": "2700",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e6218e55-b4d9-4063-abf1-1acb5f0aad58",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T15:30:00+00:00",
+        "value": "2710",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b0233442-cbd3-4180-a970-07525ef198b5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T15:45:00+00:00",
+        "value": "2700",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "457b114e-1f7a-4005-9844-f47677e15f61",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T16:00:00+00:00",
+        "value": "2660",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b601f8e3-1dcb-4626-ad95-23fd7945cfba",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T16:15:00+00:00",
+        "value": "2620",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "501a018a-2a00-468c-86a9-91769d4586ab",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T16:30:00+00:00",
+        "value": "2610",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1fc3b33f-bb0c-42f8-98a3-746a8f3a9ed2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T16:45:00+00:00",
+        "value": "2610",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "15cf2c77-f63b-438a-8dc1-5c811354ba8b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T17:00:00+00:00",
+        "value": "2590",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9bfd2e93-f085-445d-a33d-c41088257b87",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T17:15:00+00:00",
+        "value": "2570",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ec7af77b-332d-4658-9500-575f3c70d683",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T17:30:00+00:00",
+        "value": "2540",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e4696d32-8d53-4a70-85a0-044f63c4f9b9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T17:45:00+00:00",
+        "value": "2530",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f929aa25-42f4-449b-bc4c-67b76435827d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T18:00:00+00:00",
+        "value": "2500",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "245a63ca-e77b-44ff-9ebb-12c4f4d2686e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T18:15:00+00:00",
+        "value": "2490",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5105312a-7230-4bae-a2a7-4fc0e4ffd8ae",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T18:30:00+00:00",
+        "value": "2470",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9b23fb81-88a4-4ab0-82bb-ce0443932beb",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T18:45:00+00:00",
+        "value": "2450",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3d0aa358-887f-436c-a77b-55388979968a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T19:00:00+00:00",
+        "value": "2450",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "0c3b20a8-eba2-4795-b1b4-916965b15e80",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T19:15:00+00:00",
+        "value": "2450",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4d4d0a19-17c6-4ab5-9825-7aed08757c20",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T19:30:00+00:00",
+        "value": "2410",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "04a49704-399a-4d06-b254-1a4a1e7d42ff",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T19:45:00+00:00",
+        "value": "2390",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d55060f8-7735-4ebb-aa8c-a80304970544",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T20:00:00+00:00",
+        "value": "2370",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "930a6a11-73e4-439f-add4-560c95a8d956",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T20:15:00+00:00",
+        "value": "2360",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5e841000-3c92-4321-8828-769a81c4af8c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T20:30:00+00:00",
+        "value": "2340",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ca22ed7d-83a4-4903-a589-995aa9a66316",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T20:45:00+00:00",
+        "value": "2320",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3e6c4f22-cd2f-4de0-9b0d-4b8a5018c680",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T21:00:00+00:00",
+        "value": "2300",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "bada93e8-993b-415c-940e-71f117fe0850",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T21:15:00+00:00",
+        "value": "2290",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "6a95711d-3565-46e3-883b-53dff05cde7e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T21:30:00+00:00",
+        "value": "2280",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c66b1c2f-3885-4fa8-b211-15e26643361e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T21:45:00+00:00",
+        "value": "2260",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "56f649ff-b664-42c4-a02a-5ee8937886dc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T22:00:00+00:00",
+        "value": "2230",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "60e1fe0d-6a3e-4252-8ebf-fe9853e8945e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T22:15:00+00:00",
+        "value": "2210",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a27f2ad9-c265-460a-a57d-2358e539daad",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T22:30:00+00:00",
+        "value": "2210",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d450adfb-51ab-49a8-988a-128ebb45cbcc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T22:45:00+00:00",
+        "value": "2190",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b4ac6e93-d394-4aa5-a2bb-c2be20b38503",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T23:00:00+00:00",
+        "value": "2170",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "81ecf310-ee96-46b6-8a8f-d4227ac8a7c1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T23:15:00+00:00",
+        "value": "2150",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a1ff315f-858a-4302-b726-2e0a69b07f38",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T23:30:00+00:00",
+        "value": "2130",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "14c16ea2-ef8f-49c2-a6b7-f6df0bcdedb1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-07T23:45:00+00:00",
+        "value": "2130",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "663c9110-3387-4047-9022-30367581e59f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T00:00:00+00:00",
+        "value": "2120",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "203471d2-7de5-42ab-8338-5a9684054073",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T00:15:00+00:00",
+        "value": "2080",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "030855f8-a6c1-4e74-85ca-1f84abfbc153",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T00:30:00+00:00",
+        "value": "2080",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "af525146-c99d-4268-86f5-d4bb403487fa",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T00:45:00+00:00",
+        "value": "2070",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "022923b9-2224-4415-b1bf-0d6256968229",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T01:00:00+00:00",
+        "value": "2060",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "da2ab41d-2273-4f0e-a5b9-d4a62712e34a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T01:15:00+00:00",
+        "value": "2030",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "64bddb5e-ced2-4027-af03-485ca49e85da",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T01:30:00+00:00",
+        "value": "2020",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a77dbf38-74a1-43b1-b123-f5f779a7409c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T01:45:00+00:00",
+        "value": "2010",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "438bc903-3bdd-4290-9e1a-edb443e3c5d8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T02:00:00+00:00",
+        "value": "2020",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9ebdbf72-6160-4b22-a354-2e49a4d6936b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T02:15:00+00:00",
+        "value": "1990",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c3749672-cf7a-42db-aa16-d9c6919b1585",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T02:30:00+00:00",
+        "value": "1960",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "23b1539b-a81b-48a7-8f8b-c11292903eb2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T02:45:00+00:00",
+        "value": "1940",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f2e996e9-e0b3-4f20-bc41-83da84605c78",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T03:00:00+00:00",
+        "value": "1940",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2f83a7f3-fdd7-4fdc-8343-2564139bbf18",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T03:15:00+00:00",
+        "value": "1940",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "14bb0d48-22fa-4a60-9df8-3cf12db7178c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T03:30:00+00:00",
+        "value": "1920",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "740c3a74-6bf6-4b42-9444-055ec6778a68",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T03:45:00+00:00",
+        "value": "1890",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c99311c8-422d-4875-a0b2-dbfc92a56b06",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T04:00:00+00:00",
+        "value": "1880",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c9569005-db13-4604-8dea-a6eba6a8f951",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T04:15:00+00:00",
+        "value": "1880",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "61af9a34-7234-4216-a8f8-c514c94b0280",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T04:30:00+00:00",
+        "value": "1860",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "009c9e45-d1a3-4762-8eba-8f4ffe35bb03",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T04:45:00+00:00",
+        "value": "1850",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c7faccb9-b5dd-4321-9cb2-f0b9920ad6b2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T05:00:00+00:00",
+        "value": "1820",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "53016823-e990-4c2b-8c05-d5631afab16b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T05:15:00+00:00",
+        "value": "1820",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f06aaa43-7739-4306-8021-f4a9900fc871",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T05:30:00+00:00",
+        "value": "1820",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2ee0ff5f-0e46-4ec8-9fb0-f4e95d6775bd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T05:45:00+00:00",
+        "value": "1800",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1c5289a3-d94a-4467-9136-2af967e6c272",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T06:00:00+00:00",
+        "value": "1780",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "291d9e87-1cda-4ff1-b24b-ab0147947aa0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T06:15:00+00:00",
+        "value": "1760",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "85dfef71-294f-412e-a3e1-39f4ccd2dd0d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T06:30:00+00:00",
+        "value": "1770",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c8ca4f95-c721-4335-b559-b13fc2c004e5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T06:45:00+00:00",
+        "value": "1760",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3792b007-3f7e-4ff8-a126-db390c433ab2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T07:00:00+00:00",
+        "value": "1740",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "eddc54b1-099c-4c55-b827-bbf5257154f1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T07:15:00+00:00",
+        "value": "1720",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "08296e1b-1b5a-4812-861b-cf9992769336",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T07:30:00+00:00",
+        "value": "1710",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3a4aeb36-40bd-45d0-b397-ed7c73f6b66b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T07:45:00+00:00",
+        "value": "1700",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "025871bc-9243-4876-b891-af3ea8942841",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T08:00:00+00:00",
+        "value": "1690",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c9fb5514-41e8-4069-89c6-d95834d620c5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T08:15:00+00:00",
+        "value": "1680",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7ed3391c-227f-408a-818f-ae98bd6decbe",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T08:30:00+00:00",
+        "value": "1660",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "0fef568b-62b9-49e0-b61e-265aa0bc28e4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T08:45:00+00:00",
+        "value": "1660",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "569828ae-1f05-4429-8806-cccf50bd3208",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T09:00:00+00:00",
+        "value": "1660",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "0d966d6c-1203-49ad-aca0-c2f6e29c8e1c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T09:15:00+00:00",
+        "value": "1630",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a60634ec-2584-494c-b4b8-ae1c001b5fa7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T09:30:00+00:00",
+        "value": "1640",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "848aa48d-ab05-4861-8297-09b3fb13912a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T09:45:00+00:00",
+        "value": "1630",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "fee07725-921a-424e-8e60-31f38832499b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T10:00:00+00:00",
+        "value": "1630",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "87a582b7-85c6-4ace-889f-6218e417511d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T10:15:00+00:00",
+        "value": "1610",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "288c3a0d-0b64-4c2b-aed7-14e88695f9ef",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T10:30:00+00:00",
+        "value": "1590",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "409dd244-a187-46fc-bb1b-4e227a589601",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T10:45:00+00:00",
+        "value": "1590",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "0d916962-94e9-4575-a790-64146f41d49c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T11:00:00+00:00",
+        "value": "1580",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "abb3825a-979e-465a-a1dd-40b770b58428",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T11:15:00+00:00",
+        "value": "1580",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a9b94e08-cead-428e-affe-80bde1b866f2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T11:30:00+00:00",
+        "value": "1560",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "aed4896b-d4e7-4f10-b21d-9e051392779e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T11:45:00+00:00",
+        "value": "1550",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "24ffcf60-f218-4709-8aa5-970952cf3382",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T12:00:00+00:00",
+        "value": "1550",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "35945fcf-2442-4c73-bc48-b1218e97836f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T12:15:00+00:00",
+        "value": "1530",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3b29a652-a3d6-4535-a328-18543a0c3193",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T12:30:00+00:00",
+        "value": "1530",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "26f98c1f-cbec-414e-aadc-bebfd7fac6f9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T12:45:00+00:00",
+        "value": "1520",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f6d8d063-0236-4376-89ea-51856e5b9d87",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T13:00:00+00:00",
+        "value": "1500",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "264c8bd2-e359-441d-b046-7d7e73e75984",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T13:15:00+00:00",
+        "value": "1500",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "817676e4-3ed2-4a7d-b74b-a387d14ca4ea",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T13:30:00+00:00",
+        "value": "1490",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "29f9149a-552b-4ec5-a5e9-bcb02389f77f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T13:45:00+00:00",
+        "value": "1490",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "85bb0009-8930-4325-bd00-db00498eaf00",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T14:00:00+00:00",
+        "value": "1470",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4f00873f-ff5e-49fd-818f-e8e6e5264ce5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T14:15:00+00:00",
+        "value": "1460",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c961c174-e0ab-4fe8-9c0e-b60e2567acfe",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T14:30:00+00:00",
+        "value": "1450",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "76e09892-3a23-410a-ba9e-e021220e8792",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T14:45:00+00:00",
+        "value": "1460",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ccc347fc-dde4-4c65-8621-4f809d32e777",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T15:00:00+00:00",
+        "value": "1450",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "34fcb771-cd4a-48df-a49e-57f7f382ef8f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T15:15:00+00:00",
+        "value": "1440",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ac082386-819a-4e96-8fa3-3271da89dc27",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T15:30:00+00:00",
+        "value": "1420",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "40cd88d4-1962-40f1-836e-61ec80cf8bf1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T15:45:00+00:00",
+        "value": "1420",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "97c82bcd-edc5-43c7-8b5e-19cff6df89e1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T16:00:00+00:00",
+        "value": "1410",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "691347c3-4521-44db-957d-7357cdf85522",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T16:15:00+00:00",
+        "value": "1410",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "09a0ab49-63f8-41a0-aba2-77f03b24c000",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T16:30:00+00:00",
+        "value": "1400",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "92bc3791-b660-44dc-8a23-11f5fd30e53f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T16:45:00+00:00",
+        "value": "1390",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "dc1a8eb5-0d20-454e-87f1-e9cf1389786d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T17:00:00+00:00",
+        "value": "1380",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "881549f7-51da-41f9-895e-99ffe7939d41",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T17:15:00+00:00",
+        "value": "1380",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d35b317e-a0d7-491a-b812-0db98cc9157d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T17:30:00+00:00",
+        "value": "1370",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "62ae4427-82f1-4868-b66b-a748ec522700",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T17:45:00+00:00",
+        "value": "1370",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e2fc855d-9424-4717-9599-247cf4949d46",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T18:00:00+00:00",
+        "value": "1350",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "70df4e0f-7655-4020-912b-59f2b3285717",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T18:15:00+00:00",
+        "value": "1350",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a00ebd49-2171-4623-9877-bb8df975a0d5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T18:30:00+00:00",
+        "value": "1340",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8cb69759-3723-49c9-a781-cf7fedd998c0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T18:45:00+00:00",
+        "value": "1340",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f7448c24-3312-4679-84d0-6d6d379f6a22",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T19:00:00+00:00",
+        "value": "1330",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "82f1279c-fa6b-4c80-9f2e-137ddcd8c927",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T19:15:00+00:00",
+        "value": "1330",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "de26e2b2-536a-4881-894a-155e62a3fe6e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T19:30:00+00:00",
+        "value": "1330",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7c023025-a309-4515-9e4f-f28715c37741",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T19:45:00+00:00",
+        "value": "1310",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "465acb4e-5df9-4dbc-babb-99c1f6d757f9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T20:00:00+00:00",
+        "value": "1310",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a28b7ae3-bb7f-4301-851b-06d57df22281",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T20:15:00+00:00",
+        "value": "1310",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "cd5dbb83-849e-4d1d-97d0-559521595e82",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T20:30:00+00:00",
+        "value": "1300",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "44771bb7-d773-46df-ae59-3943e0f3974d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T20:45:00+00:00",
+        "value": "1300",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "cfdc2c13-a2e6-4163-8ea8-b66296fce32e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T21:00:00+00:00",
+        "value": "1280",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "843a2236-54c2-4e65-841f-833b873410d6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T21:15:00+00:00",
+        "value": "1280",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "500bee76-9915-4451-8bac-9f14879d9148",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T21:30:00+00:00",
+        "value": "1270",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "baef643b-1c18-495f-84d8-83e527ea9c8d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T21:45:00+00:00",
+        "value": "1270",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8541a9a3-90b9-4714-9e1c-88ff1f0f0c6b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T22:00:00+00:00",
+        "value": "1270",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "cebf29bb-778a-4410-a026-63b8d2ee9859",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T22:15:00+00:00",
+        "value": "1260",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "67b6da22-db2d-4c94-8bc5-7299f06e0a58",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T22:30:00+00:00",
+        "value": "1260",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "991945b7-376c-46b6-9b07-706950b79446",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T22:45:00+00:00",
+        "value": "1260",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d29fbf37-26c6-4e09-8b4d-a4b82f6fac87",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T23:00:00+00:00",
+        "value": "1250",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "de1029ef-6cfe-480c-b0af-1eae4ef0ae3e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T23:15:00+00:00",
+        "value": "1250",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "47e9ac26-0622-4901-9214-aeb961e9aa66",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T23:30:00+00:00",
+        "value": "1230",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "acf2ece7-d5be-4268-b2ce-9128bbda210e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-08T23:45:00+00:00",
+        "value": "1230",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f442f0ba-0b53-475b-9a6f-d947ce7b0863",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T00:00:00+00:00",
+        "value": "1230",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "6d1988a7-8cda-4148-9ccc-55d0d375efc6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T00:15:00+00:00",
+        "value": "1220",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "86c9583c-9da2-470b-9f11-0a059b04ab61",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T00:30:00+00:00",
+        "value": "1220",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "80a3cce3-26cc-4dee-a663-aeb64b8485cc",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T00:45:00+00:00",
+        "value": "1210",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7c0653e1-ea98-41f6-a33b-d11805bc344e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T01:00:00+00:00",
+        "value": "1210",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "bf21919a-dce0-4792-8ecb-7ccdd1a34318",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T01:15:00+00:00",
+        "value": "1200",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8013cbb7-49b5-444a-8767-15141814b91e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T01:30:00+00:00",
+        "value": "1200",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "22a94469-e09c-4f9a-8f7f-98eb2d61aeea",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T01:45:00+00:00",
+        "value": "1190",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9e50e97e-4b0f-424d-8f40-ccbf957ad69a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T02:00:00+00:00",
+        "value": "1190",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "2a7b8e4b-74ca-4cd7-92b8-df1cbb00686f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T02:15:00+00:00",
+        "value": "1180",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "18a20d04-2cef-4ef6-8ad4-d834746d4c79",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T02:30:00+00:00",
+        "value": "1180",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9745de24-bd86-4487-ba2c-8dfe132b1b86",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T02:45:00+00:00",
+        "value": "1170",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "07f83762-4a6e-4c63-8a97-9a93a7f04e6d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T03:00:00+00:00",
+        "value": "1170",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e65af238-2128-4b73-a28d-7c612d6855fa",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T03:15:00+00:00",
+        "value": "1160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4c9e3758-d9f0-4c22-9318-b2ba0b2e6e30",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T03:30:00+00:00",
+        "value": "1160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1b5efec2-e497-4a09-92fb-9f4866a16096",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T03:45:00+00:00",
+        "value": "1160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "aa976383-6928-4321-bbc3-e7d49326d741",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T04:00:00+00:00",
+        "value": "1160",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "69e6ff6e-a7c2-43d8-ba5f-5ad5c602c281",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T04:15:00+00:00",
+        "value": "1150",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7374f92e-c104-46a3-b0fc-2af27722fb4f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T04:30:00+00:00",
+        "value": "1140",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "eabf7ff9-f627-4f9d-bfcc-4de479e3442e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T04:45:00+00:00",
+        "value": "1140",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a53378fe-978a-43ac-b2af-4b9a7ebe215c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T05:00:00+00:00",
+        "value": "1130",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "3d2e191b-d53a-4500-bddc-f28c6cadeb3b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T05:15:00+00:00",
+        "value": "1120",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "23facd35-5d67-44de-ba87-9bb412dc4040",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T05:30:00+00:00",
+        "value": "1120",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9d599ed3-63a2-4f18-b4c4-48bf7217d476",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T05:45:00+00:00",
+        "value": "1110",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5cf60d0f-f2e3-445d-920e-c32fcb9b6915",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T06:00:00+00:00",
+        "value": "1110",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "7df0c308-dd59-41e1-9b36-e4e63d34c3fd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T06:15:00+00:00",
+        "value": "1100",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "973a7774-3a67-4054-9c85-9dd4894d89eb",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T06:30:00+00:00",
+        "value": "1090",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a9383cf6-d502-4c51-a96b-450fd4f514a8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T06:45:00+00:00",
+        "value": "1100",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "ae2618df-0d07-4831-8cd2-cad6dbc59af8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T07:00:00+00:00",
+        "value": "1090",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "bd5ad1db-3694-44be-98ab-515f531ca26c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T07:15:00+00:00",
+        "value": "1090",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8a2f73b7-4ae8-4da9-ba13-26788a4f675b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T07:30:00+00:00",
+        "value": "1080",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "17aecfc4-566c-4999-a516-12d795c2acce",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T07:45:00+00:00",
+        "value": "1070",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "29286ac5-d279-4fe1-a692-20c65878d9bf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T08:00:00+00:00",
+        "value": "1060",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "80db5398-5316-4096-b3cc-85872fa9529e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T08:15:00+00:00",
+        "value": "1060",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "08a0357e-2da2-46bb-bfb0-d50de60a0597",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T08:30:00+00:00",
+        "value": "1070",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "908b2b65-ab1d-4381-a94a-31e4256516de",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T08:45:00+00:00",
+        "value": "1060",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e627e90e-5b0d-4ff4-a5b0-e901d64ac35d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T09:00:00+00:00",
+        "value": "1060",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "640bf6a7-c974-4621-9259-118f884aba53",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T09:15:00+00:00",
+        "value": "1050",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "619ecf0d-17c6-4a93-b6da-809e47ed142e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T09:30:00+00:00",
+        "value": "1040",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d5218f98-ad6d-4ec4-b1ac-e36c2a0d6942",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T09:45:00+00:00",
+        "value": "1040",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "bc8101c5-3d35-4233-bdd9-8981b254c6ce",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T10:00:00+00:00",
+        "value": "1040",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "a5764546-6e02-456b-88f5-469939b4ef4d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T10:15:00+00:00",
+        "value": "1030",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "604be138-9d2d-4d95-bc88-ef388b3fd548",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T10:30:00+00:00",
+        "value": "1020",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "4bf8fdc1-723d-4213-b148-9d8bd1d9a527",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T10:45:00+00:00",
+        "value": "1020",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "1759316a-fa39-4889-ad02-5dfcce07e4ca",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T11:00:00+00:00",
+        "value": "1010",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "c0455e6f-1b30-4d4a-a808-cb8e97f54b87",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T11:15:00+00:00",
+        "value": "1000",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "d3260ed5-d1ff-4460-8d45-bdc2d6d65d35",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T11:30:00+00:00",
+        "value": "1000",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "acb6dda2-49c8-43d1-8aab-192c6118de60",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T11:45:00+00:00",
+        "value": "1000",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "eb21d291-e74d-49aa-a392-7b7b32d55819",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "e32aab5ccc774c11b172102b97abc0d8",
+        "time": "2026-07-09T12:00:00+00:00",
+        "value": "995",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "edbcefeb-28ba-457f-a0d9-11f7b45d6e7d",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 433,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous/items?f=json&monitoring_location_id=USGS-01375000&parameter_code=00060&datetime=2026-07-05T00%3A00%3A00Z%2F2026-07-09T12%3A00%3A00Z&skipGeometry=true&sortby=time&limit=2000&properties=time_series_id,time,value,approval_status,qualifier"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous/items?f=jsonld&monitoring_location_id=USGS-01375000&parameter_code=00060&datetime=2026-07-05T00%3A00%3A00Z%2F2026-07-09T12%3A00%3A00Z&skipGeometry=true&sortby=time&limit=2000&properties=time_series_id,time,value,approval_status,qualifier"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous/items?f=html&monitoring_location_id=USGS-01375000&parameter_code=00060&datetime=2026-07-05T00%3A00%3A00Z%2F2026-07-09T12%3A00%3A00Z&skipGeometry=true&sortby=time&limit=2000&properties=time_series_id,time,value,approval_status,qualifier"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous/items?f=csv&monitoring_location_id=USGS-01375000&parameter_code=00060&datetime=2026-07-05T00%3A00%3A00Z%2F2026-07-09T12%3A00%3A00Z&skipGeometry=true&sortby=time&limit=2000&properties=time_series_id,time,value,approval_status,qualifier"
+    },
+    {
+      "type": "application/json",
+      "title": "Continuous values",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous"
+    }
+  ],
+  "timeStamp": "2026-11-15T21:28:14.842318Z"
+}
