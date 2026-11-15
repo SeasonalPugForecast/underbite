@@ -1,0 +1,12 @@
+# Copy to remote.local.toml (ignored by version control). `cargo xtask remote ...` builds on the
+# first of these machines that answers over SSH; the others are skipped.
+#
+# Never list robot.local: it is not a build host.
+hosts = ["nas-build", "nv"]
+
+# A single host instead of a list:
+# host = "user@build-host"
+
+# The directory on the host, relative to its home unless absolute (default "underbite-build").
+# A linked worktree gets "-<lane>" appended, so worktrees never share a tree.
+# dir = "underbite-build"
