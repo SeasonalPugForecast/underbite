@@ -628,7 +628,7 @@ mod tests {
     }
 
     #[test]
-    fn skeleton_builds_a_header_and_no_cards() {
+    fn view_has_the_header_and_cards_in_the_requested_order() {
         let input = sample_input();
         assert_eq!(
             input.limit(Measurement::Tide).unwrap().max_age_s,
@@ -637,9 +637,13 @@ mod tests {
         assert!(input.limit(Measurement::Waves).is_none());
         let view = build_view(&input);
         assert_eq!(view.header.name, input.snapshot.spot.name);
-        assert_eq!(view.cards.len(), 0);
-        assert!(view.timeline.is_none());
-        insta::assert_json_snapshot!("spot_view_from_sample", view);
+        // Cards appear only for ids in the requested order, in that order; each card's
+        // content is tested with the card.
+        let order: Vec<CardId> = view.cards.iter().map(|c| c.chrome().id).collect();
+        let mut expected = input.card_order.clone();
+        expected.retain(|id| order.contains(id));
+        assert_eq!(order, expected);
+        insta::assert_json_snapshot!("spot_view_header_from_sample", view.header);
     }
 
     #[test]
