@@ -6,6 +6,8 @@ pub mod datagetter;
 pub mod harmonics;
 pub mod mdapi;
 
+pub use harmonics::CoopsHarmonics;
+
 use underbite_core::datum::VerticalDatum;
 use underbite_core::model::{Measurement, Requirements};
 use underbite_core::provenance::{Attribution, SourceId, StationKind, StationRef};
