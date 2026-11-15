@@ -1,0 +1,16 @@
+---
+source: crates/underbite-core/src/view/mod.rs
+expression: view
+---
+{
+  "header": {
+    "name": "The Battery",
+    "water_type": "tidal_river_estuary",
+    "water_type_label": "",
+    "updated_at": 1794000000,
+    "updated": ""
+  },
+  "cards": [],
+  "timeline": null,
+  "notices": []
+}

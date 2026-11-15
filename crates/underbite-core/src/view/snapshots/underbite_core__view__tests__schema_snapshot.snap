@@ -1,0 +1,2833 @@
+---
+source: crates/underbite-core/src/view/mod.rs
+expression: schema
+---
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpotView",
+  "description": "The conditions page of one spot.",
+  "type": "object",
+  "properties": {
+    "cards": {
+      "description": "In the user's order.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Card"
+      }
+    },
+    "header": {
+      "$ref": "#/$defs/SpotHeader"
+    },
+    "notices": {
+      "description": "Page-level messages, such as \"no data for this spot yet\".",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/SpotNotice"
+      }
+    },
+    "timeline": {
+      "description": "Filled when the day timeline is built.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TimelineVm"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "header",
+    "cards",
+    "notices"
+  ],
+  "$defs": {
+    "AlertOrigin": {
+      "type": "string",
+      "enum": [
+        "marine",
+        "weather"
+      ]
+    },
+    "AlertSeverity": {
+      "description": "NWS alert severity.",
+      "type": "string",
+      "enum": [
+        "extreme",
+        "severe",
+        "moderate",
+        "minor",
+        "unknown"
+      ]
+    },
+    "AlertVm": {
+      "description": "One alert, safety text exactly as issued and never in Luna's voice.",
+      "type": "object",
+      "properties": {
+        "ends": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "event": {
+          "type": "string"
+        },
+        "expires": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "headline": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "onset": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "origin": {
+          "$ref": "#/$defs/AlertOrigin"
+        },
+        "severity": {
+          "$ref": "#/$defs/AlertSeverity"
+        },
+        "severity_label": {
+          "type": "string"
+        },
+        "zones": {
+          "description": "Zone names or ids the alert covers.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "origin",
+        "event",
+        "severity",
+        "severity_label",
+        "zones"
+      ]
+    },
+    "AlertsCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/AlertsFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "AlertsFull": {
+      "type": "object",
+      "properties": {
+        "alerts": {
+          "description": "Marine and weather alerts de-duplicated, most severe first.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AlertVm"
+          }
+        }
+      },
+      "required": [
+        "alerts"
+      ]
+    },
+    "BandKind": {
+      "type": "string",
+      "enum": [
+        "night",
+        "slack",
+        "solunar_major",
+        "solunar_minor",
+        "highlight"
+      ]
+    },
+    "Card": {
+      "description": "One card. Cards that a later phase adds are not variants yet.",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "now"
+            }
+          },
+          "$ref": "#/$defs/NowCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "tide"
+            }
+          },
+          "$ref": "#/$defs/TideCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "current"
+            }
+          },
+          "$ref": "#/$defs/CurrentCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "flow"
+            }
+          },
+          "$ref": "#/$defs/FlowCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "water_temp"
+            }
+          },
+          "$ref": "#/$defs/WaterTempCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "clarity"
+            }
+          },
+          "$ref": "#/$defs/ClarityCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "waves"
+            }
+          },
+          "$ref": "#/$defs/WavesCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "wind"
+            }
+          },
+          "$ref": "#/$defs/WindCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "pressure"
+            }
+          },
+          "$ref": "#/$defs/PressureCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "sun_moon"
+            }
+          },
+          "$ref": "#/$defs/SunMoonCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "solunar"
+            }
+          },
+          "$ref": "#/$defs/SolunarCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "marine_forecast"
+            }
+          },
+          "$ref": "#/$defs/MarineForecastCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "alerts"
+            }
+          },
+          "$ref": "#/$defs/AlertsCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "sources"
+            }
+          },
+          "$ref": "#/$defs/SourcesCard",
+          "required": [
+            "card"
+          ]
+        }
+      ]
+    },
+    "CardChrome": {
+      "description": "The frame of a card: title, provenance, credits, state, safety notices, accessibility text.",
+      "type": "object",
+      "properties": {
+        "accessibility": {
+          "description": "What `VoiceOver` reads for the card: the plain meaning first.",
+          "type": "string"
+        },
+        "credits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CreditVm"
+          }
+        },
+        "footnote": {
+          "description": "The provenance line: \"Water 54 °F · Hudson R at Battery, NY · 0.4 mi · 6 min ago\".\nCards that combine many sources leave it empty.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/CardId"
+        },
+        "notices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Notice"
+          }
+        },
+        "state": {
+          "$ref": "#/$defs/CardState"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "credits",
+        "state",
+        "notices",
+        "accessibility"
+      ]
+    },
+    "CardId": {
+      "description": "The cards of the dashboard, with the `snake_case` ids the configuration uses.",
+      "type": "string",
+      "enum": [
+        "now",
+        "tide",
+        "current",
+        "flow",
+        "water_temp",
+        "clarity",
+        "waves",
+        "wind",
+        "pressure",
+        "sun_moon",
+        "solunar",
+        "windows",
+        "go_no_go",
+        "storm_ahead",
+        "marine_forecast",
+        "stocking",
+        "species",
+        "alerts",
+        "sources"
+      ]
+    },
+    "CardState": {
+      "description": "Whether the card's value can be trusted as current and local.",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "fresh"
+            }
+          },
+          "required": [
+            "state"
+          ]
+        },
+        {
+          "description": "Older than the user's age limit; greyed.",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string",
+              "const": "stale"
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ]
+        },
+        {
+          "description": "From a station beyond the user's distance limit; greyed.",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string",
+              "const": "far"
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string",
+              "const": "unavailable"
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ]
+        }
+      ]
+    },
+    "ChartBand": {
+      "type": "object",
+      "properties": {
+        "end_t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "kind": {
+          "$ref": "#/$defs/BandKind"
+        },
+        "label": {
+          "type": "string"
+        },
+        "start_t": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "kind",
+        "start_t",
+        "end_t",
+        "label"
+      ]
+    },
+    "ChartMarker": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/MarkerKind"
+        },
+        "label": {
+          "type": "string"
+        },
+        "t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "value": {
+          "description": "In display units, when the marker sits on the curve.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "float"
+        }
+      },
+      "required": [
+        "kind",
+        "t",
+        "label"
+      ]
+    },
+    "ChartPoint": {
+      "description": "One point: unix seconds, the value in display units, its label (\"3.4 ft\"), and whether a\nnarrow layout should keep its label.",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "major": {
+          "type": "boolean"
+        },
+        "t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "value": {
+          "type": "number",
+          "format": "float"
+        }
+      },
+      "required": [
+        "t",
+        "value",
+        "label",
+        "major"
+      ]
+    },
+    "ChartRule": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/RuleKind"
+        },
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "description": "In display units.",
+          "type": "number",
+          "format": "float"
+        }
+      },
+      "required": [
+        "kind",
+        "value",
+        "label"
+      ]
+    },
+    "ChartSeries": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartPoint"
+          }
+        },
+        "role": {
+          "$ref": "#/$defs/SeriesRole"
+        },
+        "style": {
+          "$ref": "#/$defs/SeriesStyle"
+        }
+      },
+      "required": [
+        "label",
+        "role",
+        "style",
+        "points"
+      ]
+    },
+    "ChartTick": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "major": {
+          "type": "boolean"
+        },
+        "t": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "t",
+        "label",
+        "major"
+      ]
+    },
+    "ChartVm": {
+      "description": "A chart carries every point with its label; narrow layouts thin them by `major`.",
+      "type": "object",
+      "properties": {
+        "accessibility": {
+          "description": "What `VoiceOver` reads: the shape and its extremes in words.",
+          "type": "string"
+        },
+        "bands": {
+          "description": "Shaded spans: night, slack water, solunar periods.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartBand"
+          }
+        },
+        "markers": {
+          "description": "Labelled events: highs and lows, now.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartMarker"
+          }
+        },
+        "now_t": {
+          "description": "Unix seconds of \"now\" when it falls inside the chart.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "rules": {
+          "description": "Horizontal lines: flood categories, the user's ranges.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartRule"
+          }
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartSeries"
+          }
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "description": "The y unit symbol, empty when mixed or unitless.",
+          "type": "string"
+        },
+        "x_ticks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartTick"
+          }
+        }
+      },
+      "required": [
+        "title",
+        "unit",
+        "x_ticks",
+        "series",
+        "bands",
+        "rules",
+        "markers",
+        "accessibility"
+      ]
+    },
+    "ClarityCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/ClarityFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "ClarityFull": {
+      "type": "object",
+      "properties": {
+        "chart": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "chlorophyll": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "description": {
+          "description": "\"Clear\", \"Slightly turbid\", ...",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kd490": {
+          "$ref": "#/$defs/Kd490Vm"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        },
+        "turbidity": {
+          "description": "The unit symbol is the source's own: FNU, FTU or NTU, never converted.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kd490",
+        "sections"
+      ]
+    },
+    "Compact": {
+      "description": "The compact form of a card: a headline and at most two short lines.",
+      "type": "object",
+      "properties": {
+        "headline": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "lines": {
+          "description": "At most two, not truncated or wrapped for any width.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "spark": {
+          "description": "A sparkline in display units, oldest first; empty when the card has none.",
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "required": [
+        "headline",
+        "lines",
+        "spark"
+      ]
+    },
+    "CreditVm": {
+      "description": "The credit a source is owed.",
+      "type": "object",
+      "properties": {
+        "licence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "description": "The source's name as displayed.",
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "text"
+      ]
+    },
+    "CurrentCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/CurrentFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "CurrentEventKind": {
+      "type": "string",
+      "enum": [
+        "max_flood",
+        "max_ebb",
+        "slack"
+      ]
+    },
+    "CurrentEventVm": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/CurrentEventKind"
+        },
+        "label": {
+          "description": "\"Max flood\", \"Slack\", ...",
+          "type": "string"
+        },
+        "speed": {
+          "description": "None for slack.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "time": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "t",
+        "time",
+        "kind",
+        "label"
+      ]
+    },
+    "CurrentFull": {
+      "type": "object",
+      "properties": {
+        "bin_depth": {
+          "description": "\"Bin 3 at 12 ft\": the depth the station measures at.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "chart": {
+          "description": "Speed over time with slack windows highlighted.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "direction_now": {
+          "description": "Where the water is heading now, \"NNE 025°\".",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ebb_direction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CurrentEventVm"
+          }
+        },
+        "flood_direction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "next_slack": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CurrentEventVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "phase": {
+          "$ref": "#/$defs/CurrentPhase"
+        },
+        "phase_label": {
+          "description": "\"Flooding\", \"Ebbing\", \"Slack\"",
+          "type": "string"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        },
+        "speed_now": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "phase",
+        "phase_label",
+        "events",
+        "sections"
+      ]
+    },
+    "CurrentPhase": {
+      "type": "string",
+      "enum": [
+        "flood",
+        "ebb",
+        "slack",
+        "unknown"
+      ]
+    },
+    "FloodCategoryVm": {
+      "description": "A flood category: \"Action\", \"Minor\", \"Moderate\", \"Major\".",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "stage": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "required": [
+        "label",
+        "stage"
+      ]
+    },
+    "FlowCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/FlowFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "FlowFull": {
+      "type": "object",
+      "properties": {
+        "chart": {
+          "description": "Seven days of discharge, the NWPS forecast after now, user ranges and flood stages as rules.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "discharge": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "flood_categories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FloodCategoryVm"
+          }
+        },
+        "gage_height": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "percentile": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PercentileVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "range_status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RangeStatusVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        },
+        "stage_chart": {
+          "description": "A separate stage chart when the forecast is a stage hydrograph.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trend": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TrendVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "flood_categories",
+        "sections"
+      ]
+    },
+    "ForecastPeriodVm": {
+      "description": "One period of the forecast, text exactly as issued (never truncated).",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "text"
+      ]
+    },
+    "Kd490Vm": {
+      "description": "The satellite diffuse attenuation coefficient; marked unavailable where there is none.",
+      "type": "object",
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "note": {
+          "description": "\"No satellite clarity for this spot\".",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "available",
+        "note"
+      ]
+    },
+    "LaneKind": {
+      "type": "string",
+      "enum": [
+        "tide",
+        "current",
+        "wind",
+        "pressure",
+        "light",
+        "solunar"
+      ]
+    },
+    "MarineForecastCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/MarineForecastFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "MarineForecastFull": {
+      "type": "object",
+      "properties": {
+        "headline": {
+          "description": "The first period, for the compact form.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "issued": {
+          "description": "\"Issued 4:09 AM\"",
+          "type": "string"
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ForecastPeriodVm"
+          }
+        },
+        "product": {
+          "description": "\"Coastal waters forecast\"",
+          "type": "string"
+        },
+        "zone_id": {
+          "type": "string"
+        },
+        "zone_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id",
+        "zone_name",
+        "issued",
+        "product",
+        "periods"
+      ]
+    },
+    "MarkerKind": {
+      "type": "string",
+      "enum": [
+        "high",
+        "low",
+        "slack",
+        "sunrise",
+        "sunset",
+        "now"
+      ]
+    },
+    "MoonPhase": {
+      "type": "string",
+      "enum": [
+        "new",
+        "waxing_crescent",
+        "first_quarter",
+        "waxing_gibbous",
+        "full",
+        "waning_gibbous",
+        "last_quarter",
+        "waning_crescent"
+      ]
+    },
+    "MoonPhaseVm": {
+      "type": "object",
+      "properties": {
+        "illumination": {
+          "description": "The lit fraction as a percentage.",
+          "$ref": "#/$defs/Quantity"
+        },
+        "label": {
+          "description": "\"Waxing gibbous\"",
+          "type": "string"
+        },
+        "phase": {
+          "$ref": "#/$defs/MoonPhase"
+        }
+      },
+      "required": [
+        "phase",
+        "label",
+        "illumination"
+      ]
+    },
+    "MoonVm": {
+      "type": "object",
+      "properties": {
+        "lower_transit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimedLabel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nearest_principal": {
+          "description": "The nearest new, quarter or full moon.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimedLabel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "phase": {
+          "$ref": "#/$defs/MoonPhaseVm"
+        },
+        "rise": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimedLabel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "set": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimedLabel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "upper_transit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimedLabel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "phase"
+      ]
+    },
+    "Notice": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/NoticeKind"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ]
+    },
+    "NoticeKind": {
+      "description": "The fixed notices. Their text is plain and never in Luna's voice: there is no voice field.",
+      "type": "string",
+      "enum": [
+        "not_for_navigation",
+        "modelled",
+        "provisional",
+        "approximate",
+        "traditional_cue",
+        "text_only"
+      ]
+    },
+    "NowCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/NowFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "NowFull": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NowItem"
+          }
+        }
+      },
+      "required": [
+        "items"
+      ]
+    },
+    "NowItem": {
+      "description": "The headline of another card.",
+      "type": "object",
+      "properties": {
+        "card": {
+          "$ref": "#/$defs/CardId"
+        },
+        "headline": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "label": {
+          "type": "string"
+        },
+        "line": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "$ref": "#/$defs/CardState"
+        }
+      },
+      "required": [
+        "card",
+        "label",
+        "headline",
+        "state"
+      ]
+    },
+    "PercentileClass": {
+      "description": "WaterWatch-style class of a value among its day-of-year percentiles. The bounds live in\nthe derivation, not here.",
+      "type": "string",
+      "enum": [
+        "much_below_normal",
+        "below_normal",
+        "normal",
+        "above_normal",
+        "much_above_normal",
+        "record_low",
+        "record_high"
+      ]
+    },
+    "PercentileThresholdVm": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ]
+    },
+    "PercentileVm": {
+      "description": "\"Higher than 80% of Nov 14 days since 1990\".",
+      "type": "object",
+      "properties": {
+        "basis": {
+          "description": "\"Statistics API\" or \"Computed on this device from daily values\"",
+          "type": "string"
+        },
+        "class": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PercentileClass"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "class_label": {
+          "description": "\"Above normal\"",
+          "type": "string"
+        },
+        "sample": {
+          "description": "\"approved data only, 36 years\"",
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "thresholds": {
+          "description": "Labelled thresholds, \"10th percentile\".",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PercentileThresholdVm"
+          }
+        }
+      },
+      "required": [
+        "text",
+        "class_label",
+        "basis",
+        "sample",
+        "thresholds"
+      ]
+    },
+    "PressureCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/PressureFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "PressureFull": {
+      "type": "object",
+      "properties": {
+        "change": {
+          "description": "The change over the trend window, signed.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "chart": {
+          "description": "Past observed and forecast pressure on one axis.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        },
+        "trend": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TrendVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "sections"
+      ]
+    },
+    "Quantity": {
+      "description": "A displayed value: the number in display units, its text and its unit symbol.",
+      "type": "object",
+      "properties": {
+        "text": {
+          "description": "The display text without the unit, or the missing placeholder.",
+          "type": "string"
+        },
+        "unit": {
+          "description": "The unit symbol, empty when unitless.",
+          "type": "string"
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "float"
+        }
+      },
+      "required": [
+        "text",
+        "unit"
+      ]
+    },
+    "RangeStatus": {
+      "type": "string",
+      "enum": [
+        "wadeable",
+        "best",
+        "fishable",
+        "blown_out",
+        "unknown"
+      ]
+    },
+    "RangeStatusVm": {
+      "description": "Where the discharge sits against the user's own ranges.",
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/RangeStatus"
+        },
+        "text": {
+          "description": "\"Best range (400 to 900 cfs)\"",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "text"
+      ]
+    },
+    "Row": {
+      "type": "object",
+      "properties": {
+        "detail": {
+          "description": "A second, smaller line.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ]
+    },
+    "RuleKind": {
+      "type": "string",
+      "enum": [
+        "flood_category",
+        "user_range",
+        "threshold"
+      ]
+    },
+    "Section": {
+      "description": "A titled block of label and value rows in a full form.",
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Row"
+          }
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "rows"
+      ]
+    },
+    "SeriesRole": {
+      "type": "string",
+      "enum": [
+        "predicted",
+        "observed",
+        "forecast",
+        "modelled"
+      ]
+    },
+    "SeriesStyle": {
+      "type": "string",
+      "enum": [
+        "line",
+        "area",
+        "bars",
+        "dots"
+      ]
+    },
+    "SolunarCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/SolunarFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "SolunarCause": {
+      "description": "What a solunar period is centred on.",
+      "type": "string",
+      "enum": [
+        "upper_transit",
+        "lower_transit",
+        "rise",
+        "set"
+      ]
+    },
+    "SolunarDayVm": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string"
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SolunarPeriodVm"
+          }
+        }
+      },
+      "required": [
+        "date",
+        "periods"
+      ]
+    },
+    "SolunarFull": {
+      "type": "object",
+      "properties": {
+        "days": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SolunarDayVm"
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        }
+      },
+      "required": [
+        "days",
+        "sections"
+      ]
+    },
+    "SolunarKind": {
+      "type": "string",
+      "enum": [
+        "major",
+        "minor"
+      ]
+    },
+    "SolunarPeriodVm": {
+      "type": "object",
+      "properties": {
+        "cause": {
+          "$ref": "#/$defs/SolunarCause"
+        },
+        "cause_label": {
+          "description": "\"Moon overhead\", \"Moonrise\"",
+          "type": "string"
+        },
+        "end_t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "kind": {
+          "$ref": "#/$defs/SolunarKind"
+        },
+        "label": {
+          "description": "\"Major\" or \"Minor\" (the playful label is the voice's, set by the formatter).",
+          "type": "string"
+        },
+        "range": {
+          "description": "\"6:10 to 8:10 AM\"",
+          "type": "string"
+        },
+        "start_t": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "kind",
+        "cause",
+        "label",
+        "start_t",
+        "end_t",
+        "range",
+        "cause_label"
+      ]
+    },
+    "SourceErrorVm": {
+      "description": "A source that did not deliver.",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "description": "\"Rate limited\", \"Timed out\"",
+          "type": "string"
+        },
+        "measurement": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "kind",
+        "message"
+      ]
+    },
+    "SourcesCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/SourcesFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "SourcesFull": {
+      "type": "object",
+      "properties": {
+        "credits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CreditVm"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceErrorVm"
+          }
+        },
+        "stations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StationUseVm"
+          }
+        }
+      },
+      "required": [
+        "credits",
+        "stations",
+        "errors"
+      ]
+    },
+    "SpotHeader": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "updated": {
+          "description": "\"updated 6 min ago\"",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "When the snapshot was fetched, unix seconds.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "water_type": {
+          "$ref": "#/$defs/WaterType"
+        },
+        "water_type_label": {
+          "description": "\"River or stream\", \"Tidal river or estuary\", ...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "water_type",
+        "water_type_label",
+        "updated_at",
+        "updated"
+      ]
+    },
+    "SpotNotice": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    "StationUseVm": {
+      "description": "A station that supplied a value.",
+      "type": "object",
+      "properties": {
+        "age": {
+          "description": "\"6 min ago\"",
+          "type": "string"
+        },
+        "distance": {
+          "description": "\"0.4 mi\"",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "description": "\"Observed\", \"Predicted\", \"Modelled\"",
+          "type": "string"
+        },
+        "measurement": {
+          "description": "What it supplies: \"Water temperature\".",
+          "type": "string"
+        },
+        "relation": {
+          "description": "\"Same water body\", \"Upstream\"",
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/CardState"
+        },
+        "station": {
+          "type": "string"
+        },
+        "station_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "measurement",
+        "station",
+        "station_id",
+        "source",
+        "age",
+        "relation",
+        "kind",
+        "state"
+      ]
+    },
+    "SunMoonCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/SunMoonFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "SunMoonDayVm": {
+      "description": "One local day.",
+      "type": "object",
+      "properties": {
+        "date": {
+          "description": "\"Sat Nov 14\"",
+          "type": "string"
+        },
+        "day_length": {
+          "description": "\"10 h 12 min\"",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "moon": {
+          "$ref": "#/$defs/MoonVm"
+        },
+        "polar": {
+          "description": "\"Sun stays up all day\" or \"Sun stays down all day\".",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sun": {
+          "description": "Dawn, sunrise, golden hour, sunset, dusk in time order, only those that occur.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TimedLabel"
+          }
+        }
+      },
+      "required": [
+        "date",
+        "sun",
+        "moon"
+      ]
+    },
+    "SunMoonFull": {
+      "type": "object",
+      "properties": {
+        "days": {
+          "description": "Today first, then the days the snapshot has.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SunMoonDayVm"
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        }
+      },
+      "required": [
+        "days",
+        "sections"
+      ]
+    },
+    "TempBasis": {
+      "oneOf": [
+        {
+          "description": "A gauge or buoy thermometer.",
+          "type": "string",
+          "const": "measured"
+        },
+        {
+          "description": "Sea surface temperature from a model or satellite.",
+          "type": "string",
+          "const": "sea_surface"
+        }
+      ]
+    },
+    "TideCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/TideFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "TideDayVm": {
+      "description": "One local day of the tide table.",
+      "type": "object",
+      "properties": {
+        "date": {
+          "description": "\"Sat Nov 14\"",
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TideEventVm"
+          }
+        },
+        "moon": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MoonPhaseVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sunrise": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimedLabel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sunset": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimedLabel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "date",
+        "events"
+      ]
+    },
+    "TideEventKind": {
+      "type": "string",
+      "enum": [
+        "high",
+        "low"
+      ]
+    },
+    "TideEventVm": {
+      "type": "object",
+      "properties": {
+        "height": {
+          "description": "None when the source gives times only (modelled sea level).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "$ref": "#/$defs/TideEventKind"
+        },
+        "label": {
+          "description": "\"High\" or \"Low\".",
+          "type": "string"
+        },
+        "t": {
+          "description": "Unix seconds.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "time": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "t",
+        "time",
+        "kind",
+        "label"
+      ]
+    },
+    "TideFull": {
+      "type": "object",
+      "properties": {
+        "chart": {
+          "description": "Prediction with the observed level over it, sunrise and sunset shading, moon phase.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "datum_label": {
+          "description": "\"above MLLW\"; None when heights are not shown.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "days": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TideDayVm"
+          }
+        },
+        "height_now": {
+          "description": "The height now, interpolated; None without heights.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "heights_shown": {
+          "description": "False for modelled sea level: relative curve, no heights.",
+          "type": "boolean"
+        },
+        "next": {
+          "description": "The next high and the next low, soonest first.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TideEventVm"
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        },
+        "stage": {
+          "$ref": "#/$defs/TideStage"
+        },
+        "stage_label": {
+          "description": "\"Rising\", \"Falling\", ...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stage",
+        "stage_label",
+        "next",
+        "heights_shown",
+        "days",
+        "sections"
+      ]
+    },
+    "TideStage": {
+      "type": "string",
+      "enum": [
+        "rising",
+        "falling",
+        "high_slack",
+        "low_slack",
+        "unknown"
+      ]
+    },
+    "TimedLabel": {
+      "description": "A time with its label: \"Sunrise\" \"6:42 AM\".",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "t": {
+          "description": "Unix seconds, for sorting and for drawing.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "time": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "time",
+        "t"
+      ]
+    },
+    "TimelineLane": {
+      "type": "object",
+      "properties": {
+        "chart": {
+          "$ref": "#/$defs/ChartVm"
+        },
+        "kind": {
+          "$ref": "#/$defs/LaneKind"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "label",
+        "chart"
+      ]
+    },
+    "TimelineVm": {
+      "description": "The day timeline: lanes that share one time axis.",
+      "type": "object",
+      "properties": {
+        "end_t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "lanes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TimelineLane"
+          }
+        },
+        "start_t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "step_minutes": {
+          "type": "integer",
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0
+        },
+        "x_ticks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartTick"
+          }
+        }
+      },
+      "required": [
+        "start_t",
+        "end_t",
+        "step_minutes",
+        "x_ticks",
+        "lanes"
+      ]
+    },
+    "TrendDirection": {
+      "type": "string",
+      "enum": [
+        "rising",
+        "falling",
+        "steady",
+        "unknown"
+      ]
+    },
+    "TrendVm": {
+      "type": "object",
+      "properties": {
+        "direction": {
+          "$ref": "#/$defs/TrendDirection"
+        },
+        "text": {
+          "description": "\"Rising 0.4 ft in 3 h\"",
+          "type": "string"
+        }
+      },
+      "required": [
+        "direction",
+        "text"
+      ]
+    },
+    "TroutStressVm": {
+      "description": "The trout-stress guidance against the user's threshold.",
+      "type": "object",
+      "properties": {
+        "exceeded": {
+          "type": "boolean"
+        },
+        "text": {
+          "description": "\"Consider not fishing for trout above 68 °F.\"",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "required": [
+        "exceeded",
+        "threshold",
+        "text"
+      ]
+    },
+    "WaterTempCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/WaterTempFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "WaterTempFull": {
+      "type": "object",
+      "properties": {
+        "basis": {
+          "$ref": "#/$defs/TempBasis"
+        },
+        "chart": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        },
+        "trend": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TrendVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trout_stress": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TroutStressVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "basis",
+        "sections"
+      ]
+    },
+    "WaterType": {
+      "description": "What kind of water a spot is on. It picks the default cards and source chains.",
+      "type": "string",
+      "enum": [
+        "river_stream",
+        "lake_reservoir",
+        "tidal_river_estuary",
+        "bay_inshore",
+        "surf",
+        "nearshore",
+        "offshore",
+        "great_lakes",
+        "pond",
+        "ice"
+      ]
+    },
+    "WaveNowVm": {
+      "description": "Waves at one moment: the latest observation or the forecast for a time.",
+      "type": "object",
+      "properties": {
+        "direction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dominant_period": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mean_period": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "significant_height": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "steepness": {
+          "description": "\"Steep\", when the source says.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "swells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WaveTrainVm"
+          }
+        },
+        "t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "time": {
+          "type": "string"
+        },
+        "wind_waves": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WaveTrainVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "t",
+        "time",
+        "swells"
+      ]
+    },
+    "WaveTrainVm": {
+      "description": "One wave train (wind waves or a swell).",
+      "type": "object",
+      "properties": {
+        "direction": {
+          "description": "\"SE 135°\", the direction the waves come from.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "label": {
+          "description": "\"Wind waves\", \"Swell 1\"",
+          "type": "string"
+        },
+        "period": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "label"
+      ]
+    },
+    "WavesCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/WavesFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "WavesFull": {
+      "type": "object",
+      "properties": {
+        "forecast": {
+          "description": "The forecast for now (or the next hour).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WaveNowVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "height_chart": {
+          "description": "Observed and forecast height on one axis.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WaveNowVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "period_chart": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        }
+      },
+      "required": [
+        "sections"
+      ]
+    },
+    "WindBasis": {
+      "description": "Where the wind figure comes from.",
+      "oneOf": [
+        {
+          "description": "A station or buoy.",
+          "type": "string",
+          "const": "observed"
+        },
+        {
+          "description": "The forecast model.",
+          "type": "string",
+          "const": "forecast"
+        }
+      ]
+    },
+    "WindCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/WindFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "WindFull": {
+      "type": "object",
+      "properties": {
+        "basis": {
+          "$ref": "#/$defs/WindBasis"
+        },
+        "chart": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "direction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "from_deg": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "float"
+        },
+        "gust": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hours": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WindHourVm"
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        },
+        "speed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "basis",
+        "hours",
+        "sections"
+      ]
+    },
+    "WindHourVm": {
+      "type": "object",
+      "properties": {
+        "direction": {
+          "description": "\"NW\"",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "from_deg": {
+          "description": "Degrees the wind blows from, for drawing arrows.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "float"
+        },
+        "gust": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "speed": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "time": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "t",
+        "time",
+        "speed"
+      ]
+    }
+  }
+}
