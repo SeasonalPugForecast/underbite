@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/*"]
+members = ["crates/*", "apps/*", "xtask"]
 
 [workspace.package]
 version = "0.1.0"
@@ -30,6 +30,12 @@ jiff = "0.2.37"
 ureq = "3.4.2"
 clap = { version = "4.6.7", features = ["derive"] }
 tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }
+anyhow = "1.0.104"
+
+# Tests.
+tempfile = "3.27.0"
+insta = { version = "1.49.0", features = ["yaml"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

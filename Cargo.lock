@@ -140,6 +140,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "underbite"
+version = "0.1.0"
+
+[[package]]
 name = "underbite-config"
 version = "0.1.0"
 
@@ -190,6 +194,10 @@ dependencies = [
  "thiserror",
  "whether-core",
 ]
+
+[[package]]
+name = "xtask"
+version = "0.1.0"
 
 [[package]]
 name = "zmij"
