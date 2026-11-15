@@ -3,7 +3,7 @@
 use underbite_core::model::{Measurement, Requirements};
 use underbite_core::provenance::{Attribution, SourceId};
 
-use crate::request::{Request, Response, Target};
+use crate::request::{Request, Resource, Response, Target};
 use crate::source::{Budget, FetchContext, Fragments, Period, Source, SourceError};
 
 pub mod ogc;
@@ -92,7 +92,10 @@ impl Source for Usgs {
         response: &Response<'_>,
         ctx: &FetchContext,
     ) -> Result<Vec<Request>, SourceError> {
-        ogc::follow_up(self, request, response, ctx)
+        match request.resource {
+            Resource::UsgsStatistics => statistics::follow_up(request, response, ctx),
+            _ => ogc::follow_up(self, request, response, ctx),
+        }
     }
 
     fn plan(
@@ -111,6 +114,9 @@ impl Source for Usgs {
         ctx: &FetchContext,
         out: &mut Fragments,
     ) -> Result<(), SourceError> {
-        ogc::parse(self, request, response, ctx, out)
+        match request.resource {
+            Resource::UsgsStatistics => statistics::parse(request, response, out),
+            _ => ogc::parse(self, request, response, ctx, out),
+        }
     }
 }

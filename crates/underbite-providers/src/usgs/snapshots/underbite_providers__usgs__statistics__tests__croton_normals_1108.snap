@@ -1,0 +1,36 @@
+---
+source: crates/underbite-providers/src/usgs/statistics.rs
+expression: p
+---
+day_of_year: 11-08
+thresholds:
+  p05: 0.017952882
+  p10: 0.027354075
+  p25: 0.043749526
+  p50: 0.4247527
+  p75: 6.7110925
+  p90: 19.527296
+  p95: 33.41388
+value: 0.35112894
+rank: 45.169083
+class: normal
+basis: statistics_api
+sample_count: 93
+approved_only: true
+provenance:
+  source: usgs
+  station:
+    source: usgs
+    id: "01375000"
+    name: Test site
+    kind:
+      usgs_site: stream
+    latitude: 41.225
+    longitude: -73.859
+    bin: ~
+    reference_id: ~
+  distance_m: 1200
+  relation: same_water_body
+  observed_at: 1794148200
+  kind: computed
+  quality: approved
