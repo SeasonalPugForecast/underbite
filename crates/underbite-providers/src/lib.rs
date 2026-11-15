@@ -4,3 +4,6 @@
 //!
 //! Weather comes from whether's providers and session (`whether_providers`),
 //! unchanged.
+
+#[cfg(test)]
+pub(crate) mod testutil;
