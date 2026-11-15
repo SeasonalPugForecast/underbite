@@ -8,7 +8,16 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-whether-core = { workspace = true, features = ["serde"] }
+whether-core = { workspace = true, features = ["serde", "schema"] }
+serde.workspace = true
+schemars.workspace = true
+thiserror.workspace = true
+jiff.workspace = true
+
+[dev-dependencies]
+whether-core = { workspace = true, features = ["serde", "schema", "testdata"] }
+serde_json.workspace = true
+insta = { workspace = true, features = ["yaml", "json"] }
 
 [lints]
 workspace = true
