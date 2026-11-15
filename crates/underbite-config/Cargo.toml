@@ -1,0 +1,13 @@
+[package]
+name = "underbite-config"
+description = "Underbite's configuration: schema, defaults and migration"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+
+[lints]
+workspace = true
