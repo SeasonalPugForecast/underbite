@@ -3,6 +3,7 @@
 use std::time::Duration;
 
 use crate::model::{TideEvent, TideKind, TideSeries, TideSourceKind};
+use crate::provenance::Quality;
 use crate::time::UnixTime;
 
 /// Half the span of the central difference that gives the rate.
@@ -24,7 +25,8 @@ pub enum TideDirection {
 pub enum RateBasis {
     /// From a curve of harmonic predictions.
     Predicted,
-    /// From the approximate cosine curve of a subordinate station: indicative only.
+    /// From an approximate cosine curve between events (a subordinate station, or a station
+    /// served without a curve): indicative only.
     Approximate,
 }
 
@@ -127,7 +129,10 @@ fn rate(series: &TideSeries, now: UnixTime) -> Option<TideRate> {
     let hours = (2 * RATE_HALF_SPAN_S) as f64 / 3_600.0;
     Some(TideRate {
         m_per_h: ((f64::from(after) - f64::from(before)) / hours) as f32,
-        basis: if series.source_kind == TideSourceKind::SubordinateStation {
+        // A cosine curve interpolated between events is marked Estimated whatever the station.
+        basis: if series.source_kind == TideSourceKind::SubordinateStation
+            || curve.provenance().quality == Quality::Estimated
+        {
             RateBasis::Approximate
         } else {
             RateBasis::Predicted
@@ -270,6 +275,20 @@ mod tests {
     #[test]
     fn subordinate_rates_are_labelled_approximate() {
         let series = battery(TideSourceKind::SubordinateStation, true);
+        let st = tide_stage(&series, at("2026-11-08 09:00")).unwrap();
+        assert_eq!(st.rate.unwrap().basis, RateBasis::Approximate);
+    }
+
+    #[test]
+    fn an_interpolated_curve_gives_an_approximate_rate_whatever_the_station() {
+        let mut series = battery(TideSourceKind::HarmonicStation, true);
+        let estimated = Provenance {
+            kind: ValueKind::Computed,
+            quality: Quality::Estimated,
+            ..provenance()
+        };
+        let curve = series.curve.take().unwrap();
+        series.curve = Some(Series::new(estimated, curve.samples().to_vec()));
         let st = tide_stage(&series, at("2026-11-08 09:00")).unwrap();
         assert_eq!(st.rate.unwrap().basis, RateBasis::Approximate);
     }
