@@ -1,0 +1,19 @@
+---
+source: crates/underbite-providers/src/usgs/ogc.rs
+expression: summary(&out)
+---
+credits:
+  - Provisional data from the U.S. Geological Survey are subject to revision
+fragments:
+  - datum: ~
+    kind: observed
+    last:
+      quality: provisional
+      time: 1794096000
+      value: "0.3653"
+    measurement: Discharge
+    observed_at: 1794096000
+    quality: provisional
+    samples: 673
+    shape: series
+    station: "01375000"

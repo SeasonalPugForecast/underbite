@@ -1,0 +1,34 @@
+---
+source: crates/underbite-providers/src/usgs/ogc.rs
+expression: "serde_json::json!([summary(&lake), summary(&tide)])"
+---
+- credits:
+    - Provisional data from the U.S. Geological Survey are subject to revision
+  fragments:
+    - datum: Ngvd29
+      kind: observed
+      last:
+        quality: provisional
+        time: 1794096000
+        value: "230.2764"
+      measurement: LakeLevel
+      observed_at: 1794096000
+      quality: provisional
+      samples: 673
+      shape: heights
+      station: "01323500"
+- credits:
+    - Provisional data from the U.S. Geological Survey are subject to revision
+  fragments:
+    - datum: Navd88
+      kind: observed
+      last:
+        quality: provisional
+        time: 1794096000
+        value: "-0.0305"
+      measurement: Tide
+      observed_at: 1794096000
+      quality: provisional
+      samples: 673
+      shape: heights
+      station: "01372058"

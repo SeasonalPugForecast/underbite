@@ -70,6 +70,19 @@ impl Source for Usgs {
         })
     }
 
+    fn max_follow_ups(&self) -> u32 {
+        24
+    }
+
+    fn follow_up(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        ogc::follow_up(self, request, response, ctx)
+    }
+
     fn plan(
         &self,
         target: &Target,

@@ -6,13 +6,13 @@
 
 use std::cmp::Reverse;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use underbite_core::datum::{Heights, VerticalDatum};
 use underbite_core::model::{Measurement, Turbidity, TurbidityUnit};
 use underbite_core::provenance::{Attribution, Provenance, Quality, SourceId, ValueKind};
 use underbite_core::series::{Sample, Series};
-use underbite_core::time::{UnixTime, parse_rfc3339};
+use underbite_core::time::{UnixTime, UtcOffset, parse_rfc3339};
 use underbite_core::units::{Canonical, to_canonical};
 
 use super::Usgs;
@@ -288,6 +288,14 @@ pub(super) fn plan(target: &Target, ctx: &FetchContext) -> Result<Vec<Request>, 
 #[derive(Deserialize)]
 struct Collection {
     features: Vec<Feature>,
+    #[serde(default)]
+    links: Vec<Link>,
+}
+
+#[derive(Deserialize)]
+struct Link {
+    rel: Option<String>,
+    href: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -297,6 +305,7 @@ struct Feature {
 
 #[derive(Deserialize, Default)]
 struct Props {
+    time_series_id: Option<String>,
     monitoring_location_id: Option<String>,
     parameter_code: Option<String>,
     statistic_id: Option<String>,
@@ -330,12 +339,27 @@ pub(super) fn quality(approval: Option<&str>, qualifiers: &[String]) -> Quality 
 }
 
 /// One value in canonical units.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub(super) struct Point {
     pub(super) t: i64,
     pub(super) v: f32,
     pub(super) q: Quality,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub(super) unit: Option<TurbidityUnit>,
+}
+
+/// What a request for a series carries to its parse: the parameter (the paged responses name
+/// none) and the points of the pages read so far.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+struct Carry {
+    parameter_code: String,
+    points: Vec<Point>,
+}
+
+impl Carry {
+    fn text(&self) -> Result<String, SourceError> {
+        serde_json::to_string(self).map_err(parse_error)
+    }
 }
 
 fn canonical(kind: Kind, value: Canonical) -> Option<(f32, Option<TurbidityUnit>)> {
@@ -464,6 +488,7 @@ fn samples<T>(points: &[Point], value: impl Fn(&Point) -> Option<T>) -> Vec<Samp
 #[derive(Clone, Debug)]
 pub(super) struct Latest {
     param: &'static Param,
+    series_id: Option<String>,
     statistic: Option<String>,
     primary: bool,
     pub(super) point: Point,
@@ -503,6 +528,7 @@ pub(super) fn read_latest(
         };
         found.push(Latest {
             param: p,
+            series_id: props.time_series_id,
             statistic: props.statistic_id,
             primary: props.primary.as_deref() == Some("Primary"),
             stale: now.0.saturating_sub(time.0) > max_age_s,
@@ -586,7 +612,168 @@ pub(super) fn parse(
     let body = check_response(request, response)?;
     match request.resource {
         Resource::UsgsLatestContinuous => parse_latest(request, body, ctx, usgs, out),
+        Resource::UsgsContinuous => parse_values(request, body, out),
         other => Err(SourceError::Unsupported(format!("{other:?}"))),
+    }
+}
+
+/// `YYYY-MM-DDTHH:MM:SSZ`.
+fn format_time(t: UnixTime) -> String {
+    let l = t.to_local(UtcOffset(0));
+    format!(
+        "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}Z",
+        l.date.year, l.date.month, l.date.day, l.hour, l.minute, l.second
+    )
+}
+
+/// The longest span `continuous` answers for, a little under three years.
+const MAX_CONTINUOUS_SPAN_S: i64 = 1_094 * 86_400;
+
+/// Most values per `continuous` page; a week at 15 minutes is 673.
+const CONTINUOUS_LIMIT: u32 = 2000;
+
+/// Properties asked of `continuous`.
+const CONTINUOUS_PROPERTIES: &str =
+    "time_series_id,parameter_code,time,value,unit_of_measure,approval_status,qualifier";
+
+/// A `continuous` request for one series over the target's window (at most three years back from
+/// its end), for the measurement of parameter `p`. Carries the parameter to the parse.
+fn continuous_request(
+    series_id: &str,
+    p: &Param,
+    target: &Target,
+    ctx: &FetchContext,
+) -> Result<Request, SourceError> {
+    let to = target.window.to;
+    let from = target.window.from.0.max(to.0 - MAX_CONTINUOUS_SPAN_S);
+    let url = QueryBuilder::new(&format!("{BASE}/collections/continuous/items"))
+        .param("f", "json")
+        .param("time_series_id", series_id)
+        .param(
+            "datetime",
+            format!("{}/{}", format_time(UnixTime(from)), format_time(to)),
+        )
+        .param("skipGeometry", "true")
+        .param("sortby", "time")
+        .param("limit", CONTINUOUS_LIMIT.to_string())
+        .param("properties", CONTINUOUS_PROPERTIES)
+        .finish();
+    let mut wanted = target.clone();
+    wanted.measurements = std::iter::once(p.measurement).collect();
+    let carry = Carry {
+        parameter_code: p.code.to_string(),
+        points: Vec::new(),
+    };
+    Ok(with_key(
+        Request::new(url, Resource::UsgsContinuous, wanted)
+            .metered()
+            .max_age_hint(300)
+            .with_carry(carry.text()?),
+        ctx,
+    ))
+}
+
+/// The values of a `continuous` page or a `daily` page, appended to what the pages before it
+/// carried. Values are of the carried parameter; `null` values are skipped.
+fn read_values(request: &Request, body: &[u8]) -> Result<(&'static Param, Carry), SourceError> {
+    let mut carry: Carry = match request.carry() {
+        Some(text) => serde_json::from_str(text).map_err(parse_error)?,
+        None => Carry::default(),
+    };
+    let site = station_site(&request.target)?;
+    let collection: Collection = serde_json::from_slice(body).map_err(parse_error)?;
+    if carry.parameter_code.is_empty() {
+        carry.parameter_code = collection
+            .features
+            .iter()
+            .find_map(|f| f.properties.parameter_code.clone())
+            .ok_or_else(|| parse_error("no parameter code"))?;
+    }
+    let p = spec(&carry.parameter_code)
+        .ok_or_else(|| parse_error(format!("parameter {}", carry.parameter_code)))?;
+    for feature in collection.features {
+        let props = feature.properties;
+        let other_site = props
+            .monitoring_location_id
+            .as_deref()
+            .is_some_and(|id| id != site);
+        let other_parameter = props.parameter_code.as_deref().is_some_and(|c| c != p.code);
+        if other_site || other_parameter {
+            continue;
+        }
+        let time = props
+            .time
+            .as_deref()
+            .and_then(parse_rfc3339)
+            .ok_or_else(|| parse_error("time of a value"))?;
+        carry.points.extend(point(&props, p, time)?);
+    }
+    Ok((p, carry))
+}
+
+fn parse_values(request: &Request, body: &[u8], out: &mut Fragments) -> Result<(), SourceError> {
+    let (p, carry) = read_values(request, body)?;
+    if carry.points.is_empty() {
+        return Err(SourceError::NoData(Some(
+            "no values in the window".to_string(),
+        )));
+    }
+    fragment(p, carry.points, &request.target, ValueKind::Observed, out)
+}
+
+/// The `next` link of a page, if it has one and it stays on the API.
+fn next_link(body: &[u8]) -> Result<Option<String>, SourceError> {
+    let collection: Collection = serde_json::from_slice(body).map_err(parse_error)?;
+    let href = collection
+        .links
+        .into_iter()
+        .find(|l| l.rel.as_deref() == Some("next"))
+        .and_then(|l| l.href);
+    match href {
+        Some(h) if h.starts_with(&format!("{BASE}/collections/")) => Ok(Some(h)),
+        Some(h) => Err(parse_error(format!("next link off the API: {h}"))),
+        None => Ok(None),
+    }
+}
+
+/// What a response calls for next: from `latest-continuous`, the recent values of each series
+/// it chose; from a page of values, the next page (carrying the points read so far).
+pub(super) fn follow_up(
+    usgs: &Usgs,
+    request: &Request,
+    response: &Response<'_>,
+    ctx: &FetchContext,
+) -> Result<Vec<Request>, SourceError> {
+    let body = check_response(request, response)?;
+    let target = &request.target;
+    match request.resource {
+        Resource::UsgsLatestContinuous => {
+            let window = target.window;
+            if window.to <= window.from || window.from.0 >= ctx.now.0 - 3_600 {
+                return Ok(Vec::new());
+            }
+            let readings = read_latest(body, &station_site(target)?, ctx.now, usgs.max_age_s)?;
+            let (chosen, _) = select(&readings, target);
+            chosen
+                .into_iter()
+                .filter_map(|(_, r)| Some((r.series_id.as_deref()?, r.param)))
+                .map(|(id, p)| continuous_request(id, p, target, ctx))
+                .collect()
+        }
+        Resource::UsgsContinuous => {
+            let Some(href) = next_link(body)? else {
+                return Ok(Vec::new());
+            };
+            let (_, carry) = read_values(request, body)?;
+            let mut next =
+                Request::new(href, request.resource, target.clone()).with_carry(carry.text()?);
+            next.headers.clone_from(&request.headers);
+            next.cache = request.cache;
+            next.required = request.required;
+            next.metered = request.metered;
+            Ok(vec![next])
+        }
+        _ => Ok(Vec::new()),
     }
 }
 
@@ -979,5 +1166,198 @@ mod tests {
         assert_eq!(usgs.attribution().credit, "U.S. Geological Survey");
         assert!(usgs.measurements().contains(&Measurement::LakeLevel));
         assert_eq!(usgs.budget().unwrap().limit, 1000);
+        assert_eq!(usgs.max_follow_ups(), 24);
+        assert_eq!(format_time(NOW), "2026-11-08T14:30:00Z");
+    }
+
+    /// Parses `file` as the answer to the `continuous` request for `code` at `site`.
+    fn history(site: &str, code: &str, datum: Option<VerticalDatum>, file: &str) -> Fragments {
+        let p = spec(code).unwrap();
+        let mut t = target(site, &[p.measurement]);
+        t.datum = datum;
+        let req = continuous_request("0123abcd", p, &t, &ctx()).unwrap();
+        let body = fixture_bytes("usgs", file);
+        let mut out = Fragments::new();
+        Usgs::default()
+            .parse(&req, &Response::new(200, &body), &ctx(), &mut out)
+            .unwrap();
+        out
+    }
+
+    #[test]
+    fn croton_week_has_673_ascending_samples() {
+        let out = history(
+            "01375000",
+            "00060",
+            None,
+            "usgs-continuous-croton-01375000-00060-2026-11-01_2026-11-08.json",
+        );
+        let s = only_series(&out, Measurement::Discharge);
+        assert_eq!(s.samples().len(), 673);
+        assert!(s.samples().windows(2).all(|w| w[0].time < w[1].time));
+        assert!((s.samples()[0].value - 163.0 * 0.028_316_85).abs() < 0.001);
+        insta::assert_yaml_snapshot!("continuous_croton_discharge", summary(&out));
+    }
+
+    #[test]
+    fn lake_history_is_ngvd29_metres_and_tide_navd88() {
+        let lake = history(
+            "01323500",
+            "62614",
+            None,
+            "usgs-continuous-great-sacandaga-01323500-62614-2026-11-01_2026-11-08.json",
+        );
+        let V::Heights(h) = &lake.fragments()[0].value else {
+            panic!("heights");
+        };
+        assert_eq!(h.datum, VerticalDatum::Ngvd29);
+        assert!((h.series.samples()[0].value - 756.04 * 0.3048).abs() < 0.01);
+        let tide = history(
+            "01372058",
+            "62620",
+            None,
+            "usgs-continuous-hudson-poughkeepsie-01372058-62620-2026-11-01_2026-11-08.json",
+        );
+        assert_eq!(tide.fragments()[0].measurement, Measurement::Tide);
+        insta::assert_yaml_snapshot!(
+            "continuous_lake_and_tide",
+            serde_json::json!([summary(&lake), summary(&tide)])
+        );
+    }
+
+    #[test]
+    fn turbidity_history_keeps_its_unit() {
+        let out = history(
+            "01302020",
+            "63680",
+            None,
+            "usgs-continuous-bronx-river-01302020-63680-2026-11-01_2026-11-08.json",
+        );
+        let V::Turbidity(s) = &out.fragments()[0].value else {
+            panic!("turbidity");
+        };
+        assert_eq!(s.samples()[0].value.unit, TurbidityUnit::Fnu);
+        assert!((s.samples()[0].value.value - 1.3).abs() < 1e-6);
+    }
+
+    #[test]
+    fn the_latest_response_calls_for_each_chosen_series_history() {
+        let usgs = Usgs::default();
+        let t = target(
+            "01375000",
+            &[Measurement::Discharge, Measurement::GageHeight],
+        );
+        let req = usgs
+            .plan(&t, &Requirements::default(), &ctx())
+            .unwrap()
+            .remove(0);
+        let body = fixture_bytes("usgs", "usgs-latest-continuous-croton-01375000.json");
+        let follow = usgs
+            .follow_up(&req, &Response::new(200, &body), &ctx())
+            .unwrap();
+        assert_eq!(follow.len(), 2);
+        assert!(
+            follow
+                .iter()
+                .all(|r| r.resource == Resource::UsgsContinuous && r.metered)
+        );
+        // Discharge first (measurement order), by series id, window in the encoding USGS
+        // itself uses in its `next` links.
+        assert_eq!(
+            follow[0].url,
+            "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous/items?f=json&time_series_id=e32aab5ccc774c11b172102b97abc0d8&datetime=2026-11-01T14%3A30%3A00Z%2F2026-11-08T14%3A30%3A00Z&skipGeometry=true&sortby=time&limit=2000&properties=time_series_id,parameter_code,time,value,unit_of_measure,approval_status,qualifier"
+        );
+        let paged = fixture_bytes(
+            "usgs",
+            "usgs-continuous-croton-01375000-00060-paging-limit3.json",
+        );
+        let next = String::from_utf8(paged).unwrap();
+        assert!(next.contains("datetime=2026-11-01T00%3A00%3A00Z%2F2026-11-08T00%3A00%3A00Z"));
+        assert_eq!(follow[0].target.measurements.len(), 1);
+
+        // A window that ends the instant it starts needs no history.
+        let mut now_only = t.clone();
+        now_only.window.from = NOW;
+        let req = usgs
+            .plan(&now_only, &Requirements::default(), &ctx())
+            .unwrap()
+            .remove(0);
+        assert_eq!(
+            usgs.follow_up(&req, &Response::new(200, &body), &ctx())
+                .unwrap(),
+            Vec::new()
+        );
+    }
+
+    #[test]
+    fn a_window_over_three_years_is_cut_to_three_years() {
+        let mut t = target("01375000", &[Measurement::Discharge]);
+        t.window.from = UnixTime(NOW.0 - 5 * 365 * 86_400);
+        let req = continuous_request("abc", spec("00060").unwrap(), &t, &ctx()).unwrap();
+        assert!(req.url.contains("datetime=2023-11-"), "{}", req.url);
+    }
+
+    #[test]
+    fn a_page_with_a_next_link_follows_up_and_merges_the_pages() {
+        let usgs = Usgs::default();
+        let ctx = ctx().with_secrets(Secrets {
+            usgs_api_key: Some("sekrit-key-123".to_string()),
+        });
+        let t = target("01375000", &[Measurement::Discharge]);
+        let first = continuous_request("e32a", spec("00060").unwrap(), &t, &ctx).unwrap();
+        let page = fixture_bytes(
+            "usgs",
+            "usgs-continuous-croton-01375000-00060-paging-limit3.json",
+        );
+        let follow = usgs
+            .follow_up(&first, &Response::new(200, &page), &ctx)
+            .unwrap();
+        assert_eq!(follow.len(), 1);
+        let next = &follow[0];
+        assert!(next.url.starts_with(
+            "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous/items?cursor=ZTMyYWFi"
+        ));
+        assert_eq!(next.headers, first.headers);
+        assert!(next.cache.no_store);
+        assert!(
+            next.carry()
+                .unwrap()
+                .contains("\"parameter_code\":\"00060\"")
+        );
+
+        // The first page alone, then the follow-up's page on top of it.
+        let mut one = Fragments::new();
+        usgs.parse(&first, &Response::new(200, &page), &ctx, &mut one)
+            .unwrap();
+        assert_eq!(only_series(&one, Measurement::Discharge).samples().len(), 3);
+        let rest = fixture_bytes(
+            "usgs",
+            "usgs-continuous-croton-01375000-00060-2026-11-01_2026-11-08.json",
+        );
+        let mut all = Fragments::new();
+        usgs.parse(next, &Response::new(200, &rest), &ctx, &mut all)
+            .unwrap();
+        assert_eq!(
+            only_series(&all, Measurement::Discharge).samples().len(),
+            673
+        );
+
+        // The last page has no next link.
+        assert_eq!(
+            usgs.follow_up(next, &Response::new(200, &rest), &ctx)
+                .unwrap(),
+            Vec::new()
+        );
+    }
+
+    #[test]
+    fn a_next_link_off_the_api_is_refused() {
+        let body = br#"{"features":[],"links":[{"rel":"next","href":"https://example.org/x"}]}"#;
+        let t = target("01375000", &[Measurement::Discharge]);
+        let req = continuous_request("e32a", spec("00060").unwrap(), &t, &ctx()).unwrap();
+        let err = Usgs::default()
+            .follow_up(&req, &Response::new(200, body), &ctx())
+            .unwrap_err();
+        assert!(matches!(err, SourceError::Parse(_)));
     }
 }
