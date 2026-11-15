@@ -1,4 +1,4 @@
-//! Tide prediction from harmonic constituents: heights, highs and lows.
+//! Tide prediction from harmonic constituents, highs and lows, and subordinate stations.
 //!
 //! The height above datum `D` of a harmonic station is
 //! `h(t) = Z0 + Σ f·A·cos(V0(t) + u − g)`, with `A` and `g` the amplitude and Greenwich phase lag
@@ -6,7 +6,12 @@
 //! table, and `f`, `u` the node factor and phase of the year. As in NOAA practice, `f` and `u`
 //! are taken at the middle of each UTC year and `V0` at its start, advancing at the
 //! constituent's speed.
+//!
+//! Subordinate stations have no constituents: their highs and lows are the reference station's
+//! shifted in time and scaled (or raised) in height, and their curve is interpolated between those
+//! events.
 
+use std::f64::consts::PI;
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
@@ -16,8 +21,8 @@ use crate::astro::constituents::{
     AstronomicalArguments, Constituent, utc_year, year_start, yearly_node_corrections,
 };
 use crate::datum::{DatumTable, VerticalDatum};
-use crate::model::{TideEvent, TideKind};
-use crate::provenance::{Provenance, Quality, Relation, SourceId, ValueKind};
+use crate::model::{TideEvent, TideKind, TideSeries, TideSourceKind};
+use crate::provenance::{Provenance, Quality, Relation, SourceId, StationKind, ValueKind};
 use crate::series::{Sample, Series};
 use crate::time::UnixTime;
 
@@ -25,6 +30,8 @@ use crate::time::UnixTime;
 const SEARCH_STEP: i64 = 360;
 /// Bisection steps: 360 s / 2^12 is below 0.1 s.
 const BISECTIONS: u32 = 12;
+/// Reference events computed beyond the window so that shifted events and curves cover it.
+const SUBORDINATE_MARGIN: i64 = 86_400;
 
 /// Why a tide could not be computed.
 #[derive(Clone, Debug, PartialEq, Error)]
@@ -46,6 +53,20 @@ pub enum TideError {
     /// The step is zero or the window ends before it starts.
     #[error("empty or reversed time window, or zero step")]
     BadWindow,
+    /// Harmonics were requested for a subordinate station.
+    #[error("subordinate stations are predicted from their reference station")]
+    SubordinateStation,
+    /// Subordinate offsets apply to heights above MLLW only.
+    #[error("subordinate offsets need reference heights above MLLW, not {0:?}")]
+    SubordinateDatum(VerticalDatum),
+    /// The offsets name another reference station.
+    #[error("offsets refer to station {expected}, not {actual}")]
+    ReferenceMismatch {
+        /// The reference station the offsets name.
+        expected: String,
+        /// The station of the harmonics given.
+        actual: String,
+    },
 }
 
 /// One constituent of a station, as CO-OPS `harcon` lists it.
@@ -96,6 +117,41 @@ impl TideHarmonics {
             datum,
         })
     }
+}
+
+/// How a subordinate station's heights follow the reference station's.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum HeightAdjustment {
+    /// The reference height times this ratio (CO-OPS `heightAdjustedType` `R`).
+    Ratio(f32),
+    /// The reference height plus this many metres (CO-OPS `F`).
+    Add(f32),
+}
+
+impl HeightAdjustment {
+    /// The adjusted height, metres.
+    pub fn apply(self, reference_m: f32) -> f32 {
+        match self {
+            Self::Ratio(r) => reference_m * r,
+            Self::Add(m) => reference_m + m,
+        }
+    }
+}
+
+/// The offsets of a subordinate tide station from its reference (CO-OPS `tidepredoffsets`).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SubordinateTideOffsets {
+    /// The reference (harmonic) station.
+    pub reference_id: String,
+    /// Minutes added to the reference high-tide times.
+    pub high_time_min: i32,
+    /// Minutes added to the reference low-tide times.
+    pub low_time_min: i32,
+    /// Adjustment of high-tide heights.
+    pub high_height: HeightAdjustment,
+    /// Adjustment of low-tide heights.
+    pub low_height: HeightAdjustment,
 }
 
 /// One constituent's term for a year: `f·A`, phase at the year's start and angular speed.
@@ -298,6 +354,226 @@ pub fn extremes(
     Ok(Model::new(h, from, to)?.extremes(from, to))
 }
 
+/// A subordinate station's highs and lows from its reference station's, sorted by time.
+///
+/// Heights stay relative to the reference's datum (MLLW for CO-OPS offsets).
+pub fn subordinate(
+    reference_events: &[TideEvent],
+    offsets: &SubordinateTideOffsets,
+) -> Vec<TideEvent> {
+    let mut events: Vec<TideEvent> = reference_events
+        .iter()
+        .map(|e| {
+            let (minutes, adjustment) = match e.kind {
+                TideKind::High => (offsets.high_time_min, offsets.high_height),
+                TideKind::Low => (offsets.low_time_min, offsets.low_height),
+            };
+            TideEvent {
+                time: UnixTime(e.time.0 + i64::from(minutes) * 60),
+                kind: e.kind,
+                height_m: e.height_m.map(|h| adjustment.apply(h)),
+            }
+        })
+        .collect();
+    events.sort_by_key(|e| e.time);
+    events
+}
+
+/// An approximate curve through highs and lows: half a cosine from each event to the next,
+/// sampled at the multiples of `step` between the first and last event with a height.
+pub fn curve_from_events(events: &[TideEvent], step: Duration) -> Vec<Sample<f32>> {
+    let mut points: Vec<(i64, f64)> = events
+        .iter()
+        .filter_map(|e| Some((e.time.0, f64::from(e.height_m?))))
+        .collect();
+    points.sort_by_key(|p| p.0);
+    points.dedup_by_key(|p| p.0);
+    let Ok(step) = i64::try_from(step.as_secs()) else {
+        return Vec::new();
+    };
+    let (Some(&(first, _)), Some(&(last, _))) = (points.first(), points.last()) else {
+        return Vec::new();
+    };
+    if step <= 0 {
+        return Vec::new();
+    }
+    let mut samples = Vec::new();
+    let mut t = first.div_euclid(step) * step;
+    if t < first {
+        t += step;
+    }
+    let mut i = 0;
+    while t <= last {
+        while i + 2 < points.len() && points[i + 1].0 < t {
+            i += 1;
+        }
+        let (t0, h0) = points[i];
+        let value = match points.get(i + 1) {
+            Some(&(t1, h1)) => {
+                let x = (t - t0) as f64 / (t1 - t0) as f64;
+                h0 + (h1 - h0) * (1.0 - (PI * x).cos()) / 2.0
+            }
+            None => h0,
+        };
+        samples.push(Sample::new(UnixTime(t), value as f32));
+        t += step;
+    }
+    samples
+}
+
+/// Builds the [`TideSeries`] of a spot for a window, from harmonics, from subordinate offsets or
+/// from CO-OPS predictions.
+///
+/// `base` describes the station and how it relates to the spot; each builder sets the source,
+/// value kind and quality that fit the case.
+#[derive(Clone, Debug)]
+pub struct TideSeriesBuilder {
+    /// Start of the window, inclusive.
+    pub from: UnixTime,
+    /// End of the window, inclusive.
+    pub to: UnixTime,
+    /// Spacing of the curve.
+    pub step: Duration,
+    /// Station, distance, relation and issue time of the result.
+    pub base: Provenance,
+}
+
+impl TideSeriesBuilder {
+    fn is_subordinate(&self) -> bool {
+        self.base
+            .station
+            .as_ref()
+            .is_some_and(|s| s.kind == StationKind::TideSubordinate)
+    }
+
+    fn provenance(&self, source: SourceId, kind: ValueKind, quality: Quality) -> Provenance {
+        Provenance {
+            source,
+            kind,
+            quality,
+            ..self.base.clone()
+        }
+    }
+
+    /// A harmonic station computed on the device: `Computed` heights and highs and lows.
+    pub fn harmonic(&self, h: &TideHarmonics) -> Result<TideSeries, TideError> {
+        if self.is_subordinate() {
+            return Err(TideError::SubordinateStation);
+        }
+        let provenance = self.provenance(
+            SourceId::COOPS_HARMONICS,
+            ValueKind::Computed,
+            Quality::Approved,
+        );
+        let samples = predict_samples(h, self.from, self.to, self.step)?;
+        Ok(TideSeries {
+            source_kind: TideSourceKind::Computed,
+            datum: h.datum,
+            events: extremes(h, self.from, self.to)?,
+            curve: Some(Series::new(provenance.clone(), samples)),
+            observed: None,
+            provenance,
+        })
+    }
+
+    /// A subordinate station computed on the device from its reference station's harmonics:
+    /// highs and lows by offsets, with an approximate (`Estimated`) curve between them.
+    pub fn subordinate(
+        &self,
+        reference: &TideHarmonics,
+        offsets: &SubordinateTideOffsets,
+    ) -> Result<TideSeries, TideError> {
+        if reference.station_id != offsets.reference_id {
+            return Err(TideError::ReferenceMismatch {
+                expected: offsets.reference_id.clone(),
+                actual: reference.station_id.clone(),
+            });
+        }
+        if reference.datum != VerticalDatum::Mllw {
+            return Err(TideError::SubordinateDatum(reference.datum));
+        }
+        check_window(self.from, self.to, self.step)?;
+        let shift = 60
+            * i64::from(offsets.high_time_min.unsigned_abs())
+                .max(i64::from(offsets.low_time_min.unsigned_abs()));
+        let margin = SUBORDINATE_MARGIN + shift;
+        let from = UnixTime(self.from.0 - margin);
+        let to = UnixTime(self.to.0 + margin);
+        let all = subordinate(&extremes(reference, from, to)?, offsets);
+        let provenance = self.provenance(
+            SourceId::COOPS_HARMONICS,
+            ValueKind::Computed,
+            Quality::Approved,
+        );
+        Ok(self.events_and_curve(
+            TideSourceKind::SubordinateStation,
+            VerticalDatum::Mllw,
+            &all,
+            provenance,
+        ))
+    }
+
+    /// CO-OPS predictions passed through. Without a curve (subordinate stations serve `hilo`
+    /// only) one is interpolated between the events and marked `Estimated`.
+    pub fn coops(
+        &self,
+        datum: VerticalDatum,
+        events: Vec<TideEvent>,
+        curve: Option<Vec<Sample<f32>>>,
+    ) -> TideSeries {
+        let source_kind = if self.is_subordinate() {
+            TideSourceKind::SubordinateStation
+        } else {
+            TideSourceKind::HarmonicStation
+        };
+        let provenance = self.provenance(SourceId::COOPS, ValueKind::Predicted, self.base.quality);
+        match curve {
+            Some(samples) => TideSeries {
+                source_kind,
+                datum,
+                events,
+                curve: Some(Series::new(provenance.clone(), samples)),
+                observed: None,
+                provenance,
+            },
+            None => self.events_and_curve(source_kind, datum, &events, provenance),
+        }
+    }
+
+    /// Events in the window and a cosine curve through all of them, cut to the window.
+    fn events_and_curve(
+        &self,
+        source_kind: TideSourceKind,
+        datum: VerticalDatum,
+        events: &[TideEvent],
+        provenance: Provenance,
+    ) -> TideSeries {
+        let window = self.from..=self.to;
+        let curve: Vec<_> = curve_from_events(events, self.step)
+            .into_iter()
+            .filter(|s| window.contains(&s.time))
+            .collect();
+        let curve_provenance = Provenance {
+            source: provenance.source.clone(),
+            kind: ValueKind::Computed,
+            quality: Quality::Estimated,
+            ..self.base.clone()
+        };
+        TideSeries {
+            source_kind,
+            datum,
+            events: events
+                .iter()
+                .filter(|e| window.contains(&e.time))
+                .copied()
+                .collect(),
+            curve: (!curve.is_empty()).then(|| Series::new(curve_provenance, curve)),
+            observed: None,
+            provenance,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::BTreeMap;
@@ -306,6 +582,7 @@ mod tests {
     use whether_core::time::days_from_civil;
 
     use super::*;
+    use crate::provenance::StationRef;
 
     macro_rules! fixture {
         ($file:literal) => {
@@ -419,6 +696,21 @@ mod tests {
         )
     }
 
+    fn tarrytown_offsets() -> SubordinateTideOffsets {
+        let v: Value =
+            serde_json::from_str(fixture!("coops-mdapi-8518919-tidepredoffsets.json")).unwrap();
+        assert_eq!(v["heightAdjustedType"], "R");
+        let ratio = |key: &str| HeightAdjustment::Ratio(v[key].as_f64().unwrap() as f32);
+        let minutes = |key: &str| i32::try_from(v[key].as_i64().unwrap()).unwrap();
+        SubordinateTideOffsets {
+            reference_id: v["refStationId"].as_str().unwrap().to_owned(),
+            high_time_min: minutes("timeOffsetHighTide"),
+            low_time_min: minutes("timeOffsetLowTide"),
+            high_height: ratio("heightOffsetHighTide"),
+            low_height: ratio("heightOffsetLowTide"),
+        }
+    }
+
     /// Worst time error (minutes) and worst height error (metres) of `ours` against `theirs`,
     /// matched one-to-one in order and by kind.
     fn event_errors(label: &str, ours: &[TideEvent], theirs: &[TideEvent]) -> (i64, f32) {
@@ -516,6 +808,109 @@ mod tests {
     }
 
     #[test]
+    fn tarrytown_from_the_recorded_battery_events_matches_coops() {
+        let battery_events = events(fixture!("coops-8518750-hilo-2026-11-08.json"));
+        let expected = events(fixture!("coops-8518919-hilo-2026-11-08.json"));
+        let ours = subordinate(&battery_events, &tarrytown_offsets());
+        // The first Tarrytown events come from Battery events before the recorded week, and the
+        // last Battery events shift past its end: compare where both exist.
+        let (first, last) = (ours[0].time, expected[expected.len() - 1].time);
+        let ours: Vec<_> = ours.into_iter().filter(|e| e.time <= last).collect();
+        let theirs: Vec<_> = expected.into_iter().filter(|e| e.time >= first).collect();
+        assert!(ours.len() >= 25, "{}", ours.len());
+        assert_eq!(ours.len(), theirs.len());
+        for (a, b) in ours.iter().zip(&theirs) {
+            assert_eq!((a.time, a.kind), (b.time, b.kind));
+            let dh = (a.height_m.unwrap() - b.height_m.unwrap()).abs();
+            assert!(dh <= 0.0011, "{:?}: {dh}", b.time);
+        }
+    }
+
+    #[test]
+    fn tarrytown_from_computed_battery_extremes() {
+        let expected = events(fixture!("coops-8518919-hilo-2026-11-08.json"));
+        let reference = extremes(&battery(), utc(2026, 11, 7), utc(2026, 11, 16)).unwrap();
+        let window = utc(2026, 11, 8)..utc(2026, 11, 15);
+        let ours: Vec<_> = subordinate(&reference, &tarrytown_offsets())
+            .into_iter()
+            .filter(|e| window.contains(&e.time))
+            .collect();
+        let (dt, dh) = event_errors("8518919", &ours, &expected);
+        println!(
+            "8518919 2026-11-08: {} events, times within {dt} min, heights within {:.1} mm",
+            ours.len(),
+            dh * 1000.0
+        );
+        assert!(dt <= 6 && dh <= 0.04, "{dt} min, {dh} m");
+    }
+
+    #[test]
+    fn additive_offsets_raise_heights() {
+        let offsets = SubordinateTideOffsets {
+            reference_id: "8518750".into(),
+            high_time_min: -30,
+            low_time_min: 15,
+            high_height: HeightAdjustment::Add(0.25),
+            low_height: HeightAdjustment::Add(-0.1),
+        };
+        let reference = [ev(3600, TideKind::Low, 0.2), ev(4000, TideKind::High, 1.5)];
+        let out = subordinate(&reference, &offsets);
+        assert_eq!(out[0].kind, TideKind::High);
+        assert_eq!(out[0].time, UnixTime(4000 - 1800));
+        assert!((out[0].height_m.unwrap() - 1.75).abs() < 1e-6);
+        assert_eq!(out[1].time, UnixTime(3600 + 900));
+        assert!((out[1].height_m.unwrap() - 0.1).abs() < 1e-6);
+    }
+
+    #[test]
+    fn cosine_curve_passes_through_the_events() {
+        let events = [
+            ev(0, TideKind::Low, 0.0),
+            ev(21_600, TideKind::High, 2.0),
+            ev(43_200, TideKind::Low, 0.4),
+        ];
+        let curve = curve_from_events(&events, Duration::from_mins(30));
+        assert_eq!(curve.len(), 25);
+        let at = |t: i64| curve.iter().find(|s| s.time.0 == t).unwrap().value;
+        assert!(at(0).abs() < 1e-6);
+        assert!((at(10_800) - 1.0).abs() < 1e-6);
+        assert!((at(21_600) - 2.0).abs() < 1e-6);
+        assert!((at(32_400) - 1.2).abs() < 1e-6);
+        assert!((at(43_200) - 0.4).abs() < 1e-6);
+        assert!(curve.windows(2).take(12).all(|w| w[0].value <= w[1].value));
+    }
+
+    fn base(kind: StationKind) -> Provenance {
+        Provenance {
+            source: SourceId::COOPS,
+            station: Some(StationRef {
+                source: SourceId::COOPS,
+                id: "8518919".into(),
+                name: "Tarrytown".into(),
+                kind,
+                latitude: 41.0733,
+                longitude: -73.8833,
+                bin: None,
+                reference_id: Some("8518750".into()),
+            }),
+            distance_m: Some(500.0),
+            relation: Relation::SameWaterBody,
+            observed_at: utc(2026, 11, 8),
+            kind: ValueKind::Predicted,
+            quality: Quality::Approved,
+        }
+    }
+
+    fn builder(kind: StationKind) -> TideSeriesBuilder {
+        TideSeriesBuilder {
+            from: utc(2026, 11, 8),
+            to: utc(2026, 11, 9),
+            step: Duration::from_mins(10),
+            base: base(kind),
+        }
+    }
+
+    #[test]
     fn subordinate_stations_have_no_harmonics() {
         let empty = harcon(fixture!("coops-mdapi-8518919-harcon.json"), 0.3048);
         let table = datums("8518919", fixture!("coops-mdapi-8518919-datums.json"));
@@ -528,6 +923,52 @@ mod tests {
             TideHarmonics::from_datum_table("8518919", constituents, &table, VerticalDatum::Mllw),
             Err(TideError::MissingDatum { .. })
         ));
+        assert_eq!(
+            builder(StationKind::TideSubordinate).harmonic(&battery()),
+            Err(TideError::SubordinateStation)
+        );
+    }
+
+    #[test]
+    fn builder_marks_each_case() {
+        let harmonic = builder(StationKind::TideHarmonic)
+            .harmonic(&battery())
+            .unwrap();
+        assert_eq!(harmonic.source_kind, TideSourceKind::Computed);
+        assert_eq!(harmonic.datum, VerticalDatum::Mllw);
+        assert_eq!(harmonic.provenance.kind, ValueKind::Computed);
+        assert_eq!(harmonic.provenance.source, SourceId::COOPS_HARMONICS);
+        assert_eq!(harmonic.provenance.distance_m, Some(500.0));
+        assert_eq!(harmonic.events.len(), 3);
+        assert_eq!(harmonic.curve.as_ref().unwrap().samples().len(), 145);
+
+        let sub = builder(StationKind::TideSubordinate);
+        let computed = sub.subordinate(&battery(), &tarrytown_offsets()).unwrap();
+        assert_eq!(computed.source_kind, TideSourceKind::SubordinateStation);
+        assert_eq!(computed.provenance.kind, ValueKind::Computed);
+        assert_eq!(computed.events[0].kind, TideKind::High);
+        assert_eq!(computed.events.len(), 4);
+        let curve = computed.curve.as_ref().unwrap();
+        assert_eq!(curve.provenance().quality, Quality::Estimated);
+        assert_eq!(curve.samples().len(), 145);
+
+        let recorded = events(fixture!("coops-8518919-hilo-2026-11-08.json"));
+        let passed = sub.coops(VerticalDatum::Mllw, recorded.clone(), None);
+        assert_eq!(passed.source_kind, TideSourceKind::SubordinateStation);
+        assert_eq!(passed.provenance.source, SourceId::COOPS);
+        assert_eq!(passed.provenance.kind, ValueKind::Predicted);
+        assert_eq!(passed.events.len(), 4);
+        let curve = passed.curve.unwrap();
+        assert_eq!(curve.provenance().quality, Quality::Estimated);
+
+        let six = vec![Sample::new(utc(2026, 11, 8), 1.453)];
+        let station =
+            builder(StationKind::TideHarmonic).coops(VerticalDatum::Mllw, recorded, Some(six));
+        assert_eq!(station.source_kind, TideSourceKind::HarmonicStation);
+        assert_eq!(
+            station.curve.unwrap().provenance().kind,
+            ValueKind::Predicted
+        );
     }
 
     #[test]
@@ -551,6 +992,14 @@ mod tests {
         assert_eq!(
             extremes(&unknown, t, t),
             Err(TideError::UnknownConstituent("XX9".into()))
+        );
+        let msl = TideHarmonics {
+            datum: VerticalDatum::Msl,
+            ..battery()
+        };
+        assert_eq!(
+            builder(StationKind::TideSubordinate).subordinate(&msl, &tarrytown_offsets()),
+            Err(TideError::SubordinateDatum(VerticalDatum::Msl))
         );
     }
 }
