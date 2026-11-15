@@ -246,7 +246,22 @@ core (feet to metres, cfs to m3/s, degC kept); `value` strings parse as decimal.
   (14.2 against 14.25 / 14.62 / 16.34). A daily value is therefore the mean over the site's local
   **standard-time** day, which is why `time_zone_abbreviation` is `EST` with `uses_daylight_savings`
   `N`. For the sites tested, treat the date as local standard time (UTC-5), also in summer
-  (**unverified** for a summer date).
+  (checked for summer on 2026-11-15, next paragraph).
+- Summer check, 2026-11-15, Croton 01375000: the daily means for 2026-07-06, 07-07 and 07-08 against the mean
+  of the 96 15-minute `00060` values over each candidate day (fixtures
+  `usgs-daily-croton-01375000-00060-mean-2026-07-06_2026-07-08.json` and
+  `usgs-continuous-croton-01375000-00060-2026-07-05_2026-07-09.json`):
+
+  | Day | daily mean | UTC-5 day (05:00Z to 05:00Z) | UTC-4 day (04:00Z to 04:00Z) | UTC day |
+  |---|---|---|---|---|
+  | 2026-07-06 | 1110 | 1091.78 | 987.16 | 643.30 |
+  | 2026-07-07 | 2550 | 2560.21 | 2597.50 | 2637.50 |
+  | 2026-07-08 | 1420 | 1422.71 | 1452.71 | 1588.33 |
+
+  The daily value matches the UTC-5 (standard-time) day on all three days, in July as in November, so a
+  summer daily mean is **not** the UTC-4 local civil day. The daily values are integers here (three
+  significant figures), so the match is to within about 2 percent; the 07-06 day, with a rising flood, shows the
+  difference most (1091.78 against 987.16).
 - Do not use the daily date as a UTC date.
 - `time-series-metadata.begin/end` are UTC; `last_modified` there has no offset.
 
@@ -351,6 +366,55 @@ CO-OPS station 8518750 and NDBC 44025 are outside this note.
   body.
 - `datetime` durations such as `P7D`, `sortby=-time`, and the `X-Api-Key` header and `api_key`
   parameter (not used by design).
-- Whether daily values keep the standard-time day in summer.
 - Units of `drainage_area` and `altitude`, and the full list of `qualifier` codes.
 - Live water temperature on the lower Hudson.
+
+## Percentile classes (addendum, 2026-11-15)
+
+USGS compares the current flow with the flows recorded at the gauge on the same day of the year and sorts the
+percentile into classes. WaterWatch (`https://waterwatch.usgs.gov`) defined seven classes for streamflow;
+its documentation page `https://waterwatch.usgs.gov/htmls/ptile_table_a.html` (read from the Internet Archive
+copy of 2017-05-01, `http://web.archive.org/web/20170501151620/https://waterwatch.usgs.gov/htmls/ptile_table_a.html`,
+because the live host now answers HTTP 301 to `https://waterdata.usgs.gov/blog/wdfn-stats-delivery/` and that
+blog page and the old help pages return HTTP 403 to `curl` and the fetch tool used here) says:
+
+```text
+1 = Lowest ever at a streamgage
+2 = < 10th percentile
+3 = 10th to 24th percentile
+4 = 25th to 75th percentile
+5 = 76th to 90th percentile
+6 = > 90th percentile
+7 = Highest ever at a streamgage
+```
+
+An announcement on the WaterWatch pages (archive of 2026-02-11) says WaterWatch and WaterQualityWatch "will be
+retired around February 24, 2026" (the notice points to alternative tools).
+
+
+The USGS `hyswap` Python package (`https://github.com/DOI-USGS/hyswap`, `hyswap/utils.py`, function
+`retrieve_schema`, read 2026-11-15) holds the schema "WDFN_stats", described as categorizing "flow similar to the
+USGS National Water Dashboard", with the same bounds:
+
+| Class (display name) | Percentile | `hyswap` range |
+|---|---|---|
+| Much below normal | below 10 | `[0, 10)` |
+| Below normal | 10 to 24 | `[10, 25)` |
+| Normal | 25 to 75 | `[25, 76)` |
+| Above normal | 76 to 90 | `[76, 90)` |
+| Much above normal | above 90 | `[90, 100)` |
+| All-time low for this day | lowest value of the record | percentile 0 |
+| All-time high for this day | highest value of the record | percentile 100 |
+
+The `hyswap` ranges are closed on the left and open on the right (`pd.cut(..., right=False)`), so a percentile of
+exactly 90 falls in "Much above normal" there while the older page says "> 90th" and "76th to 90th". The
+other `hyswap` schema "WaterWatch" uses `[0, 10, 25, 75, 90, 100]` with labels including "Low" and "High". The
+published bounds therefore agree on 10 / 25 / 75 or 76 / 90 as the class edges; the edge case at exactly the 75th
+and 90th percentile is not settled by the sources, and percentiles from the Statistics API
+(section "Statistics API") are only available at 5, 10, 25, 50, 75, 90 and 95, so a rank computed from them is
+interpolated. The two lowest and highest classes mean a flow below the minimum or above the maximum of the
+gauge's record for that day, which the Statistics API reports as the `minimum` and `maximum` computations.
+
+**Unverified:** the live National Water Dashboard legend (its pages were not reachable here) and the exact
+treatment of percentiles on a class edge. The 2022 national annual-streamflow fact sheet (`https://pubs.usgs.gov/fs/2022/3072/fs20223072.pdf`)
+uses the same five names plus "Lowest" and "Highest" for annual ranks, not for daily percentiles.

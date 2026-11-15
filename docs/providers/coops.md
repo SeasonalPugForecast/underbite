@@ -408,3 +408,49 @@ HTTP 400.
   seen. No dated deprecation of `datagetter` or `mdapi` was found.
 - The documentation example for `harcon` of a current station shows `feet, knots`; the live default is
   `meters, centimeters/second`.
+
+## 8. Addendum 2026-11-15: far-future predictions, a second current bin set and a diurnal station
+
+Recorded with the `COMMON` query of section 2.2 (`application=underbite&time_zone=gmt&units=metric&format=json`).
+The files are listed in `tests/fixtures/raw/coops/README.md`.
+
+**How far ahead predictions are served.** Predictions for 8518750 (`datum=MLLW`, `interval=hilo`, one day
+each) were returned for 2034-06-01, 2035-06-01, 2040-06-01, 2050-06-01 and 2100-06-01. A request for 2101-06-01
+returned `{"error": {"message":"No Predictions data was found. Please make sure the Datum input is valid."}}`.
+So predictions are served to the end of 2100 (the 2101 request was the only one probed past it). Fixtures use
+2034-06-01..07, about half a lunar-node cycle (18.6 years) after 2026:
+
+| Fixture | Content |
+|---|---|
+| `coops-8518750-hilo-2034-06-01.json` | 28 events, first `2034-06-01 00:13` H 1.63 m, last `2034-06-07 22:38` L 0.288 m |
+| `coops-8518750-predictions-6min-2034-06-01.json` | 1680 points `2034-06-01 00:00` 1.626 to `2034-06-07 23:54` 0.381 |
+
+Heights are metres above MLLW, times GMT, in the shapes of section 2.4. A one-week `hilo` and a one-week
+`interval=6` request were accepted (the 5-year and 10-year `hilo` 504 of section 7 concerns range, not horizon).
+
+**Reference current station of ACT3646: `n03020`, bin 7.** `product=currents_predictions&station=n03020&bin=7&
+interval=max_slack&begin_date=20261108&end_date=20261114` returned 54 events with `"units":"meters, cm/s"`;
+each carries `Type` (`slack`, `flood` or `ebb`), `Time` (`YYYY-MM-DD HH:MM` GMT), `Depth` (`3.9` m),
+`Velocity_Major` (cm/s, signed: negative on the ebb), `meanFloodDir` 325, `meanEbbDir` 143 and `Bin` `"7"` as in
+section 4.2. First event: slack `2026-11-08 01:10` -0.2; then ebb `04:16` -103.2 cm/s. The harmonic
+constituents are `GET /stations/n03020/harcon.json?bin=7` (fixture `coops-mdapi-n03020-harcon-bin7.json`):
+`{"units":"meters, centimeters/second","HarmonicConstituents":[...]}` with 29 constituents, each carrying
+`binNbr` 7, `binDepth` 3.93, `constNum`, `constituentName`, `majorAmplitude`, `majorPhase`, `majorPhaseGMT`,
+`minorAmplitude`, `minorPhase`, `minorPhaseGMT`, `majorMeanSpeed`, `minorMeanSpeed` and `azi`; M2 has major
+amplitude 79.94 cm/s, GMT phase 344.6 and `azi` 323.6. The bin selects the depth at which the constituents are
+valid.
+
+**Pensacola FL (8729840), a diurnal harmonic station.** `stations/8729840/tidepredoffsets.json` returns
+`"type": "R"` (reference, that is harmonic) with zero offsets, and the station record (`stations/8729840.json`)
+has `tideType: Diurnal`, `timezone` CST, `timezonecorr` -6, `lat` 30.4044, `lng` -87.2112, `shefcode` PCLF1.
+Fixtures:
+
+- `harcon.json?units=metric`: `{"units":"meters","HarmonicConstituents":[...]}` with 37 constituents, amplitude in
+  metres and phase in degrees (`phase_GMT`, `phase_local`). The dominant constituents are diurnal: K1 amplitude
+  0.125 m (GMT phase 58.2), O1 0.122 (47.9), P1 0.037, Q1 0.026, against M2 0.017 (172.1) and S2 0.005; the
+  `comments` field of M2 reads "Vector average of 5 years (2018-2022)".
+- `datums.json?units=metric`: epoch 1983-2001, accepted `Apr 15 2004`, `OrthometricDatum` NAVD88,
+  `units` meters; datums are relative to `STND` (`MHHW` 2.952, `MHW` 2.943, `MSL` 2.757).
+- `predictions` with `datum=MLLW`, `hilo`, 2026-11-08..14: 14 events, one high and one low a day (first
+  `2026-11-08 03:09` H 0.464 m, last `2026-11-14 18:53` L -0.002 m); the 6-minute series has 1680 points
+  (`2026-11-08 00:00` 0.396 m). Values can be slightly negative against MLLW.
