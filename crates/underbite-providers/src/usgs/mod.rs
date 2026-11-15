@@ -42,6 +42,18 @@ impl Usgs {
         self
     }
 
+    /// `daily` requests (daily means, `limit=50000`) for the target's measurements over its
+    /// window, for the percentile fallback and for history. Parse them with [`Source::parse`];
+    /// each value is stamped at 12:00 UTC of its date and is the mean over the site's
+    /// standard-time day.
+    pub fn daily_requests(
+        &self,
+        target: &Target,
+        ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        ogc::daily_requests(target, ctx)
+    }
+
     /// The most metered requests per hour.
     #[must_use]
     pub fn with_hourly_budget(mut self, limit: u32) -> Self {

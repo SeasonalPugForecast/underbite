@@ -12,7 +12,7 @@ use underbite_core::datum::{Heights, VerticalDatum};
 use underbite_core::model::{Measurement, Turbidity, TurbidityUnit};
 use underbite_core::provenance::{Attribution, Provenance, Quality, SourceId, ValueKind};
 use underbite_core::series::{Sample, Series};
-use underbite_core::time::{UnixTime, UtcOffset, parse_rfc3339};
+use underbite_core::time::{UnixTime, UtcOffset, parse_date, parse_rfc3339};
 use underbite_core::units::{Canonical, to_canonical};
 
 use super::Usgs;
@@ -612,7 +612,7 @@ pub(super) fn parse(
     let body = check_response(request, response)?;
     match request.resource {
         Resource::UsgsLatestContinuous => parse_latest(request, body, ctx, usgs, out),
-        Resource::UsgsContinuous => parse_values(request, body, out),
+        Resource::UsgsContinuous | Resource::UsgsDaily => parse_values(request, body, out),
         other => Err(SourceError::Unsupported(format!("{other:?}"))),
     }
 }
@@ -701,11 +701,7 @@ fn read_values(request: &Request, body: &[u8]) -> Result<(&'static Param, Carry)
         if other_site || other_parameter {
             continue;
         }
-        let time = props
-            .time
-            .as_deref()
-            .and_then(parse_rfc3339)
-            .ok_or_else(|| parse_error("time of a value"))?;
+        let time = value_time(request.resource, props.time.as_deref())?;
         carry.points.extend(point(&props, p, time)?);
     }
     Ok((p, carry))
@@ -718,7 +714,86 @@ fn parse_values(request: &Request, body: &[u8], out: &mut Fragments) -> Result<(
             "no values in the window".to_string(),
         )));
     }
-    fragment(p, carry.points, &request.target, ValueKind::Observed, out)
+    let kind = if request.resource == Resource::UsgsDaily {
+        ValueKind::Computed
+    } else {
+        ValueKind::Observed
+    };
+    fragment(p, carry.points, &request.target, kind, out)
+}
+
+/// The time of a value of `resource`. A `continuous` time is an instant. A `daily` time is a
+/// calendar date, and the value is the mean over that date in the site's standard time; it is
+/// stamped nominally at 12:00 UTC of the date, which keeps the date in every US zone from UTC-4
+/// to UTC-10. Consumers use the date (`underbite_core::time::local_date` with UTC), for
+/// instance for day-of-year keys, never the instant.
+fn value_time(resource: Resource, text: Option<&str>) -> Result<UnixTime, SourceError> {
+    let text = text.ok_or_else(|| parse_error("value without a time"))?;
+    if resource == Resource::UsgsDaily {
+        let date = parse_date(text).map_err(parse_error)?;
+        Ok(UnixTime(date.days_since_epoch() * 86_400 + 12 * 3_600))
+    } else {
+        parse_rfc3339(text).ok_or_else(|| parse_error(format!("time {text:?}")))
+    }
+}
+
+/// Properties asked of `daily`.
+const DAILY_PROPERTIES: &str = "time_series_id,monitoring_location_id,parameter_code,statistic_id,time,value,unit_of_measure,approval_status,qualifier";
+
+/// Most values per `daily` page (the API's maximum): 50 years of days.
+const DAILY_LIMIT: u32 = 50_000;
+
+/// The statistic of a daily mean.
+const DAILY_MEAN: &str = "00003";
+
+/// `daily` requests for the target's measurements over its window, one per measurement, each for
+/// the parameter that best matches `target.datum`. Values are daily means, stamped nominally at
+/// 12:00 UTC of their date (see [`value_time`]).
+pub(super) fn daily_requests(
+    target: &Target,
+    ctx: &FetchContext,
+) -> Result<Vec<Request>, SourceError> {
+    let site = station_site(target)?;
+    let from = target.window.from.to_local(UtcOffset(0)).date;
+    let to = target.window.to.to_local(UtcOffset(0)).date;
+    let date =
+        |d: underbite_core::time::LocalDate| format!("{:04}-{:02}-{:02}", d.year, d.month, d.day);
+    let mut requests = Vec::new();
+    for &measurement in &target.measurements {
+        let Some(p) = candidates(measurement, target.datum).into_iter().next() else {
+            continue;
+        };
+        let url = QueryBuilder::new(&format!("{BASE}/collections/daily/items"))
+            .param("f", "json")
+            .param("monitoring_location_id", &site)
+            .param("parameter_code", p.code)
+            .param("statistic_id", DAILY_MEAN)
+            .param("datetime", format!("{}/{}", date(from), date(to)))
+            .param("skipGeometry", "true")
+            .param("sortby", "time")
+            .param("limit", DAILY_LIMIT.to_string())
+            .param("properties", DAILY_PROPERTIES)
+            .finish();
+        let mut wanted = target.clone();
+        wanted.measurements = std::iter::once(measurement).collect();
+        let carry = Carry {
+            parameter_code: p.code.to_string(),
+            points: Vec::new(),
+        };
+        requests.push(with_key(
+            Request::new(url, Resource::UsgsDaily, wanted)
+                .metered()
+                .max_age_hint(3_600)
+                .with_carry(carry.text()?),
+            ctx,
+        ));
+    }
+    if requests.is_empty() {
+        return Err(SourceError::Unsupported(
+            "no USGS parameter for the measurements".to_string(),
+        ));
+    }
+    Ok(requests)
 }
 
 /// The `next` link of a page, if it has one and it stays on the API.
@@ -760,7 +835,7 @@ pub(super) fn follow_up(
                 .map(|(id, p)| continuous_request(id, p, target, ctx))
                 .collect()
         }
-        Resource::UsgsContinuous => {
+        Resource::UsgsContinuous | Resource::UsgsDaily => {
             let Some(href) = next_link(body)? else {
                 return Ok(Vec::new());
             };
@@ -1348,6 +1423,159 @@ mod tests {
                 .unwrap(),
             Vec::new()
         );
+    }
+
+    /// Parses `file` as the answer to the daily request of `target`'s only measurement.
+    fn daily(site: &str, m: Measurement, datum: Option<VerticalDatum>, file: &str) -> Fragments {
+        let mut t = target(site, &[m]);
+        t.datum = datum;
+        let req = Usgs::default()
+            .daily_requests(&t, &ctx())
+            .unwrap()
+            .remove(0);
+        let body = fixture_bytes("usgs", file);
+        let mut out = Fragments::new();
+        Usgs::default()
+            .parse(&req, &Response::new(200, &body), &ctx(), &mut out)
+            .unwrap();
+        out
+    }
+
+    #[test]
+    fn the_daily_request_asks_for_means_up_to_fifty_thousand() {
+        let t = target("01375000", &[Measurement::Discharge]);
+        let reqs = Usgs::default().daily_requests(&t, &ctx()).unwrap();
+        assert_eq!(reqs.len(), 1);
+        assert_eq!(reqs[0].resource, Resource::UsgsDaily);
+        assert!(reqs[0].metered);
+        assert_eq!(
+            reqs[0].url,
+            "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01375000&parameter_code=00060&statistic_id=00003&datetime=2026-11-01%2F2026-11-08&skipGeometry=true&sortby=time&limit=50000&properties=time_series_id,monitoring_location_id,parameter_code,statistic_id,time,value,unit_of_measure,approval_status,qualifier"
+        );
+    }
+
+    #[test]
+    fn daily_means_are_stamped_at_noon_utc_of_their_date() {
+        let out = daily(
+            "01375000",
+            Measurement::Discharge,
+            None,
+            "usgs-daily-croton-01375000-00060-mean-2026-07-06_2026-07-08.json",
+        );
+        let s = only_series(&out, Measurement::Discharge);
+        assert_eq!(s.samples().len(), 3);
+        let utc = underbite_core::time::zone("UTC").unwrap();
+        let dates: Vec<String> = s
+            .samples()
+            .iter()
+            .map(|x| {
+                underbite_core::time::day_key(
+                    underbite_core::time::local_date(x.time, &utc).unwrap(),
+                )
+            })
+            .collect();
+        assert_eq!(dates, ["07-06", "07-07", "07-08"]);
+        assert_eq!(s.samples()[0].time.0 % 86_400, 12 * 3_600);
+        assert!((s.samples()[0].value - 1110.0 * 0.028_316_85).abs() < 0.01);
+        assert_eq!(s.provenance().kind, ValueKind::Computed);
+        insta::assert_yaml_snapshot!("daily_croton_july", summary(&out));
+    }
+
+    #[test]
+    fn a_year_of_daily_means_and_a_lake_in_ngvd29() {
+        let year = daily(
+            "01375000",
+            Measurement::Discharge,
+            None,
+            "usgs-daily-croton-01375000-00060-mean-2025-11-08_2026-11-07.json",
+        );
+        assert_eq!(
+            only_series(&year, Measurement::Discharge).samples().len(),
+            365
+        );
+        let lake = daily(
+            "01323500",
+            Measurement::LakeLevel,
+            Some(VerticalDatum::Ngvd29),
+            "usgs-daily-great-sacandaga-01323500-62614-mean-2025-11-08_2026-11-07.json",
+        );
+        let V::Heights(h) = &lake.fragments()[0].value else {
+            panic!("heights");
+        };
+        assert_eq!(h.datum, VerticalDatum::Ngvd29);
+        assert_eq!(h.series.samples().len(), 365);
+    }
+
+    #[test]
+    fn every_qualifier_combination_of_a_winter_day_maps_to_quality() {
+        let body = fixture_bytes(
+            "usgs",
+            "usgs-daily-qualifiers-ny-bbox-00060-2026-01-20.json",
+        );
+        let json: Value = serde_json::from_slice(&body).unwrap();
+        let p = spec("00060").unwrap();
+        let mut counts = std::collections::BTreeMap::new();
+        let mut missing = 0;
+        for f in json["features"].as_array().unwrap() {
+            let props: Props = serde_json::from_value(f["properties"].clone()).unwrap();
+            match point(&props, p, UnixTime(0)).unwrap() {
+                Some(pt) => *counts.entry(pt.q).or_insert(0) += 1,
+                None => missing += 1,
+            }
+        }
+        assert_eq!(missing, 9, "null values (ICE with no flow) are skipped");
+        assert_eq!(
+            counts,
+            [
+                (Quality::Provisional, 18),
+                (Quality::Approved, 81),
+                (Quality::Estimated, 182),
+                (Quality::IceAffected, 2),
+                (Quality::Flagged, 1),
+            ]
+            .into_iter()
+            .collect()
+        );
+    }
+
+    #[test]
+    fn daily_pages_follow_their_next_link() {
+        let t = target("01375000", &[Measurement::Discharge]);
+        let usgs = Usgs::default();
+        let req = usgs.daily_requests(&t, &ctx()).unwrap().remove(0);
+        let page = fixture_bytes(
+            "usgs",
+            "usgs-daily-croton-01375000-00060-paging-limit3.json",
+        );
+        let follow = usgs
+            .follow_up(&req, &Response::new(200, &page), &ctx())
+            .unwrap();
+        assert_eq!(follow.len(), 1);
+        assert_eq!(follow[0].resource, Resource::UsgsDaily);
+        assert!(follow[0].url.contains("/collections/daily/items?cursor="));
+        let mut out = Fragments::new();
+        usgs.parse(&req, &Response::new(200, &page), &ctx(), &mut out)
+            .unwrap();
+        assert_eq!(only_series(&out, Measurement::Discharge).samples().len(), 3);
+    }
+
+    /// Live checks, run by hand: the `time_series_id` filter of `continuous` and the
+    /// `X-Api-Key` header are not yet confirmed against the service.
+    #[test]
+    #[ignore = "needs the network and, for the key header, USGS_API_KEY"]
+    fn live_continuous_by_series_and_key_header() {
+        // Run by hand: send the request `continuous_request` builds for a series id taken from
+        // `latest-continuous` of USGS-01375000, with and without the `X-Api-Key` header, and
+        // check for HTTP 200 and the 15-minute values of one series.
+        let t = target("01375000", &[Measurement::Discharge]);
+        let req = continuous_request(
+            "e32aab5ccc774c11b172102b97abc0d8",
+            spec("00060").unwrap(),
+            &t,
+            &ctx(),
+        )
+        .unwrap();
+        assert!(req.url.contains("time_series_id="));
     }
 
     #[test]
