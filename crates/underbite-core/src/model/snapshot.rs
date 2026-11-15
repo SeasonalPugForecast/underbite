@@ -290,6 +290,8 @@ pub(crate) mod testdata {
             basis,
             sample_count: 93,
             approved_only: true,
+            datum: None,
+            provenance: Some(prov(SourceId::USGS, ValueKind::Computed)),
         }
     }
 
@@ -370,9 +372,10 @@ pub(crate) mod testdata {
                 }),
             }),
             discharge_percentile_for_date: Some(percentile(PercentileBasis::StatisticsApi)),
-            level_percentile_for_date: Some(percentile(PercentileBasis::ComputedFromDaily {
-                years: 16,
-            })),
+            level_percentile_for_date: Some(Percentile {
+                datum: Some(VerticalDatum::Ngvd29),
+                ..percentile(PercentileBasis::ComputedFromDaily { years: 16 })
+            }),
         }
     }
 
@@ -489,6 +492,7 @@ pub(crate) mod testdata {
                     day: 15,
                 },
                 sun: SunTimes {
+                    polar: None,
                     sunrise: Some(at(20)),
                     sunset: Some(at(560)),
                     civil_dawn: Some(at(-10)),

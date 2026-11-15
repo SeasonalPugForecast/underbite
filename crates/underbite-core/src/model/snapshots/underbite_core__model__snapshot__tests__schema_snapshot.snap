@@ -1793,6 +1793,17 @@ expression: schemas
               }
             ]
           },
+          "datum": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/VerticalDatum"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vertical datum of the values; set for level percentiles, absent for discharge."
+          },
           "day_of_year": {
             "description": "Day of year as `MM-DD`.",
             "type": "string"
@@ -1817,6 +1828,17 @@ expression: schemas
               "number",
               "null"
             ]
+          },
+          "provenance": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Provenance"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The station and source the normals came from."
           },
           "rank": {
             "description": "Percentile rank of `value` (0 to 100), interpolated between the thresholds.",
@@ -2028,6 +2050,21 @@ expression: schemas
           "pressure_hpa"
         ],
         "type": "object"
+      },
+      "Polar": {
+        "description": "Why a day has no sunrise or sunset.",
+        "oneOf": [
+          {
+            "const": "always_up",
+            "description": "The sun stays up all day (midnight sun).",
+            "type": "string"
+          },
+          {
+            "const": "always_down",
+            "description": "The sun stays down all day (polar night).",
+            "type": "string"
+          }
+        ]
       },
       "PressureGrid": {
         "description": "One model's sea-level pressure on a regular grid around the place.\n\nPoints are stored row by row: the point at `row` (an index into `lats`)\nand `col` (an index into `lons`) is `row * lons.len() + col`.",
@@ -3066,6 +3103,17 @@ expression: schemas
                 "type": "null"
               }
             ]
+          },
+          "polar": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Polar"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set on days with no sunrise or sunset."
           },
           "sunrise": {
             "anyOf": [

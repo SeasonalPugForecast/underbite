@@ -5,9 +5,22 @@ use serde::{Deserialize, Serialize};
 
 use crate::time::{LocalDate, UnixTime};
 
+/// Why a day has no sunrise or sunset.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum Polar {
+    /// The sun stays up all day (midnight sun).
+    AlwaysUp,
+    /// The sun stays down all day (polar night).
+    AlwaysDown,
+}
+
 /// Sun times on one local day. Each is absent when the sun never crosses that altitude.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct SunTimes {
+    /// Set on days with no sunrise or sunset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub polar: Option<Polar>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sunrise: Option<UnixTime>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -127,5 +140,16 @@ mod tests {
             serde_json::to_string(&SkyConditions::default()).unwrap(),
             "{}"
         );
+    }
+
+    #[test]
+    fn polar_day_round_trips() {
+        let t = SunTimes {
+            polar: Some(Polar::AlwaysDown),
+            ..SunTimes::default()
+        };
+        let json = serde_json::to_string(&t).unwrap();
+        assert_eq!(json, "{\"polar\":\"always_down\"}");
+        assert_eq!(serde_json::from_str::<SunTimes>(&json).unwrap(), t);
     }
 }

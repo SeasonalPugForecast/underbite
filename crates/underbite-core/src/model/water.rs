@@ -3,7 +3,8 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::datum::{Height, Heights};
+use crate::datum::{Height, Heights, VerticalDatum};
+use crate::provenance::Provenance;
 use crate::series::Series;
 
 /// The unit a turbidity was measured in. The units are different methods and never convert.
@@ -103,6 +104,12 @@ pub struct Percentile {
     /// Number of years in the sample.
     pub sample_count: u32,
     pub approved_only: bool,
+    /// Vertical datum of the values; set for level percentiles, absent for discharge.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub datum: Option<VerticalDatum>,
+    /// The station and source the normals came from.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub provenance: Option<Provenance>,
 }
 
 /// Water conditions at the spot's stations. Every series carries its own provenance.
