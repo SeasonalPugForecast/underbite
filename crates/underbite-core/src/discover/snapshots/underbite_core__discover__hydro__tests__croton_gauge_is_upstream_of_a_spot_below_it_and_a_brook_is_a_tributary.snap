@@ -1,0 +1,24 @@
+---
+source: crates/underbite-core/src/discover/hydro.rs
+expression: snapshot
+---
+usgs/USGS-01374390:
+  relation: nearby
+  along_river_m: ~
+  reasons:
+    - reason: not_on_mapped_stream
+      subject: station
+usgs/USGS-0137499455:
+  relation: nearby
+  along_river_m: ~
+  reasons:
+    - reason: tributary
+      on_tributary: station
+      tributary: Purdy Brook
+      river: Croton River
+usgs/USGS-01375000:
+  relation: upstream
+  along_river_m: 997
+  reasons:
+    - reason: same_river
+      name: Croton River
