@@ -1,0 +1,19 @@
+---
+source: crates/underbite-providers/src/usgs/ogc.rs
+expression: summary(&out)
+---
+credits:
+  - Provisional data from the U.S. Geological Survey are subject to revision
+fragments:
+  - datum: Navd88
+    kind: observed
+    last:
+      quality: provisional
+      time: 1794144600
+      value: "0.2438"
+    measurement: Tide
+    observed_at: 1794144600
+    quality: provisional
+    samples: 1
+    shape: heights
+    station: "01372058"

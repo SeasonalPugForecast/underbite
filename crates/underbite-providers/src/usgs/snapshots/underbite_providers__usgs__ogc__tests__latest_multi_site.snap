@@ -1,0 +1,61 @@
+---
+source: crates/underbite-providers/src/usgs/ogc.rs
+expression: "serde_json::json!([summary(&croton), summary(&lake), summary(&tide)])"
+---
+- credits:
+    - Provisional data from the U.S. Geological Survey are subject to revision
+  fragments:
+    - datum: ~
+      kind: observed
+      last:
+        quality: provisional
+        time: 1794145500
+        value: "0.3511"
+      measurement: Discharge
+      observed_at: 1794145500
+      quality: provisional
+      samples: 1
+      shape: series
+      station: USGS-01375000
+    - datum: Gauge
+      kind: observed
+      last:
+        quality: provisional
+        time: 1794145500
+        value: "0.3353"
+      measurement: GageHeight
+      observed_at: 1794145500
+      quality: provisional
+      samples: 1
+      shape: heights
+      station: USGS-01375000
+- credits:
+    - Provisional data from the U.S. Geological Survey are subject to revision
+  fragments:
+    - datum: Ngvd29
+      kind: observed
+      last:
+        quality: provisional
+        time: 1794144600
+        value: "230.2733"
+      measurement: LakeLevel
+      observed_at: 1794144600
+      quality: provisional
+      samples: 1
+      shape: heights
+      station: "01323500"
+- credits:
+    - Provisional data from the U.S. Geological Survey are subject to revision
+  fragments:
+    - datum: Navd88
+      kind: observed
+      last:
+        quality: provisional
+        time: 1794144600
+        value: "0.2438"
+      measurement: Tide
+      observed_at: 1794144600
+      quality: provisional
+      samples: 1
+      shape: heights
+      station: "01372058"
