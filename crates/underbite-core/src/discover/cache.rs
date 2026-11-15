@@ -2,16 +2,24 @@
 //!
 //! [`StationChoices`] are a spot's pins and exclusions. [`ObservedCoverage`] holds what
 //! fetches found at stations (NDBC columns that hold values, USGS series that are live), merged
-//! in after each fetch.
+//! in after each fetch. [`DiscoveryCache`] keeps the [`Ranking`] of each spot until the spot
+//! moves, its choices, chains or limits change, the observed coverage changes, or it gets older
+//! than the cache's age limit. New station lists or hydrography call for
+//! [`DiscoveryCache::invalidate`].
 
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 
-use super::rank::StationKey;
+use super::rank::{ChainSpec, DiscoveryInput, Ranking, StationKey, distance_m, rank};
 use crate::model::{Coverage, Measurement};
 use crate::provenance::SourceId;
 use crate::time::UnixTime;
+
+/// How far a spot may move before its stations are ranked again, metres.
+pub const MOVE_TOLERANCE_M: f64 = 10.0;
+/// Age after which a spot's stations are ranked again, seconds.
+pub const DEFAULT_CACHE_AGE_S: i64 = 6 * 3_600;
 
 /// A spot's pinned and excluded stations. An exclusion wins over a pin.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -134,9 +142,96 @@ impl ObservedCoverage {
     }
 }
 
+/// Why a cached ranking cannot be used.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "why", rename_all = "snake_case")]
+pub enum Invalid {
+    Missing,
+    Moved { distance_m: f64 },
+    ChoicesChanged,
+    ChainsChanged,
+    CoverageChanged,
+    Expired { age_s: i64 },
+}
+
+/// Rankings per spot id.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct DiscoveryCache {
+    /// Age after which a ranking is redone, seconds.
+    pub max_age_s: i64,
+    spots: BTreeMap<String, Ranking>,
+}
+
+impl Default for DiscoveryCache {
+    fn default() -> Self {
+        Self::new(DEFAULT_CACHE_AGE_S)
+    }
+}
+
+fn chains_match(ranking: &Ranking, chains: &BTreeMap<Measurement, ChainSpec>) -> bool {
+    ranking.measurements.len() == chains.len()
+        && ranking
+            .measurements
+            .iter()
+            .all(|(m, r)| chains.get(m) == Some(&r.chain))
+}
+
+impl DiscoveryCache {
+    /// An empty cache whose rankings last `max_age_s`.
+    pub fn new(max_age_s: i64) -> Self {
+        Self {
+            max_age_s,
+            spots: BTreeMap::new(),
+        }
+    }
+
+    /// The cached ranking of `spot_id` if it still fits `input`.
+    pub fn check(&self, spot_id: &str, input: &DiscoveryInput) -> Result<&Ranking, Invalid> {
+        let ranking = self.spots.get(spot_id).ok_or(Invalid::Missing)?;
+        let moved = distance_m(
+            ranking.latitude,
+            ranking.longitude,
+            input.latitude,
+            input.longitude,
+        );
+        if moved > MOVE_TOLERANCE_M {
+            return Err(Invalid::Moved { distance_m: moved });
+        }
+        if ranking.choices != input.choices {
+            return Err(Invalid::ChoicesChanged);
+        }
+        if !chains_match(ranking, &input.chains) {
+            return Err(Invalid::ChainsChanged);
+        }
+        if ranking.coverage_revision != input.observed.revision() {
+            return Err(Invalid::CoverageChanged);
+        }
+        let age_s = input.now.0 - ranking.at.0;
+        if !(0..=self.max_age_s).contains(&age_s) {
+            return Err(Invalid::Expired { age_s });
+        }
+        Ok(ranking)
+    }
+
+    /// The ranking of `spot_id` for `input`, from the cache when it still fits.
+    pub fn ranking(&mut self, spot_id: &str, input: &DiscoveryInput) -> &Ranking {
+        if self.check(spot_id, input).is_err() {
+            self.spots.insert(spot_id.to_string(), rank(input));
+        }
+        // INVARIANT: the entry was either valid or inserted just above.
+        &self.spots[spot_id]
+    }
+
+    /// Drops the ranking of `spot_id`, after new station lists or hydrography.
+    pub fn invalidate(&mut self, spot_id: &str) {
+        self.spots.remove(spot_id);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::discover::rank::Limits;
 
     fn key(id: &str) -> StationKey {
         StationKey::new(SourceId::NDBC, id)
@@ -154,6 +249,22 @@ mod tests {
                 primary: true,
             },
         )])
+    }
+
+    fn input() -> DiscoveryInput {
+        DiscoveryInput {
+            latitude: 40.7033,
+            longitude: -74.0170,
+            now: UnixTime(1_000_000),
+            chains: BTreeMap::from([(
+                Measurement::Tide,
+                ChainSpec {
+                    sources: vec![SourceId::COOPS],
+                    limits: Limits::default(),
+                },
+            )]),
+            ..DiscoveryInput::default()
+        }
     }
 
     #[test]
@@ -211,5 +322,83 @@ mod tests {
         assert_eq!(o.revision(), 3);
         o.prune(UnixTime(1_000), 500);
         assert_eq!(o.revision(), 3);
+    }
+
+    #[test]
+    fn cached_ranking_is_reused_until_an_input_changes() {
+        let mut cache = DiscoveryCache::new(3_600);
+        let base = input();
+        assert_eq!(cache.check("battery", &base), Err(Invalid::Missing));
+        let at = cache.ranking("battery", &base).at;
+        assert_eq!(at, base.now);
+        assert!(cache.check("battery", &base).is_ok());
+
+        let mut later = base.clone();
+        later.now = UnixTime(base.now.0 + 3_600);
+        assert!(cache.check("battery", &later).is_ok());
+        later.now = UnixTime(base.now.0 + 3_601);
+        assert_eq!(
+            cache.check("battery", &later),
+            Err(Invalid::Expired { age_s: 3_601 })
+        );
+
+        let mut nudged = base.clone();
+        nudged.latitude += 0.00005; // about 5.6 m
+        assert!(cache.check("battery", &nudged).is_ok());
+        nudged.latitude += 0.001;
+        assert!(matches!(
+            cache.check("battery", &nudged),
+            Err(Invalid::Moved { distance_m }) if distance_m > 100.0
+        ));
+
+        let mut pinned = base.clone();
+        pinned
+            .choices
+            .pin(StationKey::new(SourceId::COOPS, "8518750"));
+        assert_eq!(
+            cache.check("battery", &pinned),
+            Err(Invalid::ChoicesChanged)
+        );
+
+        let mut limits = base.clone();
+        limits.chains.get_mut(&Measurement::Tide).unwrap().limits =
+            Limits::from_config(Some(5.0), None);
+        assert_eq!(cache.check("battery", &limits), Err(Invalid::ChainsChanged));
+        let mut fewer = base.clone();
+        fewer.chains.clear();
+        assert_eq!(cache.check("battery", &fewer), Err(Invalid::ChainsChanged));
+
+        let mut checked_again = base.clone();
+        checked_again
+            .observed
+            .merge(&key("44025"), &checked(), &found(1), UnixTime(1));
+        assert_eq!(
+            cache.check("battery", &checked_again),
+            Err(Invalid::CoverageChanged)
+        );
+        assert_eq!(
+            cache.ranking("battery", &checked_again).coverage_revision,
+            1
+        );
+        assert!(cache.check("battery", &checked_again).is_ok());
+
+        cache.invalidate("battery");
+        assert_eq!(cache.check("battery", &base), Err(Invalid::Missing));
+    }
+
+    #[test]
+    fn cache_round_trips_through_json() {
+        let mut cache = DiscoveryCache::default();
+        let mut base = input();
+        base.choices.exclude(key("44025"));
+        base.observed
+            .merge(&key("44025"), &checked(), &found(1), UnixTime(1));
+        cache.ranking("battery", &base);
+        let json = serde_json::to_string(&cache).unwrap();
+        let back: DiscoveryCache = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, cache);
+        let observed: ObservedCoverage =
+            serde_json::from_str(&serde_json::to_string(&base.observed).unwrap()).unwrap();
+        assert_eq!(observed, base.observed);
     }
 }
