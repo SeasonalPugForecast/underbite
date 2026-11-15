@@ -444,8 +444,8 @@ pub fn elongation_deg(t: UnixTime) -> f64 {
     rev(moon.lon_deg - sun_lon)
 }
 
-/// The phase angle (Sun–Moon–Earth), degrees, Meeus 48.2 and 48.3.
-fn phase_angle_deg(t: f64) -> f64 {
+/// The astronomical phase angle (Sun–Moon–Earth), degrees, 0 at full moon, Meeus 48.2 and 48.3.
+fn phase_angle_sme_deg(t: f64) -> f64 {
     let (moon, sun_lon, sun_km) = moon_and_sun(t);
     let cos_psi = cos_d(moon.lat_deg) * cos_d(moon.lon_deg - sun_lon);
     let sin_psi = (1.0 - cos_psi * cos_psi).max(0.0).sqrt();
@@ -456,7 +456,7 @@ fn phase_angle_deg(t: f64) -> f64 {
 
 /// The illuminated fraction of the moon's disc at `t`, 0 to 1 (Meeus 48.1).
 pub fn illuminated_fraction(t: UnixTime) -> f64 {
-    let i = phase_angle_deg(centuries_tt(julian_day(t)));
+    let i = phase_angle_sme_deg(centuries_tt(julian_day(t)));
     f64::midpoint(1.0, cos_d(i))
 }
 
@@ -527,7 +527,7 @@ pub fn moon_day(lat: f64, lon: f64, from: UnixTime, to: UnixTime) -> MoonDay {
         set: first(MoonEventKind::Set),
         upper_transit: first(MoonEventKind::UpperTransit),
         lower_transit: first(MoonEventKind::LowerTransit),
-        phase_angle_deg: elongation as f32,
+        elongation_deg: elongation as f32,
         illuminated_fraction: illuminated_fraction(middle) as f32,
         phase,
         nearest_principal,
@@ -770,7 +770,7 @@ mod tests {
         let parallax = (EARTH_RADIUS_KM / e.distance_km).asin().to_degrees();
         assert!((parallax - 0.991_990).abs() < 1e-6, "{parallax}");
         // Example 48.a: phase angle 69.0756°, here with the moon's apparent longitude.
-        let i = phase_angle_deg(t);
+        let i = phase_angle_sme_deg(t);
         assert!((i - 69.075_6).abs() < 0.01, "{i}");
     }
 

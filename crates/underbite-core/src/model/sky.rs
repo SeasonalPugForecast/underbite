@@ -83,7 +83,7 @@ pub struct MoonDay {
     pub lower_transit: Option<UnixTime>,
     /// The moon's apparent longitude minus the sun's, 0 to 360 degrees: 0 new, 90 first quarter,
     /// 180 full, 270 last quarter, so it also tells waxing from waning.
-    pub phase_angle_deg: f32,
+    pub elongation_deg: f32,
     /// Illuminated fraction, 0 to 1.
     pub illuminated_fraction: f32,
     pub phase: MoonPhase,

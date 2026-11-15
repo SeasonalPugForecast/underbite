@@ -507,7 +507,7 @@ pub(crate) mod testdata {
                     set: None,
                     upper_transit: Some(at(400)),
                     lower_transit: Some(at(800)),
-                    phase_angle_deg: 120.0,
+                    elongation_deg: 120.0,
                     illuminated_fraction: 0.75,
                     phase: MoonPhase::WaxingGibbous,
                     nearest_principal: Some(PrincipalPhaseTime {
