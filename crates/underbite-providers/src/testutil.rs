@@ -30,9 +30,9 @@ mod tests {
     #[test]
     fn loads_a_recorded_coops_fixture() {
         let text = fixture_str("coops", "coops-8518750-hilo-2026-11-08.json");
-        assert!(text.trim_start().starts_with('{'));
-        assert!(text.contains("\"predictions\""));
-        assert_eq!(text.matches("\"t\":").count(), 27);
+        let json: serde_json::Value = serde_json::from_str(&text).expect("valid JSON");
+        let predictions = json["predictions"].as_array().expect("a predictions array");
+        assert_eq!(predictions.len(), 27);
         assert_eq!(
             fixture_bytes("coops", "coops-8518750-hilo-2026-11-08.json"),
             text.as_bytes()
