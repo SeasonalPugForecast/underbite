@@ -1,0 +1,21 @@
+---
+source: crates/underbite-providers/src/source.rs
+expression: results
+---
+[
+    "coops-error-bad-bin.json (400): Status { status: 400, message: Some(\"Available bin number of NYH1927: 13, 8, 2,\") } => Other: HTTP 400: Available bin number of NYH1927: 13, 8, 2,",
+    "coops-error-end-before-begin.json (400): Status { status: 400, message: Some(\"Wrong Date: The requested begin/end date or range are not valid.  Wrong Date: The end date should be greater than the begin date\") } => Other: HTTP 400: Wrong Date: The requested begin/end date or range are not valid.  Wrong Date: The end date should be greater than the begin date",
+    "coops-error-no-datum.json (400): Status { status: 400, message: Some(\"Wrong Datum: Datum cannot be null or empty  ***station=8518750\") } => Other: HTTP 400: Wrong Datum: Datum cannot be null or empty  ***station=8518750",
+    "coops-error-no-product.txt (400): Status { status: 400, message: Some(\"Wrong Product : Product cannot be null or empty\") } => Other: HTTP 400: Wrong Product : Product cannot be null or empty",
+    "coops-error-range-limit-hilo.json (400): Status { status: 400, message: Some(\"Wrong Date: The requested begin/end date or range are not valid.  Range Limit Exceeded: The size limit for data retrieval for this product is 3655 days\") } => Other: HTTP 400: Wrong Date: The requested begin/end date or range are not valid.  Range Limit Exceeded: The size limit for data retrieval for this product is 3655 days",
+    "coops-error-nodata-currents-n03020.json (200): NoData(Some(\"No data was found. This product may not be offered at this station at the requested time.\")) => NoData: no data: No data was found. This product may not be offered at this station at the requested time.",
+    "coops-error-subordinate-interval-6.json (200): NoData(Some(\"No Predictions data was found. Please make sure the Datum input is valid.\")) => NoData: no data: No Predictions data was found. Please make sure the Datum input is valid.",
+    "coops-8518750-wind-2026-11-07-error-nodata.json (200): NoData(Some(\"No data was found. This product may not be offered at this station at the requested time.\")) => NoData: no data: No data was found. This product may not be offered at this station at the requested time.",
+    "usgs-error-limit-exceeded.json (400): Status { status: 400, message: Some(\"Limit of 50000 exceeded\") } => Other: HTTP 400: Limit of 50000 exceeded",
+    "marine-error-forecast-days.json (400): Status { status: 400, message: Some(\"Forecast days is invalid. Allowed range 0 to 16. Given 20.\") } => Other: HTTP 400: Forecast days is invalid. Allowed range 0 to 16. Given 20.",
+    "marine-error-invalid-variable.json (400): Status { status: 400, message: Some(\"Invalid value: Cannot initialize SurfacePressureAndHeightVariable<VariableAndPreviousDay, VariableOrSpread<ForecastPressureVariable>, ForecastHeightVariable> from invalid String value bogus\") } => Other: HTTP 400: Invalid value: Cannot initialize SurfacePressureAndHeightVariable<VariableAndPreviousDay, VariableOrSpread<ForecastPressureVariable>, ForecastHeightVariable> from invalid String value bogus",
+    "points-45.0_-30.0-invalid-point.problem.json (404): NotFound(Some(\"Unable to provide data for requested point 45,-30\")) => NotFound: not found: Unable to provide data for requested point 45,-30",
+    "zone-forecast-LEZ146-not-found.problem.json (404): NotFound(Some(\"Not Found\")) => NotFound: not found: Not Found",
+    "zone-forecast-ANZ820-offshore-unsupported.problem.json (404): NotFound(Some(\"Forecasts for marine areas are not yet supported by this API.\")) => NotFound: not found: Forecasts for marine areas are not yet supported by this API.",
+    "ndbc-44025.ocean-404.html (404): NotFound(None) => NotFound: not found",
+]
