@@ -1,0 +1,53 @@
+---
+source: crates/underbite-providers/src/nws_marine/products.rs
+expression: f
+---
+{
+  "id": "ANZ820",
+  "name": "Hudson Canyon to Baltimore Canyon to 1000 FM",
+  "kind": "offshore",
+  "issued": 1794126300,
+  "product": "off",
+  "periods": [
+    {
+      "name": "Today",
+      "text": "W to NW winds 20 to 30 kt, becoming W 15 to 20 kt. Seas 6 to 10 ft."
+    },
+    {
+      "name": "Tonight",
+      "text": "W winds 20 to 25 kt. Seas 5 to 9 ft."
+    },
+    {
+      "name": "Mon",
+      "text": "W to NW winds 20 to 30 kt. Seas 6 to 9 ft."
+    },
+    {
+      "name": "Mon Night",
+      "text": "NW winds 20 to 30 kt, diminishing to 15 to 20 kt. Seas 5 to 9 ft."
+    },
+    {
+      "name": "Tue",
+      "text": "W to NW winds 15 to 20 kt. Seas 4 to 5 ft."
+    },
+    {
+      "name": "Tue Night",
+      "text": "W to NW winds 15 to 25 kt. Seas 4 to 7 ft."
+    },
+    {
+      "name": "Wed",
+      "text": "NW winds 10 to 15 kt, diminishing to 5 to 10 kt. Seas 3 to 5 ft."
+    },
+    {
+      "name": "Wed Night",
+      "text": "N winds less than 5 kt, becoming E. Seas 3 to 4 ft."
+    },
+    {
+      "name": "Thu",
+      "text": "E winds 5 to 10 kt, becoming SE 10 to 15 kt. Seas 3 to 4 ft."
+    },
+    {
+      "name": "Thu Night",
+      "text": "E to NE winds 10 to 20 kt, becoming N to NW 15 to 20 kt. Seas 3 to 5 ft."
+    }
+  ]
+}

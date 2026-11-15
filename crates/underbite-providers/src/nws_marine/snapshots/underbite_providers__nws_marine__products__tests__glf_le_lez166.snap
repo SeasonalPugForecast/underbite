@@ -1,0 +1,45 @@
+---
+source: crates/underbite-providers/src/nws_marine/products.rs
+expression: f
+---
+{
+  "id": "LEZ166",
+  "name": "Avon Point to Willowick OH beyond 5 nm",
+  "kind": "great_lakes_open",
+  "issued": 1794772380,
+  "product": "glf",
+  "periods": [
+    {
+      "name": "Tonight",
+      "text": "Northwest winds 5 to 15 knots. Waves 1 to 3 feet."
+    },
+    {
+      "name": "Monday",
+      "text": "West winds 5 to 15 knots. Waves 2 feet or less."
+    },
+    {
+      "name": "Monday Night",
+      "text": "West winds 10 to 15 knots becoming southwest. Waves 1 to 3 feet."
+    },
+    {
+      "name": "Tuesday",
+      "text": "Southwest winds 10 to 15 knots. Waves 2 to 4 feet."
+    },
+    {
+      "name": "Tuesday Night",
+      "text": "Southwest winds 10 to 15 knots. Waves 2 to 4 feet subsiding to 1 to 3 feet."
+    },
+    {
+      "name": "Wednesday",
+      "text": "Southwest winds 10 to 15 knots increasing to 15 to 20 knots. Waves 1 to 3 feet building to 2 to 4 feet."
+    },
+    {
+      "name": "Thursday",
+      "text": "Southwest winds 15 to 20 knots. Waves 2 to 4 feet building to 3 to 5 feet."
+    },
+    {
+      "name": "Friday",
+      "text": "West winds 5 to 15 knots becoming south 10 knots or less. Waves 2 to 4 feet subsiding to 1 foot or less."
+    }
+  ]
+}

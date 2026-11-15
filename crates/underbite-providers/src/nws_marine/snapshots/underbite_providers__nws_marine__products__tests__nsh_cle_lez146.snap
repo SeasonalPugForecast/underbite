@@ -1,0 +1,29 @@
+---
+source: crates/underbite-providers/src/nws_marine/products.rs
+expression: f
+---
+{
+  "id": "LEZ146",
+  "name": "Avon Point to Willowick OH",
+  "kind": "great_lakes_nearshore",
+  "issued": 1794123360,
+  "product": "nsh",
+  "periods": [
+    {
+      "name": "Today",
+      "text": "Southwest winds 15 to 25 knots becoming west to 30 knots. Sunny. Waves 3 to 6 feet building to 5 to 9 feet. Waves occasionally around 11 feet."
+    },
+    {
+      "name": "Tonight",
+      "text": "West winds to 30 knots becoming northwest. A slight chance of rain in the evening. Waves 6 to 9 feet. Waves occasionally around 11 feet."
+    },
+    {
+      "name": "Monday",
+      "text": "Northwest winds to 30 knots becoming west and diminishing to 10 to 15 knots in the afternoon. Mostly cloudy. Waves 5 to 8 feet subsiding to 2 to 4 feet. Waves occasionally around 10 feet."
+    },
+    {
+      "name": "Monday Night",
+      "text": "West winds 10 to 15 knots becoming southwest 15 to 20 knots. Mostly cloudy in the evening, then becoming partly cloudy. Waves 1 to 3 feet building to 2 to 4 feet.\nSee Lake Erie open lakes forecast for Tuesday through Thursday.\nThe water temperature off Toledo is 58 degrees, off Cleveland 61 degrees, and off Erie 59 degrees."
+    }
+  ]
+}

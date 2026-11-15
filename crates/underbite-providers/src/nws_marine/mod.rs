@@ -48,9 +48,10 @@ const GEO_JSON: &str = "application/geo+json";
 const LD_JSON: &str = "application/ld+json";
 
 /// The follow-ups that read the text products of a zone with no forecast endpoint: Great Lakes
-/// and offshore zones. None yet.
-pub fn product_requests(_zone: &ZoneTarget, _target: &Target, _ctx: &FetchContext) -> Vec<Request> {
-    Vec::new()
+/// and offshore zones: the text product that holds the zone's forecast, or none when no product
+/// is known for the zone.
+pub fn product_requests(zone: &ZoneTarget, target: &Target, ctx: &FetchContext) -> Vec<Request> {
+    products::requests(zone, target, ctx)
 }
 
 impl Source for NwsMarine {
@@ -188,7 +189,7 @@ impl Source for NwsMarine {
         &self,
         request: &Request,
         response: &Response<'_>,
-        _ctx: &FetchContext,
+        ctx: &FetchContext,
         out: &mut Fragments,
     ) -> Result<(), SourceError> {
         // A zone without a forecast endpoint answers 404 "Marine Forecast Not Supported" (or a
@@ -206,6 +207,16 @@ impl Source for NwsMarine {
                     return Err(SourceError::Unsupported("forecast without a zone".into()));
                 };
                 let forecast = zones::parse_forecast(body, zone)?;
+                out.push(
+                    Measurement::MarineForecast,
+                    FragmentValue::ZoneForecast(forecast),
+                )
+            }
+            Resource::NwsProduct => {
+                let Place::Zone(zone) = &request.target.place else {
+                    return Err(SourceError::Unsupported("product without a zone".into()));
+                };
+                let forecast = products::parse_forecast(body, zone, ctx.now)?;
                 out.push(
                     Measurement::MarineForecast,
                     FragmentValue::ZoneForecast(forecast),
@@ -328,23 +339,27 @@ mod tests {
     }
 
     #[test]
-    fn nws_marine_lake_and_offshore_zones_ask_only_for_alerts() {
-        for (point, zones, id) in [
+    fn nws_marine_lake_and_offshore_zones_ask_for_their_text_product_and_alerts() {
+        for (point, zones, id, product) in [
             (
                 "points-41.55_-81.72.geo.json",
                 "zones-point-41.55_-81.72.geo.json",
                 "LEZ146",
+                "https://api.weather.gov/products/types/NSH/locations/CLE/latest",
             ),
             (
                 "points-39.5_-72.0-offshore.geo.json",
                 "zones-point-39.5_-72.0-offshore.geo.json",
                 "ANZ815",
+                "https://api.weather.gov/products/types/OFF/locations/NT1/latest",
             ),
         ] {
             let next = lookup(point, zones);
-            assert_eq!(next.len(), 1, "{id}");
-            assert_eq!(next[0].resource, Resource::NwsAlerts);
-            assert!(next[0].url.ends_with(id));
+            assert_eq!(next.len(), 2, "{id}");
+            assert_eq!(next[0].resource, Resource::NwsProduct);
+            assert_eq!(next[0].url, product);
+            assert_eq!(next[1].resource, Resource::NwsAlerts);
+            assert!(next[1].url.ends_with(id));
         }
     }
 
