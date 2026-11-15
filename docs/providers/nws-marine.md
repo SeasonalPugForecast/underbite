@@ -268,3 +268,54 @@ VTEC code `GL.W`, which is not confirmed by a live alert).
 - 40.25, -73.16: zone ANZ383 (coastal, 20 to 60 NM); no offshore zone at this point.
 - Lake Erie off Cleveland: zone LEZ146 (nearshore, WFO CLE), LEZ166 (beyond 5 NM); zone forecast is a
   404 for both, and the `NSH` product is used.
+
+## Addendum 2026-11-15: open-lake forecasts (GLF)
+
+Verified with `curl` against `https://api.weather.gov` with `User-Agent: underbite-dev (contact via repository)`.
+
+- Product: `GLF`, "Great Lakes Forecast", titled "Open Lake Forecast for Lake Erie" and described as the
+  forecast "for waters beyond five nautical miles of shore". It complements `NSH` (nearshore, out to 5 NM).
+- Locations: `/products/types/GLF/locations` lists `LE LH LM LO LS SC SL` (Erie, Huron, Michigan, Ontario,
+  Superior, St. Clair, St. Lawrence). The listing carries names as `null`.
+- Latest: `/products/types/GLF/locations/{code}/latest` returns the full text in `productText` (JSON-LD,
+  fields `id`, `wmoCollectiveId`, `issuingOffice`, `issuanceTime`, `productCode`, `productName`). The
+  response is HTTP 200 with `cache-control: public, max-age=60`; no rate-limit headers were present.
+- `LE`: issued by `KCLE` (Cleveland) under WMO `FZUS61`, about every 6 hours (observed 253 PM EST).
+  `LO` is issued by `KBUF` (Buffalo), also `FZUS61`. The location code is a Great Lake, not an office; the
+  `LE` product is not a per-office product, so Lake Erie's open-lake zones from Buffalo (LEZ061) and
+  Cleveland are both inside the one `LE` product.
+- Layout: a header (`FZUS61 KCLE 151953`, `GLFLE`), a title, issue time, a `.SYNOPSIS...` paragraph, then
+  blocks that each start with a UGC line followed by zone descriptions (wrapped, joined by `-`), the issue
+  time line, the periods and `$$`. UGC lines use the NSH grammar: ids separated by `-`, `>` ranges, then
+  a `DDHHMM` expiry: `LEZ162-163-160315-`, `LEZ164>168-160315-`, `LEZ061-169-160315-`, `LEZ161-160315-`.
+- Zone mapping on 2026-11-15: `LEZ162` Detroit River Lt. to Maumee Bay to Reno Beach; `LEZ163` Reno Beach to
+  The Islands; `LEZ164>168` The Islands to Vermilion, Vermilion to Avon Point, Avon Point to Willowick,
+  Willowick to Geneva-on-the-Lake, Geneva-on-the-Lake to Conneaut (so **LEZ166 is Avon Point to Willowick,
+  beyond 5 NM**, inside the `LEZ164>168` range); `LEZ061` Ripley to Buffalo; `LEZ169` Conneaut to Ripley;
+  `LEZ161` is a MAFOR (marine forecast code) block, not a normal forecast. Zone descriptions are hard
+  wrapped, so names must be rebuilt from lines up to the issue-time line. The nearshore `LEZ142` to
+  `LEZ149` stay in `NSH` `CLE`; the Lake Erie zones from `LEZ141` upward are not all in one product.
+- Periods: `.TONIGHT...`, `.MONDAY...`, `.MONDAY NIGHT...` up to eight periods, same dot-prefixed layout as
+  NSH, wrapped at about 65 columns. Text is "{direction} winds {n} to {m} knots{ becoming ...}. Waves {n} to
+  {m} feet." (also "N feet or less", "around N knots", "building to", "subsiding to", "increasing to").
+  Unlike NSH, there is no `Waves ... occasional` clause in the sample and wave height is the significant
+  wave height, with the occasional height defined in the preamble only. Units are knots and feet, times are
+  local (EST here, shown in the header lines).
+- Which product answers a given zone: query `/zones/coastal/{zone}` or `/points`; a LEZ zone numbered
+  from 142 to 149 maps to `NSH` and 160 to 169 to `GLF`, with `LEZ061` and `LOZ06x` open-lake zones in the
+  same GLF text. The numbering rule is inferred from one product per lake and is **unverified** for Huron,
+  Michigan, Superior and St. Clair (`LH LM LS SC SL` were not fetched).
+- `LO` (Lake Ontario) UGC lines: `LOZ062-160400-`, `LOZ063>065-160400-`, `LOZ061-160400-`; same layout.
+
+### Live Gale Warning payload
+
+`/alerts/active?zone=GMZ250&event=Gale%20Warning` returned one alert (event `Gale Warning`, severity
+`Moderate`, urgency `Expected`, `geocode.UGC` of four GMZ zones, `VTEC` `/O.CON.KCRP.GL.W.0007.../`, `eventCode.NationalWeatherService` `GLW`). It has the same shape as the Small Craft Advisory
+payload recorded earlier. The unfiltered `/alerts/active?event=Gale%20Warning` response was about 480 KB
+(125 alerts), so the app must always filter by zone. Alert `expires` can be earlier than `ends`.
+
+### Still unverified
+
+- The documented status code for rate limiting (the API documentation does not state one; none was
+  provoked).
+- GLF for `LH LM LS SC SL`, and LEZ166 on a day with a Gale Warning on the Great Lakes.
