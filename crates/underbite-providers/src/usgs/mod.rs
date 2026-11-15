@@ -116,6 +116,9 @@ impl Source for Usgs {
     ) -> Result<(), SourceError> {
         match request.resource {
             Resource::UsgsStatistics => statistics::parse(request, response, out),
+            Resource::UsgsMonitoringLocations | Resource::UsgsTimeSeriesMetadata => {
+                sites::parse(request, response, ctx, out)
+            }
             _ => ogc::parse(self, request, response, ctx, out),
         }
     }
