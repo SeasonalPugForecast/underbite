@@ -314,7 +314,6 @@ struct Props {
     unit_of_measure: Option<String>,
     approval_status: Option<String>,
     qualifier: Option<Vec<String>>,
-    primary: Option<String>,
 }
 
 fn parse_error(what: impl std::fmt::Display) -> SourceError {
@@ -490,7 +489,6 @@ pub(super) struct Latest {
     param: &'static Param,
     series_id: Option<String>,
     statistic: Option<String>,
-    primary: bool,
     pub(super) point: Point,
     /// Older than the freshness limit: a dead series.
     pub(super) stale: bool,
@@ -530,7 +528,6 @@ pub(super) fn read_latest(
             param: p,
             series_id: props.time_series_id,
             statistic: props.statistic_id,
-            primary: props.primary.as_deref() == Some("Primary"),
             stale: now.0.saturating_sub(time.0) > max_age_s,
             point,
         });
@@ -539,8 +536,12 @@ pub(super) fn read_latest(
 }
 
 /// The series that stand for the target's measurements: per measurement the best parameter that
-/// has a live series, and of its series the instantaneous one, then the primary, then the
-/// newest. Also the newest time among series dropped for age.
+/// has a live series, and of its series an instantaneous one, then the newest. Also the newest
+/// time among series dropped for age.
+///
+/// `latest-continuous` does not say which series is the site's primary one (that is in the
+/// series metadata), so it cannot break a tie. Two live series of one parameter and statistic
+/// reading at the same time tie, and the first in the response wins.
 pub(super) fn select<'a>(
     readings: &'a [Latest],
     target: &Target,
@@ -556,7 +557,6 @@ pub(super) fn select<'a>(
             pick = live.into_iter().min_by_key(|r| {
                 (
                     r.statistic.as_deref() != Some(INSTANTANEOUS),
-                    !r.primary,
                     Reverse(r.point.t),
                 )
             });
@@ -1080,6 +1080,35 @@ mod tests {
         .unwrap();
         assert_eq!(out.fragments().len(), 7);
         insta::assert_yaml_snapshot!("latest_bronx_river", summary(&out));
+    }
+
+    #[test]
+    fn select_prefers_instantaneous_then_newest_then_the_first_listed() {
+        let feature = |id: &str, statistic: &str, time: &str| {
+            format!(
+                r#"{{"properties":{{"time_series_id":"{id}","monitoring_location_id":"USGS-01375000","parameter_code":"00060","statistic_id":"{statistic}","time":"{time}","value":"40.0","unit_of_measure":"ft^3/s","approval_status":"Provisional","qualifier":null}}}}"#
+            )
+        };
+        let body = |features: &[String]| format!(r#"{{"features":[{}]}}"#, features.join(","));
+        let chosen = |features: &[String]| {
+            let readings =
+                read_latest(body(features).as_bytes(), "USGS-01375000", NOW, 3 * 3_600).unwrap();
+            let (chosen, _) = select(&readings, &target("01375000", &[Measurement::Discharge]));
+            chosen[0].1.series_id.clone().unwrap()
+        };
+        let tied = [
+            feature("mean", "00003", "2026-11-08T14:00:00+00:00"),
+            feature("first", "00011", "2026-11-08T13:45:00+00:00"),
+            feature("second", "00011", "2026-11-08T13:45:00+00:00"),
+        ];
+        assert_eq!(chosen(&tied), "first");
+        let newer = [
+            tied[2].clone(),
+            tied[1].clone(),
+            feature("newest", "00011", "2026-11-08T14:00:00+00:00"),
+        ];
+        assert_eq!(chosen(&newer), "newest");
+        assert_eq!(chosen(&newer[..2]), "second");
     }
 
     #[test]
