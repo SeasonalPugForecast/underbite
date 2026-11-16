@@ -209,9 +209,22 @@ pub fn next_page(
     Ok(Some(query(url, current.layer, offset)))
 }
 
-/// Parses a layer 50 answer.
+/// Parses a layer 50 answer. Features outside the network (connectors with neither a level
+/// path nor a hydrosequence) are left out.
 pub fn parse_flowlines(response: &Response<'_>) -> Result<Vec<Flowline>, SourceError> {
-    read(response)?.features.iter().map(flowline).collect()
+    read(response)?
+        .features
+        .iter()
+        .filter(|f| on_network(&f.attributes))
+        .map(flowline)
+        .collect()
+}
+
+/// Whether a flowline belongs to the network: 3DHP leaves both network fields empty on
+/// features such as "Hydro Unenforced Connector".
+fn on_network(a: &Attributes) -> bool {
+    a.get("levelpath").is_some_and(|v| !v.is_null())
+        || a.get("hydrosequence").is_some_and(|v| !v.is_null())
 }
 
 /// Parses a layer 60 answer.
@@ -381,6 +394,23 @@ mod tests {
 
     fn fx(name: &str) -> Vec<u8> {
         fixture_bytes("hydro", name)
+    }
+
+    #[test]
+    fn connectors_outside_the_network_are_left_out() {
+        // The 5 km box around the Croton holds one "Hydro Unenforced Connector" with no level
+        // path or hydrosequence.
+        let body = fx("hydro-50-croton-geom.json");
+        let lines = parse_flowlines(&Response::new(200, &body)).unwrap();
+        assert_eq!(lines.len(), 597);
+        assert!(lines.iter().any(|l| l.level_path == 3_767_999));
+    }
+
+    #[test]
+    fn a_network_flowline_without_a_level_path_is_still_an_error() {
+        let body = br#"{"features":[{"attributes":{"id3dhp":"X","hydrosequence":5}}]}"#;
+        let err = parse_flowlines(&Response::new(200, body)).unwrap_err();
+        assert!(err.to_string().contains("levelpath"), "{err}");
     }
 
     #[test]
