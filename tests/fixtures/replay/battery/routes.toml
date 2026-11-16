@@ -114,8 +114,10 @@ file = "../../raw/usgs/usgs-monitoring-locations-bbox-manhattan-st.json"
 match = "api.weather.gov/points/40.7,-74.02"
 file = "../../raw/nws-marine/points-40.7033_-74.0170.geo.json"
 
+# The zone lookup asks for every zone type at a point at sea; the recorded coastal lookup holds
+# the one marine zone the answer has.
 [[route]]
-match = "api.weather.gov/zones?type=coastal&point="
+match = "api.weather.gov/zones?point=40.7,-74.02"
 file = "../../raw/nws-marine/zones-coastal-point-40.7033_-74.0170.geo.json"
 
 [[route]]

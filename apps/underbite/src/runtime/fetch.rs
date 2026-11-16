@@ -10,6 +10,12 @@
 //! are confirmed against their files. Lists, rankings, observed coverage and responses are
 //! cached; coordinates leave the device only rounded by the fetch context, and the exact spot
 //! is used on the device (distances, snapping to the hydrography).
+//!
+//! Then the sessions run one after the other on the same transport, one request at a time: the
+//! water and marine session over the discovery plan, and whether's weather session. The sky is
+//! computed for the spot's local days, and everything lands in one `SpotSnapshot` with its
+//! credits and the errors of the sources that were passed over. The snapshot and the call ledger
+//! are saved; every request is logged only through `redact_url`.
 
 #![allow(dead_code)] // The spot, stations and tides commands call these; they are wired in separately.
 
@@ -50,13 +56,26 @@ use underbite_providers::source::{
 use underbite_providers::usgs::{Usgs, sites};
 
 use super::cache::{COOPS_STATION_LIST_TTL_S, Cache, STATION_LIST_TTL_S};
-use super::transport::{Call, Fetched, Transport, TransportError};
+use super::transport::{Call, Fetched, Transport, TransportError, user_agent};
+use jiff::tz::TimeZone;
+use underbite_core::astro::solunar::{DayBounds, SolunarSettings, sky_conditions};
+use underbite_core::model::{SkyConditions, SourceErrorKind, SpotSnapshot};
+use underbite_core::provenance::Attribution;
+use underbite_core::time::{local_date, local_date_bounds, zone};
+use underbite_providers::session::usage::OPEN_METEO;
+use underbite_providers::session::{Attempt, Chain, Link, Session, SessionOutcome};
+use underbite_providers::source::{Period, Secrets};
 use whether_core::model::ProviderId;
+use whether_core::model::WeatherSnapshot;
 use whether_core::requirements::DataRequirements;
 use whether_providers::Provider;
 use whether_providers::nws::{self, Nws};
 use whether_providers::open_meteo::{OpenMeteo, OpenMeteoSettings};
 use whether_providers::regions::covers_us;
+use whether_providers::{
+    Attempt as WeatherAttempt, FetchContext as WeatherContext, FetchError, FetchSession,
+    HttpResponse, ProviderError,
+};
 
 // ---------------------------------------------------------------------------------------------
 // The source registry
@@ -225,8 +244,9 @@ fn group_of(sources: &SourcesConfig, measurement: Measurement) -> SourceGroup {
     })
 }
 
-/// The chain and limits of every required measurement: the configured sources this tool runs,
-/// in order, each once; gridded marine models only on marine water.
+/// The chain and limits of every required measurement: the configured sources this tool runs
+/// that supply the measurement, in order, each once; gridded marine models only on marine
+/// water.
 pub(crate) fn chain_specs(
     sources: &SourcesConfig,
     requirements: &Requirements,
@@ -239,7 +259,7 @@ pub(crate) fn chain_specs(
             let group = group_of(sources, m);
             let mut chain: Vec<SourceId> = Vec::new();
             for id in group.chain {
-                let runs = WATER_SOURCES.contains(&id);
+                let runs = water_source(&id).is_some_and(|s| s.measurements().contains(&m));
                 let fits = is_marine(water) || !MARINE_ONLY.contains(&id);
                 if runs && fits && !chain.contains(&id) {
                     chain.push(id);
@@ -1150,6 +1170,393 @@ pub(crate) fn discover(
     }
 }
 
+// ---------------------------------------------------------------------------------------------
+// The water session
+// ---------------------------------------------------------------------------------------------
+
+/// The session's chains from the discovery plan: each link's source from the registry and its
+/// place (a point link is the spot rounded by the context).
+fn session_chains(
+    plan: &Plan,
+    requirements: &Requirements,
+    ctx: &FetchContext,
+) -> BTreeMap<Measurement, Chain> {
+    let window = Window::around(ctx.now, requirements);
+    plan.chains
+        .iter()
+        .map(|(&m, planned)| {
+            let links = planned
+                .links
+                .iter()
+                .filter_map(|link| {
+                    let source = water_source(&link.source)?;
+                    let place = match &link.place {
+                        LinkPlace::Station {
+                            station,
+                            distance_m,
+                            relation,
+                        } => Place::Station {
+                            station: station.clone(),
+                            distance_m: Some(*distance_m),
+                            relation: *relation,
+                        },
+                        LinkPlace::Point {
+                            latitude,
+                            longitude,
+                            ..
+                        } => Place::Point(ctx.round(Coordinates {
+                            latitude: *latitude,
+                            longitude: *longitude,
+                        })),
+                    };
+                    let target = Target {
+                        place,
+                        measurements: BTreeSet::from([m]),
+                        window,
+                        datum: None,
+                    };
+                    Some(Link { source, target })
+                })
+                .collect();
+            let chain = Chain {
+                links,
+                max_age_s: Some(planned.max_age_s),
+            };
+            (m, chain)
+        })
+        .collect()
+}
+
+/// Runs the water session to its end, one request at a time.
+fn run_session(host: &Host<'_>, mut session: Session) -> SessionOutcome {
+    while let Some(request) = session.next_request() {
+        let request = request.clone();
+        if request.metered
+            && let Err(e) = host.save_usage()
+        {
+            tracing::warn!(error = %e, "metered request not sent");
+            session.on_transport_error(&e);
+            continue;
+        }
+        match host.send(&Call::from(&request)) {
+            Ok(fetched) => session.on_response(&fetched.as_response()),
+            Err(e) => session.on_transport_error(&e.to_string()),
+        }
+    }
+    session.finish(host.now)
+}
+
+// ---------------------------------------------------------------------------------------------
+// Weather
+// ---------------------------------------------------------------------------------------------
+
+/// The weather library's response for a fetched one.
+fn weather_response(fetched: &Fetched) -> HttpResponse<'_> {
+    HttpResponse {
+        status: fetched.status,
+        body: &fetched.body,
+        date: fetched.date,
+        expires: fetched.expires,
+        last_modified: fetched.last_modified.as_deref(),
+    }
+}
+
+/// The snapshot's kind for a weather provider's error.
+fn weather_error_kind(error: &ProviderError) -> SourceErrorKind {
+    match error {
+        ProviderError::RateLimited { .. } | ProviderError::Quota(_) => SourceErrorKind::RateLimited,
+        ProviderError::Http { status: 404, .. } => SourceErrorKind::NotFound,
+        ProviderError::Malformed(_) => SourceErrorKind::Parse,
+        ProviderError::Transport(_) => SourceErrorKind::Transport,
+        _ => SourceErrorKind::Other,
+    }
+}
+
+/// What the weather session produced.
+struct Weather {
+    snapshot: Option<WeatherSnapshot>,
+    errors: Vec<ModelSourceError>,
+    attribution: Vec<Attribution>,
+}
+
+/// Runs whether's session over `chain` at the rounded spot. Every call to Open-Meteo is counted
+/// in the ledger it shares with Open-Meteo Marine and the storm check (one limit per address).
+fn fetch_weather(
+    host: &Host<'_>,
+    chain: &WeatherChain,
+    loc: Coordinates,
+    user_agent: &str,
+) -> Weather {
+    let primary: Vec<&dyn Provider> = chain.primary.iter().map(AsRef::as_ref).collect();
+    let supplements: Vec<&dyn Provider> = chain.supplements.iter().map(AsRef::as_ref).collect();
+    let ctx = WeatherContext {
+        now: host.now,
+        user_agent: user_agent.to_string(),
+        utc_offset_hint: None,
+        if_modified_since: None,
+        language: "en".to_string(),
+    };
+    let mut session = FetchSession::new(&primary, &supplements, loc, weather_requirements(), ctx);
+    while let Some(request) = session.next_request() {
+        let call = Call::from(request);
+        let cached = host.cache.and_then(|c| c.load_response(&call, host.now));
+        if cached.is_none() && call.url.contains("open-meteo.com") {
+            let now = host.now;
+            host.usage.with(|l| l.count(&OPEN_METEO, Period::Day, now));
+            if let Err(e) = host.save_usage() {
+                tracing::warn!(error = %e, "weather request not sent");
+                session.on_transport_error(&e);
+                continue;
+            }
+        }
+        let fetched = cached.map_or_else(|| host.send(&call), Ok);
+        match fetched {
+            Ok(fetched) => session.on_response(&weather_response(&fetched)),
+            Err(e) => session.on_transport_error(&e.to_string()),
+        }
+    }
+    let attempts = match session.finish(host.now) {
+        Ok((snapshot, attempts)) => {
+            let attribution = std::iter::once(snapshot.provider)
+                .chain(snapshot.supplemented_by.iter().copied())
+                .filter_map(|id| {
+                    let provider = chain
+                        .primary
+                        .iter()
+                        .chain(&chain.supplements)
+                        .find(|p| p.id() == id)?;
+                    let credit = provider.attribution();
+                    Some(Attribution {
+                        source: SourceId::new(id.id()),
+                        credit: credit.text.to_string(),
+                        url: Some(credit.url.to_string()),
+                    })
+                })
+                .collect();
+            return Weather {
+                errors: weather_errors(&attempts),
+                snapshot: Some(snapshot),
+                attribution,
+            };
+        }
+        Err(FetchError::AllProvidersFailed(attempts)) => attempts,
+        Err(e) => {
+            let error = ModelSourceError {
+                source: SourceId::new(ProviderId::OpenMeteo.id()),
+                measurement: None,
+                kind: SourceErrorKind::Other,
+                message: format!("weather: {e}"),
+            };
+            return Weather {
+                snapshot: None,
+                errors: vec![error],
+                attribution: Vec::new(),
+            };
+        }
+    };
+    let mut errors = weather_errors(&attempts);
+    if attempts.is_empty() {
+        errors.push(ModelSourceError {
+            source: SourceId::new("weather"),
+            measurement: None,
+            kind: SourceErrorKind::Other,
+            message: "weather: no weather provider configured".into(),
+        });
+    }
+    Weather {
+        snapshot: None,
+        errors,
+        attribution: Vec::new(),
+    }
+}
+
+/// The failed attempts of the weather session as snapshot errors.
+fn weather_errors(attempts: &[WeatherAttempt]) -> Vec<ModelSourceError> {
+    attempts
+        .iter()
+        .filter_map(|a| {
+            let error = a.error.as_ref()?;
+            Some(ModelSourceError {
+                source: SourceId::new(a.provider.id()),
+                measurement: None,
+                kind: weather_error_kind(error),
+                message: format!("weather {:?}: {error}", a.endpoint).to_lowercase(),
+            })
+        })
+        .collect()
+}
+
+// ---------------------------------------------------------------------------------------------
+// Time zone and sky
+// ---------------------------------------------------------------------------------------------
+
+/// The spot's time zone: the one stored with the spot (configured, or given with `--tz`), else
+/// the zone the forecast resolved for the place. `None` when neither names a known zone.
+fn time_zone(spot: &Spot, weather: Option<&WeatherSnapshot>) -> Option<(String, TimeZone)> {
+    let stored = Some(spot.time_zone.as_str()).filter(|name| !name.is_empty());
+    let forecast = weather.and_then(|w| w.location.tz_name.as_deref());
+    [stored, forecast]
+        .into_iter()
+        .flatten()
+        .find_map(|name| zone(name).ok().map(|tz| (name.to_string(), tz)))
+}
+
+/// Sun, moon and solunar periods for `days` local days from today.
+fn sky(
+    spot: &Spot,
+    tz: &TimeZone,
+    now: UnixTime,
+    days: u8,
+    settings: SolunarSettings,
+) -> SkyConditions {
+    let mut bounds = Vec::new();
+    let mut date = local_date(now, tz);
+    for _ in 0..days {
+        let Ok(day) = date else { break };
+        let Ok((start, end)) = local_date_bounds(day, tz) else {
+            break;
+        };
+        bounds.push(DayBounds {
+            date: day,
+            start,
+            end,
+        });
+        date = local_date(end, tz);
+    }
+    sky_conditions(spot.latitude, spot.longitude, &bounds, settings)
+}
+
+// ---------------------------------------------------------------------------------------------
+// One spot, end to end
+// ---------------------------------------------------------------------------------------------
+
+/// How a fetch runs, besides the spot and the configuration.
+#[derive(Clone, Debug)]
+pub(crate) struct FetchOptions {
+    /// Whether metered calls may be spent (USGS, Open-Meteo Marine, the storm point).
+    pub(crate) allow_metered: bool,
+    /// Keys the sources may send.
+    pub(crate) secrets: Secrets,
+    /// `underbite/<version>`.
+    pub(crate) user_agent: String,
+}
+
+impl FetchOptions {
+    /// Metered calls allowed, the USGS key from `USGS_API_KEY` (read through `lookup`).
+    pub(crate) fn from_env(lookup: impl Fn(&str) -> Option<String>) -> Self {
+        Self {
+            allow_metered: true,
+            secrets: Secrets {
+                usgs_api_key: lookup("USGS_API_KEY").filter(|k| !k.trim().is_empty()),
+            },
+            user_agent: user_agent(),
+        }
+    }
+}
+
+/// A spot's fetch: the snapshot and how it came about.
+#[derive(Debug)]
+pub(crate) struct SpotFetch {
+    /// Everything known about the spot.
+    pub(crate) snapshot: SpotSnapshot,
+    /// The stations per measurement with the reasons for their places.
+    pub(crate) ranking: Ranking,
+    /// The links the water session took.
+    pub(crate) plan: Plan,
+    /// Every water request, in order, with what became of it.
+    pub(crate) attempts: Vec<Attempt>,
+}
+
+/// Fetches everything a spot's cards need at `now`: discovery, the water and marine session,
+/// the weather, the sky; caches updated and the call ledger saved. The USGS key comes from
+/// `USGS_API_KEY`.
+pub(crate) fn fetch_spot(
+    spot: &Spot,
+    config: &Config,
+    now: UnixTime,
+    transport: &dyn Transport,
+    cache: Option<&Cache>,
+) -> SpotSnapshot {
+    let options = FetchOptions::from_env(|name| std::env::var(name).ok());
+    fetch_spot_with(spot, config, now, transport, cache, &options).snapshot
+}
+
+/// [`fetch_spot`] with explicit options, returning how the snapshot came about too.
+pub(crate) fn fetch_spot_with(
+    spot: &Spot,
+    config: &Config,
+    now: UnixTime,
+    transport: &dyn Transport,
+    cache: Option<&Cache>,
+    options: &FetchOptions,
+) -> SpotFetch {
+    let host = Host::new(transport, cache, now, options.allow_metered);
+    let ctx = FetchContext::new(now, options.user_agent.clone())
+        .with_coordinate_precision(config.sources.coordinate_precision)
+        .with_secrets(options.secrets.clone());
+    let rounded = ctx
+        .round(Coordinates {
+            latitude: spot.latitude,
+            longitude: spot.longitude,
+        })
+        .coordinates();
+    let requirements = requirements(config, spot.water_type);
+    let chains = chain_specs(&config.sources, &requirements, spot.water_type);
+    let discovery = discover(&host, &ctx, spot, chains);
+
+    let session = Session::new(
+        session_chains(&discovery.plan, &requirements, &ctx),
+        requirements.clone(),
+        ctx.clone(),
+    )
+    .with_usage(host.usage.clone())
+    .allow_metered(options.allow_metered);
+    let water = run_session(&host, session);
+
+    let weather_chain = weather_chain(&config.sources.weather, &rounded);
+    let weather = fetch_weather(&host, &weather_chain, rounded, &options.user_agent);
+
+    let mut snapshot = SpotSnapshot::new(spot.clone(), now);
+    let solunar = SolunarSettings {
+        major_minutes: config.windows.solunar_major_minutes,
+        minor_minutes: config.windows.solunar_minor_minutes,
+    };
+    if let Some((name, tz)) = time_zone(spot, weather.snapshot.as_ref()) {
+        snapshot.spot.time_zone = name;
+        snapshot.sky = sky(spot, &tz, now, requirements.future_days, solunar);
+    } else {
+        tracing::warn!("no time zone for the spot: no sun and moon times");
+    }
+    snapshot.weather = weather.snapshot;
+    snapshot.water = water.water;
+    snapshot.marine = water.marine;
+    snapshot.stations = water.stations;
+    let mut attribution = water.attribution;
+    attribution.extend(weather.attribution);
+    if discovery.hydrography {
+        attribution.push(hydro::attribution());
+    }
+    for credit in attribution {
+        if !snapshot.attribution.contains(&credit) {
+            snapshot.attribution.push(credit);
+        }
+    }
+    snapshot.errors = discovery.errors;
+    snapshot.errors.extend(water.errors);
+    snapshot.errors.extend(weather.errors);
+
+    host.keep(NS_SPOT, &Cache::spot_key(&spot.id), &snapshot);
+    if let Err(e) = host.save_usage() {
+        tracing::warn!(error = %e, "call ledger");
+    }
+    SpotFetch {
+        snapshot,
+        ranking: discovery.ranking,
+        plan: discovery.plan,
+        attempts: water.attempts,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::path::{Path, PathBuf};
@@ -1158,6 +1565,7 @@ mod tests {
     use super::*;
     use Measurement as M;
     use underbite_config::sources::KNOWN_SOURCES;
+    use underbite_core::model::MarineConditions;
     use underbite_core::time::parse_rfc3339;
 
     fn ids(chain: &[Box<dyn Provider>]) -> Vec<ProviderId> {
@@ -1217,14 +1625,19 @@ mod tests {
         let specs = chain_specs(&config.sources, &req, WaterType::TidalRiverEstuary);
         let temp = &specs[&M::WaterTemperature];
         let names: Vec<&str> = temp.sources.iter().map(SourceId::as_str).collect();
-        assert_eq!(names, ["usgs", "coops", "ndbc", "open-meteo-marine"]);
+        // Open-Meteo Marine forecasts sea temperature, not the water temperature at a station.
+        assert_eq!(names, ["usgs", "coops", "ndbc"]);
         assert_eq!(temp.limits, Limits::from_config(Some(25.0), Some(180)));
+        assert_eq!(specs[&M::Waves].sources, [SourceId::NDBC]);
+        assert_eq!(
+            specs[&M::WavesForecast].sources,
+            [SourceId::OPEN_METEO_MARINE]
+        );
         let wind = &specs[&M::ObservedWind];
         assert_eq!(wind.sources, OBSERVATION_CHAIN);
         assert_eq!(wind.limits.max_age_s, 180 * 60);
         assert_eq!(specs[&M::MarineAlerts].sources, [SourceId::NWS]);
 
-        // Inland, the marine model is left out of the water temperature chain.
         let river = requirements(&config, WaterType::RiverStream);
         let specs = chain_specs(&config.sources, &river, WaterType::RiverStream);
         let names: Vec<&str> = specs[&M::WaterTemperature]
@@ -1233,9 +1646,25 @@ mod tests {
             .map(SourceId::as_str)
             .collect();
         assert_eq!(names, ["usgs", "coops", "ndbc"]);
+        assert_eq!(specs[&M::FloodCategories].sources, [SourceId::NWPS]);
+        assert_eq!(specs[&M::Discharge].sources, [SourceId::USGS]);
+
+        // A gridded marine model is never asked about inland water.
+        let mut sst = config.sources.clone();
+        sst.sst.chain = vec![SourceId::OPEN_METEO_MARINE];
+        let wanted = Requirements {
+            measurements: BTreeSet::from([M::SeaSurfaceTempForecast]),
+            ..Requirements::default()
+        };
+        let lake = chain_specs(&sst, &wanted, WaterType::LakeReservoir);
         assert_eq!(
-            specs[&M::FloodCategories].sources,
-            [SourceId::USGS, SourceId::NWPS]
+            lake[&M::SeaSurfaceTempForecast].sources,
+            Vec::<SourceId>::new()
+        );
+        let bay = chain_specs(&sst, &wanted, WaterType::BayInshore);
+        assert_eq!(
+            bay[&M::SeaSurfaceTempForecast].sources,
+            [SourceId::OPEN_METEO_MARINE]
         );
     }
 
@@ -1440,5 +1869,254 @@ mod tests {
         assert_eq!(katonah.station.id, "KTNN6");
         assert!(katonah.reasons.iter().any(|r| matches!(r,
             underbite_core::discover::rank::Reason::ForecastGaugeFor { site } if site.id == "USGS-01374901")));
+    }
+
+    /// The Battery's choices: the Hudson River Entrance's surface bin pinned, and the stations
+    /// near the harbour this replay has no recordings of excluded (as a user excludes a
+    /// station), so every request gets a recorded answer.
+    fn battery_choices() -> StationChoices {
+        let mut choices = StationChoices::default();
+        choices.pin(StationKey::new(SourceId::COOPS, "NYH1927").with_bin(13));
+        for id in ["8516945", "8531680"] {
+            choices.exclude(StationKey::new(SourceId::COOPS, id));
+        }
+        for id in ["robn4", "mhrn6", "kptn6", "sdhn4", "44065"] {
+            choices.exclude(StationKey::new(SourceId::NDBC, id));
+        }
+        choices
+    }
+
+    /// Croton's choices: the gauges and buoys around it without recordings excluded.
+    fn croton_choices() -> StationChoices {
+        let mut choices = StationChoices::default();
+        choices.exclude(StationKey::new(SourceId::NDBC, "hbmn6"));
+        for id in ["WNYN6", "WPTN6", "PMTN6", "SUFN6", "SADN4"] {
+            choices.exclude(StationKey::new(SourceId::NWPS, id));
+        }
+        choices
+    }
+
+    fn fetched(spot: &Spot, config: &Config, scenario: &str, cache: &Cache) -> (SpotFetch, Replay) {
+        let transport = replay(scenario);
+        let options = FetchOptions {
+            allow_metered: true,
+            secrets: Secrets::default(),
+            user_agent: "underbite/test".into(),
+        };
+        let out = fetch_spot_with(spot, config, now(), &transport, Some(cache), &options);
+        (out, transport)
+    }
+
+    /// Fails unless every coordinate `url` sends has at most 2 decimals. A 3DHP query sends an
+    /// envelope or a point around the rounded spot: its centre is checked.
+    fn assert_rounded(url: &str) {
+        let on_grid = |v: f64| ((v * 100.0).round() - v * 100.0).abs() < 1e-6;
+        if url.contains("3DHP_all") {
+            let geometry = url
+                .split_once('?')
+                .and_then(|(_, q)| q.split('&').find_map(|p| p.strip_prefix("geometry=")))
+                .expect("geometry");
+            let n: Vec<f64> = geometry
+                .split(',')
+                .map(|v| v.parse().expect("number"))
+                .collect();
+            let centre = match n[..] {
+                [x0, y0, x1, y1] => [f64::midpoint(x0, x1), f64::midpoint(y0, y1)],
+                [x, y] => [x, y],
+                _ => panic!("{url}"),
+            };
+            assert!(centre.into_iter().all(on_grid), "{url}");
+            return;
+        }
+        for token in url.split(|c: char| !(c.is_ascii_digit() || c == '.' || c == '-')) {
+            if let Some((_, fraction)) = token.split_once('.') {
+                let digits = fraction.trim_end_matches('0');
+                assert!(
+                    digits.len() <= 2 || !digits.bytes().all(|b| b.is_ascii_digit()),
+                    "{url}: {token}"
+                );
+            }
+        }
+    }
+
+    fn errors(snapshot: &SpotSnapshot) -> Vec<(String, Option<Measurement>, SourceErrorKind)> {
+        snapshot
+            .errors
+            .iter()
+            .map(|e| (e.source.to_string(), e.measurement, e.kind))
+            .collect()
+    }
+
+    fn station_of<T>(series: &underbite_core::series::Series<T>) -> String {
+        let p = series.provenance();
+        format!(
+            "{} {}",
+            p.source,
+            p.station.as_ref().map_or("", |s| s.id.as_str())
+        )
+    }
+
+    #[test]
+    fn the_battery_end_to_end() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let cache = Cache::at(dir.path());
+        save_choices(&cache, "battery", &battery_choices(), now()).expect("choices");
+        let (out, transport) = fetched(&battery(), &Config::default(), "battery", &cache);
+        let s = &out.snapshot;
+
+        let tide = s.marine.tide.as_ref().expect("tide");
+        assert_eq!(tide.events.len(), 27);
+        let station = tide.provenance.station.as_ref().expect("station");
+        assert_eq!(
+            (tide.provenance.source.as_str(), station.id.as_str()),
+            ("coops", "8518750")
+        );
+        assert!(tide.curve.is_some() && tide.observed.is_some());
+        let current = s.marine.tidal_current.as_ref().expect("current");
+        let at = current.curve.as_ref().expect("curve").provenance();
+        let station = at.station.as_ref().expect("station");
+        assert_eq!((station.id.as_str(), station.bin), ("NYH1927", Some(13)));
+        assert!(current.events.len() > 20, "{}", current.events.len());
+
+        let forecast = s.marine.marine_forecast.as_ref().expect("forecast");
+        assert_eq!(forecast.id, "ANZ338");
+        assert!(forecast.periods.len() > 2, "{:?}", forecast.periods);
+        assert!(
+            s.marine
+                .marine_alerts
+                .iter()
+                .any(|a| a.event == "Small Craft Advisory")
+        );
+
+        // No buoy within the default 50 km has a recording: waves come from the model.
+        assert!(s.marine.waves.is_none());
+        let waves = s.marine.waves_forecast.as_ref().expect("waves forecast");
+        assert_eq!(waves.provenance().source, SourceId::OPEN_METEO_MARINE);
+        let temp = s.water.temperature_c.as_ref().expect("water temperature");
+        assert_eq!(station_of(temp), "ndbc batn6");
+
+        let weather = s.weather.as_ref().expect("weather");
+        assert_eq!(weather.provider, ProviderId::OpenMeteo);
+        assert!(weather.hourly.len() > 24, "{}", weather.hourly.len());
+        assert_eq!(s.spot.time_zone, "America/New_York");
+        assert_eq!(s.sky.days.len(), 7);
+        assert_eq!(s.fetched_at, now());
+
+        // The station's own water temperature ends on 7 November, older than 180 minutes; no
+        // station near the harbour reported wind.
+        assert_eq!(
+            errors(s),
+            [
+                (
+                    "coops".into(),
+                    Some(M::WaterTemperature),
+                    SourceErrorKind::Stale
+                ),
+                (
+                    "coops".into(),
+                    Some(M::ObservedWind),
+                    SourceErrorKind::NoData
+                ),
+                (
+                    "ndbc".into(),
+                    Some(M::ObservedWind),
+                    SourceErrorKind::NoData
+                ),
+            ]
+        );
+        let credited: BTreeSet<&str> = s.attribution.iter().map(|a| a.source.as_str()).collect();
+        for source in [
+            "coops",
+            "ndbc",
+            "nws",
+            "open-meteo-marine",
+            "open-meteo",
+            "usgs-3dhp",
+        ] {
+            assert!(credited.contains(source), "{source}: {credited:?}");
+        }
+        for url in transport.seen() {
+            assert_rounded(&url);
+        }
+
+        // The snapshot and the ledger are saved: Marine and the forecast count against
+        // Open-Meteo's one limit.
+        let saved: SpotSnapshot = cache
+            .get(NS_SPOT, &Cache::spot_key("battery"))
+            .expect("saved")
+            .value;
+        assert_eq!(&saved, s);
+        let ledger: UsageLedger = cache.get(NS_USAGE, LEDGER_KEY).expect("ledger").value;
+        assert_eq!(ledger.used(&OPEN_METEO, now()), 2);
+    }
+
+    #[test]
+    fn croton_end_to_end() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let cache = Cache::at(dir.path());
+        save_choices(&cache, "croton", &croton_choices(), now()).expect("choices");
+        let mut config = Config::default();
+        config.sources.flow.max_distance_km = Some(17.0);
+        let (out, transport) = fetched(&croton(), &config, "croton", &cache);
+        let s = &out.snapshot;
+        // River water: no tide, current, waves or marine forecast.
+        assert_eq!(s.marine, MarineConditions::default());
+        assert!(s.weather.is_some());
+        assert_eq!(s.sky.days.len(), 7);
+        let link = &out.plan.chains[&M::Discharge].links[0];
+        assert!(
+            matches!(&link.place, LinkPlace::Station { station, .. } if station.id == "USGS-01375000")
+        );
+        // Katonah defines no flood stages. The dam gauge's link needs the history of both its
+        // series, and its gage height series (00065) has no recording yet.
+        assert_eq!(
+            errors(s),
+            [
+                ("usgs".into(), None, SourceErrorKind::Transport),
+                (
+                    "usgs".into(),
+                    Some(M::Discharge),
+                    SourceErrorKind::Transport
+                ),
+                (
+                    "usgs".into(),
+                    Some(M::GageHeight),
+                    SourceErrorKind::Transport
+                ),
+                (
+                    "nwps".into(),
+                    Some(M::FloodCategories),
+                    SourceErrorKind::NoData
+                ),
+            ]
+        );
+        assert!(
+            s.errors[1]
+                .message
+                .contains("time_series_id=1d9a520f9f5d468099e5726040bfe317")
+        );
+        for url in transport.seen() {
+            assert_rounded(&url);
+        }
+    }
+
+    #[test]
+    fn the_forecast_names_the_zone_of_a_spot_without_one() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let cache = Cache::at(dir.path());
+        let mut spot = croton();
+        spot.time_zone = String::new();
+        let (out, _) = fetched(&spot, &Config::default(), "croton", &cache);
+        assert_eq!(out.snapshot.spot.time_zone, "America/New_York");
+        assert_eq!(out.snapshot.sky.days.len(), 7);
+    }
+
+    #[test]
+    fn rounding_checks_catch_precise_coordinates() {
+        assert_rounded("https://api.example/x?latitude=40.7&longitude=-74.02");
+        assert!(
+            std::panic::catch_unwind(|| assert_rounded("https://a.example/points/40.7033,-74.017"))
+                .is_err()
+        );
     }
 }

@@ -7,8 +7,10 @@
 match = "collections/latest-continuous"
 file = "../../raw/usgs/usgs-latest-continuous-croton-01375000.json"
 
+# Only the discharge series (00060) of the dam gauge was recorded; its gage height series
+# (00065) has no recording yet.
 [[route]]
-match = "collections/continuous/items"
+match = "collections/continuous/items?f=json&time_series_id=e32aab5ccc774c11b172102b97abc0d8"
 file = "../../raw/usgs/usgs-continuous-croton-01375000-00060-2026-11-01_2026-11-08.json"
 
 [[route]]
