@@ -10,7 +10,9 @@
 //! A link that has no value for a measurement, or only values older than the chain's
 //! `max_age_s`, hands that measurement to its next link and records why. A required request that
 //! fails does the same for the measurements it serves, and only for those: the link's other
-//! measurements keep their requests and the values already received. Each measurement takes all
+//! measurements keep their requests and the values already received. An optional request's
+//! failure only explains a value the link then lacks; a follow-up is required only when its
+//! source makes it so, whatever its parent was. Each measurement takes all
 //! its values from one link: one series never mixes sources. Within a link, fragments of one
 //! measurement merge by time (pages, chunks, an events response with a curve response).
 //!
@@ -144,6 +146,9 @@ struct Group {
     follow_ups: u32,
     fragments: Vec<Fragment>,
     credits: Vec<Attribution>,
+    /// The first error of an optional request, per measurement it served: the reason given
+    /// when the link ends up without a value for it.
+    missed: BTreeMap<Measurement, SourceError>,
 }
 
 /// Where a value of a measurement goes; values of one slot merge.
@@ -296,7 +301,7 @@ impl Session {
                         group.credits.push(credit);
                     }
                 }
-                self.queue_follow_ups(g, &request, next);
+                self.queue_follow_ups(g, next);
             }
             Err(error) => self.failed(g, &request, error),
         }
@@ -389,6 +394,8 @@ impl Session {
                     self.record(g, &request, outcome);
                     if request.required {
                         self.fail(g, Some(&request.target.measurements), error.as_ref());
+                    } else if let Some(error) = error {
+                        self.missed(g, &request, &error);
                     }
                 }
             }
@@ -422,6 +429,7 @@ impl Session {
                         follow_ups: 0,
                         fragments: Vec::new(),
                         credits: Vec::new(),
+                        missed: BTreeMap::new(),
                     });
                     self.groups.len() - 1
                 });
@@ -484,18 +492,17 @@ impl Session {
     }
 
     /// Queues the follow-ups a response called for, right after it and within the source's
-    /// cap; a follow-up of a required request is required.
-    fn queue_follow_ups(&mut self, g: usize, parent: &Request, requests: Vec<Request>) {
+    /// cap. Each keeps the `required` its source gave it.
+    fn queue_follow_ups(&mut self, g: usize, requests: Vec<Request>) {
         let cap = self.groups[g].source.max_follow_ups();
         let mut queued = Vec::new();
-        for mut request in requests {
+        for request in requests {
             if self.groups[g].follow_ups >= cap {
                 let error = SourceError::Parse(format!("more than {cap} follow-ups"));
                 self.record(g, &request, Outcome::NotSent(error));
                 continue;
             }
             self.groups[g].follow_ups += 1;
-            request.required |= parent.required;
             queued.push(request);
         }
         for request in queued.into_iter().rev() {
@@ -512,8 +519,23 @@ impl Session {
         }
         if request.required {
             self.fail(g, Some(&request.target.measurements), Some(&error));
+        } else {
+            self.missed(g, request, &error);
         }
         self.record(g, request, Outcome::Failed(error));
+    }
+
+    /// Keeps an optional request's error for the measurements it served.
+    fn missed(&mut self, g: usize, request: &Request, error: &SourceError) {
+        let group = &mut self.groups[g];
+        let served = if request.target.measurements.is_empty() {
+            &group.target.measurements
+        } else {
+            &request.target.measurements
+        };
+        for &m in served {
+            group.missed.entry(m).or_insert_with(|| error.clone());
+        }
     }
 
     /// Moves the link's measurements among `served` (all of them for `None` or an empty set)
@@ -574,6 +596,7 @@ impl Session {
             .collect();
         credits.insert(0, own);
         let fragments = std::mem::take(&mut group.fragments);
+        let mut missed = std::mem::take(&mut group.missed);
         for (&m, track) in &mut self.tracks {
             if track.state != State::Running(g) {
                 continue;
@@ -590,6 +613,11 @@ impl Session {
                     self.won.insert(m, won);
                 }
                 Err(error) => {
+                    // "No data" from a link whose optional request failed says why.
+                    let error = match (error, missed.remove(&m)) {
+                        (SourceError::NoData(None), Some(why)) => why,
+                        (error, _) => error,
+                    };
                     track.failures.push((id.clone(), error));
                     track.at += 1;
                     track.state = State::Waiting;
@@ -1128,6 +1156,88 @@ mod tests {
         let failed: Vec<_> = (out.errors.iter()).map(|e| e.measurement).collect();
         assert_eq!(failed, [Some(WaterTemperature), Some(Discharge)]);
         assert_eq!(out.attempts[0].measurements.len(), 2);
+    }
+
+    /// The Croton at New Croton Dam: the gage-height history (00065, series `1d9a…`) answers
+    /// 404, an optional follow-up of the required latest values, so both measurements stay.
+    #[test]
+    fn session_keeps_a_link_whose_optional_follow_up_fails() {
+        use crate::testutil::fixture_str;
+        use underbite_core::model::Measurement::GageHeight;
+        use underbite_core::provenance::{StationKind, UsgsSiteType};
+
+        // 2026-11-08 14:30:00 UTC, when the Croton fixtures were recorded.
+        let now = UnixTime(1_794_148_200);
+        let station = StationRef {
+            source: SourceId::USGS,
+            id: "USGS-01375000".into(),
+            name: "Croton River at New Croton Dam near Croton-on-Hudson NY".into(),
+            kind: StationKind::UsgsSite(UsgsSiteType::Stream),
+            latitude: 41.2247,
+            longitude: -73.8592,
+            bin: None,
+            reference_id: None,
+        };
+        let target = Target {
+            place: Place::Station {
+                station,
+                distance_m: Some(300.0),
+                relation: Relation::SameWaterBody,
+            },
+            ..fake::target("01375000", &[Discharge, GageHeight], now)
+        };
+        let usgs: Arc<dyn Source> = Arc::new(crate::usgs::Usgs::new());
+        let usgs_chain = || Chain {
+            links: vec![Link {
+                source: Arc::clone(&usgs),
+                target: target.clone(),
+            }],
+            max_age_s: None,
+        };
+        let chains = BTreeMap::from([(Discharge, usgs_chain()), (GageHeight, usgs_chain())]);
+        let requirements = Requirements {
+            measurements: chains.keys().copied().collect(),
+            ..Requirements::default()
+        };
+        let mut s =
+            Session::new(chains, requirements, fake::ctx(now)).with_usage(SharedUsage::default());
+        let latest = fixture_str("usgs", "usgs-latest-continuous-croton-01375000.json");
+        let discharge = fixture_str(
+            "usgs",
+            "usgs-continuous-croton-01375000-00060-2026-11-01_2026-11-08.json",
+        );
+        let mut urls = Vec::new();
+        while let Some(request) = s.next_request() {
+            let url = request.url.clone();
+            let (status, body) = if url.contains("/latest-continuous/") {
+                (200, latest.as_str())
+            } else if url.contains("1d9a520f9f5d468099e5726040bfe317") {
+                (404, r#"{"code":"NotFound","description":"Not found"}"#)
+            } else {
+                (200, discharge.as_str())
+            };
+            s.on_response(&Response::new(status, body.as_bytes()));
+            urls.push(url);
+        }
+        let out = s.finish(now);
+        assert_eq!(urls.len(), 3, "{urls:#?}");
+        assert!(
+            (out.attempts.iter()).any(|a| !a.required && matches!(a.outcome, Outcome::Failed(_))),
+            "{:#?}",
+            out.attempts
+        );
+        assert_eq!(out.errors, Vec::<ModelSourceError>::new());
+        assert_eq!(out.sources[&Discharge], SourceId::USGS);
+        assert_eq!(out.sources[&GageHeight], SourceId::USGS);
+        // The week's record (to 8 November 00:00, 12.9 ft³/s) stands in for the single newest
+        // value (13:45, 12.4 ft³/s), as a many-sample series always does.
+        let q = out.water.discharge_m3s.unwrap();
+        assert_eq!(q.samples().len(), 673);
+        let q = q.latest().unwrap().value;
+        assert!((q - 0.365).abs() < 0.001, "{q}");
+        let stage = out.water.gage_height.unwrap();
+        let stage = stage.series.latest().unwrap().value;
+        assert!((stage - 0.335).abs() < 0.001, "{stage}");
     }
 
     #[test]
