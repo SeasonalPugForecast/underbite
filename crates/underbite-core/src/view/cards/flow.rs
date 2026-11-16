@@ -8,7 +8,7 @@ use crate::model::{FloodCategories, Measurement, Percentile, PercentileBasis, Pe
 use crate::provenance::{Provenance, Quality, SourceId};
 use crate::series::{Sample, Series};
 use crate::time::{LocalDate, UnixTime};
-use crate::view::format::{Formatter, number};
+use crate::view::format::{Formatter, number, ordinal};
 use crate::view::strings::{Key, source_name};
 use crate::view::{
     CardChrome, CardId, CardState, ChartPoint, ChartRule, ChartSeries, ChartTick, ChartVm, Compact,
@@ -28,6 +28,8 @@ const STAGE_TREND_M: f32 = 0.01;
 /// Compact sparklines keep at most this many points.
 const SPARK_POINTS: usize = 84;
 const PROVISIONAL_STATEMENT: &str = "https://waterdata.usgs.gov/provisional-data-statement/";
+/// The credit text of a USGS value whose snapshot carries no attribution.
+const CREDIT_USGS: &str = "U.S. Geological Survey";
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
 pub struct FlowCard {
@@ -135,12 +137,12 @@ pub(super) fn is_unreliable(q: Quality) -> bool {
     matches!(q, Quality::IceAffected | Quality::Flagged)
 }
 
-pub(super) fn unreliable_text(q: Quality) -> &'static str {
-    if q == Quality::IceAffected {
-        "Affected by ice: reading unreliable"
+pub(super) fn unreliable_text(f: &Formatter, q: Quality) -> &'static str {
+    f.strings.get(if q == Quality::IceAffected {
+        Key::AffectedByIce
     } else {
-        "Flagged by the source: reading unreliable"
-    }
+        Key::FlaggedBySource
+    })
 }
 
 /// Thins a sparkline to at most about [`SPARK_POINTS`] points, keeping the last.
@@ -190,6 +192,7 @@ pub(super) fn card_state(
 /// Credits for the sources behind a card, from the snapshot's attributions; provisional USGS
 /// values add the provisional data statement.
 pub(super) fn credits(input: &ViewInput, provs: &[&Provenance]) -> Vec<CreditVm> {
+    let f = Formatter::for_input(input);
     let mut out: Vec<CreditVm> = Vec::new();
     for p in provs {
         let name = source_name(&p.source);
@@ -200,7 +203,7 @@ pub(super) fn credits(input: &ViewInput, provs: &[&Provenance]) -> Vec<CreditVm>
             .find(|a| a.source == p.source);
         let text = match found {
             Some(a) => a.credit.clone(),
-            None if p.source == SourceId::USGS => "U.S. Geological Survey".to_owned(),
+            None if p.source == SourceId::USGS => CREDIT_USGS.to_owned(),
             None => name.clone(),
         };
         let credit = CreditVm {
@@ -215,7 +218,7 @@ pub(super) fn credits(input: &ViewInput, provs: &[&Provenance]) -> Vec<CreditVm>
         if p.source == SourceId::USGS && p.quality == Quality::Provisional {
             let statement = CreditVm {
                 source: name,
-                text: "Provisional data statement".to_owned(),
+                text: f.strings.get(Key::ProvisionalStatement).to_owned(),
                 link: Some(PROVISIONAL_STATEMENT.to_owned()),
                 licence: None,
             };
@@ -298,24 +301,32 @@ pub(super) fn chart_series(
 }
 
 /// Words for a chart: its latest observed point and its extremes.
-pub(super) fn describe(title: &str, series: &[ChartSeries]) -> String {
+pub(super) fn describe(f: &Formatter, title: &str, series: &[ChartSeries]) -> String {
     let all: Vec<&ChartPoint> = series.iter().flat_map(|s| &s.points).collect();
     let (Some(hi), Some(lo)) = (
         all.iter().max_by(|a, b| a.value.total_cmp(&b.value)),
         all.iter().min_by(|a, b| a.value.total_cmp(&b.value)),
     ) else {
-        return format!("{title}: no data");
+        return format!("{title}: {}", f.strings.get(Key::ChartNoData));
     };
     let last = series
         .iter()
         .find(|s| s.role == SeriesRole::Observed)
         .and_then(|s| s.points.last());
     match last {
-        Some(l) => format!(
-            "{title}: now {}, highest {}, lowest {}",
-            l.label, hi.label, lo.label
+        Some(l) => f.strings.fmt(
+            Key::ChartNowHighLow,
+            &[
+                ("title", title),
+                ("now", &l.label),
+                ("high", &hi.label),
+                ("low", &lo.label),
+            ],
         ),
-        None => format!("{title}: highest {}, lowest {}", hi.label, lo.label),
+        None => f.strings.fmt(
+            Key::ChartHighLow,
+            &[("title", title), ("high", &hi.label), ("low", &lo.label)],
+        ),
     }
 }
 
@@ -368,7 +379,7 @@ pub(super) fn trend(
     let (direction, text) = if delta.abs() < min_change {
         (
             TrendDirection::Steady,
-            format!("{} over {hours} h", f.strings.get(Key::Steady)),
+            f.strings.fmt(Key::SteadyOver, &[("hours", &hours)]),
         )
     } else {
         let (d, key) = if delta > 0.0 {
@@ -395,15 +406,9 @@ pub(super) fn trend(
 // The flow card
 // ---------------------------------------------------------------------------------------------
 
-fn ordinal_label(n: u8) -> String {
-    let suffix = match (n % 100, n % 10) {
-        (11..=13, _) => "th",
-        (_, 1) => "st",
-        (_, 2) => "nd",
-        (_, 3) => "rd",
-        _ => "th",
-    };
-    format!("{n}{suffix} percentile")
+fn ordinal_label(f: &Formatter, n: u8) -> String {
+    f.strings
+        .fmt(Key::PercentileRank, &[("ordinal", &ordinal(u32::from(n)))])
 }
 
 fn percentile_date(p: &Percentile) -> Option<LocalDate> {
@@ -416,8 +421,11 @@ fn percentile_date(p: &Percentile) -> Option<LocalDate> {
     })
 }
 
-fn years(n: u32) -> String {
-    format!("{n} {}", if n == 1 { "year" } else { "years" })
+fn years(f: &Formatter, n: u32) -> String {
+    f.strings.fmt(
+        if n == 1 { Key::YearOne } else { Key::YearMany },
+        &[("n", &n.to_string())],
+    )
 }
 
 fn percentile_vm(
@@ -428,8 +436,8 @@ fn percentile_vm(
     let on = percentile_date(p)?;
     let text = f.percentile(p.class, p.rank, p.rank_clamped, on)?;
     let class_label = match p.class? {
-        PercentileClass::RecordLow => "Record low".to_owned(),
-        PercentileClass::RecordHigh => "Record high".to_owned(),
+        PercentileClass::RecordLow => f.strings.get(Key::ClassRecordLow).to_owned(),
+        PercentileClass::RecordHigh => f.strings.get(Key::ClassRecordHigh).to_owned(),
         PercentileClass::MuchBelowNormal => capitalize(f.strings.get(Key::PercentileMuchBelow)),
         PercentileClass::BelowNormal => capitalize(f.strings.get(Key::PercentileBelow)),
         PercentileClass::Normal => capitalize(f.strings.get(Key::PercentileNormal)),
@@ -438,16 +446,18 @@ fn percentile_vm(
     };
     let (basis, sample) = match p.basis {
         PercentileBasis::StatisticsApi => (
-            "USGS statistics (beta)".to_owned(),
+            f.strings.get(Key::BasisStatistics).to_owned(),
             if p.approved_only {
-                format!("approved data only, {}", years(p.sample_count))
+                f.strings
+                    .fmt(Key::ApprovedOnly, &[("years", &years(f, p.sample_count))])
             } else {
-                years(p.sample_count)
+                years(f, p.sample_count)
             },
         ),
         PercentileBasis::ComputedFromDaily { years: n } => (
-            format!("computed from {} of daily values", years(n)),
-            years(p.sample_count),
+            f.strings
+                .fmt(Key::ComputedFromDaily, &[("years", &years(f, n))]),
+            years(f, p.sample_count),
         ),
     };
     let t = &p.thresholds;
@@ -463,7 +473,7 @@ fn percentile_vm(
     .into_iter()
     .filter_map(|(n, v)| {
         Some(PercentileThresholdVm {
-            label: ordinal_label(n),
+            label: ordinal_label(f, n),
             value: show(v?),
         })
     })
@@ -492,40 +502,54 @@ fn range_status(
     let Some((v, q)) = discharge else {
         return Some(RangeStatusVm {
             status: RangeStatus::Unknown,
-            text: "No discharge to compare with your ranges".to_owned(),
+            text: f.strings.get(Key::RangeNoDischarge).to_owned(),
         });
     };
     if is_unreliable(q) {
         return Some(RangeStatusVm {
             status: RangeStatus::Unknown,
-            text: format!("{}: your ranges are not applied", unreliable_text(q)),
+            text: f
+                .strings
+                .fmt(Key::RangesNotApplied, &[("reason", unreliable_text(f, q))]),
         });
     }
     let (status, text) = if let Some(b) = ranges.blown_out_above_m3s.filter(|b| v > *b) {
         (
             RangeStatus::BlownOut,
-            format!("Blown out (above {} {unit})", show(b)),
+            f.strings
+                .fmt(Key::RangeBlownOut, &[("value", &show(b)), ("unit", &unit)]),
         )
     } else if ranges.best_min_m3s.is_none_or(|a| v >= a)
         && ranges.best_max_m3s.is_none_or(|b| v <= b)
         && (ranges.best_min_m3s.is_some() || ranges.best_max_m3s.is_some())
     {
         let range = match (ranges.best_min_m3s, ranges.best_max_m3s) {
-            (Some(a), Some(b)) => format!("{} to {} {unit}", show(a), show(b)),
-            (Some(a), None) => format!("from {} {unit}", show(a)),
-            (None, Some(b)) => format!("up to {} {unit}", show(b)),
+            (Some(a), Some(b)) => f.strings.fmt(
+                Key::RangeBetween,
+                &[("from", &show(a)), ("to", &show(b)), ("unit", &unit)],
+            ),
+            (Some(a), None) => f
+                .strings
+                .fmt(Key::RangeFrom, &[("value", &show(a)), ("unit", &unit)]),
+            (None, Some(b)) => f
+                .strings
+                .fmt(Key::RangeUpTo, &[("value", &show(b)), ("unit", &unit)]),
             (None, None) => String::new(),
         };
-        (RangeStatus::Best, format!("Best range ({range})"))
+        (
+            RangeStatus::Best,
+            f.strings.fmt(Key::RangeBest, &[("range", &range)]),
+        )
     } else if let Some(w) = ranges.wadeable_below_m3s.filter(|w| v < *w) {
         (
             RangeStatus::Wadeable,
-            format!("Wadeable (below {} {unit})", show(w)),
+            f.strings
+                .fmt(Key::RangeWadeable, &[("value", &show(w)), ("unit", &unit)]),
         )
     } else {
         (
             RangeStatus::Fishable,
-            "Fishable (outside your best range)".to_owned(),
+            f.strings.get(Key::RangeFishable).to_owned(),
         )
     };
     Some(RangeStatusVm { status, text })
@@ -533,31 +557,31 @@ fn range_status(
 
 fn range_rules(f: &Formatter, r: &RiverRanges) -> Vec<ChartRule> {
     let unit = f.discharge(None).unit;
-    let rule = |v: Option<f32>, label: &str| {
+    let rule = |v: Option<f32>, label: Key| {
         let q = f.discharge(v);
         q.value.map(|value| ChartRule {
             kind: RuleKind::UserRange,
             value,
-            label: format!("{label} {} {unit}", q.text),
+            label: format!("{} {} {unit}", f.strings.get(label), q.text),
         })
     };
     [
-        rule(r.wadeable_below_m3s, "Wadeable below"),
-        rule(r.best_min_m3s, "Best from"),
-        rule(r.best_max_m3s, "Best up to"),
-        rule(r.blown_out_above_m3s, "Blown out above"),
+        rule(r.wadeable_below_m3s, Key::RuleWadeableBelow),
+        rule(r.best_min_m3s, Key::RuleBestFrom),
+        rule(r.best_max_m3s, Key::RuleBestUpTo),
+        rule(r.blown_out_above_m3s, Key::RuleBlownOutAbove),
     ]
     .into_iter()
     .flatten()
     .collect()
 }
 
-fn flood_list(c: &FloodCategories) -> Vec<(&'static str, Height)> {
+fn flood_list(c: &FloodCategories) -> Vec<(Key, Height)> {
     [
-        ("Action", c.action),
-        ("Minor", c.minor),
-        ("Moderate", c.moderate),
-        ("Major", c.major),
+        (Key::FloodAction, c.action),
+        (Key::FloodMinor, c.minor),
+        (Key::FloodModerate, c.moderate),
+        (Key::FloodMajor, c.major),
     ]
     .into_iter()
     .filter_map(|(l, h)| Some((l, h?)))
@@ -582,7 +606,7 @@ pub(super) fn chart_vm(
     }
     let (first, last) = span(&series, now);
     Some(ChartVm {
-        accessibility: describe(title, &series),
+        accessibility: describe(f, title, &series),
         title: title.to_owned(),
         unit,
         x_ticks: ticks(f, first, last),
@@ -667,7 +691,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         .and_then(|r| range_status(&f, r, dq_quality));
 
     // Flood categories stay in their own (usually gage) datum.
-    let flood: Vec<(&str, Height)> = w
+    let flood: Vec<(Key, Height)> = w
         .flood_categories
         .as_ref()
         .map(flood_list)
@@ -675,7 +699,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
     let flood_categories: Vec<FloodCategoryVm> = flood
         .iter()
         .map(|(label, h)| FloodCategoryVm {
-            label: (*label).to_owned(),
+            label: f.strings.get(*label).to_owned(),
             stage: f.height(Some(*h)),
         })
         .collect();
@@ -686,13 +710,23 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         if let Some(s) = discharge {
             let pts = observed_after(s, from);
             if !pts.is_empty() {
-                series.push(chart_series("Observed", SeriesRole::Observed, pts, &show_q));
+                series.push(chart_series(
+                    f.strings.get(Key::Observed),
+                    SeriesRole::Observed,
+                    pts,
+                    &show_q,
+                ));
             }
         }
         if let Some(s) = q_forecast {
             let pts = forecast_after(s, now);
             if !pts.is_empty() {
-                series.push(chart_series("Forecast", SeriesRole::Forecast, pts, &show_q));
+                series.push(chart_series(
+                    f.strings.get(Key::Forecast),
+                    SeriesRole::Forecast,
+                    pts,
+                    &show_q,
+                ));
             }
         }
         let rules = input
@@ -700,7 +734,14 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
             .as_ref()
             .map(|r| range_rules(&f, r))
             .unwrap_or_default();
-        chart_vm(&f, "Discharge", f.discharge(None).unit, series, rules, now)
+        chart_vm(
+            &f,
+            f.strings.get(Key::Discharge),
+            f.discharge(None).unit,
+            series,
+            rules,
+            now,
+        )
     };
 
     // Stage chart: observed and forecast in one datum, flood rules only in that datum.
@@ -713,13 +754,23 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
             if let Some(h) = stage.filter(|h| h.datum == datum) {
                 let pts = observed_after(&h.series, from);
                 if !pts.is_empty() {
-                    series.push(chart_series("Observed", SeriesRole::Observed, pts, &show));
+                    series.push(chart_series(
+                        f.strings.get(Key::Observed),
+                        SeriesRole::Observed,
+                        pts,
+                        &show,
+                    ));
                 }
             }
             if let Some(h) = s_forecast {
                 let pts = forecast_after(&h.series, now);
                 if !pts.is_empty() {
-                    series.push(chart_series("Forecast", SeriesRole::Forecast, pts, &show));
+                    series.push(chart_series(
+                        f.strings.get(Key::Forecast),
+                        SeriesRole::Forecast,
+                        pts,
+                        &show,
+                    ));
                 }
             }
             let rules = flood
@@ -730,29 +781,37 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
                     q.value.map(|value| ChartRule {
                         kind: RuleKind::FloodCategory,
                         value,
-                        label: format!("{label} {}", q.full()),
+                        label: format!("{} {}", f.strings.get(*label), q.full()),
                     })
                 })
                 .collect();
-            let title = if lake_level { "Level" } else { "Stage" };
+            let title = f
+                .strings
+                .get(if lake_level { Key::Level } else { Key::Stage });
             chart_vm(&f, title, show(0.0).unit, series, rules, now)
         });
 
     // Sections.
     let mut sections = Vec::new();
     if let (Some(p), Some(src)) = (&percentile, pct_source) {
-        let mut rows = vec![row("Basis", &p.basis), row("Sample", &p.sample)];
+        let mut rows = vec![
+            row(f.strings.get(Key::RowBasis), &p.basis),
+            row(f.strings.get(Key::RowSample), &p.sample),
+        ];
         if let Some(v) = src.thresholds.p50 {
-            rows.push(row("Median", &show_pct(v).full()));
+            rows.push(row(f.strings.get(Key::RowMedian), &show_pct(v).full()));
         }
         if let (Some(lo), Some(hi)) = (src.min, src.max) {
             rows.push(row(
-                "Record range",
-                &format!("{} to {}", show_pct(lo).full(), show_pct(hi).full()),
+                f.strings.get(Key::RowRecordRange),
+                &f.strings.fmt(
+                    Key::Range,
+                    &[("from", &show_pct(lo).full()), ("to", &show_pct(hi).full())],
+                ),
             ));
         }
         sections.push(Section {
-            title: "Normal for this date".to_owned(),
+            title: f.strings.get(Key::SectionNormal).to_owned(),
             rows,
         });
     }
@@ -763,7 +822,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
             .collect();
         if !rows.is_empty() {
             sections.push(Section {
-                title: "Your ranges".to_owned(),
+                title: f.strings.get(Key::SectionRanges).to_owned(),
                 rows,
             });
         }
@@ -778,14 +837,14 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         .into_iter()
         .chain(crest_s)
         .map(|(t, v)| Row {
-            label: "Forecast crest".to_owned(),
+            label: f.strings.get(Key::ForecastCrest).to_owned(),
             value: v,
             detail: Some(format!("{}, {}", f.date_of(t), f.clock(t))),
         })
         .collect();
     if !rows.is_empty() {
         sections.push(Section {
-            title: "Forecast".to_owned(),
+            title: f.strings.get(Key::Forecast).to_owned(),
             rows,
         });
     }
@@ -795,8 +854,11 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
     let unreliable = qualities.iter().copied().find(|q| is_unreliable(*q));
     if let Some(q) = unreliable {
         sections.push(Section {
-            title: "Reading quality".to_owned(),
-            rows: vec![row("Reliability", unreliable_text(q))],
+            title: f.strings.get(Key::SectionReadingQuality).to_owned(),
+            rows: vec![row(
+                f.strings.get(Key::RowReliability),
+                unreliable_text(&f, q),
+            )],
         });
     }
 
@@ -811,7 +873,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         .or_else(|| q_forecast.map(Series::provenance))
         .or_else(|| s_forecast.map(|h| h.series.provenance()));
     let mut lines: Vec<String> = Vec::new();
-    lines.extend(unreliable.map(|q| unreliable_text(q).to_owned()));
+    lines.extend(unreliable.map(|q| unreliable_text(&f, q).to_owned()));
     lines.extend(percentile.as_ref().map(|p| p.text.clone()));
     lines.extend(range_status.as_ref().map(|r| r.text.clone()));
     lines.extend(main_prov.map(|p| f.station_footer(p).text));
@@ -849,16 +911,16 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         Some(p) if latest_t.is_some() => card_state(input, &f, measurement, p, latest_t),
         _ => CardState::Fresh,
     };
-    let label = if discharge.is_some() {
-        "Flow"
+    let label = f.strings.get(if discharge.is_some() {
+        Key::FlowWord
     } else if lake_level {
-        "Level"
+        Key::Level
     } else {
-        "Stage"
-    };
+        Key::Stage
+    });
     let footnote = main_prov.map(|p| f.footnote(&format!("{label} {}", headline.full()), p, now));
     let title = if lake_level {
-        "Lake level".to_owned()
+        f.strings.get(Key::LakeLevel).to_owned()
     } else {
         f.strings.card_title(CardId::Flow).to_owned()
     };
@@ -873,7 +935,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
     }
     if let Some(q) = unreliable {
         accessibility.push_str(". ");
-        accessibility.push_str(unreliable_text(q));
+        accessibility.push_str(unreliable_text(&f, q));
     }
 
     Some(FlowCard {

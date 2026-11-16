@@ -216,6 +216,134 @@ keys! {
     UnitMinutes => ("min", "min"),
     UnitHours => ("h", "h"),
     Next => ("Next", "Next"),
+    /// `{from}`, `{to}`.
+    Range => ("{from} to {to}", "{from} to {to}"),
+    AffectedByIce => (
+        "Affected by ice: reading unreliable",
+        "Affected by ice: reading unreliable",
+    ),
+    FlaggedBySource => (
+        "Flagged by the source: reading unreliable",
+        "Flagged by the source: reading unreliable",
+    ),
+    ProvisionalStatement => ("Provisional data statement", "Provisional data statement"),
+    ChartNoData => ("no data", "no data"),
+    /// `{title}`, `{now}`, `{high}`, `{low}`.
+    ChartNowHighLow => (
+        "{title}: now {now}, highest {high}, lowest {low}",
+        "{title}: now {now}, highest {high}, lowest {low}",
+    ),
+    /// `{title}`, `{high}`, `{low}`.
+    ChartHighLow => (
+        "{title}: highest {high}, lowest {low}",
+        "{title}: highest {high}, lowest {low}",
+    ),
+    /// `{lowest}`, `{lowest_time}`, `{highest}`, `{highest_time}`.
+    ExtremesAt => (
+        "lowest {lowest} at {lowest_time}, highest {highest} at {highest_time}.",
+        "lowest {lowest} at {lowest_time}, highest {highest} at {highest_time}.",
+    ),
+    /// `{hours}`.
+    SteadyOver => ("Steady over {hours} h", "Steady over {hours} h"),
+    ClassRecordLow => ("Record low", "Record low"),
+    ClassRecordHigh => ("Record high", "Record high"),
+    BasisStatistics => ("USGS statistics (beta)", "USGS statistics (beta)"),
+    /// `{years}`.
+    ApprovedOnly => ("approved data only, {years}", "approved data only, {years}"),
+    /// `{years}`.
+    ComputedFromDaily => (
+        "computed from {years} of daily values",
+        "computed from {years} of daily values",
+    ),
+    /// `{n}`.
+    YearOne => ("{n} year", "{n} year"),
+    YearMany => ("{n} years", "{n} years"),
+    RangeNoDischarge => (
+        "No discharge to compare with your ranges",
+        "No discharge to compare with your ranges",
+    ),
+    /// `{reason}`.
+    RangesNotApplied => (
+        "{reason}: your ranges are not applied",
+        "{reason}: your ranges are not applied",
+    ),
+    /// `{value}`, `{unit}`.
+    RangeBlownOut => (
+        "Blown out (above {value} {unit})",
+        "Blown out (above {value} {unit})",
+    ),
+    /// `{range}`.
+    RangeBest => ("Best range ({range})", "Best range ({range})"),
+    /// `{value}`, `{unit}`.
+    RangeWadeable => (
+        "Wadeable (below {value} {unit})",
+        "Wadeable (below {value} {unit})",
+    ),
+    RangeFishable => (
+        "Fishable (outside your best range)",
+        "Fishable (outside your best range)",
+    ),
+    /// `{from}`, `{to}`, `{unit}`.
+    RangeBetween => ("{from} to {to} {unit}", "{from} to {to} {unit}"),
+    /// `{value}`, `{unit}`.
+    RangeFrom => ("from {value} {unit}", "from {value} {unit}"),
+    RangeUpTo => ("up to {value} {unit}", "up to {value} {unit}"),
+    RuleWadeableBelow => ("Wadeable below", "Wadeable below"),
+    RuleBestFrom => ("Best from", "Best from"),
+    RuleBestUpTo => ("Best up to", "Best up to"),
+    RuleBlownOutAbove => ("Blown out above", "Blown out above"),
+    FloodAction => ("Action", "Action"),
+    FloodMinor => ("Minor", "Minor"),
+    FloodModerate => ("Moderate", "Moderate"),
+    FloodMajor => ("Major", "Major"),
+    Discharge => ("Discharge", "Discharge"),
+    Level => ("Level", "Level"),
+    Stage => ("Stage", "Stage"),
+    LakeLevel => ("Lake level", "Lake level"),
+    FlowWord => ("Flow", "Flow"),
+    Forecast => ("Forecast", "Forecast"),
+    RowBasis => ("Basis", "Basis"),
+    RowSample => ("Sample", "Sample"),
+    RowMedian => ("Median", "Median"),
+    RowRecordRange => ("Record range", "Record range"),
+    SectionNormal => ("Normal for this date", "Normal for this date"),
+    SectionRanges => ("Your ranges", "Your ranges"),
+    ForecastCrest => ("Forecast crest", "Forecast crest"),
+    SectionReadingQuality => ("Reading quality", "Reading quality"),
+    RowReliability => ("Reliability", "Reliability"),
+    /// `{threshold}`.
+    TroutStressRule => ("Trout stress {threshold}", "Trout stress {threshold}"),
+    SeaSurfaceForecast => (
+        "Forecast sea surface (modelled)",
+        "Forecast sea surface (modelled)",
+    ),
+    SeaSurfaceObserved => ("Observed sea surface", "Observed sea surface"),
+    SeaSurfaceObservedRow => ("Sea surface, observed", "Sea surface, observed"),
+    SeaSurfaceForecastRow => (
+        "Sea surface, forecast (modelled)",
+        "Sea surface, forecast (modelled)",
+    ),
+    SectionSeaSurface => ("Sea surface", "Sea surface"),
+    WaterWord => ("Water", "Water"),
+    Kd490Unavailable => (
+        "Unavailable: no current satellite source",
+        "Unavailable: no current satellite source",
+    ),
+    Kd490Note => (
+        "Satellite estimate of how deeply light reaches",
+        "Satellite estimate of how deeply light reaches",
+    ),
+    SatelliteUnavailable => (
+        "Satellite clarity is unavailable: no current source",
+        "Satellite clarity is unavailable: no current source",
+    ),
+    Turbidity => ("Turbidity", "Turbidity"),
+    ClarityWord => ("Clarity", "Clarity"),
+    Cyanobacteria => ("Cyanobacteria", "Cyanobacteria"),
+    /// `{value}`.
+    CellsPerMl => ("{value} cells/mL", "{value} cells/mL"),
+    SectionAlgae => ("Algae", "Algae"),
+    Chlorophyll => ("Chlorophyll", "Chlorophyll"),
     /// The placeholder for an unknown value.
     Missing => ("—", "—"),
 }
@@ -233,6 +361,8 @@ pub enum SafetyKey {
     TraditionalCue,
     TextOnly,
     RegulationsLink,
+    /// `{threshold}`: the user's trout-stress temperature.
+    TroutStress,
 }
 
 impl SafetyKey {
@@ -248,6 +378,7 @@ impl SafetyKey {
             Self::Approximate => "Approximate: check conditions locally before you go.",
             Self::TraditionalCue => "A traditional cue, not a promise.",
             Self::TextOnly => "Text only: open the map for the picture.",
+            Self::TroutStress => "Consider not fishing for trout above {threshold}.",
             Self::RegulationsLink => {
                 "Check the official source for current regulations; this is not legal advice."
             }
@@ -297,6 +428,12 @@ impl Strings {
     #[allow(clippy::unused_self)]
     pub const fn safety(self, key: SafetyKey) -> &'static str {
         key.text()
+    }
+
+    /// A safety text with its `{name}` placeholders filled: the same in every voice.
+    #[allow(clippy::unused_self)]
+    pub fn safety_fmt(self, key: SafetyKey, args: &[(&str, &str)]) -> String {
+        fill(key.text(), args)
     }
 
     /// The card title.
@@ -461,6 +598,7 @@ mod tests {
             SafetyKey::TraditionalCue,
             SafetyKey::TextOnly,
             SafetyKey::RegulationsLink,
+            SafetyKey::TroutStress,
         ] {
             assert_eq!(luna.safety(key), plain.safety(key));
             assert!(!key.text().contains("Luna"));

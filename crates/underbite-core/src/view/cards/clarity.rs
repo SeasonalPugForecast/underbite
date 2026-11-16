@@ -12,12 +12,12 @@ use crate::view::cards::flow::{
     sample_quality, spark, unreliable_text,
 };
 use crate::view::format::Formatter;
+use crate::view::strings::Key;
 use crate::view::{
     CardChrome, CardId, ChartVm, Compact, Quantity, Row, Section, SeriesRole, ViewInput,
 };
 
 const WEEK_S: i64 = 7 * 86_400;
-const KD490_UNAVAILABLE: &str = "Unavailable: no current satellite source";
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
 pub struct ClarityCard {
@@ -75,12 +75,12 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
         Some(l) => Kd490Vm {
             available: true,
             value: Some(qty(l.value, 2, "1/m")),
-            note: "Satellite estimate of how deeply light reaches".to_owned(),
+            note: f.strings.get(Key::Kd490Note).to_owned(),
         },
         None => Kd490Vm {
             available: false,
             value: None,
-            note: KD490_UNAVAILABLE.to_owned(),
+            note: f.strings.get(Key::Kd490Unavailable).to_owned(),
         },
     };
 
@@ -102,7 +102,7 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
         let show = |v: f32| f.turbidity(Some(v), unit);
         let series = if samples.len() >= 2 {
             vec![chart_series(
-                "Observed",
+                f.strings.get(Key::Observed),
                 SeriesRole::Observed,
                 &samples,
                 &show,
@@ -112,7 +112,7 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
         };
         chart_vm(
             &f,
-            "Turbidity",
+            f.strings.get(Key::Turbidity),
             unit.label().to_owned(),
             series,
             Vec::new(),
@@ -128,21 +128,27 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
     let mut rows: Vec<Row> = Vec::new();
     if let Some(l) = cyano.and_then(|s| s.latest()) {
         rows.push(row(
-            "Cyanobacteria",
-            &format!("{} cells/mL", Formatter::number(l.value, 0)),
+            f.strings.get(Key::Cyanobacteria),
+            &f.strings.fmt(
+                Key::CellsPerMl,
+                &[("value", &Formatter::number(l.value, 0))],
+            ),
         ));
     }
     if !rows.is_empty() {
         sections.push(Section {
-            title: "Algae".to_owned(),
+            title: f.strings.get(Key::SectionAlgae).to_owned(),
             rows,
         });
     }
     let turbidity_quality = latest_t.map(|(s, l)| sample_quality(s, l));
     if let Some(q) = turbidity_quality.filter(|q| is_unreliable(*q)) {
         sections.push(Section {
-            title: "Reading quality".to_owned(),
-            rows: vec![row("Reliability", unreliable_text(q))],
+            title: f.strings.get(Key::SectionReadingQuality).to_owned(),
+            rows: vec![row(
+                f.strings.get(Key::RowReliability),
+                unreliable_text(&f, q),
+            )],
         });
     }
 
@@ -162,10 +168,10 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
         .unwrap_or_else(|| f.turbidity(None, TurbidityUnit::Fnu));
     let mut lines: Vec<String> = Vec::new();
     if let Some(q) = turbidity_quality.filter(|q| is_unreliable(*q)) {
-        lines.push(unreliable_text(q).to_owned());
+        lines.push(unreliable_text(&f, q).to_owned());
     }
     if let Some(c) = &chlorophyll_q {
-        lines.push(format!("Chlorophyll {}", c.full()));
+        lines.push(format!("{} {}", f.strings.get(Key::Chlorophyll), c.full()));
     }
     lines.push(f.station_footer(main).text);
     lines.truncate(2);
@@ -173,7 +179,8 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
     let title = f.strings.card_title(CardId::Clarity).to_owned();
     let mut accessibility = format!("{title}: {}", headline.full());
     if !kd490_vm.available {
-        accessibility.push_str(". Satellite clarity is unavailable: no current source");
+        accessibility.push_str(". ");
+        accessibility.push_str(f.strings.get(Key::SatelliteUnavailable));
     }
     let qualities: Vec<Quality> = provs.iter().map(|p| p.quality).collect();
     let latest = latest_t.map(|(_, l)| l.time);
@@ -186,11 +193,11 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
     } else {
         Measurement::Clarity
     };
-    let label = if turbidity.is_some() {
-        "Turbidity"
+    let label = f.strings.get(if turbidity.is_some() {
+        Key::Turbidity
     } else {
-        "Clarity"
-    };
+        Key::ClarityWord
+    });
 
     Some(ClarityCard {
         chrome: CardChrome {

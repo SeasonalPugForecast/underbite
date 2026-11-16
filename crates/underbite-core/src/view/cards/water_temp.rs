@@ -12,6 +12,7 @@ use crate::view::cards::flow::{
     row, sample_quality, spark, trend, unreliable_text,
 };
 use crate::view::format::{Formatter, number};
+use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
     CardChrome, CardId, ChartRule, ChartVm, Compact, Quantity, Row, RuleKind, Section, SeriesRole,
     TrendVm, ViewInput,
@@ -116,7 +117,9 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
             let threshold = show(limit);
             TroutStressVm {
                 exceeded: latest.value > limit && !is_unreliable(quality),
-                text: format!("Consider not fishing for trout above {}.", threshold.full()),
+                text: f
+                    .strings
+                    .safety_fmt(SafetyKey::TroutStress, &[("threshold", &threshold.full())]),
                 threshold,
             }
         });
@@ -126,11 +129,11 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
     let pts = observed_after(primary, from);
     if !pts.is_empty() {
         let (label, role) = if forecast_only {
-            ("Forecast sea surface (modelled)", SeriesRole::Modelled)
+            (f.strings.get(Key::SeaSurfaceForecast), SeriesRole::Modelled)
         } else if basis == TempBasis::Measured {
-            ("Observed", SeriesRole::Observed)
+            (f.strings.get(Key::Observed), SeriesRole::Observed)
         } else {
-            ("Observed sea surface", SeriesRole::Observed)
+            (f.strings.get(Key::SeaSurfaceObserved), SeriesRole::Observed)
         };
         series.push(chart_series(label, role, pts, &show));
     }
@@ -141,7 +144,7 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
         let pts = observed_after(s, now);
         if !pts.is_empty() {
             series.push(chart_series(
-                "Forecast sea surface (modelled)",
+                f.strings.get(Key::SeaSurfaceForecast),
                 SeriesRole::Modelled,
                 pts,
                 &show,
@@ -155,12 +158,14 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
         rules.push(ChartRule {
             kind: RuleKind::Threshold,
             value: v,
-            label: format!("Trout stress {}", t.threshold.full()),
+            label: f
+                .strings
+                .fmt(Key::TroutStressRule, &[("threshold", &t.threshold.full())]),
         });
     }
     let chart = chart_vm(
         &f,
-        "Water temperature",
+        f.strings.card_title(CardId::WaterTemp),
         f.temperature(None).unit,
         series,
         rules,
@@ -173,23 +178,32 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
     if basis == TempBasis::Measured
         && let Some(l) = sst.and_then(Series::latest)
     {
-        rows.push(row("Sea surface, observed", &show(l.value).full()));
+        rows.push(row(
+            f.strings.get(Key::SeaSurfaceObservedRow),
+            &show(l.value).full(),
+        ));
     }
     if let Some(s) = sst_forecast.filter(|_| !forecast_only)
         && let Some(v) = s.at(now, std::time::Duration::from_hours(6))
     {
-        rows.push(row("Sea surface, forecast (modelled)", &show(v).full()));
+        rows.push(row(
+            f.strings.get(Key::SeaSurfaceForecastRow),
+            &show(v).full(),
+        ));
     }
     if !rows.is_empty() {
         sections.push(Section {
-            title: "Sea surface".to_owned(),
+            title: f.strings.get(Key::SectionSeaSurface).to_owned(),
             rows,
         });
     }
     if is_unreliable(quality) {
         sections.push(Section {
-            title: "Reading quality".to_owned(),
-            rows: vec![row("Reliability", unreliable_text(quality))],
+            title: f.strings.get(Key::SectionReadingQuality).to_owned(),
+            rows: vec![row(
+                f.strings.get(Key::RowReliability),
+                unreliable_text(&f, quality),
+            )],
         });
     }
 
@@ -197,7 +211,7 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
     let prov: &Provenance = primary.provenance();
     let mut lines: Vec<String> = Vec::new();
     if is_unreliable(quality) {
-        lines.push(unreliable_text(quality).to_owned());
+        lines.push(unreliable_text(&f, quality).to_owned());
     }
     if let Some(t) = trout_stress.as_ref().filter(|t| t.exceeded) {
         lines.push(t.text.clone());
@@ -227,7 +241,7 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
     }
     if is_unreliable(quality) {
         accessibility.push_str(". ");
-        accessibility.push_str(unreliable_text(quality));
+        accessibility.push_str(unreliable_text(&f, quality));
     }
     let qualities: Vec<Quality> = vec![quality];
 
@@ -235,7 +249,11 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
         chrome: CardChrome {
             id: CardId::WaterTemp,
             title,
-            footnote: Some(f.footnote(&format!("Water {}", value.full()), prov, now)),
+            footnote: Some(f.footnote(
+                &format!("{} {}", f.strings.get(Key::WaterWord), value.full()),
+                prov,
+                now,
+            )),
             credits: credits(input, &[prov]),
             state: card_state(input, &f, measurement, prov, Some(latest.time)),
             notices: quality_notices(&f, &qualities),

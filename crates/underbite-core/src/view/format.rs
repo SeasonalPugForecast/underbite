@@ -496,7 +496,7 @@ fn round_u32(x: f32) -> u32 {
     x.round() as u32
 }
 
-fn ordinal(n: u32) -> String {
+pub(crate) fn ordinal(n: u32) -> String {
     let suffix = match (n % 100, n % 10) {
         (11..=13, _) => "th",
         (_, 1) => "st",
