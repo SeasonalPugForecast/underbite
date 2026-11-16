@@ -1,0 +1,189 @@
+---
+source: crates/underbite-core/src/view/cards/storm_ahead.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "storm_ahead",
+    "title": "Storm ahead",
+    "footnote": "Storm outlook checked Jan 15, 2:00 PM · modelled",
+    "credits": [
+      {
+        "source": "Open-Meteo",
+        "text": "Weather model data by Open-Meteo.com, with ECMWF, NOAA GFS, GEM and ICON forecasts",
+        "link": "https://open-meteo.com/",
+        "licence": "CC BY 4.0"
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "approximate",
+        "text": "Approximate: check conditions locally before you go."
+      }
+    ],
+    "accessibility": "Storm ahead · Sat night – Sun night. Up to 35 cm of snow · models disagree."
+  },
+  "compact": {
+    "headline": {
+      "value": 35.180004,
+      "text": "35",
+      "unit": "cm"
+    },
+    "lines": [
+      "Storm ahead · Sat night – Sun night",
+      "Up to 35 cm of snow · models disagree"
+    ],
+    "spark": []
+  },
+  "full": {
+    "event": {
+      "title": "Storm ahead · Sat night – Sun night",
+      "window": "Sat night – Sun night",
+      "start": 1800122400,
+      "end": 1800273600,
+      "severity": "watch",
+      "headline": {
+        "kind": "snow",
+        "text": "Up to 35 cm of snow",
+        "amount": {
+          "value": 35.180004,
+          "text": "35",
+          "unit": "cm"
+        }
+      },
+      "agreement": {
+        "agreement": "low",
+        "label": "Low agreement",
+        "sentence": "ECMWF brings 35 cm of snow; GFS 8 cm."
+      },
+      "models": [
+        {
+          "model": "ECMWF",
+          "snow": {
+            "value": 35.180004,
+            "text": "35.2",
+            "unit": "cm"
+          },
+          "precipitation": {
+            "value": 43.600006,
+            "text": "43.6",
+            "unit": "mm"
+          },
+          "gust": {
+            "value": 83.7,
+            "text": "84",
+            "unit": "km/h"
+          },
+          "low": {
+            "value": 979.3,
+            "text": "979",
+            "unit": "hPa"
+          },
+          "low_at": "Sun 1 PM",
+          "onset": "Sat 10 PM"
+        },
+        {
+          "model": "GFS",
+          "snow": {
+            "value": 7.54,
+            "text": "7.5",
+            "unit": "cm"
+          },
+          "precipitation": {
+            "value": 13.700002,
+            "text": "13.7",
+            "unit": "mm"
+          },
+          "gust": {
+            "value": 47.4,
+            "text": "47",
+            "unit": "km/h"
+          },
+          "low": {
+            "value": 999.1,
+            "text": "999",
+            "unit": "hPa"
+          },
+          "low_at": "Sun 4 PM",
+          "onset": "Sun 8 AM"
+        },
+        {
+          "model": "GEM",
+          "snow": {
+            "value": 21.319998,
+            "text": "21.3",
+            "unit": "cm"
+          },
+          "precipitation": {
+            "value": 29.7,
+            "text": "29.7",
+            "unit": "mm"
+          },
+          "gust": {
+            "value": 63.300003,
+            "text": "63",
+            "unit": "km/h"
+          },
+          "low": {
+            "value": 989.5,
+            "text": "990",
+            "unit": "hPa"
+          },
+          "low_at": "Sun 1 PM",
+          "onset": "Sun 12 AM"
+        },
+        {
+          "model": "ICON",
+          "snow": {
+            "value": 27.650002,
+            "text": "27.7",
+            "unit": "cm"
+          },
+          "precipitation": {
+            "value": 37.799995,
+            "text": "37.8",
+            "unit": "mm"
+          },
+          "gust": {
+            "value": 75.4,
+            "text": "75",
+            "unit": "km/h"
+          },
+          "low": {
+            "value": 983.5,
+            "text": "984",
+            "unit": "hPa"
+          },
+          "low_at": "Sun 10 AM",
+          "onset": "Sat 8 PM"
+        }
+      ]
+    },
+    "hurricanes": [],
+    "sections": [
+      {
+        "title": "Why you see this",
+        "rows": [
+          {
+            "label": "Shown when",
+            "value": "the models' average reaches about 5 cm of snow, 25 mm of precipitation or gusts of 60 km/h, within 5 days",
+            "detail": null
+          }
+        ]
+      },
+      {
+        "title": "Safety",
+        "rows": [
+          {
+            "label": "Forecasts change",
+            "value": "Storm forecasts change from one run to the next and can be wrong about where a storm goes. Check the National Weather Service and the National Hurricane Center, and follow local officials, before you go on or near the water.",
+            "detail": null
+          }
+        ]
+      }
+    ]
+  }
+}

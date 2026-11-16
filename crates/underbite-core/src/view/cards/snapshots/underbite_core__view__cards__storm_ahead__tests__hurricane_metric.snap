@@ -1,0 +1,98 @@
+---
+source: crates/underbite-core/src/view/cards/storm_ahead.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "storm_ahead",
+    "title": "Storm ahead",
+    "footnote": "Storm outlook checked Jan 15, 2:00 PM · modelled",
+    "credits": [
+      {
+        "source": "NOAA National Hurricane Center",
+        "text": "Advisories, forecast tracks and the forecast cone: NOAA National Hurricane Center",
+        "link": "https://www.nhc.noaa.gov/text/MIATCPAT1.shtml",
+        "licence": "Public domain"
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "approximate",
+        "text": "Approximate: check conditions locally before you go."
+      }
+    ],
+    "accessibility": "Storm ahead: Hurricane Sample · Category 2. The forecast cone reaches this spot on Sun Jan 17. Winds 165 km/h · 965 hPa · N at 15 km/h."
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "Hurricane Sample · Category 2",
+      "unit": ""
+    },
+    "lines": [
+      "The forecast cone reaches this spot on Sun Jan 17",
+      "Winds 165 km/h · 965 hPa · N at 15 km/h"
+    ],
+    "spark": []
+  },
+  "full": {
+    "event": null,
+    "hurricanes": [
+      {
+        "id": "al992027",
+        "name": "Sample",
+        "title": "Hurricane Sample · Category 2",
+        "classification": "HU",
+        "category": 2,
+        "severity": "severe",
+        "wind": {
+          "value": 165.0,
+          "text": "165",
+          "unit": "km/h"
+        },
+        "pressure": {
+          "value": 965.0,
+          "text": "965",
+          "unit": "hPa"
+        },
+        "movement": "N at 15 km/h",
+        "strength": "Winds 165 km/h · 965 hPa · N at 15 km/h",
+        "advisory": "Advisory Fri 4:00 PM",
+        "advisory_url": "https://www.nhc.noaa.gov/text/MIATCPAT1.shtml",
+        "reaches": "The forecast cone reaches this spot on Sun Jan 17",
+        "reaches_at": 1800240828,
+        "leaves_at": 1800294390
+      }
+    ],
+    "sections": [
+      {
+        "title": "Why you see this",
+        "rows": [
+          {
+            "label": "Shown when",
+            "value": "the models' average reaches about 5 cm of snow, 25 mm of precipitation or gusts of 60 km/h, within 5 days",
+            "detail": null
+          },
+          {
+            "label": "Hurricanes",
+            "value": "NHC's forecast cone reaches this spot within 5 days",
+            "detail": null
+          }
+        ]
+      },
+      {
+        "title": "Safety",
+        "rows": [
+          {
+            "label": "Forecasts change",
+            "value": "Storm forecasts change from one run to the next and can be wrong about where a storm goes. Check the National Weather Service and the National Hurricane Center, and follow local officials, before you go on or near the water.",
+            "detail": null
+          }
+        ]
+      }
+    ]
+  }
+}
