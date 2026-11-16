@@ -1,0 +1,174 @@
+import SwiftUI
+import UnderbiteKit
+
+/// Trout stress threshold and the solunar switch.
+struct FishingPage: View {
+    var body: some View {
+        PreferencePage(title: "Trout and fishing windows") { access in
+            if let settings = access.settings {
+                Section {
+                    QuantityRow(
+                        title: "Trout stress above", quantity: Preferences.troutStress,
+                        settingsJSON: access.json, value: settings.thresholds.troutStressC,
+                        optional: false
+                    ) { value in
+                        if let value { access.edit { $0.thresholds.troutStressC = value } }
+                    }
+                    Button("Use the usual threshold") {
+                        access.edit { $0.thresholds.troutStressC = Preferences.defaultTroutStressC }
+                    }
+                    .disabled(settings.thresholds.troutStressC == Preferences.defaultTroutStressC)
+                } footer: {
+                    Text("Above this water temperature the water temperature card warns that trout are stressed. The usual threshold is 20 °C (68 °F).")
+                }
+                Section {
+                    Toggle(
+                        "Show solunar times",
+                        isOn: access.binding({ $0.windows.showSolunar }, fallback: true) {
+                            $0.windows.showSolunar = $1
+                        })
+                } footer: {
+                    Text("Solunar major and minor periods, from the sun and moon. Left out of the fishing windows when off.")
+                }
+            }
+        }
+    }
+}
+
+/// How old a reading may be and how far away a station may be, per kind of data.
+struct FreshnessPage: View {
+    var body: some View {
+        PreferencePage(title: "Freshness and distance") { access in
+            if let settings = access.settings {
+                ForEach(Preferences.SourceKind.allCases) { kind in
+                    let group = kind.group(in: settings.sources)
+                    Section(kind.title) {
+                        Picker(
+                            "Oldest reading",
+                            selection: Binding<Int>(
+                                get: { group.maxAgeMinutes ?? 0 },
+                                set: { minutes in
+                                    access.edit {
+                                        var changed = kind.group(in: $0.sources)
+                                        changed.maxAgeMinutes = minutes == 0 ? nil : minutes
+                                        kind.set(changed, in: &$0.sources)
+                                    }
+                                })
+                        ) {
+                            Text("Any age").tag(0)
+                            ForEach(choices(including: group.maxAgeMinutes), id: \.self) { minutes in
+                                Text(Duration.seconds(minutes * 60).formatted(
+                                    .units(allowed: [.days, .hours, .minutes], width: .wide)
+                                )).tag(minutes)
+                            }
+                        }
+                        QuantityRow(
+                            title: "Farthest station", quantity: Preferences.distance,
+                            settingsJSON: access.json, value: group.maxDistanceKm,
+                            offLabel: "Any distance"
+                        ) { value in
+                            access.edit {
+                                var changed = kind.group(in: $0.sources)
+                                changed.maxDistanceKm = value
+                                kind.set(changed, in: &$0.sources)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// The usual choices, with a stored age that is not one of them.
+    private func choices(including stored: Int?) -> [Int] {
+        var all = Preferences.freshnessChoices
+        if let stored, stored > 0, !all.contains(stored) { all = (all + [stored]).sorted() }
+        return all
+    }
+}
+
+/// How often the data refreshes: an app preference, not part of the settings document.
+struct RefreshPage: View {
+    @Environment(SpotStore.self) private var store
+
+    var body: some View {
+        Form {
+            Section {
+                Picker(
+                    "Refresh every",
+                    selection: Binding(
+                        get: { store.refreshMinutes }, set: { store.setRefreshMinutes($0) })
+                ) {
+                    ForEach(RefreshPolicy.choices, id: \.self) { minutes in
+                        Text(Duration.seconds(minutes * 60).formatted(
+                            .units(allowed: [.hours, .minutes], width: .wide))
+                        ).tag(minutes)
+                    }
+                }
+                .pickerStyle(.inline)
+            } footer: {
+                Text("Data is fetched when the app opens and older than about two thirds of this, and again while it is open. Low Power Mode waits longer.")
+            }
+        }
+        .navigationTitle("Refresh")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// Luna's voice or plain words. Values, alerts and safety text are plain either way.
+struct VoicePage: View {
+    var body: some View {
+        PreferencePage(title: "Voice") { access in
+            Section {
+                Picker(
+                    "Voice",
+                    selection: access.binding({ $0.presentation.voice }, fallback: "luna") {
+                        $0.presentation.voice = $1
+                    }
+                ) {
+                    Text("Luna").tag("luna")
+                    Text("Plain").tag("plain")
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+            } footer: {
+                Text("Luna adds a little personality to captions and empty screens. Safety text, alerts and the \"not for navigation\" notes are always plain.")
+            }
+        }
+    }
+}
+
+/// How exactly a spot's place is sent to the data providers.
+struct PrivacyPage: View {
+    var body: some View {
+        PreferencePage(title: "Privacy") { access in
+            let current = access.settings?.sources.coordinatePrecision ?? 2
+            Section {
+                Picker(
+                    "Place sent as",
+                    selection: access.binding({ $0.sources.coordinatePrecision }, fallback: 2) {
+                        $0.sources.coordinatePrecision = $1
+                    }
+                ) {
+                    ForEach(Preferences.precisionChoices, id: \.self) { decimals in
+                        Text(Self.title(decimals)).tag(decimals)
+                    }
+                    if !Preferences.allowsPrecision(current) {
+                        Text("Finer than allowed: choose another").tag(current)
+                    }
+                }
+                .pickerStyle(.inline)
+            } footer: {
+                Text("Data providers are sent your spot's place rounded to this many decimals of latitude and longitude, never finer. Your exact spots stay on this device. A coarser place may pick a station farther from the water you fish.")
+            }
+        }
+    }
+
+    private static func title(_ decimals: Int) -> String {
+        switch decimals {
+        case 2: "2 decimals, neighbourhood"
+        case 1: "1 decimal, town"
+        default: "Whole degrees, region"
+        }
+    }
+}
