@@ -8,8 +8,9 @@ use crate::model::{SolunarCause, SolunarKind, SolunarPeriod};
 use crate::time::UnixTime;
 use crate::view::cards::sun_moon::{computed_credit, day_label, today_and_after};
 use crate::view::format::{Formatter, number};
+use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
-    CardChrome, CardId, CardState, Compact, NoticeKind, Quantity, Row, Section, ViewInput, Voice,
+    CardChrome, CardId, CardState, Compact, NoticeKind, Quantity, Row, Section, ViewInput,
 };
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -46,22 +47,20 @@ pub struct SolunarFull {
 }
 
 /// The period's name in the voice: "Major", or Luna's "Big nibble".
-pub(crate) fn kind_label(voice: Voice, kind: SolunarKind) -> &'static str {
-    match (voice, kind) {
-        (Voice::Plain, SolunarKind::Major) => "Major",
-        (Voice::Plain, SolunarKind::Minor) => "Minor",
-        (Voice::Luna, SolunarKind::Major) => "Big nibble",
-        (Voice::Luna, SolunarKind::Minor) => "Small nibble",
-    }
+pub(crate) fn kind_label(f: &Formatter, kind: SolunarKind) -> &'static str {
+    f.strings.get(match kind {
+        SolunarKind::Major => Key::SolunarMajor,
+        SolunarKind::Minor => Key::SolunarMinor,
+    })
 }
 
-fn cause_label(cause: SolunarCause) -> &'static str {
-    match cause {
-        SolunarCause::UpperTransit => "Moon overhead",
-        SolunarCause::LowerTransit => "Moon underfoot",
-        SolunarCause::Rise => "Moonrise",
-        SolunarCause::Set => "Moonset",
-    }
+fn cause_label(f: &Formatter, cause: SolunarCause) -> &'static str {
+    f.strings.get(match cause {
+        SolunarCause::UpperTransit => Key::MoonOverhead,
+        SolunarCause::LowerTransit => Key::MoonUnderfoot,
+        SolunarCause::Rise => Key::Moonrise,
+        SolunarCause::Set => Key::Moonset,
+    })
 }
 
 /// "6:10 to 8:10 AM": a shared AM or PM is written once.
@@ -80,11 +79,11 @@ fn period_vm(f: &Formatter, p: &SolunarPeriod) -> SolunarPeriodVm {
     SolunarPeriodVm {
         kind: p.kind,
         cause: p.cause,
-        label: kind_label(f.strings.voice, p.kind).to_owned(),
+        label: kind_label(f, p.kind).to_owned(),
         start_t: p.start.0,
         end_t: p.end.0,
         range: range_text(f, p.start, p.end),
-        cause_label: cause_label(p.cause).to_owned(),
+        cause_label: cause_label(f, p.cause).to_owned(),
     }
 }
 
@@ -97,6 +96,7 @@ fn next_of(periods: &[&SolunarPeriod], kind: SolunarKind, now: UnixTime) -> Opti
         .map(|p| **p)
 }
 
+#[allow(clippy::too_many_lines)]
 pub fn build(input: &ViewInput) -> Option<SolunarCard> {
     if !input.solunar.show {
         return None;
@@ -113,14 +113,19 @@ pub fn build(input: &ViewInput) -> Option<SolunarCard> {
     let minor = next_of(&all, SolunarKind::Minor, now);
     let line = |p: &Option<SolunarPeriod>| {
         p.map(|p| {
-            let label = kind_label(f.strings.voice, p.kind);
+            let label = kind_label(&f, p.kind);
             if p.start <= now {
-                format!("{label} now, until {}", f.clock(p.end))
+                f.strings.fmt(
+                    Key::SolunarNow,
+                    &[("label", label), ("time", &f.clock(p.end))],
+                )
             } else {
-                format!(
-                    "Next {} {}",
-                    label.to_lowercase(),
-                    range_text(&f, p.start, p.end)
+                f.strings.fmt(
+                    Key::NextEvent,
+                    &[
+                        ("kind", &label.to_lowercase()),
+                        ("time", &range_text(&f, p.start, p.end)),
+                    ],
                 )
             }
         })
@@ -134,21 +139,21 @@ pub fn build(input: &ViewInput) -> Option<SolunarCard> {
         if p.start <= now {
             Quantity {
                 value: Some(0.0),
-                text: "now".to_owned(),
+                text: f.strings.get(Key::NowText).to_owned(),
                 unit: String::new(),
             }
         } else if minutes < 120.0 {
             Quantity {
                 value: Some(minutes),
                 text: number(minutes, 0),
-                unit: "min".to_owned(),
+                unit: f.strings.get(Key::UnitMinutes).to_owned(),
             }
         } else {
             let hours = minutes / 60.0;
             Quantity {
                 value: Some(hours),
                 text: number(hours, 1),
-                unit: "h".to_owned(),
+                unit: f.strings.get(Key::UnitHours).to_owned(),
             }
         }
     });
@@ -162,7 +167,10 @@ pub fn build(input: &ViewInput) -> Option<SolunarCard> {
         .collect();
 
     let mut rows = Vec::new();
-    for (p, name) in [(&major, "Next major"), (&minor, "Next minor")] {
+    for (p, name) in [
+        (&major, f.strings.get(Key::SolunarNextMajor)),
+        (&minor, f.strings.get(Key::SolunarNextMinor)),
+    ] {
         if let Some(p) = p {
             let vm = period_vm(&f, p);
             rows.push(Row {
@@ -172,18 +180,17 @@ pub fn build(input: &ViewInput) -> Option<SolunarCard> {
             });
         }
     }
+    let title = f.strings.card_title(CardId::Solunar);
+    let cue = f.strings.safety(SafetyKey::TraditionalCue);
     let accessibility = if lines.is_empty() {
-        "Solunar: no more periods in the forecast. A traditional cue, not a promise.".to_owned()
+        format!("{title}: {}. {cue}", f.strings.get(Key::SolunarNone))
     } else {
-        format!(
-            "Solunar: {}. A traditional cue, not a promise.",
-            lines.join(". ")
-        )
+        format!("{title}: {}. {cue}", lines.join(". "))
     };
     Some(SolunarCard {
         chrome: CardChrome {
             id: CardId::Solunar,
-            title: f.strings.card_title(CardId::Solunar).to_owned(),
+            title: title.to_owned(),
             footnote: None,
             credits: vec![computed_credit(f.strings)],
             state: CardState::Fresh,
@@ -198,7 +205,7 @@ pub fn build(input: &ViewInput) -> Option<SolunarCard> {
         full: SolunarFull {
             days: day_vms,
             sections: vec![Section {
-                title: "Next".to_owned(),
+                title: f.strings.get(Key::Next).to_owned(),
                 rows,
             }],
         },
@@ -209,6 +216,7 @@ pub fn build(input: &ViewInput) -> Option<SolunarCard> {
 mod tests {
     use super::*;
     use crate::time::parse_rfc3339;
+    use crate::view::Voice;
     use crate::view::cards::sun_moon::testing::battery_input;
     use whether_core::presentation::TimeFormat;
 

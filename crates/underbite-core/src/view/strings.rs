@@ -200,6 +200,22 @@ keys! {
         "Sun and moon positions from astronomical algorithms",
         "Sun and moon positions from astronomical algorithms",
     ),
+    /// The name of a major solunar period; Luna calls it a big nibble.
+    SolunarMajor => ("Major", "Big nibble"),
+    SolunarMinor => ("Minor", "Small nibble"),
+    /// `{label}` (the period's name), `{time}`.
+    SolunarNow => ("{label} now, until {time}", "{label} now, until {time}"),
+    SolunarNextMajor => ("Next major", "Next major"),
+    SolunarNextMinor => ("Next minor", "Next minor"),
+    SolunarNone => (
+        "no more periods in the forecast",
+        "no more periods in the forecast",
+    ),
+    /// The headline when a solunar period is under way.
+    NowText => ("now", "now"),
+    UnitMinutes => ("min", "min"),
+    UnitHours => ("h", "h"),
+    Next => ("Next", "Next"),
     /// The placeholder for an unknown value.
     Missing => ("—", "—"),
 }

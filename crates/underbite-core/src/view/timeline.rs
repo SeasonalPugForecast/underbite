@@ -589,7 +589,7 @@ fn solunar_lane(ctx: &Ctx) -> ChartVm {
         .filter_map(|p| {
             let label = format!(
                 "{} {}",
-                kind_label(f.strings.voice, p.kind),
+                kind_label(f, p.kind),
                 range_text(f, p.start, p.end)
             );
             let kind = match p.kind {
