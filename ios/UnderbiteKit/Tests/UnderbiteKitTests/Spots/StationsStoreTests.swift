@@ -233,6 +233,38 @@ final class StationsStoreTests: XCTestCase {
         XCTAssertEqual(lookups.value, 0, "no lookup was needed")
     }
 
+    func testAnOpenedListShowsTheStationsAFetchStoredWithoutWaitingForIt() async throws {
+        let release = Shared(false)
+        let (s, host) = store(
+            in: directory,
+            fetcher: { _, _, _, _, _, _ in
+                // A long fetch that has ranked the stations already.
+                while !release.value { try? await Task.sleep(for: .milliseconds(5)) }
+                throw URLError(.notConnectedToInternet)
+            },
+            discoverer: { _, _, _, _, _ in throw URLError(.notConnectedToInternet) })
+        s.add(SeedSpots.battery)
+        // What the fetch's first step stores on the host: a ranking of the spot's stations.
+        _ = try await discoverStations(
+            spot: SeedSpots.battery.info, settingsJson: s.settingsJSON, keys: Self.noKeys,
+            allowMetered: false, now: Self.now, host: host)
+        let stored = try XCTUnwrap(storedStations(spotId: SeedSpots.battery.id, host: host))
+
+        let refresh = Task { await s.refresh() }
+        try? await Task.sleep(for: .milliseconds(20))
+        let list = Task { await s.discoverStations(for: SeedSpots.battery.id) }
+        try? await Task.sleep(for: .milliseconds(20))
+        // The lookup waits for the fetch; the list already has the stored stations.
+        XCTAssertTrue(s.discovering.isEmpty)
+        XCTAssertEqual(s.cache(SeedSpots.battery.id).stationsJSON, stored)
+        release.value = true
+        await refresh.value
+        await list.value
+        // Neither the failed fetch nor the failed lookup dropped them.
+        XCTAssertEqual(s.cache(SeedSpots.battery.id).stationsJSON, stored)
+        XCTAssertNotNil(s.stationProblems[SeedSpots.battery.id])
+    }
+
     func testAnOfflineLookupKeepsTheStationsItHadAndSaysWhy() async {
         let offline = Shared(false)
         let (s, _) = store(

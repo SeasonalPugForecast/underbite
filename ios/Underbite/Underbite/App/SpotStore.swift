@@ -417,6 +417,7 @@ final class SpotStore {
         let now = clock()
         let options = FetchOptions(
             allowMetered: true, inferWaterType: !spot.waterTypeChosen && held.suggestion == nil)
+        var ranked: String?
         do {
             let outcome = try await fetcher(
                 spot.info, settingsJSON, keys(), options, now, host)
@@ -431,13 +432,17 @@ final class SpotStore {
                 held.lastSuccess = now
                 held.error = nil
                 // The stations the fetch ranked, so the list shows them before any lookup.
-                if let stations = storedStations(spotId: id, host: host) {
-                    held.stationsJSON = stations
-                    stationsRevision += 1
-                }
+                ranked = storedStations(spotId: id, host: host)
             }
         } catch {
             held.error = String(describing: error)
+        }
+        // Else the stations a list kept while the fetch ran stay.
+        if let ranked {
+            held.stationsJSON = ranked
+            stationsRevision += 1
+        } else {
+            held.stationsJSON = cache(id).stationsJSON
         }
         caches[id] = held
         files.write(held, files.cacheName(id))
@@ -451,6 +456,7 @@ final class SpotStore {
     /// one meanwhile. Cancelling the caller does not stop it.
     func discoverStations(for id: String) async {
         guard spot(id) != nil else { return }
+        keepStoredStations(id)
         lookups.add([id])
         if !running {
             running = true
@@ -459,6 +465,19 @@ final class SpotStore {
             Task { await self.drain() }
         }
         await withCheckedContinuation { lookupWaiters[id, default: []].append($0) }
+    }
+
+    /// Keeps the stations a fetch or lookup of `id` last stored on the host, read without a
+    /// request: a fetch ranks them first and stores them long before it ends, so the list need
+    /// not wait for it.
+    private func keepStoredStations(_ id: String) {
+        var held = cache(id)
+        guard let stored = storedStations(spotId: id, host: host), stored != held.stationsJSON
+        else { return }
+        held.stationsJSON = stored
+        caches[id] = held
+        files.write(held, files.cacheName(id))
+        stationsRevision += 1
     }
 
     private func discoverOne(_ id: String) async {
