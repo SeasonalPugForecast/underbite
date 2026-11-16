@@ -2,6 +2,53 @@
 # route answers the first request whose URL contains `match`; `file` is relative to this file.
 # A request with no route fails with its redacted URL.
 
+# 3DHP hydrography (layer 50 flowlines, layer 60 waterbodies), each answered only for the exact
+# geometry recorded (and, for a waterbody point, its search distance), so a query nobody
+# recorded fails.
+# Flowlines and waterbodies within 5 km of the spot rounded to 41.23,-73.86 (plus the rounding
+# cell).
+[[route]]
+match = "geometry=-73.92804,41.17883,-73.79196,41.28117&"
+file = "../../raw/hydro/hydro-50-croton-geom.json"
+
+[[route]]
+match = "geometry=-73.86000,41.23000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=5696&"
+file = "../../raw/hydro/hydro-60-croton-geom.json"
+
+# Within 1.5 km (plus the rounding cell) of the river gauges beyond them: Hunter Brook, Katonah,
+# West Nyack and West Point.
+[[route]]
+match = "geometry=-73.86625,41.24027,-73.81375,41.27973&"
+file = "../../raw/hydro/hydro-50-hunter-brook-geom.json"
+
+[[route]]
+match = "geometry=-73.84000,41.26000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
+file = "../../raw/hydro/hydro-60-hunter-brook-geom.json"
+
+[[route]]
+match = "geometry=-73.69625,41.25027,-73.64375,41.28973&"
+file = "../../raw/hydro/hydro-50-ktnn6-geom.json"
+
+[[route]]
+match = "geometry=-73.67000,41.27000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
+file = "../../raw/hydro/hydro-60-ktnn6-geom.json"
+
+[[route]]
+match = "geometry=-73.98619,41.08026,-73.93381,41.11974&"
+file = "../../raw/hydro/hydro-50-wnyn6-geom.json"
+
+[[route]]
+match = "geometry=-73.96000,41.10000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2197&"
+file = "../../raw/hydro/hydro-60-wnyn6-geom.json"
+
+[[route]]
+match = "geometry=-73.98629,41.37027,-73.93371,41.40973&"
+file = "../../raw/hydro/hydro-50-wptn6-geom.json"
+
+[[route]]
+match = "geometry=-73.96000,41.39000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
+file = "../../raw/hydro/hydro-60-wptn6-geom.json"
+
 # USGS water data: the specific collections first, the site lookup last.
 [[route]]
 match = "collections/latest-continuous"
@@ -130,16 +177,6 @@ file = "../../raw/nwps/nwps-gauge-SADN4.json"
 [[route]]
 match = "nwps/v1/gauges?bbox"
 file = "../../raw/nwps/nwps-gauges-bbox-lower-hudson.json"
-
-# 3DHP hydrography, with geometry: the named flowlines around the dam and the reservoir's
-# generalised outline.
-[[route]]
-match = "3DHP_all/MapServer/50/query"
-file = "../../raw/hydro/hydro-50-croton-envelope.json"
-
-[[route]]
-match = "3DHP_all/MapServer/60/query"
-file = "../../raw/hydro/hydro-60-new-croton-reservoir-geom.json"
 
 # Storms: NHC and the Open-Meteo run metadata, then the point series (before the plain forecast;
 # whether's recording for New York City stands in until the spot's own is recorded).

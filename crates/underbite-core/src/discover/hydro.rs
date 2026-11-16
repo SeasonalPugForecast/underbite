@@ -13,7 +13,6 @@
 //! polyline a few percent longer. Estuary connectors carry no tidal information, so nothing here
 //! infers ebb or flood from them.
 
-use std::cmp::Ordering;
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
@@ -23,6 +22,9 @@ use crate::provenance::{Relation, SourceId, StationKind, StationRef, UsgsSiteTyp
 
 /// Mean Earth radius (IUGG), metres.
 const EARTH_RADIUS_M: f64 = 6_371_008.8;
+
+/// Two places this close along one flowline measure the same water, metres.
+pub const SAME_PLACE_M: f64 = 100.0;
 
 /// A WGS84 position in degrees.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -463,10 +465,12 @@ impl<'a> Hydro<'a> {
             });
             if a.index == b.index {
                 let d = b.measure_m - a.measure_m;
-                let relation = match d.partial_cmp(&0.0) {
-                    Some(Ordering::Less) => Relation::Upstream,
-                    Some(Ordering::Greater) => Relation::Downstream,
-                    _ => Relation::SameWaterBody,
+                let relation = if d.abs() <= SAME_PLACE_M {
+                    Relation::SameWaterBody
+                } else if d < 0.0 {
+                    Relation::Upstream
+                } else {
+                    Relation::Downstream
                 };
                 (relation, Some(d.abs()))
             } else if b.hydrosequence > a.hydrosequence {
@@ -548,7 +552,10 @@ impl<'a> Hydro<'a> {
             (Some(w), Mode::Spot | Mode::WaterbodyStation) => {
                 self.waterbody_path(&w.key, p).or(snapped)
             }
-            _ => snapped,
+            // A gauge inside a wide river or a lake, away from every flowline, is on the main
+            // flow path through it.
+            (Some(w), Mode::StreamGauge) => snapped.or_else(|| self.waterbody_path(&w.key, p)),
+            (None, _) => snapped,
         };
         HydroPosition { waterbody, stream }
     }
@@ -1259,6 +1266,78 @@ mod tests {
             ("U", SnapBasis::Nearest)
         );
         assert!(hydro.snap(Point::new(41.01, -73.995)).is_none());
+    }
+
+    /// One straight reach of a river flowing south along -74.0, from 41.02 to 40.98.
+    fn south_reach() -> Flowline {
+        Flowline {
+            id: "R".into(),
+            name: Some("Main River".into()),
+            kind: FlowlineKind::ChannelLine,
+            stream_order: Some(5),
+            level_path: 7,
+            hydrosequence: 7,
+            dn_hydrosequence: 0,
+            up_hydrosequence: 0,
+            length_km: None,
+            paths: vec![vec![Point::new(41.02, -74.0), Point::new(40.98, -74.0)]],
+        }
+    }
+
+    #[test]
+    fn places_within_100_m_along_one_flowline_are_the_same_water() {
+        let lines = [south_reach()];
+        let hydro = Hydro::new(&lines, &[], HydroOptions::default());
+        let spot = hydro.locate_spot(Point::new(41.0, -74.0));
+        // 0.0008 degrees of latitude is about 89 m, 0.0012 about 133 m.
+        let gauge = |id, lat| usgs(id, UsgsSiteType::Stream, lat, -74.0002);
+        let near = hydro.relation(&spot, &gauge("near", 41.0008));
+        assert_eq!(near.relation, Relation::SameWaterBody);
+        let along = near.along_river_m.unwrap();
+        assert!((along - 89.0).abs() < 1.0, "{along}");
+        let above = hydro.relation(&spot, &gauge("above", 41.0012));
+        assert_eq!(above.relation, Relation::Upstream);
+        let below = hydro.relation(&spot, &gauge("below", 40.9988));
+        assert_eq!(below.relation, Relation::Downstream);
+        assert!(SAME_PLACE_M < above.along_river_m.unwrap());
+    }
+
+    #[test]
+    fn a_gauge_inside_a_wide_river_takes_its_flow_path() {
+        let lines = [south_reach()];
+        // A river 0.02 degrees (about 1.7 km) wide around its flowline.
+        let river = Waterbody {
+            id: "W".into(),
+            gnis_id: None,
+            name: Some("Main River".into()),
+            kind: WaterbodyKind::River,
+            area_km2: 7.0,
+            rings: vec![rect(40.98, -74.01, 41.02, -73.99)],
+        };
+        let hydro = Hydro::new(
+            &lines,
+            std::slice::from_ref(&river),
+            HydroOptions::default(),
+        );
+        let spot = hydro.locate_spot(Point::new(41.01, -74.0));
+        // About 670 m east of the flowline, inside the outline; another beyond it.
+        let inside = usgs("in", UsgsSiteType::Stream, 41.0, -73.992);
+        let outside = usgs("out", UsgsSiteType::Stream, 41.0, -73.985);
+        let hint = hydro.relation(&spot, &inside);
+        assert_eq!(hint.relation, Relation::Downstream);
+        assert!(hint.reasons.contains(&HydroReason::Snapped {
+            subject: Subject::Station,
+            basis: SnapBasis::WaterbodyPath,
+            name: Some("Main River".into()),
+        }));
+        let hint = hydro.relation(&spot, &outside);
+        assert!(hint.reasons.contains(&HydroReason::NotOnMappedStream {
+            subject: Subject::Station
+        }));
+        // Without the outline the gauge inside is off the network too.
+        let bare = Hydro::new(&lines, &[], HydroOptions::default());
+        let spot = bare.locate_spot(Point::new(41.01, -74.0));
+        assert_eq!(bare.relation(&spot, &inside).relation, Relation::Nearby);
     }
 
     fn infer(

@@ -95,7 +95,7 @@ expression: json
       "chrome": {
         "id": "flow",
         "title": "River flow",
-        "footnote": "Flow 12.4 cfs · CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY · 0.0 mi upstream · 45 min ago",
+        "footnote": "Flow 12.4 cfs · CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY · 0.0 mi · 45 min ago",
         "credits": [
           {
             "source": "USGS",
@@ -8537,17 +8537,17 @@ expression: json
             "text": "Provisional data, subject to revision."
           }
         ],
-        "accessibility": "Sources: USGS, NOAA NWPS, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, USGS. ndbc: not found nwps: no data: the gauge defines no flood stages, used nwps nwps: no data: the forecast has no values (2 more)"
+        "accessibility": "Sources: USGS, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, USGS. ndbc: not found"
       },
       "compact": {
         "headline": {
-          "value": 7.0,
-          "text": "7",
+          "value": 6.0,
+          "text": "6",
           "unit": "sources"
         },
         "lines": [
           "2 stations",
-          "3 problems"
+          "1 problem"
         ],
         "spark": []
       },
@@ -8557,12 +8557,6 @@ expression: json
             "source": "USGS",
             "text": "U.S. Geological Survey",
             "link": "https://waterdata.usgs.gov",
-            "licence": "Public domain"
-          },
-          {
-            "source": "NOAA NWPS",
-            "text": "NOAA National Water Prediction Service",
-            "link": "https://water.noaa.gov/",
             "licence": "Public domain"
           },
           {
@@ -8604,7 +8598,7 @@ expression: json
             "source": "USGS",
             "distance": "0.0 mi",
             "age": "45 min ago",
-            "relation": "Upstream",
+            "relation": "Same water body",
             "kind": "Observed",
             "state": {
               "state": "fresh"
@@ -8617,7 +8611,7 @@ expression: json
             "source": "USGS",
             "distance": "0.0 mi",
             "age": "—",
-            "relation": "Upstream",
+            "relation": "Same water body",
             "kind": "Computed",
             "state": {
               "state": "fresh"
@@ -8630,18 +8624,6 @@ expression: json
             "measurement": "Water temperature",
             "kind": "Not found",
             "message": "ndbc: not found"
-          },
-          {
-            "source": "NOAA NWPS",
-            "measurement": "Flood categories",
-            "kind": "No data",
-            "message": "nwps: no data: the gauge defines no flood stages, used nwps"
-          },
-          {
-            "source": "NOAA NWPS",
-            "measurement": "River forecast",
-            "kind": "No data",
-            "message": "nwps: no data: the forecast has no values (2 more)"
           }
         ]
       }
