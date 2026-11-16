@@ -412,7 +412,7 @@ fn merge(candidates: &[StationCandidate]) -> BTreeMap<StationKey, Merged> {
     out
 }
 
-/// The bin kept per station: a pinned bin, else the shallowest of known depth, else the first
+/// The bin kept per station among those not excluded: a pinned bin, else the shallowest of known depth, else the first
 /// listed (CO-OPS lists a station's bins from the surface down).
 fn kept_bins(
     merged: &BTreeMap<StationKey, Merged>,
@@ -421,6 +421,11 @@ fn kept_bins(
     let mut best: BTreeMap<StationKey, (bool, f32, usize, u16)> = BTreeMap::new();
     for (key, m) in merged {
         let Some(bin) = key.bin else { continue };
+        // An excluded bin is dropped whatever happens, so it cannot be the one kept.
+        let site = input.joins.get(&key.station());
+        if input.choices.is_excluded(key) || site.is_some_and(|s| input.choices.is_excluded(s)) {
+            continue;
+        }
         let depth = input
             .bin_depths_m
             .get(key)
@@ -1117,6 +1122,32 @@ mod tests {
             ranking.measurements[&M::TidalCurrent].stations[0]
                 .reasons
                 .contains(&same)
+        );
+    }
+
+    #[test]
+    fn an_excluded_bin_leaves_another_bin_serving() {
+        let mut input = battery();
+        input
+            .choices
+            .exclude(StationKey::new(SourceId::COOPS, "NYH1927").with_bin(13));
+        let ranking = rank(&input);
+        let current = &ranking.measurements[&M::TidalCurrent];
+        let serving: Vec<Option<u16>> = current
+            .stations
+            .iter()
+            .filter(|s| s.station.id == "NYH1927")
+            .map(|s| s.station.bin)
+            .collect();
+        assert_eq!(serving.len(), 1, "one bin of the station serves");
+        assert_ne!(serving[0], Some(13));
+        let reasons = dropped(current, "NYH1927");
+        assert!(reasons.contains(&&Reason::Excluded), "{reasons:?}");
+        assert!(
+            reasons
+                .iter()
+                .all(|r| matches!(r, Reason::Excluded | Reason::OtherBin { .. })),
+            "{reasons:?}"
         );
     }
 
