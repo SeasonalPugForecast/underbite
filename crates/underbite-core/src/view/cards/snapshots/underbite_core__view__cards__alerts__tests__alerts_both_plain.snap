@@ -1,0 +1,89 @@
+---
+source: crates/underbite-core/src/view/cards/alerts.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "alerts",
+    "title": "Alerts",
+    "footnote": null,
+    "credits": [
+      {
+        "source": "National Weather Service",
+        "text": "Marine alerts: NOAA National Weather Service",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "Open-Meteo",
+        "text": "Weather data by Open-Meteo.com",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Alerts: 3 active. Flood Warning, Wind Advisory, Small Craft Advisory."
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "Flood Warning",
+      "unit": ""
+    },
+    "lines": [
+      "Until Nov 9, 4:30 AM",
+      "2 more"
+    ],
+    "spark": []
+  },
+  "full": {
+    "alerts": [
+      {
+        "id": "sample-flood-warning",
+        "origin": "weather",
+        "event": "Flood Warning",
+        "headline": "The East Branch Bronx River near New York is above flood stage and is expected to crest this evening. Roads along the creek are flooded; do not drive through flooded roadways.",
+        "severity": "severe",
+        "severity_label": "Severe",
+        "onset": "Nov 8, 7:30 AM",
+        "ends": "Nov 9, 4:30 AM",
+        "expires": null,
+        "zones": []
+      },
+      {
+        "id": "sample-wind-advisory",
+        "origin": "weather",
+        "event": "Wind Advisory",
+        "headline": "West winds 20 to 30 mph with gusts up to 50 mph. Gusty winds will blow around unsecured objects and may bring down tree limbs.",
+        "severity": "moderate",
+        "severity_label": "Moderate",
+        "onset": "Nov 8, 12:30 PM",
+        "ends": "Nov 8, 10:30 PM",
+        "expires": null,
+        "zones": []
+      },
+      {
+        "id": "urn:oid:2.49.0.1.840.0.59e16cc8ba4c86b00bee7c5e08c327085a29588b.003.1",
+        "origin": "marine",
+        "event": "Small Craft Advisory",
+        "headline": "Small Craft Advisory issued November 8 at 1:48AM EST until November 9 at 6:00PM EST by NWS Upton NY",
+        "severity": "minor",
+        "severity_label": "Minor",
+        "onset": "Nov 8, 1:48 AM",
+        "ends": "Nov 9, 6:00 PM",
+        "expires": "Nov 8, 3:00 PM",
+        "zones": [
+          "ANZ331",
+          "ANZ332",
+          "ANZ335",
+          "ANZ338",
+          "ANZ340",
+          "ANZ345"
+        ]
+      }
+    ]
+  }
+}

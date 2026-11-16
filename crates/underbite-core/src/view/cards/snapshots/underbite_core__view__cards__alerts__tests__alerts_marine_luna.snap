@@ -1,0 +1,58 @@
+---
+source: crates/underbite-core/src/view/cards/alerts.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "alerts",
+    "title": "Alerts",
+    "footnote": null,
+    "credits": [
+      {
+        "source": "National Weather Service",
+        "text": "Marine alerts: NOAA National Weather Service",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Alerts: 1 active. Small Craft Advisory."
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "Small Craft Advisory",
+      "unit": ""
+    },
+    "lines": [
+      "Until Nov 9, 6:00 PM"
+    ],
+    "spark": []
+  },
+  "full": {
+    "alerts": [
+      {
+        "id": "urn:oid:2.49.0.1.840.0.59e16cc8ba4c86b00bee7c5e08c327085a29588b.003.1",
+        "origin": "marine",
+        "event": "Small Craft Advisory",
+        "headline": "Small Craft Advisory issued November 8 at 1:48AM EST until November 9 at 6:00PM EST by NWS Upton NY",
+        "severity": "minor",
+        "severity_label": "Minor",
+        "onset": "Nov 8, 1:48 AM",
+        "ends": "Nov 9, 6:00 PM",
+        "expires": "Nov 8, 3:00 PM",
+        "zones": [
+          "ANZ331",
+          "ANZ332",
+          "ANZ335",
+          "ANZ338",
+          "ANZ340",
+          "ANZ345"
+        ]
+      }
+    ]
+  }
+}
