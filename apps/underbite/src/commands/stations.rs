@@ -5,9 +5,12 @@ use std::fmt::Write as _;
 use std::process::ExitCode;
 
 use anyhow::{Context, bail};
+use std::collections::BTreeMap;
+
 use clap::Subcommand;
 use serde_json::json;
 use underbite_config::schema::Config;
+use underbite_core::discover::cache::StationChoices;
 use underbite_core::discover::rank::{CoverageState, MeasurementRanking, Reason, StationKey};
 use underbite_core::model::{Measurement, Spot, WaterType};
 use underbite_core::provenance::{Relation, SourceId};
@@ -84,11 +87,70 @@ fn parse_key(text: &str) -> anyhow::Result<StationKey> {
     if source.is_empty() || id.is_empty() {
         bail!("{text:?} is not `source:id` or `source:id:bin`");
     }
-    let key = StationKey::new(SourceId::new(source), id);
+    let source = source.to_ascii_lowercase();
+    let key = StationKey::new(SourceId::new(&source), canonical_id(&source, id));
     Ok(match parts.next() {
         Some(bin) => key.with_bin(bin.parse().with_context(|| format!("bin of {text:?}"))?),
         None => key,
     })
+}
+
+/// A station id in the case its source writes it, so `ndbc:BGNN6` and `ndbc:bgnn6` are one
+/// station: NDBC ids are lower case, CO-OPS and NWPS ids upper case, and USGS ids are
+/// `USGS-<number>` (a bare number is accepted).
+fn canonical_id(source: &str, id: &str) -> String {
+    let id = id.trim();
+    match source {
+        "ndbc" => id.to_ascii_lowercase(),
+        "coops" | "coops-harmonics" | "nwps" => id.to_ascii_uppercase(),
+        "usgs" => {
+            let number = match id.split_at_checked(5) {
+                Some((prefix, rest)) if prefix.eq_ignore_ascii_case("usgs-") => rest,
+                _ => id,
+            };
+            format!("USGS-{number}")
+        }
+        _ => id.to_owned(),
+    }
+}
+
+/// A key as the command line writes it.
+fn key_text(key: &StationKey) -> String {
+    match key.bin {
+        Some(bin) => format!("{}:{}:{bin}", key.source, key.id),
+        None => format!("{}:{}", key.source, key.id),
+    }
+}
+
+/// The pins and exclusions, in words, that cover no station of the rankings: a mistyped id, or
+/// a station too far away to be a candidate for the measurements ranked.
+fn unmatched_choices(
+    choices: &StationChoices,
+    rankings: &BTreeMap<Measurement, MeasurementRanking>,
+) -> Vec<String> {
+    let found: Vec<StationKey> = rankings
+        .values()
+        .flat_map(|r| {
+            r.stations
+                .iter()
+                .map(|s| StationKey::of(&s.station))
+                .chain(r.dropped.iter().map(|d| StationKey::of(&d.station)))
+        })
+        .collect();
+    let missing = |what: &str, keys: &std::collections::BTreeSet<StationKey>| {
+        keys.iter()
+            .filter(|k| !found.iter().any(|f| k.covers(f)))
+            .map(|k| {
+                format!(
+                    "the {what} {} matches no station found near here",
+                    key_text(k)
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+    let mut out = missing("pin", &choices.pinned);
+    out.extend(missing("exclusion", &choices.excluded));
+    out
 }
 
 /// A name in the configuration's snake case, as the enum it names.
@@ -283,6 +345,12 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
         .with_coordinate_precision(config.sources.coordinate_precision)
         .with_secrets(env.options.secrets.clone());
     let found = discover(&host, &ctx, &spot, chains);
+    if let Some(cache) = env.cache.as_ref() {
+        let choices = load_choices(cache, &spot.id);
+        for warning in unmatched_choices(&choices, &found.ranking.measurements) {
+            eprintln!("warning: {warning}");
+        }
+    }
 
     if *json {
         let value = json!({
@@ -330,6 +398,67 @@ mod tests {
         assert!(parse_key("coops").is_err());
         assert!(parse_key("coops:").is_err());
         assert!(parse_key("coops:x:y").is_err());
+    }
+
+    #[test]
+    fn ids_take_the_case_of_their_source() {
+        let key = |text: &str| parse_key(text).unwrap();
+        assert_eq!(key("ndbc:BGNN6"), StationKey::new(SourceId::NDBC, "bgnn6"));
+        assert_eq!(key("NDBC:44025"), StationKey::new(SourceId::NDBC, "44025"));
+        assert_eq!(
+            key("coops:nyh1927:13"),
+            StationKey::new(SourceId::COOPS, "NYH1927").with_bin(13)
+        );
+        assert_eq!(key("nwps:ktnn6"), StationKey::new(SourceId::NWPS, "KTNN6"));
+        assert_eq!(
+            key("usgs:01375000"),
+            StationKey::new(SourceId::USGS, "USGS-01375000")
+        );
+        assert_eq!(key("usgs:usgs-01375000"), key("usgs:01375000"));
+        // A source this version does not know keeps its id as written.
+        assert_eq!(key("other:AbC").id, "AbC");
+    }
+
+    #[test]
+    fn a_choice_that_matches_nothing_is_reported() {
+        use underbite_core::discover::rank::{ChainSpec, DroppedStation};
+        use underbite_core::provenance::StationRef;
+        use underbite_core::provenance::{StationKind, UsgsSiteType};
+        let station = |id: &str| StationRef {
+            source: SourceId::USGS,
+            id: id.into(),
+            name: "Croton R".into(),
+            kind: StationKind::UsgsSite(UsgsSiteType::Stream),
+            latitude: 41.2,
+            longitude: -73.8,
+            bin: None,
+            reference_id: None,
+        };
+        let ranking = MeasurementRanking {
+            chain: ChainSpec {
+                sources: vec![SourceId::USGS],
+                limits: underbite_core::discover::rank::Limits::default(),
+            },
+            stations: Vec::new(),
+            dropped: vec![DroppedStation {
+                station: station("USGS-01375000"),
+                distance_m: 100.0,
+                reason: Reason::Excluded,
+            }],
+        };
+        let rankings = BTreeMap::from([(Measurement::Discharge, ranking)]);
+        let mut choices = StationChoices::default();
+        choices.exclude(parse_key("usgs:01375000").unwrap());
+        choices.pin(parse_key("usgs:01375001").unwrap());
+        choices.pin(parse_key("ndbc:44025").unwrap());
+        let found = unmatched_choices(&choices, &rankings);
+        assert_eq!(
+            found,
+            [
+                "the pin ndbc:44025 matches no station found near here",
+                "the pin usgs:USGS-01375001 matches no station found near here",
+            ]
+        );
     }
 
     #[test]
