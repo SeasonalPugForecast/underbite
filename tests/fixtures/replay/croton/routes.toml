@@ -29,13 +29,34 @@ file = "../../raw/usgs/usgs-monitoring-locations-bbox-croton-lk.json"
 
 [[route]]
 match = "collections/time-series-metadata"
-file = "../../raw/usgs/usgs-time-series-metadata-croton-01375000.json"
+file = "../../raw/usgs/usgs-time-series-metadata-bbox-croton.json"
 
 [[route]]
 match = "USGS-01375000"
 file = "../../raw/usgs/usgs-monitoring-locations-croton-01375000.json"
 
+# CO-OPS and NDBC station lists: the same national lists wherever the spot is.
+[[route]]
+match = "stations.json?type=tidepredictions"
+file = "../../raw/coops/coops-mdapi-stations-tidepredictions-newyork-trimmed.json"
+
+[[route]]
+match = "stations.json?type=waterlevels"
+file = "../../raw/coops/coops-mdapi-stations-waterlevels-newyork-trimmed.json"
+
+[[route]]
+match = "stations.json?type=currentpredictions"
+file = "../../raw/coops/coops-mdapi-stations-currentpredictions-newyork-trimmed.json"
+
+[[route]]
+match = "ndbc.noaa.gov/activestations.xml"
+file = "../../raw/ndbc/ndbc-activestations.xml"
+
 # NWPS gauges around the lower Hudson.
+[[route]]
+match = "nwps/v1/gauges/KTNN6"
+file = "../../raw/nwps/nwps-gauge-KTNN6.json"
+
 [[route]]
 match = "nwps/v1/gauges/AUON6/stageflow/forecast"
 file = "../../raw/nwps/nwps-gauge-AUON6-stageflow-forecast.json"
@@ -48,14 +69,15 @@ file = "../../raw/nwps/nwps-gauge-AUON6.json"
 match = "nwps/v1/gauges?bbox"
 file = "../../raw/nwps/nwps-gauges-bbox-lower-hudson.json"
 
-# 3DHP hydrography.
+# 3DHP hydrography, with geometry: the named flowlines around the dam and the reservoir's
+# generalised outline.
 [[route]]
 match = "3DHP_all/MapServer/50/query"
-file = "../../raw/hydro/hydro-50-croton-point-distance.json"
+file = "../../raw/hydro/hydro-50-croton-envelope.json"
 
 [[route]]
 match = "3DHP_all/MapServer/60/query"
-file = "../../raw/hydro/hydro-60-new-croton-reservoir-point.json"
+file = "../../raw/hydro/hydro-60-new-croton-reservoir-geom.json"
 
 # Storms: NHC and the Open-Meteo run metadata, then the point series (before the plain forecast).
 [[route]]

@@ -3,9 +3,10 @@
 # relative to this file. A request with no route fails with its redacted URL.
 
 # CO-OPS data: the max/slack and high/low routes come before the 6-minute curves, which share
-# their product names.
+# their product names. The current routes name their station and bin, so no other current
+# station is answered with the Hudson River Entrance's predictions.
 [[route]]
-match = "interval=max_slack"
+match = "station=NYH1927&time_zone=gmt&units=metric&interval=max_slack&format=json&bin=13"
 file = "../../raw/coops/coops-NYH1927-bin13-max-slack-2026-11-08.json"
 
 [[route]]
@@ -37,7 +38,7 @@ match = "product=wind"
 file = "../../raw/coops/coops-8518750-wind-2026-11-07-error-nodata.json"
 
 [[route]]
-match = "product=currents_predictions"
+match = "station=NYH1927&time_zone=gmt&units=metric&interval=6&format=json&bin=13"
 file = "../../raw/coops/coops-NYH1927-bin13-currents-predictions-6min-2026-11-08.json"
 
 # CO-OPS metadata.
