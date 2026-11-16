@@ -454,6 +454,10 @@ keys! {
     StationMany => ("{n} stations", "{n} stations"),
     ProblemOne => ("{n} problem", "{n} problem"),
     ProblemMany => ("{n} problems", "{n} problems"),
+    Gust => ("Gust", "Gust"),
+    Twilight => ("Twilight", "Twilight"),
+    GoldenHour => ("Golden hour", "Golden hour"),
+    LaneLight => ("Light", "Light"),
     /// The placeholder for an unknown value.
     Missing => ("—", "—"),
 }

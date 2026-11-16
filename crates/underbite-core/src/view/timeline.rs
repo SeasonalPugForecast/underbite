@@ -14,10 +14,10 @@ use crate::time::{UnixTime, local_date, local_date_bounds, zone};
 use crate::view::cards::solunar::{kind_label, range_text};
 use crate::view::chart::{self, Zoned, level_at, speed_at};
 use crate::view::format::{Formatter, Phase};
-use crate::view::strings::{Key, source_name};
+use crate::view::strings::{Key, SafetyKey, source_name};
 use crate::view::{
-    BandKind, ChartBand, ChartMarker, ChartPoint, ChartSeries, ChartTick, ChartVm, LaneKind,
-    MarkerKind, Quantity, SeriesRole, SeriesStyle, TimelineLane, TimelineVm, ViewInput,
+    BandKind, CardId, ChartBand, ChartMarker, ChartPoint, ChartSeries, ChartTick, ChartVm,
+    LaneKind, MarkerKind, Quantity, SeriesRole, SeriesStyle, TimelineLane, TimelineVm, ViewInput,
 };
 
 /// The widest gap a curve or hourly series is interpolated across.
@@ -128,12 +128,14 @@ fn extremes(points: &[ChartPoint], f: &Formatter) -> String {
     let lo = points.iter().min_by(|a, b| a.value.total_cmp(&b.value));
     let hi = points.iter().max_by(|a, b| a.value.total_cmp(&b.value));
     match (lo, hi) {
-        (Some(lo), Some(hi)) => format!(
-            "lowest {} at {}, highest {} at {}.",
-            lo.label,
-            f.clock(UnixTime(lo.t)),
-            hi.label,
-            f.clock(UnixTime(hi.t))
+        (Some(lo), Some(hi)) => f.strings.fmt(
+            Key::ExtremesAt,
+            &[
+                ("lowest", &lo.label),
+                ("lowest_time", &f.clock(UnixTime(lo.t))),
+                ("highest", &hi.label),
+                ("highest_time", &f.clock(UnixTime(hi.t))),
+            ],
         ),
         _ => String::new(),
     }
@@ -144,7 +146,7 @@ fn extremes(points: &[ChartPoint], f: &Formatter) -> String {
 // ---------------------------------------------------------------------------------------------
 
 fn tide_lane(ctx: &Ctx) -> ChartVm {
-    let name = "Tide";
+    let name = ctx.f.strings.card_title(CardId::Tide);
     let Some(tide) = ctx.input.snapshot.marine.tide.as_ref() else {
         return ctx.empty(name);
     };
@@ -188,10 +190,7 @@ fn tide_lane(ctx: &Ctx) -> ChartVm {
         .iter()
         .filter(|e| ctx.in_window(e.time.0))
         .map(|e| {
-            let word = match e.kind {
-                TideKind::High => "High",
-                TideKind::Low => "Low",
-            };
+            let word = f.strings.tide_kind(e.kind);
             let q = shown.then(|| f.length(e.height_m));
             ChartMarker {
                 kind: match e.kind {
@@ -212,14 +211,19 @@ fn tide_lane(ctx: &Ctx) -> ChartVm {
     } else {
         markers
             .iter()
-            .map(|m| format!("{} at {}", m.label, f.clock(UnixTime(m.t))))
+            .map(|m| {
+                f.strings.fmt(
+                    Key::EventAt,
+                    &[("event", &m.label), ("time", &f.clock(UnixTime(m.t)))],
+                )
+            })
             .collect::<Vec<_>>()
             .join(", ")
     };
     let (label, role) = if shown {
-        ("Predicted", SeriesRole::Predicted)
+        (f.strings.get(Key::Predicted), SeriesRole::Predicted)
     } else {
-        ("Modelled sea level", SeriesRole::Modelled)
+        (f.strings.get(Key::ModelledSeaLevel), SeriesRole::Modelled)
     };
     let credit = source_name(&tide.provenance.source);
     ctx.chart(
@@ -247,7 +251,7 @@ fn tide_lane(ctx: &Ctx) -> ChartVm {
 // ---------------------------------------------------------------------------------------------
 
 fn current_lane(ctx: &Ctx) -> ChartVm {
-    let name = "Current";
+    let name = ctx.f.strings.card_title(CardId::Current);
     let Some(series) = ctx.input.snapshot.marine.tidal_current.as_ref() else {
         return ctx.empty(name);
     };
@@ -304,7 +308,7 @@ fn current_lane(ctx: &Ctx) -> ChartVm {
         &source_name(&series.provenance.source),
         ctx.input.units.current_speed.symbol(),
         vec![ChartSeries {
-            label: "Predicted".to_owned(),
+            label: f.strings.get(Key::Predicted).to_owned(),
             role: SeriesRole::Predicted,
             style: SeriesStyle::Line,
             points,
@@ -344,7 +348,7 @@ struct Source {
 }
 
 fn wind_lane(ctx: &Ctx) -> ChartVm {
-    let name = "Wind";
+    let name = ctx.f.strings.card_title(CardId::Wind);
     let snapshot = &ctx.input.snapshot;
     let f = &ctx.f;
     let (source, speed, gust): (Source, Pairs, Pairs) = match &snapshot.weather {
@@ -381,7 +385,7 @@ fn wind_lane(ctx: &Ctx) -> ChartVm {
         },
     };
     let mut series = vec![ChartSeries {
-        label: "Wind".to_owned(),
+        label: name.to_owned(),
         role: source.role,
         style: SeriesStyle::Line,
         points: ctx.points(|t| interpolate(&speed, t), |v| f.wind_speed(Some(v))),
@@ -389,7 +393,7 @@ fn wind_lane(ctx: &Ctx) -> ChartVm {
     let gusts = ctx.points(|t| interpolate(&gust, t), |v| f.wind_speed(Some(v)));
     if !gusts.is_empty() {
         series.push(ChartSeries {
-            label: "Gust".to_owned(),
+            label: f.strings.get(Key::Gust).to_owned(),
             role: source.role,
             style: SeriesStyle::Dots,
             points: gusts,
@@ -411,7 +415,7 @@ fn wind_lane(ctx: &Ctx) -> ChartVm {
 }
 
 fn pressure_lane(ctx: &Ctx) -> ChartVm {
-    let name = "Pressure";
+    let name = ctx.f.strings.card_title(CardId::Pressure);
     let snapshot = &ctx.input.snapshot;
     let f = &ctx.f;
     let (credit, role, values): (String, SeriesRole, Vec<(i64, f32)>) = match &snapshot.weather {
@@ -442,7 +446,7 @@ fn pressure_lane(ctx: &Ctx) -> ChartVm {
         &credit,
         ctx.input.units.pressure.symbol(),
         vec![ChartSeries {
-            label: "Pressure".to_owned(),
+            label: name.to_owned(),
             role,
             style: SeriesStyle::Line,
             points,
@@ -503,24 +507,24 @@ fn night_spans(ctx: &Ctx, days: &[SkyDay], tz: &TimeZone) -> Vec<(i64, i64)> {
 }
 
 fn light_lane(ctx: &Ctx, tz: &TimeZone) -> ChartVm {
-    let name = "Light";
+    let name = ctx.f.strings.get(Key::LaneLight);
     let days = &ctx.input.snapshot.sky.days;
     let f = &ctx.f;
     let mut bands: Vec<ChartBand> = night_spans(ctx, days, tz)
         .into_iter()
-        .filter_map(|(a, b)| band(ctx, BandKind::Night, a, b, "Night"))
+        .filter_map(|(a, b)| band(ctx, BandKind::Night, a, b, f.strings.get(Key::Night)))
         .collect();
     for d in days {
         let s = &d.sun;
         let t = |v: Option<UnixTime>| v.map(|t| t.0);
         for (a, b, label) in [
-            (t(s.civil_dawn), t(s.sunrise), "Twilight"),
-            (t(s.sunrise), t(s.golden_morning_end), "Golden hour"),
-            (t(s.golden_evening_start), t(s.sunset), "Golden hour"),
-            (t(s.sunset), t(s.civil_dusk), "Twilight"),
+            (t(s.civil_dawn), t(s.sunrise), Key::Twilight),
+            (t(s.sunrise), t(s.golden_morning_end), Key::GoldenHour),
+            (t(s.golden_evening_start), t(s.sunset), Key::GoldenHour),
+            (t(s.sunset), t(s.civil_dusk), Key::Twilight),
         ] {
             if let (Some(a), Some(b)) = (a, b)
-                && let Some(x) = band(ctx, BandKind::Highlight, a, b, label)
+                && let Some(x) = band(ctx, BandKind::Highlight, a, b, f.strings.get(label))
             {
                 bands.push(x);
             }
@@ -531,8 +535,12 @@ fn light_lane(ctx: &Ctx, tz: &TimeZone) -> ChartVm {
         .iter()
         .flat_map(|d| {
             [
-                (MarkerKind::Sunrise, "Sunrise", d.sun.sunrise),
-                (MarkerKind::Sunset, "Sunset", d.sun.sunset),
+                (
+                    MarkerKind::Sunrise,
+                    f.strings.get(Key::Sunrise),
+                    d.sun.sunrise,
+                ),
+                (MarkerKind::Sunset, f.strings.get(Key::Sunset), d.sun.sunset),
             ]
         })
         .filter_map(|(kind, word, t)| {
@@ -549,9 +557,11 @@ fn light_lane(ctx: &Ctx, tz: &TimeZone) -> ChartVm {
     let polar: Vec<&str> = days
         .iter()
         .filter_map(|d| d.sun.polar)
-        .map(|p| match p {
-            Polar::AlwaysUp => "Sun stays up all day",
-            Polar::AlwaysDown => "Sun stays down all day",
+        .map(|p| {
+            f.strings.get(match p {
+                Polar::AlwaysUp => Key::SunStaysUp,
+                Polar::AlwaysDown => Key::SunStaysDown,
+            })
         })
         .collect();
     if bands.is_empty() && markers.is_empty() && polar.is_empty() {
@@ -561,7 +571,7 @@ fn light_lane(ctx: &Ctx, tz: &TimeZone) -> ChartVm {
     summary.extend(polar.iter().map(|p| (*p).to_owned()));
     ctx.chart(
         name,
-        "computed on device",
+        f.strings.get(Key::ComputedOnDeviceInline),
         "",
         Vec::new(),
         bands,
@@ -571,8 +581,8 @@ fn light_lane(ctx: &Ctx, tz: &TimeZone) -> ChartVm {
 }
 
 fn solunar_lane(ctx: &Ctx) -> ChartVm {
-    let name = "Solunar";
     let f = &ctx.f;
+    let name = f.strings.card_title(CardId::Solunar);
     // A period belongs to every day it overlaps: list each once.
     let mut periods: Vec<_> = ctx
         .input
@@ -603,16 +613,17 @@ fn solunar_lane(ctx: &Ctx) -> ChartVm {
         return ctx.empty(name);
     }
     let summary = format!(
-        "{}. A traditional cue, not a promise.",
+        "{}. {}",
         bands
             .iter()
             .map(|b| b.label.clone())
             .collect::<Vec<_>>()
-            .join(", ")
+            .join(", "),
+        f.strings.safety(SafetyKey::TraditionalCue)
     );
     ctx.chart(
         name,
-        "computed on device",
+        f.strings.get(Key::ComputedOnDeviceInline),
         "",
         Vec::new(),
         bands,
@@ -647,15 +658,32 @@ pub fn build(input: &ViewInput) -> Option<TimelineVm> {
         steps,
         ticks,
     };
+    let s = ctx.f.strings;
     let mut lanes = vec![
-        (LaneKind::Tide, "Tide", tide_lane(&ctx)),
-        (LaneKind::Current, "Current", current_lane(&ctx)),
-        (LaneKind::Wind, "Wind", wind_lane(&ctx)),
-        (LaneKind::Pressure, "Pressure", pressure_lane(&ctx)),
-        (LaneKind::Light, "Light", light_lane(&ctx, &tz)),
+        (LaneKind::Tide, s.card_title(CardId::Tide), tide_lane(&ctx)),
+        (
+            LaneKind::Current,
+            s.card_title(CardId::Current),
+            current_lane(&ctx),
+        ),
+        (LaneKind::Wind, s.card_title(CardId::Wind), wind_lane(&ctx)),
+        (
+            LaneKind::Pressure,
+            s.card_title(CardId::Pressure),
+            pressure_lane(&ctx),
+        ),
+        (
+            LaneKind::Light,
+            s.get(Key::LaneLight),
+            light_lane(&ctx, &tz),
+        ),
     ];
     if input.solunar.show {
-        lanes.push((LaneKind::Solunar, "Solunar", solunar_lane(&ctx)));
+        lanes.push((
+            LaneKind::Solunar,
+            s.card_title(CardId::Solunar),
+            solunar_lane(&ctx),
+        ));
     }
     let any = lanes
         .iter()

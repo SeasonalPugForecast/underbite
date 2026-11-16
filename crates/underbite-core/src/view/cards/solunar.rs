@@ -70,9 +70,9 @@ pub(crate) fn range_text(f: &Formatter, start: UnixTime, end: UnixTime) -> Strin
         && let (Some((ta, sa)), Some((_, sb))) = (a.rsplit_once(' '), b.rsplit_once(' '))
         && sa == sb
     {
-        return format!("{ta} to {b}");
+        return f.strings.fmt(Key::Range, &[("from", ta), ("to", &b)]);
     }
-    format!("{a} to {b}")
+    f.strings.fmt(Key::Range, &[("from", &a), ("to", &b)])
 }
 
 fn period_vm(f: &Formatter, p: &SolunarPeriod) -> SolunarPeriodVm {
