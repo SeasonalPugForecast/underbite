@@ -226,6 +226,8 @@ keys! {
 pub enum SafetyKey {
     NotForNavigation,
     Modelled,
+    /// The tide card's note when the source is a sea-level model, not a tide prediction.
+    ModelledSeaLevel,
     Provisional,
     Approximate,
     TraditionalCue,
@@ -238,7 +240,8 @@ impl SafetyKey {
     pub const fn text(self) -> &'static str {
         match self {
             Self::NotForNavigation => "Not for navigation.",
-            Self::Modelled => {
+            Self::Modelled => "Modelled data: an estimate, not a measurement.",
+            Self::ModelledSeaLevel => {
                 "Modelled sea level, not a tide prediction; times can be off by hours near the coast."
             }
             Self::Provisional => "Provisional data, subject to revision.",
@@ -452,6 +455,7 @@ mod tests {
         for key in [
             SafetyKey::NotForNavigation,
             SafetyKey::Modelled,
+            SafetyKey::ModelledSeaLevel,
             SafetyKey::Provisional,
             SafetyKey::Approximate,
             SafetyKey::TraditionalCue,

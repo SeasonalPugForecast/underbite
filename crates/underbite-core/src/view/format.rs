@@ -454,6 +454,14 @@ impl Formatter {
         }
     }
 
+    /// The tide card's modelled-sea-level notice: the modelled kind with the tide-specific text.
+    pub fn sea_level_notice(&self) -> Notice {
+        Notice {
+            kind: NoticeKind::Modelled,
+            text: self.strings.safety(SafetyKey::ModelledSeaLevel).to_owned(),
+        }
+    }
+
     /// "River or stream" and so on.
     pub fn water_type_label(&self, water_type: WaterType) -> String {
         self.strings.water_type(water_type).to_owned()
@@ -808,6 +816,18 @@ mod tests {
         ] {
             assert_eq!(luna.notice(kind), plain.notice(kind));
         }
+        assert_eq!(luna.sea_level_notice(), plain.sea_level_notice());
+        // The generic modelled notice does not claim to be about sea level.
+        assert_eq!(
+            luna.notice(NoticeKind::Modelled).text,
+            "Modelled data: an estimate, not a measurement."
+        );
+        assert_eq!(luna.sea_level_notice().kind, NoticeKind::Modelled);
+        assert!(
+            luna.sea_level_notice()
+                .text
+                .starts_with("Modelled sea level, not a tide prediction")
+        );
         assert_eq!(
             luna.notice(NoticeKind::NotForNavigation).text,
             "Not for navigation."

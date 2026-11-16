@@ -486,7 +486,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
 
     let mut notices = vec![f.notice(NoticeKind::NotForNavigation)];
     if model {
-        notices.push(f.notice(NoticeKind::Modelled));
+        notices.push(f.sea_level_notice());
     } else if tide.source_kind == TideSourceKind::SubordinateStation
         || tide.curve.is_none()
         || tide
