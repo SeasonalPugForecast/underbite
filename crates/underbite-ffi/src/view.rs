@@ -1,18 +1,15 @@
 //! The spot view, fully formatted for the app.
 //!
 //! The view is `underbite-core`'s `SpotView`, passed through as JSON without reshaping. The
-//! settings become a `ViewInput` here exactly as the command line does it.
+//! settings become a `ViewInput` through `underbite-config`, the command line's own.
 
 use serde::Serialize;
-use underbite_config::rivers::RiverRange;
 use underbite_config::schema::Config;
+use underbite_config::view_input::view_input;
 use underbite_core::model::{SpotSnapshot, WaterType};
-use underbite_core::provenance::SourceId;
 use underbite_core::time::UnixTime;
 use underbite_core::view::format::Formatter;
-use underbite_core::view::{
-    Card, CardId, RiverRanges, SolunarSettings, SpotView, ViewInput, build_view,
-};
+use underbite_core::view::{Card, CardId, SpotView, build_view};
 
 use crate::settings::{SettingsError, load};
 
@@ -231,43 +228,4 @@ pub fn attributions(snapshot_json: String) -> Result<Vec<Credit>, ViewError> {
             licence: c.licence,
         })
         .collect())
-}
-
-// ---------------------------------------------------------------------------------------------
-// The settings as a view input (as the command line builds it)
-// ---------------------------------------------------------------------------------------------
-
-/// What `build_view` takes, from the configuration. Mirrors `view_input` in the command line's
-/// `commands/spot.rs`.
-pub(crate) fn view_input(config: &Config, snapshot: SpotSnapshot, now: UnixTime) -> ViewInput {
-    let river_ranges = river_ranges(&config.rivers, &snapshot);
-    ViewInput {
-        card_order: config.cards.order_for(snapshot.spot.water_type),
-        snapshot,
-        now,
-        units: config.units.display_units(),
-        voice: config.presentation.voice,
-        clock: config.presentation.clock,
-        timeline_span: config.presentation.timeline_span(),
-        limits: underbite_fetch::measurement_limits(&config.sources),
-        river_ranges,
-        trout_stress_c: Some(config.thresholds.trout_stress_c as f32),
-        solunar: SolunarSettings {
-            show: config.windows.show_solunar,
-        },
-    }
-}
-
-/// Mirrors `river_ranges` in `commands/spot.rs`. The user's ranges for the gauge the spot's discharge comes from: the entry for that USGS
-/// site, and none when the spot has no USGS discharge or no entry names its gauge.
-fn river_ranges(rivers: &[RiverRange], snapshot: &SpotSnapshot) -> Option<RiverRanges> {
-    let station = snapshot
-        .water
-        .discharge_m3s
-        .as_ref()?
-        .provenance()
-        .station
-        .as_ref()
-        .filter(|s| s.source == SourceId::USGS)?;
-    RiverRange::find(rivers, &station.id).map(RiverRange::to_ranges)
 }

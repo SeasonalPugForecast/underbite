@@ -17,7 +17,7 @@ use underbite_core::units::{
     pressure_to_hpa,
 };
 use underbite_core::view::format::Formatter;
-use underbite_core::view::strings::{Key, Strings, source_name};
+use underbite_core::view::strings::{Strings, source_name};
 use underbite_core::view::{CardId, DisplayUnits, Voice};
 use underbite_providers::coops::{Coops, CoopsHarmonics};
 use underbite_providers::ndbc::Ndbc;
@@ -822,37 +822,6 @@ fn provider(id: &str) -> Option<Arc<dyn Source>> {
     })
 }
 
-/// What a measurement is called, in the core's words.
-pub(crate) fn measurement_label(m: Measurement) -> &'static str {
-    Strings::new(Voice::Plain).get(match m {
-        Measurement::WaterTemperature => Key::MeasWaterTemperature,
-        Measurement::Discharge => Key::MeasDischarge,
-        Measurement::GageHeight => Key::MeasGageHeight,
-        Measurement::LakeLevel => Key::MeasLakeLevel,
-        Measurement::Turbidity => Key::MeasTurbidity,
-        Measurement::DissolvedOxygen => Key::MeasDissolvedOxygen,
-        Measurement::Conductivity => Key::MeasConductivity,
-        Measurement::Salinity => Key::MeasSalinity,
-        Measurement::Ph => Key::MeasPh,
-        Measurement::Chlorophyll => Key::MeasChlorophyll,
-        Measurement::Clarity => Key::MeasClarity,
-        Measurement::Cyanobacteria => Key::MeasCyanobacteria,
-        Measurement::Tide => Key::MeasTide,
-        Measurement::TidalCurrent => Key::MeasTidalCurrent,
-        Measurement::OceanCurrent => Key::MeasOceanCurrent,
-        Measurement::Waves => Key::MeasWaves,
-        Measurement::WavesForecast => Key::MeasWavesForecast,
-        Measurement::SeaSurfaceTemp => Key::MeasSeaSurfaceTemp,
-        Measurement::SeaSurfaceTempForecast => Key::MeasSeaSurfaceTempForecast,
-        Measurement::MarineForecast => Key::MeasMarineForecast,
-        Measurement::MarineAlerts => Key::MeasMarineAlerts,
-        Measurement::FloodCategories => Key::MeasFloodCategories,
-        Measurement::FlowForecast => Key::MeasFlowForecast,
-        Measurement::ObservedWind => Key::MeasWind,
-        Measurement::ObservedPressure => Key::MeasPressure,
-    })
-}
-
 /// Every source the settings can name, with what the sources screen shows for it.
 #[uniffi::export]
 pub fn source_catalogue() -> Vec<SourceInfo> {
@@ -882,7 +851,7 @@ pub fn source_catalogue() -> Vec<SourceInfo> {
                 name,
                 measurements: measurements
                     .into_iter()
-                    .map(|m| measurement_label(m).to_owned())
+                    .map(|m| Strings::new(Voice::Plain).measurement(m).to_owned())
                     .collect(),
                 license: row.license.map(str::to_owned),
                 needs_key: row.needs_key,
