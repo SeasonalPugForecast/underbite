@@ -13,7 +13,9 @@
 //! polyline a few percent longer. Estuary connectors carry no tidal information, so nothing here
 //! infers ebb or flood from them.
 
+use std::cell::OnceCell;
 use std::collections::BTreeMap;
+use std::collections::btree_map::Entry;
 
 use serde::{Deserialize, Serialize};
 
@@ -127,15 +129,13 @@ impl Waterbody {
     pub fn contains(&self, p: Point) -> bool {
         let mut inside = false;
         for ring in &self.rings {
-            for (a, b) in edges(ring) {
-                if (a.latitude > p.latitude) != (b.latitude > p.latitude) {
-                    let x = a.longitude
-                        + (p.latitude - a.latitude) * (b.longitude - a.longitude)
-                            / (b.latitude - a.latitude);
-                    if p.longitude < x {
-                        inside = !inside;
-                    }
-                }
+            // Every edge once, the closing one first; the parity does not depend on the order.
+            let Some(mut a) = ring.last() else {
+                continue;
+            };
+            for b in ring {
+                inside ^= crosses(*a, *b, p);
+                a = b;
             }
         }
         inside
@@ -290,17 +290,154 @@ enum Mode {
     StreamGauge,
 }
 
+/// Extra distance, metres, before a bounding box rules a feature out: far more than the
+/// rounding of the projected distances, so a skipped feature could never have been within reach.
+const SLACK_M: f64 = 1.0;
+
+/// The same for two boxes, degrees (about a centimetre).
+const SLACK_DEG: f64 = 1e-7;
+
+/// A latitude and longitude box, empty when it holds no point.
+#[derive(Clone, Copy, Debug)]
+struct Bounds {
+    south: f64,
+    west: f64,
+    north: f64,
+    east: f64,
+}
+
+impl Bounds {
+    const EMPTY: Self = Self {
+        south: f64::INFINITY,
+        west: f64::INFINITY,
+        north: f64::NEG_INFINITY,
+        east: f64::NEG_INFINITY,
+    };
+
+    fn of<'p>(points: impl IntoIterator<Item = &'p Point>) -> Self {
+        points.into_iter().fold(Self::EMPTY, |b, p| Self {
+            south: b.south.min(p.latitude),
+            west: b.west.min(p.longitude),
+            north: b.north.max(p.latitude),
+            east: b.east.max(p.longitude),
+        })
+    }
+
+    fn union(self, o: Self) -> Self {
+        Self {
+            south: self.south.min(o.south),
+            west: self.west.min(o.west),
+            north: self.north.max(o.north),
+            east: self.east.max(o.east),
+        }
+    }
+
+    /// Whether the boxes overlap or come within `slack` degrees of each other.
+    fn meets(&self, o: &Self, slack: f64) -> bool {
+        self.south <= o.north + slack
+            && o.south <= self.north + slack
+            && self.west <= o.east + slack
+            && o.west <= self.east + slack
+    }
+
+    /// A lower bound, metres, of the distance from `p` to any segment inside the box, in the
+    /// projection [`Projection`] measures segments in (infinite for an empty box).
+    fn distance_m(&self, p: Point) -> f64 {
+        let gap = |lo: f64, hi: f64, x: f64| (lo - x).max(x - hi).max(0.0);
+        let at = Projection::at(p);
+        (gap(self.west, self.east, p.longitude) * at.cos_lat * at.m_per_deg)
+            .hypot(gap(self.south, self.north, p.latitude) * at.m_per_deg)
+    }
+}
+
+/// A waterbody's edges sorted into latitude bands, for point-in-polygon tests that only look at
+/// the edges level with the point.
+#[derive(Debug)]
+struct Outline {
+    bounds: Bounds,
+    /// Band height, degrees of latitude.
+    height: f64,
+    bands: Vec<Vec<(Point, Point)>>,
+}
+
+impl Outline {
+    fn new(w: &Waterbody) -> Self {
+        let bounds = Bounds::of(w.rings.iter().flatten());
+        let count = w.rings.iter().map(Vec::len).sum::<usize>();
+        let span = bounds.north - bounds.south;
+        let n = if span > 0.0 {
+            (count / 4).clamp(1, 4096)
+        } else {
+            1
+        };
+        let mut outline = Self {
+            bounds,
+            height: span / n as f64,
+            bands: vec![Vec::new(); n],
+        };
+        for (a, b) in w.rings.iter().flat_map(|r| edges(r)) {
+            let (lo, hi) = (a.latitude.min(b.latitude), a.latitude.max(b.latitude));
+            for band in outline.band(lo)..=outline.band(hi) {
+                outline.bands[band].push((a, b));
+            }
+        }
+        outline
+    }
+
+    /// The band of a latitude; monotone, so an edge spanning `lo..=hi` sits in every band a
+    /// latitude between them falls in.
+    fn band(&self, latitude: f64) -> usize {
+        let i = if self.height > 0.0 {
+            // Saturates below 0 and above the last band.
+            ((latitude - self.bounds.south) / self.height) as usize
+        } else {
+            0
+        };
+        i.min(self.bands.len() - 1)
+    }
+
+    /// [`Waterbody::contains`] over the edges of the point's band only: an edge the test counts
+    /// spans the point's latitude, so it is in that band, and the count's parity is unchanged.
+    fn contains(&self, p: Point) -> bool {
+        if !(self.bounds.south..=self.bounds.north).contains(&p.latitude) {
+            return false;
+        }
+        self.bands[self.band(p.latitude)]
+            .iter()
+            .fold(false, |inside, &(a, b)| inside ^ crosses(a, b, p))
+    }
+}
+
+/// The polygons of one [`WaterbodyKey`].
+#[derive(Debug)]
+struct Group {
+    parts: Vec<usize>,
+    bounds: Bounds,
+    /// The flowlines through the group, found on first use.
+    through: OnceCell<Vec<usize>>,
+}
+
 /// The hydrography around a spot, indexed for relation queries.
+///
+/// Each flowline and waterbody carries its bounding box, so a point only meets the features
+/// within the snap or shore tolerance; waterbody edges are banded by latitude for
+/// point-in-polygon tests, and the flowlines through a waterbody are found once.
 #[derive(Debug)]
 pub struct Hydro<'a> {
     flowlines: &'a [Flowline],
     waterbodies: &'a [Waterbody],
     options: HydroOptions,
     by_hydrosequence: BTreeMap<u64, usize>,
-    groups: BTreeMap<WaterbodyKey, Vec<usize>>,
+    groups: BTreeMap<WaterbodyKey, Group>,
     lengths_m: Vec<f64>,
     /// Source length over geometry length, per flowline.
     scales: Vec<f64>,
+    /// Per flowline: its bounding box and the length of each segment in path order, metres.
+    reaches: Vec<(Bounds, Vec<f64>)>,
+    outlines: Vec<Outline>,
+    /// Every feature scanned and every polygon test over all edges, to check the index against.
+    #[cfg(test)]
+    exhaustive: bool,
 }
 
 impl<'a> Hydro<'a> {
@@ -314,23 +451,33 @@ impl<'a> Hydro<'a> {
             .enumerate()
             .map(|(i, f)| (f.hydrosequence, i))
             .collect();
-        let mut groups: BTreeMap<WaterbodyKey, Vec<usize>> = BTreeMap::new();
+        let outlines: Vec<Outline> = waterbodies.iter().map(Outline::new).collect();
+        let mut groups: BTreeMap<WaterbodyKey, Group> = BTreeMap::new();
         for (i, w) in waterbodies.iter().enumerate() {
             let key = w
                 .gnis_id
                 .map_or_else(|| WaterbodyKey::Feature(w.id.clone()), WaterbodyKey::Gnis);
-            groups.entry(key).or_default().push(i);
+            let group = groups.entry(key).or_insert_with(|| Group {
+                parts: Vec::new(),
+                bounds: Bounds::EMPTY,
+                through: OnceCell::new(),
+            });
+            group.parts.push(i);
+            group.bounds = group.bounds.union(outlines[i].bounds);
         }
-        let geometry_m: Vec<f64> = flowlines
+        let reaches: Vec<(Bounds, Vec<f64>)> = flowlines
             .iter()
             .map(|f| {
-                f.paths
+                let segments = f
+                    .paths
                     .iter()
                     .flat_map(|p| p.windows(2))
                     .map(|s| haversine_m(s[0], s[1]))
-                    .sum()
+                    .collect();
+                (Bounds::of(f.paths.iter().flatten()), segments)
             })
             .collect();
+        let geometry_m: Vec<f64> = reaches.iter().map(|(_, s)| s.iter().sum()).collect();
         let scales: Vec<f64> = flowlines
             .iter()
             .zip(&geometry_m)
@@ -348,7 +495,57 @@ impl<'a> Hydro<'a> {
             groups,
             lengths_m,
             scales,
+            reaches,
+            outlines,
+            #[cfg(test)]
+            exhaustive: false,
         }
+    }
+
+    /// Whether everything in the box is farther than `limit_m` from `p`.
+    // `self` only switches the index off in tests.
+    #[cfg_attr(not(test), expect(clippy::unused_self))]
+    fn beyond(&self, bounds: &Bounds, p: Point, limit_m: f64) -> bool {
+        #[cfg(test)]
+        if self.exhaustive {
+            return false;
+        }
+        bounds.distance_m(p) > limit_m + SLACK_M
+    }
+
+    /// Whether every point of one box is clearly outside the other: a point that far outside a
+    /// polygon's box is outside the polygon, rounding of the edge crossings included.
+    // `self` only switches the index off in tests.
+    #[cfg_attr(not(test), expect(clippy::unused_self))]
+    fn apart(&self, a: &Bounds, b: &Bounds) -> bool {
+        #[cfg(test)]
+        if self.exhaustive {
+            return false;
+        }
+        !a.meets(b, SLACK_DEG)
+    }
+
+    /// Whether waterbody `i` contains `p`.
+    fn part_contains(&self, i: usize, p: Point) -> bool {
+        #[cfg(test)]
+        if self.exhaustive {
+            return self.waterbodies[i].contains(p);
+        }
+        self.outlines[i].contains(p)
+    }
+
+    /// [`Waterbody::distance_m`] with the banded point-in-polygon test.
+    fn part_distance(&self, i: usize, p: Point) -> f64 {
+        if self.part_contains(i, p) {
+            return 0.0;
+        }
+        let at = Projection::at(p);
+        self.waterbodies[i]
+            .rings
+            .iter()
+            .flat_map(|r| edges(r))
+            .map(|(a, b)| at.segment(a, b).0)
+            .fold(f64::INFINITY, f64::min)
     }
 
     /// Places the spot: in or at the shore of a waterbody (then on its main flow path), or on the
@@ -362,6 +559,9 @@ impl<'a> Hydro<'a> {
         let mut nearest: Option<StreamPosition> = None;
         let mut named: Option<StreamPosition> = None;
         for i in 0..self.flowlines.len() {
+            if self.beyond(&self.reaches[i].0, p, self.options.snap_tolerance_m) {
+                continue;
+            }
             let pos = self.position_on(i, p, SnapBasis::Nearest);
             if pos.offset_m > self.options.snap_tolerance_m {
                 continue;
@@ -400,6 +600,7 @@ impl<'a> Hydro<'a> {
             along_river_m,
             reasons,
         };
+        // No hit beyond the shore tolerance: only inside or within it matters here.
         let shared = spot
             .waterbody
             .as_ref()
@@ -509,21 +710,26 @@ impl<'a> Hydro<'a> {
         (relation, along, reasons)
     }
 
-    /// Relation hints for every station, keyed by source and station id.
+    /// Relation hints for every station, keyed by source and station id. A key listed twice is
+    /// related once, from its last entry.
     pub fn relations(
         &self,
         spot: Point,
         stations: &[StationRef],
     ) -> BTreeMap<StationKey, RelationHint> {
         let at = self.locate_spot(spot);
-        stations
-            .iter()
-            .map(|s| ((s.source.clone(), s.id.clone()), self.relation(&at, s)))
-            .collect()
+        let mut out = BTreeMap::new();
+        for s in stations.iter().rev() {
+            if let Entry::Vacant(e) = out.entry((s.source.clone(), s.id.clone())) {
+                e.insert(self.relation(&at, s));
+            }
+        }
+        out
     }
 
     fn locate(&self, p: Point, mode: Mode) -> HydroPosition {
         let snapped = self.snap(p);
+        // A waterbody beyond the shore tolerance is never taken, nor does it outrank one within.
         let mut hits: Vec<WaterbodyHit> = self
             .groups
             .keys()
@@ -560,11 +766,17 @@ impl<'a> Hydro<'a> {
         HydroPosition { waterbody, stream }
     }
 
+    /// Where `p` is against the group's polygons; `None` for a group whose box is beyond the
+    /// shore tolerance, which neither holds the point nor measures it from the shore.
     fn group_hit(&self, key: &WaterbodyKey, p: Point) -> Option<WaterbodyHit> {
-        let parts = self.groups.get(key)?;
+        let group = self.groups.get(key)?;
+        if self.beyond(&group.bounds, p, self.options.shore_tolerance_m) {
+            return None;
+        }
+        let parts = &group.parts;
         let (part, distance_m) = parts
             .iter()
-            .map(|&i| (i, self.waterbodies[i].distance_m(p)))
+            .map(|&i| (i, self.part_distance(i, p)))
             .min_by(|x, y| x.1.total_cmp(&y.1))?;
         let w = &self.waterbodies[part];
         Some(WaterbodyHit {
@@ -572,30 +784,36 @@ impl<'a> Hydro<'a> {
             name: parts.iter().find_map(|&i| self.waterbodies[i].name.clone()),
             kind: w.kind,
             area_km2: parts.iter().map(|&i| self.waterbodies[i].area_km2).sum(),
-            inside: w.contains(p),
+            inside: self.part_contains(part, p),
             distance_m,
         })
     }
 
+    /// The flowlines with a vertex or a segment midpoint inside the group, in index order.
+    fn through(&self, group: &Group) -> Vec<usize> {
+        let inside = |q: Point| group.parts.iter().any(|&i| self.part_contains(i, q));
+        (0..self.flowlines.len())
+            .filter(|&i| {
+                !self.apart(&self.reaches[i].0, &group.bounds)
+                    && self.flowlines[i]
+                        .paths
+                        .iter()
+                        .flat_map(|l| l.windows(2))
+                        .any(|s| {
+                            inside(s[0])
+                                || inside(Point::new(
+                                    f64::midpoint(s[0].latitude, s[1].latitude),
+                                    f64::midpoint(s[0].longitude, s[1].longitude),
+                                ))
+                        })
+            })
+            .collect()
+    }
+
     /// The highest-order flowline through the waterbody (named first), nearest the point.
     fn waterbody_path(&self, key: &WaterbodyKey, p: Point) -> Option<StreamPosition> {
-        let parts = self.groups.get(key)?;
-        let inside = |q: Point| parts.iter().any(|&i| self.waterbodies[i].contains(q));
-        let through: Vec<usize> = (0..self.flowlines.len())
-            .filter(|&i| {
-                self.flowlines[i]
-                    .paths
-                    .iter()
-                    .flat_map(|l| l.windows(2))
-                    .any(|s| {
-                        inside(s[0])
-                            || inside(Point::new(
-                                f64::midpoint(s[0].latitude, s[1].latitude),
-                                f64::midpoint(s[0].longitude, s[1].longitude),
-                            ))
-                    })
-            })
-            .collect();
+        let group = self.groups.get(key)?;
+        let through = group.through.get_or_init(|| self.through(group));
         let rank = |i: usize| {
             (
                 self.flowlines[i].stream_order,
@@ -604,7 +822,8 @@ impl<'a> Hydro<'a> {
         };
         let best = through.iter().map(|&i| rank(i)).max()?;
         through
-            .into_iter()
+            .iter()
+            .copied()
             .filter(|&i| rank(i) == best)
             .map(|i| self.position_on(i, p, SnapBasis::WaterbodyPath))
             .fold(None, |acc, pos| {
@@ -618,10 +837,11 @@ impl<'a> Hydro<'a> {
 
     fn position_on(&self, index: usize, p: Point, basis: SnapBasis) -> StreamPosition {
         let f = &self.flowlines[index];
+        let at = Projection::at(p);
         let (mut offset_m, mut measure_m, mut run) = (f64::INFINITY, 0.0, 0.0);
-        for s in f.paths.iter().flat_map(|l| l.windows(2)) {
-            let (d, t) = segment_distance(p, s[0], s[1]);
-            let len = haversine_m(s[0], s[1]);
+        let segments = f.paths.iter().flat_map(|l| l.windows(2));
+        for (s, &len) in segments.zip(&self.reaches[index].1) {
+            let (d, t) = at.segment(s[0], s[1]);
             if d < offset_m {
                 offset_m = d;
                 measure_m = run + t * len;
@@ -832,6 +1052,15 @@ fn closer(pos: &StreamPosition, than: Option<&StreamPosition>) -> bool {
     })
 }
 
+/// Whether edge `ab` crosses the ray from `p` towards the east (the even-odd rule's test).
+fn crosses(a: Point, b: Point, p: Point) -> bool {
+    (a.latitude > p.latitude) != (b.latitude > p.latitude)
+        && p.longitude
+            < a.longitude
+                + (p.latitude - a.latitude) * (b.longitude - a.longitude)
+                    / (b.latitude - a.latitude)
+}
+
 fn edges(ring: &[Point]) -> impl Iterator<Item = (Point, Point)> + '_ {
     ring.iter()
         .zip(ring.iter().cycle().skip(1))
@@ -849,23 +1078,44 @@ fn haversine_m(a: Point, b: Point) -> f64 {
 /// Distance from `p` to segment `ab`, metres, and the position along it (0 at `a`, 1 at `b`), in
 /// an equirectangular projection centred on `p`.
 fn segment_distance(p: Point, a: Point, b: Point) -> (f64, f64) {
-    let m_per_deg = EARTH_RADIUS_M.to_radians();
-    let cos_lat = p.latitude.to_radians().cos();
-    let xy = |q: Point| {
-        (
-            (q.longitude - p.longitude) * cos_lat * m_per_deg,
-            (q.latitude - p.latitude) * m_per_deg,
-        )
-    };
-    let ((ax, ay), (bx, by)) = (xy(a), xy(b));
-    let (dx, dy) = (bx - ax, by - ay);
-    let len2 = dx * dx + dy * dy;
-    let t = if len2 > 0.0 {
-        (-(ax * dx + ay * dy) / len2).clamp(0.0, 1.0)
-    } else {
-        0.0
-    };
-    ((ax + t * dx).hypot(ay + t * dy), t)
+    Projection::at(p).segment(a, b)
+}
+
+/// An equirectangular projection centred on a point, metres.
+#[derive(Clone, Copy)]
+struct Projection {
+    p: Point,
+    m_per_deg: f64,
+    cos_lat: f64,
+}
+
+impl Projection {
+    fn at(p: Point) -> Self {
+        Self {
+            p,
+            m_per_deg: EARTH_RADIUS_M.to_radians(),
+            cos_lat: p.latitude.to_radians().cos(),
+        }
+    }
+
+    /// Distance from the centre to segment `ab` and the position along it.
+    fn segment(&self, a: Point, b: Point) -> (f64, f64) {
+        let xy = |q: Point| {
+            (
+                (q.longitude - self.p.longitude) * self.cos_lat * self.m_per_deg,
+                (q.latitude - self.p.latitude) * self.m_per_deg,
+            )
+        };
+        let ((ax, ay), (bx, by)) = (xy(a), xy(b));
+        let (dx, dy) = (bx - ax, by - ay);
+        let len2 = dx * dx + dy * dy;
+        let t = if len2 > 0.0 {
+            (-(ax * dx + ay * dy) / len2).clamp(0.0, 1.0)
+        } else {
+            0.0
+        };
+        ((ax + t * dx).hypot(ay + t * dy), t)
+    }
 }
 
 #[cfg(test)]
@@ -900,13 +1150,14 @@ mod tests {
         a[key].as_str().map(str::to_owned)
     }
 
-    /// Layer 50 features; `level_path` fills a field the query did not ask for.
+    /// Layer 50 features on the network; `level_path` fills a field the query did not ask for.
     fn flowlines(name: &str, level_path: Option<u64>) -> Vec<Flowline> {
         let int = |a: &Value, k: &str| a[k].as_f64().map(|x| x as u64);
         fixture(name)["features"]
             .as_array()
             .unwrap()
             .iter()
+            .filter(|f| !f["attributes"]["hydrosequence"].is_null())
             .map(|f| {
                 let a = &f["attributes"];
                 Flowline {
@@ -916,8 +1167,8 @@ mod tests {
                     stream_order: int(a, "streamorder").map(|o| o as u8),
                     level_path: int(a, "levelpath").or(level_path).unwrap(),
                     hydrosequence: int(a, "hydrosequence").unwrap(),
-                    dn_hydrosequence: int(a, "dnhydrosequence").unwrap(),
-                    up_hydrosequence: int(a, "uphydrosequence").unwrap(),
+                    dn_hydrosequence: int(a, "dnhydrosequence").unwrap_or(0),
+                    up_hydrosequence: int(a, "uphydrosequence").unwrap_or(0),
                     length_km: a["lengthkm"].as_f64(),
                     paths: points(&f["geometry"]["paths"]),
                 }
@@ -1510,6 +1761,217 @@ mod tests {
             Some(WaterType::TidalRiverEstuary)
         );
         assert_eq!(choose_water_type(None, None), None);
+    }
+
+    fn raw(path: &str) -> String {
+        let path = format!(
+            "{}/../../tests/fixtures/raw/{path}",
+            env!("CARGO_MANIFEST_DIR")
+        );
+        std::fs::read_to_string(path).unwrap()
+    }
+
+    fn station(source: SourceId, id: &str, kind: StationKind, lat: f64, lon: f64) -> StationRef {
+        StationRef {
+            source,
+            id: id.into(),
+            name: id.into(),
+            kind,
+            latitude: lat,
+            longitude: lon,
+            bin: None,
+            reference_id: None,
+        }
+    }
+
+    /// Every station in the recorded CO-OPS, NDBC, USGS and NWPS lists within `km` of `at`, each
+    /// also as a twin of the other placement mode (stream gauge or not).
+    fn listed_stations(at: Point, usgs_lists: &[&str], km: f64) -> Vec<StationRef> {
+        let mut out = Vec::new();
+        for (file, kind) in [
+            ("tidepredictions", StationKind::TideHarmonic),
+            ("waterlevels", StationKind::WaterLevel),
+            ("currentpredictions", StationKind::CurrentHarmonic),
+        ] {
+            let v: Value = serde_json::from_str(&raw(&format!(
+                "coops/coops-mdapi-stations-{file}-newyork-trimmed.json"
+            )))
+            .unwrap();
+            for s in v["stations"].as_array().unwrap() {
+                let (lat, lon) = (s["lat"].as_f64().unwrap(), s["lng"].as_f64().unwrap());
+                let id = s["id"].as_str().unwrap();
+                out.push(station(SourceId::COOPS, id, kind, lat, lon));
+            }
+        }
+        for name in usgs_lists {
+            let v: Value = serde_json::from_str(&raw(&format!("usgs/{name}"))).unwrap();
+            for f in v["features"].as_array().unwrap() {
+                let c = &f["geometry"]["coordinates"];
+                let site = match f["properties"]["site_type_code"].as_str().unwrap() {
+                    "ST" => UsgsSiteType::Stream,
+                    "LK" => UsgsSiteType::Lake,
+                    "ES" => UsgsSiteType::Estuary,
+                    _ => UsgsSiteType::Other,
+                };
+                out.push(station(
+                    SourceId::USGS,
+                    f["id"].as_str().unwrap(),
+                    StationKind::UsgsSite(site),
+                    c[1].as_f64().unwrap(),
+                    c[0].as_f64().unwrap(),
+                ));
+            }
+        }
+        let v: Value =
+            serde_json::from_str(&raw("nwps/nwps-gauges-bbox-lower-hudson.json")).unwrap();
+        for g in v["gauges"].as_array().unwrap() {
+            out.push(station(
+                SourceId::NWPS,
+                g["lid"].as_str().unwrap(),
+                StationKind::NwpsGauge,
+                g["latitude"].as_f64().unwrap(),
+                g["longitude"].as_f64().unwrap(),
+            ));
+        }
+        let xml = raw("ndbc/ndbc-activestations.xml");
+        for tag in xml.split("<station ").skip(1) {
+            let attr = |k: &str| {
+                let start = tag.find(&format!(" {k}=\"")).map(|i| i + k.len() + 3)?;
+                let len = tag[start..].find('"')?;
+                Some(tag[start..start + len].to_owned())
+            };
+            let id = tag.split('"').nth(1).unwrap().to_owned();
+            let (Some(lat), Some(lon)) = (attr("lat"), attr("lon")) else {
+                continue;
+            };
+            let kind = if attr("type").as_deref() == Some("buoy") {
+                StationKind::Buoy
+            } else {
+                StationKind::Cman
+            };
+            out.push(station(
+                SourceId::NDBC,
+                &id,
+                kind,
+                lat.parse().unwrap(),
+                lon.parse().unwrap(),
+            ));
+        }
+        out.retain(|s| haversine_m(at, Point::new(s.latitude, s.longitude)) <= km * 1000.0);
+        let twins: Vec<StationRef> = out
+            .iter()
+            .map(|s| {
+                let kind = match s.kind {
+                    StationKind::UsgsSite(UsgsSiteType::Stream) | StationKind::NwpsGauge => {
+                        StationKind::UsgsSite(UsgsSiteType::Lake)
+                    }
+                    _ => StationKind::UsgsSite(UsgsSiteType::Stream),
+                };
+                let id = format!("{}+twin", s.id);
+                station(s.source.clone(), &id, kind, s.latitude, s.longitude)
+            })
+            .collect();
+        out.extend(twins);
+        out
+    }
+
+    const CROTON_SPOT: Point = Point::new(41.2250, -73.8589);
+
+    /// The features of several recorded answers, each id once, the first answer first.
+    fn network(lines: &[&str], lakes: &[&str]) -> (Vec<Flowline>, Vec<Waterbody>) {
+        let mut reaches: Vec<Flowline> = Vec::new();
+        for name in lines {
+            for f in flowlines(name, None) {
+                if !reaches.iter().any(|g| g.id == f.id) {
+                    reaches.push(f);
+                }
+            }
+        }
+        let mut bodies: Vec<Waterbody> = Vec::new();
+        for name in lakes {
+            for w in waterbodies(name, |_| Vec::new()) {
+                if !bodies.iter().any(|v| v.id == w.id) {
+                    bodies.push(w);
+                }
+            }
+        }
+        (reaches, bodies)
+    }
+
+    /// Scans every feature and tests every polygon edge.
+    fn exhaustive<'a>(lines: &'a [Flowline], lakes: &'a [Waterbody]) -> Hydro<'a> {
+        Hydro {
+            exhaustive: true,
+            ..Hydro::new(lines, lakes, HydroOptions::default())
+        }
+    }
+
+    #[test]
+    fn the_index_changes_no_relation_on_the_recorded_networks() {
+        let croton_lists = [
+            "usgs-monitoring-locations-bbox-croton-st.json",
+            "usgs-monitoring-locations-bbox-croton-lk.json",
+            "usgs-monitoring-locations-bbox-croton-es.json",
+        ];
+        let battery = Point::new(40.7033, -74.0170);
+        let far = |ids: [&str; 5], layer| ids.map(|id| format!("hydro-{layer}-{id}-geom.json"));
+        let far_ids = ["hunter-brook", "ktnn6", "wnyn6", "wptn6", "xrvn6"];
+        let (lines_50, lakes_60) = (far(far_ids, 50), far(far_ids, 60));
+        let mut second = (
+            vec!["hydro-50-croton-geom.json"],
+            vec!["hydro-60-croton-geom.json"],
+        );
+        second.0.extend(lines_50.iter().map(String::as_str));
+        second.1.extend(lakes_60.iter().map(String::as_str));
+        let cases = [
+            (
+                "croton, spot's network",
+                CROTON_SPOT,
+                network(
+                    &["hydro-50-croton-geom.json"],
+                    &["hydro-60-croton-geom.json"],
+                ),
+                listed_stations(CROTON_SPOT, &croton_lists, 50.0),
+            ),
+            (
+                "croton, with the far gauges' networks",
+                CROTON_SPOT,
+                network(&second.0, &second.1),
+                listed_stations(CROTON_SPOT, &croton_lists, 50.0),
+            ),
+            (
+                "battery",
+                battery,
+                network(
+                    &["hydro-50-battery-geom.json"],
+                    &["hydro-60-battery-geom.json"],
+                ),
+                listed_stations(
+                    battery,
+                    &["usgs-monitoring-locations-bbox-manhattan-st.json"],
+                    50.0,
+                ),
+            ),
+        ];
+        for (case, spot, (lines, lakes), stations) in &cases {
+            let indexed = Hydro::new(lines, lakes, HydroOptions::default());
+            let scan = exhaustive(lines, lakes);
+            assert_eq!(
+                indexed.locate_spot(*spot),
+                scan.locate_spot(*spot),
+                "{case}"
+            );
+            let fast = indexed.relations(*spot, stations);
+            let slow = scan.relations(*spot, stations);
+            assert_eq!(fast.len(), slow.len(), "{case}");
+            for (key, hint) in &slow {
+                assert_eq!(fast.get(key), Some(hint), "{case}: {key:?}");
+            }
+            // The networks place stations every way, so the comparison covers each path.
+            let kinds: std::collections::BTreeSet<String> =
+                fast.values().map(|h| format!("{:?}", h.relation)).collect();
+            assert!(kinds.len() >= 3, "{case}: {kinds:?}");
+        }
     }
 
     #[test]
