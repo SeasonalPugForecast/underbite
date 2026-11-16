@@ -11,3 +11,7 @@
 /target/ios-*
 /ios/Underbite/Signing.local.xcconfig
 /ios/remote.local.toml
+/ios/UnderbiteKit/.build/
+/ios/UnderbiteKit/.swiftpm/
+/ios/Underbite/Underbite.xcodeproj/project.xcworkspace/
+xcuserdata/
