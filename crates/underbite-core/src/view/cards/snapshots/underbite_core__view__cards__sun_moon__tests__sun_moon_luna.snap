@@ -1,0 +1,372 @@
+---
+source: crates/underbite-core/src/view/cards/sun_moon.rs
+expression: build(&input).unwrap()
+---
+{
+  "chrome": {
+    "id": "sun_moon",
+    "title": "Sun and moon",
+    "footnote": null,
+    "credits": [
+      {
+        "source": "Computed on device",
+        "text": "Sun and moon positions from astronomical algorithms",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Sunrise 6:34 AM, Sunset 4:45 PM. Waning crescent, 1% lit."
+  },
+  "compact": {
+    "headline": {
+      "value": 0.5171947,
+      "text": "1",
+      "unit": "%"
+    },
+    "lines": [
+      "Sunrise 6:34 AM · Sunset 4:45 PM",
+      "Waning crescent · Moonrise 6:01 AM"
+    ],
+    "spark": []
+  },
+  "full": {
+    "days": [
+      {
+        "date": "Sun Nov 8",
+        "sun": [
+          {
+            "label": "Nautical dawn",
+            "time": "5:32 AM",
+            "t": 1794133978
+          },
+          {
+            "label": "Civil dawn",
+            "time": "6:05 AM",
+            "t": 1794135938
+          },
+          {
+            "label": "Sunrise",
+            "time": "6:34 AM",
+            "t": 1794137669
+          },
+          {
+            "label": "Golden hour ends",
+            "time": "7:14 AM",
+            "t": 1794140050
+          },
+          {
+            "label": "Golden hour starts",
+            "time": "4:05 PM",
+            "t": 1794171932
+          },
+          {
+            "label": "Sunset",
+            "time": "4:45 PM",
+            "t": 1794174313
+          },
+          {
+            "label": "Civil dusk",
+            "time": "5:14 PM",
+            "t": 1794176044
+          },
+          {
+            "label": "Nautical dusk",
+            "time": "5:46 PM",
+            "t": 1794178004
+          }
+        ],
+        "day_length": "10 h 11 min",
+        "polar": null,
+        "moon": {
+          "phase": {
+            "phase": "waning_crescent",
+            "label": "Waning crescent",
+            "illumination": {
+              "value": 0.5171947,
+              "text": "1",
+              "unit": "%"
+            }
+          },
+          "rise": {
+            "label": "Moonrise",
+            "time": "6:01 AM",
+            "t": 1794135696
+          },
+          "set": {
+            "label": "Moonset",
+            "time": "4:01 PM",
+            "t": 1794171672
+          },
+          "upper_transit": {
+            "label": "Moon overhead",
+            "time": "11:05 AM",
+            "t": 1794153909
+          },
+          "lower_transit": {
+            "label": "Moon underfoot",
+            "time": "11:28 PM",
+            "t": 1794198534
+          },
+          "nearest_principal": {
+            "label": "New moon",
+            "time": "Nov 9 2:02 AM",
+            "t": 1794207733
+          }
+        }
+      },
+      {
+        "date": "Mon Nov 9",
+        "sun": [
+          {
+            "label": "Nautical dawn",
+            "time": "5:34 AM",
+            "t": 1794220442
+          },
+          {
+            "label": "Civil dawn",
+            "time": "6:06 AM",
+            "t": 1794222406
+          },
+          {
+            "label": "Sunrise",
+            "time": "6:35 AM",
+            "t": 1794224141
+          },
+          {
+            "label": "Golden hour ends",
+            "time": "7:15 AM",
+            "t": 1794226529
+          },
+          {
+            "label": "Golden hour starts",
+            "time": "4:04 PM",
+            "t": 1794258263
+          },
+          {
+            "label": "Sunset",
+            "time": "4:44 PM",
+            "t": 1794260652
+          },
+          {
+            "label": "Civil dusk",
+            "time": "5:13 PM",
+            "t": 1794262387
+          },
+          {
+            "label": "Nautical dusk",
+            "time": "5:45 PM",
+            "t": 1794264350
+          }
+        ],
+        "day_length": "10 h 09 min",
+        "polar": null,
+        "moon": {
+          "phase": {
+            "phase": "new",
+            "label": "New moon",
+            "illumination": {
+              "value": 0.3595107,
+              "text": "0",
+              "unit": "%"
+            }
+          },
+          "rise": {
+            "label": "Moonrise",
+            "time": "7:07 AM",
+            "t": 1794226043
+          },
+          "set": {
+            "label": "Moonset",
+            "time": "4:33 PM",
+            "t": 1794259985
+          },
+          "upper_transit": {
+            "label": "Moon overhead",
+            "time": "11:53 AM",
+            "t": 1794243190
+          },
+          "lower_transit": null,
+          "nearest_principal": {
+            "label": "New moon",
+            "time": "Nov 9 2:02 AM",
+            "t": 1794207733
+          }
+        }
+      },
+      {
+        "date": "Tue Nov 10",
+        "sun": [
+          {
+            "label": "Nautical dawn",
+            "time": "5:35 AM",
+            "t": 1794306907
+          },
+          {
+            "label": "Civil dawn",
+            "time": "6:07 AM",
+            "t": 1794308873
+          },
+          {
+            "label": "Sunrise",
+            "time": "6:36 AM",
+            "t": 1794310612
+          },
+          {
+            "label": "Golden hour ends",
+            "time": "7:16 AM",
+            "t": 1794313009
+          },
+          {
+            "label": "Golden hour starts",
+            "time": "4:03 PM",
+            "t": 1794344597
+          },
+          {
+            "label": "Sunset",
+            "time": "4:43 PM",
+            "t": 1794346993
+          },
+          {
+            "label": "Civil dusk",
+            "time": "5:12 PM",
+            "t": 1794348732
+          },
+          {
+            "label": "Nautical dusk",
+            "time": "5:44 PM",
+            "t": 1794350699
+          }
+        ],
+        "day_length": "10 h 06 min",
+        "polar": null,
+        "moon": {
+          "phase": {
+            "phase": "waxing_crescent",
+            "label": "Waxing crescent",
+            "illumination": {
+              "value": 2.1162438,
+              "text": "2",
+              "unit": "%"
+            }
+          },
+          "rise": {
+            "label": "Moonrise",
+            "time": "8:11 AM",
+            "t": 1794316283
+          },
+          "set": {
+            "label": "Moonset",
+            "time": "5:11 PM",
+            "t": 1794348666
+          },
+          "upper_transit": {
+            "label": "Moon overhead",
+            "time": "12:43 PM",
+            "t": 1794332589
+          },
+          "lower_transit": {
+            "label": "Moon underfoot",
+            "time": "12:17 AM",
+            "t": 1794287877
+          },
+          "nearest_principal": {
+            "label": "New moon",
+            "time": "Nov 9 2:02 AM",
+            "t": 1794207733
+          }
+        }
+      }
+    ],
+    "sections": [
+      {
+        "title": "Sun",
+        "rows": [
+          {
+            "label": "Nautical dawn",
+            "value": "5:32 AM",
+            "detail": null
+          },
+          {
+            "label": "Civil dawn",
+            "value": "6:05 AM",
+            "detail": null
+          },
+          {
+            "label": "Sunrise",
+            "value": "6:34 AM",
+            "detail": null
+          },
+          {
+            "label": "Golden hour ends",
+            "value": "7:14 AM",
+            "detail": null
+          },
+          {
+            "label": "Golden hour starts",
+            "value": "4:05 PM",
+            "detail": null
+          },
+          {
+            "label": "Sunset",
+            "value": "4:45 PM",
+            "detail": null
+          },
+          {
+            "label": "Civil dusk",
+            "value": "5:14 PM",
+            "detail": null
+          },
+          {
+            "label": "Nautical dusk",
+            "value": "5:46 PM",
+            "detail": null
+          },
+          {
+            "label": "Day length",
+            "value": "10 h 11 min",
+            "detail": null
+          }
+        ]
+      },
+      {
+        "title": "Moon",
+        "rows": [
+          {
+            "label": "Waning crescent",
+            "value": "1% lit",
+            "detail": null
+          },
+          {
+            "label": "Moonrise",
+            "value": "6:01 AM",
+            "detail": null
+          },
+          {
+            "label": "Moonset",
+            "value": "4:01 PM",
+            "detail": null
+          },
+          {
+            "label": "Moon overhead",
+            "value": "11:05 AM",
+            "detail": null
+          },
+          {
+            "label": "Moon underfoot",
+            "value": "11:28 PM",
+            "detail": null
+          },
+          {
+            "label": "New moon",
+            "value": "Nov 9 2:02 AM",
+            "detail": null
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,194 @@
+---
+source: crates/underbite-core/src/view/cards/solunar.rs
+expression: build(&input).unwrap()
+---
+{
+  "chrome": {
+    "id": "solunar",
+    "title": "Solunar",
+    "footnote": null,
+    "credits": [
+      {
+        "source": "Computed on device",
+        "text": "Sun and moon positions from astronomical algorithms",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "traditional_cue",
+        "text": "A traditional cue, not a promise."
+      }
+    ],
+    "accessibility": "Solunar: Next big nibble 10:05 AM to 12:05 PM. Next small nibble 3:31 to 4:31 PM. A traditional cue, not a promise."
+  },
+  "compact": {
+    "headline": {
+      "value": 2.0833333,
+      "text": "2.1",
+      "unit": "h"
+    },
+    "lines": [
+      "Next big nibble 10:05 AM to 12:05 PM",
+      "Next small nibble 3:31 to 4:31 PM"
+    ],
+    "spark": []
+  },
+  "full": {
+    "days": [
+      {
+        "date": "Sun Nov 8",
+        "periods": [
+          {
+            "kind": "minor",
+            "cause": "rise",
+            "label": "Small nibble",
+            "start_t": 1794133896,
+            "end_t": 1794137496,
+            "range": "5:31 to 6:31 AM",
+            "cause_label": "Moonrise"
+          },
+          {
+            "kind": "major",
+            "cause": "upper_transit",
+            "label": "Big nibble",
+            "start_t": 1794150309,
+            "end_t": 1794157509,
+            "range": "10:05 AM to 12:05 PM",
+            "cause_label": "Moon overhead"
+          },
+          {
+            "kind": "minor",
+            "cause": "set",
+            "label": "Small nibble",
+            "start_t": 1794169872,
+            "end_t": 1794173472,
+            "range": "3:31 to 4:31 PM",
+            "cause_label": "Moonset"
+          },
+          {
+            "kind": "major",
+            "cause": "lower_transit",
+            "label": "Big nibble",
+            "start_t": 1794194934,
+            "end_t": 1794202134,
+            "range": "10:28 PM to 12:28 AM",
+            "cause_label": "Moon underfoot"
+          }
+        ]
+      },
+      {
+        "date": "Mon Nov 9",
+        "periods": [
+          {
+            "kind": "major",
+            "cause": "lower_transit",
+            "label": "Big nibble",
+            "start_t": 1794194934,
+            "end_t": 1794202134,
+            "range": "10:28 PM to 12:28 AM",
+            "cause_label": "Moon underfoot"
+          },
+          {
+            "kind": "minor",
+            "cause": "rise",
+            "label": "Small nibble",
+            "start_t": 1794224243,
+            "end_t": 1794227843,
+            "range": "6:37 to 7:37 AM",
+            "cause_label": "Moonrise"
+          },
+          {
+            "kind": "major",
+            "cause": "upper_transit",
+            "label": "Big nibble",
+            "start_t": 1794239590,
+            "end_t": 1794246790,
+            "range": "10:53 AM to 12:53 PM",
+            "cause_label": "Moon overhead"
+          },
+          {
+            "kind": "minor",
+            "cause": "set",
+            "label": "Small nibble",
+            "start_t": 1794258185,
+            "end_t": 1794261785,
+            "range": "4:03 to 5:03 PM",
+            "cause_label": "Moonset"
+          },
+          {
+            "kind": "major",
+            "cause": "lower_transit",
+            "label": "Big nibble",
+            "start_t": 1794284277,
+            "end_t": 1794291477,
+            "range": "11:17 PM to 1:17 AM",
+            "cause_label": "Moon underfoot"
+          }
+        ]
+      },
+      {
+        "date": "Tue Nov 10",
+        "periods": [
+          {
+            "kind": "major",
+            "cause": "lower_transit",
+            "label": "Big nibble",
+            "start_t": 1794284277,
+            "end_t": 1794291477,
+            "range": "11:17 PM to 1:17 AM",
+            "cause_label": "Moon underfoot"
+          },
+          {
+            "kind": "minor",
+            "cause": "rise",
+            "label": "Small nibble",
+            "start_t": 1794314483,
+            "end_t": 1794318083,
+            "range": "7:41 to 8:41 AM",
+            "cause_label": "Moonrise"
+          },
+          {
+            "kind": "major",
+            "cause": "upper_transit",
+            "label": "Big nibble",
+            "start_t": 1794328989,
+            "end_t": 1794336189,
+            "range": "11:43 AM to 1:43 PM",
+            "cause_label": "Moon overhead"
+          },
+          {
+            "kind": "minor",
+            "cause": "set",
+            "label": "Small nibble",
+            "start_t": 1794346866,
+            "end_t": 1794350466,
+            "range": "4:41 to 5:41 PM",
+            "cause_label": "Moonset"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "title": "Next",
+        "rows": [
+          {
+            "label": "Next major",
+            "value": "10:05 AM to 12:05 PM (moon overhead)",
+            "detail": "Nov 8"
+          },
+          {
+            "label": "Next minor",
+            "value": "3:31 to 4:31 PM (moonset)",
+            "detail": "Nov 8"
+          }
+        ]
+      }
+    ]
+  }
+}
