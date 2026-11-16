@@ -11,7 +11,7 @@ struct ConditionsView: View {
 
     @State private var loaded: LoadedPage?
     @State private var firstShowDone = false
-    @State private var customizing = ConditionsLaunch.opensCustomize
+    @State private var customizing = false
 
     var body: some View {
         let spot = store.spot(spotID)
@@ -33,6 +33,13 @@ struct ConditionsView: View {
                 firstShowDone = false
                 await store.show(spotID)
                 firstShowDone = true
+            }
+            .task {
+                // A launch argument opens the sheet once the page has finished appearing: a sheet
+                // asked for while the page is still being pushed aborts the app.
+                guard ConditionsLaunch.opensCustomize else { return }
+                try? await Task.sleep(for: .seconds(2))
+                customizing = true
             }
             .task(id: store.pageJSON) {
                 let json = store.pageJSON

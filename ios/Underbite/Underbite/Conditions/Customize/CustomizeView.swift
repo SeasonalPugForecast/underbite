@@ -20,6 +20,7 @@ struct CustomizeView: View {
     @State private var confirmingRestore = false
     @State private var problem: String?
     @State private var started = false
+    @State private var editMode: EditMode = .active
 
     /// The water types of the user's spots, with the core's label for each.
     private var types: [WaterTypeChoice] {
@@ -88,7 +89,7 @@ struct CustomizeView: View {
             }
         }
         // The list stays in editing mode: handles and switches, one tap away from nothing else.
-        .environment(\.editMode, .constant(.active))
+        .environment(\.editMode, $editMode)
         .navigationTitle("Customize")
         .navigationBarTitleDisplayMode(.inline)
         .confirmationDialog(
@@ -106,6 +107,9 @@ struct CustomizeView: View {
         .onChange(of: target) { _, _ in
             guard started else { return }
             reload(detectOwn: true)
+        }
+        .onChange(of: editMode) { _, mode in
+            if mode != .active { editMode = .active }
         }
         .onAppear {
             guard !started else { return }
