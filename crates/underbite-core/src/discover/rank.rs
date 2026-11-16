@@ -262,15 +262,27 @@ pub struct MeasurementRanking {
     pub dropped: Vec<DroppedStation>,
 }
 
+/// Version of the ranking rules; a ranking made under other rules is redone. Raise it whenever
+/// [`rank`] would choose differently from the same input.
+pub const RANK_RULES: u32 = 1;
+
 /// The stations of a spot, ranked per measurement, and what the ranking was computed from.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Ranking {
+    /// [`RANK_RULES`] when the ranking was made; 0 for rankings stored before it was recorded.
+    #[serde(default)]
+    pub rules: u32,
     pub latitude: f64,
     pub longitude: f64,
     pub at: UnixTime,
     pub choices: StationChoices,
     /// [`ObservedCoverage::revision`] of the coverage used.
     pub coverage_revision: u64,
+    /// The hydrography's relations and whether it placed the spot, as ranked.
+    #[serde(default)]
+    pub relations: BTreeMap<StationKey, Relation>,
+    #[serde(default)]
+    pub spot_placed: bool,
     pub measurements: BTreeMap<Measurement, MeasurementRanking>,
 }
 
@@ -461,11 +473,14 @@ pub fn rank(input: &DiscoveryInput) -> Ranking {
         .map(|(m, chain)| (*m, rank_one(input, &merged, &kept, *m, chain)))
         .collect();
     Ranking {
+        rules: RANK_RULES,
         latitude: input.latitude,
         longitude: input.longitude,
         at: input.now,
         choices: input.choices.clone(),
         coverage_revision: input.observed.revision(),
+        relations: input.relations.clone(),
+        spot_placed: input.spot_placed,
         measurements,
     }
 }

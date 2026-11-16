@@ -11,7 +11,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 
-use super::rank::{ChainSpec, DiscoveryInput, Ranking, StationKey, distance_m, rank};
+use super::rank::{ChainSpec, DiscoveryInput, RANK_RULES, Ranking, StationKey, distance_m, rank};
 use crate::model::{Coverage, Measurement};
 use crate::provenance::SourceId;
 use crate::time::UnixTime;
@@ -147,11 +147,19 @@ impl ObservedCoverage {
 #[serde(tag = "why", rename_all = "snake_case")]
 pub enum Invalid {
     Missing,
-    Moved { distance_m: f64 },
+    Moved {
+        distance_m: f64,
+    },
     ChoicesChanged,
     ChainsChanged,
     CoverageChanged,
-    Expired { age_s: i64 },
+    /// The hydrography relates the stations or places the spot differently.
+    HydrographyChanged,
+    /// The ranking was made under other rules.
+    RulesChanged,
+    Expired {
+        age_s: i64,
+    },
 }
 
 /// Rankings per spot id.
@@ -188,6 +196,9 @@ impl DiscoveryCache {
     /// The cached ranking of `spot_id` if it still fits `input`.
     pub fn check(&self, spot_id: &str, input: &DiscoveryInput) -> Result<&Ranking, Invalid> {
         let ranking = self.spots.get(spot_id).ok_or(Invalid::Missing)?;
+        if ranking.rules != RANK_RULES {
+            return Err(Invalid::RulesChanged);
+        }
         let moved = distance_m(
             ranking.latitude,
             ranking.longitude,
@@ -205,6 +216,9 @@ impl DiscoveryCache {
         }
         if ranking.coverage_revision != input.observed.revision() {
             return Err(Invalid::CoverageChanged);
+        }
+        if ranking.relations != input.relations || ranking.spot_placed != input.spot_placed {
+            return Err(Invalid::HydrographyChanged);
         }
         let age_s = input.now.0 - ranking.at.0;
         if !(0..=self.max_age_s).contains(&age_s) {
@@ -382,8 +396,39 @@ mod tests {
         );
         assert!(cache.check("battery", &checked_again).is_ok());
 
+        let mut placed = checked_again.clone();
+        placed.spot_placed = !checked_again.spot_placed;
+        assert_eq!(
+            cache.check("battery", &placed),
+            Err(Invalid::HydrographyChanged)
+        );
+        let mut related = checked_again.clone();
+        related.relations.insert(
+            StationKey::new(SourceId::COOPS, "8518750"),
+            crate::provenance::Relation::SameWaterBody,
+        );
+        assert_eq!(
+            cache.check("battery", &related),
+            Err(Invalid::HydrographyChanged)
+        );
+
         cache.invalidate("battery");
         assert_eq!(cache.check("battery", &base), Err(Invalid::Missing));
+    }
+
+    #[test]
+    fn a_ranking_from_older_rules_is_redone() {
+        let mut cache = DiscoveryCache::new(3_600);
+        let base = input();
+        cache.ranking("battery", &base);
+        // A ranking stored before the rules were versioned decodes with version 0.
+        let mut json = serde_json::to_value(&cache).unwrap();
+        json["spots"]["battery"]
+            .as_object_mut()
+            .unwrap()
+            .remove("rules");
+        let old: DiscoveryCache = serde_json::from_value(json).unwrap();
+        assert_eq!(old.check("battery", &base), Err(Invalid::RulesChanged));
     }
 
     #[test]
