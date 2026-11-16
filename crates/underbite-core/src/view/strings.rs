@@ -458,27 +458,104 @@ keys! {
     Missing => ("—", "—"),
 }
 
-/// Texts that are never playful: safety, advisories and regulations. No voice parameter exists
-/// for them.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum SafetyKey {
-    NotForNavigation,
-    Modelled,
+/// Declares [`SafetyKey`], its list and its table in one place.
+macro_rules! safety_keys {
+    ($($(#[$doc:meta])* $name:ident => $text:expr,)*) => {
+        /// Texts that are never playful: safety, advisories and regulations. No voice parameter
+        /// exists for them.
+        #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        pub enum SafetyKey {
+            $($(#[$doc])* $name,)*
+        }
+
+        impl SafetyKey {
+            /// Every key, for tests and for a later localisation.
+            pub const ALL: &'static [Self] = &[$(Self::$name,)*];
+
+            /// The one text.
+            pub const fn text(self) -> &'static str {
+                match self {
+                    $(Self::$name => $text,)*
+                }
+            }
+        }
+    };
+}
+
+safety_keys! {
+    NotForNavigation => "Not for navigation.",
+    Modelled => "Modelled data: an estimate, not a measurement.",
     /// The tide card's note when the source is a sea-level model, not a tide prediction.
-    ModelledSeaLevel,
-    Provisional,
-    Approximate,
-    TraditionalCue,
-    TextOnly,
-    RegulationsLink,
+    ModelledSeaLevel => "Modelled sea level, not a tide prediction; times can be off by hours near the coast.",
+    Provisional => "Provisional data, subject to revision.",
+    Approximate => "Approximate: check conditions locally before you go.",
+    TraditionalCue => "A traditional cue, not a promise.",
+    TextOnly => "Text only: open the map for the picture.",
+    RegulationsLink => "Check the official source for current regulations; this is not legal advice.",
     /// `{threshold}`: the user's trout-stress temperature.
-    TroutStress,
+    TroutStress => "Consider not fishing for trout above {threshold}.",
     /// How serious an alert is, as the alert source grades it.
-    SeverityExtreme,
-    SeveritySevere,
-    SeverityModerate,
-    SeverityMinor,
-    SeverityUnknown,
+    SeverityExtreme => "Extreme",
+    SeveritySevere => "Severe",
+    SeverityModerate => "Moderate",
+    SeverityMinor => "Minor",
+    SeverityUnknown => "Unknown severity",
+    /// `{amount}`: "14 in".
+    StormSnow => "Up to {amount} of snow",
+    StormRain => "Up to {amount} of rain",
+    StormGusts => "Gusts to {amount}",
+    StormAgreementHigh => "High agreement",
+    StormAgreementMedium => "Medium agreement",
+    StormAgreementLow => "Low agreement",
+    /// `{wet}`, `{wet_amount}`, `{noun}`, `{dry}`, `{dry_amount}`.
+    StormBrings => "{wet} brings {wet_amount} {noun}; {dry} {dry_amount}.",
+    StormOfSnow => "of snow",
+    StormOfRain => "of rain",
+    StormPartMorning => "morning",
+    StormPartAfternoon => "afternoon",
+    StormPartNight => "night",
+    /// `{window}`.
+    StormTitle => "Storm ahead · {window}",
+    /// `{window}`.
+    StormAlso => "Also a storm ahead · {window}",
+    /// `{title}`, `{reaches}`, `{second}`.
+    StormHurricaneAcc => "Storm ahead: {title}. {reaches}. {second}.",
+    StormModelsDiffer => "models differ",
+    StormModelsDisagree => "models disagree",
+    /// `{hours}`.
+    StormStale => "Checked {hours} h ago; forecasts may have changed.",
+    /// `{date}`, `{time}`.
+    StormChecked => "Storm outlook checked {date}, {time} · modelled",
+    HurricaneHurricane => "Hurricane",
+    HurricaneTropicalStorm => "Tropical Storm",
+    HurricaneTropicalDepression => "Tropical Depression",
+    HurricaneSubtropicalStorm => "Subtropical Storm",
+    HurricaneSubtropicalDepression => "Subtropical Depression",
+    HurricanePostTropical => "Post-Tropical Cyclone",
+    HurricanePotentialTropical => "Potential Tropical Cyclone",
+    HurricaneTyphoon => "Typhoon",
+    HurricaneCyclone => "Tropical Cyclone",
+    /// `{name}`, `{category}`.
+    HurricaneCategory => "{name} · Category {category}",
+    StormStationary => "Stationary",
+    /// `{direction}`, `{speed}`.
+    StormMovement => "{direction} at {speed}",
+    StormInCone => "This spot is in the forecast cone",
+    /// `{date}`.
+    StormConeReaches => "The forecast cone reaches this spot on {date}",
+    /// `{wind}`, `{pressure}`, `{movement}`.
+    StormStrength => "Winds {wind} · {pressure} · {movement}",
+    /// `{day}`, `{time}`.
+    StormAdvisory => "Advisory {day} {time}",
+    StormShownWhen => "Shown when",
+    /// `{snow}`, `{precipitation}`, `{gust}`, `{days}`.
+    StormShownWhenText => "the models' average reaches about {snow} of snow, {precipitation} of precipitation or gusts of {gust}, within {days} days",
+    StormHurricanesLabel => "Hurricanes",
+    StormHurricanesText => "NHC's forecast cone reaches this spot within 5 days",
+    StormSectionWhy => "Why you see this",
+    StormSectionSafety => "Safety",
+    StormForecastsChange => "Forecasts change",
+    StormForecastsChangeText => "Storm forecasts change from one run to the next and can be wrong about where a storm goes. Check the National Weather Service and the National Hurricane Center, and follow local officials, before you go on or near the water.",
 }
 
 impl SafetyKey {
@@ -490,30 +567,6 @@ impl SafetyKey {
             AlertSeverity::Moderate => Self::SeverityModerate,
             AlertSeverity::Minor => Self::SeverityMinor,
             AlertSeverity::Unknown => Self::SeverityUnknown,
-        }
-    }
-
-    /// The one text.
-    pub const fn text(self) -> &'static str {
-        match self {
-            Self::NotForNavigation => "Not for navigation.",
-            Self::Modelled => "Modelled data: an estimate, not a measurement.",
-            Self::ModelledSeaLevel => {
-                "Modelled sea level, not a tide prediction; times can be off by hours near the coast."
-            }
-            Self::Provisional => "Provisional data, subject to revision.",
-            Self::Approximate => "Approximate: check conditions locally before you go.",
-            Self::TraditionalCue => "A traditional cue, not a promise.",
-            Self::TextOnly => "Text only: open the map for the picture.",
-            Self::TroutStress => "Consider not fishing for trout above {threshold}.",
-            Self::SeverityExtreme => "Extreme",
-            Self::SeveritySevere => "Severe",
-            Self::SeverityModerate => "Moderate",
-            Self::SeverityMinor => "Minor",
-            Self::SeverityUnknown => "Unknown severity",
-            Self::RegulationsLink => {
-                "Check the official source for current regulations; this is not legal advice."
-            }
         }
     }
 }
@@ -721,22 +774,7 @@ mod tests {
         assert_eq!(luna.get(Key::GoNoGoGood), "Luna approves.");
         assert_eq!(luna.card_title(CardId::Windows), "Snack times");
         assert_eq!(plain.card_title(CardId::Windows), "Fishing windows");
-        for key in [
-            SafetyKey::NotForNavigation,
-            SafetyKey::Modelled,
-            SafetyKey::ModelledSeaLevel,
-            SafetyKey::Provisional,
-            SafetyKey::Approximate,
-            SafetyKey::TraditionalCue,
-            SafetyKey::TextOnly,
-            SafetyKey::RegulationsLink,
-            SafetyKey::TroutStress,
-            SafetyKey::SeverityExtreme,
-            SafetyKey::SeveritySevere,
-            SafetyKey::SeverityModerate,
-            SafetyKey::SeverityMinor,
-            SafetyKey::SeverityUnknown,
-        ] {
+        for key in SafetyKey::ALL.iter().copied() {
             assert_eq!(luna.safety(key), plain.safety(key));
             assert!(!key.text().contains("Luna"));
         }

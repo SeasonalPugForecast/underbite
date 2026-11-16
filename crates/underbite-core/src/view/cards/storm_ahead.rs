@@ -23,7 +23,7 @@ use crate::units::{HeightUnit, SpeedUnit};
 use crate::view::cards::sun_moon::day_label;
 use crate::view::chart::Zoned;
 use crate::view::format::{Formatter, number};
-use crate::view::strings::Key;
+use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
     CardChrome, CardId, CardState, Compact, CreditVm, NoticeKind, Quantity, Row, Section, ViewInput,
 };
@@ -34,6 +34,19 @@ const HOUR: i64 = 3_600;
 const DAY: i64 = 24 * HOUR;
 
 const OPEN_METEO_LINK: &str = "https://open-meteo.com/";
+/// The length units of snow and rain amounts.
+const UNIT_IN: &str = "in";
+const UNIT_CM: &str = "cm";
+const UNIT_MM: &str = "mm";
+/// The credits as the sources ask to be credited.
+const SOURCE_OPEN_METEO: &str = "Open-Meteo";
+const CREDIT_OPEN_METEO: &str =
+    "Weather model data by Open-Meteo.com, with ECMWF, NOAA GFS, GEM and ICON forecasts";
+const SOURCE_NHC: &str = "NOAA National Hurricane Center";
+const CREDIT_NHC: &str =
+    "Advisories, forecast tracks and the forecast cone: NOAA National Hurricane Center";
+const LICENCE_CC_BY_4: &str = "CC BY 4.0";
+const LICENCE_PUBLIC_DOMAIN: &str = "Public domain";
 const NHC_LINK: &str = "https://www.nhc.noaa.gov/";
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -170,18 +183,18 @@ impl Amounts<'_> {
 
     fn snow(&self, cm: Option<f32>) -> Quantity {
         let (unit, factor) = if self.imperial {
-            ("in", 1.0 / 2.54)
+            (UNIT_IN, 1.0 / 2.54)
         } else {
-            ("cm", 1.0)
+            (UNIT_CM, 1.0)
         };
         cm.map_or_else(|| self.missing(unit), |cm| quantity(cm * factor, 1, unit))
     }
 
     fn precipitation(&self, mm: Option<f32>) -> Quantity {
         let (unit, factor, decimals) = if self.imperial {
-            ("in", 1.0 / 25.4, 2)
+            (UNIT_IN, 1.0 / 25.4, 2)
         } else {
-            ("mm", 1.0, 1)
+            (UNIT_MM, 1.0, 1)
         };
         mm.map_or_else(
             || self.missing(unit),
@@ -200,7 +213,7 @@ fn rough(q: &Quantity, snow: bool) -> Quantity {
     let Some(value) = q.value else {
         return q.clone();
     };
-    let extra = u8::from(!snow && q.unit == "in");
+    let extra = u8::from(!snow && q.unit == UNIT_IN);
     Quantity {
         value: Some(value),
         text: number(value, u8::from(value < 1.0) + extra),
@@ -237,18 +250,6 @@ fn advisory_wind(f: &Formatter, kt: Option<u16>) -> Quantity {
 
 // -- time -------------------------------------------------------------------------------------
 
-fn weekday_name(day: Weekday) -> &'static str {
-    match day {
-        Weekday::Mon => "Mon",
-        Weekday::Tue => "Tue",
-        Weekday::Wed => "Wed",
-        Weekday::Thu => "Thu",
-        Weekday::Fri => "Fri",
-        Weekday::Sat => "Sat",
-        Weekday::Sun => "Sun",
-    }
-}
-
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Part {
     Morning,
@@ -269,36 +270,40 @@ fn part_of_day(z: &Zoned, t: UnixTime) -> (Weekday, Part) {
 }
 
 /// "Sun afternoon", "Tue night".
-fn day_part_label(z: &Zoned, t: UnixTime) -> String {
+fn day_part_label(f: &Formatter, z: &Zoned, t: UnixTime) -> String {
     let (day, part) = part_of_day(z, t);
-    let word = match part {
-        Part::Morning => "morning",
-        Part::Afternoon => "afternoon",
-        Part::Night => "night",
-    };
-    format!("{} {word}", weekday_name(day))
+    let word = f.strings.safety(match part {
+        Part::Morning => SafetyKey::StormPartMorning,
+        Part::Afternoon => SafetyKey::StormPartAfternoon,
+        Part::Night => SafetyKey::StormPartNight,
+    });
+    format!("{} {word}", f.strings.weekday(day))
 }
 
 /// "Sun 1 PM" or "Sun 13:00".
 fn day_time(z: &Zoned, f: &Formatter, t: UnixTime) -> String {
-    format!("{} {}", weekday_name(z.local(t).weekday), f.hour_label(t))
+    format!(
+        "{} {}",
+        f.strings.weekday(z.local(t).weekday),
+        f.hour_label(t)
+    )
 }
 
 /// The span in parts of days: "Sun afternoon", "Sun morning – Sun night", or for a day or more
 /// "Sat night – Mon" (the end's part is kept when it is a night).
-fn span_label(z: &Zoned, start: UnixTime, end: UnixTime) -> String {
+fn span_label(f: &Formatter, z: &Zoned, start: UnixTime, end: UnixTime) -> String {
     let last = UnixTime((end.0 - 1).max(start.0));
     let long = end.0 - start.0 >= DAY;
-    let from = day_part_label(z, start);
+    let from = day_part_label(f, z, start);
     let (start_day, start_part) = part_of_day(z, start);
     let (end_day, end_part) = part_of_day(z, last);
     if (start_day, start_part) == (end_day, end_part) {
         return from;
     }
     let to = if long && end_part != Part::Night {
-        weekday_name(end_day).to_owned()
+        f.strings.weekday(end_day).to_owned()
     } else {
-        day_part_label(z, last)
+        day_part_label(f, z, last)
     };
     format!("{from} – {to}")
 }
@@ -343,7 +348,10 @@ fn headline(a: &Amounts, event: &StormEvent) -> Option<StormHeadlineVm> {
             event.mean_snow_cm / SIGNIFICANT_SNOW_CM,
             StormHeadlineVm {
                 kind: StormHeadlineKind::Snow,
-                text: format!("Up to {} of snow", amount.full()),
+                text: a
+                    .f
+                    .strings
+                    .safety_fmt(SafetyKey::StormSnow, &[("amount", &amount.full())]),
                 amount,
             },
         );
@@ -354,7 +362,10 @@ fn headline(a: &Amounts, event: &StormEvent) -> Option<StormHeadlineVm> {
             event.mean_total_mm / SIGNIFICANT_PRECIP_MM,
             StormHeadlineVm {
                 kind: StormHeadlineKind::Rain,
-                text: format!("Up to {} of rain", amount.full()),
+                text: a
+                    .f
+                    .strings
+                    .safety_fmt(SafetyKey::StormRain, &[("amount", &amount.full())]),
                 amount,
             },
         );
@@ -365,7 +376,10 @@ fn headline(a: &Amounts, event: &StormEvent) -> Option<StormHeadlineVm> {
             analysis::mean_peak_gust_kmh(event).unwrap_or(0.0) / SIGNIFICANT_GUST_KMH,
             StormHeadlineVm {
                 kind: StormHeadlineKind::Gusts,
-                text: format!("Gusts to {}", amount.full()),
+                text: a
+                    .f
+                    .strings
+                    .safety_fmt(SafetyKey::StormGusts, &[("amount", &amount.full())]),
                 amount,
             },
         );
@@ -377,11 +391,11 @@ fn agreement_vm(a: &Amounts, event: &StormEvent, spot: (f64, f64)) -> Option<Sto
     // The watch carries no pressure grids, so the verdict rests on the totals alone.
     let result = analysis::agreement(&event.models, &[], spot.0, spot.1);
     let verdict = result.verdict?;
-    let label = match verdict {
-        Agreement::High => "High agreement",
-        Agreement::Medium => "Medium agreement",
-        Agreement::Low => "Low agreement",
-    };
+    let label = a.f.strings.safety(match verdict {
+        Agreement::High => SafetyKey::StormAgreementHigh,
+        Agreement::Medium => SafetyKey::StormAgreementMedium,
+        Agreement::Low => SafetyKey::StormAgreementLow,
+    });
     let mut sentence = String::new();
     if let (Some(wet), Some(dry)) = (&result.wettest, &result.driest)
         && wet.model != dry.model
@@ -407,13 +421,20 @@ fn agreement_vm(a: &Amounts, event: &StormEvent, spot: (f64, f64)) -> Option<Sto
         } else {
             (amount(None, wet.total_mm), amount(None, dry.total_mm))
         };
-        let noun = if snowy { "of snow" } else { "of rain" };
-        sentence = format!(
-            "{} brings {} {noun}; {} {}.",
-            short_name(&wet.model),
-            w.full(),
-            short_name(&dry.model),
-            d.full()
+        let noun = a.f.strings.safety(if snowy {
+            SafetyKey::StormOfSnow
+        } else {
+            SafetyKey::StormOfRain
+        });
+        sentence = a.f.strings.safety_fmt(
+            SafetyKey::StormBrings,
+            &[
+                ("wet", short_name(&wet.model)),
+                ("wet_amount", &w.full()),
+                ("noun", noun),
+                ("dry", short_name(&dry.model)),
+                ("dry_amount", &d.full()),
+            ],
         );
     }
     Some(StormAgreementVm {
@@ -450,9 +471,12 @@ fn event_vm(
     spot: (f64, f64),
 ) -> Option<StormEventVm> {
     let (wet_start, wet_end) = wet_span(outlook, event);
-    let window = span_label(z, wet_start, wet_end);
+    let window = span_label(a.f, z, wet_start, wet_end);
     Some(StormEventVm {
-        title: format!("Storm ahead · {window}"),
+        title: a
+            .f
+            .strings
+            .safety_fmt(SafetyKey::StormTitle, &[("window", &window)]),
         window,
         start: event.start.0,
         end: event.end.0,
@@ -488,26 +512,32 @@ fn severity(h: &Hurricane) -> StormSeverity {
 }
 
 /// "Hurricane Josephine", "Tropical Storm Josephine".
-fn kind_name(h: &Hurricane) -> String {
-    let kind = match h.classification.as_str() {
-        "HU" => "Hurricane",
-        "TS" => "Tropical Storm",
-        "TD" => "Tropical Depression",
-        "STS" => "Subtropical Storm",
-        "STD" => "Subtropical Depression",
-        "PTC" => "Post-Tropical Cyclone",
-        "PC" => "Potential Tropical Cyclone",
-        "TY" => "Typhoon",
-        _ => "Tropical Cyclone",
-    };
+fn kind_name(f: &Formatter, h: &Hurricane) -> String {
+    let kind = f.strings.safety(match h.classification.as_str() {
+        "HU" => SafetyKey::HurricaneHurricane,
+        "TS" => SafetyKey::HurricaneTropicalStorm,
+        "TD" => SafetyKey::HurricaneTropicalDepression,
+        "STS" => SafetyKey::HurricaneSubtropicalStorm,
+        "STD" => SafetyKey::HurricaneSubtropicalDepression,
+        "PTC" => SafetyKey::HurricanePostTropical,
+        "PC" => SafetyKey::HurricanePotentialTropical,
+        "TY" => SafetyKey::HurricaneTyphoon,
+        _ => SafetyKey::HurricaneCyclone,
+    });
     format!("{kind} {}", h.name)
 }
 
 /// "NE at 13 mph", "Stationary" below 1 kt, or the missing placeholder.
 fn movement(f: &Formatter, h: &Hurricane) -> String {
     match (h.movement_deg, h.movement_kt) {
-        (_, Some(kt)) if kt < 1.0 => "Stationary".to_owned(),
-        (Some(deg), Some(kt)) => format!("{} at {}", compass16(deg), knots(f, Some(kt)).full()),
+        (_, Some(kt)) if kt < 1.0 => f.strings.safety(SafetyKey::StormStationary).to_owned(),
+        (Some(deg), Some(kt)) => f.strings.safety_fmt(
+            SafetyKey::StormMovement,
+            &[
+                ("direction", compass16(deg)),
+                ("speed", &knots(f, Some(kt)).full()),
+            ],
+        ),
         _ => f.strings.get(Key::Missing).to_owned(),
     }
 }
@@ -519,32 +549,50 @@ fn hurricane_vm(
     window: (UnixTime, UnixTime),
     now: UnixTime,
 ) -> HurricaneAheadVm {
-    let name = kind_name(h);
+    let name = kind_name(f, h);
     let category = category(h);
     let wind = advisory_wind(f, h.wind_kt);
     let pressure = f.pressure(h.pressure_hpa);
     let movement = movement(f, h);
-    let advisory_day = weekday_name(z.local(h.advisory_time).weekday);
+    let advisory_day = f.strings.weekday(z.local(h.advisory_time).weekday);
     let reaches = if window.0 <= now {
-        "This spot is in the forecast cone".to_owned()
+        f.strings.safety(SafetyKey::StormInCone).to_owned()
     } else {
-        format!(
-            "The forecast cone reaches this spot on {}",
-            day_label(f, z.local(window.0).date)
+        f.strings.safety_fmt(
+            SafetyKey::StormConeReaches,
+            &[("date", &day_label(f, z.local(window.0).date))],
         )
     };
     HurricaneAheadVm {
         id: h.id.clone(),
         name: h.name.clone(),
-        title: category.map_or_else(|| name.clone(), |n| format!("{name} · Category {n}")),
+        title: category.map_or_else(
+            || name.clone(),
+            |n| {
+                f.strings.safety_fmt(
+                    SafetyKey::HurricaneCategory,
+                    &[("name", &name), ("category", &n.to_string())],
+                )
+            },
+        ),
         classification: h.classification.clone(),
         category,
         severity: severity(h),
-        strength: format!("Winds {} · {} · {movement}", wind.full(), pressure.full()),
+        strength: f.strings.safety_fmt(
+            SafetyKey::StormStrength,
+            &[
+                ("wind", &wind.full()),
+                ("pressure", &pressure.full()),
+                ("movement", &movement),
+            ],
+        ),
         wind,
         pressure,
         movement,
-        advisory: format!("Advisory {advisory_day} {}", f.clock(h.advisory_time)),
+        advisory: f.strings.safety_fmt(
+            SafetyKey::StormAdvisory,
+            &[("day", advisory_day), ("time", &f.clock(h.advisory_time))],
+        ),
         advisory_url: h.advisory_url.clone(),
         reaches,
         reaches_at: window.0.0,
@@ -583,27 +631,23 @@ fn credits(event: bool, hurricanes: &[HurricaneAheadVm]) -> Vec<CreditVm> {
     let mut credits = Vec::new();
     if event {
         credits.push(CreditVm {
-            source: "Open-Meteo".to_owned(),
-            text: "Weather model data by Open-Meteo.com, with ECMWF, NOAA GFS, GEM and ICON \
-                   forecasts"
-                .to_owned(),
+            source: SOURCE_OPEN_METEO.to_owned(),
+            text: CREDIT_OPEN_METEO.to_owned(),
             link: Some(OPEN_METEO_LINK.to_owned()),
-            licence: Some("CC BY 4.0".to_owned()),
+            licence: Some(LICENCE_CC_BY_4.to_owned()),
         });
     }
     if !hurricanes.is_empty() {
         credits.push(CreditVm {
-            source: "NOAA National Hurricane Center".to_owned(),
-            text: "Advisories, forecast tracks and the forecast cone: NOAA National Hurricane \
-                   Center"
-                .to_owned(),
+            source: SOURCE_NHC.to_owned(),
+            text: CREDIT_NHC.to_owned(),
             link: Some(
                 hurricanes[0]
                     .advisory_url
                     .clone()
                     .unwrap_or_else(|| NHC_LINK.to_owned()),
             ),
-            licence: Some("Public domain".to_owned()),
+            licence: Some(LICENCE_PUBLIC_DOMAIN.to_owned()),
         });
     }
     credits
@@ -613,46 +657,48 @@ fn credits(event: bool, hurricanes: &[HurricaneAheadVm]) -> Vec<CreditVm> {
 fn sections(a: &Amounts, hurricanes: bool) -> Vec<Section> {
     let (snow, precip) = if a.imperial {
         (
-            format!("{} in", number(SIGNIFICANT_SNOW_CM / 2.54, 0)),
-            format!("{} in", number(SIGNIFICANT_PRECIP_MM / 25.4, 0)),
+            format!("{} {UNIT_IN}", number(SIGNIFICANT_SNOW_CM / 2.54, 0)),
+            format!("{} {UNIT_IN}", number(SIGNIFICANT_PRECIP_MM / 25.4, 0)),
         )
     } else {
         (
-            format!("{} cm", number(SIGNIFICANT_SNOW_CM, 0)),
-            format!("{} mm", number(SIGNIFICANT_PRECIP_MM, 0)),
+            format!("{} {UNIT_CM}", number(SIGNIFICANT_SNOW_CM, 0)),
+            format!("{} {UNIT_MM}", number(SIGNIFICANT_PRECIP_MM, 0)),
         )
     };
     let gust = a.gust(Some(SIGNIFICANT_GUST_KMH)).full();
     let days = SIGNIFICANT_HORIZON_SECS / DAY;
+    let s = a.f.strings;
     let mut rows = vec![Row {
-        label: "Shown when".to_owned(),
-        value: format!(
-            "the models' average reaches about {snow} of snow, {precip} of precipitation or gusts \
-             of {gust}, within {days} days"
+        label: s.safety(SafetyKey::StormShownWhen).to_owned(),
+        value: s.safety_fmt(
+            SafetyKey::StormShownWhenText,
+            &[
+                ("snow", &snow),
+                ("precipitation", &precip),
+                ("gust", &gust),
+                ("days", &days.to_string()),
+            ],
         ),
         detail: None,
     }];
     if hurricanes {
         rows.push(Row {
-            label: "Hurricanes".to_owned(),
-            value: "NHC's forecast cone reaches this spot within 5 days".to_owned(),
+            label: s.safety(SafetyKey::StormHurricanesLabel).to_owned(),
+            value: s.safety(SafetyKey::StormHurricanesText).to_owned(),
             detail: None,
         });
     }
     vec![
         Section {
-            title: "Why you see this".to_owned(),
+            title: s.safety(SafetyKey::StormSectionWhy).to_owned(),
             rows,
         },
         Section {
-            title: "Safety".to_owned(),
+            title: s.safety(SafetyKey::StormSectionSafety).to_owned(),
             rows: vec![Row {
-                label: "Forecasts change".to_owned(),
-                value: "Storm forecasts change from one run to the next and can be wrong about \
-                        where a storm goes. Check the National Weather Service and the National \
-                        Hurricane Center, and follow local officials, before you go on or near \
-                        the water."
-                    .to_owned(),
+                label: s.safety(SafetyKey::StormForecastsChange).to_owned(),
+                value: s.safety(SafetyKey::StormForecastsChangeText).to_owned(),
                 detail: None,
             }],
         },
@@ -661,7 +707,7 @@ fn sections(a: &Amounts, hurricanes: bool) -> Vec<Section> {
 
 /// The card, or `None` when no storm is significant within five days and no hurricane's forecast
 /// cone reaches the spot.
-#[allow(clippy::many_single_char_names)]
+#[allow(clippy::many_single_char_names, clippy::too_many_lines)]
 pub fn build(input: &ViewInput) -> Option<StormAheadCard> {
     let snapshot = &input.snapshot;
     let storm = snapshot.storm.as_ref()?;
@@ -687,7 +733,10 @@ pub fn build(input: &ViewInput) -> Option<StormAheadCard> {
         (Some(h), e) => {
             let second = e.as_ref().map_or_else(
                 || h.strength.clone(),
-                |e| format!("Also a storm ahead · {}", e.window),
+                |e| {
+                    f.strings
+                        .safety_fmt(SafetyKey::StormAlso, &[("window", &e.window)])
+                },
             );
             (
                 Quantity {
@@ -696,16 +745,26 @@ pub fn build(input: &ViewInput) -> Option<StormAheadCard> {
                     unit: String::new(),
                 },
                 vec![h.reaches.clone(), second.clone()],
-                format!("Storm ahead: {}. {}. {second}.", h.title, h.reaches),
+                f.strings.safety_fmt(
+                    SafetyKey::StormHurricaneAcc,
+                    &[
+                        ("title", &h.title),
+                        ("reaches", &h.reaches),
+                        ("second", &second),
+                    ],
+                ),
             )
         }
         (None, Some(e)) => {
             let differ = match e.agreement.as_ref().map(|g| g.agreement) {
-                Some(Agreement::Medium) => " · models differ",
-                Some(Agreement::Low) => " · models disagree",
-                _ => "",
+                Some(Agreement::Medium) => Some(SafetyKey::StormModelsDiffer),
+                Some(Agreement::Low) => Some(SafetyKey::StormModelsDisagree),
+                _ => None,
             };
-            let line = format!("{}{differ}", e.headline.text);
+            let line = match differ {
+                Some(key) => format!("{} · {}", e.headline.text, f.strings.safety(key)),
+                None => e.headline.text.clone(),
+            };
             (
                 e.headline.amount.clone(),
                 vec![e.title.clone(), line.clone()],
@@ -718,15 +777,20 @@ pub fn build(input: &ViewInput) -> Option<StormAheadCard> {
     let age = now.0 - storm.checked_at.0;
     let state = if age > STALE_AFTER_S {
         CardState::Stale {
-            reason: format!("Checked {} h ago; forecasts may have changed.", age / HOUR),
+            reason: f.strings.safety_fmt(
+                SafetyKey::StormStale,
+                &[("hours", &(age / HOUR).to_string())],
+            ),
         }
     } else {
         CardState::Fresh
     };
-    let footnote = format!(
-        "Storm outlook checked {}, {} · modelled",
-        f.date_of(storm.checked_at),
-        f.clock(storm.checked_at)
+    let footnote = f.strings.safety_fmt(
+        SafetyKey::StormChecked,
+        &[
+            ("date", &f.date_of(storm.checked_at)),
+            ("time", &f.clock(storm.checked_at)),
+        ],
     );
     let full_sections = sections(&a, !hurricanes.is_empty());
     let credits = credits(event.is_some(), &hurricanes);
