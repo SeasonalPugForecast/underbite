@@ -12,6 +12,192 @@ expression: json
   },
   "cards": [
     {
+      "card": "now",
+      "chrome": {
+        "id": "now",
+        "title": "Now",
+        "footnote": null,
+        "credits": [
+          {
+            "source": "NOAA CO-OPS",
+            "text": "Tide, water-level and current data: NOAA/NOS CO-OPS",
+            "link": "https://tidesandcurrents.noaa.gov/",
+            "licence": null
+          },
+          {
+            "source": "NOAA NDBC",
+            "text": "Buoy observations: NOAA National Data Buoy Center",
+            "link": "https://www.ndbc.noaa.gov/",
+            "licence": null
+          },
+          {
+            "source": "Open-Meteo",
+            "text": "Weather data by Open-Meteo.com",
+            "link": null,
+            "licence": null
+          },
+          {
+            "source": "Computed on device",
+            "text": "Sun and moon positions from astronomical algorithms",
+            "link": null,
+            "licence": null
+          }
+        ],
+        "state": {
+          "state": "fresh"
+        },
+        "notices": [
+          {
+            "kind": "not_for_navigation",
+            "text": "Not for navigation."
+          },
+          {
+            "kind": "provisional",
+            "text": "Provisional data, subject to revision."
+          }
+        ],
+        "accessibility": "Now. Tide 3.8 ft MLLW. Water temperature 60 °F. Current 1.1 kn. Wind 7 kn. Sun and moon 1%."
+      },
+      "compact": {
+        "headline": {
+          "value": 3.8188977,
+          "text": "3.8",
+          "unit": "ft MLLW"
+        },
+        "lines": [
+          "Water temperature 60 °F",
+          "Current 1.1 kn"
+        ],
+        "spark": []
+      },
+      "full": {
+        "items": [
+          {
+            "card": "tide",
+            "label": "Tide",
+            "headline": {
+              "value": 3.8188977,
+              "text": "3.8",
+              "unit": "ft MLLW"
+            },
+            "line": "Falling · Low 1:34 PM",
+            "state": {
+              "state": "fresh"
+            }
+          },
+          {
+            "card": "water_temp",
+            "label": "Water temperature",
+            "headline": {
+              "value": 60.08,
+              "text": "60",
+              "unit": "°F"
+            },
+            "line": "Steady over 3 h",
+            "state": {
+              "state": "fresh"
+            }
+          },
+          {
+            "card": "current",
+            "label": "Current",
+            "headline": {
+              "value": 1.0807775,
+              "text": "1.1",
+              "unit": "kn"
+            },
+            "line": "Flood 1.1 kn toward N 11°",
+            "state": {
+              "state": "fresh"
+            }
+          },
+          {
+            "card": "wind",
+            "label": "Wind",
+            "headline": {
+              "value": 7.386609,
+              "text": "7",
+              "unit": "kn"
+            },
+            "line": "From SW 221°",
+            "state": {
+              "state": "fresh"
+            }
+          },
+          {
+            "card": "sun_moon",
+            "label": "Sun and moon",
+            "headline": {
+              "value": 0.5171947,
+              "text": "1",
+              "unit": "%"
+            },
+            "line": "Sunrise 6:34 AM · Sunset 4:45 PM",
+            "state": {
+              "state": "fresh"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "card": "alerts",
+      "chrome": {
+        "id": "alerts",
+        "title": "Alerts",
+        "footnote": null,
+        "credits": [
+          {
+            "source": "National Weather Service",
+            "text": "NOAA National Weather Service",
+            "link": "https://www.weather.gov/",
+            "licence": null
+          }
+        ],
+        "state": {
+          "state": "fresh"
+        },
+        "notices": [],
+        "accessibility": "Alerts: 1 active. Small Craft Advisory."
+      },
+      "compact": {
+        "headline": {
+          "value": null,
+          "text": "Small Craft Advisory",
+          "unit": ""
+        },
+        "lines": [
+          "Until Nov 9, 6:00 PM"
+        ],
+        "spark": []
+      },
+      "full": {
+        "alerts": [
+          {
+            "id": "urn:oid:2.49.0.1.840.0.59e16cc8ba4c86b00bee7c5e08c327085a29588b.003.1",
+            "origin": "marine",
+            "event": "Small Craft Advisory",
+            "headline": "Small Craft Advisory issued November 8 at 1:48AM EST until November 9 at 6:00PM EST by NWS Upton NY",
+            "description": "* WHAT...West winds 10 to 20 kt with gusts up to 30 kt.\n\n* WHERE...Long Island Sound, New York Harbor, Peconic and Gardiners Bays, and South Shore Bays from Jones Inlet through Shinnecock Bay.\n\n* WHEN...Until 6 PM EST Monday.\n\n* IMPACTS...Conditions will be hazardous to small craft.",
+            "instruction": "Inexperienced mariners, especially those operating smaller vessels, should avoid navigating in hazardous conditions.",
+            "severity": "minor",
+            "severity_label": "Minor",
+            "onset": "Nov 8, 1:48 AM",
+            "ends": "Nov 9, 6:00 PM",
+            "expires": "Nov 8, 3:00 PM",
+            "zones": [
+              "ANZ331",
+              "ANZ332",
+              "ANZ335",
+              "ANZ338",
+              "ANZ340",
+              "ANZ345"
+            ]
+          }
+        ]
+      }
+    },
+    {
       "card": "tide",
       "chrome": {
         "id": "tide",
@@ -5323,6 +5509,93 @@ expression: json
       }
     },
     {
+      "card": "marine_forecast",
+      "chrome": {
+        "id": "marine_forecast",
+        "title": "Marine forecast",
+        "footnote": "New York Harbor · Zone forecast · Issued 1:57 AM",
+        "credits": [
+          {
+            "source": "National Weather Service",
+            "text": "NOAA National Weather Service",
+            "link": "https://forecast.weather.gov/shmrn.php?mz=ANZ338",
+            "licence": null
+          }
+        ],
+        "state": {
+          "state": "fresh"
+        },
+        "notices": [
+          {
+            "kind": "text_only",
+            "text": "Text only: open the map for the picture."
+          }
+        ],
+        "accessibility": "Marine forecast for New York Harbor. Zone forecast, issued 1:57 am. Today: W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 3 seconds."
+      },
+      "compact": {
+        "headline": {
+          "value": null,
+          "text": "W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 3 seconds.",
+          "unit": ""
+        },
+        "lines": [
+          "Today",
+          "New York Harbor · Issued 1:57 AM"
+        ],
+        "spark": []
+      },
+      "full": {
+        "zone_id": "ANZ338",
+        "zone_name": "New York Harbor",
+        "issued": "Issued 1:57 AM",
+        "product": "Zone forecast",
+        "headline": "W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 3 seconds.",
+        "periods": [
+          {
+            "name": "Today",
+            "text": "W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 3 seconds."
+          },
+          {
+            "name": "Tonight",
+            "text": "W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 2 seconds."
+          },
+          {
+            "name": "Mon",
+            "text": "NW winds 15 to 20 kt with gusts up to 25 kt. Waves 2 to 3 ft. Wave Detail: W 2 ft at 3 seconds."
+          },
+          {
+            "name": "Mon Night",
+            "text": "NW winds 15 to 20 kt, becoming W 10 to 15 kt after midnight. Waves around 2 ft. Wave Detail: NW 2 ft at 2 seconds."
+          },
+          {
+            "name": "Tue",
+            "text": "W winds 10 to 15 kt with gusts up to 20 kt. Waves around 2 ft. Wave Detail: W 1 ft at 2 seconds."
+          },
+          {
+            "name": "Tue Night",
+            "text": "W winds 10 to 15 kt. Waves 1 to 2 ft. Wave Detail: W 1 ft at 2 seconds."
+          },
+          {
+            "name": "Wed",
+            "text": "W winds 5 to 10 kt. Waves 1 to 2 ft."
+          },
+          {
+            "name": "Wed Night",
+            "text": "N winds 5 to 10 kt. Waves 1 ft or less."
+          },
+          {
+            "name": "Thu",
+            "text": "NE winds 5 to 10 kt. Waves 1 ft or less. Chance of rain."
+          },
+          {
+            "name": "Thu Night",
+            "text": "NE winds 20 to 25 kt with gusts up to 30 kt. Waves 2 to 3 ft. Rain likely."
+          }
+        ]
+      }
+    },
+    {
       "card": "sun_moon",
       "chrome": {
         "id": "sun_moon",
@@ -6039,7 +6312,7 @@ expression: json
             "text": "Not for navigation."
           }
         ],
-        "accessibility": "Sources: NOAA NDBC, NOAA CO-OPS, Open-Meteo Marine, National Weather Service, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, Open-Meteo model providers. coops: no recent data, used ndbc (1 more) coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc (2 more)"
+        "accessibility": "Sources: NOAA NDBC, NOAA CO-OPS, Open-Meteo Marine, National Weather Service, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, Open-Meteo model providers. coops: no recent data, used ndbc (1 more) coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc (2 more) coops: no recent data, used ndbc (2 more)"
       },
       "compact": {
         "headline": {
@@ -6049,7 +6322,7 @@ expression: json
         },
         "lines": [
           "5 stations",
-          "2 problems"
+          "3 problems"
         ],
         "spark": []
       },
@@ -6112,7 +6385,7 @@ expression: json
         ],
         "stations": [
           {
-            "measurement": "Water temperature",
+            "measurement": "Water temperature, Pressure",
             "station": "8518750 - The Battery, NY",
             "station_id": "batn6",
             "source": "NOAA NDBC",
@@ -6189,6 +6462,12 @@ expression: json
             "measurement": "Wind",
             "kind": "No data",
             "message": "coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc (2 more)"
+          },
+          {
+            "source": "NOAA CO-OPS",
+            "measurement": "Pressure",
+            "kind": "Out of date",
+            "message": "coops: no recent data, used ndbc (2 more)"
           }
         ]
       }

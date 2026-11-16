@@ -4,6 +4,22 @@ expression: text
 ---
 The Battery (Tidal river or estuary, updated just now)
 
+== Now ==
+3.8 ft MLLW
+Water temperature 60 °F
+Current 1.1 kn
+Not for navigation.
+Provisional data, subject to revision.
+Credit: Tide, water-level and current data: NOAA/NOS CO-OPS (https://tidesandcurrents.noaa.gov/)
+Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa.gov/)
+Credit: Weather data by Open-Meteo.com
+Credit: Sun and moon positions from astronomical algorithms
+
+== Alerts ==
+Small Craft Advisory
+Until Nov 9, 6:00 PM
+Credit: NOAA National Weather Service (https://www.weather.gov/)
+
 == Tide ==
 3.8 ft MLLW
 Falling · Low 1:34 PM
@@ -65,6 +81,14 @@ Waves 3.6 ft · New York Harbor Entrance - 15 NM SE of Breezy Point , NY · 28 m
 Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa.gov/)
 Credit: Weather data by Open-Meteo.com. Marine models: Copernicus Marine Service, ECMWF, NOAA NCEP, DWD, Copernicus Climate Change Service. Modelled, not suitable for coastal navigation. (https://open-meteo.com/)
 
+== Marine forecast ==
+W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 3 seconds.
+Today
+New York Harbor · Issued 1:57 AM
+New York Harbor · Zone forecast · Issued 1:57 AM
+Text only: open the map for the picture.
+Credit: NOAA National Weather Service (https://forecast.weather.gov/shmrn.php?mz=ANZ338)
+
 == Sun and moon ==
 1 %
 Sunrise 6:34 AM · Sunset 4:45 PM
@@ -91,7 +115,7 @@ Credit: Sun and moon positions from astronomical algorithms
 == Sources ==
 9 sources
 5 stations
-2 problems
+3 problems
   Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa.gov/)
   Credit: Tide, water-level and current data: NOAA/NOS CO-OPS (https://tidesandcurrents.noaa.gov/)
   Credit: Weather data by Open-Meteo.com. Marine models: Copernicus Marine Service, ECMWF, NOAA NCEP, DWD, Copernicus Climate Change Service. Modelled, not suitable for coastal navigation. (https://open-meteo.com/)
@@ -103,7 +127,8 @@ Credit: Sun and moon positions from astronomical algorithms
   Credit: Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean) (https://open-meteo.com/en/licence)
   Problem: NOAA CO-OPS: coops: no recent data, used ndbc (1 more)
   Problem: NOAA CO-OPS: coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc (2 more)
-  Water temperature: 8518750 - The Battery, NY (NOAA NDBC, 0.2 mi, 42 min ago)
+  Problem: NOAA CO-OPS: coops: no recent data, used ndbc (2 more)
+  Water temperature, Pressure: 8518750 - The Battery, NY (NOAA NDBC, 0.2 mi, 42 min ago)
   Tide: NEW YORK (The Battery) (NOAA CO-OPS, 0.2 mi, —)
   Tidal current: Hudson River Entrance (NOAA CO-OPS, 0.5 mi, —)
   Waves: New York Harbor Entrance - 15 NM SE of Breezy Point , NY (NOAA NDBC, 28 mi, just now)

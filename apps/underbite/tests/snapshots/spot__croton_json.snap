@@ -12,6 +12,122 @@ expression: json
   },
   "cards": [
     {
+      "card": "now",
+      "chrome": {
+        "id": "now",
+        "title": "Now",
+        "footnote": null,
+        "credits": [
+          {
+            "source": "USGS",
+            "text": "U.S. Geological Survey",
+            "link": "https://waterdata.usgs.gov",
+            "licence": null
+          },
+          {
+            "source": "USGS",
+            "text": "Provisional data statement",
+            "link": "https://waterdata.usgs.gov/provisional-data-statement/",
+            "licence": null
+          },
+          {
+            "source": "Open-Meteo",
+            "text": "Weather data by Open-Meteo.com",
+            "link": null,
+            "licence": null
+          },
+          {
+            "source": "Computed on device",
+            "text": "Sun and moon positions from astronomical algorithms",
+            "link": null,
+            "licence": null
+          }
+        ],
+        "state": {
+          "state": "fresh"
+        },
+        "notices": [
+          {
+            "kind": "provisional",
+            "text": "Provisional data, subject to revision."
+          },
+          {
+            "kind": "traditional_cue",
+            "text": "A traditional cue, not a promise."
+          }
+        ],
+        "accessibility": "Now. River flow 12.4 cfs. Wind 7 kn. Sun and moon 1%. Solunar 34 min."
+      },
+      "compact": {
+        "headline": {
+          "value": 12.4,
+          "text": "12.4",
+          "unit": "cfs"
+        },
+        "lines": [
+          "Wind 7 kn",
+          "Sun and moon 1%"
+        ],
+        "spark": []
+      },
+      "full": {
+        "items": [
+          {
+            "card": "flow",
+            "label": "River flow",
+            "headline": {
+              "value": 12.4,
+              "text": "12.4",
+              "unit": "cfs"
+            },
+            "line": "normal, 45th percentile for Nov 8",
+            "state": {
+              "state": "fresh"
+            }
+          },
+          {
+            "card": "wind",
+            "label": "Wind",
+            "headline": {
+              "value": 7.386609,
+              "text": "7",
+              "unit": "kn"
+            },
+            "line": "From SW 221°",
+            "state": {
+              "state": "fresh"
+            }
+          },
+          {
+            "card": "sun_moon",
+            "label": "Sun and moon",
+            "headline": {
+              "value": 0.5171947,
+              "text": "1",
+              "unit": "%"
+            },
+            "line": "Sunrise 6:34 AM · Sunset 4:43 PM",
+            "state": {
+              "state": "fresh"
+            }
+          },
+          {
+            "card": "solunar",
+            "label": "Solunar",
+            "headline": {
+              "value": 34.0,
+              "text": "34",
+              "unit": "min"
+            },
+            "line": "Next big nibble 10:04 AM to 12:04 PM",
+            "state": {
+              "state": "fresh"
+            }
+          }
+        ]
+      }
+    },
+    {
       "card": "flow",
       "chrome": {
         "id": "flow",

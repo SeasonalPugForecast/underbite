@@ -69,15 +69,28 @@ pub struct CardsConfig {
 impl Default for CardsConfig {
     fn default() -> Self {
         use CardId::{
-            Clarity, Current, Flow, Sources, Stocking, StormAhead, SunMoon, Tide, WaterTemp, Waves,
-            Wind, Windows,
+            Alerts, Clarity, Current, Flow, MarineForecast, Now, Sources, Stocking, StormAhead,
+            SunMoon, Tide, WaterTemp, Waves, Wind, Windows,
         };
+        // Alerts sit near the top everywhere: a card shows only when it has something to say.
         let fresh = CardLayout::of(&[
-            Flow, WaterTemp, Clarity, Windows, Wind, SunMoon, Stocking, Sources,
+            Now, Alerts, Flow, WaterTemp, Clarity, Windows, Wind, SunMoon, Stocking, Sources,
         ]);
         Self {
             order: vec![
-                Windows, StormAhead, Tide, Current, Wind, WaterTemp, Flow, Waves, SunMoon, Sources,
+                Now,
+                Alerts,
+                StormAhead,
+                Windows,
+                Tide,
+                Current,
+                Wind,
+                WaterTemp,
+                Waves,
+                MarineForecast,
+                Flow,
+                SunMoon,
+                Sources,
             ],
             hidden: Vec::new(),
             river: Some(fresh.clone()),
@@ -264,6 +277,32 @@ mod tests {
         assert!(
             !c.order_for(WaterType::RiverStream)
                 .contains(&CardId::StormAhead)
+        );
+    }
+
+    #[test]
+    fn every_default_order_has_the_summary_alerts_and_sources() {
+        let c = CardsConfig::default();
+        for wt in [
+            WaterType::RiverStream,
+            WaterType::LakeReservoir,
+            WaterType::TidalRiverEstuary,
+            WaterType::BayInshore,
+            WaterType::Surf,
+            WaterType::Nearshore,
+            WaterType::Offshore,
+            WaterType::GreatLakes,
+            WaterType::Pond,
+            WaterType::Ice,
+        ] {
+            let order = c.order_for(wt);
+            assert_eq!(order.first(), Some(&CardId::Now), "{wt:?}");
+            assert_eq!(order.get(1), Some(&CardId::Alerts), "{wt:?}");
+            assert_eq!(order.last(), Some(&CardId::Sources), "{wt:?}");
+        }
+        assert!(
+            c.order_for(WaterType::BayInshore)
+                .contains(&CardId::MarineForecast)
         );
     }
 

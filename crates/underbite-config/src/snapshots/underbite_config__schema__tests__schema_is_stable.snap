@@ -871,6 +871,8 @@ expression: json_schema()
         "ice": {
           "hidden": [],
           "order": [
+            "now",
+            "alerts",
             "flow",
             "water_temp",
             "clarity",
@@ -882,20 +884,25 @@ expression: json_schema()
           ]
         },
         "order": [
-          "windows",
+          "now",
+          "alerts",
           "storm_ahead",
+          "windows",
           "tide",
           "current",
           "wind",
           "water_temp",
-          "flow",
           "waves",
+          "marine_forecast",
+          "flow",
           "sun_moon",
           "sources"
         ],
         "pond": {
           "hidden": [],
           "order": [
+            "now",
+            "alerts",
             "flow",
             "water_temp",
             "clarity",
@@ -909,6 +916,8 @@ expression: json_schema()
         "river": {
           "hidden": [],
           "order": [
+            "now",
+            "alerts",
             "flow",
             "water_temp",
             "clarity",

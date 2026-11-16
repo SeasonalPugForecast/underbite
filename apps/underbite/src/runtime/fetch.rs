@@ -2213,28 +2213,21 @@ mod tests {
         assert_eq!(s.sky.days.len(), 7);
         assert_eq!(s.fetched_at, now());
 
-        // The CO-OPS stations' water temperature ends on 7 November, older than 180 minutes, and
-        // they report no wind; each is recorded before the buoys answer.
-        let stale = (
-            "coops".to_string(),
-            Some(M::WaterTemperature),
-            SourceErrorKind::Stale,
+        // The CO-OPS stations' water temperature and pressure end on 7 November, older than 180
+        // minutes, and they report no wind; each is recorded before the buoys answer, and the
+        // Battery's own barometer answers through NDBC.
+        let coops = |m, kind| ("coops".to_string(), Some(m), kind);
+        let (stale, no_wind, old_pressure) = (
+            coops(M::WaterTemperature, SourceErrorKind::Stale),
+            coops(M::ObservedWind, SourceErrorKind::NoData),
+            coops(M::ObservedPressure, SourceErrorKind::Stale),
         );
-        let no_wind = (
-            "coops".to_string(),
-            Some(M::ObservedWind),
-            SourceErrorKind::NoData,
-        );
-        assert_eq!(
-            errors(s),
-            [
-                stale.clone(),
-                stale,
-                no_wind.clone(),
-                no_wind.clone(),
-                no_wind
-            ]
-        );
+        let mut expected = vec![stale; 2];
+        expected.extend([no_wind.clone(), no_wind.clone(), no_wind]);
+        expected.extend(vec![old_pressure; 3]);
+        assert_eq!(errors(s), expected);
+        let pressure = s.marine.observed_pressure_hpa.as_ref().expect("pressure");
+        assert_eq!(station_of(pressure), "ndbc batn6");
         // The sources card names the CO-OPS stations' missing wind once, with the count.
         let card = sources_card(s);
         let wind: Vec<&str> = card
@@ -2246,7 +2239,7 @@ mod tests {
             .collect();
         assert_eq!(wind.len(), 1, "{:#?}", card.full.errors);
         assert!(wind[0].ends_with(" (2 more)"), "{}", wind[0]);
-        assert_eq!(card.full.errors.len(), 2, "{:#?}", card.full.errors);
+        assert_eq!(card.full.errors.len(), 3, "{:#?}", card.full.errors);
 
         let credited: BTreeSet<&str> = s.attribution.iter().map(|a| a.source.as_str()).collect();
         for source in [
