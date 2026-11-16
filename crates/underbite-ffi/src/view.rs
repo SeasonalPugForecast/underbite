@@ -6,13 +6,12 @@
 use serde::Serialize;
 use underbite_config::rivers::RiverRange;
 use underbite_config::schema::Config;
-use underbite_config::sources::{SourceGroup, SourcesConfig};
-use underbite_core::model::{Measurement, SpotSnapshot, WaterType};
+use underbite_core::model::{SpotSnapshot, WaterType};
 use underbite_core::provenance::SourceId;
 use underbite_core::time::UnixTime;
 use underbite_core::view::format::Formatter;
 use underbite_core::view::{
-    Card, CardId, MeasurementLimit, RiverRanges, SolunarSettings, SpotView, ViewInput, build_view,
+    Card, CardId, RiverRanges, SolunarSettings, SpotView, ViewInput, build_view,
 };
 
 use crate::settings::{SettingsError, load};
@@ -250,7 +249,7 @@ pub(crate) fn view_input(config: &Config, snapshot: SpotSnapshot, now: UnixTime)
         voice: config.presentation.voice,
         clock: config.presentation.clock,
         timeline_span: config.presentation.timeline_span(),
-        limits: measurement_limits(&config.sources),
+        limits: underbite_fetch::measurement_limits(&config.sources),
         river_ranges,
         trout_stress_c: Some(config.thresholds.trout_stress_c as f32),
         solunar: SolunarSettings {
@@ -271,77 +270,4 @@ fn river_ranges(rivers: &[RiverRange], snapshot: &SpotSnapshot) -> Option<RiverR
         .as_ref()
         .filter(|s| s.source == SourceId::USGS)?;
     RiverRange::find(rivers, &station.id).map(RiverRange::to_ranges)
-}
-
-/// Station observations of wind and pressure have no `[sources]` group (as in the command
-/// line's `runtime/fetch.rs`).
-const OBSERVATION_MAX_AGE_MINUTES: u32 = 180;
-
-/// Mirrors `group_name` in `runtime/fetch.rs`: the `[sources]` table that configures
-/// `measurement`, by name.
-fn group_name(measurement: Measurement) -> Option<&'static str> {
-    use Measurement as M;
-    Some(match measurement {
-        M::WaterTemperature => "water_temperature",
-        M::Tide => "tide",
-        M::TidalCurrent | M::OceanCurrent => "currents",
-        M::Discharge | M::GageHeight | M::FlowForecast | M::FloodCategories => "flow",
-        M::LakeLevel => "lake_level",
-        M::Waves | M::WavesForecast => "waves",
-        M::SeaSurfaceTemp | M::SeaSurfaceTempForecast => "sst",
-        M::Clarity | M::Turbidity => "clarity",
-        M::DissolvedOxygen
-        | M::Conductivity
-        | M::Salinity
-        | M::Ph
-        | M::Chlorophyll
-        | M::Cyanobacteria => "water_quality",
-        M::MarineForecast | M::MarineAlerts => "marine_forecast",
-        M::ObservedWind | M::ObservedPressure => return None,
-    })
-}
-
-/// The distance and age limits of `measurement`'s group, or the fixed ones for observations.
-fn limits_of(sources: &SourcesConfig, measurement: Measurement) -> (Option<f64>, Option<u32>) {
-    let group: Option<&SourceGroup> = group_name(measurement).and_then(|name| {
-        sources
-            .groups()
-            .into_iter()
-            .find(|(n, _)| *n == name)
-            .map(|(_, g)| g)
-    });
-    match group {
-        Some(g) => (g.max_distance_km, g.max_age_minutes),
-        None => (None, Some(OBSERVATION_MAX_AGE_MINUTES)),
-    }
-}
-
-/// Mirrors `measurement_limits` in `runtime/fetch.rs`: the user's distance and age limits per
-/// measurement, for greying values in the view.
-fn measurement_limits(sources: &SourcesConfig) -> Vec<MeasurementLimit> {
-    use Measurement as M;
-    [
-        M::WaterTemperature,
-        M::Discharge,
-        M::GageHeight,
-        M::LakeLevel,
-        M::Turbidity,
-        M::Tide,
-        M::TidalCurrent,
-        M::Waves,
-        M::SeaSurfaceTemp,
-        M::ObservedWind,
-        M::ObservedPressure,
-    ]
-    .into_iter()
-    .filter_map(|m| {
-        let (km, minutes) = limits_of(sources, m);
-        let limit = MeasurementLimit {
-            measurement: m,
-            max_distance_m: km.map(|km| (km * 1_000.0) as f32),
-            max_age_s: minutes.map(|min| i64::from(min) * 60),
-        };
-        (limit.max_distance_m.is_some() || limit.max_age_s.is_some()).then_some(limit)
-    })
-    .collect()
 }

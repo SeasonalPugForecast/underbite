@@ -23,6 +23,7 @@ bindgen = ["uniffi/cli"]
 underbite-core.workspace = true
 underbite-providers.workspace = true
 underbite-config.workspace = true
+underbite-fetch.workspace = true
 whether-core = { workspace = true, features = ["serde"] }
 whether-providers = { workspace = true, features = ["serde"] }
 serde.workspace = true

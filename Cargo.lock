@@ -1207,6 +1207,7 @@ dependencies = [
  "thiserror",
  "underbite-config",
  "underbite-core",
+ "underbite-fetch",
  "underbite-providers",
  "uniffi",
  "whether-core",
