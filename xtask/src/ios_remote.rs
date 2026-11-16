@@ -447,6 +447,9 @@ fn rsync_args(remote: &Remote) -> Vec<String> {
         format!("--filter=P /{STAGE}"),
         format!("--filter=P /{DERIVED}"),
         format!("--filter=P /{SCREENS}"),
+        // What `build` made there stays for the steps after it (`exec`, `sync`).
+        format!("--filter=P /{XCFRAMEWORK}"),
+        format!("--filter=P /{SWIFT_DEST}/{SWIFT}"),
         "--exclude=/.git".into(),
     ]
     .into_iter()
@@ -474,7 +477,7 @@ fn package(remote: &Remote) -> String {
     in_dir(
         remote,
         &format!(
-            "cp {STAGE}/{SWIFT} {SWIFT_DEST}/{SWIFT}; rm -rf {XCFRAMEWORK}; \
+            "mkdir -p {SWIFT_DEST}; cp {STAGE}/{SWIFT} {SWIFT_DEST}/{SWIFT}; rm -rf {XCFRAMEWORK}; \
              xcodebuild {} >/dev/null; echo wrote {XCFRAMEWORK}",
             args.join(" ")
         ),
@@ -1885,7 +1888,9 @@ mod tests {
         assert_eq!(p.0[2].1[2], "/stage/");
         let package = last_line(&p);
         assert!(
-            package.contains(&format!("cp .stage/{SWIFT} {SWIFT_DEST}/{SWIFT}")),
+            package.contains(&format!(
+                "mkdir -p {SWIFT_DEST}; cp .stage/{SWIFT} {SWIFT_DEST}/{SWIFT}"
+            )),
             "{package}"
         );
         assert!(package.contains("'-create-xcframework'"), "{package}");
@@ -1901,6 +1906,15 @@ mod tests {
         let rsync = &p.0[1].1;
         assert!(rsync.contains(&"--filter=P /.underbite-remote".to_string()));
         assert!(rsync.contains(&"--filter=:- .gitignore".to_string()));
+        // The framework and bindings the Mac made survive a later sync.
+        assert!(
+            rsync.contains(&format!("--filter=P /{XCFRAMEWORK}")),
+            "{rsync:?}"
+        );
+        assert!(
+            rsync.contains(&format!("--filter=P /{SWIFT_DEST}/{SWIFT}")),
+            "{rsync:?}"
+        );
         let sync = plan(&args(Step::Sync), &r, "s", &[]);
         assert_eq!(sync.0.len(), 2);
     }
