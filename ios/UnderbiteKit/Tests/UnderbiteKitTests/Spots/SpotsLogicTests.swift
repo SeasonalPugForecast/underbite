@@ -95,72 +95,120 @@ final class SpotsLogicTests: XCTestCase {
         XCTAssertNil(TypedCoordinates.parse("nan, 0"))
     }
 
-    func testWaterKindsCoverTheCoreAndLabelUnknownOnes() {
-        XCTAssertEqual(WaterKind.all.count, 10)
-        XCTAssertEqual(WaterKind.label("tidal_river_estuary"), "Tidal river or estuary")
-        XCTAssertEqual(WaterKind.label("salt_pond"), "Salt Pond")
+    // MARK: - Words from the core
+
+    private func emptyStore(_ directory: URL) -> SpotStore {
+        let files = AppFiles(directory: directory)
+        return SpotStore(
+            files: files, host: URLSessionHost(storeURL: files.hostDirectory),
+            keys: { Keys(usgs: nil, copernicusUser: nil, copernicusPassword: nil) },
+            clock: { 1_800_000_000 },
+            fetcher: { _, _, _, _, _, _ in throw URLError(.notConnectedToInternet) },
+            discoverer: { _, _, _, _, _ in throw URLError(.notConnectedToInternet) })
     }
 
-    private static let stations = """
+    private func temporaryDirectory() -> URL {
+        FileManager.default.temporaryDirectory
+            .appending(path: "underbite-spots-\(UUID().uuidString)", directoryHint: .isDirectory)
+    }
+
+    func testTheWaterPickerListsTheCoresKindsInItsOrder() {
+        let directory = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let options = emptyStore(directory).waterTypeOptions
+        XCTAssertEqual(options.count, 10)
+        XCTAssertEqual(options.first?.id, "river_stream")
+        XCTAssertEqual(
+            options.first { $0.id == "tidal_river_estuary" }?.label, "Tidal river or estuary")
+        XCTAssertEqual(options.first { $0.id == "ice" }?.label, "Ice fishing")
+    }
+
+    func testMeasurementTitlesComeFromTheCoreById() throws {
+        let titles = try measurementTitles(settingsJson: defaultSettingsJson())
+        XCTAssertEqual(titles.first?.id, "tide")
+        XCTAssertEqual(titles.first { $0.id == "discharge" }?.title, "River flow")
+        XCTAssertEqual(titles.first { $0.id == "ph" }?.title, "pH")
+    }
+
+    /// A discovery as the core writes it (Unix time 1_800_000_000): a USGS site's kind is an
+    /// object, the others are strings.
+    nonisolated static let stations = """
         {
-          "water_temperature": {
-            "chain": {"sources": ["coops"], "limits": {"max_distance_m": 50000, "max_age_s": 86400}},
+          "tide": {
+            "chain": {"sources": ["coops"], "limits": {"max_distance_m": 50000.0, "max_age_s": 86400}},
             "stations": [
-              {"station": {"source": "coops", "id": "8518750", "name": "The Battery", "kind": "tide_gauge",
-                           "latitude": 40.7, "longitude": -74.0, "bin": null, "reference_id": null},
-               "distance_m": 300.0, "relation": "nearby", "coverage": "reported", "primary": true,
-               "pinned": true, "reasons": [{"reason": "pinned"}]}
+              {"station": {"source": "coops", "id": "8518750", "name": "The Battery", "kind": "tide_harmonic",
+                           "latitude": 40.7006, "longitude": -74.0142, "bin": null, "reference_id": null},
+               "distance_m": 643.7, "relation": "nearby", "coverage": "reported", "last_value_at": 1799999640,
+               "age_s": 360, "primary": true, "pinned": false,
+               "reasons": [{"reason": "reported", "at": 1799999640}, {"reason": "distance", "distance_m": 643.7}]}
             ],
             "dropped": [
-              {"station": {"source": "coops", "id": "8519483", "name": "Bergen Point", "kind": {"other": "tide_gauge"},
-                           "latitude": 40.6, "longitude": -74.1, "bin": null, "reference_id": null},
-               "distance_m": 9000.0, "reason": {"reason": "excluded"}},
               {"station": {"source": "ndbc", "id": "44025", "name": "Long Island", "kind": "buoy",
-                           "latitude": 40.2, "longitude": -73.1, "bin": null, "reference_id": null},
-               "distance_m": 90000.0, "reason": {"reason": "too_far", "distance_m": 90000.0, "limit_m": 50000.0}}
+                           "latitude": 40.25, "longitude": -73.16, "bin": null, "reference_id": null},
+               "distance_m": 90000.0, "reason": {"reason": "too_far", "distance_m": 90000.0, "limit_m": 50000.0}},
+              {"station": {"source": "coops", "id": "8519483", "name": "Bergen Point", "kind": "water_level",
+                           "latitude": 40.64, "longitude": -74.14, "bin": null, "reference_id": null},
+               "distance_m": 9000.0, "reason": {"reason": "excluded"}}
             ]
           },
           "tidal_current": {
-            "chain": {"sources": ["coops"], "limits": {"max_distance_m": 50000, "max_age_s": 86400}},
+            "chain": {"sources": ["coops"], "limits": {"max_distance_m": 50000.0, "max_age_s": 86400}},
             "stations": [
-              {"station": {"source": "coops", "id": "NYH1927", "name": "The Narrows", "kind": "current",
-                           "latitude": 40.6, "longitude": -74.0, "bin": 13, "reference_id": null},
+              {"station": {"source": "coops", "id": "NYH1927", "name": "The Narrows", "kind": "current_harmonic",
+                           "latitude": 40.6, "longitude": -74.04, "bin": 13, "reference_id": null},
                "distance_m": 1200.0, "relation": "nearby", "coverage": "listed", "primary": true,
-               "pinned": false, "reasons": []}
+               "pinned": false, "reasons": [{"reason": "listed"}, {"reason": "distance", "distance_m": 1200.0}]}
             ],
             "dropped": []
           },
-          "tide": {
-            "chain": {"sources": ["coops"], "limits": {"max_distance_m": 50000, "max_age_s": 86400}},
+          "discharge": {
+            "chain": {"sources": ["usgs"], "limits": {"max_distance_m": 50000.0, "max_age_s": 86400}},
             "stations": [
-              {"station": {"source": "coops", "id": "8518750", "name": "The Battery", "kind": "tide_gauge",
-                           "latitude": 40.7, "longitude": -74.0, "bin": null, "reference_id": null},
-               "distance_m": 300.0, "relation": "nearby", "coverage": "reported", "primary": true,
-               "pinned": false, "reasons": []}
+              {"station": {"source": "usgs", "id": "USGS-01375000", "name": "Croton River at New Croton Dam",
+                           "kind": {"usgs_site": "stream"}, "latitude": 41.22, "longitude": -73.86,
+                           "bin": null, "reference_id": null},
+               "distance_m": 2000.0, "relation": "upstream", "coverage": "listed", "primary": true,
+               "pinned": true,
+               "reasons": [{"reason": "pinned"}, {"reason": "listed"},
+                           {"reason": "relation", "relation": "upstream"},
+                           {"reason": "distance", "distance_m": 2000.0}]}
             ],
             "dropped": []
           },
-          "waves": {"chain": {"sources": [], "limits": {"max_distance_m": 1, "max_age_s": 1}},
+          "waves": {"chain": {"sources": [], "limits": {"max_distance_m": 1.0, "max_age_s": 1}},
                     "stations": [], "dropped": []}
         }
         """
 
-    func testTheStationListReadsPinsExclusionsAndBinsInTheCoresOrder() {
-        let listing = StationListing(json: Self.stations)
-        XCTAssertEqual(listing.groups.map(\.title), ["Tide", "Tidal current", "Water temperature"])
-        let temperature = listing.groups[2].rows
-        XCTAssertEqual(temperature.map(\.key), ["coops:8518750", "coops:8519483"])
-        XCTAssertEqual(temperature.map(\.pinned), [true, false])
-        // Only an exclusion is a row among the dropped ones; "too far" is not a choice.
-        XCTAssertEqual(temperature.map(\.excluded), [false, true])
-        XCTAssertEqual(listing.groups[1].rows[0].key, "coops:NYH1927:13")
-        XCTAssertFalse(listing.isEmpty)
+    func testStationRowsAreTheCoresWordsInItsOrder() throws {
+        let groups = try stationRows(
+            stationsJson: Self.stations, settingsJson: defaultSettingsJson(), now: 1_800_000_000)
+        XCTAssertEqual(groups.map(\.title), ["Tide", "Tidal current", "River flow"])
+        let battery = groups[0].rows[0]
+        XCTAssertEqual(battery.key, "coops:8518750")
+        XCTAssertEqual(battery.distance, "0.4 mi")
+        XCTAssertEqual(battery.relation, "Nearby")
+        XCTAssertEqual(battery.detail, "NOAA CO-OPS 8518750 · 0.4 mi · Nearby")
+        XCTAssertEqual(battery.reasons, ["Latest value 6 min ago"])
+        // The exclusion stays a row, with its switch on; the far buoy is left out with why.
+        XCTAssertEqual(groups[0].rows.map(\.key), ["coops:8518750", "coops:8519483"])
+        XCTAssertEqual(groups[0].rows.map(\.excluded), [false, true])
+        XCTAssertEqual(groups[0].leftOutTitle, "Luna passed over 1")
+        XCTAssertEqual(
+            groups[0].leftOut.first?.reasons, ["56 mi from your spot, beyond your 31 mi limit"])
+        XCTAssertEqual(groups[1].rows[0].key, "coops:NYH1927:13")
+        // A USGS site, whose kind is an object, reads like the others.
+        XCTAssertEqual(groups[2].rows[0].key, "usgs:USGS-01375000")
+        XCTAssertEqual(groups[2].rows[0].relation, "Upstream")
+        XCTAssertTrue(groups[2].rows[0].pinned)
     }
 
-    func testAnUnreadableListIsEmpty() {
-        XCTAssertTrue(StationListing(json: nil).isEmpty)
-        XCTAssertTrue(StationListing(json: "not json").isEmpty)
-        XCTAssertTrue(StationListing(json: "{}").groups.isEmpty)
+    func testUnreadableStationsGiveNoRows() throws {
+        XCTAssertThrowsError(
+            try stationRows(stationsJson: "not json", settingsJson: defaultSettingsJson(), now: 0))
+        XCTAssertEqual(
+            try stationRows(stationsJson: "{}", settingsJson: defaultSettingsJson(), now: 0), [])
     }
 
     func testStationSwitchesMapToTheCoresChoices() {
@@ -170,16 +218,66 @@ final class SpotsLogicTests: XCTestCase {
         XCTAssertEqual(StationChoice.excludeSwitched(on: false), .clear)
     }
 
-    func testTheCoreAcceptsTheKeysTheRowsBuild() throws {
-        let directory = FileManager.default.temporaryDirectory
-            .appending(path: "underbite-pins-\(UUID().uuidString)", directoryHint: .isDirectory)
+    func testAChoiceNotYetRankedShowsOnItsRow() throws {
+        let groups = try stationRows(
+            stationsJson: Self.stations, settingsJson: defaultSettingsJson(), now: 1_800_000_000)
+        let battery = groups[0].rows[0]
+        let excluded = groups[0].rows[1]
+        XCTAssertEqual(
+            StationSwitches.of(battery, pending: [:]), StationSwitches(pinned: false, excluded: false))
+        XCTAssertEqual(
+            StationSwitches.of(battery, pending: [battery.key: .pin]),
+            StationSwitches(pinned: true, excluded: false))
+        // Clearing an exclusion turns its switch off before the core ranks again.
+        XCTAssertEqual(
+            StationSwitches.of(excluded, pending: [excluded.key: .clear]),
+            StationSwitches(pinned: false, excluded: false))
+        XCTAssertEqual(
+            StationSwitches.of(excluded, pending: [battery.key: .pin]),
+            StationSwitches(pinned: false, excluded: true))
+    }
+
+    func testTheCoreAcceptsTheKeysTheRowsGive() throws {
+        let directory = temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         let host = URLSessionHost(storeURL: directory)
-        let rows = StationListing(json: Self.stations).groups.flatMap(\.rows)
-        for row in rows {
+        let groups = try stationRows(
+            stationsJson: Self.stations, settingsJson: defaultSettingsJson(), now: 1_800_000_000)
+        for row in groups.flatMap({ $0.rows + $0.leftOut }) {
             try pinStation(spotId: "spot-1", key: row.key, now: 1_800_000_000, host: host)
             try excludeStation(spotId: "spot-1", key: row.key, now: 1_800_000_000, host: host)
             try clearStation(spotId: "spot-1", key: row.key, now: 1_800_000_000, host: host)
         }
+    }
+
+    // MARK: - Areas
+
+    func testAreasAreRenamedAndReorderedInTheStore() {
+        let directory = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = emptyStore(directory)
+        let hudson = store.addArea(named: "Hudson")
+        let bay = store.addArea(named: "Bay")
+        let sound = store.addArea(named: "Sound")
+        XCTAssertEqual(store.arrangedAreas.map(\.name), ["Hudson", "Bay", "Sound"])
+
+        store.renameArea(bay.id, to: "  Raritan Bay ")
+        store.renameArea(hudson.id, to: "   ")
+        XCTAssertEqual(store.arrangedAreas.map(\.name), ["Hudson", "Raritan Bay", "Sound"])
+
+        let ids = store.arrangedAreas.map(\.id)
+        store.reorderAreas(
+            SpotGrouping.reordered(all: ids, section: ids, moving: IndexSet(integer: 2), to: 0))
+        XCTAssertEqual(store.arrangedAreas.map(\.id), [sound.id, hudson.id, bay.id])
+        // An order naming only some areas puts the others after them, as they were.
+        store.reorderAreas([bay.id])
+        XCTAssertEqual(store.arrangedAreas.map(\.id), [bay.id, sound.id, hudson.id])
+
+        // The spots list the areas in that order, and both survive a launch.
+        store.add(spot("s1", area: hudson.id))
+        let sections = SpotGrouping.sections(spots: store.spots, areas: store.areas)
+        XCTAssertEqual(sections.map(\.id), ["area-" + bay.id, "area-" + sound.id, "area-" + hudson.id])
+        let again = emptyStore(directory)
+        XCTAssertEqual(again.arrangedAreas.map(\.name), ["Raritan Bay", "Sound", "Hudson"])
     }
 }

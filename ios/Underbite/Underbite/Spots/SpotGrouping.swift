@@ -31,18 +31,22 @@ nonisolated enum SpotGrouping {
         if !pinned.isEmpty { result.append(SpotSection(kind: .pinned, spots: pinned)) }
         let rest = order.filter { !$0.pinned }
         let known = Set(areas.map(\.id))
-        let byOrder = areas.sorted { a, b in
-            if a.order != b.order { return a.order < b.order }
-            if a.name != b.name { return a.name < b.name }
-            return a.id < b.id
-        }
-        for area in byOrder {
+        for area in arrangedAreas(areas) {
             result.append(
                 SpotSection(kind: .area(area.id), spots: rest.filter { $0.areaID == area.id }))
         }
         let loose = rest.filter { $0.areaID.map { !known.contains($0) } ?? true }
         if !loose.isEmpty { result.append(SpotSection(kind: .unassigned, spots: loose)) }
         return result
+    }
+
+    /// The areas in the user's order, then by name.
+    static func arrangedAreas(_ areas: [Area]) -> [Area] {
+        areas.sorted { a, b in
+            if a.order != b.order { return a.order < b.order }
+            if a.name != b.name { return a.name < b.name }
+            return a.id < b.id
+        }
     }
 
     /// The whole list's ids after moving rows `source` of one section to `destination` (the
@@ -62,27 +66,6 @@ nonisolated enum SpotGrouping {
         let inSection = Set(section)
         var next = items.makeIterator()
         return all.map { inSection.contains($0) ? (next.next() ?? $0) : $0 }
-    }
-}
-
-/// The ten kinds of water the core knows, with the words it gives them (the picker's rows; the
-/// page header's own label comes from the core's view).
-nonisolated enum WaterKind {
-    static let all: [(id: String, label: String)] = [
-        ("river_stream", "River or stream"),
-        ("lake_reservoir", "Lake or reservoir"),
-        ("tidal_river_estuary", "Tidal river or estuary"),
-        ("bay_inshore", "Bay or inshore"),
-        ("surf", "Surf"),
-        ("nearshore", "Nearshore"),
-        ("offshore", "Offshore"),
-        ("great_lakes", "Great Lakes"),
-        ("pond", "Pond"),
-        ("ice", "Ice fishing"),
-    ]
-
-    static func label(_ id: String) -> String {
-        all.first { $0.id == id }?.label ?? id.replacingOccurrences(of: "_", with: " ").capitalized
     }
 }
 

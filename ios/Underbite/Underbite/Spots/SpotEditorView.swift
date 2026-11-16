@@ -24,11 +24,17 @@ struct SpotEditorView: View {
             }
             Section {
                 Picker("Water", selection: $waterType) {
-                    ForEach(WaterKind.all, id: \.id) { Text($0.label).tag($0.id) }
+                    ForEach(store.waterTypeOptions, id: \.id) { option in
+                        Text(option.label)
+                            .accessibilityLabel(option.plainLabel ?? option.label)
+                            .tag(option.id)
+                    }
                 }
-                if let hint = suggestion {
+                if let hint = suggestion,
+                    let option = store.waterTypeOptions.first(where: { $0.id == hint.waterType })
+                {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Suggested: \(WaterKind.label(hint.waterType))")
+                        Text("Suggested: \(option.label)")
                         ForEach(hint.reasons, id: \.self) { reason in
                             Text(reason).font(.caption).foregroundStyle(.secondary)
                         }
@@ -44,7 +50,7 @@ struct SpotEditorView: View {
             Section("Area") {
                 Picker("Area", selection: $areaID) {
                     Text("None").tag(String?.none)
-                    ForEach(store.areas) { Text($0.name).tag(Optional($0.id)) }
+                    ForEach(store.arrangedAreas) { Text($0.name).tag(Optional($0.id)) }
                 }
             }
             Section {

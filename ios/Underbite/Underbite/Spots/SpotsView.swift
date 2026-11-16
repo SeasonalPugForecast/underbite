@@ -3,12 +3,14 @@ import SwiftUI
 /// What the Spots screen has open over it.
 private enum SpotsSheet: Identifiable {
     case add
+    case areas
     case edit(String)
     case stations(String)
 
     var id: String {
         switch self {
         case .add: "add"
+        case .areas: "areas"
         case .edit(let id): "edit-" + id
         case .stations(let id): "stations-" + id
         }
@@ -64,6 +66,8 @@ struct SpotsView: View {
             switch sheet {
             case .add:
                 AddSpotView { added in selection = added }
+            case .areas:
+                AreasView()
             case .edit(let id):
                 NavigationStack { SpotEditorView(spotID: id) }
             case .stations(let id):
@@ -89,6 +93,8 @@ private struct SpotList: View {
     @State private var asksForArea = false
     @State private var deleting: Spot?
     @State private var removingArea: Area?
+    @State private var renamingArea: Area?
+    @State private var areaName = ""
 
     var body: some View {
         let sections = SpotGrouping.sections(spots: store.spots, areas: store.areas)
@@ -152,6 +158,9 @@ private struct SpotList: View {
                 Menu {
                     Button("Add a spot", systemImage: "mappin.and.ellipse") { sheet = .add }
                     Button("New area", systemImage: "folder.badge.plus") { asksForArea = true }
+                    if !store.areas.isEmpty {
+                        Button("Arrange areas", systemImage: "folder") { sheet = .areas }
+                    }
                 } label: {
                     Label("Add", systemImage: "plus")
                 }
@@ -167,6 +176,17 @@ private struct SpotList: View {
             Button("Cancel", role: .cancel) { newAreaName = "" }
         } message: {
             Text("Group spots by the water you fish: \"Montauk\", \"Upper Delaware\".")
+        }
+        .alert(
+            "Rename area",
+            isPresented: Binding(get: { renamingArea != nil }, set: { if !$0 { renamingArea = nil } })
+        ) {
+            TextField("Name", text: $areaName)
+            Button("Rename") {
+                if let area = renamingArea { store.renameArea(area.id, to: areaName) }
+                renamingArea = nil
+            }
+            Button("Cancel", role: .cancel) { renamingArea = nil }
         }
         .confirmationDialog(
             deleting.map { "Delete \($0.name)?" } ?? "Delete spot?",
@@ -197,6 +217,11 @@ private struct SpotList: View {
             if let area = store.areas.first(where: { $0.id == id }) {
                 Text(area.name)
                     .contextMenu {
+                        Button("Rename", systemImage: "pencil") {
+                            areaName = area.name
+                            renamingArea = area
+                        }
+                        Button("Arrange areas", systemImage: "folder") { sheet = .areas }
                         Button("Remove area", systemImage: "trash", role: .destructive) {
                             removingArea = area
                         }
@@ -224,7 +249,7 @@ private struct SpotList: View {
         }
         if !store.areas.isEmpty {
             Menu("Move to area", systemImage: "folder") {
-                ForEach(store.areas) { area in
+                ForEach(store.arrangedAreas) { area in
                     Button(area.name) { store.assign(spot.id, toArea: area.id) }
                 }
                 if spot.areaID != nil {

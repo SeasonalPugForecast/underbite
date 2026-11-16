@@ -1,50 +1,62 @@
 import SwiftUI
 import UnderbiteKit
 
-/// The stations discovered around one spot, per measurement in the core's order, each with a
-/// switch to always use it and one to never use it. The core remembers the choices for the spot
-/// (with its station lists) and applies them from the next fetch; this screen asks it to
-/// discover again so the list shows them at once.
+/// The stations around one spot, per measurement in the core's order, each with a switch to
+/// always use it and one to never use it, and the stations left out with why. Every word and
+/// distance is the core's. The list shows the stations kept from the last lookup at once and
+/// follows the new lookup; the choices go through the store, on its own host, and apply from
+/// the next fetch.
 struct StationsView: View {
     @Environment(SpotStore.self) private var store
     let spotID: String
 
-    @State private var listing = StationListing(json: nil)
-    @State private var loading = true
+    /// Choices made and not yet in the core's rows.
+    @State private var pending: [String: StationChoice] = [:]
+    @State private var lookedUp = false
     @State private var failure: String?
-    @State private var problem: String?
-    @State private var names = Dictionary(
-        uniqueKeysWithValues: sourceCatalogue().map { ($0.id, $0.name) })
 
     var body: some View {
+        let groups = store.stationRows(for: spotID)
+        let looking = store.discovering.contains(spotID) || !lookedUp
         List {
-            ForEach(listing.groups) { group in
+            ForEach(groups, id: \.measurement) { group in
                 Section(group.title) {
-                    ForEach(group.rows) { row in
-                        StationRow(
-                            row: row, sourceName: names[row.sourceID] ?? row.sourceID.uppercased()
-                        ) { choice in
-                            Task { await apply(choice, to: row) }
+                    ForEach(group.rows, id: \.key) { row in
+                        stationRow(row)
+                    }
+                    if let title = group.leftOutTitle {
+                        DisclosureGroup(title) {
+                            ForEach(group.leftOut, id: \.key) { row in
+                                stationRow(row)
+                            }
                         }
                     }
                 }
             }
             Section {
-                if let problem {
-                    Text(problem).foregroundStyle(.orange)
+                if let problem = store.stationProblems[spotID] {
+                    Text("Some stations could not be looked up: \(problem)")
+                        .foregroundStyle(.orange)
                 }
             } footer: {
                 Text(
-                    "A pin or an exclusion holds for this spot, in every measurement the station serves, from the next refresh. The core ranks the others by distance, water body and freshness."
+                    "A pin or an exclusion holds for this spot, in every measurement the station serves, from the next refresh. The others are ranked by distance, water body and freshness."
                 )
             }
         }
         .overlay {
-            if listing.isEmpty {
-                if loading {
+            if groups.isEmpty {
+                if looking {
                     LunaLoading()
                 } else {
                     LunaEmptyState(kind: .conditions)
+                }
+            }
+        }
+        .toolbar {
+            if looking, !groups.isEmpty {
+                ToolbarItem(placement: .status) {
+                    ProgressView().accessibilityLabel("Looking up stations")
                 }
             }
         }
@@ -59,93 +71,66 @@ struct StationsView: View {
             Text(failure ?? "")
         }
         .task(id: spotID) {
-            listing = StationListing(json: store.cache(spotID).stationsJSON)
-            if !listing.isEmpty { loading = false }
-            await discover()
-            loading = false
+            await store.discoverStations(for: spotID)
+            lookedUp = true
         }
     }
 
-    /// Asks the core for the stations around the spot again and shows them; what it could not
-    /// reach is said under the list.
-    private func discover() async {
-        guard let spot = store.spot(spotID) else { return }
-        let settings = store.settingsJSON
-        let host = StationChoiceWriter.host
-        let now = Int64(Date().timeIntervalSince1970)
-        do {
-            let found = try await discoverStations(
-                spot: spot.info, settingsJson: settings, keys: Keychain.keys(),
-                allowMetered: true, now: now, host: host)
-            let fresh = StationListing(json: found.stationsJson)
-            if !fresh.isEmpty || listing.isEmpty { listing = fresh }
-            problem = found.errors.first.map { "Some station lists could not be read: \($0.message)" }
-        } catch {
-            problem = "The stations could not be looked up: \(error)"
+    private func stationRow(_ row: StationRow) -> some View {
+        StationRowView(row: row, switches: StationSwitches.of(row, pending: pending)) { choice in
+            apply(choice, to: row)
         }
     }
 
-    private func apply(_ choice: StationChoice, to row: StationListing.Row) async {
-        do {
-            try StationChoiceWriter.write(choice, key: row.key, spotID: spotID)
-        } catch {
-            failure = String(describing: error)
-            return
-        }
-        await discover()
-        // The next fetch uses the choice; do it now so the page follows.
+    /// Saves the choice through the store, shows it at once, and fetches the spot again so
+    /// its page follows. Not tied to the list: closing it does not drop the fetch.
+    private func apply(_ choice: StationChoice, to row: StationRow) {
+        pending[row.key] = choice
         let id = spotID
-        Task { await store.refresh(only: [id]) }
+        Task {
+            do {
+                try await store.chooseStation(choice, key: row.key, for: id)
+            } catch {
+                failure = String(describing: error)
+            }
+            pending[row.key] = nil
+            await store.refresh(only: [id])
+        }
     }
 }
 
-/// One station: its name, where it comes from, and the two switches.
-private struct StationRow: View {
-    let row: StationListing.Row
-    let sourceName: String
+/// One station: its name, where it comes from and how far, why it has its place, and the two
+/// switches.
+private struct StationRowView: View {
+    let row: StationRow
+    let switches: StationSwitches
     let choose: (StationChoice) -> Void
-
-    private var detail: String {
-        let bin = row.bin.map { ", bin \($0)" } ?? ""
-        return "\(sourceName), \(row.stationID)\(bin)"
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.name).font(.headline)
-                Text(detail)
+                Text(row.detail)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                ForEach(row.reasons, id: \.self) { reason in
+                    Text(reason)
+                        .font(.caption)
+                        .foregroundStyle(
+                            row.used || row.excluded
+                                ? AnyShapeStyle(.secondary) : AnyShapeStyle(.orange))
+                }
             }
             .accessibilityElement(children: .combine)
             Toggle(
                 "Always use",
                 isOn: Binding(
-                    get: { row.pinned }, set: { choose(.pinSwitched(on: $0)) }))
+                    get: { switches.pinned }, set: { choose(.pinSwitched(on: $0)) }))
             Toggle(
                 "Never use",
                 isOn: Binding(
-                    get: { row.excluded }, set: { choose(.excludeSwitched(on: $0)) }))
+                    get: { switches.excluded }, set: { choose(.excludeSwitched(on: $0)) }))
         }
         .padding(.vertical, 2)
-    }
-}
-
-/// Writes a choice through the core's pin calls, into the same station store the fetches read
-/// (the host's directory), so the next fetch and discovery see it.
-@MainActor
-enum StationChoiceWriter {
-    /// The host over the app's station store.
-    static var host: URLSessionHost { URLSessionHost(storeURL: AppFiles.standard.hostDirectory) }
-
-    static func write(_ choice: StationChoice, key: String, spotID: String) throws {
-        let host = Self.host
-        let now = Int64(Date().timeIntervalSince1970)
-        switch choice {
-        case .pin: try pinStation(spotId: spotID, key: key, now: now, host: host)
-        case .exclude: try excludeStation(spotId: spotID, key: key, now: now, host: host)
-        case .clear: try clearStation(spotId: spotID, key: key, now: now, host: host)
-        }
     }
 }

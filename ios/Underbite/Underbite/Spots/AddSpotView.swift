@@ -53,12 +53,16 @@ struct AddSpotView: View {
                         .textInputAutocapitalization(.words)
                     Picker("Water", selection: $waterType) {
                         Text("Suggest one for me").tag(String?.none)
-                        ForEach(WaterKind.all, id: \.id) { Text($0.label).tag(Optional($0.id)) }
+                        ForEach(store.waterTypeOptions, id: \.id) { option in
+                            Text(option.label)
+                                .accessibilityLabel(option.plainLabel ?? option.label)
+                                .tag(Optional(option.id))
+                        }
                     }
                     if !store.areas.isEmpty {
                         Picker("Area", selection: $areaID) {
                             Text("None").tag(String?.none)
-                            ForEach(store.areas) { Text($0.name).tag(Optional($0.id)) }
+                            ForEach(store.arrangedAreas) { Text($0.name).tag(Optional($0.id)) }
                         }
                     }
                 }

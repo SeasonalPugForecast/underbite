@@ -46,6 +46,10 @@ final class SpotStore {
     typealias Fetcher =
         @Sendable (SpotInfo, String, Keys, FetchOptions, Int64, FetchHost) async throws
         -> SpotFetchOutcome
+    /// Looks up the stations around one spot (the core's `discover_stations`; tests may stand
+    /// another in).
+    typealias Discoverer =
+        @Sendable (SpotInfo, String, Keys, Int64, FetchHost) async throws -> DiscoveryOutcome
 
     private(set) var spots: [Spot] = []
     private(set) var areas: [Area] = []
@@ -64,6 +68,12 @@ final class SpotStore {
     private(set) var pageJSON = ""
     /// Where the phone is, when it was asked; never saved unless the user saves it as a spot.
     private(set) var currentPlace: CurrentPlace?
+    /// The ids whose stations are being looked up now.
+    private(set) var discovering: Set<String> = []
+    /// Per spot, what the last station lookup could not read, or why it failed.
+    private(set) var stationProblems: [String: String] = [:]
+    /// Raised whenever a spot's stations change, so the views that list them follow.
+    private(set) var stationsRevision = 0
 
     /// A fix of the phone.
     struct CurrentPlace: Equatable {
@@ -77,10 +87,20 @@ final class SpotStore {
     @ObservationIgnored private let clock: @Sendable () -> Int64
     @ObservationIgnored private let lowPower: @Sendable () -> Bool
     @ObservationIgnored private let fetcher: Fetcher
+    @ObservationIgnored private let discoverer: Discoverer
     @ObservationIgnored private var caches: [String: SpotCache] = [:]
     @ObservationIgnored private var queue = RefreshQueue()
+    /// The spots whose stations wait to be looked up, before any fetch still waiting.
+    @ObservationIgnored private var lookups = RefreshQueue()
     @ObservationIgnored private var running = false
+    /// A refresh asked for the page to be built once the calls are done.
+    @ObservationIgnored private var pageDue = false
     @ObservationIgnored private var waiters: [CheckedContinuation<Void, Never>] = []
+    @ObservationIgnored private var lookupWaiters: [String: [CheckedContinuation<Void, Never>]] =
+        [:]
+    /// The station rows last built per spot, with the stations revision and settings they are of.
+    @ObservationIgnored private var rowsBuilt:
+        [String: (revision: Int, settings: String, rows: [StationGroup])] = [:]
     @ObservationIgnored private var generation = 0
     @ObservationIgnored private var pendingSettingsSave: Task<Void, Never>?
 
@@ -97,6 +117,11 @@ final class SpotStore {
             try await fetchSpot(
                 spot: spot, settingsJson: settings, keys: keys, options: options, now: now,
                 host: host)
+        },
+        discoverer: @escaping Discoverer = { spot, settings, keys, now, host in
+            try await UnderbiteKit.discoverStations(
+                spot: spot, settingsJson: settings, keys: keys, allowMetered: true, now: now,
+                host: host)
         }
     ) {
         self.files = files
@@ -105,6 +130,7 @@ final class SpotStore {
         self.clock = clock
         self.lowPower = lowPower
         self.fetcher = fetcher
+        self.discoverer = discoverer
         settingsJSON = defaultSettingsJson()
         load()
     }
@@ -180,6 +206,8 @@ final class SpotStore {
         spots.removeAll { $0.id == id }
         caches[id] = nil
         files.remove(files.cacheName(id))
+        stationProblems[id] = nil
+        rowsBuilt[id] = nil
         if activeID == id { activeID = arranged.first?.id }
         saveState()
     }
@@ -220,6 +248,26 @@ final class SpotStore {
     func removeArea(_ id: String) {
         areas.removeAll { $0.id == id }
         for index in spots.indices where spots[index].areaID == id { spots[index].areaID = nil }
+        saveState()
+    }
+
+    /// Renames an area; a blank name leaves it as it was.
+    func renameArea(_ id: String, to name: String) {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, let index = areas.firstIndex(where: { $0.id == id }) else { return }
+        areas[index].name = name
+        saveState()
+    }
+
+    /// The areas in the user's order.
+    var arrangedAreas: [Area] { SpotGrouping.arrangedAreas(areas) }
+
+    /// Puts the areas in the user's order: `ids` first, in that order, the others after them.
+    func reorderAreas(_ ids: [String]) {
+        let rest = arrangedAreas.map(\.id).filter { !ids.contains($0) }
+        for (position, id) in (ids + rest).enumerated() {
+            if let index = areas.firstIndex(where: { $0.id == id }) { areas[index].order = position }
+        }
         saveState()
     }
 
@@ -291,6 +339,11 @@ final class SpotStore {
         files.write(Data(settingsJSON.utf8), "settings.json")
     }
 
+    /// Every kind of water with the core's name for it, in the order a picker lists them.
+    var waterTypeOptions: [WaterTypeOption] {
+        (try? UnderbiteKit.waterTypeOptions(settingsJson: settingsJSON)) ?? []
+    }
+
     // MARK: - Refresh
 
     /// Fetches the spots whose data is older than the refresh interval allows (all of them
@@ -315,25 +368,43 @@ final class SpotStore {
         let wanted = arranged.map(\.id).filter { ids?.contains($0) ?? true }
         let first = wanted.filter { $0 == activeID } + wanted.filter { $0 != activeID }
         queue.add(first)
+        pageDue = true
         if running {
             await withCheckedContinuation { waiters.append($0) }
             return
         }
         running = true
+        await drain()
+    }
+
+    /// Runs the waiting station lookups and fetches one at a time, lookups first (someone is
+    /// looking at the list), until none is left. Every call loads the call ledger and saves its
+    /// own copy, so one at a time is what keeps every metered call counted. Cancelling the task
+    /// drops the fetches still waiting. Called with `running` set.
+    private func drain() async {
         repeat {
-            while let id = queue.next() {
+            while true {
+                if let id = lookups.next() {
+                    await discoverOne(id)
+                    continue
+                }
                 if Task.isCancelled {
                     queue.clear()
                     break
                 }
+                guard let id = queue.next() else { break }
                 await fetchOne(id)
             }
-            await rebuildPage()
-            // A refresh that joined during the build has its spots waiting.
-        } while !queue.isEmpty
+            if pageDue {
+                pageDue = false
+                await rebuildPage()
+            }
+            // A refresh or a lookup that joined during the build has its spots waiting.
+        } while !queue.isEmpty || !lookups.isEmpty
         running = false
-        let done = waiters
+        let done = waiters + lookupWaiters.values.flatMap { $0 }
         waiters = []
+        lookupWaiters = [:]
         for waiter in done { waiter.resume() }
     }
 
@@ -367,17 +438,79 @@ final class SpotStore {
         files.write(held, files.cacheName(id))
     }
 
-    /// The stations around the spot, ranked per measurement, kept with its cache.
+    // MARK: - Stations
+
+    /// Looks up the stations around spot `id` again, through the store's own host and in turn
+    /// with the fetches (never beside one, so the call ledger counts both), and keeps what it
+    /// found with the spot's cache. Returns once that lookup is done; the list shows the kept
+    /// one meanwhile. Cancelling the caller does not stop it.
     func discoverStations(for id: String) async {
+        guard spot(id) != nil else { return }
+        lookups.add([id])
+        if !running {
+            running = true
+            // The calls run on their own: a closed list cancels its task, which must not drop
+            // the fetches a refresh adds meanwhile.
+            Task { await self.drain() }
+        }
+        await withCheckedContinuation { lookupWaiters[id, default: []].append($0) }
+    }
+
+    private func discoverOne(_ id: String) async {
+        // Those asking now are answered by this lookup; one asking while it runs waits for the
+        // next.
+        let asking = lookupWaiters.removeValue(forKey: id) ?? []
+        defer { for waiter in asking { waiter.resume() } }
         guard let spot = spot(id) else { return }
-        var held = cache(id)
-        let found = try? await UnderbiteKit.discoverStations(
-            spot: spot.info, settingsJson: settingsJSON, keys: keys(), allowMetered: true,
-            now: clock(), host: host)
-        guard let found else { return }
-        held.stationsJSON = found.stationsJson
-        caches[id] = held
-        files.write(held, files.cacheName(id))
+        discovering.insert(id)
+        defer { discovering.remove(id) }
+        let settings = settingsJSON
+        do {
+            let found = try await discoverer(spot.info, settings, keys(), clock(), host)
+            // A spot deleted meanwhile keeps no stations.
+            guard self.spot(id) != nil else { return }
+            var held = cache(id)
+            // Every list unreachable: the phone is offline; the older stations stay.
+            let offline =
+                !found.errors.isEmpty && found.errors.allSatisfy { $0.kind == "transport" }
+            if !offline || held.stationsJSON == nil {
+                held.stationsJSON = found.stationsJson
+                caches[id] = held
+                files.write(held, files.cacheName(id))
+                stationsRevision += 1
+            }
+            stationProblems[id] = found.errors.first?.message
+        } catch {
+            stationProblems[id] = String(describing: error)
+        }
+    }
+
+    /// The stations around spot `id` as the core words them, from the last lookup kept with
+    /// the spot, so they show at once after a launch.
+    func stationRows(for id: String) -> [StationGroup] {
+        let revision = stationsRevision
+        if let held = rowsBuilt[id], held.revision == revision, held.settings == settingsJSON {
+            return held.rows
+        }
+        guard let json = cache(id).stationsJSON else { return [] }
+        let rows =
+            (try? UnderbiteKit.stationRows(
+                stationsJson: json, settingsJson: settingsJSON, now: clock())) ?? []
+        rowsBuilt[id] = (revision, settingsJSON, rows)
+        return rows
+    }
+
+    /// Remembers `choice` for the station `key` (`coops:8518750`) of spot `id` in the store's
+    /// own station store, which the next fetch reads, then looks the stations up again so the
+    /// list shows it. The page follows with the spot's next fetch.
+    func chooseStation(_ choice: StationChoice, key: String, for id: String) async throws {
+        let now = clock()
+        switch choice {
+        case .pin: try pinStation(spotId: id, key: key, now: now, host: host)
+        case .exclude: try excludeStation(spotId: id, key: key, now: now, host: host)
+        case .clear: try clearStation(spotId: id, key: key, now: now, host: host)
+        }
+        await discoverStations(for: id)
     }
 
     // MARK: - The page
