@@ -1,9 +1,9 @@
 import SwiftUI
 import UnderbiteKit
 
-/// A card's full form as a plain list: the headline, what the card says in words, the view's
-/// own sections of label and value rows, the notices and every credit with its link. Charts
-/// come with the detail pages that replace this one. All text is the view model's.
+/// A card's full form: the headline, the card's charts, the notices, what the card says in
+/// words, the view's own sections of label and value rows and every credit with its link. All
+/// text is the view model's; the charts only lay it out.
 struct CardDetailView: View {
     let card: ViewModel.Card
 
@@ -16,11 +16,29 @@ struct CardDetailView: View {
                         .listRowInsets(EdgeInsets())
                 }
             }
+            if let chrome = card.chrome { charts(chrome) }
             details
             if let chrome = card.chrome { footer(chrome) }
         }
         .navigationTitle(card.chrome?.title ?? "")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    // MARK: - Charts
+
+    /// The card's charts, then its notices ("Not for navigation.") right under them.
+    @ViewBuilder private func charts(_ chrome: ViewModel.CardChrome) -> some View {
+        let blocks = CardCharts.blocks(for: card)
+        if !blocks.isEmpty {
+            Section {
+                ForEach(blocks) { block in
+                    ChartBlock(chart: block.chart, valueBand: block.band, notes: block.notes)
+                }
+            }
+        }
+        if !chrome.notices.isEmpty {
+            Section { NoticeList(notices: chrome.notices) }
+        }
     }
 
     // MARK: - By kind
@@ -315,7 +333,6 @@ struct CardDetailView: View {
     @ViewBuilder private func footer(_ chrome: ViewModel.CardChrome) -> some View {
         Section {
             StateReason(state: chrome.state)
-            NoticeList(notices: chrome.notices)
             if let footnote = chrome.footnote {
                 Text(footnote).font(.footnote).foregroundStyle(.secondary)
             }
