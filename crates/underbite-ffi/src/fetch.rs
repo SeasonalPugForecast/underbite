@@ -18,6 +18,8 @@ use std::sync::Arc;
 use underbite_config::schema::Config;
 use underbite_core::model::{SourceError, Spot, WaterType};
 use underbite_core::time::UnixTime;
+use underbite_core::view::strings::Strings;
+use underbite_fetch::store::{self, Choice, parse_station_key};
 use underbite_fetch::{self as library, Call, Fetched, TransportError};
 use underbite_providers::request::{is_secret_header, redact_url, secret_values};
 use underbite_providers::source::Secrets;
@@ -442,8 +444,9 @@ impl From<&SourceError> for SourceIssue {
 pub struct WaterTypeSuggestion {
     /// The water type, as `SpotInfo::water_type` writes it.
     pub water_type: String,
-    /// Why, as JSON: the core's list of reasons (marine zone, waterbody, stream, USGS site).
-    pub reasons_json: String,
+    /// Why, in words the core writes in the settings' voice: "in an NWS coastal marine zone",
+    /// "on Croton River (stream of order 7)", ...
+    pub reasons: Vec<String>,
 }
 
 /// A spot's fetch.
@@ -535,14 +538,15 @@ pub async fn fetch_spot(
         &options,
     ))
     .await;
-    let suggestion = match &out.inferred {
-        Some(s) => Some(WaterTypeSuggestion {
-            water_type: name(&s.water_type),
-            reasons_json: serde_json::to_string(&s.reasons)
-                .map_err(|e| invalid("water type reasons", &e))?,
-        }),
-        None => None,
-    };
+    let strings = Strings::new(config.presentation.voice);
+    let suggestion = out.inferred.as_ref().map(|s| WaterTypeSuggestion {
+        water_type: name(&s.water_type),
+        reasons: s
+            .reasons
+            .iter()
+            .map(|r| strings.water_type_reason(r))
+            .collect(),
+    });
     Ok(SpotFetchOutcome {
         snapshot_json: serde_json::to_string(&out.snapshot).map_err(|e| invalid("snapshot", &e))?,
         errors: out.snapshot.errors.iter().map(SourceIssue::from).collect(),
@@ -582,6 +586,64 @@ pub async fn discover_stations(
             .map_err(|e| invalid("stations", &e))?,
         errors: found.errors.iter().map(SourceIssue::from).collect(),
     })
+}
+
+/// Always use the station `key` (`"coops:8518750"`, `"coops:NYH1927:13"` for one current bin,
+/// `"ndbc:44025"`, `"usgs:01375000"`; the id is read in the case its source writes it) for
+/// the spot `spot_id` from the next fetch on. Kept through `host` with the spot's other
+/// choices; an exclusion of the same station is lifted. `now` is Unix seconds.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn pin_station(
+    spot_id: String,
+    key: String,
+    now: i64,
+    host: Arc<dyn FetchHost>,
+) -> Result<(), FetchError> {
+    choose(&spot_id, &key, Choice::Pin, now, host.as_ref())
+}
+
+/// Never use the station `key` for the spot `spot_id` from the next fetch on (see
+/// [`pin_station`]); a pin of the same station is lifted.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn exclude_station(
+    spot_id: String,
+    key: String,
+    now: i64,
+    host: Arc<dyn FetchHost>,
+) -> Result<(), FetchError> {
+    choose(&spot_id, &key, Choice::Exclude, now, host.as_ref())
+}
+
+/// Forgets the pin or exclusion of the station `key` for the spot `spot_id` (see
+/// [`pin_station`]).
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn clear_station(
+    spot_id: String,
+    key: String,
+    now: i64,
+    host: Arc<dyn FetchHost>,
+) -> Result<(), FetchError> {
+    choose(&spot_id, &key, Choice::Clear, now, host.as_ref())
+}
+
+/// Applies `choice` to the station `key` in the spot's stored choices.
+fn choose(
+    spot_id: &str,
+    key: &str,
+    choice: Choice,
+    now: i64,
+    host: &dyn FetchHost,
+) -> Result<(), FetchError> {
+    let key = parse_station_key(key).map_err(|e| invalid("station", &e))?;
+    let name = store::spot_key(spot_id);
+    let stored = host.load(store::CHOICES.to_owned(), name.clone());
+    let value = store::apply_choice(stored.as_deref(), choice, key, UnixTime(now))
+        .map_err(|e| invalid("station choices", &e))?;
+    host.store(store::CHOICES.to_owned(), name, value);
+    Ok(())
 }
 
 #[cfg(test)]

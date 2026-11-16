@@ -9,8 +9,8 @@ use serde_json::Value;
 use underbite_core::model::{SpotSnapshot, WaterType};
 use underbite_core::time::parse_rfc3339;
 use underbite_ffi::fetch::{
-    FetchError, FetchHost, FetchOptions, HostError, HostRequest, HostResponse, Keys,
-    discover_stations, fetch_spot,
+    FetchError, FetchHost, FetchOptions, HostError, HostRequest, HostResponse, Keys, clear_station,
+    discover_stations, exclude_station, fetch_spot, pin_station,
 };
 use underbite_ffi::settings::default_settings_json;
 use underbite_ffi::view::SpotInfo;
@@ -387,8 +387,12 @@ fn the_battery_saved_as_a_river_is_inferred_tidal() {
     );
     let suggestion = out.suggestion.expect("suggestion");
     assert_eq!(suggestion.water_type, "tidal_river_estuary");
-    let reasons: Value = serde_json::from_str(&suggestion.reasons_json).expect("reasons");
-    assert_eq!(reasons[0]["reason"], "marine_zone", "{reasons}");
+    assert_eq!(
+        suggestion.reasons.first().map(String::as_str),
+        Some("in an NWS coastal marine zone"),
+        "{:?}",
+        suggestion.reasons
+    );
     assert_eq!(s.spot.water_type, WaterType::TidalRiverEstuary);
     assert!(s.marine.tide.is_some());
 }
@@ -459,4 +463,109 @@ fn unreadable_settings_or_spots_fail_the_call() {
         Err(FetchError::Invalid { .. })
     ));
     assert_eq!(host.urls(), Vec::<String>::new());
+}
+
+#[test]
+fn the_reasons_for_a_water_type_come_as_text_in_either_voice() {
+    for voice in ["plain", "luna"] {
+        let host = Replay::new("battery");
+        let spot = SpotInfo {
+            water_type: "river_stream".into(),
+            ..battery()
+        };
+        let options = FetchOptions {
+            infer_water_type: true,
+            ..METERED
+        };
+        let settings = settings(|s| s["presentation"]["voice"] = voice.into());
+        let (_, out) = fetched(spot, settings, Keys::default(), options, &host);
+        let reasons = out.suggestion.expect("suggestion").reasons;
+        assert!(reasons.len() >= 2, "{voice}: {reasons:?}");
+        assert!(
+            reasons.iter().all(|r| !r.contains('{') && !r.contains('_')),
+            "{voice}: {reasons:?}"
+        );
+        assert_eq!(reasons[0], "in an NWS coastal marine zone", "{voice}");
+    }
+}
+
+/// The station the tide came from after a fetch of the Battery.
+fn tide_station(host: &Arc<Replay>) -> String {
+    let (s, _) = fetched(
+        battery(),
+        default_settings_json(),
+        Keys::default(),
+        METERED,
+        host,
+    );
+    let tide = s.marine.tide.as_ref().expect("tide");
+    tide.provenance
+        .station
+        .as_ref()
+        .map(|st| st.id.clone())
+        .expect("station")
+}
+
+#[test]
+fn a_pin_or_exclusion_changes_the_next_fetches_station() {
+    let host = Replay::new("battery");
+    assert_eq!(tide_station(&host), "8518750");
+
+    // Another tide station the ranking offers.
+    let found = pollster::block_on(discover_stations(
+        battery(),
+        default_settings_json(),
+        Keys::default(),
+        true,
+        now(),
+        host.host(),
+    ))
+    .expect("discovered");
+    let stations: Value = serde_json::from_str(&found.stations_json).expect("json");
+    let other = stations["tide"]["stations"]
+        .as_array()
+        .expect("stations")
+        .iter()
+        .map(|s| s["station"]["id"].as_str().expect("id").to_owned())
+        .find(|id| id != "8518750")
+        .expect("a second tide station");
+    let key = format!("coops:{}", other.to_ascii_lowercase());
+
+    pin_station("battery".into(), key.clone(), now(), host.host()).expect("pinned");
+    assert_eq!(tide_station(&host), other);
+
+    // Another spot is not affected, and a pin is lifted by clearing it.
+    clear_station("battery".into(), key, now(), host.host()).expect("cleared");
+    assert_eq!(tide_station(&host), "8518750");
+
+    // Excluding the nearest station moves the tide elsewhere; the host holds only keys and ids.
+    exclude_station("battery".into(), "coops:8518750".into(), now(), host.host())
+        .expect("excluded");
+    assert_ne!(tide_station(&host), "8518750");
+    let choices = host
+        .value("choices", &underbite_fetch::store::spot_key("battery"))
+        .expect("choices");
+    assert!(
+        choices.contains("8518750") && !choices.contains("40.70"),
+        "{choices}"
+    );
+    assert!(
+        host.value("choices", &underbite_fetch::store::spot_key("croton"))
+            .is_none()
+    );
+}
+
+#[test]
+fn a_station_key_that_is_not_one_fails_the_call() {
+    let host = Replay::new("battery");
+    for bad in ["coops", "coops:", ":8518750", "coops:8518750:x"] {
+        assert!(
+            matches!(
+                pin_station("battery".into(), bad.into(), now(), host.host()),
+                Err(FetchError::Invalid { .. })
+            ),
+            "{bad}"
+        );
+    }
+    assert_eq!(host.values(), Vec::<String>::new());
 }
