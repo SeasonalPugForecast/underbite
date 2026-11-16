@@ -11,7 +11,7 @@ use crate::view::cards::flow::{
     card_state, chart_series, chart_vm, credits, is_unreliable, qty, quality_notices, row,
     sample_quality, spark, unreliable_text,
 };
-use crate::view::format::{Formatter, number};
+use crate::view::format::Formatter;
 use crate::view::{
     CardChrome, CardId, ChartVm, Compact, Quantity, Row, Section, SeriesRole, ViewInput,
 };
@@ -129,7 +129,7 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
     if let Some(l) = cyano.and_then(|s| s.latest()) {
         rows.push(row(
             "Cyanobacteria",
-            &format!("{} cells/mL", number(l.value, 0)),
+            &format!("{} cells/mL", Formatter::number(l.value, 0)),
         ));
     }
     if !rows.is_empty() {
@@ -314,7 +314,7 @@ mod tests {
         input.snapshot.water.cyanobacteria_cells_ml = Some(run(p, NOW, 900, &[1500.0]));
         let c = card(&input);
         assert_eq!(c.full.chlorophyll.as_ref().unwrap().full(), "2.5 µg/L");
-        assert_eq!(c.full.sections[0].rows[0].value, "1500 cells/mL");
+        assert_eq!(c.full.sections[0].rows[0].value, "1,500 cells/mL");
     }
 
     #[test]

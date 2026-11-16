@@ -1,6 +1,5 @@
 ---
 source: crates/underbite-core/src/view/cards/now.rs
-assertion_line: 235
 expression: card
 ---
 {
@@ -53,7 +52,7 @@ expression: card
         "text": "A traditional cue, not a promise."
       }
     ],
-    "accessibility": "Now. Water temperature 58 °F. River flow 12 cfs. Wind 13 mph. Sun and moon 75%. Solunar 5.7 h."
+    "accessibility": "Now. Water temperature 58 °F. River flow 12.0 cfs. Wind 13 mph. Sun and moon 75%. Solunar 5.7 h."
   },
   "compact": {
     "headline": {
@@ -62,7 +61,7 @@ expression: card
       "unit": "°F"
     },
     "lines": [
-      "River flow 12 cfs",
+      "River flow 12.0 cfs",
       "Wind 13 mph"
     ],
     "spark": []
@@ -87,7 +86,7 @@ expression: card
         "label": "River flow",
         "headline": {
           "value": 12.006987,
-          "text": "12",
+          "text": "12.0",
           "unit": "cfs"
         },
         "line": "normal, 48th percentile for Nov 8",

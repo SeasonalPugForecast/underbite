@@ -1091,9 +1091,9 @@ mod tests {
             labels,
             ["5th percentile", "50th percentile", "95th percentile"]
         );
-        assert_eq!(p.thresholds[1].value.full(), "15 cfs");
-        assert_eq!(c.compact.headline.full(), "12 cfs");
-        assert_eq!(c.full.trend.as_ref().unwrap().text, "Rising 1 cfs in 3 h");
+        assert_eq!(p.thresholds[1].value.full(), "15.0 cfs");
+        assert_eq!(c.compact.headline.full(), "12.4 cfs");
+        assert_eq!(c.full.trend.as_ref().unwrap().text, "Rising 0.7 cfs in 3 h");
         assert_eq!(c.chrome.notices.len(), 1);
         assert_eq!(
             c.chrome.notices[0].text,
@@ -1135,7 +1135,7 @@ mod tests {
         let c = card(&input);
         let r = c.full.range_status.as_ref().unwrap();
         assert_eq!(r.status, RangeStatus::Best);
-        assert_eq!(r.text, "Best range (10 to 20 cfs)");
+        assert_eq!(r.text, "Best range (10.0 to 20.0 cfs)");
         let chart = c.full.chart.as_ref().unwrap();
         let rules: Vec<f32> = chart.rules.iter().map(|r| r.value.round()).collect();
         assert_eq!(rules, [8.0, 10.0, 20.0, 50.0]);
@@ -1156,7 +1156,7 @@ mod tests {
         });
         let r = card(&input).full.range_status.unwrap();
         assert_eq!(r.status, RangeStatus::Wadeable);
-        assert_eq!(r.text, "Wadeable (below 30 cfs)");
+        assert_eq!(r.text, "Wadeable (below 30.0 cfs)");
         input.river_ranges = Some(RiverRanges {
             blown_out_above_m3s: Some(5.0 * CFS),
             ..RiverRanges::default()
@@ -1187,7 +1187,7 @@ mod tests {
         input.snapshot.water.discharge_m3s =
             Some(run(p, NOW, 900, &ramp(11.0 * CFS, 12.4 * CFS, 25)));
         let c = card(&input);
-        assert_eq!(c.compact.headline.full(), "12 cfs");
+        assert_eq!(c.compact.headline.full(), "12.4 cfs");
         assert_eq!(c.compact.lines[0], "Affected by ice: reading unreliable");
         let r = c.full.range_status.unwrap();
         assert_eq!(r.status, RangeStatus::Unknown);

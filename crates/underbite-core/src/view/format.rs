@@ -95,20 +95,32 @@ impl Formatter {
 
     // -- values ----------------------------------------------------------------------------
 
-    /// "1,200 cfs" (whole numbers, grouped) or "34.0 m³/s".
+    /// "1,200 cfs" (whole numbers, grouped), "12.4 cfs" below 100 cfs, "340 m³/s" or "3.4 m³/s"
+    /// below 10 m³/s: small flows keep the decimal they are read to.
     pub fn discharge(&self, m3s: Option<f32>) -> Quantity {
         let unit = self.units.discharge;
         let Some(m3s) = m3s else {
             return self.missing(unit.symbol());
         };
         let v = unit.from_canonical(m3s);
-        match unit {
-            DischargeUnit::Cfs => Quantity {
-                value: Some(v),
-                text: group_thousands(&number(v, 0)),
-                unit: unit.symbol().to_owned(),
-            },
-            DischargeUnit::M3s => Self::quantity(v, u8::from(v.abs() < 100.0), unit.symbol()),
+        let small = match unit {
+            DischargeUnit::Cfs => 100.0,
+            DischargeUnit::M3s => 10.0,
+        };
+        let decimals = u8::from(v.abs() < small);
+        Quantity {
+            value: Some(v),
+            text: Self::number(v, decimals),
+            unit: unit.symbol().to_owned(),
+        }
+    }
+
+    /// A number with the thousands grouped: "1,500", "12,345.6".
+    pub fn number(value: f32, decimals: u8) -> String {
+        let text = number(value, decimals);
+        match text.split_once('.') {
+            Some((whole, fraction)) => format!("{}.{fraction}", group_thousands(whole)),
+            None => group_thousands(&text),
         }
     }
 
@@ -573,6 +585,10 @@ mod tests {
         assert_eq!(group_thousands("1234567"), "1,234,567");
         assert_eq!(group_thousands("-4500"), "-4,500");
         assert_eq!(number(-0.04, 1), "0.0");
+        assert_eq!(Formatter::number(1500.0, 0), "1,500");
+        assert_eq!(Formatter::number(1_234_567.8, 1), "1,234,567.8");
+        assert_eq!(Formatter::number(-4500.0, 0), "-4,500");
+        assert_eq!(Formatter::number(12.5, 1), "12.5");
         assert_eq!(ordinal(1), "1st");
         assert_eq!(ordinal(12), "12th");
         assert_eq!(ordinal(45), "45th");
@@ -585,8 +601,14 @@ mod tests {
         let m = fmt(metric(), Voice::Plain, TimeFormat::H24);
         // 34 m3/s is about 1200 cfs.
         assert_eq!(u.discharge(Some(33.98)).full(), "1,200 cfs");
-        assert_eq!(m.discharge(Some(34.0)).full(), "34.0 m³/s");
+        assert_eq!(m.discharge(Some(34.0)).full(), "34 m³/s");
         assert_eq!(m.discharge(Some(340.0)).full(), "340 m³/s");
+        // Small flows keep one decimal: below 100 cfs and below 10 m³/s.
+        assert_eq!(u.discharge(Some(0.351)).full(), "12.4 cfs");
+        assert_eq!(u.discharge(Some(2.8)).full(), "98.9 cfs");
+        assert_eq!(u.discharge(Some(3.0)).full(), "106 cfs");
+        assert_eq!(m.discharge(Some(3.4)).full(), "3.4 m³/s");
+        assert_eq!(m.discharge(Some(9.96)).full(), "10.0 m³/s");
         let h = Height {
             datum: VerticalDatum::Mllw,
             metres: 1.28,

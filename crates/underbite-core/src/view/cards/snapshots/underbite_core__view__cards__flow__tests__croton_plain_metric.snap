@@ -108,7 +108,7 @@ expression: "card(&croton_input(metric(), Voice::Plain))"
           "label": "95th percentile",
           "value": {
             "value": 33.41388,
-            "text": "33.4",
+            "text": "33",
             "unit": "m³/s"
           }
         }
