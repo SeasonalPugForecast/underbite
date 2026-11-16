@@ -1,4 +1,5 @@
 import SwiftUI
+import UnderbiteKit
 
 @main
 struct UnderbiteApp: App {
@@ -9,6 +10,7 @@ struct UnderbiteApp: App {
         WindowGroup {
             RootTabs()
                 .environment(store)
+                .environment(\.voiceStyle, voice)
                 .task { await store.refreshOnOpen() }
                 .onChange(of: phase) { _, phase in
                     switch phase {
@@ -18,6 +20,11 @@ struct UnderbiteApp: App {
                     }
                 }
         }
+    }
+
+    /// The voice of the settings (`presentation.voice`); Luna's when they cannot be read.
+    private var voice: VoiceStyle {
+        VoiceStyle(setting: (try? Settings(json: store.settingsJSON).presentation.voice) ?? "luna")
     }
 
     /// The one store of the process; `-seed` adds the test places (debug builds).
