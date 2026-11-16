@@ -104,12 +104,13 @@ fn part(id: CardId, input: &ViewInput) -> Option<Part> {
 }
 
 /// What matters now, gathered from the other cards in a fixed order for the water type. Values
-/// are the cards' own; a card that is not built is skipped and nothing is filled in for it.
+/// are the cards' own; a card that is not in the user's order, or not built, is skipped and nothing is filled in for it.
 pub fn build(input: &ViewInput) -> Option<NowCard> {
     let f = Formatter::for_input(input);
     let title = f.strings.card_title(CardId::Now).to_owned();
     let parts: Vec<Part> = priority(input.snapshot.spot.water_type)
         .iter()
+        .filter(|id| input.card_order.contains(id))
         .filter_map(|id| part(*id, input))
         .take(MAX_ITEMS)
         .collect();
@@ -233,6 +234,31 @@ mod tests {
         let ids: Vec<CardId> = card.full.items.iter().map(|i| i.card).collect();
         assert_eq!(&ids[..2], [CardId::WaterTemp, CardId::Flow]);
         insta::assert_json_snapshot!("now_river_plain", card);
+    }
+
+    #[test]
+    fn cards_left_out_of_the_order_give_no_items_or_notices() {
+        let mut input = sample_input();
+        input.snapshot.spot.water_type = WaterType::RiverStream;
+        input.voice = Voice::Plain;
+        let with = build(&input).unwrap();
+        assert!(with.full.items.iter().any(|i| i.card == CardId::Solunar));
+        assert!(
+            with.chrome
+                .notices
+                .iter()
+                .any(|n| n.kind == crate::view::NoticeKind::TraditionalCue)
+        );
+        input.card_order.retain(|c| *c != CardId::Solunar);
+        let without = build(&input).unwrap();
+        assert!(without.full.items.iter().all(|i| i.card != CardId::Solunar));
+        assert!(
+            without
+                .chrome
+                .notices
+                .iter()
+                .all(|n| n.kind != crate::view::NoticeKind::TraditionalCue)
+        );
     }
 
     #[test]

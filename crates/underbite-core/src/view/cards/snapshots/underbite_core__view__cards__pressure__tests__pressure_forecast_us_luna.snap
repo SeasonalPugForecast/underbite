@@ -6,7 +6,7 @@ expression: card
   "chrome": {
     "id": "pressure",
     "title": "Pressure",
-    "footnote": "Pressure 30.11 inHg · Open-Meteo · modelled · 5 min ago",
+    "footnote": "Pressure 30.11 inHg · Open-Meteo · modelled · just now",
     "credits": [
       {
         "source": "Open-Meteo",
@@ -18,7 +18,12 @@ expression: card
     "state": {
       "state": "fresh"
     },
-    "notices": [],
+    "notices": [
+      {
+        "kind": "modelled",
+        "text": "Modelled data: an estimate, not a measurement."
+      }
+    ],
     "accessibility": "Pressure forecast: 30.11 inHg, Steady 0.02 inHg in 3 h."
   },
   "compact": {

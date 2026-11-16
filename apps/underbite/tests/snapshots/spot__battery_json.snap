@@ -31,12 +31,6 @@ expression: json
             "licence": null
           },
           {
-            "source": "Open-Meteo",
-            "text": "Weather data by Open-Meteo.com",
-            "link": null,
-            "licence": null
-          },
-          {
             "source": "Computed on device",
             "text": "Sun and moon positions from astronomical algorithms",
             "link": null,
@@ -56,7 +50,7 @@ expression: json
             "text": "Provisional data, subject to revision."
           }
         ],
-        "accessibility": "Now. Tide 3.8 ft MLLW. Water temperature 60 °F. Current 1.1 kn. Wind 7 kn. Sun and moon 1%."
+        "accessibility": "Now. Tide 3.8 ft MLLW. Water temperature 60 °F. Current 1.1 kn. Sun and moon 1%."
       },
       "compact": {
         "headline": {
@@ -107,19 +101,6 @@ expression: json
               "unit": "kn"
             },
             "line": "Flood 1.1 kn toward N 11°",
-            "state": {
-              "state": "fresh"
-            }
-          },
-          {
-            "card": "wind",
-            "label": "Wind",
-            "headline": {
-              "value": 7.386609,
-              "text": "7",
-              "unit": "kn"
-            },
-            "line": "From SW 221°",
             "state": {
               "state": "fresh"
             }
@@ -3062,68 +3043,6 @@ expression: json
       }
     },
     {
-      "card": "wind",
-      "chrome": {
-        "id": "wind",
-        "title": "Wind",
-        "footnote": "Wind 7 kn · Open-Meteo · modelled · just now",
-        "credits": [
-          {
-            "source": "Open-Meteo",
-            "text": "Weather data by Open-Meteo.com",
-            "link": null,
-            "licence": null
-          }
-        ],
-        "state": {
-          "state": "fresh"
-        },
-        "notices": [],
-        "accessibility": "Wind forecast: 7 kn from SW 221°, gusts 15 kn."
-      },
-      "compact": {
-        "headline": {
-          "value": 7.386609,
-          "text": "7",
-          "unit": "kn"
-        },
-        "lines": [
-          "From SW 221°",
-          "Gusts 15 kn"
-        ],
-        "spark": []
-      },
-      "full": {
-        "basis": "forecast",
-        "speed": {
-          "value": 7.386609,
-          "text": "7",
-          "unit": "kn"
-        },
-        "gust": {
-          "value": 15.356372,
-          "text": "15",
-          "unit": "kn"
-        },
-        "direction": "SW 221°",
-        "from_deg": 221.0,
-        "hours": [],
-        "chart": null,
-        "sections": [
-          {
-            "title": "Source",
-            "rows": [
-              {
-                "label": "Forecast",
-                "value": "Open-Meteo",
-                "detail": "modelled"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
       "card": "water_temp",
       "chrome": {
         "id": "water_temp",
@@ -4812,7 +4731,7 @@ expression: json
       "chrome": {
         "id": "waves",
         "title": "Waves",
-        "footnote": "Waves 3.6 ft · New York Harbor Entrance - 15 NM SE of Breezy Point , NY · 28 mi · just now",
+        "footnote": "Waves 3.6 ft · New York Harbor Entrance - 15 NM SE of Breezy Point , NY · 28 mi · 50 min ago",
         "credits": [
           {
             "source": "NOAA NDBC",
@@ -6429,7 +6348,7 @@ expression: json
             "station_id": "44065",
             "source": "NOAA NDBC",
             "distance": "28 mi",
-            "age": "just now",
+            "age": "50 min ago",
             "relation": "Nearby",
             "kind": "Observed",
             "state": {
@@ -6442,7 +6361,7 @@ expression: json
             "station_id": "robn4",
             "source": "NOAA NDBC",
             "distance": "4.1 mi",
-            "age": "just now",
+            "age": "—",
             "relation": "Downstream",
             "kind": "Observed",
             "state": {

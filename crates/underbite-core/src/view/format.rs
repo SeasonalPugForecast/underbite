@@ -363,7 +363,12 @@ impl Formatter {
     // -- provenance ------------------------------------------------------------------------
 
     /// "Hudson R at Battery, NY · 0.4 mi · 6 min ago", the parts after the value.
-    fn provenance_parts(&self, p: &Provenance, now: UnixTime) -> Vec<String> {
+    fn provenance_parts(
+        &self,
+        p: &Provenance,
+        now: UnixTime,
+        sample: Option<UnixTime>,
+    ) -> Vec<String> {
         let mut parts = vec![match &p.station {
             Some(s) => s.name.clone(),
             None => source_name(&p.source),
@@ -381,8 +386,10 @@ impl Formatter {
             (_, Some(d)) => parts.push(d),
             (_, None) => {}
         }
-        if p.kind != ValueKind::Predicted {
-            parts.push(self.age(now.0 - p.observed_at.0));
+        if p.kind != ValueKind::Predicted
+            && let Some(t) = sample
+        {
+            parts.push(self.age(now.0 - t.0));
         }
         parts
     }
@@ -391,7 +398,21 @@ impl Formatter {
     /// 6 min ago". `value` is the label and value ("Water 54 °F").
     pub fn footnote(&self, value: &str, p: &Provenance, now: UnixTime) -> String {
         let mut parts = vec![value.to_owned()];
-        parts.extend(self.provenance_parts(p, now));
+        parts.extend(self.provenance_parts(p, now, Some(p.observed_at)));
+        parts.join(" · ")
+    }
+
+    /// Like [`Self::footnote`], but the age is that of the sample shown (`sample`); without one
+    /// (a series with nothing at or before `now`) there is no age.
+    pub fn footnote_aged(
+        &self,
+        value: &str,
+        p: &Provenance,
+        now: UnixTime,
+        sample: Option<UnixTime>,
+    ) -> String {
+        let mut parts = vec![value.to_owned()];
+        parts.extend(self.provenance_parts(p, now, sample));
         parts.join(" · ")
     }
 

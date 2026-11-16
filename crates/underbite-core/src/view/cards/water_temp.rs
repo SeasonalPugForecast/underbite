@@ -5,7 +5,7 @@ use serde::Serialize;
 
 use crate::model::{Measurement, WaterType};
 use crate::provenance::{Provenance, Quality};
-use crate::series::Series;
+use crate::series::{Sample, Series};
 use crate::time::UnixTime;
 use crate::view::cards::flow::{
     card_state, chart_series, chart_vm, credits, is_unreliable, observed_after, quality_notices,
@@ -14,8 +14,8 @@ use crate::view::cards::flow::{
 use crate::view::format::{Formatter, number};
 use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
-    CardChrome, CardId, ChartRule, ChartVm, Compact, Quantity, Row, RuleKind, Section, SeriesRole,
-    TrendVm, ViewInput,
+    CardChrome, CardId, ChartRule, ChartVm, Compact, NoticeKind, Quantity, Row, RuleKind, Section,
+    SeriesRole, TrendVm, ViewInput,
 };
 
 const WEEK_S: i64 = 7 * 86_400;
@@ -69,6 +69,15 @@ const fn is_fresh(t: WaterType) -> bool {
     )
 }
 
+/// The sample that applies at `now`: the newest at or before it, else the first one ahead.
+fn sample_at(series: &Series<f32>, now: UnixTime) -> Option<&Sample<f32>> {
+    let samples = series.samples();
+    let i = samples.partition_point(|s| s.time <= now);
+    i.checked_sub(1)
+        .and_then(|i| samples.get(i))
+        .or_else(|| samples.first())
+}
+
 #[allow(clippy::too_many_lines)]
 pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
     let w = &input.snapshot.water;
@@ -88,7 +97,7 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
         (None, Some(s), _) | (None, None, Some(s)) => (s, TempBasis::SeaSurface),
         (None, None, None) => return None,
     };
-    let latest = primary.latest()?;
+    let latest = sample_at(primary, now)?;
     let quality = sample_quality(primary, latest);
     let show = |c: f32| f.temperature(Some(c));
     let value = show(latest.value);
@@ -249,14 +258,21 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
         chrome: CardChrome {
             id: CardId::WaterTemp,
             title,
-            footnote: Some(f.footnote(
+            footnote: Some(f.footnote_aged(
                 &format!("{} {}", f.strings.get(Key::WaterWord), value.full()),
                 prov,
                 now,
+                Some(latest.time).filter(|t| *t <= now),
             )),
             credits: credits(input, &[prov]),
             state: card_state(input, &f, measurement, prov, Some(latest.time)),
-            notices: quality_notices(&f, &qualities),
+            notices: {
+                let mut notices = quality_notices(&f, &qualities);
+                if forecast_only {
+                    notices.push(f.notice(NoticeKind::Modelled));
+                }
+                notices
+            },
             accessibility,
         },
         compact: Compact {
@@ -279,8 +295,8 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
 mod tests {
     use super::*;
     use crate::provenance::{SourceId, StationKind, ValueKind};
-    use crate::view::Voice;
     use crate::view::cards::flow::fixtures::{NOW, croton, input, metric, prov, ramp, run, us};
+    use crate::view::{CardState, Voice};
 
     fn river(units: crate::view::DisplayUnits, voice: Voice, from_c: f32, to_c: f32) -> ViewInput {
         let mut input = input(units, voice);
@@ -371,6 +387,47 @@ mod tests {
         let c = card(&input);
         assert!(c.full.trend.is_none());
         assert_eq!(c.full.chart.unwrap().series[0].role, SeriesRole::Modelled);
+        // The value is the model's step now, not the last step of the run.
+        assert_eq!(c.full.value.as_ref().unwrap().full(), "59 °F");
+        assert_eq!(c.chrome.notices.len(), 1);
+        assert_eq!(c.chrome.notices[0].kind, NoticeKind::Modelled);
+    }
+
+    #[test]
+    fn a_forecast_run_that_has_ended_is_stale_and_the_step_now_leads() {
+        let mut input = input(us(), Voice::Plain);
+        let model = prov(
+            SourceId::OPEN_METEO_MARINE,
+            "grid",
+            "Open-Meteo Marine",
+            StationKind::Buoy,
+            ValueKind::Modelled,
+            Quality::Approved,
+        );
+        input.snapshot.spot.water_type = WaterType::BayInshore;
+        input.limits = vec![crate::view::MeasurementLimit {
+            measurement: Measurement::SeaSurfaceTempForecast,
+            max_distance_m: None,
+            max_age_s: Some(6 * 3_600),
+        }];
+        // Hourly steps from three hours back to three ahead: the one at `now` is 15 degrees.
+        input.snapshot.marine.sea_surface_temp_forecast_c = Some(run(
+            model.clone(),
+            NOW + 3 * 3_600,
+            3_600,
+            &ramp(12.0, 18.0, 7),
+        ));
+        let c = card(&input);
+        assert_eq!(c.full.value.as_ref().unwrap().full(), "59 °F");
+        assert_eq!(c.chrome.state, CardState::Fresh);
+        assert!(c.chrome.footnote.as_deref().unwrap().contains("just now"));
+
+        // A run that ended days ago is old, whatever its last step says.
+        input.snapshot.marine.sea_surface_temp_forecast_c =
+            Some(run(model, NOW - 2 * 86_400, 3_600, &ramp(10.0, 20.0, 25)));
+        let c = card(&input);
+        assert!(matches!(c.chrome.state, CardState::Stale { .. }));
+        assert_eq!(c.full.value.as_ref().unwrap().full(), "68 °F");
     }
 
     #[test]

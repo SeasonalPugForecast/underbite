@@ -12,7 +12,6 @@ Not for navigation.
 Provisional data, subject to revision.
 Credit: Tide, water-level and current data: NOAA/NOS CO-OPS (https://tidesandcurrents.noaa.gov/)
 Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa.gov/)
-Credit: Weather data by Open-Meteo.com
 Credit: Sun and moon positions from astronomical algorithms
 
 == Alerts ==
@@ -49,17 +48,6 @@ Current Flood 1.1 kn toward N 11° · Hudson River Entrance · 0.5 mi
 Not for navigation.
 Credit: Tide, water-level and current data: NOAA/NOS CO-OPS (https://tidesandcurrents.noaa.gov/)
 
-== Wind ==
-7 kn
-From SW 221°
-Gusts 15 kn
-  gust: 15 kn
-  Source
-    Forecast: Open-Meteo (modelled)
-  speed: 7 kn
-Wind 7 kn · Open-Meteo · modelled · just now
-Credit: Weather data by Open-Meteo.com
-
 == Water temperature ==
 60 °F
 Steady over 3 h
@@ -77,7 +65,7 @@ Modelled 0.8 ft
   Sources
     Buoy: New York Harbor Entrance - 15 NM SE of Breezy Point , NY (28 mi)
     Model: Open-Meteo Marine (modelled)
-Waves 3.6 ft · New York Harbor Entrance - 15 NM SE of Breezy Point , NY · 28 mi · just now
+Waves 3.6 ft · New York Harbor Entrance - 15 NM SE of Breezy Point , NY · 28 mi · 50 min ago
 Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa.gov/)
 Credit: Weather data by Open-Meteo.com. Marine models: Copernicus Marine Service, ECMWF, NOAA NCEP, DWD, Copernicus Climate Change Service. Modelled, not suitable for coastal navigation. (https://open-meteo.com/)
 
@@ -131,6 +119,6 @@ Credit: Sun and moon positions from astronomical algorithms
   Water temperature, Pressure: 8518750 - The Battery, NY (NOAA NDBC, 0.2 mi, 42 min ago)
   Tide: NEW YORK (The Battery) (NOAA CO-OPS, 0.2 mi, —)
   Tidal current: Hudson River Entrance (NOAA CO-OPS, 0.5 mi, —)
-  Waves: New York Harbor Entrance - 15 NM SE of Breezy Point , NY (NOAA NDBC, 28 mi, just now)
-  Wind: 8530973 - Robbins Reef, NJ (NOAA NDBC, 4.1 mi, just now)
+  Waves: New York Harbor Entrance - 15 NM SE of Breezy Point , NY (NOAA NDBC, 28 mi, 50 min ago)
+  Wind: 8530973 - Robbins Reef, NJ (NOAA NDBC, 4.1 mi, —)
 Not for navigation.

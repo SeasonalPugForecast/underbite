@@ -83,80 +83,72 @@ pub struct SourcesFull {
 struct Used<'a> {
     measurement: Measurement,
     provenance: &'a Provenance,
+    /// Whether the value is a series, whose age is that of a sample.
+    series: bool,
+    /// The newest sample at or before now; none for a series with only samples ahead.
     latest: Option<UnixTime>,
 }
 
-fn push_series<'a, T>(
-    out: &mut Vec<Used<'a>>,
-    measurement: Measurement,
-    series: Option<&'a Series<T>>,
-) {
-    if let Some(s) = series {
-        out.push(Used {
-            measurement,
-            provenance: s.provenance(),
-            latest: s.latest().map(|x| x.time),
-        });
+/// What the snapshot holds, collected as of `now`.
+struct Collected<'a> {
+    items: Vec<Used<'a>>,
+    now: UnixTime,
+}
+
+impl<'a> Collected<'a> {
+    fn push(&mut self, used: Used<'a>) {
+        self.items.push(used);
+    }
+
+    fn series<T>(&mut self, measurement: Measurement, series: Option<&'a Series<T>>) {
+        if let Some(s) = series {
+            self.items.push(Used {
+                measurement,
+                provenance: s.provenance(),
+                series: true,
+                latest: s
+                    .samples()
+                    .iter()
+                    .rev()
+                    .find(|x| x.time <= self.now)
+                    .map(|x| x.time),
+            });
+        }
     }
 }
 
 /// Every provenance in the snapshot, in a fixed order.
 #[allow(clippy::too_many_lines)]
-fn used(snapshot: &SpotSnapshot) -> Vec<Used<'_>> {
+fn used(snapshot: &SpotSnapshot, now: UnixTime) -> Vec<Used<'_>> {
     let w = &snapshot.water;
     let m = &snapshot.marine;
-    let mut out = Vec::new();
-    push_series(
-        &mut out,
-        Measurement::WaterTemperature,
-        w.temperature_c.as_ref(),
-    );
-    push_series(&mut out, Measurement::Discharge, w.discharge_m3s.as_ref());
-    push_series(
-        &mut out,
+    let mut out = Collected {
+        items: Vec::new(),
+        now,
+    };
+    out.series(Measurement::WaterTemperature, w.temperature_c.as_ref());
+    out.series(Measurement::Discharge, w.discharge_m3s.as_ref());
+    out.series(
         Measurement::GageHeight,
         w.gage_height.as_ref().map(|h| &h.series),
     );
-    push_series(
-        &mut out,
-        Measurement::LakeLevel,
-        w.level.as_ref().map(|h| &h.series),
-    );
-    push_series(&mut out, Measurement::Turbidity, w.turbidity.as_ref());
-    push_series(
-        &mut out,
+    out.series(Measurement::LakeLevel, w.level.as_ref().map(|h| &h.series));
+    out.series(Measurement::Turbidity, w.turbidity.as_ref());
+    out.series(
         Measurement::DissolvedOxygen,
         w.dissolved_oxygen_mg_l.as_ref(),
     );
-    push_series(
-        &mut out,
-        Measurement::Conductivity,
-        w.conductivity_us_cm.as_ref(),
-    );
-    push_series(&mut out, Measurement::Salinity, w.salinity_psu.as_ref());
-    push_series(&mut out, Measurement::Ph, w.ph.as_ref());
-    push_series(
-        &mut out,
-        Measurement::Chlorophyll,
-        w.chlorophyll_ug_l.as_ref(),
-    );
-    push_series(
-        &mut out,
-        Measurement::Clarity,
-        w.clarity_kd490_per_m.as_ref(),
-    );
-    push_series(
-        &mut out,
+    out.series(Measurement::Conductivity, w.conductivity_us_cm.as_ref());
+    out.series(Measurement::Salinity, w.salinity_psu.as_ref());
+    out.series(Measurement::Ph, w.ph.as_ref());
+    out.series(Measurement::Chlorophyll, w.chlorophyll_ug_l.as_ref());
+    out.series(Measurement::Clarity, w.clarity_kd490_per_m.as_ref());
+    out.series(
         Measurement::Cyanobacteria,
         w.cyanobacteria_cells_ml.as_ref(),
     );
-    push_series(
-        &mut out,
-        Measurement::FlowForecast,
-        w.discharge_forecast_m3s.as_ref(),
-    );
-    push_series(
-        &mut out,
+    out.series(Measurement::FlowForecast, w.discharge_forecast_m3s.as_ref());
+    out.series(
         Measurement::FlowForecast,
         w.stage_forecast.as_ref().map(|h| &h.series),
     );
@@ -168,6 +160,7 @@ fn used(snapshot: &SpotSnapshot) -> Vec<Used<'_>> {
             out.push(Used {
                 measurement,
                 provenance: p,
+                series: false,
                 latest: None,
             });
         }
@@ -176,6 +169,7 @@ fn used(snapshot: &SpotSnapshot) -> Vec<Used<'_>> {
         out.push(Used {
             measurement: Measurement::Tide,
             provenance: &t.provenance,
+            series: false,
             latest: None,
         });
     }
@@ -183,41 +177,24 @@ fn used(snapshot: &SpotSnapshot) -> Vec<Used<'_>> {
         out.push(Used {
             measurement: Measurement::TidalCurrent,
             provenance: &c.provenance,
+            series: false,
             latest: None,
         });
     }
-    push_series(
-        &mut out,
-        Measurement::OceanCurrent,
-        m.ocean_current.as_ref(),
-    );
-    push_series(&mut out, Measurement::Waves, m.waves.as_ref());
-    push_series(
-        &mut out,
-        Measurement::SeaSurfaceTemp,
-        m.sea_surface_temp_c.as_ref(),
-    );
-    push_series(
-        &mut out,
-        Measurement::WavesForecast,
-        m.waves_forecast.as_ref(),
-    );
-    push_series(
-        &mut out,
+    out.series(Measurement::OceanCurrent, m.ocean_current.as_ref());
+    out.series(Measurement::Waves, m.waves.as_ref());
+    out.series(Measurement::SeaSurfaceTemp, m.sea_surface_temp_c.as_ref());
+    out.series(Measurement::WavesForecast, m.waves_forecast.as_ref());
+    out.series(
         Measurement::SeaSurfaceTempForecast,
         m.sea_surface_temp_forecast_c.as_ref(),
     );
-    push_series(
-        &mut out,
-        Measurement::ObservedWind,
-        m.observed_wind.as_ref(),
-    );
-    push_series(
-        &mut out,
+    out.series(Measurement::ObservedWind, m.observed_wind.as_ref());
+    out.series(
         Measurement::ObservedPressure,
         m.observed_pressure_hpa.as_ref(),
     );
-    out
+    out.items
 }
 
 fn measurement_label(f: &Formatter, m: Measurement) -> &'static str {
@@ -425,8 +402,14 @@ fn station_uses(input: &ViewInput, f: &Formatter, used: &[Used<'_>]) -> Vec<Stat
         let measurement = measurement_label(f, u.measurement);
         // Predictions and computed curves have no age to speak of.
         let aged = matches!(p.kind, ValueKind::Observed | ValueKind::Satellite);
-        let latest = u.latest.unwrap_or(p.observed_at);
-        let state = card_state(input, f, u.measurement, p, aged.then_some(latest));
+        // A series is as old as its newest sample so far; one with only samples ahead has no age.
+        let latest = if u.series {
+            u.latest
+        } else {
+            Some(p.observed_at)
+        };
+        let aged = aged && latest.is_some();
+        let state = card_state(input, f, u.measurement, p, latest.filter(|_| aged));
         // One row per station and kind of value, naming everything it supplies.
         let kind = kind_label(f, p.kind);
         if let Some(row) = out.iter_mut().find(|s| {
@@ -447,8 +430,8 @@ fn station_uses(input: &ViewInput, f: &Formatter, used: &[Used<'_>]) -> Vec<Stat
             station_id: station.id.clone(),
             source: source_name(&p.source),
             distance: p.distance_m.map(|m| f.distance(Some(m)).full()),
-            age: if aged {
-                f.age(input.now.0 - latest.0)
+            age: if let Some(t) = latest.filter(|_| aged) {
+                f.age(input.now.0 - t.0)
             } else {
                 f.strings.get(Key::Missing).to_owned()
             },
@@ -505,7 +488,7 @@ fn plural(f: &Formatter, n: usize, one: Key, many: Key) -> String {
 pub fn build(input: &ViewInput) -> Option<SourcesCard> {
     let snapshot = &input.snapshot;
     let f = Formatter::for_input(input);
-    let used = used(snapshot);
+    let used = used(snapshot, input.now);
     let credits = credits(snapshot, &used, f.strings);
     let stations = station_uses(input, &f, &used);
     let errors = error_vms(&f, &snapshot.errors);
@@ -761,5 +744,29 @@ mod tests {
         insta::assert_json_snapshot!("sources_luna", build(&input).unwrap());
         input.voice = Voice::Plain;
         insta::assert_json_snapshot!("sources_plain", build(&input).unwrap());
+    }
+
+    #[test]
+    fn a_series_is_aged_from_its_newest_sample_so_far() {
+        let mut input = sample_input();
+        let now = input.now;
+        let temp = input.snapshot.water.temperature_c.take().unwrap();
+        let prov = temp.provenance().clone();
+        let at = |dt: i64| crate::series::Sample::new(UnixTime(now.0 + dt), 12.0);
+        input.snapshot.water.temperature_c =
+            Some(Series::new(prov.clone(), vec![at(-1_800), at(7_200)]));
+        let card = build(&input).unwrap();
+        let age = |card: &SourcesCard| {
+            card.full
+                .stations
+                .iter()
+                .find(|s| s.measurement.starts_with("Water temperature"))
+                .unwrap()
+                .age
+                .clone()
+        };
+        assert_eq!(age(&card), "30 min ago");
+        input.snapshot.water.temperature_c = Some(Series::new(prov, vec![at(3_600), at(7_200)]));
+        assert_eq!(age(&build(&input).unwrap()), "—");
     }
 }

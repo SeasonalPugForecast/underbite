@@ -31,12 +31,6 @@ expression: json
             "licence": null
           },
           {
-            "source": "Open-Meteo",
-            "text": "Weather data by Open-Meteo.com",
-            "link": null,
-            "licence": null
-          },
-          {
             "source": "Computed on device",
             "text": "Sun and moon positions from astronomical algorithms",
             "link": null,
@@ -50,13 +44,9 @@ expression: json
           {
             "kind": "provisional",
             "text": "Provisional data, subject to revision."
-          },
-          {
-            "kind": "traditional_cue",
-            "text": "A traditional cue, not a promise."
           }
         ],
-        "accessibility": "Now. River flow 12.4 cfs. Wind 7 kn. Sun and moon 1%. Solunar 34 min."
+        "accessibility": "Now. River flow 12.4 cfs. Sun and moon 1%."
       },
       "compact": {
         "headline": {
@@ -65,7 +55,6 @@ expression: json
           "unit": "cfs"
         },
         "lines": [
-          "Wind 7 kn",
           "Sun and moon 1%"
         ],
         "spark": []
@@ -86,19 +75,6 @@ expression: json
             }
           },
           {
-            "card": "wind",
-            "label": "Wind",
-            "headline": {
-              "value": 7.386609,
-              "text": "7",
-              "unit": "kn"
-            },
-            "line": "From SW 221°",
-            "state": {
-              "state": "fresh"
-            }
-          },
-          {
             "card": "sun_moon",
             "label": "Sun and moon",
             "headline": {
@@ -107,19 +83,6 @@ expression: json
               "unit": "%"
             },
             "line": "Sunrise 6:34 AM · Sunset 4:43 PM",
-            "state": {
-              "state": "fresh"
-            }
-          },
-          {
-            "card": "solunar",
-            "label": "Solunar",
-            "headline": {
-              "value": 34.0,
-              "text": "34",
-              "unit": "min"
-            },
-            "line": "Next big nibble 10:04 AM to 12:04 PM",
             "state": {
               "state": "fresh"
             }
@@ -7892,68 +7855,6 @@ expression: json
                 "label": "Median",
                 "value": "15.0 cfs",
                 "detail": null
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "card": "wind",
-      "chrome": {
-        "id": "wind",
-        "title": "Wind",
-        "footnote": "Wind 7 kn · Open-Meteo · modelled · just now",
-        "credits": [
-          {
-            "source": "Open-Meteo",
-            "text": "Weather data by Open-Meteo.com",
-            "link": null,
-            "licence": null
-          }
-        ],
-        "state": {
-          "state": "fresh"
-        },
-        "notices": [],
-        "accessibility": "Wind forecast: 7 kn from SW 221°, gusts 15 kn."
-      },
-      "compact": {
-        "headline": {
-          "value": 7.386609,
-          "text": "7",
-          "unit": "kn"
-        },
-        "lines": [
-          "From SW 221°",
-          "Gusts 15 kn"
-        ],
-        "spark": []
-      },
-      "full": {
-        "basis": "forecast",
-        "speed": {
-          "value": 7.386609,
-          "text": "7",
-          "unit": "kn"
-        },
-        "gust": {
-          "value": 15.356372,
-          "text": "15",
-          "unit": "kn"
-        },
-        "direction": "SW 221°",
-        "from_deg": 221.0,
-        "hours": [],
-        "chart": null,
-        "sections": [
-          {
-            "title": "Source",
-            "rows": [
-              {
-                "label": "Forecast",
-                "value": "Open-Meteo",
-                "detail": "modelled"
               }
             ]
           }

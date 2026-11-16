@@ -1,6 +1,5 @@
 ---
 source: crates/underbite-core/src/view/cards/now.rs
-assertion_line: 224
 expression: card
 ---
 {
@@ -86,7 +85,7 @@ expression: card
         "card": "water_temp",
         "label": "Water temperature",
         "headline": {
-          "value": 58.28,
+          "value": 58.1,
           "text": "58",
           "unit": "°F"
         },

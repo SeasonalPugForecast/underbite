@@ -56,7 +56,7 @@ expression: card
   },
   "compact": {
     "headline": {
-      "value": 58.28,
+      "value": 58.1,
       "text": "58",
       "unit": "°F"
     },
@@ -72,7 +72,7 @@ expression: card
         "card": "water_temp",
         "label": "Water temperature",
         "headline": {
-          "value": 58.28,
+          "value": 58.1,
           "text": "58",
           "unit": "°F"
         },

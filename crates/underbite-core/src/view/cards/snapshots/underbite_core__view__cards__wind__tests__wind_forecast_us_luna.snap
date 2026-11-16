@@ -6,7 +6,7 @@ expression: card
   "chrome": {
     "id": "wind",
     "title": "Wind",
-    "footnote": "Wind 8 mph · Open-Meteo · modelled · 5 min ago",
+    "footnote": "Wind 8 mph · Open-Meteo · modelled · just now",
     "credits": [
       {
         "source": "Open-Meteo",
@@ -18,7 +18,12 @@ expression: card
     "state": {
       "state": "fresh"
     },
-    "notices": [],
+    "notices": [
+      {
+        "kind": "modelled",
+        "text": "Modelled data: an estimate, not a measurement."
+      }
+    ],
     "accessibility": "Wind forecast: 8 mph from SW 225°, gusts 16 mph."
   },
   "compact": {

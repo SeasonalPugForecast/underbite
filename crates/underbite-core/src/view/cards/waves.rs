@@ -15,8 +15,8 @@ use crate::view::chart::{Zoned, ticks, window};
 use crate::view::format::Formatter;
 use crate::view::strings::{Key, source_name};
 use crate::view::{
-    CardChrome, CardId, CardState, ChartPoint, ChartVm, Compact, Quantity, Row, Section,
-    SeriesRole, ViewInput,
+    CardChrome, CardId, CardState, ChartPoint, ChartVm, Compact, NoticeKind, Quantity, Row,
+    Section, SeriesRole, ViewInput,
 };
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -299,6 +299,12 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
     };
     let value = format!("{label} {}", headline.full());
     let p = lead_series.provenance();
+    // The age is that of the sample shown; a model step still ahead has none.
+    let shown_at = if is_observed {
+        newest.map(|s| s.time)
+    } else {
+        forecast.map(|s| s.time)
+    };
     let card_state = match newest {
         Some(s) if is_observed => aged_state(input, &f, p, Measurement::Waves, now.0 - s.time.0),
         _ => CardState::Fresh,
@@ -347,10 +353,14 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
         chrome: CardChrome {
             id: CardId::Waves,
             title: f.strings.card_title(CardId::Waves).to_owned(),
-            footnote: Some(f.footnote(&value, p, now)),
+            footnote: Some(f.footnote_aged(&value, p, now, shown_at.filter(|t| *t <= now))),
             credits: card_credits,
             state: card_state,
-            notices: Vec::new(),
+            notices: if is_observed {
+                Vec::new()
+            } else {
+                vec![f.notice(NoticeKind::Modelled)]
+            },
             accessibility,
         },
         compact: Compact {
@@ -619,5 +629,50 @@ mod tests {
             vec![empty],
         ));
         assert!(build(&input).is_none());
+    }
+
+    #[test]
+    fn a_modelled_headline_carries_the_modelled_notice_and_its_own_age() {
+        let mut input = sample_input();
+        input.snapshot.marine = crate::model::MarineConditions::default();
+        input.snapshot.marine.waves_forecast = Some(model_series(&input));
+        let card = build(&input).unwrap();
+        assert_eq!(card.compact.headline.text, "3.3");
+        assert_eq!(card.chrome.notices.len(), 1);
+        assert_eq!(card.chrome.notices[0].kind, NoticeKind::Modelled);
+        assert!(
+            card.chrome
+                .footnote
+                .as_deref()
+                .unwrap()
+                .ends_with("just now")
+        );
+        // Observed headline: no modelled notice.
+        let buoy = buoy_input();
+        assert_eq!(build(&buoy).unwrap().chrome.notices.len(), 0);
+        // A model step still ahead has no age.
+        let now = input.now.0;
+        let ahead = Series::new(
+            prov(
+                SourceId::OPEN_METEO_MARINE,
+                ValueKind::Modelled,
+                Relation::Gridded,
+                0,
+                now,
+            ),
+            vec![Sample::new(
+                UnixTime(now + 3_600),
+                WaveSample {
+                    significant_height_m: Some(1.0),
+                    ..WaveSample::default()
+                },
+            )],
+        );
+        input.snapshot.marine.waves_forecast = Some(ahead);
+        let text = build(&input).unwrap().chrome.footnote.unwrap();
+        assert!(
+            !text.contains("ago") && !text.contains("just now"),
+            "{text}"
+        );
     }
 }

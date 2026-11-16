@@ -16,8 +16,8 @@ use crate::view::chart::{Zoned, ticks, window};
 use crate::view::format::Formatter;
 use crate::view::strings::{Key, source_name};
 use crate::view::{
-    CardChrome, CardId, CardState, ChartPoint, ChartSeries, ChartVm, Compact, CreditVm, Quantity,
-    Row, Section, SeriesRole, SeriesStyle, ViewInput,
+    CardChrome, CardId, CardState, ChartPoint, ChartSeries, ChartVm, Compact, CreditVm, NoticeKind,
+    Quantity, Row, Section, SeriesRole, SeriesStyle, ViewInput,
 };
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -141,19 +141,61 @@ pub(super) fn weather_credit(weather: &WeatherSnapshot) -> CreditVm {
     }
 }
 
-/// "Wind 12 mph · Open-Meteo · modelled · 6 min ago".
+/// "Wind 12 mph · Open-Meteo · modelled · 6 min ago"; the age is that of the forecast value
+/// shown (`valid_at`), not of the download.
 pub(super) fn weather_footnote(
     f: &Formatter,
     value: &str,
     weather: &WeatherSnapshot,
     now: UnixTime,
+    valid_at: UnixTime,
 ) -> String {
     format!(
         "{value} · {} · {} · {}",
         weather.provider.display_name(),
         f.strings.get(Key::Modelled),
-        f.age(now.0 - weather.fetched_at.0),
+        f.age(now.0 - valid_at.0),
     )
+}
+
+/// whether's current conditions are used only this close to `now`.
+pub(super) const CURRENT_WINDOW_S: i64 = 3_600;
+
+/// Whether's current conditions when they are for about now.
+pub(super) fn current_near(
+    weather: &WeatherSnapshot,
+    now: UnixTime,
+) -> Option<&whether_core::model::Current> {
+    weather
+        .current
+        .as_ref()
+        .filter(|c| (now.0 - c.time.0).abs() <= CURRENT_WINDOW_S)
+}
+
+/// Whether the station lies beyond the user's distance limit.
+pub(super) fn is_far(input: &ViewInput, p: &Provenance, measurement: Measurement) -> bool {
+    matches!(
+        (p.distance_m, input.limit(measurement).and_then(|l| l.max_distance_m)),
+        (Some(d), Some(max)) if d > max
+    )
+}
+
+/// Fresh, or stale when the forecast value's own time is older than the age limit.
+pub(super) fn forecast_state(
+    input: &ViewInput,
+    f: &Formatter,
+    measurement: Measurement,
+    valid_at: UnixTime,
+) -> CardState {
+    let limit = max_age(input, measurement);
+    let age = (input.now.0 - valid_at.0).max(0);
+    if age > limit {
+        CardState::Stale {
+            reason: f.stale_reason(age, limit),
+        }
+    } else {
+        CardState::Fresh
+    }
 }
 
 /// Chart points from (time, quantity) pairs; pairs without a value are skipped.
@@ -187,20 +229,27 @@ pub(super) fn line_series(
 /// Speed, gust and "from" degrees, all canonical.
 type Fix = (f32, Option<f32>, Option<f32>);
 
-/// The forecast figure that applies now: whether's current conditions, else the hourly step.
-fn forecast_now(weather: &WeatherSnapshot, now: UnixTime) -> Option<Fix> {
-    if let Some(c) = &weather.current
+/// The forecast figure that applies now and the time it is for: whether's current conditions
+/// when they are within an hour of `now`, else the hourly step containing `now`, else nothing.
+fn forecast_now(weather: &WeatherSnapshot, now: UnixTime) -> Option<(Fix, UnixTime)> {
+    if let Some(c) = current_near(weather, now)
         && let Some(speed) = c.wind_speed
     {
-        return Some((speed.0, c.wind_gust.map(|g| g.0), c.wind_dir.map(|d| d.0)));
+        return Some((
+            (speed.0, c.wind_gust.map(|g| g.0), c.wind_dir.map(|d| d.0)),
+            c.time,
+        ));
     }
     let h = weather
         .hourly
         .get(current_hour_index(&weather.hourly, now)?)?;
     Some((
-        h.wind_speed?.0,
-        h.wind_gust.map(|g| g.0),
-        h.wind_dir.map(|d| d.0),
+        (
+            h.wind_speed?.0,
+            h.wind_gust.map(|g| g.0),
+            h.wind_dir.map(|d| d.0),
+        ),
+        h.time,
     ))
 }
 
@@ -247,8 +296,11 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
 
     let observed = snapshot.marine.observed_wind.as_ref();
     let newest = observed.and_then(|s| latest_at(s, now));
-    let observed_fresh =
-        newest.is_some_and(|s| now.0 - s.time.0 <= max_age(input, Measurement::ObservedWind));
+    // A station leads only while it is recent and not too far away.
+    let observed_fresh = observed.zip(newest).is_some_and(|(o, s)| {
+        now.0 - s.time.0 <= max_age(input, Measurement::ObservedWind)
+            && !is_far(input, o.provenance(), Measurement::ObservedWind)
+    });
     let weather = snapshot.weather.as_ref();
     let forecast = weather.and_then(|w| forecast_now(w, now));
     // A fresh station first, else the forecast, else a stale station shown as such.
@@ -288,17 +340,24 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
                 .into_iter()
                 .map(|(t, v)| hour_vm(&f, t, v))
                 .collect();
-            (forecast?, hours, CardState::Fresh, None)
+            let (fix, valid_at) = forecast?;
+            (
+                fix,
+                hours,
+                forecast_state(input, &f, Measurement::ObservedWind, valid_at),
+                None,
+            )
         }
     };
     let speed = f.wind_speed(Some(fix.0));
     let gust = fix.1.map(|g| f.wind_speed(Some(g)));
     let direction = fix.2.map(|d| f.direction(Some(d)));
     let headline = format!("{} {}", f.strings.card_title(CardId::Wind), speed.full());
-    let footnote = match (station, weather) {
-        (Some((p, _)), _) => f.footnote(&headline, p, now),
-        (None, Some(w)) => weather_footnote(&f, &headline, w, now),
-        (None, None) => headline.clone(),
+    let forecast_time = forecast.map(|(_, t)| t);
+    let footnote = match (station, weather, forecast_time) {
+        (Some((p, t)), _, _) => f.footnote_aged(&headline, p, now, Some(t)),
+        (None, Some(w), Some(t)) => weather_footnote(&f, &headline, w, now, t),
+        _ => headline.clone(),
     };
 
     // The chart: past observations and the forecast ahead, as separate series.
@@ -441,7 +500,11 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
             footnote: Some(footnote),
             credits: chart_credits,
             state: card_state,
-            notices: Vec::new(),
+            notices: if basis == WindBasis::Forecast {
+                vec![f.notice(NoticeKind::Modelled)]
+            } else {
+                Vec::new()
+            },
             accessibility,
         },
         compact: Compact {
@@ -591,5 +654,83 @@ mod tests {
             w.hourly.clear();
         }
         assert!(build(&input).is_none());
+    }
+
+    #[test]
+    fn an_old_current_step_gives_way_to_the_hour_now() {
+        let mut input = forecast_only();
+        let w = input.snapshot.weather.as_mut().unwrap();
+        let c = w.current.as_mut().unwrap();
+        c.time = UnixTime(SAMPLE_NOW.0 - 3 * 3_600);
+        c.wind_speed = Some(whether_core::units::Mps(20.0));
+        let card = build(&input).unwrap();
+        assert_eq!(card.full.speed.as_ref().unwrap().text, "9");
+        assert_eq!(card.chrome.state, CardState::Fresh);
+        assert_eq!(card.chrome.notices.len(), 1);
+        assert_eq!(card.chrome.notices[0].kind, NoticeKind::Modelled);
+        // A current step within the hour is used, with its own age.
+        let w = input.snapshot.weather.as_mut().unwrap();
+        w.current.as_mut().unwrap().time = UnixTime(SAMPLE_NOW.0 - 1_800);
+        let card = build(&input).unwrap();
+        assert_eq!(card.full.speed.as_ref().unwrap().text, "45");
+        assert!(
+            card.chrome
+                .footnote
+                .as_deref()
+                .unwrap()
+                .ends_with("30 min ago")
+        );
+    }
+
+    #[test]
+    fn no_forecast_value_beyond_the_hourly_data() {
+        let mut input = forecast_only();
+        input.now = UnixTime(SAMPLE_NOW.0 + 10 * 86_400);
+        assert!(build(&input).is_none());
+        // An old station is then shown greyed, not an old forecast.
+        input.snapshot.marine.observed_wind = Some(station_wind(&input, 5 * 3_600));
+        let card = build(&input).unwrap();
+        assert_eq!(card.full.basis, WindBasis::Observed);
+        assert!(matches!(card.chrome.state, CardState::Stale { .. }));
+    }
+
+    #[test]
+    fn a_far_station_does_not_beat_the_forecast() {
+        let mut input = forecast_only();
+        input.snapshot.marine.observed_wind = Some(station_wind(&input, 600));
+        input.limits.push(crate::view::MeasurementLimit {
+            measurement: Measurement::ObservedWind,
+            max_distance_m: Some(1_000.0),
+            max_age_s: None,
+        });
+        let card = build(&input).unwrap();
+        assert_eq!(card.full.basis, WindBasis::Forecast);
+        assert_eq!(card.full.speed.as_ref().unwrap().text, "8");
+        // Alone, it is still shown, marked far.
+        input.snapshot.weather = None;
+        let card = build(&input).unwrap();
+        assert_eq!(card.full.basis, WindBasis::Observed);
+        assert!(matches!(card.chrome.state, CardState::Far { .. }));
+    }
+
+    #[test]
+    fn a_station_with_only_samples_ahead_has_no_age() {
+        let mut input = forecast_only();
+        input.snapshot.weather = None;
+        input.snapshot.marine.observed_wind = Some(station_wind(&input, -7_200));
+        assert!(build(&input).is_none());
+        let f = Formatter::for_input(&input);
+        let p = input
+            .snapshot
+            .marine
+            .observed_wind
+            .as_ref()
+            .unwrap()
+            .provenance();
+        let text = f.footnote_aged("Wind 13 mph", p, input.now, None);
+        assert!(
+            !text.contains("ago") && !text.contains("just now"),
+            "{text}"
+        );
     }
 }

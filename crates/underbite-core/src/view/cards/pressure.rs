@@ -12,14 +12,14 @@ use crate::model::Measurement;
 use crate::time::UnixTime;
 use crate::units::{PressureUnit, pressure_from_hpa};
 use crate::view::cards::wind::{
-    aged_state, latest_at, line_series, max_age, points, station_credit, weather_credit,
-    weather_footnote,
+    aged_state, current_near, forecast_state, latest_at, line_series, max_age, points,
+    station_credit, weather_credit, weather_footnote,
 };
 use crate::view::chart::{Zoned, ticks, window};
 use crate::view::format::Formatter;
 use crate::view::strings::{Key, source_name};
 use crate::view::{
-    CardChrome, CardId, CardState, ChartVm, Compact, Quantity, Row, Section, SeriesRole,
+    CardChrome, CardId, ChartVm, Compact, NoticeKind, Quantity, Row, Section, SeriesRole,
     TrendDirection, TrendVm, ViewInput,
 };
 
@@ -53,8 +53,10 @@ enum Basis {
     Forecast,
 }
 
-/// The forecast pressure now and the change to three hours later.
-fn forecast_now(weather: &WeatherSnapshot, now: UnixTime) -> Option<(f32, Option<f32>)> {
+/// The forecast pressure now, the change to three hours later and the time the value is for:
+/// whether's current conditions when within an hour of `now`, else the hourly step containing
+/// `now`, else nothing.
+fn forecast_now(weather: &WeatherSnapshot, now: UnixTime) -> Option<(f32, Option<f32>, UnixTime)> {
     let step = current_hour_index(&weather.hourly, now).and_then(|i| {
         let start = weather.hourly[i].pressure_msl?.0;
         let target = weather.hourly[i].time.0 + TREND_HOURS * 3_600;
@@ -63,10 +65,12 @@ fn forecast_now(weather: &WeatherSnapshot, now: UnixTime) -> Option<(f32, Option
             .find(|h| h.time.0 >= target)
             .and_then(|h| h.pressure_msl)
             .map(|p| p.0 - start);
-        Some((start, later))
+        Some((start, later, weather.hourly[i].time))
     });
-    if let Some(c) = weather.current.as_ref().and_then(|c| c.pressure_msl) {
-        return Some((c.0, step.and_then(|s| s.1)));
+    if let Some(c) = current_near(weather, now)
+        && let Some(p) = c.pressure_msl
+    {
+        return Some((p.0, step.and_then(|s| s.1), c.time));
     }
     step
 }
@@ -153,8 +157,13 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
         }
         Basis::Forecast => {
             let w = weather?;
-            let (v, d) = forecast?;
-            (v, forecast_trend(w, now), d, CardState::Fresh)
+            let (v, d, valid_at) = forecast?;
+            (
+                v,
+                forecast_trend(w, now),
+                d,
+                forecast_state(input, &f, Measurement::ObservedPressure, valid_at),
+            )
         }
     };
     let value = f.pressure(Some(hpa));
@@ -167,8 +176,13 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
         value.full()
     );
     let footnote = match (basis, observed, weather) {
-        (Basis::Observed, Some(o), _) => f.footnote(&headline, o.provenance(), now),
-        (_, _, Some(w)) => weather_footnote(&f, &headline, w, now),
+        (Basis::Observed, Some(o), _) => {
+            f.footnote_aged(&headline, o.provenance(), now, newest.map(|s| s.time))
+        }
+        (_, _, Some(w)) => match forecast {
+            Some((_, _, t)) => weather_footnote(&f, &headline, w, now, t),
+            None => headline.clone(),
+        },
         _ => headline.clone(),
     };
 
@@ -287,7 +301,11 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
             footnote: Some(footnote),
             credits: chart_credits,
             state: card_state,
-            notices: Vec::new(),
+            notices: if basis == Basis::Forecast {
+                vec![f.notice(NoticeKind::Modelled)]
+            } else {
+                Vec::new()
+            },
             accessibility,
         },
         compact: Compact {
@@ -313,6 +331,7 @@ mod tests {
     use super::*;
     use crate::provenance::{Provenance, Quality, Relation, SourceId, ValueKind};
     use crate::series::{Sample, Series};
+    use crate::view::CardState;
     use crate::view::tests::sample_input;
     use whether_core::testdata::SAMPLE_NOW;
 
@@ -418,5 +437,41 @@ mod tests {
         let mut input = forecast_only();
         input.snapshot.weather = None;
         assert!(build(&input).is_none());
+    }
+
+    #[test]
+    fn an_old_current_step_gives_way_to_the_hour_now() {
+        let mut input = forecast_only();
+        let w = input.snapshot.weather.as_mut().unwrap();
+        let c = w.current.as_mut().unwrap();
+        c.time = UnixTime(SAMPLE_NOW.0 - 3 * 3_600);
+        c.pressure_msl = Some(whether_core::units::Hpa(990.0));
+        let card = build(&input).unwrap();
+        assert_eq!(card.full.value.as_ref().unwrap().text, "30.09");
+        assert_eq!(card.chrome.notices.len(), 1);
+        // A current step within the hour is used, and its own age is shown.
+        let w = input.snapshot.weather.as_mut().unwrap();
+        w.current.as_mut().unwrap().time = UnixTime(SAMPLE_NOW.0 - 1_800);
+        let card = build(&input).unwrap();
+        assert_eq!(card.full.value.as_ref().unwrap().text, "29.23");
+        assert!(
+            card.chrome
+                .footnote
+                .as_deref()
+                .unwrap()
+                .ends_with("30 min ago")
+        );
+    }
+
+    #[test]
+    fn no_forecast_value_beyond_the_hourly_data() {
+        let mut input = forecast_only();
+        input.now = UnixTime(SAMPLE_NOW.0 + 10 * 86_400);
+        assert!(build(&input).is_none());
+        // A station that is old is then shown, greyed, rather than the old forecast.
+        input.snapshot.marine.observed_pressure_hpa =
+            Some(buoy(&input, 5 * 3_600, 1_016.0, 1_012.0));
+        let card = build(&input).unwrap();
+        assert!(matches!(card.chrome.state, CardState::Stale { .. }));
     }
 }
