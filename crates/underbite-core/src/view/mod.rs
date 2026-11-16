@@ -573,7 +573,7 @@ pub fn build_view(input: &ViewInput) -> SpotView {
             updated: f.updated(snapshot.fetched_at, input.now),
         },
         cards,
-        timeline: None,
+        timeline: timeline::build(input),
         notices: Vec::new(),
     }
 }
