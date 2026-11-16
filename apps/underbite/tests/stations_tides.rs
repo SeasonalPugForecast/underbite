@@ -181,20 +181,83 @@ fn tides_for_a_week_give_the_recorded_events_in_local_time() {
     json_args.push("--json");
     let v = json(&run(cache.path(), &battery(), &json_args));
     let got = events(&v);
-    assert_eq!(got.len(), 27);
     assert_eq!(v["datum"], "ft MLLW");
-    for ((t, h), (rt, rh)) in got.iter().zip(&recorded()) {
+    // The days are the station's: 2026-11-08 to 2026-11-14 in New York, which begin at 05:00
+    // UTC on the 8th and end at 04:59 UTC on the 15th; the recorded week lies inside.
+    let (start, end) = (NOV_8_START, NOV_8_START + 7 * 86_400);
+    let want: Vec<_> = recorded()
+        .into_iter()
+        .filter(|(t, _)| (start..end).contains(t))
+        .collect();
+    assert_eq!(want.len(), 27);
+    assert_eq!(got.len(), want.len());
+    for ((t, h), (rt, rh)) in got.iter().zip(&want) {
         assert_eq!(t, rt);
         assert!((h - rh).abs() < 1e-4, "{h} vs {rh}");
     }
+    let new_york = jiff::tz::TimeZone::get("America/New_York").expect("zone");
     for e in v["events"].as_array().expect("events") {
         let at = jiff::Timestamp::from_second(e["t"].as_i64().expect("t")).expect("ts");
-        let date = at.to_string();
+        let date = at.to_zoned(new_york.clone()).date().to_string();
         assert!(
-            ("2026-11-08".."2026-11-15").contains(&&date[..10]),
+            ("2026-11-08".."2026-11-15").contains(&date.as_str()),
             "{date}"
         );
     }
+}
+
+/// 2026-11-08 00:00 in New York (EST, UTC-5), as a Unix time.
+const NOV_8_START: i64 = 1_794_114_000;
+
+#[test]
+fn a_day_is_a_day_of_the_station_not_of_utc() {
+    // The evening of the 14th in New York is the 15th in UTC: it belongs to `--from
+    // 2026-11-14`, and the evening of the 13th does not.
+    let cache = tempfile::tempdir().expect("tempdir");
+    let args = [
+        "tides",
+        "8518750",
+        "--offline",
+        "--from",
+        "2026-11-14",
+        "--days",
+        "1",
+        "--json",
+    ];
+    let v = json(&run(cache.path(), &battery(), &args));
+    let new_york = jiff::tz::TimeZone::get("America/New_York").expect("zone");
+    let local: Vec<String> = events(&v)
+        .iter()
+        .map(|(t, _)| {
+            jiff::Timestamp::from_second(*t)
+                .expect("ts")
+                .to_zoned(new_york.clone())
+                .strftime("%Y-%m-%d %H")
+                .to_string()
+        })
+        .collect();
+    assert!(!local.is_empty(), "{local:?}");
+    assert!(
+        local.iter().all(|l| l.starts_with("2026-11-14")),
+        "{local:?}"
+    );
+    let last: i32 = local.last().expect("last")[11..].parse().expect("hour");
+    assert!(last >= 16, "the evening is included: {local:?}");
+    let text = stdout(&run(
+        cache.path(),
+        &battery(),
+        &[
+            "tides",
+            "8518750",
+            "--offline",
+            "--from",
+            "2026-11-14",
+            "--days",
+            "1",
+        ],
+    ));
+    assert!(!text.contains("Nov 13"), "{text}");
+    assert!(text.contains("Nov 14"), "{text}");
 }
 
 #[test]

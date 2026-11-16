@@ -13,7 +13,7 @@ use underbite_config::schema::Config;
 use underbite_core::datum::Height;
 use underbite_core::model::{Measurement, Requirements, TideEvent, TideKind, TideSeries};
 use underbite_core::provenance::{Relation, SourceId, StationKind, StationRef};
-use underbite_core::time::{UnixTime, day_number, parse_date, zone};
+use underbite_core::time::{LocalDate, UnixTime, local_date, local_date_bounds, parse_date, zone};
 use underbite_core::view::Quantity;
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::Key;
@@ -36,10 +36,10 @@ pub(crate) struct Args {
     /// Station id, for example 8518750.
     #[arg(value_name = "STATION")]
     pub(crate) station: String,
-    /// First day, as `YYYY-MM-DD` in UTC, the days CO-OPS counts in; today by default.
+    /// First day, as `YYYY-MM-DD`, a day of the station's own clock; today there by default.
     #[arg(long, value_name = "DATE")]
     pub(crate) from: Option<String>,
-    /// How many days to show.
+    /// How many of the station's days to show.
     #[arg(long, value_name = "N", default_value_t = 3)]
     pub(crate) days: u16,
     /// Compute the predictions on this device from the station's harmonic constants.
@@ -52,8 +52,6 @@ pub(crate) struct Args {
 
 /// The most days one run covers.
 const MAX_DAYS: u16 = 366;
-/// Seconds in a day.
-const DAY_S: i64 = 86_400;
 /// How long station details stay valid, seconds.
 const DETAILS_AGE_S: u32 = 30 * 86_400;
 
@@ -285,6 +283,30 @@ fn offline(
     })
 }
 
+/// The window of `days` local days of `tz` from `first`: the start of the first day to the last
+/// second of the last, so a day is 23 or 25 hours across a daylight-saving change.
+fn local_window(first: LocalDate, days: u16, tz: &TimeZone) -> anyhow::Result<Window> {
+    let out_of_range = || anyhow!("{first:?} and {days} days are out of range");
+    let last = jiff::civil::Date::new(
+        i16::try_from(first.year).map_err(|_| out_of_range())?,
+        i8::try_from(first.month).map_err(|_| out_of_range())?,
+        i8::try_from(first.day).map_err(|_| out_of_range())?,
+    )
+    .and_then(|d| d.checked_add(jiff::Span::new().days(i64::from(days) - 1)))
+    .map_err(|_| out_of_range())?;
+    let last = LocalDate {
+        year: i32::from(last.year()),
+        month: u8::try_from(last.month()).map_err(|_| out_of_range())?,
+        day: u8::try_from(last.day()).map_err(|_| out_of_range())?,
+    };
+    let (from, _) = local_date_bounds(first, tz).map_err(|e| anyhow!("{e}"))?;
+    let (_, end) = local_date_bounds(last, tz).map_err(|e| anyhow!("{e}"))?;
+    Ok(Window {
+        from,
+        to: UnixTime(end.0 - 1),
+    })
+}
+
 /// Runs `underbite tides`.
 pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
     if args.days == 0 || args.days > MAX_DAYS {
@@ -296,18 +318,6 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
     let ctx = FetchContext::new(env.now, env.options.user_agent.clone())
         .with_coordinate_precision(config.sources.coordinate_precision);
 
-    let first = match &args.from {
-        Some(text) => {
-            let date = parse_date(text).map_err(|e| anyhow!("--from {text:?}: {e}"))?;
-            UnixTime(day_number(date) * DAY_S)
-        }
-        None => UnixTime(env.now.0.div_euclid(DAY_S) * DAY_S),
-    };
-    let window = Window {
-        from: first,
-        to: UnixTime(first.0 + i64::from(args.days) * DAY_S - 1),
-    };
-
     let station = find_station(&host, &ctx, &args.station)?;
     let place = Place::Station {
         station: station.clone(),
@@ -315,6 +325,11 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
         relation: Relation::Nearby,
     };
     let (tz, zone_name) = station_zone(&host, &station.id);
+    let first = match &args.from {
+        Some(text) => parse_date(text).map_err(|e| anyhow!("--from {text:?}: {e}"))?,
+        None => local_date(env.now, &tz).map_err(|e| anyhow!("today at the station: {e}"))?,
+    };
+    let window = local_window(first, args.days, &tz)?;
     let (tide, computed, credit) = if args.offline {
         (
             offline(&host, &ctx, place, window)?,
@@ -477,5 +492,35 @@ impl Shown {
         }
         println!();
         println!("{}", self.credit);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn date(text: &str) -> LocalDate {
+        parse_date(text).unwrap()
+    }
+
+    #[test]
+    fn days_are_the_stations_own_local_days() {
+        let ny = zone("America/New_York").unwrap();
+        // 2026-11-14 is standard time in New York: midnight is 05:00 UTC.
+        let w = local_window(date("2026-11-14"), 1, &ny).unwrap();
+        assert_eq!(
+            w.from,
+            underbite_core::time::parse_rfc3339("2026-11-14T05:00:00Z").unwrap()
+        );
+        assert_eq!(
+            w.to,
+            underbite_core::time::parse_rfc3339("2026-11-15T04:59:59Z").unwrap()
+        );
+        // Three days across the end of daylight saving (2026-11-01) are 73 hours.
+        let w = local_window(date("2026-10-31"), 3, &ny).unwrap();
+        assert_eq!(w.to.0 - w.from.0 + 1, 73 * 3600);
+        // UTC stations keep UTC days.
+        let w = local_window(date("2026-11-14"), 2, &TimeZone::UTC).unwrap();
+        assert_eq!(w.to.0 - w.from.0 + 1, 2 * 86_400);
     }
 }
