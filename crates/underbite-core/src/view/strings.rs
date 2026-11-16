@@ -5,78 +5,203 @@
 //! the split is by type, so a safety text cannot be given a Luna variant by accident. A later
 //! localisation replaces this table.
 
-use crate::model::WaterType;
+use whether_core::time::Weekday;
+
+use crate::model::{MoonPhase, PrincipalPhase, TideKind, WaterType};
 use crate::provenance::SourceId;
 use crate::view::{CardId, NoticeKind, Voice};
 
-/// Texts that may be playful. Each has a plain and a Luna variant (often the same).
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Key {
+/// Declares [`Key`], its list and its table in one place.
+macro_rules! keys {
+    ($($(#[$doc:meta])* $name:ident => ($plain:expr, $luna:expr $(,)?),)*) => {
+        /// Texts that may be playful. Each has a plain and a Luna variant (often the same).
+        #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        pub enum Key {
+            $($(#[$doc])* $name,)*
+        }
+
+        impl Key {
+            /// Every key, for tests and for a later localisation.
+            pub const ALL: &'static [Self] = &[$(Self::$name,)*];
+
+            /// `(plain, luna)`.
+            const fn variants(self) -> (&'static str, &'static str) {
+                match self {
+                    $(Self::$name => ($plain, $luna),)*
+                }
+            }
+        }
+    };
+}
+
+keys! {
     /// `{n}` minutes, hours or days.
-    UpdatedJustNow,
-    UpdatedMinutes,
-    UpdatedHours,
-    UpdatedDays,
-    AgeJustNow,
-    AgeMinutes,
-    AgeHours,
-    AgeDays,
+    UpdatedJustNow => ("updated just now", "updated just now"),
+    UpdatedMinutes => ("updated {n} min ago", "updated {n} min ago"),
+    UpdatedHours => ("updated {n} h ago", "updated {n} h ago"),
+    UpdatedDays => ("updated {n} d ago", "updated {n} d ago"),
+    AgeJustNow => ("just now", "just now"),
+    AgeMinutes => ("{n} min ago", "{n} min ago"),
+    AgeHours => ("{n} h ago", "{n} h ago"),
+    AgeDays => ("{n} d ago", "{n} d ago"),
     /// `{station}`, `{distance}`.
-    StationFooter,
+    StationFooter => (
+                "{station}, {distance}",
+                "Luna's watching {station}, {distance}",
+            ),
     /// `{reason}`.
-    GoNoGoBad,
-    GoNoGoGood,
+    GoNoGoBad => (
+                "Not recommended: {reason}",
+                "Luna's not impressed: {reason}",
+            ),
+    GoNoGoGood => ("Good conditions.", "Luna approves."),
     /// `{range}`.
-    NextWindow,
-    NoWindows,
-    NoData,
-    NoCards,
-    Loading,
-    Flood,
-    Ebb,
-    Slack,
-    Rising,
-    Falling,
-    Steady,
+    NextWindow => ("Next fishing window {range}", "Next snack time {range}"),
+    NoWindows => (
+                "No fishing windows in this period.",
+                "No snack times in this period.",
+            ),
+    NoData => ("No data for this spot yet.", "Luna found nothing here yet."),
+    NoCards => ("Nothing to show.", "Luna has nothing to show."),
+    Loading => ("Loading", "Luna is paddling over"),
+    Flood => ("Flood", "Flood"),
+    Ebb => ("Ebb", "Ebb"),
+    Slack => ("Slack", "Slack"),
+    Rising => ("Rising", "Rising"),
+    Falling => ("Falling", "Falling"),
+    Steady => ("Steady", "Steady"),
     /// "Rising 0.4 ft in 3 h": `{direction}`, `{amount}`, `{hours}`.
-    TrendOver,
-    Upstream,
-    Downstream,
-    Modelled,
-    Satellite,
+    TrendOver => (
+                "{direction} {amount} in {hours} h",
+                "{direction} {amount} in {hours} h",
+            ),
+    Upstream => ("upstream", "upstream"),
+    Downstream => ("downstream", "downstream"),
+    Modelled => ("modelled", "modelled"),
+    Satellite => ("satellite", "satellite"),
     /// `{distance}`, `{limit}`: why a value is greyed.
-    FarReason,
+    FarReason => (
+                "{distance} from your spot, beyond your {limit} limit",
+                "{distance} from your spot, beyond your {limit} limit",
+            ),
     /// `{age}`, `{limit}`.
-    StaleReason,
-    PercentileMuchBelow,
-    PercentileBelow,
-    PercentileNormal,
-    PercentileAbove,
-    PercentileMuchAbove,
+    StaleReason => (
+                "{age} old, beyond your {limit} limit",
+                "{age} old, beyond your {limit} limit",
+            ),
+    PercentileMuchBelow => ("much below normal", "much below normal"),
+    PercentileBelow => ("below normal", "below normal"),
+    PercentileNormal => ("normal", "normal"),
+    PercentileAbove => ("above normal", "above normal"),
+    PercentileMuchAbove => ("much above normal", "much above normal"),
     /// `{band}`, `{rank}` (a rank text), `{date}`.
-    PercentileText,
+    PercentileText => ("{band}, {rank} for {date}", "{band}, {rank} for {date}"),
     /// `{band}`, `{date}`.
-    PercentileNoRank,
+    PercentileNoRank => ("{band} for {date}", "{band} for {date}"),
     /// `{ordinal}`.
-    PercentileRank,
-    PercentileRankBelow,
-    PercentileRankAbove,
+    PercentileRank => ("{ordinal} percentile", "{ordinal} percentile"),
+    PercentileRankBelow => (
+                "below the {ordinal} percentile",
+                "below the {ordinal} percentile",
+            ),
+    PercentileRankAbove => (
+                "above the {ordinal} percentile",
+                "above the {ordinal} percentile",
+            ),
     /// `{date}`.
-    PercentileRecordLow,
-    PercentileRecordHigh,
-    WaterRiver,
-    WaterLake,
-    WaterTidal,
-    WaterBay,
-    WaterSurf,
-    WaterNearshore,
-    WaterOffshore,
-    WaterGreatLakes,
-    WaterPond,
-    WaterIce,
-    Water,
+    PercentileRecordLow => ("record low for {date}", "record low for {date}"),
+    PercentileRecordHigh => ("record high for {date}", "record high for {date}"),
+    WaterRiver => ("River or stream", "River or stream"),
+    WaterLake => ("Lake or reservoir", "Lake or reservoir"),
+    WaterTidal => ("Tidal river or estuary", "Tidal river or estuary"),
+    WaterBay => ("Bay or inshore", "Bay or inshore"),
+    WaterSurf => ("Surf", "Surf"),
+    WaterNearshore => ("Nearshore", "Nearshore"),
+    WaterOffshore => ("Offshore", "Offshore"),
+    WaterGreatLakes => ("Great Lakes", "Great Lakes"),
+    WaterPond => ("Pond", "Pond"),
+    WaterIce => ("Ice fishing", "Ice fishing"),
+    Water => ("Water", "Water"),
+    Station => ("Station", "Station"),
+    Heights => ("Heights", "Heights"),
+    Depth => ("Depth", "Depth"),
+    Night => ("Night", "Night"),
+    Sunrise => ("Sunrise", "Sunrise"),
+    Sunset => ("Sunset", "Sunset"),
+    Predicted => ("Predicted", "Predicted"),
+    PredictedEvents => ("Predicted events", "Predicted events"),
+    Observed => ("Observed", "Observed"),
+    ModelledSeaLevel => ("Modelled sea level", "Modelled sea level"),
+    /// The headline of a tide card whose source gives times only.
+    TimesOnly => ("times only", "times only"),
+    TideHigh => ("High", "High"),
+    TideLow => ("Low", "Low"),
+    MaxFlood => ("Max flood", "Max flood"),
+    MaxEbb => ("Max ebb", "Max ebb"),
+    /// `{time}`.
+    NextSlack => ("Next slack {time}", "Next slack {time}"),
+    /// `{kind}` (a tide event name), `{time}`.
+    NextEvent => ("Next {kind} {time}", "Next {kind} {time}"),
+    /// `{datum}`: "above MLLW".
+    AboveDatum => ("above {datum}", "above {datum}"),
+    /// `{bin}`, `{depth}`.
+    BinAt => ("Bin {bin} at {depth}", "Bin {bin} at {depth}"),
+    /// `{bin}`.
+    BinOnly => ("Bin {bin}", "Bin {bin}"),
+    /// `{depth}`.
+    DepthAt => ("At {depth}", "At {depth}"),
+    /// `{line}`, `{direction}`.
+    TowardLine => ("{line} toward {direction}", "{line} toward {direction}"),
+    CurrentSpeed => ("Current speed", "Current speed"),
+    /// `{event}`, `{time}`.
+    EventAt => ("{event} at {time}", "{event} at {time}"),
+    MoonNew => ("New moon", "New moon"),
+    MoonWaxingCrescent => ("Waxing crescent", "Waxing crescent"),
+    MoonFirstQuarter => ("First quarter", "First quarter"),
+    MoonWaxingGibbous => ("Waxing gibbous", "Waxing gibbous"),
+    MoonFull => ("Full moon", "Full moon"),
+    MoonWaningGibbous => ("Waning gibbous", "Waning gibbous"),
+    MoonLastQuarter => ("Last quarter", "Last quarter"),
+    MoonWaningCrescent => ("Waning crescent", "Waning crescent"),
+    WeekdayMon => ("Mon", "Mon"),
+    WeekdayTue => ("Tue", "Tue"),
+    WeekdayWed => ("Wed", "Wed"),
+    WeekdayThu => ("Thu", "Thu"),
+    WeekdayFri => ("Fri", "Fri"),
+    WeekdaySat => ("Sat", "Sat"),
+    WeekdaySun => ("Sun", "Sun"),
+    NauticalDawn => ("Nautical dawn", "Nautical dawn"),
+    CivilDawn => ("Civil dawn", "Civil dawn"),
+    GoldenHourEnds => ("Golden hour ends", "Golden hour ends"),
+    GoldenHourStarts => ("Golden hour starts", "Golden hour starts"),
+    CivilDusk => ("Civil dusk", "Civil dusk"),
+    NauticalDusk => ("Nautical dusk", "Nautical dusk"),
+    SunStaysUp => ("Sun stays up all day", "Sun stays up all day"),
+    SunStaysDown => ("Sun stays down all day", "Sun stays down all day"),
+    DayLength => ("Day length", "Day length"),
+    /// `{hours}`, `{minutes}` (two digits).
+    DayLengthValue => ("{hours} h {minutes} min", "{hours} h {minutes} min"),
+    Moonrise => ("Moonrise", "Moonrise"),
+    Moonset => ("Moonset", "Moonset"),
+    MoonOverhead => ("Moon overhead", "Moon overhead"),
+    MoonUnderfoot => ("Moon underfoot", "Moon underfoot"),
+    NoMoonrise => ("No moonrise today", "No moonrise today"),
+    NoMoonset => ("No moonset today", "No moonset today"),
+    NotToday => ("Not today", "Not today"),
+    /// `{value}`: "62%".
+    Lit => ("{value} lit", "{value} lit"),
+    Sun => ("Sun", "Sun"),
+    Moon => ("Moon", "Moon"),
+    NoSunriseOrSunset => ("No sunrise or sunset today", "No sunrise or sunset today"),
+    ComputedOnDevice => ("Computed on device", "Computed on device"),
+    /// The same, lower case, after a lane title.
+    ComputedOnDeviceInline => ("computed on device", "computed on device"),
+    SunMoonCredit => (
+        "Sun and moon positions from astronomical algorithms",
+        "Sun and moon positions from astronomical algorithms",
+    ),
     /// The placeholder for an unknown value.
-    Missing,
+    Missing => ("—", "—"),
 }
 
 /// Texts that are never playful: safety, advisories and regulations. No voice parameter exists
@@ -120,148 +245,6 @@ impl From<NoticeKind> for SafetyKey {
             NoticeKind::Approximate => Self::Approximate,
             NoticeKind::TraditionalCue => Self::TraditionalCue,
             NoticeKind::TextOnly => Self::TextOnly,
-        }
-    }
-}
-
-impl Key {
-    /// Every key, for tests and for a later localisation.
-    pub const ALL: [Self; 53] = [
-        Self::UpdatedJustNow,
-        Self::UpdatedMinutes,
-        Self::UpdatedHours,
-        Self::UpdatedDays,
-        Self::AgeJustNow,
-        Self::AgeMinutes,
-        Self::AgeHours,
-        Self::AgeDays,
-        Self::StationFooter,
-        Self::GoNoGoBad,
-        Self::GoNoGoGood,
-        Self::NextWindow,
-        Self::NoWindows,
-        Self::NoData,
-        Self::NoCards,
-        Self::Loading,
-        Self::Flood,
-        Self::Ebb,
-        Self::Slack,
-        Self::Rising,
-        Self::Falling,
-        Self::Steady,
-        Self::TrendOver,
-        Self::Upstream,
-        Self::Downstream,
-        Self::Modelled,
-        Self::Satellite,
-        Self::FarReason,
-        Self::StaleReason,
-        Self::PercentileMuchBelow,
-        Self::PercentileBelow,
-        Self::PercentileNormal,
-        Self::PercentileAbove,
-        Self::PercentileMuchAbove,
-        Self::PercentileText,
-        Self::PercentileNoRank,
-        Self::PercentileRank,
-        Self::PercentileRankBelow,
-        Self::PercentileRankAbove,
-        Self::PercentileRecordLow,
-        Self::PercentileRecordHigh,
-        Self::WaterRiver,
-        Self::WaterLake,
-        Self::WaterTidal,
-        Self::WaterBay,
-        Self::WaterSurf,
-        Self::WaterNearshore,
-        Self::WaterOffshore,
-        Self::WaterGreatLakes,
-        Self::WaterPond,
-        Self::WaterIce,
-        Self::Water,
-        Self::Missing,
-    ];
-
-    /// `(plain, luna)`.
-    const fn variants(self) -> (&'static str, &'static str) {
-        match self {
-            Self::UpdatedJustNow => ("updated just now", "updated just now"),
-            Self::UpdatedMinutes => ("updated {n} min ago", "updated {n} min ago"),
-            Self::UpdatedHours => ("updated {n} h ago", "updated {n} h ago"),
-            Self::UpdatedDays => ("updated {n} d ago", "updated {n} d ago"),
-            Self::AgeJustNow => ("just now", "just now"),
-            Self::AgeMinutes => ("{n} min ago", "{n} min ago"),
-            Self::AgeHours => ("{n} h ago", "{n} h ago"),
-            Self::AgeDays => ("{n} d ago", "{n} d ago"),
-            Self::StationFooter => (
-                "{station}, {distance}",
-                "Luna's watching {station}, {distance}",
-            ),
-            Self::GoNoGoBad => (
-                "Not recommended: {reason}",
-                "Luna's not impressed: {reason}",
-            ),
-            Self::GoNoGoGood => ("Good conditions.", "Luna approves."),
-            Self::NextWindow => ("Next fishing window {range}", "Next snack time {range}"),
-            Self::NoWindows => (
-                "No fishing windows in this period.",
-                "No snack times in this period.",
-            ),
-            Self::NoData => ("No data for this spot yet.", "Luna found nothing here yet."),
-            Self::NoCards => ("Nothing to show.", "Luna has nothing to show."),
-            Self::Loading => ("Loading", "Luna is paddling over"),
-            Self::Flood => ("Flood", "Flood"),
-            Self::Ebb => ("Ebb", "Ebb"),
-            Self::Slack => ("Slack", "Slack"),
-            Self::Rising => ("Rising", "Rising"),
-            Self::Falling => ("Falling", "Falling"),
-            Self::Steady => ("Steady", "Steady"),
-            Self::TrendOver => (
-                "{direction} {amount} in {hours} h",
-                "{direction} {amount} in {hours} h",
-            ),
-            Self::Upstream => ("upstream", "upstream"),
-            Self::Downstream => ("downstream", "downstream"),
-            Self::Modelled => ("modelled", "modelled"),
-            Self::Satellite => ("satellite", "satellite"),
-            Self::FarReason => (
-                "{distance} from your spot, beyond your {limit} limit",
-                "{distance} from your spot, beyond your {limit} limit",
-            ),
-            Self::StaleReason => (
-                "{age} old, beyond your {limit} limit",
-                "{age} old, beyond your {limit} limit",
-            ),
-            Self::PercentileMuchBelow => ("much below normal", "much below normal"),
-            Self::PercentileBelow => ("below normal", "below normal"),
-            Self::PercentileNormal => ("normal", "normal"),
-            Self::PercentileAbove => ("above normal", "above normal"),
-            Self::PercentileMuchAbove => ("much above normal", "much above normal"),
-            Self::PercentileText => ("{band}, {rank} for {date}", "{band}, {rank} for {date}"),
-            Self::PercentileNoRank => ("{band} for {date}", "{band} for {date}"),
-            Self::PercentileRank => ("{ordinal} percentile", "{ordinal} percentile"),
-            Self::PercentileRankBelow => (
-                "below the {ordinal} percentile",
-                "below the {ordinal} percentile",
-            ),
-            Self::PercentileRankAbove => (
-                "above the {ordinal} percentile",
-                "above the {ordinal} percentile",
-            ),
-            Self::PercentileRecordLow => ("record low for {date}", "record low for {date}"),
-            Self::PercentileRecordHigh => ("record high for {date}", "record high for {date}"),
-            Self::WaterRiver => ("River or stream", "River or stream"),
-            Self::WaterLake => ("Lake or reservoir", "Lake or reservoir"),
-            Self::WaterTidal => ("Tidal river or estuary", "Tidal river or estuary"),
-            Self::WaterBay => ("Bay or inshore", "Bay or inshore"),
-            Self::WaterSurf => ("Surf", "Surf"),
-            Self::WaterNearshore => ("Nearshore", "Nearshore"),
-            Self::WaterOffshore => ("Offshore", "Offshore"),
-            Self::WaterGreatLakes => ("Great Lakes", "Great Lakes"),
-            Self::WaterPond => ("Pond", "Pond"),
-            Self::WaterIce => ("Ice fishing", "Ice fishing"),
-            Self::Water => ("Water", "Water"),
-            Self::Missing => ("—", "—"),
         }
     }
 }
@@ -323,6 +306,51 @@ impl Strings {
             CardId::Alerts => "Alerts",
             CardId::Sources => "Sources",
         }
+    }
+
+    /// "High" or "Low".
+    pub const fn tide_kind(self, kind: TideKind) -> &'static str {
+        self.get(match kind {
+            TideKind::High => Key::TideHigh,
+            TideKind::Low => Key::TideLow,
+        })
+    }
+
+    /// "Waxing gibbous", "Full moon", ...
+    pub const fn moon_phase(self, phase: MoonPhase) -> &'static str {
+        self.get(match phase {
+            MoonPhase::New => Key::MoonNew,
+            MoonPhase::WaxingCrescent => Key::MoonWaxingCrescent,
+            MoonPhase::FirstQuarter => Key::MoonFirstQuarter,
+            MoonPhase::WaxingGibbous => Key::MoonWaxingGibbous,
+            MoonPhase::Full => Key::MoonFull,
+            MoonPhase::WaningGibbous => Key::MoonWaningGibbous,
+            MoonPhase::LastQuarter => Key::MoonLastQuarter,
+            MoonPhase::WaningCrescent => Key::MoonWaningCrescent,
+        })
+    }
+
+    /// "New moon", "First quarter", "Full moon" or "Last quarter".
+    pub const fn principal_phase(self, phase: PrincipalPhase) -> &'static str {
+        self.get(match phase {
+            PrincipalPhase::New => Key::MoonNew,
+            PrincipalPhase::FirstQuarter => Key::MoonFirstQuarter,
+            PrincipalPhase::Full => Key::MoonFull,
+            PrincipalPhase::LastQuarter => Key::MoonLastQuarter,
+        })
+    }
+
+    /// "Mon", "Tue", ...
+    pub const fn weekday(self, day: Weekday) -> &'static str {
+        self.get(match day {
+            Weekday::Mon => Key::WeekdayMon,
+            Weekday::Tue => Key::WeekdayTue,
+            Weekday::Wed => Key::WeekdayWed,
+            Weekday::Thu => Key::WeekdayThu,
+            Weekday::Fri => Key::WeekdayFri,
+            Weekday::Sat => Key::WeekdaySat,
+            Weekday::Sun => Key::WeekdaySun,
+        })
     }
 
     /// "River or stream", "Tidal river or estuary", ...

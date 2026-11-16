@@ -76,16 +76,15 @@ const SLACK_MS: f32 = 0.05;
 const SLACK_HALF_WINDOW_S: i64 = 15 * 60;
 
 fn event_vm(f: &Formatter, e: &CurrentEvent) -> CurrentEventVm {
-    let max = |phase| format!("Max {}", f.phase(phase).to_lowercase());
     let (kind, label, speed) = match e.kind {
         CurrentKind::MaxFlood => (
             CurrentEventKind::MaxFlood,
-            max(Phase::Flood),
+            f.strings.get(Key::MaxFlood).to_owned(),
             Some(f.current_speed(Some(e.speed_ms.abs()))),
         ),
         CurrentKind::MaxEbb => (
             CurrentEventKind::MaxEbb,
-            max(Phase::Ebb),
+            f.strings.get(Key::MaxEbb).to_owned(),
             Some(f.current_speed(Some(e.speed_ms.abs()))),
         ),
         CurrentKind::Slack => (
@@ -188,9 +187,18 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
         .collect();
 
     let bin_depth = match (series.bin, series.depth_m) {
-        (Some(bin), Some(d)) => Some(format!("Bin {bin} at {}", f.length(Some(d)).full())),
-        (Some(bin), None) => Some(format!("Bin {bin}")),
-        (None, Some(d)) => Some(format!("At {}", f.length(Some(d)).full())),
+        (Some(bin), Some(d)) => Some(f.strings.fmt(
+            Key::BinAt,
+            &[
+                ("bin", &bin.to_string()),
+                ("depth", &f.length(Some(d)).full()),
+            ],
+        )),
+        (Some(bin), None) => Some(f.strings.fmt(Key::BinOnly, &[("bin", &bin.to_string())])),
+        (None, Some(d)) => Some(
+            f.strings
+                .fmt(Key::DepthAt, &[("depth", &f.length(Some(d)).full())]),
+        ),
         (None, None) => None,
     };
 
@@ -200,10 +208,14 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
         (q.value.unwrap_or_default(), q.full())
     };
     let (label, style, times): (&str, _, Vec<i64>) = if series.curve.is_some() {
-        ("Predicted", SeriesStyle::Line, grid(start, end, step))
+        (
+            f.strings.get(Key::Predicted),
+            SeriesStyle::Line,
+            grid(start, end, step),
+        )
     } else {
         (
-            "Predicted events",
+            f.strings.get(Key::PredictedEvents),
             SeriesStyle::Dots,
             events
                 .iter()
@@ -256,10 +268,14 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
             .collect(),
         now_t: Some(now.0),
         accessibility: format!(
-            "Current speed: {}.",
+            "{}: {}.",
+            f.strings.get(Key::CurrentSpeed),
             listed
                 .iter()
-                .map(|e| format!("{} at {}", e.label.to_lowercase(), e.time))
+                .map(|e| f.strings.fmt(
+                    Key::EventAt,
+                    &[("event", &e.label.to_lowercase()), ("time", &e.time)]
+                ))
                 .collect::<Vec<_>>()
                 .join(", ")
         ),
@@ -270,12 +286,14 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
     if let (Some(q), CurrentPhase::Flood | CurrentPhase::Ebb) = (&speed_now, phase) {
         line = format!("{phase_label} {}", q.full());
         if let Some(d) = &direction_now {
-            line = format!("{line} toward {d}");
+            line = f
+                .strings
+                .fmt(Key::TowardLine, &[("line", &line), ("direction", d)]);
         }
     }
     let mut lines = vec![line.clone()];
     if let Some(n) = &next_slack {
-        lines.push(format!("Next slack {}", n.time));
+        lines.push(f.strings.fmt(Key::NextSlack, &[("time", &n.time)]));
     }
     let mut notices = vec![f.notice(NoticeKind::NotForNavigation)];
     let subordinate = p
@@ -299,7 +317,7 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
         state(input, &f, p, Measurement::TidalCurrent)
     };
     let mut rows = vec![Row {
-        label: "Station".to_owned(),
+        label: f.strings.get(Key::Station).to_owned(),
         value: p
             .station
             .as_ref()
@@ -308,7 +326,7 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
     }];
     if let Some(d) = &bin_depth {
         rows.push(Row {
-            label: "Depth".to_owned(),
+            label: f.strings.get(Key::Depth).to_owned(),
             value: d.clone(),
             detail: None,
         });
@@ -318,12 +336,19 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
         chrome: CardChrome {
             id: CardId::Current,
             title: f.strings.card_title(CardId::Current).to_owned(),
-            footnote: Some(f.footnote(&format!("Current {line}"), p, now)),
+            footnote: Some(f.footnote(
+                &format!("{} {line}", f.strings.card_title(CardId::Current)),
+                p,
+                now,
+            )),
             credits: credits(snapshot, &p.source),
             state: card_state,
             notices,
             accessibility: match &next_slack {
-                Some(n) => format!("{line}. Next slack {}.", n.time),
+                Some(n) => format!(
+                    "{line}. {}.",
+                    f.strings.fmt(Key::NextSlack, &[("time", &n.time)])
+                ),
                 None => format!("{line}."),
             },
         },
@@ -344,7 +369,7 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
             bin_depth,
             chart,
             sections: vec![Section {
-                title: "Station".to_owned(),
+                title: f.strings.get(Key::Station).to_owned(),
                 rows,
             }],
         },

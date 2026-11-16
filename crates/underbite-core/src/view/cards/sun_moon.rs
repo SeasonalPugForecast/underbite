@@ -2,10 +2,12 @@
 
 use schemars::JsonSchema;
 use serde::Serialize;
+use whether_core::time::Weekday;
 
-use crate::model::{MoonDay, MoonPhase, Polar, PrincipalPhase, SkyDay, SunTimes};
+use crate::model::{MoonDay, MoonPhase, Polar, SkyDay, SunTimes};
 use crate::time::{LocalDate, UnixTime, day_number, local_date, zone};
 use crate::view::format::Formatter;
+use crate::view::strings::{Key, Strings};
 use crate::view::{
     CardChrome, CardId, CardState, Compact, CreditVm, Quantity, Row, Section, TimedLabel, ViewInput,
 };
@@ -59,10 +61,10 @@ pub struct SunMoonFull {
 }
 
 /// The credit for values computed on the device.
-pub(crate) fn computed_credit() -> CreditVm {
+pub(crate) fn computed_credit(strings: Strings) -> CreditVm {
     CreditVm {
-        source: "Computed on device".to_owned(),
-        text: "Sun and moon positions from astronomical algorithms".to_owned(),
+        source: strings.get(Key::ComputedOnDevice).to_owned(),
+        text: strings.get(Key::SunMoonCredit).to_owned(),
         link: None,
         licence: None,
     }
@@ -72,15 +74,15 @@ pub(crate) fn computed_credit() -> CreditVm {
 pub(crate) fn day_label(f: &Formatter, date: LocalDate) -> String {
     // 1970-01-01 was a Thursday.
     let weekday = match (day_number(date) + 4).rem_euclid(7) {
-        0 => "Sun",
-        1 => "Mon",
-        2 => "Tue",
-        3 => "Wed",
-        4 => "Thu",
-        5 => "Fri",
-        _ => "Sat",
+        0 => Weekday::Sun,
+        1 => Weekday::Mon,
+        2 => Weekday::Tue,
+        3 => Weekday::Wed,
+        4 => Weekday::Thu,
+        5 => Weekday::Fri,
+        _ => Weekday::Sat,
     };
-    format!("{weekday} {}", f.date(date))
+    format!("{} {}", f.strings.weekday(weekday), f.date(date))
 }
 
 /// The snapshot's sky days from the spot's local today on, in date order.
@@ -97,31 +99,9 @@ pub(crate) fn today_and_after<'a>(input: &ViewInput, days: &'a [SkyDay]) -> Vec<
     out
 }
 
-fn phase_label(phase: MoonPhase) -> &'static str {
-    match phase {
-        MoonPhase::New => "New moon",
-        MoonPhase::WaxingCrescent => "Waxing crescent",
-        MoonPhase::FirstQuarter => "First quarter",
-        MoonPhase::WaxingGibbous => "Waxing gibbous",
-        MoonPhase::Full => "Full moon",
-        MoonPhase::WaningGibbous => "Waning gibbous",
-        MoonPhase::LastQuarter => "Last quarter",
-        MoonPhase::WaningCrescent => "Waning crescent",
-    }
-}
-
-fn principal_label(phase: PrincipalPhase) -> &'static str {
-    match phase {
-        PrincipalPhase::New => "New moon",
-        PrincipalPhase::FirstQuarter => "First quarter",
-        PrincipalPhase::Full => "Full moon",
-        PrincipalPhase::LastQuarter => "Last quarter",
-    }
-}
-
-fn timed(f: &Formatter, label: &str, t: UnixTime) -> TimedLabel {
+fn timed(f: &Formatter, label: Key, t: UnixTime) -> TimedLabel {
     TimedLabel {
-        label: label.to_owned(),
+        label: f.strings.get(label).to_owned(),
         time: f.clock(t),
         t: t.0,
     }
@@ -130,14 +110,14 @@ fn timed(f: &Formatter, label: &str, t: UnixTime) -> TimedLabel {
 /// The sun's events that occur, in time order.
 fn sun_events(f: &Formatter, sun: &SunTimes) -> Vec<TimedLabel> {
     let mut out: Vec<TimedLabel> = [
-        ("Nautical dawn", sun.nautical_dawn),
-        ("Civil dawn", sun.civil_dawn),
-        ("Sunrise", sun.sunrise),
-        ("Golden hour ends", sun.golden_morning_end),
-        ("Golden hour starts", sun.golden_evening_start),
-        ("Sunset", sun.sunset),
-        ("Civil dusk", sun.civil_dusk),
-        ("Nautical dusk", sun.nautical_dusk),
+        (Key::NauticalDawn, sun.nautical_dawn),
+        (Key::CivilDawn, sun.civil_dawn),
+        (Key::Sunrise, sun.sunrise),
+        (Key::GoldenHourEnds, sun.golden_morning_end),
+        (Key::GoldenHourStarts, sun.golden_evening_start),
+        (Key::Sunset, sun.sunset),
+        (Key::CivilDusk, sun.civil_dusk),
+        (Key::NauticalDusk, sun.nautical_dusk),
     ]
     .into_iter()
     .filter_map(|(label, t)| t.map(|t| timed(f, label, t)))
@@ -146,33 +126,41 @@ fn sun_events(f: &Formatter, sun: &SunTimes) -> Vec<TimedLabel> {
     out
 }
 
-fn polar_text(polar: Polar) -> &'static str {
-    match polar {
-        Polar::AlwaysUp => "Sun stays up all day",
-        Polar::AlwaysDown => "Sun stays down all day",
-    }
+fn polar_text(f: &Formatter, polar: Polar) -> &'static str {
+    f.strings.get(match polar {
+        Polar::AlwaysUp => Key::SunStaysUp,
+        Polar::AlwaysDown => Key::SunStaysDown,
+    })
 }
 
 /// "10 h 12 min", rounded to the minute.
-fn day_length(sun: &SunTimes) -> Option<String> {
+fn day_length(f: &Formatter, sun: &SunTimes) -> Option<String> {
     let (rise, set) = (sun.sunrise?, sun.sunset?);
     let minutes = (set.0 - rise.0 + 30).div_euclid(60);
-    (minutes > 0).then(|| format!("{} h {:02} min", minutes / 60, minutes % 60))
+    (minutes > 0).then(|| {
+        f.strings.fmt(
+            Key::DayLengthValue,
+            &[
+                ("hours", &(minutes / 60).to_string()),
+                ("minutes", &format!("{:02}", minutes % 60)),
+            ],
+        )
+    })
 }
 
 fn moon_vm(f: &Formatter, moon: &MoonDay) -> MoonVm {
     MoonVm {
         phase: MoonPhaseVm {
             phase: moon.phase,
-            label: phase_label(moon.phase).to_owned(),
+            label: f.strings.moon_phase(moon.phase).to_owned(),
             illumination: f.percent(Some(moon.illuminated_fraction * 100.0)),
         },
-        rise: moon.rise.map(|t| timed(f, "Moonrise", t)),
-        set: moon.set.map(|t| timed(f, "Moonset", t)),
-        upper_transit: moon.upper_transit.map(|t| timed(f, "Moon overhead", t)),
-        lower_transit: moon.lower_transit.map(|t| timed(f, "Moon underfoot", t)),
+        rise: moon.rise.map(|t| timed(f, Key::Moonrise, t)),
+        set: moon.set.map(|t| timed(f, Key::Moonset, t)),
+        upper_transit: moon.upper_transit.map(|t| timed(f, Key::MoonOverhead, t)),
+        lower_transit: moon.lower_transit.map(|t| timed(f, Key::MoonUnderfoot, t)),
         nearest_principal: moon.nearest_principal.map(|p| TimedLabel {
-            label: principal_label(p.phase).to_owned(),
+            label: f.strings.principal_phase(p.phase).to_owned(),
             time: format!("{} {}", f.date_of(p.time), f.clock(p.time)),
             t: p.time.0,
         }),
@@ -183,8 +171,8 @@ fn day_vm(f: &Formatter, d: &SkyDay) -> SunMoonDayVm {
     SunMoonDayVm {
         date: day_label(f, d.date),
         sun: sun_events(f, &d.sun),
-        day_length: day_length(&d.sun),
-        polar: d.sun.polar.map(|p| polar_text(p).to_owned()),
+        day_length: day_length(f, &d.sun),
+        polar: d.sun.polar.map(|p| polar_text(f, p).to_owned()),
         moon: moon_vm(f, &d.moon),
     }
 }
@@ -198,17 +186,18 @@ fn row(label: &str, value: String) -> Row {
 }
 
 /// Today's sun and moon as label and value rows; events that do not happen say so.
-fn sections_for(day: &SunMoonDayVm) -> Vec<Section> {
+fn sections_for(f: &Formatter, day: &SunMoonDayVm) -> Vec<Section> {
+    let s = f.strings;
     let mut sun: Vec<Row> = day
         .sun
         .iter()
         .map(|e| row(&e.label, e.time.clone()))
         .collect();
     if let Some(p) = &day.polar {
-        sun.push(row("Sun", p.clone()));
+        sun.push(row(s.get(Key::Sun), p.clone()));
     }
     if let Some(l) = &day.day_length {
-        sun.push(row("Day length", l.clone()));
+        sun.push(row(s.get(Key::DayLength), l.clone()));
     }
     let m = &day.moon;
     let event = |label: &str, missing: &str, e: &Option<TimedLabel>| {
@@ -221,23 +210,31 @@ fn sections_for(day: &SunMoonDayVm) -> Vec<Section> {
     let mut moon = vec![
         row(
             &m.phase.label,
-            format!("{} lit", m.phase.illumination.full()),
+            s.fmt(Key::Lit, &[("value", &m.phase.illumination.full())]),
         ),
-        event("Moonrise", "No moonrise today", &m.rise),
-        event("Moonset", "No moonset today", &m.set),
-        event("Moon overhead", "Not today", &m.upper_transit),
-        event("Moon underfoot", "Not today", &m.lower_transit),
+        event(s.get(Key::Moonrise), s.get(Key::NoMoonrise), &m.rise),
+        event(s.get(Key::Moonset), s.get(Key::NoMoonset), &m.set),
+        event(
+            s.get(Key::MoonOverhead),
+            s.get(Key::NotToday),
+            &m.upper_transit,
+        ),
+        event(
+            s.get(Key::MoonUnderfoot),
+            s.get(Key::NotToday),
+            &m.lower_transit,
+        ),
     ];
     if let Some(p) = &m.nearest_principal {
         moon.push(row(&p.label, p.time.clone()));
     }
     vec![
         Section {
-            title: "Sun".to_owned(),
+            title: s.get(Key::Sun).to_owned(),
             rows: sun,
         },
         Section {
-            title: "Moon".to_owned(),
+            title: s.get(Key::Moon).to_owned(),
             rows: moon,
         },
     ]
@@ -255,34 +252,49 @@ pub fn build(input: &ViewInput) -> Option<SunMoonCard> {
     let sun_line = if let Some(p) = &first.polar {
         p.clone()
     } else {
-        let find = |label: &str| first.sun.iter().find(|e| e.label == label);
-        match (find("Sunrise"), find("Sunset")) {
-            (Some(r), Some(s)) => format!("Sunrise {} · Sunset {}", r.time, s.time),
-            (Some(r), None) => format!("Sunrise {}", r.time),
-            (None, Some(s)) => format!("Sunset {}", s.time),
-            (None, None) => "No sunrise or sunset today".to_owned(),
+        let find = |key: Key| {
+            let label = f.strings.get(key);
+            first.sun.iter().find(|e| e.label == label)
+        };
+        let (rise, set) = (f.strings.get(Key::Sunrise), f.strings.get(Key::Sunset));
+        match (find(Key::Sunrise), find(Key::Sunset)) {
+            (Some(r), Some(s)) => format!("{rise} {} · {set} {}", r.time, s.time),
+            (Some(r), None) => format!("{rise} {}", r.time),
+            (None, Some(s)) => format!("{set} {}", s.time),
+            (None, None) => f.strings.get(Key::NoSunriseOrSunset).to_owned(),
         }
     };
     let moon = &first.moon;
     let moon_line = match (&moon.rise, &moon.set) {
-        (Some(r), _) => format!("{} · Moonrise {}", moon.phase.label, r.time),
-        (None, Some(s)) => format!("{} · Moonset {}", moon.phase.label, s.time),
-        (None, None) => format!("{} · No moonrise today", moon.phase.label),
+        (Some(r), _) => format!(
+            "{} · {} {}",
+            moon.phase.label,
+            f.strings.get(Key::Moonrise),
+            r.time
+        ),
+        (None, Some(s)) => format!(
+            "{} · {} {}",
+            moon.phase.label,
+            f.strings.get(Key::Moonset),
+            s.time
+        ),
+        (None, None) => format!("{} · {}", moon.phase.label, f.strings.get(Key::NoMoonrise)),
     };
     let accessibility = format!(
-        "{}. {}, {} lit.",
+        "{}. {}, {}.",
         sun_line.replace(" · ", ", "),
         moon.phase.label,
-        moon.phase.illumination.full()
+        f.strings
+            .fmt(Key::Lit, &[("value", &moon.phase.illumination.full())])
     );
     let headline = moon.phase.illumination.clone();
-    let sections = sections_for(first);
+    let sections = sections_for(&f, first);
     Some(SunMoonCard {
         chrome: CardChrome {
             id: CardId::SunMoon,
             title: f.strings.card_title(CardId::SunMoon).to_owned(),
             footnote: None,
-            credits: vec![computed_credit()],
+            credits: vec![computed_credit(f.strings)],
             state: CardState::Fresh,
             notices: Vec::new(),
             accessibility,

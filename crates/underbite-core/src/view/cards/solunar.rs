@@ -185,7 +185,7 @@ pub fn build(input: &ViewInput) -> Option<SolunarCard> {
             id: CardId::Solunar,
             title: f.strings.card_title(CardId::Solunar).to_owned(),
             footnote: None,
-            credits: vec![computed_credit()],
+            credits: vec![computed_credit(f.strings)],
             state: CardState::Fresh,
             notices: vec![f.notice(NoticeKind::TraditionalCue)],
             accessibility,

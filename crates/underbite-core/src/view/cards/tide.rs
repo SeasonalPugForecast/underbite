@@ -6,8 +6,7 @@ use serde::Serialize;
 use crate::datum::{Height, VerticalDatum};
 use crate::derive::tide_stage::{TideDirection, tide_stage};
 use crate::model::{
-    Measurement, MoonPhase, SkyConditions, SpotSnapshot, TideEvent, TideKind, TideSeries,
-    TideSourceKind,
+    Measurement, SkyConditions, SpotSnapshot, TideEvent, TideKind, TideSeries, TideSourceKind,
 };
 use crate::provenance::{Provenance, Quality, SourceId};
 use crate::series::Series;
@@ -111,11 +110,15 @@ pub(super) fn credits(snapshot: &SpotSnapshot, source: &SourceId) -> Vec<CreditV
         .collect()
 }
 
+const CREDIT_COOPS: &str = "Predictions and observations: NOAA CO-OPS";
+const CREDIT_HARMONICS: &str = "Computed from NOAA harmonic constants";
+const CREDIT_OPEN_METEO: &str = "Sea level model: Open-Meteo";
+
 fn default_credit(id: &SourceId) -> String {
     match id.as_str() {
-        "coops" => "Predictions and observations: NOAA CO-OPS".to_owned(),
-        "coops-harmonics" => "Computed from NOAA harmonic constants".to_owned(),
-        "open-meteo-marine" => "Sea level model: Open-Meteo".to_owned(),
+        "coops" => CREDIT_COOPS.to_owned(),
+        "coops-harmonics" => CREDIT_HARMONICS.to_owned(),
+        "open-meteo-marine" => CREDIT_OPEN_METEO.to_owned(),
         _ => source_name(id),
     }
 }
@@ -136,26 +139,6 @@ pub(super) fn state(
     }
 }
 
-fn moon_label(phase: MoonPhase) -> &'static str {
-    match phase {
-        MoonPhase::New => "New moon",
-        MoonPhase::WaxingCrescent => "Waxing crescent",
-        MoonPhase::FirstQuarter => "First quarter",
-        MoonPhase::WaxingGibbous => "Waxing gibbous",
-        MoonPhase::Full => "Full moon",
-        MoonPhase::WaningGibbous => "Waning gibbous",
-        MoonPhase::LastQuarter => "Last quarter",
-        MoonPhase::WaningCrescent => "Waning crescent",
-    }
-}
-
-fn kind_label(kind: TideKind) -> &'static str {
-    match kind {
-        TideKind::High => "High",
-        TideKind::Low => "Low",
-    }
-}
-
 fn event_vm(f: &Formatter, tide: &TideSeries, shown: bool, e: &TideEvent) -> TideEventVm {
     TideEventVm {
         t: e.time.0,
@@ -164,7 +147,7 @@ fn event_vm(f: &Formatter, tide: &TideSeries, shown: bool, e: &TideEvent) -> Tid
             TideKind::High => TideEventKind::High,
             TideKind::Low => TideEventKind::Low,
         },
-        label: kind_label(e.kind).to_owned(),
+        label: f.strings.tide_kind(e.kind).to_owned(),
         height: shown.then(|| {
             f.height(e.height_m.map(|metres| Height {
                 datum: tide.datum,
@@ -175,7 +158,7 @@ fn event_vm(f: &Formatter, tide: &TideSeries, shown: bool, e: &TideEvent) -> Tid
 }
 
 /// Night as bands between each sunset and the next sunrise, clipped to the window.
-fn night_bands(sky: &SkyConditions, start: i64, end: i64) -> Vec<ChartBand> {
+fn night_bands(f: &Formatter, sky: &SkyConditions, start: i64, end: i64) -> Vec<ChartBand> {
     let mut rises: Vec<i64> = sky
         .days
         .iter()
@@ -208,7 +191,7 @@ fn night_bands(sky: &SkyConditions, start: i64, end: i64) -> Vec<ChartBand> {
             kind: BandKind::Night,
             start_t,
             end_t,
-            label: "Night".to_owned(),
+            label: f.strings.get(Key::Night).to_owned(),
         })
         .collect()
 }
@@ -307,7 +290,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
     let mut series = Vec::new();
     if shown {
         series.push(ChartSeries {
-            label: "Predicted".to_owned(),
+            label: f.strings.get(Key::Predicted).to_owned(),
             role: SeriesRole::Predicted,
             style: SeriesStyle::Line,
             points: levels.iter().map(|(t, v)| point(&z, &f, *t, *v)).collect(),
@@ -319,7 +302,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
                 .collect();
             if !points.is_empty() {
                 series.push(ChartSeries {
-                    label: "Observed".to_owned(),
+                    label: f.strings.get(Key::Observed).to_owned(),
                     role: SeriesRole::Observed,
                     style: SeriesStyle::Line,
                     points,
@@ -330,7 +313,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
         // A relative curve: scaled to 0..1, labelled with the time, never with a height.
         let range = hi - lo;
         series.push(ChartSeries {
-            label: "Modelled sea level".to_owned(),
+            label: f.strings.get(Key::ModelledSeaLevel).to_owned(),
             role: SeriesRole::Modelled,
             style: SeriesStyle::Line,
             points: levels
@@ -358,27 +341,32 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
                 t: e.time.0,
                 value: q.as_ref().and_then(|q| q.value),
                 label: match &q {
-                    Some(q) => format!("{} {}", kind_label(e.kind), q.full()),
-                    None => format!("{} {}", kind_label(e.kind), f.clock(e.time)),
+                    Some(q) => format!("{} {}", f.strings.tide_kind(e.kind), q.full()),
+                    None => format!("{} {}", f.strings.tide_kind(e.kind), f.clock(e.time)),
                 },
             }
         })
         .collect();
     let described: Vec<String> = markers
         .iter()
-        .map(|m| format!("{} at {}", m.label, f.clock(UnixTime(m.t))))
+        .map(|m| {
+            f.strings.fmt(
+                Key::EventAt,
+                &[("event", &m.label), ("time", &f.clock(UnixTime(m.t)))],
+            )
+        })
         .collect();
     for day in &snapshot.sky.days {
         for (kind, label, at) in [
-            (MarkerKind::Sunrise, "Sunrise", day.sun.sunrise),
-            (MarkerKind::Sunset, "Sunset", day.sun.sunset),
+            (MarkerKind::Sunrise, Key::Sunrise, day.sun.sunrise),
+            (MarkerKind::Sunset, Key::Sunset, day.sun.sunset),
         ] {
             if let Some(t) = at.filter(|t| t.0 >= start && t.0 <= end) {
                 markers.push(ChartMarker {
                     kind,
                     t: t.0,
                     value: None,
-                    label: format!("{label} {}", f.clock(t)),
+                    label: format!("{} {}", f.strings.get(label), f.clock(t)),
                 });
             }
         }
@@ -393,11 +381,15 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
         },
         x_ticks: ticks(&z, &f, start, end),
         series,
-        bands: night_bands(&snapshot.sky, start, end),
+        bands: night_bands(&f, &snapshot.sky, start, end),
         rules: Vec::new(),
         markers,
         now_t: Some(now.0),
-        accessibility: format!("Tide: {}.", described.join(", ")),
+        accessibility: format!(
+            "{}: {}.",
+            f.strings.card_title(CardId::Tide),
+            described.join(", ")
+        ),
     });
 
     let today = day_number(z.local(now).date);
@@ -411,9 +403,9 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
         if last_date != Some(date) {
             last_date = Some(date);
             let sky = snapshot.sky.days.iter().find(|d| d.date == date);
-            let timed = |label: &str, t: Option<UnixTime>| {
+            let timed = |label: Key, t: Option<UnixTime>| {
                 t.map(|t| TimedLabel {
-                    label: label.to_owned(),
+                    label: f.strings.get(label).to_owned(),
                     time: f.clock(t),
                     t: t.0,
                 })
@@ -421,11 +413,11 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
             days.push(TideDayVm {
                 date: day_label(&f, date),
                 events: Vec::new(),
-                sunrise: sky.and_then(|d| timed("Sunrise", d.sun.sunrise)),
-                sunset: sky.and_then(|d| timed("Sunset", d.sun.sunset)),
+                sunrise: sky.and_then(|d| timed(Key::Sunrise, d.sun.sunrise)),
+                sunset: sky.and_then(|d| timed(Key::Sunset, d.sun.sunset)),
                 moon: sky.map(|d| MoonPhaseVm {
                     phase: d.moon.phase,
-                    label: moon_label(d.moon.phase).to_owned(),
+                    label: f.strings.moon_phase(d.moon.phase).to_owned(),
                     illumination: f.percent(Some(d.moon.illuminated_fraction * 100.0)),
                 }),
             });
@@ -438,11 +430,11 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
     let datum_label = shown.then(|| {
         let unit_text = height(Some(0.0)).unit;
         let name = unit_text.split_once(' ').map_or("", |(_, d)| d);
-        format!("above {name}")
+        f.strings.fmt(Key::AboveDatum, &[("datum", name)])
     });
     let p = &tide.provenance;
     let mut rows = vec![Row {
-        label: "Station".to_owned(),
+        label: f.strings.get(Key::Station).to_owned(),
         value: p
             .station
             .as_ref()
@@ -451,7 +443,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
     }];
     if let Some(label) = &datum_label {
         rows.push(Row {
-            label: "Heights".to_owned(),
+            label: f.strings.get(Key::Heights).to_owned(),
             value: label.clone(),
             detail: None,
         });
@@ -460,7 +452,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
     let next_all = upcoming.first().map(|e| event_vm(&f, tide, shown, e));
     let value_text = height_now
         .as_ref()
-        .map_or_else(|| "times only".to_owned(), Quantity::full);
+        .map_or_else(|| f.strings.get(Key::TimesOnly).to_owned(), Quantity::full);
     let mut lines = Vec::new();
     if let Some(n) = &next_all {
         lines.push(format!("{stage_label} · {} {}", n.label, n.time));
@@ -513,9 +505,11 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
     };
     let accessibility = match &next_all {
         Some(n) => format!(
-            "{stage_label}. Next {} {}{}.",
-            n.label.to_lowercase(),
-            n.time,
+            "{stage_label}. {}{}.",
+            f.strings.fmt(
+                Key::NextEvent,
+                &[("kind", &n.label.to_lowercase()), ("time", &n.time)]
+            ),
             match (&n.height, &datum_label) {
                 (Some(h), Some(d)) => {
                     format!(", {} {} {d}", h.text, input.units.height.symbol())
@@ -530,7 +524,11 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
         chrome: CardChrome {
             id: CardId::Tide,
             title: f.strings.card_title(CardId::Tide).to_owned(),
-            footnote: Some(f.footnote(&format!("Tide {value_text}"), p, now)),
+            footnote: Some(f.footnote(
+                &format!("{} {value_text}", f.strings.card_title(CardId::Tide)),
+                p,
+                now,
+            )),
             credits: credits(snapshot, &p.source),
             state: card_state,
             notices,
@@ -551,7 +549,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
             chart,
             days,
             sections: vec![Section {
-                title: "Station".to_owned(),
+                title: f.strings.get(Key::Station).to_owned(),
                 rows,
             }],
         },
