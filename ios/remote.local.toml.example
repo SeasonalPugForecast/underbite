@@ -1,0 +1,18 @@
+# Copy to ios/remote.local.toml (gitignored) and fill in the placeholders.
+
+# The Mac that runs Xcode, as `user@host`.
+host = "user@mac.local"
+# The directory this tool owns on the Mac: absolute, or relative to its home. A linked
+# git worktree (a lane) gets `-<lane>` appended. Shared, so any account on the Mac can open it.
+dir = "/Users/Shared/underbite-build"
+# Xcode, when it is not at /Applications/Xcode.app.
+# xcode = "/Applications/Xcode.app"
+# The simulators `app` and `shots` use (each cloned per lane as `<name> (<lane>)`).
+# Both must be device types the installed iOS 26 (or later) runtime offers.
+# simulator = "iPhone 17"
+# ipad_simulator = "iPad Air 11-inch (M4)"
+# For `device`: the Apple development team, the paired iPhone, and a command here that
+# prints the Mac account's password (to unlock its keychain over SSH).
+# team = "ABCDE12345"
+# iphone = "My iPhone"
+# keychain_password_command = "secret-tool lookup service mac account dev"
