@@ -3,6 +3,6 @@
 
 uniffi::setup_scaffolding!();
 
-mod fetch;
-mod settings;
-mod view;
+pub mod fetch;
+pub mod settings;
+pub mod view;
