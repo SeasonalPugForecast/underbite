@@ -12,6 +12,7 @@ struct ConditionsView: View {
     @State private var loaded: LoadedPage?
     @State private var firstShowDone = false
     @State private var customizing = false
+    @State private var openCard: ViewModel.Card?
 
     var body: some View {
         let spot = store.spot(spotID)
@@ -20,6 +21,7 @@ struct ConditionsView: View {
             .navigationTitle(spot?.name ?? "Conditions")
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: ViewModel.Card.self) { CardDetailView(card: $0) }
+            .navigationDestination(item: $openCard) { CardDetailView(card: $0) }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Customize", systemImage: "slider.horizontal.3") { customizing = true }
@@ -40,6 +42,19 @@ struct ConditionsView: View {
                 guard ConditionsLaunch.opensCustomize else { return }
                 try? await Task.sleep(for: .seconds(2))
                 customizing = true
+            }
+            .task(id: loaded?.json) {
+                // Debug builds only: `-open-card <id>` opens that card's page once the page has
+                // loaded, for screenshots.
+                #if DEBUG
+                    let arguments = ProcessInfo.processInfo.arguments
+                    guard let flag = arguments.firstIndex(of: "-open-card"),
+                        arguments.indices.contains(flag + 1), openCard == nil,
+                        let view = pageView
+                    else { return }
+                    try? await Task.sleep(for: .seconds(1))
+                    openCard = view.cards.first { $0.chrome?.id == arguments[flag + 1] }
+                #endif
             }
             .task(id: store.pageJSON) {
                 let json = store.pageJSON
@@ -85,6 +100,11 @@ struct ConditionsView: View {
                     AlertsBanner(card: alerts)
                 }
                 .buttonStyle(.plain)
+            }
+            if let timeline = view.timeline {
+                DayTimelineView(
+                    timeline: timeline,
+                    shownCards: Set(view.cards.compactMap { $0.chrome?.id }))
             }
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(LoadedPage.entries(in: view)) { entry in
