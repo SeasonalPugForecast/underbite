@@ -12,8 +12,10 @@
 //! is used on the device (distances, snapping to the hydrography).
 //!
 //! Then the sessions run one after the other on the same transport, one request at a time: the
-//! water and marine session over the discovery plan, and whether's weather session. The sky is
-//! computed for the spot's local days, and everything lands in one `SpotSnapshot` with its
+//! water and marine session over the discovery plan, whether's weather session, the normals of
+//! the latest USGS discharge or lake level for its day, and the storm-ahead check with nearby
+//! hurricanes. The sky is computed for the spot's local days, and everything lands in one
+//! `SpotSnapshot` with its
 //! credits and the errors of the sources that were passed over. The snapshot and the call ledger
 //! are saved; every request is logged only through `redact_url`.
 
@@ -59,12 +61,16 @@ use super::cache::{COOPS_STATION_LIST_TTL_S, Cache, STATION_LIST_TTL_S};
 use super::transport::{Call, Fetched, Transport, TransportError, user_agent};
 use jiff::tz::TimeZone;
 use underbite_core::astro::solunar::{DayBounds, SolunarSettings, sky_conditions};
+use underbite_core::model::{Percentile, StormWatch, WaterConditions};
 use underbite_core::model::{SkyConditions, SourceErrorKind, SpotSnapshot};
 use underbite_core::provenance::Attribution;
+use underbite_core::time::standard_offset;
 use underbite_core::time::{local_date, local_date_bounds, zone};
 use underbite_providers::session::usage::OPEN_METEO;
 use underbite_providers::session::{Attempt, Chain, Link, Session, SessionOutcome};
 use underbite_providers::source::{Period, Secrets};
+use underbite_providers::storms::{StormOptions, StormOutcome, StormWatchPlan};
+use underbite_providers::usgs::statistics::Reading;
 use whether_core::model::ProviderId;
 use whether_core::model::WeatherSnapshot;
 use whether_core::requirements::DataRequirements;
@@ -1427,6 +1433,134 @@ fn sky(
 }
 
 // ---------------------------------------------------------------------------------------------
+// Storms and normals
+// ---------------------------------------------------------------------------------------------
+
+/// Runs the storm-ahead check and the hurricane watch for `spot`, given its previous watch.
+fn fetch_storms(
+    host: &Host<'_>,
+    ctx: &FetchContext,
+    spot: &Spot,
+    previous: Option<&StormWatch>,
+    hurricane_distance_km: f64,
+) -> StormOutcome {
+    let options = StormOptions {
+        hurricane_distance_km,
+        allow_metered: host.allow_metered,
+    };
+    let mut plan = StormWatchPlan::new(spot, previous, &options, ctx, Some(host.usage.clone()));
+    while let Some(request) = plan.next_request() {
+        let call = Call::from(&request.http).with_cache(request.cache);
+        if request.http.metered
+            && let Err(e) = host.save_usage()
+        {
+            tracing::warn!(error = %e, "storm request not sent");
+            plan.on_transport_error(&e);
+            continue;
+        }
+        match host.send(&call) {
+            Ok(fetched) => plan.on_response(&fetched.as_response()),
+            Err(e) => plan.on_transport_error(&e.to_string()),
+        }
+    }
+    plan.finish()
+}
+
+/// Where the latest discharge or lake level stands among the normals of its day, from the
+/// USGS Statistics API (or the site's daily means when it has none). Only values from a USGS
+/// site have normals; the day is the site's standard-time day in the spot's zone.
+fn fetch_normals(
+    host: &Host<'_>,
+    ctx: &FetchContext,
+    water: &mut WaterConditions,
+    tz: Option<&TimeZone>,
+) -> Vec<ModelSourceError> {
+    let mut errors = Vec::new();
+    let level_datum = water.level.as_ref().map(|h| h.datum);
+    let wanted = [
+        (Measurement::Discharge, water.discharge_m3s.as_ref(), None),
+        (
+            Measurement::LakeLevel,
+            water.level.as_ref().map(|h| &h.series),
+            level_datum,
+        ),
+    ];
+    let mut found: Vec<(Measurement, Percentile)> = Vec::new();
+    for (measurement, series, datum) in wanted {
+        let Some(series) = series else { continue };
+        let (Some(latest), Some(station)) = (series.latest(), &series.provenance().station) else {
+            continue;
+        };
+        if station.source != SourceId::USGS {
+            continue;
+        }
+        let Some(offset) = tz.and_then(|tz| {
+            let date = local_date(latest.time, tz).ok()?;
+            standard_offset(tz, date).ok()
+        }) else {
+            continue;
+        };
+        let provenance = series.provenance();
+        let target = Target {
+            place: Place::Station {
+                station: station.clone(),
+                distance_m: provenance.distance_m,
+                relation: provenance.relation,
+            },
+            measurements: BTreeSet::from([measurement]),
+            window: Window {
+                from: host.now,
+                to: host.now,
+            },
+            datum,
+        };
+        let reading = Reading {
+            measurement,
+            datum,
+            value: latest.value,
+            at: latest.time,
+        };
+        let usgs = Usgs::new();
+        let first = match usgs.statistics_request(&target, &reading, offset, ctx) {
+            Ok(request) => request,
+            Err(e) => {
+                errors.push(e.to_model(SourceId::USGS, Some(measurement)));
+                continue;
+            }
+        };
+        let mut queue = vec![first];
+        let mut asked = 0;
+        while let Some(request) = queue.pop() {
+            asked += 1;
+            let mut out = Fragments::new();
+            let next = host.get(&usgs, &request).and_then(|fetched| {
+                let response = fetched.as_response();
+                usgs.parse(&request, &response, ctx, &mut out)?;
+                usgs.follow_up(&request, &response, ctx)
+            });
+            match next {
+                Ok(next) if asked <= usgs.max_follow_ups() => queue.extend(next),
+                Ok(_) => {}
+                Err(e) => errors.push(e.to_model(SourceId::USGS, Some(measurement))),
+            }
+            for fragment in out.fragments() {
+                if let FragmentValue::Percentile(p) = &fragment.value {
+                    found.push((fragment.measurement, p.clone()));
+                }
+            }
+        }
+    }
+    for (measurement, percentile) in found {
+        match measurement {
+            Measurement::Discharge => water.discharge_percentile_for_date = Some(percentile),
+            Measurement::LakeLevel => water.level_percentile_for_date = Some(percentile),
+            _ => {}
+        }
+    }
+    errors
+}
+
+// ---------------------------------------------------------------------------------------------
 // One spot, end to end
 // ---------------------------------------------------------------------------------------------
 
@@ -1502,6 +1636,7 @@ pub(crate) fn fetch_spot_with(
         .coordinates();
     let requirements = requirements(config, spot.water_type);
     let chains = chain_specs(&config.sources, &requirements, spot.water_type);
+    let previous: Option<SpotSnapshot> = host.stored(NS_SPOT, &Cache::spot_key(&spot.id));
     let discovery = discover(&host, &ctx, spot, chains);
 
     let session = Session::new(
@@ -1511,17 +1646,36 @@ pub(crate) fn fetch_spot_with(
     )
     .with_usage(host.usage.clone())
     .allow_metered(options.allow_metered);
-    let water = run_session(&host, session);
+    let mut water = run_session(&host, session);
 
     let weather_chain = weather_chain(&config.sources.weather, &rounded);
     let weather = fetch_weather(&host, &weather_chain, rounded, &options.user_agent);
+
+    let zone = time_zone(spot, weather.snapshot.as_ref());
+    let normals = fetch_normals(
+        &host,
+        &ctx,
+        &mut water.water,
+        zone.as_ref().map(|(_, tz)| tz),
+    );
+    // The storm group's chain switches the check off when empty; the plan runs both parts.
+    let storms = (!config.sources.storm.chain.is_empty()).then(|| {
+        let previous = previous.as_ref().and_then(|p| p.storm.as_ref());
+        fetch_storms(
+            &host,
+            &ctx,
+            spot,
+            previous,
+            config.storms.hurricane_distance_km,
+        )
+    });
 
     let mut snapshot = SpotSnapshot::new(spot.clone(), now);
     let solunar = SolunarSettings {
         major_minutes: config.windows.solunar_major_minutes,
         minor_minutes: config.windows.solunar_minor_minutes,
     };
-    if let Some((name, tz)) = time_zone(spot, weather.snapshot.as_ref()) {
+    if let Some((name, tz)) = zone {
         snapshot.spot.time_zone = name;
         snapshot.sky = sky(spot, &tz, now, requirements.future_days, solunar);
     } else {
@@ -1533,6 +1687,9 @@ pub(crate) fn fetch_spot_with(
     snapshot.stations = water.stations;
     let mut attribution = water.attribution;
     attribution.extend(weather.attribution);
+    if let Some(storms) = &storms {
+        attribution.extend(storms.attribution.iter().cloned());
+    }
     if discovery.hydrography {
         attribution.push(hydro::attribution());
     }
@@ -1543,7 +1700,12 @@ pub(crate) fn fetch_spot_with(
     }
     snapshot.errors = discovery.errors;
     snapshot.errors.extend(water.errors);
+    snapshot.errors.extend(normals);
     snapshot.errors.extend(weather.errors);
+    if let Some(storms) = storms {
+        snapshot.errors.extend(storms.errors);
+        snapshot.storm = Some(storms.watch);
+    }
 
     host.keep(NS_SPOT, &Cache::spot_key(&spot.id), &snapshot);
     if let Err(e) = host.save_usage() {
@@ -2047,7 +2209,109 @@ mod tests {
             .value;
         assert_eq!(&saved, s);
         let ledger: UsageLedger = cache.get(NS_USAGE, LEDGER_KEY).expect("ledger").value;
-        assert_eq!(ledger.used(&OPEN_METEO, now()), 2);
+        assert_eq!(ledger.used(&OPEN_METEO, now()), 3);
+
+        // The storm check: the models' hours at the spot, no hurricane near.
+        let watch = s.storm.as_ref().expect("storm watch");
+        assert_eq!(watch.checked_at, now());
+        let point = watch.point.as_ref().expect("point series");
+        assert!(point.points.len() > 1, "{}", point.points.len());
+        assert!(point.points.iter().all(|p| p.run.is_some()));
+        assert_eq!(watch.hurricanes, []);
+        assert!(credited.contains("open-meteo-storm"));
+    }
+
+    #[test]
+    fn the_storm_point_is_reused_for_three_hours() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let cache = Cache::at(dir.path());
+        save_choices(&cache, "battery", &battery_choices(), now()).expect("choices");
+        let (first, _) = fetched(&battery(), &Config::default(), "battery", &cache);
+        let transport = replay("battery");
+        let options = FetchOptions {
+            allow_metered: true,
+            secrets: Secrets::default(),
+            user_agent: "underbite/test".into(),
+        };
+        let later = UnixTime(now().0 + 3_600);
+        let again = fetch_spot_with(
+            &battery(),
+            &Config::default(),
+            later,
+            &transport,
+            Some(&cache),
+            &options,
+        );
+        assert!(
+            transport.seen().iter().all(|u| !u.contains("&models=")),
+            "{:#?}",
+            transport.seen()
+        );
+        let (a, b) = (
+            first.snapshot.storm.expect("first"),
+            again.snapshot.storm.expect("again"),
+        );
+        assert_eq!(a.point, b.point);
+        assert_eq!(b.checked_at, later);
+    }
+
+    #[test]
+    fn croton_discharge_takes_its_place_among_the_normals_of_8_november() {
+        use underbite_core::provenance::{Provenance, Quality, UsgsSiteType, ValueKind};
+        use underbite_core::series::{Sample, Series};
+        const CFS: f32 = 0.028_316_846;
+        let dir = tempfile::tempdir().expect("tempdir");
+        let cache = Cache::at(dir.path());
+        let transport = replay("croton");
+        let host = Host::new(&transport, Some(&cache), now(), true);
+        let dam = StationRef {
+            source: SourceId::USGS,
+            id: "USGS-01375000".into(),
+            name: "CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY".into(),
+            kind: StationKind::UsgsSite(UsgsSiteType::Stream),
+            latitude: 41.225_027_8,
+            longitude: -73.858_888_9,
+            bin: None,
+            reference_id: None,
+        };
+        let at = parse_rfc3339("2026-11-08T14:15:00Z").expect("time");
+        let provenance = Provenance {
+            source: SourceId::USGS,
+            station: Some(dam),
+            distance_m: Some(20.0),
+            relation: Relation::SameWaterBody,
+            observed_at: at,
+            kind: ValueKind::Observed,
+            quality: Quality::Provisional,
+        };
+        let mut water = WaterConditions {
+            discharge_m3s: Some(Series::new(provenance, vec![Sample::new(at, 12.4 * CFS)])),
+            ..WaterConditions::default()
+        };
+        let tz = zone("America/New_York").expect("zone");
+        let errors = fetch_normals(&host, &ctx(), &mut water, Some(&tz));
+        assert_eq!(errors, []);
+        let percentile = water.discharge_percentile_for_date.expect("percentile");
+        assert_eq!(percentile.day_of_year, "11-08");
+        assert!(percentile.thresholds.p50.is_some());
+        let station = percentile
+            .provenance
+            .and_then(|p| p.station)
+            .expect("station");
+        assert_eq!(station.id, "USGS-01375000");
+        assert!(
+            transport
+                .seen()
+                .iter()
+                .any(|u| u.contains("observationNormals"))
+        );
+        // Without a zone there is no standard-time day to ask about.
+        let mut water = WaterConditions {
+            discharge_m3s: water.discharge_m3s.take(),
+            ..WaterConditions::default()
+        };
+        assert_eq!(fetch_normals(&host, &ctx(), &mut water, None), []);
+        assert!(water.discharge_percentile_for_date.is_none());
     }
 
     #[test]

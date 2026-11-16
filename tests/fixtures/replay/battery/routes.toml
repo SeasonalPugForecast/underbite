@@ -163,7 +163,8 @@ file = "../../raw/hydro/hydro-50-battery-envelope.json"
 match = "3DHP_all/MapServer/60/query"
 file = "../../raw/hydro/hydro-60-battery-envelope.json"
 
-# Storms: NHC and the Open-Meteo run metadata, then the point series (before the plain forecast).
+# Storms: NHC and the Open-Meteo run metadata, then the point series (before the plain forecast;
+# whether's recording for New York City stands in until the spot's own is recorded).
 [[route]]
 match = "nhc.noaa.gov/CurrentStorms.json"
 file = "../../raw/storms/nhc-current-storms-2026-11-15.json"
@@ -185,7 +186,7 @@ match = "cmc_gem_gdps_15km/static/meta.json"
 file = "../../raw/storms/open-meteo-meta-cmc_gem_gdps_15km-2026-11-15.json"
 
 [[route]]
-match = "api.open-meteo.com/v1/forecast?models="
+match = "api.open-meteo.com/v1/forecast?latitude=40.7&longitude=-74.02&models="
 file = "../../raw/storms/whether-open-meteo-storm-point-10001.json"
 
 # Weather copies.
