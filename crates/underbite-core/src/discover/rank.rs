@@ -262,6 +262,30 @@ pub struct MeasurementRanking {
     pub dropped: Vec<DroppedStation>,
 }
 
+/// A map keyed by station as a list of `[key, relation]` pairs.
+mod relation_pairs {
+    use std::collections::BTreeMap;
+
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    use super::{Relation, StationKey};
+
+    pub(super) fn serialize<S: Serializer>(
+        map: &BTreeMap<StationKey, Relation>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        map.iter().collect::<Vec<_>>().serialize(serializer)
+    }
+
+    pub(super) fn deserialize<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<BTreeMap<StationKey, Relation>, D::Error> {
+        Ok(Vec::<(StationKey, Relation)>::deserialize(deserializer)?
+            .into_iter()
+            .collect())
+    }
+}
+
 /// Version of the ranking rules; a ranking made under other rules is redone. Raise it whenever
 /// [`rank`] would choose differently from the same input.
 pub const RANK_RULES: u32 = 1;
@@ -278,8 +302,9 @@ pub struct Ranking {
     pub choices: StationChoices,
     /// [`ObservedCoverage::revision`] of the coverage used.
     pub coverage_revision: u64,
-    /// The hydrography's relations and whether it placed the spot, as ranked.
-    #[serde(default)]
+    /// The hydrography's relations and whether it placed the spot, as ranked. Stored as a list
+    /// of pairs: a station key is not a JSON object key.
+    #[serde(default, with = "relation_pairs")]
     pub relations: BTreeMap<StationKey, Relation>,
     #[serde(default)]
     pub spot_placed: bool,

@@ -417,6 +417,22 @@ mod tests {
     }
 
     #[test]
+    fn a_ranking_with_relations_round_trips_through_json() {
+        let mut cache = DiscoveryCache::new(3_600);
+        let mut related = input();
+        related.spot_placed = true;
+        related.relations.insert(
+            StationKey::new(SourceId::COOPS, "8518750"),
+            crate::provenance::Relation::SameWaterBody,
+        );
+        cache.ranking("battery", &related);
+        let json = serde_json::to_string(&cache).expect("a station key is not a map key");
+        let back: DiscoveryCache = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, cache);
+        assert!(back.check("battery", &related).is_ok());
+    }
+
+    #[test]
     fn a_ranking_from_older_rules_is_redone() {
         let mut cache = DiscoveryCache::new(3_600);
         let base = input();
