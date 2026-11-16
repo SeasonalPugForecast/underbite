@@ -1,5 +1,6 @@
 ---
 source: crates/underbite-core/src/view/cards/now.rs
+assertion_line: 224
 expression: card
 ---
 {
@@ -31,6 +32,12 @@ expression: card
         "text": "Observations: NOAA National Data Buoy Center",
         "link": null,
         "licence": null
+      },
+      {
+        "source": "Computed on device",
+        "text": "Sun and moon positions from astronomical algorithms",
+        "link": null,
+        "licence": null
       }
     ],
     "state": {
@@ -46,7 +53,7 @@ expression: card
         "text": "Provisional data, subject to revision."
       }
     ],
-    "accessibility": "Now. Tide 4.9 ft MLLW. Water temperature 58 °F. Current 1.6 kn. Wind 13 mph."
+    "accessibility": "Now. Tide 4.9 ft MLLW. Water temperature 58 °F. Current 1.6 kn. Wind 13 mph. Sun and moon 75%."
   },
   "compact": {
     "headline": {
@@ -110,6 +117,19 @@ expression: card
           "unit": "mph"
         },
         "line": "From WSW 250°",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "card": "sun_moon",
+        "label": "Sun and moon",
+        "headline": {
+          "value": 75.0,
+          "text": "75",
+          "unit": "%"
+        },
+        "line": "Sunrise 4:40 PM · Sunset 1:40 AM",
         "state": {
           "state": "fresh"
         }

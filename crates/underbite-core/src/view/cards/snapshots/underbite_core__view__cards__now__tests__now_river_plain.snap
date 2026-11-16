@@ -1,5 +1,6 @@
 ---
 source: crates/underbite-core/src/view/cards/now.rs
+assertion_line: 235
 expression: card
 ---
 {
@@ -31,6 +32,12 @@ expression: card
         "text": "Observations: NOAA National Data Buoy Center",
         "link": null,
         "licence": null
+      },
+      {
+        "source": "Computed on device",
+        "text": "Sun and moon positions from astronomical algorithms",
+        "link": null,
+        "licence": null
       }
     ],
     "state": {
@@ -40,9 +47,13 @@ expression: card
       {
         "kind": "provisional",
         "text": "Provisional data, subject to revision."
+      },
+      {
+        "kind": "traditional_cue",
+        "text": "A traditional cue, not a promise."
       }
     ],
-    "accessibility": "Now. Water temperature 58 °F. River flow 12 cfs. Wind 13 mph."
+    "accessibility": "Now. Water temperature 58 °F. River flow 12 cfs. Wind 13 mph. Sun and moon 75%. Solunar 5.7 h."
   },
   "compact": {
     "headline": {
@@ -93,6 +104,32 @@ expression: card
           "unit": "mph"
         },
         "line": "From WSW 250°",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "card": "sun_moon",
+        "label": "Sun and moon",
+        "headline": {
+          "value": 75.0,
+          "text": "75",
+          "unit": "%"
+        },
+        "line": "Sunrise 4:40 PM · Sunset 1:40 AM",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "card": "solunar",
+        "label": "Solunar",
+        "headline": {
+          "value": 5.6666665,
+          "text": "5.7",
+          "unit": "h"
+        },
+        "line": "Next major 10:00 PM to 12:00 AM",
         "state": {
           "state": "fresh"
         }
