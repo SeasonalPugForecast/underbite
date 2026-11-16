@@ -457,8 +457,8 @@ keys! {
     /// `{age}`: "6 min ago".
     StationReported => ("Latest value {age}", "Latest value {age}"),
     StationListed => (
-                "Listed, not yet seen to report",
-                "Listed, not yet seen to report",
+                "Listed by the source; not checked yet",
+                "Listed by the source; Luna has not checked yet",
             ),
     /// `{age}`: "2 h ago".
     StationNotReported => (

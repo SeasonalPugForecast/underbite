@@ -11,7 +11,7 @@ use serde::Serialize;
 
 use crate::discover::rank::{DroppedStation, MeasurementRanking, RankedStation, Reason};
 use crate::model::Measurement;
-use crate::provenance::StationRef;
+use crate::provenance::{Relation, StationRef};
 use crate::time::UnixTime;
 use crate::view::format::Formatter;
 use crate::view::strings::{Key, MEASUREMENTS, source_name};
@@ -107,6 +107,8 @@ fn used(s: &RankedStation, f: &Formatter, now: UnixTime) -> StationRow {
         .iter()
         // The distance and the relation have their own places in the row.
         .filter(|r| !matches!(r, Reason::Distance { .. } | Reason::Relation { .. }))
+        // Coverage is only in question while nothing says the station reports or not.
+        .filter(|r| **r != Reason::Listed || !s.reasons.iter().any(reports_or_not))
         .map(|r| reason_text(f, r, now))
         .collect();
     row(&s.station, s.distance_m, Some(relation), reasons, f, |r| {
@@ -172,8 +174,18 @@ fn key(station: &StationRef) -> String {
     }
 }
 
+/// A reason that settles whether the station reports.
+fn reports_or_not(reason: &Reason) -> bool {
+    matches!(reason, Reason::Reported { .. } | Reason::NotReported { .. })
+}
+
+/// A relation in words, in the formatter's voice.
+pub fn relation_text(f: &Formatter, relation: Relation) -> &'static str {
+    f.strings.relation(relation)
+}
+
 /// A ranking reason in words; distances and ages come from the formatter.
-fn reason_text(f: &Formatter, reason: &Reason, now: UnixTime) -> String {
+pub fn reason_text(f: &Formatter, reason: &Reason, now: UnixTime) -> String {
     let s = f.strings;
     match reason {
         Reason::Pinned => s.get(Key::StationPinned).to_owned(),
@@ -418,7 +430,10 @@ mod tests {
         let current = &groups[1];
         assert_eq!(current.rows[0].key, "coops:NYH1927:13");
         assert_eq!(current.rows[0].station, "NYH1927 · Bin 13");
-        assert_eq!(current.rows[0].reasons, ["Listed, not yet seen to report"]);
+        assert_eq!(
+            current.rows[0].reasons,
+            ["Listed by the source; not checked yet"]
+        );
         assert_eq!(current.left_out[0].key, "coops:NYH1927:15");
         assert_eq!(
             current.left_out[0].reasons,
@@ -521,5 +536,25 @@ mod tests {
             Some("Luna passed over 1")
         );
         assert_eq!(groups[2].rows[0].reasons[0], "Pinned by you");
+        assert_eq!(
+            groups[1].rows[0].reasons,
+            ["Listed by the source; Luna has not checked yet"]
+        );
+    }
+
+    #[test]
+    fn listed_says_nothing_beside_a_reading() {
+        let f = formatter(DistanceUnit::Mi, Voice::Plain);
+        let both = ranked(
+            battery(),
+            643.7,
+            vec![
+                Reason::Listed,
+                Reason::Reported {
+                    at: UnixTime(NOW.0 - 360),
+                },
+            ],
+        );
+        assert_eq!(used(&both, &f, NOW).reasons, ["Latest value 6 min ago"]);
     }
 }
