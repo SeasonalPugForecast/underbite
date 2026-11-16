@@ -57,6 +57,11 @@ file = "../../raw/hydro/hydro-50-xrvn6-geom.json"
 match = "geometry=-73.60000,41.26000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
 file = "../../raw/hydro/hydro-60-xrvn6-geom.json"
 
+# NWS point lookup for the rounded spot: land (zone NYZ070), so no marine zone.
+[[route]]
+match = "api.weather.gov/points/41.23,-73.86"
+file = "../../raw/nws-marine/points-41.23_-73.86.geo.json"
+
 # USGS water data: the specific collections first, the site lookup last.
 [[route]]
 match = "collections/latest-continuous"

@@ -12,6 +12,7 @@ Alert, zone-forecast and product contents are live and change; the recording is 
 | `points-39.5_-72.0-offshore.geo.json` | `A/points/39.5,-72.0` (offshore zone ANZ815, no `gridId`) | 2026-11-08 |
 | `points-45.0_-30.0-invalid-point.problem.json` | `A/points/45.0,-30.0` (HTTP 404, mid-Atlantic, outside coverage) | 2026-11-08 |
 | `points-41.55_-81.72.geo.json` | `A/points/41.55,-81.72` (Lake Erie off Cleveland; `forecastZone` LEZ146) | 2026-11-08 |
+| `points-41.23_-73.86.geo.json` | `A/points/41.23,-73.86` (the Croton spot rounded to 2 decimals; `type` land, `forecastZone` NYZ070) | 2026-11-16 |
 | `zones-coastal-point-40.7033_-74.0170.geo.json` | `A/zones?type=coastal&point=40.7033,-74.0170` (ANZ338 New York Harbor) | 2026-11-08 |
 | `zones-coastal-point-40.25_-73.16.geo.json` | `A/zones?type=coastal&point=40.25,-73.16` (ANZ383, 20 to 60 NM) | 2026-11-08 |
 | `zones-offshore-point-40.25_-73.16-empty.geo.json` | `A/zones?type=offshore&point=40.25,-73.16` (empty `features`) | 2026-11-08 |
