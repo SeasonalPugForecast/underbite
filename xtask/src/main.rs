@@ -2,6 +2,9 @@
 
 mod ci;
 mod hooks;
+mod ios;
+mod ios_licenses;
+mod ios_remote;
 mod lane;
 mod remote;
 mod vendor;
@@ -21,7 +24,17 @@ commands:
                       access to the git server
   remote clean --lane <name> | --all-lanes
                       delete a lane's directory on the build host
-                      (a linked git worktree is a lane with its own directories)";
+                      (a linked git worktree is a lane with its own directories)
+  ios build [--debug] the iOS core: static libraries and Swift bindings; on a Mac
+                      also ios/UnderbiteKit/UnderbiteFFI.xcframework
+  ios licenses        write the app's open-source notices
+                      (ios/Underbite/Underbite/Resources/Acknowledgements.json)
+  ios remote doctor|sync|build|test|app|shots|device [--host user@mac] [--dir d] [--dry-run]
+                      the same on the Mac over SSH (host: ios/remote.local.toml)
+  ios remote exec [--fetch path] -- <command>
+                      run a command in the lane's directory on the Mac, Xcode selected
+  ios remote clean --lane <name> | --all-lanes
+                      delete a lane's directory and simulators on the Mac";
 
 /// A parsed xtask command line.
 #[derive(Debug, PartialEq, Eq)]
@@ -29,6 +42,7 @@ enum Command {
     Ci,
     HooksInstall { force: bool },
     Remote { args: Vec<String> },
+    Ios { args: Vec<String> },
     Help,
 }
 
@@ -40,6 +54,9 @@ fn parse(args: &[String]) -> Result<Command, String> {
         ["hooks", "install", "--force"] => Ok(Command::HooksInstall { force: true }),
         [] | ["help" | "-h" | "--help"] => Ok(Command::Help),
         ["remote", rest @ ..] => Ok(Command::Remote {
+            args: rest.iter().map(|s| (*s).to_owned()).collect(),
+        }),
+        ["ios", rest @ ..] => Ok(Command::Ios {
             args: rest.iter().map(|s| (*s).to_owned()).collect(),
         }),
         [name] => Err(format!("unknown command `{name}`")),
@@ -55,6 +72,7 @@ fn main() -> ExitCode {
         Ok(Command::Remote { args }) => {
             remote::run(&args.iter().map(String::as_str).collect::<Vec<_>>())
         }
+        Ok(Command::Ios { args }) => ios::run(&args.iter().map(String::as_str).collect::<Vec<_>>()),
         Ok(Command::Help) => {
             println!("{USAGE}");
             Ok(())
