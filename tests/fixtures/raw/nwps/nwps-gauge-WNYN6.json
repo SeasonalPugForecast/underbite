@@ -1,0 +1,165 @@
+{
+  "lid": "WNYN6",
+  "usgsId": "1763e524",
+  "reachId": "6244334",
+  "name": "Hackensack River at West Nyack",
+  "description": "",
+  "rfc": {
+    "abbreviation": "MARFC",
+    "name": "Middle Atlantic River Forecast Center"
+  },
+  "wfo": {
+    "abbreviation": "OKX",
+    "name": "Upton"
+  },
+  "state": {
+    "abbreviation": "NY",
+    "name": "New York"
+  },
+  "county": "Rockland",
+  "timeZone": "EST5EDT",
+  "latitude": 41.095555555556,
+  "longitude": -73.964444444444,
+  "pedts": {
+    "observed": "HGIRG",
+    "forecast": ""
+  },
+  "status": {
+    "observed": {
+      "primary": 2.52,
+      "primaryUnit": "ft",
+      "secondary": -999,
+      "secondaryUnit": "kcfs",
+      "floodCategory": "no_flooding",
+      "validTime": "2026-11-15T23:45:00Z"
+    },
+    "forecast": {
+      "primary": -999,
+      "primaryUnit": "",
+      "secondary": -999,
+      "secondaryUnit": "",
+      "floodCategory": "fcst_not_current",
+      "validTime": "0001-01-01T00:00:00Z"
+    }
+  },
+  "flood": {
+    "stageUnits": "ft",
+    "flowUnits": "cfs",
+    "categories": {
+      "major": {
+        "stage": 10,
+        "flow": -9999
+      },
+      "moderate": {
+        "stage": 8,
+        "flow": -9999
+      },
+      "minor": {
+        "stage": 6,
+        "flow": -9999
+      },
+      "action": {
+        "stage": -9999,
+        "flow": -9999
+      }
+    },
+    "lro": null,
+    "crests": {
+      "historic": [],
+      "recent": []
+    },
+    "lowWaters": {
+      "historic": []
+    },
+    "impacts": [
+      {
+        "stage": 11,
+        "statement": "Flooding and road closure on NY 303 both directions and area of NY 59 in Clarkstown. Road closure due to flooding on Palisades Interstate Parkway, near the Palisades Mall, along Route 59 by Pascack Road near the Nanuet/Spring Valley border. Flooding of homes and properties along Klein Avenue, south of 287 and retention pond. "
+      },
+      {
+        "stage": 10.6,
+        "statement": "Route 59 across from the Palisades Center and Dunkin' closes in both directions to traffic due to flooding. Waist-high water at points submerging the roadways. Water begins to inundate neighboring businesses. Flooding also occurs on homes and properties along Klein Avenue, south of 287 and retention pond. Flooding also reported on Bobbie Lane and Cemetery Lane. "
+      },
+      {
+        "stage": 8.3,
+        "statement": "Route 59 closes due to flooding and AMC movie theater parking lot completely floods. Nyack water plant facility alond Hackensack begins to flood. "
+      },
+      {
+        "stage": 7.5,
+        "statement": "Route 59 along the Hackensack River flooded. Both eastbound and westbound lanes of Route 59 closes due to flooding in front of the Palisades Center Mall. "
+      },
+      {
+        "stage": 6,
+        "statement": "Around 6.5 feet, road along retention pond south of Route 59 begins to flood, inundating the eastbound lane of Route 59 and then the westbound lane of Route 59.  "
+      }
+    ]
+  },
+  "images": {
+    "probability": {
+      "weekint": {
+        "stage": "",
+        "flow": "",
+        "volume": ""
+      },
+      "entperiod": {
+        "stage": "",
+        "flow": "",
+        "volume": ""
+      },
+      "shortrange": ""
+    },
+    "hydrograph": {
+      "default": "https://water.noaa.gov/resources/hydrographs/wnyn6_hg.png",
+      "floodcat": "https://water.noaa.gov/resources/hydrographs/wnyn6_record.png"
+    },
+    "photos": []
+  },
+  "dataAttribution": [
+    {
+      "abbrev": "US Geological Survey",
+      "text": "USGS--Water Resources of the United States",
+      "title": "US Geological Survey",
+      "url": "http://water.usgs.gov/"
+    },
+    {
+      "abbrev": "USGS",
+      "text": "1763e524",
+      "title": "Observations courtesy of U.S. Geological Survey",
+      "url": "https://waterdata.usgs.gov/nwis/inventory/?site_no=1763e524"
+    }
+  ],
+  "impactsLowWaters": [],
+  "normalThreshold": null,
+  "hydronotes": [],
+  "datums": {
+    "vertical": {
+      "value": []
+    },
+    "horizontal": {
+      "value": []
+    },
+    "notes": {
+      "value": []
+    }
+  },
+  "inundation": {
+    "enabled": false,
+    "url": "",
+    "zeroDatum": null,
+    "downloads": null,
+    "siteSpecificInfo": "",
+    "dataAttribution": []
+  },
+  "upstreamLid": "",
+  "downstreamLid": "",
+  "inService": {
+    "enabled": true,
+    "message": ""
+  },
+  "lowThreshold": null,
+  "forecastReliability": "Forecasts are not available. Only observed stages are available for this point.",
+  "TruncateObs": "-1",
+  "TruncateFcst": "0",
+  "ObservedFloodCategory": "no_flooding",
+  "ForecastFloodCategory": "fcst_not_current"
+}

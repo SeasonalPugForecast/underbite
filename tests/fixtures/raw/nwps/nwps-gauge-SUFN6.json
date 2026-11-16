@@ -1,0 +1,179 @@
+{
+  "lid": "SUFN6",
+  "usgsId": "01387450",
+  "reachId": "6245480",
+  "name": "Mahwah River at Suffern",
+  "description": "",
+  "rfc": {
+    "abbreviation": "MARFC",
+    "name": "Middle Atlantic River Forecast Center"
+  },
+  "wfo": {
+    "abbreviation": "OKX",
+    "name": "Upton"
+  },
+  "state": {
+    "abbreviation": "NY",
+    "name": "New York"
+  },
+  "county": "Rockland",
+  "timeZone": "EST5EDT",
+  "latitude": 41.140833333333,
+  "longitude": -74.116944444444,
+  "pedts": {
+    "observed": "HGIRG",
+    "forecast": "HGIFF"
+  },
+  "status": {
+    "observed": {
+      "primary": 1.88,
+      "primaryUnit": "ft",
+      "secondary": 0.0123,
+      "secondaryUnit": "kcfs",
+      "floodCategory": "no_flooding",
+      "validTime": "2026-11-15T23:30:00Z"
+    },
+    "forecast": {
+      "primary": -999,
+      "primaryUnit": "",
+      "secondary": -999,
+      "secondaryUnit": "",
+      "floodCategory": "fcst_not_current",
+      "validTime": "0001-01-01T00:00:00Z"
+    }
+  },
+  "flood": {
+    "stageUnits": "ft",
+    "flowUnits": "cfs",
+    "categories": {
+      "major": {
+        "stage": 10.5,
+        "flow": -9999
+      },
+      "moderate": {
+        "stage": 7,
+        "flow": -9999
+      },
+      "minor": {
+        "stage": 5,
+        "flow": -9999
+      },
+      "action": {
+        "stage": 4.5,
+        "flow": -9999
+      }
+    },
+    "lro": null,
+    "crests": {
+      "historic": [
+        {
+          "occurredTime": "1999-09-16T01:30:00Z",
+          "stage": 9.7,
+          "flow": 0,
+          "preliminary": "R",
+          "olddatum": false
+        }
+      ],
+      "recent": [
+        {
+          "occurredTime": "1999-09-16T01:30:00Z",
+          "stage": 9.7,
+          "flow": 0,
+          "preliminary": "R",
+          "olddatum": false
+        }
+      ]
+    },
+    "lowWaters": {
+      "historic": []
+    },
+    "impacts": [
+      {
+        "stage": 10.6,
+        "statement": "Major flooding along Mahwah River at Suffern. 8 feet of waters into homes basements. Major flooding in homes in the Squires Gate community along the Mahwah River, especially on Lonergan Drive. "
+      },
+      {
+        "stage": 7,
+        "statement": "Moderate flooding along Mahwah River at Suffern communities. Moderate flooding in homes in the Squires Gate community along the Mahwah River, especially on Lonergan Drive. "
+      },
+      {
+        "stage": 5,
+        "statement": "Minor flooding on homes along the Mahwah River at Suffern. Minor flooding in homes in the Squires Gate community along the Mahwah River, especially on Lonergan Drive. "
+      }
+    ]
+  },
+  "images": {
+    "probability": {
+      "weekint": {
+        "stage": "",
+        "flow": "",
+        "volume": ""
+      },
+      "entperiod": {
+        "stage": "",
+        "flow": "",
+        "volume": ""
+      },
+      "shortrange": ""
+    },
+    "hydrograph": {
+      "default": "https://water.noaa.gov/resources/hydrographs/sufn6_hg.png",
+      "floodcat": "https://water.noaa.gov/resources/hydrographs/sufn6_record.png"
+    },
+    "photos": []
+  },
+  "dataAttribution": [
+    {
+      "abbrev": "US Geological Survey",
+      "text": "USGS--Water Resources of the United States",
+      "title": "US Geological Survey",
+      "url": "https://waterdata.usgs.gov/nwis"
+    },
+    {
+      "abbrev": "USGS",
+      "text": "01387450",
+      "title": "Observations courtesy of U.S. Geological Survey",
+      "url": "https://waterdata.usgs.gov/nwis/inventory/?site_no=01387450"
+    }
+  ],
+  "impactsLowWaters": [],
+  "normalThreshold": {
+    "value": 0,
+    "units": "ft"
+  },
+  "hydronotes": [],
+  "datums": {
+    "vertical": {
+      "value": []
+    },
+    "horizontal": {
+      "value": []
+    },
+    "notes": {
+      "value": []
+    }
+  },
+  "inundation": {
+    "enabled": false,
+    "url": "",
+    "zeroDatum": null,
+    "downloads": null,
+    "siteSpecificInfo": "",
+    "dataAttribution": []
+  },
+  "upstreamLid": "",
+  "downstreamLid": "",
+  "inService": {
+    "enabled": true,
+    "message": ""
+  },
+  "lowThreshold": {
+    "units": "ft",
+    "value": 0
+  },
+  "forecastReliability": "Forecasts are not available. Only observed stages are available for this point.",
+  "TruncateObs": "-1",
+  "TruncateFcst": "0",
+  "ObservedFloodCategory": "no_flooding",
+  "ForecastFloodCategory": "fcst_not_current"
+}

@@ -1,0 +1,547 @@
+{
+  "lid": "MAWN4",
+  "usgsId": "01387500",
+  "reachId": "6246322",
+  "name": "Ramapo River at Mahwah",
+  "description": "",
+  "rfc": {
+    "abbreviation": "MARFC",
+    "name": "Middle Atlantic River Forecast Center"
+  },
+  "wfo": {
+    "abbreviation": "OKX",
+    "name": "Upton"
+  },
+  "state": {
+    "abbreviation": "NJ",
+    "name": "New Jersey"
+  },
+  "county": "Bergen",
+  "timeZone": "EST5EDT",
+  "latitude": 41.0975,
+  "longitude": -74.1633333333333,
+  "pedts": {
+    "observed": "HGIRG",
+    "forecast": "HGIFF"
+  },
+  "status": {
+    "observed": {
+      "primary": 3.31,
+      "primaryUnit": "ft",
+      "secondary": 0.0146,
+      "secondaryUnit": "kcfs",
+      "floodCategory": "no_flooding",
+      "validTime": "2026-11-15T23:30:00Z"
+    },
+    "forecast": {
+      "primary": 3,
+      "primaryUnit": "ft",
+      "secondary": -999,
+      "secondaryUnit": "kcfs",
+      "floodCategory": "no_flooding",
+      "validTime": "2026-11-16T06:00:00Z"
+    }
+  },
+  "flood": {
+    "stageUnits": "ft",
+    "flowUnits": "cfs",
+    "categories": {
+      "major": {
+        "stage": 12,
+        "flow": -9999
+      },
+      "moderate": {
+        "stage": 9,
+        "flow": -9999
+      },
+      "minor": {
+        "stage": 8,
+        "flow": -9999
+      },
+      "action": {
+        "stage": 7.5,
+        "flow": -9999
+      }
+    },
+    "lro": {
+      "minorCS": "0.1",
+      "moderateCS": "0.07",
+      "majorCS": "< 0.05",
+      "producedTime": "2026-10-28T23:22:27Z",
+      "interval": "NDJ"
+    },
+    "crests": {
+      "historic": [
+        {
+          "occurredTime": "2011-08-28T16:00:00Z",
+          "stage": 15.78,
+          "flow": 0,
+          "preliminary": "R",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1955-10-16T00:00:00Z",
+          "stage": 12.53,
+          "flow": 10900,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1999-09-16T22:00:00Z",
+          "stage": 12.52,
+          "flow": 13800,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1968-05-29T00:00:00Z",
+          "stage": 11.87,
+          "flow": 8770,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1955-08-19T00:00:00Z",
+          "stage": 11.35,
+          "flow": 8580,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2011-03-07T07:45:00Z",
+          "stage": 11.16,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1903-10-09T00:00:00Z",
+          "stage": 11,
+          "flow": 12400,
+          "preliminary": "O",
+          "olddatum": true
+        },
+        {
+          "occurredTime": "1971-08-28T00:00:00Z",
+          "stage": 10.76,
+          "flow": 6700,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2011-03-11T06:45:00Z",
+          "stage": 10.72,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1973-12-21T00:00:00Z",
+          "stage": 10.5,
+          "flow": 6050,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1938-09-22T00:00:00Z",
+          "stage": 10.4,
+          "flow": 6720,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1979-01-25T00:00:00Z",
+          "stage": 9.9,
+          "flow": 4750,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2005-04-03T00:00:00Z",
+          "stage": 9.87,
+          "flow": 6220,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2005-10-13T00:00:00Z",
+          "stage": 9.85,
+          "flow": 6170,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1973-02-03T00:00:00Z",
+          "stage": 9.77,
+          "flow": 4340,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2011-04-17T03:45:00Z",
+          "stage": 9.55,
+          "flow": 5520,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1957-12-21T00:00:00Z",
+          "stage": 9.33,
+          "flow": 3800,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1995-11-12T13:45:00Z",
+          "stage": 8.880000000000003,
+          "flow": 4330,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1961-02-26T00:00:00Z",
+          "stage": 8.869999999999997,
+          "flow": 3120,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2003-12-11T00:00:00Z",
+          "stage": 8.8,
+          "flow": 4200,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1996-01-25T10:30:00Z",
+          "stage": 8.69,
+          "flow": 3420,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1982-01-05T00:00:00Z",
+          "stage": 8.4,
+          "flow": 2520,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2008-12-12T00:00:00Z",
+          "stage": 8.07,
+          "flow": 3090,
+          "preliminary": "O",
+          "olddatum": false
+        }
+      ],
+      "recent": [
+        {
+          "occurredTime": "2011-08-28T16:00:00Z",
+          "stage": 15.78,
+          "flow": 0,
+          "preliminary": "R",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2011-04-17T03:45:00Z",
+          "stage": 9.55,
+          "flow": 5520,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2011-03-11T06:45:00Z",
+          "stage": 10.72,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2011-03-07T07:45:00Z",
+          "stage": 11.16,
+          "flow": 0,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2008-12-12T00:00:00Z",
+          "stage": 8.07,
+          "flow": 3090,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2005-10-13T00:00:00Z",
+          "stage": 9.85,
+          "flow": 6170,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2005-04-03T00:00:00Z",
+          "stage": 9.87,
+          "flow": 6220,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "2003-12-11T00:00:00Z",
+          "stage": 8.8,
+          "flow": 4200,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1999-09-16T22:00:00Z",
+          "stage": 12.52,
+          "flow": 13800,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1996-01-25T10:30:00Z",
+          "stage": 8.69,
+          "flow": 3420,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1995-11-12T13:45:00Z",
+          "stage": 8.880000000000003,
+          "flow": 4330,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1982-01-05T00:00:00Z",
+          "stage": 8.4,
+          "flow": 2520,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1979-01-25T00:00:00Z",
+          "stage": 9.9,
+          "flow": 4750,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1973-12-21T00:00:00Z",
+          "stage": 10.5,
+          "flow": 6050,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1973-02-03T00:00:00Z",
+          "stage": 9.77,
+          "flow": 4340,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1971-08-28T00:00:00Z",
+          "stage": 10.76,
+          "flow": 6700,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1968-05-29T00:00:00Z",
+          "stage": 11.87,
+          "flow": 8770,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1961-02-26T00:00:00Z",
+          "stage": 8.869999999999997,
+          "flow": 3120,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1957-12-21T00:00:00Z",
+          "stage": 9.33,
+          "flow": 3800,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1955-10-16T00:00:00Z",
+          "stage": 12.53,
+          "flow": 10900,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1955-08-19T00:00:00Z",
+          "stage": 11.35,
+          "flow": 8580,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1938-09-22T00:00:00Z",
+          "stage": 10.4,
+          "flow": 6720,
+          "preliminary": "O",
+          "olddatum": false
+        },
+        {
+          "occurredTime": "1903-10-09T00:00:00Z",
+          "stage": 11,
+          "flow": 12400,
+          "preliminary": "O",
+          "olddatum": true
+        }
+      ]
+    },
+    "lowWaters": {
+      "historic": []
+    },
+    "impacts": [
+      {
+        "stage": 12,
+        "statement": "Major flooding along Route 202 and Route 17 intersection. Road closed. Flooding along Riverview Drive and along Halifax Road and Bridle Path Lane. Flooding on Brakeshoe Place, Brook Street and Catherine Avenue. "
+      },
+      {
+        "stage": 9,
+        "statement": "State Route 202 floods downstream. Moderate flooding along Route 202 and Route 17. Water into backyards. Minor flooding along Brakeshoe Place, Brook Street and Catherine Avenue. "
+      },
+      {
+        "stage": 8,
+        "statement": "Minor flooding along Route 202. "
+      }
+    ]
+  },
+  "images": {
+    "probability": {
+      "weekint": {
+        "stage": "https://water.noaa.gov/resources/probabilistic/exceedance/MAWN4.SSTG.prob.weekint.gif",
+        "flow": "https://water.noaa.gov/resources/probabilistic/exceedance/MAWN4.QINE.prob.weekint.gif",
+        "volume": "https://water.noaa.gov/resources/probabilistic/exceedance/MAWN4.volume.prob.weekint.gif"
+      },
+      "entperiod": {
+        "stage": "https://water.noaa.gov/resources/probabilistic/exceedance/MAWN4.SSTG.exceed.90day.gif",
+        "flow": "https://water.noaa.gov/resources/probabilistic/exceedance/MAWN4.QINE.exceed.90day.gif",
+        "volume": ""
+      },
+      "shortrange": "https://water.noaa.gov/resources/probabilistic/short_term/MAWN4.shortrange.hefs.png"
+    },
+    "hydrograph": {
+      "default": "https://water.noaa.gov/resources/hydrographs/mawn4_hg.png",
+      "floodcat": "https://water.noaa.gov/resources/hydrographs/mawn4_record.png"
+    },
+    "photos": [
+      {
+        "id": "12337095975959007726",
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            41.0975,
+            -74.1633333333333
+          ]
+        },
+        "properties": {
+          "image": "https://water.noaa.gov/resources/photos/mawn4/12337095975959007726.jpeg",
+          "caption": "Ramapo River at Mahwah"
+        }
+      }
+    ]
+  },
+  "dataAttribution": [
+    {
+      "abbrev": "US Geological Survey",
+      "text": "USGS--Water Resources of the United States",
+      "title": "US Geological Survey",
+      "url": "https://waterdata.usgs.gov/nwis"
+    },
+    {
+      "abbrev": "USGS",
+      "text": "01387500",
+      "title": "Observations courtesy of U.S. Geological Survey",
+      "url": "https://waterdata.usgs.gov/nwis/inventory/?site_no=01387500"
+    },
+    {
+      "abbrev": "COE",
+      "text": "NAN",
+      "title": "Observations courtesy of U.S. Army Corps of Engineers",
+      "url": "http://www2.mvr.usace.army.mil/WaterControl/new/layout.cfm"
+    }
+  ],
+  "impactsLowWaters": [],
+  "normalThreshold": {
+    "value": 0,
+    "units": "ft"
+  },
+  "hydronotes": [],
+  "datums": {
+    "vertical": {
+      "value": []
+    },
+    "horizontal": {
+      "value": []
+    },
+    "notes": {
+      "value": []
+    }
+  },
+  "inundation": {
+    "enabled": true,
+    "url": "https://mapservices.weather.noaa.gov/static/rest/services/NWS_FIM/FIM_mawn4/MapServer",
+    "zeroDatum": {
+      "value": 252.2,
+      "datum": "NAVD88"
+    },
+    "downloads": {
+      "depthGrids": "https://water.noaa.gov/resources/downloads/fim/mawn4/mawn4_shapefiles.zip",
+      "images": "https://water.noaa.gov/resources/downloads/fim/mawn4/mawn4_images.zip",
+      "kmz": "https://water.noaa.gov/resources/downloads/fim/mawn4/mawn4_kmz.zip"
+    },
+    "siteSpecificInfo": "",
+    "dataAttribution": [
+      {
+        "text": "USGS",
+        "title": "Observations courtesy of the US Geological Survey",
+        "url": "",
+        "image": "https://water.noaa.gov/resources/fim/"
+      },
+      {
+        "text": "State",
+        "title": "New York and Philadelphia Districts",
+        "url": "http://www.usace.army.mil/",
+        "image": "https://water.noaa.gov/resources/fim/"
+      },
+      {
+        "text": "Partner1",
+        "title": "New Jersey Department of Environmental Protection",
+        "url": "http://www.state.nj.us/dep/",
+        "image": "https://water.noaa.gov/resources/fim/mawn4-partner-01.png"
+      },
+      {
+        "text": "Partner2",
+        "title": "Federal Emergency Management Agency, Region II",
+        "url": "http://www.fema.gov/",
+        "image": "https://water.noaa.gov/resources/fim/mawn4-partner-02.png"
+      }
+    ]
+  },
+  "upstreamLid": "SFFN6",
+  "downstreamLid": "PLUN4",
+  "inService": {
+    "enabled": true,
+    "message": ""
+  },
+  "lowThreshold": {
+    "units": "ft",
+    "value": 0
+  },
+  "forecastReliability": "Forecasts are issued routinely year-round.",
+  "TruncateObs": "-1",
+  "TruncateFcst": "3",
+  "ObservedFloodCategory": "no_flooding",
+  "ForecastFloodCategory": "no_flooding"
+}

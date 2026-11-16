@@ -1,0 +1,11 @@
+{
+  "pedts": "HMIFE",
+  "issuedTime": "2026-11-15T08:47:00Z",
+  "wfo": "OKX",
+  "timeZone": "EST5EDT",
+  "primaryName": "Tide Height",
+  "primaryUnits": "ft",
+  "secondaryName": "Flow",
+  "secondaryUnits": "kcfs",
+  "data": []
+}
