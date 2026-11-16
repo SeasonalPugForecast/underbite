@@ -2331,22 +2331,12 @@ mod tests {
         assert!(
             matches!(&link.place, LinkPlace::Station { station, .. } if station.id == "USGS-01375000")
         );
-        // Katonah defines no flood stages. The dam gauge's link needs the history of both its
-        // series, and its gage height series (00065) has no recording yet.
+        // Katonah defines no flood stages. The gage height history (00065) has no recording
+        // yet, but history is optional: the latest discharge and gage height still arrive.
         assert_eq!(
             errors(s),
             [
                 ("usgs".into(), None, SourceErrorKind::Transport),
-                (
-                    "usgs".into(),
-                    Some(M::Discharge),
-                    SourceErrorKind::Transport
-                ),
-                (
-                    "usgs".into(),
-                    Some(M::GageHeight),
-                    SourceErrorKind::Transport
-                ),
                 (
                     "nwps".into(),
                     Some(M::FloodCategories),
@@ -2354,11 +2344,8 @@ mod tests {
                 ),
             ]
         );
-        assert!(
-            s.errors[1]
-                .message
-                .contains("time_series_id=1d9a520f9f5d468099e5726040bfe317")
-        );
+        assert!(s.water.discharge_m3s.is_some());
+        assert!(s.water.gage_height.is_some());
         for url in transport.seen() {
             assert_rounded(&url);
         }

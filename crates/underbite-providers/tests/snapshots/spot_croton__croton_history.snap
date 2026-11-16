@@ -43,7 +43,7 @@ expression: "replay::summary(&outcome, &served)"
       "provenance": {
         "distance_m": 1000.0,
         "kind": "observed",
-        "observed_at": 1794096000,
+        "observed_at": 1794145500,
         "quality": "provisional",
         "relation": "same_water_body",
         "source": "usgs",
@@ -68,10 +68,10 @@ expression: "replay::summary(&outcome, &served)"
         },
         "last": {
           "quality": "provisional",
-          "time": 1794096000,
-          "value": 0.36528730392456055
+          "time": 1794145500,
+          "value": 0.35112887620925903
         },
-        "len": 673
+        "len": 674
       }
     }
   }
