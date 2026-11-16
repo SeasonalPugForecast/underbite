@@ -10,6 +10,7 @@ use anyhow::{Context, anyhow, bail};
 use underbite_core::model::{Measurement, Requirements};
 use underbite_core::provenance::{Relation, SourceId, StationKind, StationRef};
 use underbite_core::time::{UnixTime, day_number, parse_date};
+use underbite_fetch::Call;
 use underbite_providers::coops::{Coops, mdapi};
 use underbite_providers::ndbc::Ndbc;
 use underbite_providers::request::{
@@ -20,7 +21,6 @@ use underbite_providers::usgs::Usgs;
 
 use crate::cli::Global;
 use crate::runtime::env::Env;
-use crate::runtime::transport::Call;
 
 /// Arguments of `underbite record`.
 #[derive(Debug, clap::Args)]
@@ -317,9 +317,7 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
     }
     let path = destination(&args.out, &plan, args.name.as_deref(), args.force)?;
     let call = recording_call(&plan.request);
-    let fetched = env
-        .host()
-        .send(&call)
+    let fetched = pollster::block_on(underbite_fetch::send(&env.host(), &call))
         .with_context(|| format!("request to {}", call.redacted_url()))?;
     if !(200..300).contains(&fetched.status) {
         bail!(
@@ -436,7 +434,7 @@ mod tests {
     #[test]
     fn a_recording_is_the_apps_request_and_never_answered_from_the_cache() {
         use crate::runtime::cache::Cache;
-        use crate::runtime::transport::Fetched;
+        use underbite_fetch::Fetched;
 
         let dir = tempfile::tempdir().unwrap();
         let cache = Cache::at(dir.path());

@@ -1,10 +1,9 @@
 //! HTTP transport over ureq, and replay of recorded responses.
 //!
-//! One [`Transport`] serves both Underbite's own [`Request`] and whether's [`HttpRequest`]
+//! One [`Transport`] sends every [`Call`] of a fetch: Underbite's own requests and whether's
 //! (the weather and storm sessions). Network I/O lives only here: the sessions build requests
 //! and parse bytes. Every URL that reaches a message or a log goes through [`redact_url`].
 
-use std::fmt;
 use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -13,11 +12,10 @@ use std::time::Duration;
 
 use serde::Deserialize;
 use underbite_core::time::UnixTime;
-use underbite_providers::request::{
-    CacheHint, Request, Response, is_secret_header, redact_url, secret_values,
-};
+use underbite_fetch::{Call, Fetched, TransportError};
+use underbite_providers::request::{redact_url, secret_values};
 use whether_core::time::parse_http_date;
-use whether_providers::{HttpRequest, Method};
+use whether_providers::Method;
 
 /// Largest response body accepted, after decompression.
 pub(crate) const MAX_BODY: u64 = 8 * 1024 * 1024;
@@ -25,175 +23,6 @@ pub(crate) const MAX_BODY: u64 = 8 * 1024 * 1024;
 /// The User-Agent: `underbite/<version>`.
 pub(crate) fn user_agent() -> String {
     format!("underbite/{}", env!("CARGO_PKG_VERSION"))
-}
-
-/// One HTTP call, built from either kind of request.
-#[derive(Clone, PartialEq)]
-pub(crate) struct Call {
-    /// Full URL; may carry a key, so show it only through [`redact_url`].
-    pub(crate) url: String,
-    /// Extra headers.
-    pub(crate) headers: Vec<(&'static str, String)>,
-    /// GET, or POST with a JSON body.
-    pub(crate) method: Method,
-    /// The JSON body of a POST.
-    pub(crate) body: Option<String>,
-    /// How the response may be cached.
-    pub(crate) cache: CacheHint,
-}
-
-impl Call {
-    /// A GET of `url` with default caching.
-    pub(crate) fn get(url: impl Into<String>) -> Self {
-        Self::new(
-            url.into(),
-            Vec::new(),
-            Method::Get,
-            None,
-            CacheHint::default(),
-        )
-    }
-
-    fn new(
-        url: String,
-        headers: Vec<(&'static str, String)>,
-        method: Method,
-        body: Option<String>,
-        mut cache: CacheHint,
-    ) -> Self {
-        let keyed = !secret_values(&url).is_empty()
-            || headers.iter().any(|(name, _)| is_secret_header(name));
-        cache.no_store |= keyed;
-        Self {
-            url,
-            headers,
-            method,
-            body,
-            cache,
-        }
-    }
-
-    /// The same call with other cache hints (the storm plan's).
-    pub(crate) fn with_cache(mut self, cache: CacheHint) -> Self {
-        self.cache.fresh = cache.fresh;
-        self.cache.no_store |= cache.no_store;
-        self.cache.max_age = cache.max_age;
-        self
-    }
-
-    /// Whether the response may be written to disk: never when the call carries a key.
-    pub(crate) fn may_store_on_disk(&self) -> bool {
-        !self.cache.no_store
-    }
-
-    /// The URL with secrets masked, for messages and logs.
-    pub(crate) fn redacted_url(&self) -> String {
-        redact_url(&self.url)
-    }
-}
-
-impl From<&Request> for Call {
-    fn from(req: &Request) -> Self {
-        let mut call = Self::new(
-            req.url.clone(),
-            req.headers.clone(),
-            Method::Get,
-            None,
-            req.cache,
-        );
-        call.cache.no_store |= !req.may_store_on_disk();
-        call
-    }
-}
-
-impl From<&HttpRequest> for Call {
-    fn from(req: &HttpRequest) -> Self {
-        Self::new(
-            req.url.clone(),
-            req.headers.clone(),
-            req.method,
-            req.body.clone(),
-            CacheHint::default(),
-        )
-    }
-}
-
-impl fmt::Debug for Call {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Call")
-            .field("url", &self.redacted_url())
-            .field("method", &self.method)
-            .field("cache", &self.cache)
-            .finish_non_exhaustive()
-    }
-}
-
-/// A response that owns its bytes and the headers the sessions use.
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub(crate) struct Fetched {
-    /// Status code.
-    pub(crate) status: u16,
-    /// Body bytes, decompressed.
-    pub(crate) body: Vec<u8>,
-    /// The `Content-Type` header.
-    pub(crate) content_type: Option<String>,
-    /// The `Date` header.
-    pub(crate) date: Option<UnixTime>,
-    /// The `Expires` header.
-    pub(crate) expires: Option<UnixTime>,
-    /// `max-age` of `Cache-Control`, seconds.
-    pub(crate) cache_max_age: Option<u32>,
-    /// The `Last-Modified` header.
-    pub(crate) last_modified: Option<String>,
-    /// The `ETag` header.
-    pub(crate) etag: Option<String>,
-    /// `Retry-After`, seconds (a date is converted against the `Date` header).
-    pub(crate) retry_after: Option<u32>,
-    /// The `X-RateLimit-Remaining` header.
-    pub(crate) rate_limit_remaining: Option<u32>,
-}
-
-impl Fetched {
-    /// A response with just a status and body.
-    pub(crate) fn new(status: u16, body: impl Into<Vec<u8>>) -> Self {
-        Self {
-            status,
-            body: body.into(),
-            ..Self::default()
-        }
-    }
-
-    /// A borrowed view for the sources.
-    pub(crate) fn as_response(&self) -> Response<'_> {
-        Response {
-            status: self.status,
-            body: &self.body,
-            content_type: self.content_type.as_deref(),
-            date: self.date,
-            expires: self.expires,
-            cache_max_age: self.cache_max_age,
-            last_modified: self.last_modified.as_deref(),
-            etag: self.etag.as_deref(),
-            retry_after: self.retry_after,
-            rate_limit_remaining: self.rate_limit_remaining,
-        }
-    }
-}
-/// Why a call got no response. Messages never contain secrets.
-#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
-pub(crate) enum TransportError {
-    /// The request or connection timed out.
-    #[error("timed out: {0}")]
-    Timeout(String),
-    /// The body was larger than the cap.
-    #[error("response larger than {0} bytes")]
-    TooLarge(u64),
-    /// DNS, TLS, connection or protocol failure.
-    #[error("{0}")]
-    Failed(String),
-    /// Replay has no route for this (redacted) URL.
-    #[error("no replay route for {0}")]
-    NoRoute(String),
 }
 
 /// Performs HTTP calls. Implemented by [`UreqTransport`] and [`Replay`].
@@ -483,9 +312,6 @@ mod tests {
     use std::io::Write;
     use std::net::TcpListener;
     use std::thread;
-    use underbite_providers::request::{
-        Coordinates, Place, Resource, RoundedPoint, Target, Window,
-    };
 
     /// Serves one canned response to the next connection; returns the base URL.
     fn serve(response: Vec<u8>) -> (String, thread::JoinHandle<String>) {
@@ -633,43 +459,6 @@ mod tests {
         assert_eq!(max_age("no-store"), None);
         assert_eq!(retry_after("120", None), Some(120));
         assert_eq!(retry_after("Sun, 15 Nov 2026 12:00:42 GMT", None), None);
-    }
-
-    fn target() -> Target {
-        Target {
-            place: Place::Point(RoundedPoint::new(
-                Coordinates {
-                    latitude: 40.7,
-                    longitude: -74.02,
-                },
-                2,
-            )),
-            measurements: std::collections::BTreeSet::new(),
-            window: Window {
-                from: UnixTime(0),
-                to: UnixTime(1),
-            },
-            datum: None,
-        }
-    }
-
-    #[test]
-    fn keyed_calls_are_never_stored() {
-        let keyed = Request::new(
-            "https://api.example.test/a?site=1&api_key=K".into(),
-            Resource::CoopsStations,
-            target(),
-        );
-        assert!(!Call::from(&keyed).may_store_on_disk());
-        assert!(!format!("{:?}", Call::from(&keyed)).contains("api_key=K"));
-        let plain = Request::new(
-            "https://api.example.test/a".into(),
-            Resource::CoopsStations,
-            target(),
-        );
-        assert!(Call::from(&plain).may_store_on_disk());
-        let with_header = plain.header("X-Api-Key", "K");
-        assert!(!Call::from(&with_header).may_store_on_disk());
     }
 
     const ROUTES: &str = r#"

@@ -5,9 +5,11 @@
 
 use anyhow::{Context, anyhow};
 use underbite_core::time::{UnixTime, parse_rfc3339};
+use underbite_fetch::FetchOptions;
+use underbite_providers::source::Secrets;
 
 use super::cache::Cache;
-use super::fetch::{FetchOptions, Host};
+use super::host::CliHost;
 use super::transport::{Replay, Transport, UreqTransport, user_agent};
 use crate::cli::Global;
 
@@ -48,18 +50,26 @@ impl Env {
             transport,
             cache: Cache::from_env(lookup).context("the cache directory")?,
             now,
-            options: FetchOptions::from_env(lookup),
+            options: fetch_options(lookup),
         })
     }
 
     /// A host over this environment's transport and cache, at its time.
-    pub(crate) fn host(&self) -> Host<'_> {
-        Host::new(
-            self.transport.as_ref(),
-            self.cache.as_ref(),
-            self.now,
-            self.options.allow_metered,
-        )
+    pub(crate) fn host(&self) -> CliHost<'_> {
+        CliHost::new(self.transport.as_ref(), self.cache.as_ref(), self.now)
+    }
+}
+
+/// Metered calls allowed, the USGS key from `USGS_API_KEY` (read through `lookup`), the tool's
+/// User-Agent, and the spot's own water type.
+fn fetch_options(lookup: impl Fn(&str) -> Option<String>) -> FetchOptions {
+    FetchOptions {
+        allow_metered: true,
+        secrets: Secrets {
+            usgs_api_key: lookup("USGS_API_KEY").filter(|k| !k.trim().is_empty()),
+        },
+        user_agent: user_agent(),
+        infer_water_type: false,
     }
 }
 
@@ -125,9 +135,8 @@ mod tests {
     fn replay_answers_from_its_directory_and_a_missing_one_fails() {
         let env = lookup(&[]);
         let replayed = Env::new(&global(Some(battery()), None), &env, || UnixTime(0)).unwrap();
-        let call = super::super::transport::Call::get(
-            "https://api.weather.gov/points/40.7,-74.02".to_owned(),
-        );
+        let call =
+            underbite_fetch::Call::get("https://api.weather.gov/points/40.7,-74.02".to_owned());
         assert_eq!(replayed.transport.send(&call).unwrap().status, 200);
         let missing = PathBuf::from("/nonexistent/replay");
         assert!(Env::new(&global(Some(missing), None), &env, || UnixTime(0)).is_err());

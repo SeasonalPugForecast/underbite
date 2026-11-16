@@ -14,6 +14,7 @@ publish = false
 underbite-core = { path = "crates/underbite-core" }
 underbite-providers = { path = "crates/underbite-providers" }
 underbite-config = { path = "crates/underbite-config" }
+underbite-fetch = { path = "crates/underbite-fetch" }
 
 # whether's crates, pinned by revision. They opt into features explicitly, so each
 # consumer here names the features it needs.

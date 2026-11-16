@@ -11,6 +11,7 @@ publish.workspace = true
 underbite-core.workspace = true
 underbite-providers.workspace = true
 underbite-config.workspace = true
+underbite-fetch.workspace = true
 whether-core = { workspace = true, features = ["serde"] }
 whether-providers = { workspace = true, features = ["serde"] }
 ureq.workspace = true
@@ -23,6 +24,7 @@ anyhow.workspace = true
 clap.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
+pollster.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

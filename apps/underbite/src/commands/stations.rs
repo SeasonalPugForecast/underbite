@@ -15,12 +15,12 @@ use underbite_core::discover::rank::{CoverageState, MeasurementRanking, Reason, 
 use underbite_core::model::{Measurement, Spot, WaterType};
 use underbite_core::provenance::{Relation, SourceId};
 use underbite_core::view::format::Formatter;
-use underbite_providers::source::FetchContext;
+use underbite_fetch::{requirements, stations_near};
 
 use super::spot::point_id;
 use crate::cli::Global;
 use crate::runtime::env::Env;
-use crate::runtime::fetch::{chain_specs, discover, load_choices, requirements, save_choices};
+use crate::runtime::host::{load_choices, save_choices};
 
 /// Arguments of `underbite stations`.
 #[derive(Debug, clap::Args)]
@@ -339,12 +339,14 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
             bail!("none of those measurements is shown for {water_type} water");
         }
     }
-    let chains = chain_specs(&config.sources, &wanted, water);
-    let host = env.host();
-    let ctx = FetchContext::new(env.now, env.options.user_agent.clone())
-        .with_coordinate_precision(config.sources.coordinate_precision)
-        .with_secrets(env.options.secrets.clone());
-    let found = discover(&host, &ctx, &spot, chains);
+    let found = pollster::block_on(stations_near(
+        &env.host(),
+        &spot,
+        &config,
+        &wanted,
+        env.now,
+        &env.options,
+    ));
     if let Some(cache) = env.cache.as_ref() {
         let choices = load_choices(cache, &spot.id);
         for warning in unmatched_choices(&choices, &found.ranking.measurements) {

@@ -1134,6 +1134,7 @@ dependencies = [
  "clap",
  "insta",
  "jiff",
+ "pollster",
  "serde",
  "serde_json",
  "tempfile",
@@ -1143,6 +1144,7 @@ dependencies = [
  "tracing-subscriber",
  "underbite-config",
  "underbite-core",
+ "underbite-fetch",
  "underbite-providers",
  "ureq",
  "whether-core",
@@ -1174,6 +1176,24 @@ dependencies = [
  "serde_json",
  "thiserror",
  "whether-core",
+]
+
+[[package]]
+name = "underbite-fetch"
+version = "0.1.0"
+dependencies = [
+ "jiff",
+ "pollster",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "toml",
+ "tracing",
+ "underbite-config",
+ "underbite-core",
+ "underbite-providers",
+ "whether-core",
+ "whether-providers",
 ]
 
 [[package]]

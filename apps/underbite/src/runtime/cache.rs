@@ -1,38 +1,25 @@
 //! The on-disk cache: JSON files under `$XDG_CACHE_HOME/underbite/v1`, written atomically.
 //!
-//! Two kinds of entries live here. Values (station lists, harmonic metadata, normals,
-//! discovery results, the last snapshot of a spot, the usage ledger) are JSON files by
-//! namespace and key. Responses are a body file and a small metadata file named by a hash of the
-//! redacted URL. Neither URLs nor keys appear in a file or in a file name, a response to a
-//! keyed request is never written, and a request for a fresh copy bypasses the cache.
+//! Two kinds of entries live here. Values (station lists, discovery results, the last snapshot
+//! of a spot, the usage ledger, a spot's pins and exclusions) are JSON files by namespace and
+//! key, in the shape of [`Stored`]. Responses are a body file and a small metadata file named by
+//! a hash of the redacted URL. Neither URLs nor keys appear in a file or in a file name, a
+//! response to a keyed request is never written, and a request for a fresh copy bypasses the
+//! cache.
 
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use serde::de::DeserializeOwned;
+use serde::de::{DeserializeOwned, IgnoredAny};
 use serde::{Deserialize, Serialize};
 use underbite_core::time::UnixTime;
-
-use super::transport::{Call, Fetched};
+use underbite_fetch::store::Stored;
+use underbite_fetch::{Call, Fetched};
 
 /// Directory name of the current cache format, below `underbite/`.
 const VERSION_DIR: &str = "v1";
-
-/// How long a CO-OPS station list stays valid, seconds.
-pub(crate) const COOPS_STATION_LIST_TTL_S: i64 = 7 * 86_400;
-/// How long the other stations lists stay valid, seconds.
-pub(crate) const STATION_LIST_TTL_S: i64 = 86_400;
-
-/// A value with when it was stored.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Stored<T> {
-    /// When it was stored, Unix seconds.
-    pub(crate) saved_at: i64,
-    /// The value.
-    pub(crate) value: T,
-}
 
 /// What a cached response needs besides its body.
 #[derive(Debug, Serialize, Deserialize)]
@@ -103,11 +90,6 @@ impl Cache {
         &self.dir
     }
 
-    /// The key of a spot: a hash of its id, never its coordinates.
-    pub(crate) fn spot_key(spot_id: &str) -> String {
-        format!("spot-{:016x}", fnv1a(spot_id.as_bytes()))
-    }
-
     fn value_path(&self, namespace: &str, key: &str) -> io::Result<PathBuf> {
         for part in [namespace, key] {
             let ok = !part.is_empty()
@@ -133,13 +115,17 @@ impl Cache {
         value: &T,
         now: UnixTime,
     ) -> io::Result<()> {
-        let path = self.value_path(namespace, key)?;
-        let json = serde_json::to_vec(&Stored {
+        let json = serde_json::to_string(&Stored {
             saved_at: now.0,
             value,
         })
         .map_err(io::Error::other)?;
-        write_atomic(&path, &json)
+        self.put_text(namespace, key, &json)
+    }
+
+    /// Stores `text`, a value already in the shape of [`Stored`], under `namespace` and `key`.
+    pub(crate) fn put_text(&self, namespace: &str, key: &str, text: &str) -> io::Result<()> {
+        write_atomic(&self.value_path(namespace, key)?, text.as_bytes())
     }
 
     /// The stored value. A corrupt file is logged and deleted.
@@ -156,17 +142,26 @@ impl Cache {
         }
     }
 
-    /// The stored value when it is at most `max_age_s` old at `now`.
-    pub(crate) fn get_within<T: DeserializeOwned>(
-        &self,
-        namespace: &str,
-        key: &str,
-        now: UnixTime,
-        max_age_s: i64,
-    ) -> Option<T> {
-        let stored = self.get::<T>(namespace, key)?;
-        let age = now.0 - stored.saved_at;
-        (0..=max_age_s).contains(&age).then_some(stored.value)
+    /// The text of a stored value, for a reader that knows its type. A file that is not a
+    /// stored value at all is logged and deleted.
+    pub(crate) fn get_text(&self, namespace: &str, key: &str) -> Option<String> {
+        let path = self.value_path(namespace, key).ok()?;
+        let bytes = fs::read(&path).ok()?;
+        let checked = String::from_utf8(bytes)
+            .map_err(|e| e.to_string())
+            .and_then(|text| {
+                serde_json::from_str::<Stored<IgnoredAny>>(&text)
+                    .map(|_| text)
+                    .map_err(|e| e.to_string())
+            });
+        match checked {
+            Ok(text) => Some(text),
+            Err(e) => {
+                tracing::warn!(namespace, error = %e, "deleting corrupt cache file");
+                let _ = fs::remove_file(&path);
+                None
+            }
+        }
     }
 
     /// Deletes a stored value; a missing one is not an error.
@@ -358,31 +353,27 @@ mod tests {
     }
 
     #[test]
-    fn values_round_trip_and_expire() {
+    fn values_round_trip() {
         let (_guard, cache) = cache();
         let list = vec!["8518750".to_string(), "8531680".to_string()];
         cache
             .put("stations-coops", "list", &list, NOW)
             .expect("put");
-        let later = UnixTime(NOW.0 + 3 * 86_400);
+        let stored = cache
+            .get::<Vec<String>>("stations-coops", "list")
+            .expect("stored");
+        assert_eq!((stored.saved_at, &stored.value), (NOW.0, &list));
+        let text = cache.get_text("stations-coops", "list").expect("text");
         assert_eq!(
-            cache.get_within::<Vec<String>>(
-                "stations-coops",
-                "list",
-                later,
-                COOPS_STATION_LIST_TTL_S
-            ),
-            Some(list.clone())
+            text,
+            format!(r#"{{"saved_at":{},"value":["8518750","8531680"]}}"#, NOW.0)
         );
+        cache
+            .put_text("stations-coops", "copy", &text)
+            .expect("put text");
         assert_eq!(
-            cache.get_within::<Vec<String>>("stations-coops", "list", later, STATION_LIST_TTL_S),
-            None
-        );
-        assert_eq!(
-            cache
-                .get::<Vec<String>>("stations-coops", "list")
-                .map(|s| s.saved_at),
-            Some(NOW.0)
+            cache.get::<Vec<String>>("stations-coops", "copy"),
+            Some(stored)
         );
         cache.remove("stations-coops", "list").expect("remove");
         cache
@@ -397,18 +388,14 @@ mod tests {
         write_atomic(&cache.dir().join("ns").join("k.json"), b"{not json").expect("write");
         assert!(cache.get::<u8>("ns", "k").is_none());
         assert!(!cache.dir().join("ns").join("k.json").exists());
+        write_atomic(&cache.dir().join("ns").join("k.json"), b"[1]").expect("write");
+        assert!(cache.get_text("ns", "k").is_none());
+        assert!(!cache.dir().join("ns").join("k.json").exists());
+        assert!(cache.put_text("ns", "../escape", "{}").is_err());
         assert!(cache.put("ns", "../escape", &1u8, NOW).is_err());
         assert!(cache.put("a/b", "k", &1u8, NOW).is_err());
         assert!(cache.put("ns", "", &1u8, NOW).is_err());
         assert!(cache.put("ns", ".hidden", &1u8, NOW).is_err());
-    }
-
-    #[test]
-    fn spot_keys_hide_the_coordinates() {
-        let key = Cache::spot_key("battery");
-        assert!(key.starts_with("spot-") && key.len() == 21, "{key}");
-        assert_eq!(key, Cache::spot_key("battery"));
-        assert_ne!(key, Cache::spot_key("croton"));
     }
 
     #[test]
@@ -557,7 +544,12 @@ mod tests {
             .store_response(&call, &json_response(Some(600)), NOW)
             .expect("store");
         cache
-            .put("spot", &Cache::spot_key("battery"), &"snapshot", NOW)
+            .put(
+                "spot",
+                &underbite_fetch::store::spot_key("battery"),
+                &"snapshot",
+                NOW,
+            )
             .expect("put");
         for file in list_files(cache.dir()) {
             assert!(

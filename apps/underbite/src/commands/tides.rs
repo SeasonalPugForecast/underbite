@@ -17,6 +17,7 @@ use underbite_core::time::{LocalDate, UnixTime, local_date, local_date_bounds, p
 use underbite_core::view::Quantity;
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::Key;
+use underbite_fetch::{Call, Fetched};
 use underbite_providers::coops::mdapi::{self, Metadata, StationList};
 use underbite_providers::coops::{Coops, CoopsHarmonics};
 use underbite_providers::request::{
@@ -27,8 +28,7 @@ use underbite_providers::source::{FetchContext, FragmentValue, Fragments, Source
 
 use crate::cli::Global;
 use crate::runtime::env::Env;
-use crate::runtime::fetch::Host;
-use crate::runtime::transport::{Call, Fetched};
+use crate::runtime::host::CliHost;
 
 /// Arguments of `underbite tides`.
 #[derive(Debug, clap::Args)]
@@ -83,8 +83,8 @@ struct Detail {
 }
 
 /// One request through the host, the URL (redacted) named when it fails.
-fn send(host: &Host<'_>, call: &Call) -> anyhow::Result<Fetched> {
-    host.send(call)
+fn send(host: &CliHost<'_>, call: &Call) -> anyhow::Result<Fetched> {
+    pollster::block_on(underbite_fetch::send(host, call))
         .with_context(|| format!("request to {}", call.redacted_url()))
 }
 
@@ -98,7 +98,7 @@ fn target_for(place: Place, window: Window) -> Target {
 }
 
 /// The tide prediction station `id` from CO-OPS's list.
-fn find_station(host: &Host<'_>, ctx: &FetchContext, id: &str) -> anyhow::Result<StationRef> {
+fn find_station(host: &CliHost<'_>, ctx: &FetchContext, id: &str) -> anyhow::Result<StationRef> {
     let point = ctx.round(Coordinates {
         latitude: 0.0,
         longitude: 0.0,
@@ -124,7 +124,7 @@ fn find_station(host: &Host<'_>, ctx: &FetchContext, id: &str) -> anyhow::Result
 }
 
 /// The zone the station's clock shows; UTC (and a note) when CO-OPS does not say.
-fn station_zone(host: &Host<'_>, id: &str) -> (TimeZone, String) {
+fn station_zone(host: &CliHost<'_>, id: &str) -> (TimeZone, String) {
     let found = (|| -> anyhow::Result<String> {
         let url = format!("{}/stations/{id}.json", mdapi::BASE);
         let call = Call::get(url).with_cache(CacheHint {
@@ -160,7 +160,7 @@ fn station_zone(host: &Host<'_>, id: &str) -> (TimeZone, String) {
 
 /// NOAA's published predictions, one request per range the API allows.
 fn online(
-    host: &Host<'_>,
+    host: &CliHost<'_>,
     ctx: &FetchContext,
     place: Place,
     window: Window,
@@ -239,7 +239,7 @@ fn parse_with(
 /// subordinate station, its reference's and its offsets), through the session that follows the
 /// metadata requests.
 fn offline(
-    host: &Host<'_>,
+    host: &CliHost<'_>,
     ctx: &FetchContext,
     place: Place,
     window: Window,

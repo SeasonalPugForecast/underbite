@@ -16,10 +16,10 @@ use underbite_core::time::UnixTime;
 use underbite_core::view::{
     Card, CardState, Quantity, RiverRanges, SolunarSettings, SpotView, ViewInput, build_view,
 };
+use underbite_fetch::{FetchOptions, fetch_spot, measurement_limits};
 
 use crate::cli::Global;
 use crate::runtime::env::{Env, var};
-use crate::runtime::fetch::{FetchOptions, fetch_spot_with, measurement_limits};
 
 /// Arguments of `underbite spot`.
 #[derive(Debug, clap::Args)]
@@ -73,14 +73,7 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
         infer_water_type: water_type.is_none(),
         ..env.options.clone()
     };
-    let fetched = fetch_spot_with(
-        &spot,
-        &config,
-        now,
-        env.transport.as_ref(),
-        env.cache.as_ref(),
-        &options,
-    );
+    let fetched = pollster::block_on(fetch_spot(&env.host(), &spot, &config, now, &options));
     if water_type.is_none() {
         eprintln!(
             "underbite: {}",
