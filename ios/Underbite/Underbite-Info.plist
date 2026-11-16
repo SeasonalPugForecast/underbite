@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Merged into the generated Info.plist (the rest is in the target's build settings).
+     Location is "when in use" only: no background location, no background modes yet. -->
+<plist version="1.0">
+<dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Finds the water and the stations near you when you ask. Your exact location stays on this device: data services only see it rounded, to about a kilometre or more.</string>
+</dict>
+</plist>

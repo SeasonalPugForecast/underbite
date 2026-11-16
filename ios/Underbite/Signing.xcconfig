@@ -1,0 +1,18 @@
+// Signing for running on your iPhone or iPad. Your team and, if Apple asks for
+// a different one, the bundle identifier go in Signing.local.xcconfig next to
+// this file (gitignored, and never overwritten by `cargo xtask ios remote`):
+//
+//     DEVELOPMENT_TEAM = ABCDE12345
+//     UNDERBITE_BUNDLE_ID = dev.yourname.underbite
+//
+// `team = "ABCDE12345"` in ios/remote.local.toml makes `cargo xtask ios remote
+// device` write that file on the Mac.
+
+#include "Version.xcconfig"
+
+// The app's bundle identifier; the keychain items keep `dev.savery.underbite`
+// as their service whatever it is.
+UNDERBITE_BUNDLE_ID = dev.savery.underbite
+PRODUCT_BUNDLE_IDENTIFIER = $(UNDERBITE_BUNDLE_ID)
+
+#include? "Signing.local.xcconfig"

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- No capabilities yet: App Groups, background refresh and iCloud come with the
+     features that need them. -->
+<plist version="1.0">
+<dict/>
+</plist>
