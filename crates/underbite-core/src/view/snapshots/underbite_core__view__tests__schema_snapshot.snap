@@ -43,6 +43,26 @@ expression: schema
     "notices"
   ],
   "$defs": {
+    "Agreement": {
+      "description": "How closely the models agree on an event.",
+      "oneOf": [
+        {
+          "description": "The models tell the same story.",
+          "type": "string",
+          "const": "high"
+        },
+        {
+          "description": "They differ in amounts or placement.",
+          "type": "string",
+          "const": "medium"
+        },
+        {
+          "description": "They tell different stories.",
+          "type": "string",
+          "const": "low"
+        }
+      ]
+    },
     "AlertOrigin": {
       "type": "string",
       "enum": [
@@ -320,6 +340,19 @@ expression: schema
             }
           },
           "$ref": "#/$defs/MarineForecastCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "storm_ahead"
+            }
+          },
+          "$ref": "#/$defs/StormAheadCard",
           "required": [
             "card"
           ]
@@ -1138,6 +1171,89 @@ expression: schema
       "required": [
         "name",
         "text"
+      ]
+    },
+    "HurricaneAheadVm": {
+      "description": "A hurricane whose forecast cone reaches the spot.",
+      "type": "object",
+      "properties": {
+        "advisory": {
+          "description": "\"Advisory Thu 5:00 PM\"",
+          "type": "string"
+        },
+        "advisory_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "category": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0
+        },
+        "classification": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "leaves_at": {
+          "description": "When the cone leaves the spot.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "movement": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "pressure": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "reaches": {
+          "description": "\"The forecast cone reaches this spot on Thu Jan 21\", or \"This spot is in the forecast cone\".",
+          "type": "string"
+        },
+        "reaches_at": {
+          "description": "When the cone reaches the spot (now when it is there already).",
+          "type": "integer",
+          "format": "int64"
+        },
+        "severity": {
+          "$ref": "#/$defs/StormSeverity"
+        },
+        "strength": {
+          "description": "NHC's strength line: \"Winds 65 mph · 29.18 inHg · NE at 13 mph\".",
+          "type": "string"
+        },
+        "title": {
+          "description": "\"Hurricane Josephine · Category 1\"",
+          "type": "string"
+        },
+        "wind": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "title",
+        "classification",
+        "severity",
+        "wind",
+        "pressure",
+        "movement",
+        "strength",
+        "advisory",
+        "reaches",
+        "reaches_at",
+        "leaves_at"
       ]
     },
     "Kd490Vm": {
@@ -1980,6 +2096,215 @@ expression: schema
         "relation",
         "kind",
         "state"
+      ]
+    },
+    "StormAgreementVm": {
+      "description": "How well the models agree on the event's totals.",
+      "type": "object",
+      "properties": {
+        "agreement": {
+          "$ref": "#/$defs/Agreement"
+        },
+        "label": {
+          "description": "\"High agreement\", \"Medium agreement\", \"Low agreement\".",
+          "type": "string"
+        },
+        "sentence": {
+          "description": "\"ECMWF brings 14 in of snow; GFS 3 in.\" Empty when the models cannot be told apart.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "agreement",
+        "label",
+        "sentence"
+      ]
+    },
+    "StormAheadCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/StormAheadFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "StormAheadFull": {
+      "type": "object",
+      "properties": {
+        "event": {
+          "description": "The storm from the forecast models, when one is coming.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StormEventVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hurricanes": {
+          "description": "Hurricanes whose cone reaches the spot, the soonest first.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HurricaneAheadVm"
+          }
+        },
+        "sections": {
+          "description": "Why the card shows, and the safety text.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        }
+      },
+      "required": [
+        "hurricanes",
+        "sections"
+      ]
+    },
+    "StormEventVm": {
+      "description": "The coming storm from the forecast models.",
+      "type": "object",
+      "properties": {
+        "agreement": {
+          "description": "Absent when fewer than two models have a total.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StormAgreementVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "end": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "headline": {
+          "$ref": "#/$defs/StormHeadlineVm"
+        },
+        "models": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StormModelRowVm"
+          }
+        },
+        "severity": {
+          "$ref": "#/$defs/StormSeverity"
+        },
+        "start": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "title": {
+          "description": "\"Storm ahead · Sat night – Mon night\"",
+          "type": "string"
+        },
+        "window": {
+          "description": "When the rain or snow falls: \"Sat night – Mon night\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "window",
+        "start",
+        "end",
+        "severity",
+        "headline",
+        "models"
+      ]
+    },
+    "StormHeadlineKind": {
+      "description": "What made the weather event significant.",
+      "type": "string",
+      "enum": [
+        "snow",
+        "rain",
+        "gusts"
+      ]
+    },
+    "StormHeadlineVm": {
+      "description": "The figure that goes furthest past its threshold, as the most any model brings.",
+      "type": "object",
+      "properties": {
+        "amount": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "kind": {
+          "$ref": "#/$defs/StormHeadlineKind"
+        },
+        "text": {
+          "description": "\"Up to 14 in of snow\", \"Up to 1.7 in of rain\" or \"Gusts to 52 mph\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text",
+        "amount"
+      ]
+    },
+    "StormModelRowVm": {
+      "description": "One model's numbers for the event.",
+      "type": "object",
+      "properties": {
+        "gust": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "low": {
+          "description": "The lowest pressure at the spot.",
+          "$ref": "#/$defs/Quantity"
+        },
+        "low_at": {
+          "description": "\"Sun 1 PM\"",
+          "type": "string"
+        },
+        "model": {
+          "description": "The model's short name: \"ECMWF\".",
+          "type": "string"
+        },
+        "onset": {
+          "description": "When the precipitation starts: \"Sat 9 PM\".",
+          "type": "string"
+        },
+        "precipitation": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "snow": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "required": [
+        "model",
+        "snow",
+        "precipitation",
+        "gust",
+        "low",
+        "low_at",
+        "onset"
+      ]
+    },
+    "StormSeverity": {
+      "description": "How strong a coming storm is, for colouring: a model storm is a watch-level signal; a\ncyclone follows NHC's classification.",
+      "type": "string",
+      "enum": [
+        "watch",
+        "strong",
+        "severe",
+        "extreme"
       ]
     },
     "SunMoonCard": {

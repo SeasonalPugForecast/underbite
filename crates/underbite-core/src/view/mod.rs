@@ -21,8 +21,8 @@ use crate::units::{DischargeUnit, DistanceUnit, HeightUnit, PressureUnit, SpeedU
 use cards::{
     alerts::AlertsCard, clarity::ClarityCard, current::CurrentCard, flow::FlowCard,
     marine_forecast::MarineForecastCard, now::NowCard, pressure::PressureCard,
-    solunar::SolunarCard, sources::SourcesCard, sun_moon::SunMoonCard, tide::TideCard,
-    water_temp::WaterTempCard, waves::WavesCard, wind::WindCard,
+    solunar::SolunarCard, sources::SourcesCard, storm_ahead::StormAheadCard, sun_moon::SunMoonCard,
+    tide::TideCard, water_temp::WaterTempCard, waves::WavesCard, wind::WindCard,
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -225,6 +225,7 @@ pub enum Card {
     SunMoon(SunMoonCard),
     Solunar(SolunarCard),
     MarineForecast(MarineForecastCard),
+    StormAhead(StormAheadCard),
     Alerts(AlertsCard),
     Sources(SourcesCard),
 }
@@ -245,6 +246,7 @@ impl Card {
             Self::SunMoon(c) => &c.chrome,
             Self::Solunar(c) => &c.chrome,
             Self::MarineForecast(c) => &c.chrome,
+            Self::StormAhead(c) => &c.chrome,
             Self::Alerts(c) => &c.chrome,
             Self::Sources(c) => &c.chrome,
         }
@@ -554,13 +556,10 @@ pub fn build_view(input: &ViewInput) -> SpotView {
             CardId::MarineForecast => {
                 cards::marine_forecast::build(input).map(Card::MarineForecast)
             }
+            CardId::StormAhead => cards::storm_ahead::build(input).map(Card::StormAhead),
             CardId::Alerts => cards::alerts::build(input).map(Card::Alerts),
             CardId::Sources => cards::sources::build(input).map(Card::Sources),
-            CardId::Windows
-            | CardId::GoNoGo
-            | CardId::StormAhead
-            | CardId::Stocking
-            | CardId::Species => None,
+            CardId::Windows | CardId::GoNoGo | CardId::Stocking | CardId::Species => None,
         })
         .collect();
     let f = format::Formatter::for_input(input);
