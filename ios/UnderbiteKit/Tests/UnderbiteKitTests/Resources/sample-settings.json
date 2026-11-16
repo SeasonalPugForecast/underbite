@@ -1,0 +1,175 @@
+{
+  "cards": {
+    "hidden": [],
+    "order": [
+      "now",
+      "alerts",
+      "storm_ahead",
+      "windows",
+      "tide",
+      "current",
+      "wind",
+      "water_temp",
+      "waves",
+      "marine_forecast",
+      "flow",
+      "sun_moon",
+      "sources"
+    ]
+  },
+  "limits": [
+    {
+      "max_current_kn": 2.0,
+      "max_gust_kn": 18.0,
+      "max_wave_m": 0.6,
+      "max_wind_kn": 12.0,
+      "name": "Kayak",
+      "no_lightning": true,
+      "no_small_craft_advisory": true
+    },
+    {
+      "max_gust_kn": 25.0,
+      "max_wave_m": 1.2,
+      "max_wind_kn": 20.0,
+      "name": "20 ft boat",
+      "no_lightning": true,
+      "no_small_craft_advisory": true
+    },
+    {
+      "max_current_kn": 1.5,
+      "max_gust_kn": 22.0,
+      "max_wave_m": 0.3,
+      "max_wind_kn": 15.0,
+      "name": "Wading",
+      "no_lightning": true,
+      "no_small_craft_advisory": true
+    }
+  ],
+  "map": {
+    "offline_max_mb": 1500,
+    "preset": "Inshore flats"
+  },
+  "presentation": {
+    "clock": "12h",
+    "timeline_hours": 48,
+    "timeline_step_minutes": 30,
+    "voice": "luna"
+  },
+  "providers": {
+    "copernicus": {
+      "enabled": false
+    },
+    "usgs": {}
+  },
+  "rivers": [],
+  "sources": {
+    "clarity": {
+      "chain": [
+        "usgs",
+        "copernicus"
+      ]
+    },
+    "coordinate_precision": 2,
+    "currents": {
+      "chain": [
+        "coops",
+        "hf-radar",
+        "copernicus",
+        "open-meteo-marine"
+      ]
+    },
+    "flow": {
+      "chain": [
+        "usgs",
+        "nwps"
+      ]
+    },
+    "lake_level": {
+      "chain": [
+        "usgs",
+        "coops",
+        "glerl"
+      ]
+    },
+    "marine_forecast": {
+      "chain": [
+        "nws"
+      ]
+    },
+    "sst": {
+      "chain": [
+        "mur-sst",
+        "open-meteo-marine"
+      ]
+    },
+    "storm": {
+      "chain": [
+        "open-meteo-storm",
+        "nhc"
+      ]
+    },
+    "tide": {
+      "chain": [
+        "coops",
+        "coops-harmonics",
+        "open-meteo-marine"
+      ]
+    },
+    "water_quality": {
+      "chain": [
+        "usgs"
+      ]
+    },
+    "water_temperature": {
+      "chain": [
+        "usgs",
+        "coops",
+        "ndbc",
+        "glerl",
+        "open-meteo-marine",
+        "mur-sst"
+      ],
+      "max_age_minutes": 180,
+      "max_distance_km": 25.0
+    },
+    "waves": {
+      "chain": [
+        "ndbc",
+        "open-meteo-marine"
+      ]
+    },
+    "weather": {
+      "chain": [
+        "nws",
+        "open-meteo"
+      ]
+    }
+  },
+  "storms": {
+    "hurricane_distance_km": 3000.0
+  },
+  "thresholds": {
+    "trout_stress_c": 20.0
+  },
+  "units": {
+    "discharge": "cfs",
+    "distance": "mi",
+    "height": "ft",
+    "pressure": "inHg",
+    "speed": "kn",
+    "water_temp": "F"
+  },
+  "version": 1,
+  "windows": {
+    "factors": {
+      "low_light": 1.0,
+      "pressure_falling": 0.7,
+      "solunar": 0.5,
+      "tide_stage": 1.0,
+      "water_temp": 1.0
+    },
+    "show_solunar": true,
+    "solunar_major_minutes": 120,
+    "solunar_minor_minutes": 60
+  }
+}

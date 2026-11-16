@@ -1,0 +1,5103 @@
+{
+  "active": 0,
+  "spots": [
+    {
+      "id": "battery",
+      "name": "The Battery",
+      "status": {
+        "error": null,
+        "last_success": 1794000000,
+        "refreshing": false,
+        "updated": "updated 6 min ago"
+      },
+      "water_type": "tidal_river_estuary",
+      "water_type_label": "Tidal river or estuary"
+    }
+  ],
+  "view": {
+    "cards": [
+      {
+        "card": "now",
+        "chrome": {
+          "accessibility": "Now. Tide 5.2 ft MLLW. Water temperature 58 °F. Current 0.0 kn. Wind 12 kn. Sun and moon 75%.",
+          "credits": [
+            {
+              "licence": null,
+              "link": "https://tidesandcurrents.noaa.gov",
+              "source": "NOAA CO-OPS",
+              "text": "NOAA CO-OPS"
+            },
+            {
+              "licence": null,
+              "link": null,
+              "source": "USGS",
+              "text": "U.S. Geological Survey"
+            },
+            {
+              "licence": null,
+              "link": "https://waterdata.usgs.gov/provisional-data-statement/",
+              "source": "USGS",
+              "text": "Provisional data statement"
+            },
+            {
+              "licence": null,
+              "link": null,
+              "source": "NOAA NDBC",
+              "text": "Observations: NOAA National Data Buoy Center"
+            },
+            {
+              "licence": null,
+              "link": null,
+              "source": "Computed on device",
+              "text": "Sun and moon positions from astronomical algorithms"
+            }
+          ],
+          "footnote": null,
+          "id": "now",
+          "notices": [
+            {
+              "kind": "not_for_navigation",
+              "text": "Not for navigation."
+            },
+            {
+              "kind": "provisional",
+              "text": "Provisional data, subject to revision."
+            }
+          ],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "Now"
+        },
+        "compact": {
+          "headline": {
+            "text": "5.2",
+            "unit": "ft MLLW",
+            "value": 5.249344
+          },
+          "lines": [
+            "Water temperature 58 °F",
+            "Current 0.0 kn"
+          ],
+          "spark": []
+        },
+        "full": {
+          "items": [
+            {
+              "card": "tide",
+              "headline": {
+                "text": "5.2",
+                "unit": "ft MLLW",
+                "value": 5.249344
+              },
+              "label": "Tide",
+              "line": "— · High 4:30 PM",
+              "state": {
+                "state": "fresh"
+              }
+            },
+            {
+              "card": "water_temp",
+              "headline": {
+                "text": "58",
+                "unit": "°F",
+                "value": 58.28
+              },
+              "label": "Water temperature",
+              "line": "Luna's watching The Battery, 0.4 mi",
+              "state": {
+                "state": "fresh"
+              }
+            },
+            {
+              "card": "current",
+              "headline": {
+                "text": "0.0",
+                "unit": "kn",
+                "value": 0.0
+              },
+              "label": "Current",
+              "line": "Slack",
+              "state": {
+                "state": "fresh"
+              }
+            },
+            {
+              "card": "wind",
+              "headline": {
+                "text": "12",
+                "unit": "kn",
+                "value": 11.663067
+              },
+              "label": "Wind",
+              "line": "From WSW 250°",
+              "state": {
+                "state": "fresh"
+              }
+            },
+            {
+              "card": "sun_moon",
+              "headline": {
+                "text": "75",
+                "unit": "%",
+                "value": 75.0
+              },
+              "label": "Sun and moon",
+              "line": "Sunrise 4:40 PM · Sunset 1:40 AM",
+              "state": {
+                "state": "fresh"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "card": "alerts",
+        "chrome": {
+          "accessibility": "Alerts: 1 active. Small Craft Advisory.",
+          "credits": [
+            {
+              "licence": null,
+              "link": null,
+              "source": "National Weather Service",
+              "text": "Marine alerts: NOAA National Weather Service"
+            }
+          ],
+          "footnote": null,
+          "id": "alerts",
+          "notices": [],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "Alerts"
+        },
+        "compact": {
+          "headline": {
+            "text": "Small Craft Advisory",
+            "unit": "",
+            "value": null
+          },
+          "lines": [
+            "Until Nov 7, 2:20 AM"
+          ],
+          "spark": []
+        },
+        "full": {
+          "alerts": [
+            {
+              "description": null,
+              "ends": "Nov 7, 2:20 AM",
+              "event": "Small Craft Advisory",
+              "expires": "Nov 6, 9:20 PM",
+              "headline": "Small Craft Advisory in effect",
+              "id": "urn:oid:example",
+              "instruction": null,
+              "onset": "Nov 6, 4:20 PM",
+              "origin": "marine",
+              "severity": "minor",
+              "severity_label": "Minor",
+              "zones": [
+                "ANZ338"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "card": "tide",
+        "chrome": {
+          "accessibility": "—. Next high 4:30 PM, 5.6 ft above MLLW.",
+          "credits": [
+            {
+              "licence": null,
+              "link": "https://tidesandcurrents.noaa.gov",
+              "source": "NOAA CO-OPS",
+              "text": "NOAA CO-OPS"
+            }
+          ],
+          "footnote": "Tide 5.2 ft MLLW · The Battery · 0.4 mi",
+          "id": "tide",
+          "notices": [
+            {
+              "kind": "not_for_navigation",
+              "text": "Not for navigation."
+            }
+          ],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "Tide"
+        },
+        "compact": {
+          "headline": {
+            "text": "5.2",
+            "unit": "ft MLLW",
+            "value": 5.249344
+          },
+          "lines": [
+            "— · High 4:30 PM",
+            "5.6 ft MLLW"
+          ],
+          "spark": [
+            5.4680667
+          ]
+        },
+        "full": {
+          "chart": {
+            "accessibility": "Tide: High 5.6 ft at 4:30 PM, Low — at 11:00 PM.",
+            "bands": [
+              {
+                "end_t": 1794001200,
+                "kind": "night",
+                "label": "Night",
+                "start_t": 1793989560
+              },
+              {
+                "end_t": 1794173160,
+                "kind": "night",
+                "label": "Night",
+                "start_t": 1794033600
+              }
+            ],
+            "markers": [
+              {
+                "kind": "high",
+                "label": "High 5.6 ft",
+                "t": 1794000600,
+                "value": 5.610236
+              },
+              {
+                "kind": "sunrise",
+                "label": "Sunrise 4:40 PM",
+                "t": 1794001200,
+                "value": null
+              },
+              {
+                "kind": "low",
+                "label": "Low —",
+                "t": 1794024000,
+                "value": null
+              },
+              {
+                "kind": "sunset",
+                "label": "Sunset 1:40 AM",
+                "t": 1794033600,
+                "value": null
+              }
+            ],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [
+              {
+                "label": "Predicted",
+                "points": [
+                  {
+                    "label": "5.5 ft",
+                    "major": false,
+                    "t": 1794000600,
+                    "value": 5.4680667
+                  }
+                ],
+                "role": "predicted",
+                "style": "line"
+              },
+              {
+                "label": "Observed",
+                "points": [
+                  {
+                    "label": "4.6 ft",
+                    "major": false,
+                    "t": 1794000000,
+                    "value": 4.593176
+                  }
+                ],
+                "role": "observed",
+                "style": "line"
+              }
+            ],
+            "title": "Tide",
+            "unit": "ft",
+            "x_ticks": [
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794114000
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794117600
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794121200
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794124800
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794128400
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794132000
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794135600
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794139200
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794142800
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794146400
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794150000
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794153600
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794157200
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794160800
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794164400
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794168000
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794171600
+              }
+            ]
+          },
+          "datum_label": "above MLLW",
+          "days": [
+            {
+              "date": "Fri Nov 6",
+              "events": [
+                {
+                  "height": {
+                    "text": "5.6",
+                    "unit": "ft MLLW",
+                    "value": 5.610236
+                  },
+                  "kind": "high",
+                  "label": "High",
+                  "t": 1794000600,
+                  "time": "4:30 PM"
+                },
+                {
+                  "height": {
+                    "text": "—",
+                    "unit": "ft",
+                    "value": null
+                  },
+                  "kind": "low",
+                  "label": "Low",
+                  "t": 1794024000,
+                  "time": "11:00 PM"
+                }
+              ],
+              "moon": null,
+              "sunrise": null,
+              "sunset": null
+            }
+          ],
+          "height_now": {
+            "text": "5.2",
+            "unit": "ft MLLW",
+            "value": 5.249344
+          },
+          "heights_shown": true,
+          "next": [
+            {
+              "height": {
+                "text": "5.6",
+                "unit": "ft MLLW",
+                "value": 5.610236
+              },
+              "kind": "high",
+              "label": "High",
+              "t": 1794000600,
+              "time": "4:30 PM"
+            },
+            {
+              "height": {
+                "text": "—",
+                "unit": "ft",
+                "value": null
+              },
+              "kind": "low",
+              "label": "Low",
+              "t": 1794024000,
+              "time": "11:00 PM"
+            }
+          ],
+          "sections": [
+            {
+              "rows": [
+                {
+                  "detail": "0.4 mi",
+                  "label": "Station",
+                  "value": "The Battery"
+                },
+                {
+                  "detail": null,
+                  "label": "Heights",
+                  "value": "above MLLW"
+                }
+              ],
+              "title": "Station"
+            }
+          ],
+          "stage": "unknown",
+          "stage_label": "—"
+        }
+      },
+      {
+        "card": "current",
+        "chrome": {
+          "accessibility": "Slack. Next slack 7:40 PM.",
+          "credits": [
+            {
+              "licence": null,
+              "link": "https://tidesandcurrents.noaa.gov",
+              "source": "NOAA CO-OPS",
+              "text": "NOAA CO-OPS"
+            }
+          ],
+          "footnote": "Current Slack · The Battery · 0.4 mi",
+          "id": "current",
+          "notices": [
+            {
+              "kind": "not_for_navigation",
+              "text": "Not for navigation."
+            }
+          ],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "Current"
+        },
+        "compact": {
+          "headline": {
+            "text": "0.0",
+            "unit": "kn",
+            "value": 0.0
+          },
+          "lines": [
+            "Slack",
+            "Next slack 7:40 PM"
+          ],
+          "spark": []
+        },
+        "full": {
+          "bin_depth": "Bin 2 at 14.8 ft",
+          "chart": {
+            "accessibility": "Current speed: max ebb at 4:50 PM, slack at 7:40 PM.",
+            "bands": [
+              {
+                "end_t": 1794000360,
+                "kind": "slack",
+                "label": "Slack",
+                "start_t": 1794000360
+              }
+            ],
+            "markers": [
+              {
+                "kind": "slack",
+                "label": "Slack 7:40 PM",
+                "t": 1794012000,
+                "value": null
+              }
+            ],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [
+              {
+                "label": "Predicted",
+                "points": [
+                  {
+                    "label": "-1.5 kn",
+                    "major": true,
+                    "t": 1794002400,
+                    "value": -1.5418365
+                  },
+                  {
+                    "label": "-1.4 kn",
+                    "major": false,
+                    "t": 1794004200,
+                    "value": -1.3521451
+                  },
+                  {
+                    "label": "-1.0 kn",
+                    "major": true,
+                    "t": 1794006000,
+                    "value": -0.99032116
+                  },
+                  {
+                    "label": "-0.6 kn",
+                    "major": false,
+                    "t": 1794007800,
+                    "value": -0.5647545
+                  },
+                  {
+                    "label": "-0.2 kn",
+                    "major": true,
+                    "t": 1794009600,
+                    "value": -0.20293038
+                  },
+                  {
+                    "label": "0.0 kn",
+                    "major": false,
+                    "t": 1794011400,
+                    "value": -0.013239105
+                  }
+                ],
+                "role": "predicted",
+                "style": "line"
+              }
+            ],
+            "title": "Current",
+            "unit": "kn",
+            "x_ticks": [
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794114000
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794117600
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794121200
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794124800
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794128400
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794132000
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794135600
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794139200
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794142800
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794146400
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794150000
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794153600
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794157200
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794160800
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794164400
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794168000
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794171600
+              }
+            ]
+          },
+          "direction_now": null,
+          "ebb_direction": "SSW 200°",
+          "events": [
+            {
+              "kind": "max_ebb",
+              "label": "Max ebb",
+              "speed": {
+                "text": "1.6",
+                "unit": "kn",
+                "value": 1.5550756
+              },
+              "t": 1794001800,
+              "time": "4:50 PM"
+            },
+            {
+              "kind": "slack",
+              "label": "Slack",
+              "speed": null,
+              "t": 1794012000,
+              "time": "7:40 PM"
+            }
+          ],
+          "flood_direction": "NNE 20°",
+          "next_slack": {
+            "kind": "slack",
+            "label": "Slack",
+            "speed": null,
+            "t": 1794012000,
+            "time": "7:40 PM"
+          },
+          "phase": "slack",
+          "phase_label": "Slack",
+          "sections": [
+            {
+              "rows": [
+                {
+                  "detail": "0.4 mi",
+                  "label": "Station",
+                  "value": "The Battery"
+                },
+                {
+                  "detail": null,
+                  "label": "Depth",
+                  "value": "Bin 2 at 14.8 ft"
+                }
+              ],
+              "title": "Station"
+            }
+          ],
+          "speed_now": {
+            "text": "0.0",
+            "unit": "kn",
+            "value": 0.0
+          }
+        }
+      },
+      {
+        "card": "wind",
+        "chrome": {
+          "accessibility": "Wind observed: 12 kn from WSW 250°, gusts 16 kn.",
+          "credits": [
+            {
+              "licence": null,
+              "link": null,
+              "source": "NOAA NDBC",
+              "text": "Observations: NOAA National Data Buoy Center"
+            }
+          ],
+          "footnote": "Wind 12 kn · The Battery · 0.4 mi · 6 min ago",
+          "id": "wind",
+          "notices": [],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "Wind"
+        },
+        "compact": {
+          "headline": {
+            "text": "12",
+            "unit": "kn",
+            "value": 11.663067
+          },
+          "lines": [
+            "From WSW 250°",
+            "Gusts 16 kn"
+          ],
+          "spark": [
+            11.663067
+          ]
+        },
+        "full": {
+          "basis": "observed",
+          "chart": {
+            "accessibility": "Wind chart: 12 kn now.",
+            "bands": [],
+            "markers": [],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [
+              {
+                "label": "Observed wind",
+                "points": [
+                  {
+                    "label": "12 kn",
+                    "major": false,
+                    "t": 1794000000,
+                    "value": 11.663067
+                  }
+                ],
+                "role": "observed",
+                "style": "line"
+              },
+              {
+                "label": "Observed gusts",
+                "points": [
+                  {
+                    "label": "16 kn",
+                    "major": false,
+                    "t": 1794000000,
+                    "value": 15.5507555
+                  }
+                ],
+                "role": "observed",
+                "style": "line"
+              }
+            ],
+            "title": "Wind",
+            "unit": "kn",
+            "x_ticks": [
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794114000
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794117600
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794121200
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794124800
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794128400
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794132000
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794135600
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794139200
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794142800
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794146400
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794150000
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794153600
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794157200
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794160800
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794164400
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794168000
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794171600
+              }
+            ]
+          },
+          "direction": "WSW 250°",
+          "from_deg": 250.0,
+          "gust": {
+            "text": "16",
+            "unit": "kn",
+            "value": 15.5507555
+          },
+          "hours": [
+            {
+              "direction": "WSW 250°",
+              "from_deg": 250.0,
+              "gust": {
+                "text": "16",
+                "unit": "kn",
+                "value": 15.5507555
+              },
+              "speed": {
+                "text": "12",
+                "unit": "kn",
+                "value": 11.663067
+              },
+              "t": 1794000000,
+              "time": "4:20 PM"
+            }
+          ],
+          "sections": [
+            {
+              "rows": [
+                {
+                  "detail": "observed 4:20 PM",
+                  "label": "Station",
+                  "value": "The Battery"
+                }
+              ],
+              "title": "Source"
+            }
+          ],
+          "speed": {
+            "text": "12",
+            "unit": "kn",
+            "value": 11.663067
+          }
+        }
+      },
+      {
+        "card": "water_temp",
+        "chrome": {
+          "accessibility": "Water temperature: 58 °F",
+          "credits": [
+            {
+              "licence": null,
+              "link": null,
+              "source": "USGS",
+              "text": "U.S. Geological Survey"
+            },
+            {
+              "licence": null,
+              "link": "https://waterdata.usgs.gov/provisional-data-statement/",
+              "source": "USGS",
+              "text": "Provisional data statement"
+            }
+          ],
+          "footnote": "Water 58 °F · The Battery · 0.4 mi · just now",
+          "id": "water_temp",
+          "notices": [
+            {
+              "kind": "provisional",
+              "text": "Provisional data, subject to revision."
+            }
+          ],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "Water temperature"
+        },
+        "compact": {
+          "headline": {
+            "text": "58",
+            "unit": "°F",
+            "value": 58.28
+          },
+          "lines": [
+            "Luna's watching The Battery, 0.4 mi"
+          ],
+          "spark": [
+            58.1,
+            58.28
+          ]
+        },
+        "full": {
+          "basis": "measured",
+          "chart": {
+            "accessibility": "Water temperature: now 58 °F, highest 58 °F, lowest 58 °F",
+            "bands": [],
+            "markers": [],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [
+              {
+                "label": "Observed",
+                "points": [
+                  {
+                    "label": "58 °F",
+                    "major": true,
+                    "t": 1794000000,
+                    "value": 58.1
+                  },
+                  {
+                    "label": "58 °F",
+                    "major": true,
+                    "t": 1794000360,
+                    "value": 58.28
+                  }
+                ],
+                "role": "observed",
+                "style": "line"
+              }
+            ],
+            "title": "Water temperature",
+            "unit": "°F",
+            "x_ticks": []
+          },
+          "sections": [
+            {
+              "rows": [
+                {
+                  "detail": null,
+                  "label": "Sea surface, observed",
+                  "value": "59 °F"
+                },
+                {
+                  "detail": null,
+                  "label": "Sea surface, forecast (modelled)",
+                  "value": "60 °F"
+                }
+              ],
+              "title": "Sea surface"
+            }
+          ],
+          "trend": null,
+          "trout_stress": null,
+          "value": {
+            "text": "58",
+            "unit": "°F",
+            "value": 58.28
+          }
+        }
+      },
+      {
+        "card": "waves",
+        "chrome": {
+          "accessibility": "Waves 3.0 ft, period 8.0 seconds, from ESE 120°.",
+          "credits": [
+            {
+              "licence": null,
+              "link": null,
+              "source": "NOAA NDBC",
+              "text": "Observations: NOAA National Data Buoy Center"
+            },
+            {
+              "licence": null,
+              "link": null,
+              "source": "Open-Meteo Marine",
+              "text": "Wave model: Open-Meteo.com"
+            }
+          ],
+          "footnote": "Waves 3.0 ft · The Battery · 0.4 mi · just now",
+          "id": "waves",
+          "notices": [],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "Waves"
+        },
+        "compact": {
+          "headline": {
+            "text": "3.0",
+            "unit": "ft",
+            "value": 2.952756
+          },
+          "lines": [
+            "8.0 s · from ESE 120°",
+            "Modelled 3.0 ft"
+          ],
+          "spark": [
+            2.952756,
+            2.952756
+          ]
+        },
+        "full": {
+          "forecast": {
+            "direction": "ESE 120°",
+            "dominant_period": {
+              "text": "8.0",
+              "unit": "s",
+              "value": 8.0
+            },
+            "mean_period": {
+              "text": "5.5",
+              "unit": "s",
+              "value": 5.5
+            },
+            "significant_height": {
+              "text": "3.0",
+              "unit": "ft",
+              "value": 2.952756
+            },
+            "steepness": "Average",
+            "swells": [
+              {
+                "direction": "SSE 150°",
+                "height": {
+                  "text": "2.0",
+                  "unit": "ft",
+                  "value": 1.9685041
+                },
+                "label": "Swell 1",
+                "period": {
+                  "text": "7.0",
+                  "unit": "s",
+                  "value": 7.0
+                }
+              }
+            ],
+            "t": 1794000360,
+            "time": "4:26 PM",
+            "wind_waves": {
+              "direction": "SE",
+              "height": {
+                "text": "2.0",
+                "unit": "ft",
+                "value": 1.9685041
+              },
+              "label": "Wind waves",
+              "period": {
+                "text": "7.0",
+                "unit": "s",
+                "value": 7.0
+              }
+            }
+          },
+          "height_chart": {
+            "accessibility": "Wave height chart.",
+            "bands": [],
+            "markers": [],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [
+              {
+                "label": "Observed",
+                "points": [
+                  {
+                    "label": "3.0 ft",
+                    "major": false,
+                    "t": 1794000000,
+                    "value": 2.952756
+                  },
+                  {
+                    "label": "3.0 ft",
+                    "major": false,
+                    "t": 1794000360,
+                    "value": 2.952756
+                  }
+                ],
+                "role": "observed",
+                "style": "line"
+              },
+              {
+                "label": "Modelled",
+                "points": [
+                  {
+                    "label": "3.0 ft",
+                    "major": false,
+                    "t": 1794000000,
+                    "value": 2.952756
+                  },
+                  {
+                    "label": "3.0 ft",
+                    "major": false,
+                    "t": 1794000360,
+                    "value": 2.952756
+                  }
+                ],
+                "role": "modelled",
+                "style": "line"
+              }
+            ],
+            "title": "Wave height",
+            "unit": "ft",
+            "x_ticks": [
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794114000
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794117600
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794121200
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794124800
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794128400
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794132000
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794135600
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794139200
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794142800
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794146400
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794150000
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794153600
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794157200
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794160800
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794164400
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794168000
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794171600
+              }
+            ]
+          },
+          "observed": {
+            "direction": "ESE 120°",
+            "dominant_period": {
+              "text": "8.0",
+              "unit": "s",
+              "value": 8.0
+            },
+            "mean_period": {
+              "text": "5.5",
+              "unit": "s",
+              "value": 5.5
+            },
+            "significant_height": {
+              "text": "3.0",
+              "unit": "ft",
+              "value": 2.952756
+            },
+            "steepness": "Average",
+            "swells": [
+              {
+                "direction": "SSE 150°",
+                "height": {
+                  "text": "2.0",
+                  "unit": "ft",
+                  "value": 1.9685041
+                },
+                "label": "Swell 1",
+                "period": {
+                  "text": "7.0",
+                  "unit": "s",
+                  "value": 7.0
+                }
+              }
+            ],
+            "t": 1794000360,
+            "time": "4:26 PM",
+            "wind_waves": {
+              "direction": "SE",
+              "height": {
+                "text": "2.0",
+                "unit": "ft",
+                "value": 1.9685041
+              },
+              "label": "Wind waves",
+              "period": {
+                "text": "7.0",
+                "unit": "s",
+                "value": 7.0
+              }
+            }
+          },
+          "period_chart": {
+            "accessibility": "Wave period chart.",
+            "bands": [],
+            "markers": [],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [
+              {
+                "label": "Observed",
+                "points": [
+                  {
+                    "label": "8.0 s",
+                    "major": false,
+                    "t": 1794000000,
+                    "value": 8.0
+                  },
+                  {
+                    "label": "8.0 s",
+                    "major": false,
+                    "t": 1794000360,
+                    "value": 8.0
+                  }
+                ],
+                "role": "observed",
+                "style": "line"
+              },
+              {
+                "label": "Modelled",
+                "points": [
+                  {
+                    "label": "8.0 s",
+                    "major": false,
+                    "t": 1794000000,
+                    "value": 8.0
+                  },
+                  {
+                    "label": "8.0 s",
+                    "major": false,
+                    "t": 1794000360,
+                    "value": 8.0
+                  }
+                ],
+                "role": "modelled",
+                "style": "line"
+              }
+            ],
+            "title": "Wave period",
+            "unit": "s",
+            "x_ticks": [
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794114000
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794117600
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794121200
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794124800
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794128400
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794132000
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794135600
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794139200
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794142800
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794146400
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794150000
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794153600
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794157200
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794160800
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794164400
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794168000
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794171600
+              }
+            ]
+          },
+          "sections": [
+            {
+              "rows": [
+                {
+                  "detail": "0.4 mi",
+                  "label": "Buoy",
+                  "value": "The Battery"
+                },
+                {
+                  "detail": "modelled",
+                  "label": "Model",
+                  "value": "The Battery"
+                }
+              ],
+              "title": "Sources"
+            }
+          ]
+        }
+      },
+      {
+        "card": "marine_forecast",
+        "chrome": {
+          "accessibility": "Marine forecast for New York Harbor. Zone forecast, issued 3:20 pm. Tonight: W winds 10 to 15 kt. Waves 1 ft or less.",
+          "credits": [
+            {
+              "licence": null,
+              "link": "https://forecast.weather.gov/shmrn.php?mz=ANZ338",
+              "source": "National Weather Service",
+              "text": "Marine forecast: NOAA National Weather Service"
+            }
+          ],
+          "footnote": "New York Harbor · Zone forecast · Issued 3:20 PM",
+          "id": "marine_forecast",
+          "notices": [
+            {
+              "kind": "text_only",
+              "text": "Text only: open the map for the picture."
+            }
+          ],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "Marine forecast"
+        },
+        "compact": {
+          "headline": {
+            "text": "W winds 10 to 15 kt. Waves 1 ft or less.",
+            "unit": "",
+            "value": null
+          },
+          "lines": [
+            "Tonight",
+            "New York Harbor · Issued 3:20 PM"
+          ],
+          "spark": []
+        },
+        "full": {
+          "headline": "W winds 10 to 15 kt. Waves 1 ft or less.",
+          "issued": "Issued 3:20 PM",
+          "periods": [
+            {
+              "name": "Tonight",
+              "text": "W winds 10 to 15 kt. Waves 1 ft or less."
+            }
+          ],
+          "product": "Zone forecast",
+          "zone_id": "ANZ338",
+          "zone_name": "New York Harbor"
+        }
+      },
+      {
+        "card": "flow",
+        "chrome": {
+          "accessibility": "River flow: 12.0 cfs, normal, 48th percentile for Nov 8",
+          "credits": [
+            {
+              "licence": null,
+              "link": null,
+              "source": "USGS",
+              "text": "U.S. Geological Survey"
+            },
+            {
+              "licence": null,
+              "link": "https://waterdata.usgs.gov/provisional-data-statement/",
+              "source": "USGS",
+              "text": "Provisional data statement"
+            },
+            {
+              "licence": null,
+              "link": null,
+              "source": "NOAA NWPS",
+              "text": "NOAA NWPS"
+            }
+          ],
+          "footnote": "Flow 12.0 cfs · The Battery · 0.4 mi · just now",
+          "id": "flow",
+          "notices": [
+            {
+              "kind": "provisional",
+              "text": "Provisional data, subject to revision."
+            }
+          ],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "River flow"
+        },
+        "compact": {
+          "headline": {
+            "text": "12.0",
+            "unit": "cfs",
+            "value": 12.006987
+          },
+          "lines": [
+            "normal, 48th percentile for Nov 8",
+            "Luna's watching The Battery, 0.4 mi"
+          ],
+          "spark": [
+            12.360133,
+            12.006987
+          ]
+        },
+        "full": {
+          "chart": {
+            "accessibility": "Discharge: now 12.0 cfs, highest 21.2 cfs, lowest 12.0 cfs",
+            "bands": [],
+            "markers": [],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [
+              {
+                "label": "Observed",
+                "points": [
+                  {
+                    "label": "12.4 cfs",
+                    "major": true,
+                    "t": 1794000000,
+                    "value": 12.360133
+                  },
+                  {
+                    "label": "12.0 cfs",
+                    "major": true,
+                    "t": 1794000360,
+                    "value": 12.006987
+                  }
+                ],
+                "role": "observed",
+                "style": "line"
+              },
+              {
+                "label": "Forecast",
+                "points": [
+                  {
+                    "label": "21.2 cfs",
+                    "major": true,
+                    "t": 1794000360,
+                    "value": 21.1888
+                  }
+                ],
+                "role": "forecast",
+                "style": "dots"
+              }
+            ],
+            "title": "Discharge",
+            "unit": "cfs",
+            "x_ticks": []
+          },
+          "discharge": {
+            "text": "12.0",
+            "unit": "cfs",
+            "value": 12.006987
+          },
+          "flood_categories": [
+            {
+              "label": "Action",
+              "stage": {
+                "text": "7.9",
+                "unit": "ft gage datum",
+                "value": 7.8740163
+              }
+            },
+            {
+              "label": "Minor",
+              "stage": {
+                "text": "7.9",
+                "unit": "ft gage datum",
+                "value": 7.8740163
+              }
+            },
+            {
+              "label": "Major",
+              "stage": {
+                "text": "9.8",
+                "unit": "ft gage datum",
+                "value": 9.84252
+              }
+            }
+          ],
+          "gage_height": {
+            "text": "4.0",
+            "unit": "ft NAVD88",
+            "value": 3.9698164
+          },
+          "percentile": {
+            "basis": "USGS statistics (beta)",
+            "class": "normal",
+            "class_label": "Normal",
+            "sample": "approved data only, 93 years",
+            "text": "normal, 48th percentile for Nov 8",
+            "thresholds": [
+              {
+                "label": "5th percentile",
+                "value": {
+                  "text": "0.7",
+                  "unit": "cfs",
+                  "value": 0.70629334
+                }
+              },
+              {
+                "label": "10th percentile",
+                "value": {
+                  "text": "1.1",
+                  "unit": "cfs",
+                  "value": 1.05944
+                }
+              },
+              {
+                "label": "25th percentile",
+                "value": {
+                  "text": "1.4",
+                  "unit": "cfs",
+                  "value": 1.4125867
+                }
+              },
+              {
+                "label": "50th percentile",
+                "value": {
+                  "text": "14.8",
+                  "unit": "cfs",
+                  "value": 14.83216
+                }
+              },
+              {
+                "label": "75th percentile",
+                "value": {
+                  "text": "237",
+                  "unit": "cfs",
+                  "value": 236.60826
+                }
+              },
+              {
+                "label": "90th percentile",
+                "value": {
+                  "text": "689",
+                  "unit": "cfs",
+                  "value": 688.636
+                }
+              },
+              {
+                "label": "95th percentile",
+                "value": {
+                  "text": "1,180",
+                  "unit": "cfs",
+                  "value": 1179.5099
+                }
+              }
+            ]
+          },
+          "range_status": null,
+          "sections": [
+            {
+              "rows": [
+                {
+                  "detail": null,
+                  "label": "Basis",
+                  "value": "USGS statistics (beta)"
+                },
+                {
+                  "detail": null,
+                  "label": "Sample",
+                  "value": "approved data only, 93 years"
+                },
+                {
+                  "detail": null,
+                  "label": "Median",
+                  "value": "14.8 cfs"
+                },
+                {
+                  "detail": null,
+                  "label": "Record range",
+                  "value": "0.4 cfs to 2,825 cfs"
+                }
+              ],
+              "title": "Normal for this date"
+            },
+            {
+              "rows": [
+                {
+                  "detail": "Nov 6, 4:26 PM",
+                  "label": "Forecast crest",
+                  "value": "21.2 cfs"
+                },
+                {
+                  "detail": "Nov 6, 4:26 PM",
+                  "label": "Forecast crest",
+                  "value": "4.6 ft gage datum"
+                }
+              ],
+              "title": "Forecast"
+            },
+            {
+              "rows": [
+                {
+                  "detail": "NOAA NWPS",
+                  "label": "Station",
+                  "value": "The Battery"
+                }
+              ],
+              "title": "Flood categories"
+            }
+          ],
+          "stage_chart": {
+            "accessibility": "Stage: highest 4.6 ft gage datum, lowest 4.6 ft gage datum",
+            "bands": [],
+            "markers": [],
+            "now_t": 1794000360,
+            "rules": [
+              {
+                "kind": "flood_category",
+                "label": "Action 7.9 ft gage datum",
+                "value": 7.8740163
+              },
+              {
+                "kind": "flood_category",
+                "label": "Minor 7.9 ft gage datum",
+                "value": 7.8740163
+              },
+              {
+                "kind": "flood_category",
+                "label": "Major 9.8 ft gage datum",
+                "value": 9.84252
+              }
+            ],
+            "series": [
+              {
+                "label": "Forecast",
+                "points": [
+                  {
+                    "label": "4.6 ft gage datum",
+                    "major": true,
+                    "t": 1794000360,
+                    "value": 4.593176
+                  }
+                ],
+                "role": "forecast",
+                "style": "dots"
+              }
+            ],
+            "title": "Stage",
+            "unit": "ft gage datum",
+            "x_ticks": []
+          },
+          "trend": null
+        }
+      },
+      {
+        "card": "sun_moon",
+        "chrome": {
+          "accessibility": "Sunrise 4:40 PM, Sunset 1:40 AM. Waxing gibbous, 75% lit.",
+          "credits": [
+            {
+              "licence": null,
+              "link": null,
+              "source": "Computed on device",
+              "text": "Sun and moon positions from astronomical algorithms"
+            }
+          ],
+          "footnote": null,
+          "id": "sun_moon",
+          "notices": [],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "Sun and moon"
+        },
+        "compact": {
+          "headline": {
+            "text": "75",
+            "unit": "%",
+            "value": 75.0
+          },
+          "lines": [
+            "Sunrise 4:40 PM · Sunset 1:40 AM",
+            "Waxing gibbous · Moonrise 6:00 PM"
+          ],
+          "spark": []
+        },
+        "full": {
+          "days": [
+            {
+              "date": "Sun Nov 15",
+              "day_length": "9 h 00 min",
+              "moon": {
+                "lower_transit": {
+                  "label": "Moon underfoot",
+                  "t": 1794048000,
+                  "time": "5:40 AM"
+                },
+                "nearest_principal": {
+                  "label": "Full moon",
+                  "t": 1794180000,
+                  "time": "Nov 8 6:20 PM"
+                },
+                "phase": {
+                  "illumination": {
+                    "text": "75",
+                    "unit": "%",
+                    "value": 75.0
+                  },
+                  "label": "Waxing gibbous",
+                  "phase": "waxing_gibbous"
+                },
+                "rise": {
+                  "label": "Moonrise",
+                  "t": 1794006000,
+                  "time": "6:00 PM"
+                },
+                "set": null,
+                "upper_transit": {
+                  "label": "Moon overhead",
+                  "t": 1794024000,
+                  "time": "11:00 PM"
+                }
+              },
+              "polar": null,
+              "sun": [
+                {
+                  "label": "Nautical dawn",
+                  "t": 1793997300,
+                  "time": "3:35 PM"
+                },
+                {
+                  "label": "Civil dawn",
+                  "t": 1793999400,
+                  "time": "4:10 PM"
+                },
+                {
+                  "label": "Sunrise",
+                  "t": 1794001200,
+                  "time": "4:40 PM"
+                },
+                {
+                  "label": "Golden hour ends",
+                  "t": 1794004800,
+                  "time": "5:40 PM"
+                },
+                {
+                  "label": "Golden hour starts",
+                  "t": 1794030000,
+                  "time": "12:40 AM"
+                },
+                {
+                  "label": "Sunset",
+                  "t": 1794033600,
+                  "time": "1:40 AM"
+                },
+                {
+                  "label": "Civil dusk",
+                  "t": 1794035400,
+                  "time": "2:10 AM"
+                },
+                {
+                  "label": "Nautical dusk",
+                  "t": 1794037500,
+                  "time": "2:45 AM"
+                }
+              ]
+            }
+          ],
+          "sections": [
+            {
+              "rows": [
+                {
+                  "detail": null,
+                  "label": "Nautical dawn",
+                  "value": "3:35 PM"
+                },
+                {
+                  "detail": null,
+                  "label": "Civil dawn",
+                  "value": "4:10 PM"
+                },
+                {
+                  "detail": null,
+                  "label": "Sunrise",
+                  "value": "4:40 PM"
+                },
+                {
+                  "detail": null,
+                  "label": "Golden hour ends",
+                  "value": "5:40 PM"
+                },
+                {
+                  "detail": null,
+                  "label": "Golden hour starts",
+                  "value": "12:40 AM"
+                },
+                {
+                  "detail": null,
+                  "label": "Sunset",
+                  "value": "1:40 AM"
+                },
+                {
+                  "detail": null,
+                  "label": "Civil dusk",
+                  "value": "2:10 AM"
+                },
+                {
+                  "detail": null,
+                  "label": "Nautical dusk",
+                  "value": "2:45 AM"
+                },
+                {
+                  "detail": null,
+                  "label": "Day length",
+                  "value": "9 h 00 min"
+                }
+              ],
+              "title": "Sun"
+            },
+            {
+              "rows": [
+                {
+                  "detail": null,
+                  "label": "Waxing gibbous",
+                  "value": "75% lit"
+                },
+                {
+                  "detail": null,
+                  "label": "Moonrise",
+                  "value": "6:00 PM"
+                },
+                {
+                  "detail": null,
+                  "label": "Moonset",
+                  "value": "No moonset today"
+                },
+                {
+                  "detail": null,
+                  "label": "Moon overhead",
+                  "value": "11:00 PM"
+                },
+                {
+                  "detail": null,
+                  "label": "Moon underfoot",
+                  "value": "5:40 AM"
+                },
+                {
+                  "detail": null,
+                  "label": "Full moon",
+                  "value": "Nov 8 6:20 PM"
+                }
+              ],
+              "title": "Moon"
+            }
+          ]
+        }
+      },
+      {
+        "card": "sources",
+        "chrome": {
+          "accessibility": "Sources: NOAA CO-OPS, USGS, NOAA NDBC, copernicus, cyan, NOAA NWPS, Open-Meteo Marine, National Weather Service, Open-Meteo, Open-Meteo model providers, USGS. USGS: rate limited, used NWPS stage",
+          "credits": [],
+          "footnote": null,
+          "id": "sources",
+          "notices": [
+            {
+              "kind": "not_for_navigation",
+              "text": "Not for navigation."
+            },
+            {
+              "kind": "provisional",
+              "text": "Provisional data, subject to revision."
+            }
+          ],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "Sources"
+        },
+        "compact": {
+          "headline": {
+            "text": "11",
+            "unit": "sources",
+            "value": 11.0
+          },
+          "lines": [
+            "9 stations",
+            "1 problem"
+          ],
+          "spark": []
+        },
+        "full": {
+          "credits": [
+            {
+              "licence": "Public domain",
+              "link": "https://tidesandcurrents.noaa.gov",
+              "source": "NOAA CO-OPS",
+              "text": "NOAA CO-OPS"
+            },
+            {
+              "licence": "Public domain",
+              "link": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+              "source": "USGS",
+              "text": "U.S. Geological Survey"
+            },
+            {
+              "licence": "Public domain",
+              "link": "https://www.ndbc.noaa.gov/",
+              "source": "NOAA NDBC",
+              "text": "Observations: NOAA National Data Buoy Center"
+            },
+            {
+              "licence": null,
+              "link": null,
+              "source": "copernicus",
+              "text": "copernicus"
+            },
+            {
+              "licence": null,
+              "link": null,
+              "source": "cyan",
+              "text": "cyan"
+            },
+            {
+              "licence": "Public domain",
+              "link": "https://water.noaa.gov/",
+              "source": "NOAA NWPS",
+              "text": "River forecasts: NOAA National Water Prediction Service"
+            },
+            {
+              "licence": "CC BY 4.0",
+              "link": "https://open-meteo.com/",
+              "source": "Open-Meteo Marine",
+              "text": "Weather data by Open-Meteo.com"
+            },
+            {
+              "licence": "Public domain",
+              "link": "https://www.weather.gov/",
+              "source": "National Weather Service",
+              "text": "Marine forecasts and alerts: NOAA National Weather Service"
+            },
+            {
+              "licence": "CC BY 4.0",
+              "link": "https://open-meteo.com/",
+              "source": "Open-Meteo",
+              "text": "Weather data by Open-Meteo.com"
+            },
+            {
+              "licence": null,
+              "link": "https://open-meteo.com/en/licence",
+              "source": "Open-Meteo model providers",
+              "text": "Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean)"
+            },
+            {
+              "licence": null,
+              "link": "https://waterdata.usgs.gov/provisional-data-statement/",
+              "source": "USGS",
+              "text": "Provisional data statement"
+            }
+          ],
+          "errors": [
+            {
+              "kind": "Rate limited",
+              "measurement": "River flow",
+              "message": "USGS: rate limited, used NWPS stage",
+              "source": "USGS"
+            }
+          ],
+          "stations": [
+            {
+              "age": "just now",
+              "distance": "0.4 mi",
+              "kind": "Observed",
+              "measurement": "Water temperature, River flow, Gage height, Lake level, Turbidity, Dissolved oxygen, Conductivity, pH, Chlorophyll",
+              "relation": "Same water body",
+              "source": "USGS",
+              "state": {
+                "state": "fresh"
+              },
+              "station": "The Battery",
+              "station_id": "8518750"
+            },
+            {
+              "age": "6 min ago",
+              "distance": "0.4 mi",
+              "kind": "Observed",
+              "measurement": "Salinity, Waves, Sea surface temperature, Wind, Pressure",
+              "relation": "Same water body",
+              "source": "NOAA NDBC",
+              "state": {
+                "state": "fresh"
+              },
+              "station": "The Battery",
+              "station_id": "8518750"
+            },
+            {
+              "age": "6 min ago",
+              "distance": "0.4 mi",
+              "kind": "Satellite",
+              "measurement": "Water clarity",
+              "relation": "Same water body",
+              "source": "copernicus",
+              "state": {
+                "state": "fresh"
+              },
+              "station": "The Battery",
+              "station_id": "8518750"
+            },
+            {
+              "age": "6 min ago",
+              "distance": "0.4 mi",
+              "kind": "Satellite",
+              "measurement": "Cyanobacteria",
+              "relation": "Same water body",
+              "source": "cyan",
+              "state": {
+                "state": "fresh"
+              },
+              "station": "The Battery",
+              "station_id": "8518750"
+            },
+            {
+              "age": "—",
+              "distance": "0.4 mi",
+              "kind": "Predicted",
+              "measurement": "River forecast",
+              "relation": "Same water body",
+              "source": "NOAA NWPS",
+              "state": {
+                "state": "fresh"
+              },
+              "station": "The Battery",
+              "station_id": "8518750"
+            },
+            {
+              "age": "—",
+              "distance": "0.4 mi",
+              "kind": "Computed",
+              "measurement": "River flow, Lake level",
+              "relation": "Same water body",
+              "source": "USGS",
+              "state": {
+                "state": "fresh"
+              },
+              "station": "The Battery",
+              "station_id": "8518750"
+            },
+            {
+              "age": "—",
+              "distance": "0.4 mi",
+              "kind": "Predicted",
+              "measurement": "Tide, Tidal current",
+              "relation": "Same water body",
+              "source": "NOAA CO-OPS",
+              "state": {
+                "state": "fresh"
+              },
+              "station": "The Battery",
+              "station_id": "8518750"
+            },
+            {
+              "age": "—",
+              "distance": "0.4 mi",
+              "kind": "Modelled",
+              "measurement": "Ocean current",
+              "relation": "Same water body",
+              "source": "copernicus",
+              "state": {
+                "state": "fresh"
+              },
+              "station": "The Battery",
+              "station_id": "8518750"
+            },
+            {
+              "age": "—",
+              "distance": "0.4 mi",
+              "kind": "Modelled",
+              "measurement": "Wave forecast, Sea surface temperature forecast",
+              "relation": "Same water body",
+              "source": "Open-Meteo Marine",
+              "state": {
+                "state": "fresh"
+              },
+              "station": "The Battery",
+              "station_id": "8518750"
+            }
+          ]
+        }
+      }
+    ],
+    "header": {
+      "name": "The Battery",
+      "updated": "updated 6 min ago",
+      "updated_at": 1794000000,
+      "water_type": "tidal_river_estuary",
+      "water_type_label": "Tidal river or estuary"
+    },
+    "notices": [],
+    "timeline": {
+      "end_t": 1794114000,
+      "lanes": [
+        {
+          "chart": {
+            "accessibility": "Tide: High 5.6 ft MLLW at 4:30 PM, Low — at 11:00 PM",
+            "bands": [],
+            "markers": [
+              {
+                "kind": "high",
+                "label": "High 5.6 ft MLLW",
+                "t": 1794000600,
+                "value": 5.610236
+              },
+              {
+                "kind": "low",
+                "label": "Low —",
+                "t": 1794024000,
+                "value": null
+              }
+            ],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [
+              {
+                "label": "Predicted",
+                "points": [
+                  {
+                    "label": "5.5 ft MLLW",
+                    "major": false,
+                    "t": 1794000600,
+                    "value": 5.4680667
+                  }
+                ],
+                "role": "predicted",
+                "style": "line"
+              }
+            ],
+            "title": "Tide · NOAA CO-OPS",
+            "unit": "ft",
+            "x_ticks": [
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1793941200
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1793944800
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1793948400
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1793952000
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1793955600
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1793959200
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1793962800
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1793966400
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1793970000
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1793973600
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1793977200
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1793980800
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1793984400
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1793988000
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              }
+            ]
+          },
+          "credits": [
+            {
+              "licence": null,
+              "link": "https://tidesandcurrents.noaa.gov",
+              "source": "NOAA CO-OPS",
+              "text": "NOAA CO-OPS"
+            }
+          ],
+          "kind": "tide",
+          "label": "Tide",
+          "notices": [
+            {
+              "kind": "not_for_navigation",
+              "text": "Not for navigation."
+            }
+          ]
+        },
+        {
+          "chart": {
+            "accessibility": "Current: Slack 7:40 PM",
+            "bands": [
+              {
+                "end_t": 1794012900,
+                "kind": "slack",
+                "label": "Slack",
+                "start_t": 1794011100
+              }
+            ],
+            "markers": [
+              {
+                "kind": "slack",
+                "label": "Slack 7:40 PM",
+                "t": 1794012000,
+                "value": null
+              }
+            ],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [
+              {
+                "label": "Predicted",
+                "points": [
+                  {
+                    "label": "-1.5 kn",
+                    "major": true,
+                    "t": 1794002400,
+                    "value": -1.5418365
+                  },
+                  {
+                    "label": "-1.4 kn",
+                    "major": false,
+                    "t": 1794004200,
+                    "value": -1.3521451
+                  },
+                  {
+                    "label": "-1.0 kn",
+                    "major": true,
+                    "t": 1794006000,
+                    "value": -0.99032116
+                  },
+                  {
+                    "label": "-0.6 kn",
+                    "major": false,
+                    "t": 1794007800,
+                    "value": -0.5647545
+                  },
+                  {
+                    "label": "-0.2 kn",
+                    "major": true,
+                    "t": 1794009600,
+                    "value": -0.20293038
+                  },
+                  {
+                    "label": "0.0 kn",
+                    "major": false,
+                    "t": 1794011400,
+                    "value": -0.013239105
+                  }
+                ],
+                "role": "predicted",
+                "style": "line"
+              }
+            ],
+            "title": "Current · NOAA CO-OPS",
+            "unit": "kn",
+            "x_ticks": [
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1793941200
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1793944800
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1793948400
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1793952000
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1793955600
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1793959200
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1793962800
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1793966400
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1793970000
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1793973600
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1793977200
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1793980800
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1793984400
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1793988000
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              }
+            ]
+          },
+          "credits": [
+            {
+              "licence": null,
+              "link": "https://tidesandcurrents.noaa.gov",
+              "source": "NOAA CO-OPS",
+              "text": "NOAA CO-OPS"
+            }
+          ],
+          "kind": "current",
+          "label": "Current",
+          "notices": [
+            {
+              "kind": "not_for_navigation",
+              "text": "Not for navigation."
+            }
+          ]
+        },
+        {
+          "chart": {
+            "accessibility": "Wind: Luna found nothing here yet.",
+            "bands": [],
+            "markers": [],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [],
+            "title": "Wind",
+            "unit": "",
+            "x_ticks": [
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1793941200
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1793944800
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1793948400
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1793952000
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1793955600
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1793959200
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1793962800
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1793966400
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1793970000
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1793973600
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1793977200
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1793980800
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1793984400
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1793988000
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              }
+            ]
+          },
+          "credits": [],
+          "kind": "wind",
+          "label": "Wind",
+          "notices": []
+        },
+        {
+          "chart": {
+            "accessibility": "Pressure: Luna found nothing here yet.",
+            "bands": [],
+            "markers": [],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [],
+            "title": "Pressure",
+            "unit": "",
+            "x_ticks": [
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1793941200
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1793944800
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1793948400
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1793952000
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1793955600
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1793959200
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1793962800
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1793966400
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1793970000
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1793973600
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1793977200
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1793980800
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1793984400
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1793988000
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              }
+            ]
+          },
+          "credits": [],
+          "kind": "pressure",
+          "label": "Pressure",
+          "notices": []
+        },
+        {
+          "chart": {
+            "accessibility": "Light: Sunrise 4:40 PM, Sunset 1:40 AM",
+            "bands": [
+              {
+                "end_t": 1793999400,
+                "kind": "night",
+                "label": "Night",
+                "start_t": 1793941200
+              },
+              {
+                "end_t": 1794001200,
+                "kind": "highlight",
+                "label": "Twilight",
+                "start_t": 1793999400
+              },
+              {
+                "end_t": 1794004800,
+                "kind": "highlight",
+                "label": "Golden hour",
+                "start_t": 1794001200
+              },
+              {
+                "end_t": 1794033600,
+                "kind": "highlight",
+                "label": "Golden hour",
+                "start_t": 1794030000
+              },
+              {
+                "end_t": 1794035400,
+                "kind": "highlight",
+                "label": "Twilight",
+                "start_t": 1794033600
+              },
+              {
+                "end_t": 1794114000,
+                "kind": "night",
+                "label": "Night",
+                "start_t": 1794035400
+              }
+            ],
+            "markers": [
+              {
+                "kind": "sunrise",
+                "label": "Sunrise 4:40 PM",
+                "t": 1794001200,
+                "value": null
+              },
+              {
+                "kind": "sunset",
+                "label": "Sunset 1:40 AM",
+                "t": 1794033600,
+                "value": null
+              }
+            ],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [],
+            "title": "Light · computed on device",
+            "unit": "",
+            "x_ticks": [
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1793941200
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1793944800
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1793948400
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1793952000
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1793955600
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1793959200
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1793962800
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1793966400
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1793970000
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1793973600
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1793977200
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1793980800
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1793984400
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1793988000
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              }
+            ]
+          },
+          "credits": [
+            {
+              "licence": null,
+              "link": null,
+              "source": "Computed on device",
+              "text": "Sun and moon positions from astronomical algorithms"
+            }
+          ],
+          "kind": "light",
+          "label": "Light",
+          "notices": []
+        },
+        {
+          "chart": {
+            "accessibility": "Solunar: Big nibble 10:00 PM to 12:00 AM. A traditional cue, not a promise.",
+            "bands": [
+              {
+                "end_t": 1794027600,
+                "kind": "solunar_major",
+                "label": "Big nibble 10:00 PM to 12:00 AM",
+                "start_t": 1794020400
+              }
+            ],
+            "markers": [],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [],
+            "title": "Solunar · computed on device",
+            "unit": "",
+            "x_ticks": [
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1793941200
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1793944800
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1793948400
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1793952000
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1793955600
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1793959200
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1793962800
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1793966400
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1793970000
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1793973600
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1793977200
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1793980800
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1793984400
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1793988000
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              }
+            ]
+          },
+          "credits": [
+            {
+              "licence": null,
+              "link": null,
+              "source": "Computed on device",
+              "text": "Sun and moon positions from astronomical algorithms"
+            }
+          ],
+          "kind": "solunar",
+          "label": "Solunar",
+          "notices": []
+        }
+      ],
+      "start_t": 1793941200,
+      "step_minutes": 30,
+      "x_ticks": [
+        {
+          "label": "12 AM",
+          "major": true,
+          "t": 1793941200
+        },
+        {
+          "label": "1 AM",
+          "major": false,
+          "t": 1793944800
+        },
+        {
+          "label": "2 AM",
+          "major": false,
+          "t": 1793948400
+        },
+        {
+          "label": "3 AM",
+          "major": true,
+          "t": 1793952000
+        },
+        {
+          "label": "4 AM",
+          "major": false,
+          "t": 1793955600
+        },
+        {
+          "label": "5 AM",
+          "major": false,
+          "t": 1793959200
+        },
+        {
+          "label": "6 AM",
+          "major": true,
+          "t": 1793962800
+        },
+        {
+          "label": "7 AM",
+          "major": false,
+          "t": 1793966400
+        },
+        {
+          "label": "8 AM",
+          "major": false,
+          "t": 1793970000
+        },
+        {
+          "label": "9 AM",
+          "major": true,
+          "t": 1793973600
+        },
+        {
+          "label": "10 AM",
+          "major": false,
+          "t": 1793977200
+        },
+        {
+          "label": "11 AM",
+          "major": false,
+          "t": 1793980800
+        },
+        {
+          "label": "12 PM",
+          "major": true,
+          "t": 1793984400
+        },
+        {
+          "label": "1 PM",
+          "major": false,
+          "t": 1793988000
+        },
+        {
+          "label": "2 PM",
+          "major": false,
+          "t": 1793991600
+        },
+        {
+          "label": "3 PM",
+          "major": true,
+          "t": 1793995200
+        },
+        {
+          "label": "4 PM",
+          "major": false,
+          "t": 1793998800
+        },
+        {
+          "label": "5 PM",
+          "major": false,
+          "t": 1794002400
+        },
+        {
+          "label": "6 PM",
+          "major": true,
+          "t": 1794006000
+        },
+        {
+          "label": "7 PM",
+          "major": false,
+          "t": 1794009600
+        },
+        {
+          "label": "8 PM",
+          "major": false,
+          "t": 1794013200
+        },
+        {
+          "label": "9 PM",
+          "major": true,
+          "t": 1794016800
+        },
+        {
+          "label": "10 PM",
+          "major": false,
+          "t": 1794020400
+        },
+        {
+          "label": "11 PM",
+          "major": false,
+          "t": 1794024000
+        },
+        {
+          "label": "12 AM",
+          "major": true,
+          "t": 1794027600
+        },
+        {
+          "label": "1 AM",
+          "major": false,
+          "t": 1794031200
+        },
+        {
+          "label": "2 AM",
+          "major": false,
+          "t": 1794034800
+        },
+        {
+          "label": "3 AM",
+          "major": true,
+          "t": 1794038400
+        },
+        {
+          "label": "4 AM",
+          "major": false,
+          "t": 1794042000
+        },
+        {
+          "label": "5 AM",
+          "major": false,
+          "t": 1794045600
+        },
+        {
+          "label": "6 AM",
+          "major": true,
+          "t": 1794049200
+        },
+        {
+          "label": "7 AM",
+          "major": false,
+          "t": 1794052800
+        },
+        {
+          "label": "8 AM",
+          "major": false,
+          "t": 1794056400
+        },
+        {
+          "label": "9 AM",
+          "major": true,
+          "t": 1794060000
+        },
+        {
+          "label": "10 AM",
+          "major": false,
+          "t": 1794063600
+        },
+        {
+          "label": "11 AM",
+          "major": false,
+          "t": 1794067200
+        },
+        {
+          "label": "12 PM",
+          "major": true,
+          "t": 1794070800
+        },
+        {
+          "label": "1 PM",
+          "major": false,
+          "t": 1794074400
+        },
+        {
+          "label": "2 PM",
+          "major": false,
+          "t": 1794078000
+        },
+        {
+          "label": "3 PM",
+          "major": true,
+          "t": 1794081600
+        },
+        {
+          "label": "4 PM",
+          "major": false,
+          "t": 1794085200
+        },
+        {
+          "label": "5 PM",
+          "major": false,
+          "t": 1794088800
+        },
+        {
+          "label": "6 PM",
+          "major": true,
+          "t": 1794092400
+        },
+        {
+          "label": "7 PM",
+          "major": false,
+          "t": 1794096000
+        },
+        {
+          "label": "8 PM",
+          "major": false,
+          "t": 1794099600
+        },
+        {
+          "label": "9 PM",
+          "major": true,
+          "t": 1794103200
+        },
+        {
+          "label": "10 PM",
+          "major": false,
+          "t": 1794106800
+        },
+        {
+          "label": "11 PM",
+          "major": false,
+          "t": 1794110400
+        }
+      ]
+    }
+  }
+}

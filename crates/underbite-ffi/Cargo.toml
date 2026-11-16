@@ -33,6 +33,7 @@ async-trait.workspace = true
 
 [dev-dependencies]
 pollster.workspace = true
+underbite-core = { workspace = true, features = ["testdata"] }
 
 # The workspace lints, except that UniFFI's generated scaffolding is `unsafe`
 # (the hand-written code has none).
