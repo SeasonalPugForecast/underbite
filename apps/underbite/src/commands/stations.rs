@@ -15,6 +15,7 @@ use underbite_core::discover::rank::{CoverageState, MeasurementRanking, Reason, 
 use underbite_core::model::{Measurement, Spot, WaterType};
 use underbite_core::provenance::{Relation, SourceId};
 use underbite_core::view::format::Formatter;
+use underbite_fetch::store::parse_station_key;
 use underbite_fetch::{requirements, stations_near};
 
 use super::spot::point_id;
@@ -80,38 +81,7 @@ fn parse_location(text: &str) -> anyhow::Result<(f64, f64)> {
 
 /// Parses `source:id[:bin]`.
 fn parse_key(text: &str) -> anyhow::Result<StationKey> {
-    let mut parts = text.splitn(3, ':');
-    let (Some(source), Some(id)) = (parts.next(), parts.next()) else {
-        bail!("{text:?} is not `source:id` or `source:id:bin`");
-    };
-    if source.is_empty() || id.is_empty() {
-        bail!("{text:?} is not `source:id` or `source:id:bin`");
-    }
-    let source = source.to_ascii_lowercase();
-    let key = StationKey::new(SourceId::new(&source), canonical_id(&source, id));
-    Ok(match parts.next() {
-        Some(bin) => key.with_bin(bin.parse().with_context(|| format!("bin of {text:?}"))?),
-        None => key,
-    })
-}
-
-/// A station id in the case its source writes it, so `ndbc:BGNN6` and `ndbc:bgnn6` are one
-/// station: NDBC ids are lower case, CO-OPS and NWPS ids upper case, and USGS ids are
-/// `USGS-<number>` (a bare number is accepted).
-fn canonical_id(source: &str, id: &str) -> String {
-    let id = id.trim();
-    match source {
-        "ndbc" => id.to_ascii_lowercase(),
-        "coops" | "coops-harmonics" | "nwps" => id.to_ascii_uppercase(),
-        "usgs" => {
-            let number = match id.split_at_checked(5) {
-                Some((prefix, rest)) if prefix.eq_ignore_ascii_case("usgs-") => rest,
-                _ => id,
-            };
-            format!("USGS-{number}")
-        }
-        _ => id.to_owned(),
-    }
+    Ok(parse_station_key(text)?)
 }
 
 /// A key as the command line writes it.
@@ -388,37 +358,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn keys_parse_with_and_without_a_bin() {
+    fn keys_read_as_the_store_reads_them() {
         assert_eq!(
-            parse_key("coops:8518750").unwrap(),
-            StationKey::new(SourceId::COOPS, "8518750")
-        );
-        assert_eq!(
-            parse_key("coops:NYH1927:13").unwrap(),
-            StationKey::new(SourceId::COOPS, "NYH1927").with_bin(13)
-        );
-        assert!(parse_key("coops").is_err());
-        assert!(parse_key("coops:").is_err());
-        assert!(parse_key("coops:x:y").is_err());
-    }
-
-    #[test]
-    fn ids_take_the_case_of_their_source() {
-        let key = |text: &str| parse_key(text).unwrap();
-        assert_eq!(key("ndbc:BGNN6"), StationKey::new(SourceId::NDBC, "bgnn6"));
-        assert_eq!(key("NDBC:44025"), StationKey::new(SourceId::NDBC, "44025"));
-        assert_eq!(
-            key("coops:nyh1927:13"),
-            StationKey::new(SourceId::COOPS, "NYH1927").with_bin(13)
-        );
-        assert_eq!(key("nwps:ktnn6"), StationKey::new(SourceId::NWPS, "KTNN6"));
-        assert_eq!(
-            key("usgs:01375000"),
+            parse_key("usgs:01375000").unwrap(),
             StationKey::new(SourceId::USGS, "USGS-01375000")
         );
-        assert_eq!(key("usgs:usgs-01375000"), key("usgs:01375000"));
-        // A source this version does not know keeps its id as written.
-        assert_eq!(key("other:AbC").id, "AbC");
+        assert!(parse_key("coops").is_err());
     }
 
     #[test]
