@@ -844,6 +844,15 @@ fn station_lists(
 const HYDRO_RADIUS_M: f64 = 5_000.0;
 /// NWPS gauges whose USGS site is looked up, nearest first.
 const JOINED_GAUGES: usize = 3;
+/// River stations beyond the spot's hydrography whose own surroundings are read, per fetch.
+const FAR_STATIONS: usize = 4;
+/// Measurements of a river at a gauge, which only mean something on the spot's own river.
+const RIVER_MEASUREMENTS: [Measurement; 4] = [
+    Measurement::Discharge,
+    Measurement::GageHeight,
+    Measurement::FlowForecast,
+    Measurement::FloodCategories,
+];
 
 /// Water types whose stations are related to the spot through the river network: rivers,
 /// lakes and the estuaries and bays they open into.
@@ -885,17 +894,22 @@ fn hydro_pages<T>(
 /// The relation of each station to the spot from the flowlines and waterbodies around it. A
 /// station or spot off the mapped streams has no known relation and is left out; a `Nearby`
 /// between two placed ones (a tributary, another river) is known and kept.
+///
+/// `river` lists the stations that serve a river measurement, nearest first. Those the spot's
+/// hydrography leaves off the network get the flowlines around their own position (at most
+/// [`FAR_STATIONS`] queries), and the relations are computed once more over both.
 fn relations(
     host: &Host<'_>,
     ctx: &FetchContext,
     spot: &Spot,
     stations: &[StationRef],
+    river: &[StationRef],
 ) -> Result<BTreeMap<StationKey, Relation>, SourceError> {
     let at = Coordinates {
         latitude: spot.latitude,
         longitude: spot.longitude,
     };
-    let flowlines = hydro_pages(
+    let mut flowlines = hydro_pages(
         host,
         hydro::flowlines_query(at, HYDRO_RADIUS_M, ctx)?,
         hydro::parse_flowlines,
@@ -905,13 +919,28 @@ fn relations(
         hydro::waterbodies_query(at, HYDRO_RADIUS_M, ctx)?,
         hydro::parse_waterbodies,
     )?;
-    let hints = hydrography::relations(
-        Point::new(spot.latitude, spot.longitude),
-        stations,
-        &flowlines,
-        &waterbodies,
-        HydroOptions::default(),
-    );
+    let here = Point::new(spot.latitude, spot.longitude);
+    let relate = |flowlines: &[hydrography::Flowline]| {
+        hydrography::relations(
+            here,
+            stations,
+            flowlines,
+            &waterbodies,
+            HydroOptions::default(),
+        )
+    };
+    let mut hints = relate(&flowlines);
+    let off: Vec<&StationRef> = river
+        .iter()
+        .filter(|s| {
+            hints
+                .get(&(s.source.clone(), s.id.clone()))
+                .is_some_and(off_network)
+        })
+        .collect();
+    if far_flowlines(host, ctx, &off, &mut flowlines) {
+        hints = relate(&flowlines);
+    }
     let placed = |hint: &hydrography::RelationHint| {
         hint.relation != Relation::Nearby
             || !hint
@@ -924,6 +953,99 @@ fn relations(
         .filter(|(_, hint)| placed(hint))
         .map(|((source, id), hint)| (StationKey::new(source, id), hint.relation))
         .collect())
+}
+
+/// A station the loaded network does not reach while it places the spot.
+fn off_network(hint: &hydrography::RelationHint) -> bool {
+    let off = |subject: hydrography::Subject| {
+        hint.reasons.iter().any(|r| {
+            matches!(r, hydrography::HydroReason::NotOnMappedStream { subject: s } if *s == subject)
+        })
+    };
+    hint.relation == Relation::Nearby
+        && off(hydrography::Subject::Station)
+        && !off(hydrography::Subject::Spot)
+}
+
+/// Adds the flowlines around each of `stations` (nearest first, at most [`FAR_STATIONS`]
+/// queries, each centred on the station rounded by the context) that are not loaded yet;
+/// returns whether any were added. A query that fails leaves its station off the network.
+fn far_flowlines(
+    host: &Host<'_>,
+    ctx: &FetchContext,
+    stations: &[&StationRef],
+    flowlines: &mut Vec<hydrography::Flowline>,
+) -> bool {
+    let mut loaded: BTreeSet<String> = flowlines.iter().map(|f| f.id.clone()).collect();
+    let mut queried: BTreeSet<String> = BTreeSet::new();
+    let before = flowlines.len();
+    for station in stations {
+        let at = Coordinates {
+            latitude: station.latitude,
+            longitude: station.longitude,
+        };
+        let query = match hydro::flowlines_query(at, hydro::MIN_RADIUS_M, ctx) {
+            Ok(query) => query,
+            Err(e) => {
+                tracing::debug!(station = %station.id, error = %e, "hydrography around a station");
+                continue;
+            }
+        };
+        // Stations in the same rounding cell share one query.
+        if queried.contains(&query.url) {
+            continue;
+        }
+        if queried.len() == FAR_STATIONS {
+            tracing::debug!(station = %station.id, "hydrography around a station: limit reached");
+            break;
+        }
+        queried.insert(query.url.clone());
+        match hydro_pages(host, query, hydro::parse_flowlines) {
+            Ok(found) => {
+                for flowline in found {
+                    if loaded.insert(flowline.id.clone()) {
+                        flowlines.push(flowline);
+                    }
+                }
+            }
+            Err(e) => {
+                tracing::debug!(station = %station.id, error = %e, "hydrography around a station");
+            }
+        }
+    }
+    flowlines.len() > before
+}
+
+/// The stations that can serve a river measurement within its chain's distance limit, nearest
+/// first.
+fn river_stations(
+    spot: &Spot,
+    candidates: &[StationCandidate],
+    chains: &BTreeMap<Measurement, ChainSpec>,
+) -> Vec<StationRef> {
+    let mut out: Vec<(f64, &StationRef)> = Vec::new();
+    for c in candidates {
+        let d = distance_m(
+            spot.latitude,
+            spot.longitude,
+            c.station.latitude,
+            c.station.longitude,
+        );
+        let serves = RIVER_MEASUREMENTS.iter().any(|m| {
+            c.offers.contains_key(m)
+                && chains.get(m).is_some_and(|chain| {
+                    chain.sources.contains(&c.station.source) && d <= chain.limits.max_distance_m
+                })
+        });
+        let listed = out
+            .iter()
+            .any(|(_, s)| s.source == c.station.source && s.id == c.station.id);
+        if serves && !listed {
+            out.push((d, &c.station));
+        }
+    }
+    out.sort_by(|a, b| a.0.total_cmp(&b.0));
+    out.into_iter().map(|(_, s)| s.clone()).collect()
 }
 
 /// The USGS site each of the nearest NWPS gauges forecasts, from the gauges' metadata.
@@ -1155,7 +1277,8 @@ pub(crate) fn discover(
     }
     let mut hydrography = false;
     let relations = if uses_hydrography(spot.water_type) && !nearby.is_empty() {
-        match relations(host, ctx, spot, &nearby) {
+        let river = river_stations(spot, &lists.candidates, &chains);
+        match relations(host, ctx, spot, &nearby, &river) {
             Ok(r) => {
                 hydrography = true;
                 r
@@ -2084,6 +2207,252 @@ mod tests {
         };
         assert_eq!(katonah.relation, Relation::Nearby);
         assert!(katonah.reasons.contains(&nearby), "{:?}", katonah.reasons);
+    }
+
+    /// Answers the given URLs with 3DHP pages; any other URL has no route.
+    struct Hydrography {
+        pages: BTreeMap<String, String>,
+        seen: std::sync::Mutex<Vec<String>>,
+    }
+
+    impl Hydrography {
+        /// The spot's flowlines and no waterbodies, plus pages around stations.
+        fn new(spot: &Spot, flowlines: String, around: &[(&StationRef, String)]) -> Self {
+            let at = |latitude, longitude| Coordinates {
+                latitude,
+                longitude,
+            };
+            let spot = at(spot.latitude, spot.longitude);
+            let query =
+                |centre, radius| hydro::flowlines_query(centre, radius, &ctx()).expect("query");
+            let mut pages = BTreeMap::from([
+                (query(spot, HYDRO_RADIUS_M).url, flowlines),
+                (
+                    hydro::waterbodies_query(spot, HYDRO_RADIUS_M, &ctx())
+                        .expect("query")
+                        .url,
+                    r#"{"features":[]}"#.to_string(),
+                ),
+            ]);
+            for (station, page) in around {
+                let url = query(at(station.latitude, station.longitude), hydro::MIN_RADIUS_M).url;
+                pages.insert(url, page.clone());
+            }
+            Self {
+                pages,
+                seen: std::sync::Mutex::default(),
+            }
+        }
+
+        fn seen(&self) -> Vec<String> {
+            self.seen.lock().expect("lock").clone()
+        }
+    }
+
+    impl Transport for Hydrography {
+        fn send(&self, call: &Call) -> Result<Fetched, TransportError> {
+            self.seen.lock().expect("lock").push(call.url.clone());
+            self.pages
+                .get(&call.url)
+                .map(|body| Fetched::new(200, body.clone()))
+                .ok_or_else(|| TransportError::NoRoute(call.redacted_url()))
+        }
+    }
+
+    /// A synthetic flowline: id, name, level path, hydrosequence, the hydrosequence downstream
+    /// (0 at an outlet) and its ends as (latitude, longitude), upstream first.
+    type Line<'a> = (&'a str, &'a str, u64, u64, u64, [(f64, f64); 2]);
+
+    /// A layer 50 page of synthetic flowlines.
+    fn flowline_page(lines: &[Line<'_>]) -> String {
+        let features: Vec<serde_json::Value> = lines
+            .iter()
+            .map(|(id, name, level_path, hs, dn, ends)| {
+                let path: Vec<[f64; 2]> = ends.iter().map(|&(lat, lon)| [lon, lat]).collect();
+                serde_json::json!({
+                    "attributes": {
+                        "id3dhp": id,
+                        "gnisidlabel": name,
+                        "featuretypelabel": "StreamRiver",
+                        "streamorder": 3,
+                        "levelpath": level_path,
+                        "hydrosequence": hs,
+                        "dnhydrosequence": dn,
+                        "uphydrosequence": 0,
+                    },
+                    "geometry": { "paths": [path] },
+                })
+            })
+            .collect();
+        serde_json::json!({ "features": features }).to_string()
+    }
+
+    /// A forecast gauge that defines flood stages.
+    fn flood_gauge(id: &str, latitude: f64, longitude: f64) -> StationCandidate {
+        let coverage = Coverage {
+            last_value_at: None,
+            primary: true,
+        };
+        StationCandidate {
+            station: StationRef {
+                source: SourceId::NWPS,
+                id: id.into(),
+                name: id.into(),
+                kind: StationKind::NwpsGauge,
+                latitude,
+                longitude,
+                bin: None,
+                reference_id: None,
+            },
+            offers: BTreeMap::from([(M::FloodCategories, coverage)]),
+        }
+    }
+
+    fn flood_chain() -> BTreeMap<Measurement, ChainSpec> {
+        BTreeMap::from([(
+            M::FloodCategories,
+            ChainSpec {
+                sources: vec![SourceId::NWPS],
+                limits: Limits::from_config(Some(25.0), None),
+            },
+        )])
+    }
+
+    /// The spot's own reach of the main river, north to south through the spot.
+    const SPOT_REACH: Line<'static> = (
+        "main-1",
+        "Main River",
+        1,
+        100,
+        0,
+        [(41.235, -73.8588), (41.215, -73.8588)],
+    );
+
+    #[test]
+    fn far_river_gauges_are_placed_by_the_hydrography_around_them() {
+        let spot = croton();
+        // About 17 km away, beyond the spot's flowlines: one up the same river, one on another
+        // river, and one whose surroundings cannot be read.
+        let candidates = vec![
+            flood_gauge("UPPN6", 41.38, -73.8588),
+            flood_gauge("OTHN6", 41.2252, -74.06),
+            flood_gauge("LSTN6", 41.11, -73.97),
+        ];
+        let stations: Vec<StationRef> = candidates.iter().map(|c| c.station.clone()).collect();
+        let upper = (
+            "main-9",
+            "Main River",
+            1,
+            200,
+            150,
+            [(41.39, -73.8588), (41.37, -73.8588)],
+        );
+        let other = (
+            "other-1",
+            "Other River",
+            2,
+            500,
+            0,
+            [(41.235, -74.06), (41.215, -74.06)],
+        );
+        let transport = Hydrography::new(
+            &spot,
+            flowline_page(&[SPOT_REACH]),
+            &[
+                // The spot's reach again: loaded once.
+                (&stations[0], flowline_page(&[upper, SPOT_REACH])),
+                (&stations[1], flowline_page(&[other])),
+            ],
+        );
+        let host = Host::new(&transport, None, now(), true);
+        let chains = flood_chain();
+        let river = river_stations(&spot, &candidates, &chains);
+        let nearest: Vec<&str> = river.iter().map(|s| s.id.as_str()).collect();
+        assert_eq!(nearest, ["LSTN6", "OTHN6", "UPPN6"]);
+
+        let relations = relations(&host, &ctx(), &spot, &stations, &river).expect("hydrography");
+        let key = |id: &str| StationKey::new(SourceId::NWPS, id);
+        // Same level path, higher hydrosequence: upstream, with no reach loaded in between.
+        assert_eq!(relations.get(&key("UPPN6")), Some(&Relation::Upstream));
+        assert_eq!(relations.get(&key("OTHN6")), Some(&Relation::Nearby));
+        assert_eq!(relations.get(&key("LSTN6")), None);
+        let seen = transport.seen();
+        assert_eq!(seen.len(), 5, "{seen:#?}");
+        for url in &seen {
+            assert_rounded(url);
+        }
+
+        let input = DiscoveryInput {
+            latitude: spot.latitude,
+            longitude: spot.longitude,
+            now: now(),
+            candidates,
+            chains,
+            relations,
+            ..DiscoveryInput::default()
+        };
+        let ranking = underbite_core::discover::rank::rank(&input);
+        let flood = &ranking.measurements[&M::FloodCategories];
+        let kept: Vec<(&str, Relation)> = flood
+            .stations
+            .iter()
+            .map(|s| (s.station.id.as_str(), s.relation))
+            .collect();
+        assert_eq!(
+            kept,
+            [("UPPN6", Relation::Upstream), ("LSTN6", Relation::Nearby)]
+        );
+        let dropped = flood
+            .dropped
+            .iter()
+            .find(|d| d.station.id == "OTHN6")
+            .expect("dropped");
+        assert_eq!(
+            dropped.reason,
+            underbite_core::discover::rank::Reason::OtherWaterBody {
+                relation: Relation::Nearby
+            }
+        );
+    }
+
+    #[test]
+    fn far_hydrography_queries_are_bounded_and_shared_within_a_rounding_cell() {
+        let spot = croton();
+        let mut candidates: Vec<StationCandidate> = (0..6)
+            .map(|i| {
+                let latitude = 41.30 + 0.02 * f64::from(i);
+                flood_gauge(&format!("G{i}"), latitude, -73.70)
+            })
+            .collect();
+        // The nearest gauge's neighbour in the same cell shares its query.
+        candidates.push(flood_gauge("TWIN", 41.3004, -73.7003));
+        // A gauge on the spot's reach needs no query of its own.
+        candidates.push(flood_gauge("HERE", 41.22, -73.8588));
+        let stations: Vec<StationRef> = candidates.iter().map(|c| c.station.clone()).collect();
+        let transport = Hydrography::new(&spot, flowline_page(&[SPOT_REACH]), &[]);
+        let host = Host::new(&transport, None, now(), true);
+        let river = river_stations(&spot, &candidates, &flood_chain());
+        let relations = relations(&host, &ctx(), &spot, &stations, &river).expect("hydrography");
+        // The failed queries leave their gauges unknown without failing the hydrography.
+        assert_eq!(
+            relations.keys().map(|k| k.id.as_str()).collect::<Vec<_>>(),
+            ["HERE"]
+        );
+        let far: Vec<String> = transport.seen()[2..].to_vec();
+        let expected: Vec<String> = ["G0", "G1", "G2", "G3"]
+            .iter()
+            .map(|id| {
+                let g = stations.iter().find(|s| s.id == *id).expect("gauge");
+                let at = Coordinates {
+                    latitude: g.latitude,
+                    longitude: g.longitude,
+                };
+                hydro::flowlines_query(at, hydro::MIN_RADIUS_M, &ctx())
+                    .expect("query")
+                    .url
+            })
+            .collect();
+        assert_eq!(far, expected);
     }
 
     fn fetched(spot: &Spot, config: &Config, scenario: &str, cache: &Cache) -> (SpotFetch, Replay) {
