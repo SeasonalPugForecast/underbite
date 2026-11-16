@@ -334,14 +334,10 @@ pub fn parse_station_list(
                 };
                 (kind, Measurement::TidalCurrent, s.currbin)
             }
-            StationList::WaterLevels => {
-                let measurement = if s.tidal == Some(false) {
-                    Measurement::LakeLevel
-                } else {
-                    Measurement::Tide
-                };
-                (StationKind::WaterLevel, measurement, None)
-            }
+            // A non-tidal station (the Great Lakes) measures a lake level, which the data
+            // source does not serve yet: it is left out rather than offered for nothing.
+            StationList::WaterLevels if s.tidal == Some(false) => continue,
+            StationList::WaterLevels => (StationKind::WaterLevel, Measurement::Tide, None),
             StationList::Currents => (
                 StationKind::PortsCurrentMeter,
                 Measurement::TidalCurrent,
@@ -926,6 +922,18 @@ mod tests {
             m.iter()
                 .all(|c| c.station.kind == StationKind::PortsCurrentMeter)
         );
+    }
+
+    #[test]
+    fn non_tidal_water_level_stations_are_not_offered() {
+        let body = br#"{"stations":[
+            {"id":"9063020","name":"Buffalo","lat":42.877,"lng":-78.89,"tidal":false},
+            {"id":"8518750","name":"The Battery","lat":40.7006,"lng":-74.0142,"tidal":true}
+        ]}"#;
+        let c = parse_station_list(StationList::WaterLevels, body).unwrap();
+        assert_eq!(c.len(), 1);
+        assert_eq!(c[0].station.id, "8518750");
+        assert!(c[0].offers.keys().eq([&Measurement::Tide]));
     }
 
     #[test]
