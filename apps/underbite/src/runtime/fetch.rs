@@ -18,7 +18,6 @@
 //! `SpotSnapshot` with its
 //! credits and the errors of the sources that were passed over. The snapshot and the call ledger
 //! are saved; every request is logged only through `redact_url`.
-
 #![allow(dead_code)] // The spot, stations and tides commands call these; they are wired in separately.
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -1969,12 +1968,9 @@ mod tests {
     }
 
     #[test]
-    fn battery_discovery_takes_the_battery_and_the_pinned_current_bin() {
+    fn battery_discovery_takes_the_battery_and_the_hudson_river_entrance_current_bin() {
         let dir = tempfile::tempdir().expect("tempdir");
         let cache = Cache::at(dir.path());
-        let mut choices = StationChoices::default();
-        choices.pin(StationKey::new(SourceId::COOPS, "NYH1927").with_bin(13));
-        save_choices(&cache, "battery", &choices, now()).expect("choices");
         let transport = replay("battery");
         let d = discovered(&battery(), &transport, &cache);
         assert!(d.errors.is_empty(), "{:#?}", d.errors);
@@ -1982,19 +1978,26 @@ mod tests {
         assert_eq!(first_link(&d, M::Tide).1, "8518750");
         let current = first_link(&d, M::TidalCurrent);
         assert_eq!((current.1.as_str(), current.2), ("NYH1927", Some(13)));
-        // Without hydrography geometry the nearer Dimond Reef follows, at its shallowest bin.
+        // With the hydrography's geometry the stations on the harbour's own water rank by distance.
         let second = &d.plan.chains[&M::TidalCurrent].links[1];
-        assert!(matches!(&second.place, LinkPlace::Station { station, .. }
-            if station.id == "NYH1919" && station.bin == Some(3)));
+        assert!(
+            matches!(&second.place, LinkPlace::Station { station, relation, .. }
+            if station.id == "NYH1920" && station.bin == Some(12)
+                && *relation == Relation::SameWaterBody)
+        );
         assert_eq!(first_link(&d, M::MarineAlerts).0, "nws");
         assert_eq!(first_link(&d, M::WavesForecast).0, "open-meteo-marine");
         // CO-OPS water levels stand in for the station's own temperature sensor.
         assert_eq!(first_link(&d, M::WaterTemperature).1, "8518750");
 
-        // A second fetch takes the lists from the cache.
+        // Discovery checks the planned buoys' files once per run, so a second run probes the
+        // stations the first run's check promoted; the third run changes nothing. Later runs
+        // take the lists from the cache.
+        discovered(&battery(), &transport, &cache);
         let sent = transport.seen().len();
         let again = discovered(&battery(), &transport, &cache);
-        assert_eq!(again.plan, d.plan);
+        assert_eq!(again.plan, discovered(&battery(), &transport, &cache).plan);
+        assert_eq!(first_link(&again, M::TidalCurrent).1, "NYH1927");
         let lists = [
             "stations.json",
             "activestations.xml",
@@ -2015,9 +2018,8 @@ mod tests {
         let cache = Cache::at(dir.path());
         let transport = replay("croton");
         let d = discovered(&croton(), &transport, &cache);
-        // No estuary sites were recorded around Croton; the other site types still count.
-        assert_eq!(d.errors.len(), 1, "{:#?}", d.errors);
-        assert!(d.errors[0].message.contains("site_type_code=ES"));
+        // No estuary sites are listed around Croton: an empty answer, not an error.
+        assert_eq!(d.errors, [], "{:#?}", d.errors);
         for m in [M::Discharge, M::GageHeight] {
             let link = first_link(&d, m);
             assert_eq!(
@@ -2031,31 +2033,6 @@ mod tests {
         assert_eq!(katonah.station.id, "KTNN6");
         assert!(katonah.reasons.iter().any(|r| matches!(r,
             underbite_core::discover::rank::Reason::ForecastGaugeFor { site } if site.id == "USGS-01374901")));
-    }
-
-    /// The Battery's choices: the Hudson River Entrance's surface bin pinned, and the stations
-    /// near the harbour this replay has no recordings of excluded (as a user excludes a
-    /// station), so every request gets a recorded answer.
-    fn battery_choices() -> StationChoices {
-        let mut choices = StationChoices::default();
-        choices.pin(StationKey::new(SourceId::COOPS, "NYH1927").with_bin(13));
-        for id in ["8516945", "8531680"] {
-            choices.exclude(StationKey::new(SourceId::COOPS, id));
-        }
-        for id in ["robn4", "mhrn6", "kptn6", "sdhn4", "44065"] {
-            choices.exclude(StationKey::new(SourceId::NDBC, id));
-        }
-        choices
-    }
-
-    /// Croton's choices: the gauges and buoys around it without recordings excluded.
-    fn croton_choices() -> StationChoices {
-        let mut choices = StationChoices::default();
-        choices.exclude(StationKey::new(SourceId::NDBC, "hbmn6"));
-        for id in ["WNYN6", "WPTN6", "PMTN6", "SUFN6", "SADN4"] {
-            choices.exclude(StationKey::new(SourceId::NWPS, id));
-        }
-        choices
     }
 
     fn fetched(spot: &Spot, config: &Config, scenario: &str, cache: &Cache) -> (SpotFetch, Replay) {
@@ -2122,7 +2099,6 @@ mod tests {
     fn the_battery_end_to_end() {
         let dir = tempfile::tempdir().expect("tempdir");
         let cache = Cache::at(dir.path());
-        save_choices(&cache, "battery", &battery_choices(), now()).expect("choices");
         let (out, transport) = fetched(&battery(), &Config::default(), "battery", &cache);
         let s = &out.snapshot;
 
@@ -2150,10 +2126,14 @@ mod tests {
                 .any(|a| a.event == "Small Craft Advisory")
         );
 
-        // No buoy within the default 50 km has a recording: waves come from the model.
-        assert!(s.marine.waves.is_none());
+        // Buoy 44065 lies within the default 50 km: the observed waves and wind are its and
+        // the Robbins Reef light's; the model's waves are the forecast.
+        let waves = s.marine.waves.as_ref().expect("waves");
+        assert_eq!(station_of(waves), "ndbc 44065");
         let waves = s.marine.waves_forecast.as_ref().expect("waves forecast");
         assert_eq!(waves.provenance().source, SourceId::OPEN_METEO_MARINE);
+        let wind = s.marine.observed_wind.as_ref().expect("wind");
+        assert_eq!(station_of(wind), "ndbc robn4");
         let temp = s.water.temperature_c.as_ref().expect("water temperature");
         assert_eq!(station_of(temp), "ndbc batn6");
 
@@ -2164,26 +2144,26 @@ mod tests {
         assert_eq!(s.sky.days.len(), 7);
         assert_eq!(s.fetched_at, now());
 
-        // The station's own water temperature ends on 7 November, older than 180 minutes; no
-        // station near the harbour reported wind.
+        // The CO-OPS stations' water temperature ends on 7 November, older than 180 minutes, and
+        // they report no wind; each is recorded before the buoys answer.
+        let stale = (
+            "coops".to_string(),
+            Some(M::WaterTemperature),
+            SourceErrorKind::Stale,
+        );
+        let no_wind = (
+            "coops".to_string(),
+            Some(M::ObservedWind),
+            SourceErrorKind::NoData,
+        );
         assert_eq!(
             errors(s),
             [
-                (
-                    "coops".into(),
-                    Some(M::WaterTemperature),
-                    SourceErrorKind::Stale
-                ),
-                (
-                    "coops".into(),
-                    Some(M::ObservedWind),
-                    SourceErrorKind::NoData
-                ),
-                (
-                    "ndbc".into(),
-                    Some(M::ObservedWind),
-                    SourceErrorKind::NoData
-                ),
+                stale.clone(),
+                stale,
+                no_wind.clone(),
+                no_wind.clone(),
+                no_wind
             ]
         );
         let credited: BTreeSet<&str> = s.attribution.iter().map(|a| a.source.as_str()).collect();
@@ -2225,7 +2205,6 @@ mod tests {
     fn the_storm_point_is_reused_for_three_hours() {
         let dir = tempfile::tempdir().expect("tempdir");
         let cache = Cache::at(dir.path());
-        save_choices(&cache, "battery", &battery_choices(), now()).expect("choices");
         let (first, _) = fetched(&battery(), &Config::default(), "battery", &cache);
         let transport = replay("battery");
         let options = FetchOptions {
@@ -2318,7 +2297,6 @@ mod tests {
     fn croton_end_to_end() {
         let dir = tempfile::tempdir().expect("tempdir");
         let cache = Cache::at(dir.path());
-        save_choices(&cache, "croton", &croton_choices(), now()).expect("choices");
         let mut config = Config::default();
         config.sources.flow.max_distance_km = Some(17.0);
         let (out, transport) = fetched(&croton(), &config, "croton", &cache);
@@ -2331,12 +2309,17 @@ mod tests {
         assert!(
             matches!(&link.place, LinkPlace::Station { station, .. } if station.id == "USGS-01375000")
         );
-        // Katonah defines no flood stages. The gage height history (00065) has no recording
-        // yet, but history is optional: the latest discharge and gage height still arrive.
+        // Expected errors: the buoy list's Haverstraw station has no data file (it reports water
+        // quality only), and Katonah defines no flood stages before West Nyack, the next gauge
+        // within 17 km, supplies them.
         assert_eq!(
             errors(s),
             [
-                ("usgs".into(), None, SourceErrorKind::Transport),
+                (
+                    "ndbc".into(),
+                    Some(M::WaterTemperature),
+                    SourceErrorKind::NotFound
+                ),
                 (
                     "nwps".into(),
                     Some(M::FloodCategories),
@@ -2344,8 +2327,42 @@ mod tests {
                 ),
             ]
         );
-        assert!(s.water.discharge_m3s.is_some());
-        assert!(s.water.gage_height.is_some());
+        let discharge = s.water.discharge_m3s.as_ref().expect("discharge");
+        assert_eq!(station_of(discharge), "usgs USGS-01375000");
+        let gage = s.water.gage_height.as_ref().expect("gage height");
+        assert_eq!(station_of(&gage.series), "usgs USGS-01375000");
+        // Both have their histories: the 14-day window holds hundreds of readings.
+        assert!(
+            discharge.samples().len() > 100,
+            "{}",
+            discharge.samples().len()
+        );
+        assert!(
+            gage.series.samples().len() > 100,
+            "{}",
+            gage.series.samples().len()
+        );
+        let percentile = s
+            .water
+            .discharge_percentile_for_date
+            .as_ref()
+            .expect("percentile");
+        assert_eq!(percentile.day_of_year, "11-08");
+        assert_eq!(
+            percentile
+                .provenance
+                .as_ref()
+                .and_then(|p| p.station.as_ref())
+                .map(|st| st.id.as_str()),
+            Some("USGS-01375000")
+        );
+        let flood = s.water.flood_categories.as_ref().expect("flood categories");
+        let minor = flood.minor.as_ref().expect("minor");
+        assert!((minor.metres - 6.0 * 0.3048).abs() < 1e-3, "{minor:?}");
+        let gauges = &out.plan.chains[&M::FloodCategories].links;
+        assert!(
+            matches!(&gauges[1].place, LinkPlace::Station { station, .. } if station.id == "WNYN6")
+        );
         for url in transport.seen() {
             assert_rounded(&url);
         }
