@@ -5,9 +5,9 @@ import UnderbiteKit
 /// settings valid, and the bridge between the core's canonical values and the fields the
 /// settings hold. Foundation only, so the package tests compile it too.
 ///
-/// Swift converts nothing. Typed values go to `parseUserValue` as typed, sliders move over
-/// `displayStops`, and the fields that are not canonical (knots, cubic feet per second,
-/// kilometres) are reached through the factor the core itself reports for one field unit.
+/// Swift converts and formats nothing. Each field is entered, shown and stepped through the
+/// core in the unit the settings store it in (`parseSettingValue`, `formatSettingValue`,
+/// `settingStops`), and durations come from `formatDuration`.
 nonisolated enum Preferences {
     /// The settings could not take an edit.
     struct Rejected: Error, Equatable, LocalizedError {
