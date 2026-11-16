@@ -460,14 +460,40 @@ fn station_uses(input: &ViewInput, f: &Formatter, used: &[Used<'_>]) -> Vec<Stat
     out
 }
 
-fn error_vm(f: &Formatter, e: &SourceError) -> SourceErrorVm {
+fn error_vm(f: &Formatter, e: &SourceError, count: usize) -> SourceErrorVm {
+    // The source's own plain message: "USGS: rate limited, used NWPS stage".
+    let mut message = e.message.clone();
+    if count > 1 {
+        let more = f
+            .strings
+            .fmt(Key::MoreCount, &[("n", &(count - 1).to_string())]);
+        message = format!("{message} ({more})");
+    }
     SourceErrorVm {
         source: source_name(&e.source),
         measurement: e.measurement.map(|m| measurement_label(f, m).to_owned()),
         kind: error_kind_label(f, e.kind).to_owned(),
-        // The source's own plain message: "USGS: rate limited, used NWPS stage".
-        message: e.message.clone(),
+        message,
     }
+}
+
+/// Each source's problem with a measurement once, in the order they first occurred, with the
+/// first message and how many more there were (one per station tried, say).
+fn error_vms(f: &Formatter, errors: &[SourceError]) -> Vec<SourceErrorVm> {
+    let mut groups: Vec<(&SourceError, usize)> = Vec::new();
+    for e in errors {
+        let same = |g: &&mut (&SourceError, usize)| {
+            g.0.source == e.source && g.0.measurement == e.measurement && g.0.kind == e.kind
+        };
+        match groups.iter_mut().find(same) {
+            Some(g) => g.1 += 1,
+            None => groups.push((e, 1)),
+        }
+    }
+    groups
+        .into_iter()
+        .map(|(e, count)| error_vm(f, e, count))
+        .collect()
 }
 
 fn plural(f: &Formatter, n: usize, one: Key, many: Key) -> String {
@@ -482,7 +508,7 @@ pub fn build(input: &ViewInput) -> Option<SourcesCard> {
     let used = used(snapshot);
     let credits = credits(snapshot, &used, f.strings);
     let stations = station_uses(input, &f, &used);
-    let errors: Vec<SourceErrorVm> = snapshot.errors.iter().map(|e| error_vm(&f, e)).collect();
+    let errors = error_vms(&f, &snapshot.errors);
     if credits.is_empty() && stations.is_empty() && errors.is_empty() {
         return None;
     }
@@ -673,6 +699,43 @@ mod tests {
                 "2 problems".to_owned()
             ]
         );
+    }
+
+    #[test]
+    fn a_problem_repeated_at_several_stations_is_listed_once() {
+        let mut input = sample_input();
+        input.snapshot.errors.clear();
+        for station in ["8518750", "8516945", "8531680"] {
+            input.snapshot.errors.push(SourceError {
+                source: SourceId::COOPS,
+                measurement: Some(Measurement::ObservedWind),
+                kind: SourceErrorKind::NoData,
+                message: format!("coops {station}: no data"),
+            });
+        }
+        input.snapshot.errors.push(SourceError {
+            source: SourceId::COOPS,
+            measurement: Some(Measurement::WaterTemperature),
+            kind: SourceErrorKind::NoData,
+            message: "coops 8518750: no data".into(),
+        });
+        let card = build(&input).unwrap();
+        let shown: Vec<(&str, &str)> = card
+            .full
+            .errors
+            .iter()
+            .map(|e| (e.measurement.as_deref().unwrap(), e.message.as_str()))
+            .collect();
+        assert_eq!(
+            shown,
+            [
+                ("Wind", "coops 8518750: no data (2 more)"),
+                ("Water temperature", "coops 8518750: no data"),
+            ]
+        );
+        assert!(card.compact.lines.contains(&"2 problems".to_owned()));
+        // The snapshot keeps every error.
+        assert_eq!(input.snapshot.errors.len(), 4);
     }
 
     #[test]

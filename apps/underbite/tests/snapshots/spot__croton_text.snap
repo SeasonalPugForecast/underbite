@@ -58,7 +58,7 @@ Credit: Sun and moon positions from astronomical algorithms
 == Sources ==
 7 sources
 2 stations
-5 problems
+3 problems
   Credit: U.S. Geological Survey (https://waterdata.usgs.gov)
   Credit: NOAA National Water Prediction Service (https://water.noaa.gov/)
   Credit: Weather data by Open-Meteo.com (https://open-meteo.com)
@@ -68,9 +68,7 @@ Credit: Sun and moon positions from astronomical algorithms
   Credit: Provisional data statement (https://waterdata.usgs.gov/provisional-data-statement/)
   Problem: NOAA NDBC: ndbc: not found
   Problem: NOAA NWPS: nwps: no data: the gauge defines no flood stages, used nwps
-  Problem: NOAA NWPS: nwps: no data: the forecast has no values
-  Problem: NOAA NWPS: nwps: no data: the forecast has no values
-  Problem: NOAA NWPS: nwps: no data: the forecast has no values
+  Problem: NOAA NWPS: nwps: no data: the forecast has no values (2 more)
   River flow, Gage height: CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY (USGS, 0.0 mi, 45 min ago)
   River flow: CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY (USGS, 0.0 mi, —)
 Provisional data, subject to revision.

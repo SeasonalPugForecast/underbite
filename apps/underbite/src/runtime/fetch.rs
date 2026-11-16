@@ -2137,6 +2137,24 @@ mod tests {
             .collect()
     }
 
+    fn sources_card(s: &SpotSnapshot) -> underbite_core::view::cards::sources::SourcesCard {
+        let config = Config::default();
+        let input = underbite_core::view::ViewInput {
+            card_order: config.cards.order_for(s.spot.water_type),
+            snapshot: s.clone(),
+            now: now(),
+            units: config.units.display_units(),
+            voice: config.presentation.voice,
+            clock: config.presentation.clock,
+            timeline_span: config.presentation.timeline_span(),
+            limits: measurement_limits(&config.sources),
+            river_ranges: None,
+            trout_stress_c: None,
+            solunar: underbite_core::view::SolunarSettings { show: true },
+        };
+        underbite_core::view::cards::sources::build(&input).expect("sources card")
+    }
+
     fn station_of<T>(series: &underbite_core::series::Series<T>) -> String {
         let p = series.provenance();
         format!(
@@ -2217,6 +2235,19 @@ mod tests {
                 no_wind
             ]
         );
+        // The sources card names the CO-OPS stations' missing wind once, with the count.
+        let card = sources_card(s);
+        let wind: Vec<&str> = card
+            .full
+            .errors
+            .iter()
+            .filter(|e| e.source == "NOAA CO-OPS" && e.measurement.as_deref() == Some("Wind"))
+            .map(|e| e.message.as_str())
+            .collect();
+        assert_eq!(wind.len(), 1, "{:#?}", card.full.errors);
+        assert!(wind[0].ends_with(" (2 more)"), "{}", wind[0]);
+        assert_eq!(card.full.errors.len(), 2, "{:#?}", card.full.errors);
+
         let credited: BTreeSet<&str> = s.attribution.iter().map(|a| a.source.as_str()).collect();
         for source in [
             "coops",

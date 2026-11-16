@@ -91,7 +91,7 @@ Credit: Sun and moon positions from astronomical algorithms
 == Sources ==
 9 sources
 5 stations
-5 problems
+2 problems
   Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa.gov/)
   Credit: Tide, water-level and current data: NOAA/NOS CO-OPS (https://tidesandcurrents.noaa.gov/)
   Credit: Weather data by Open-Meteo.com. Marine models: Copernicus Marine Service, ECMWF, NOAA NCEP, DWD, Copernicus Climate Change Service. Modelled, not suitable for coastal navigation. (https://open-meteo.com/)
@@ -101,11 +101,8 @@ Credit: Sun and moon positions from astronomical algorithms
   Credit: USGS TNM / NGTOC - 3D National Hydrographic Program (3DHP). Features may not reflect current conditions and are not for critical use. (https://www.usgs.gov/3d-hydrography-program)
   Credit: Weather data by Open-Meteo.com (https://open-meteo.com/)
   Credit: Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean) (https://open-meteo.com/en/licence)
-  Problem: NOAA CO-OPS: coops: no recent data, used ndbc
-  Problem: NOAA CO-OPS: coops: no recent data, used ndbc
-  Problem: NOAA CO-OPS: coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc
-  Problem: NOAA CO-OPS: coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc
-  Problem: NOAA CO-OPS: coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc
+  Problem: NOAA CO-OPS: coops: no recent data, used ndbc (1 more)
+  Problem: NOAA CO-OPS: coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc (2 more)
   Water temperature: 8518750 - The Battery, NY (NOAA NDBC, 0.2 mi, 42 min ago)
   Tide: NEW YORK (The Battery) (NOAA CO-OPS, 0.2 mi, —)
   Tidal current: Hudson River Entrance (NOAA CO-OPS, 0.5 mi, —)

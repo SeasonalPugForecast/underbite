@@ -8561,7 +8561,7 @@ expression: json
             "text": "Provisional data, subject to revision."
           }
         ],
-        "accessibility": "Sources: USGS, NOAA NWPS, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, USGS. ndbc: not found nwps: no data: the gauge defines no flood stages, used nwps nwps: no data: the forecast has no values nwps: no data: the forecast has no values nwps: no data: the forecast has no values"
+        "accessibility": "Sources: USGS, NOAA NWPS, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, USGS. ndbc: not found nwps: no data: the gauge defines no flood stages, used nwps nwps: no data: the forecast has no values (2 more)"
       },
       "compact": {
         "headline": {
@@ -8571,7 +8571,7 @@ expression: json
         },
         "lines": [
           "2 stations",
-          "5 problems"
+          "3 problems"
         ],
         "spark": []
       },
@@ -8665,19 +8665,7 @@ expression: json
             "source": "NOAA NWPS",
             "measurement": "River forecast",
             "kind": "No data",
-            "message": "nwps: no data: the forecast has no values"
-          },
-          {
-            "source": "NOAA NWPS",
-            "measurement": "River forecast",
-            "kind": "No data",
-            "message": "nwps: no data: the forecast has no values"
-          },
-          {
-            "source": "NOAA NWPS",
-            "measurement": "River forecast",
-            "kind": "No data",
-            "message": "nwps: no data: the forecast has no values"
+            "message": "nwps: no data: the forecast has no values (2 more)"
           }
         ]
       }
