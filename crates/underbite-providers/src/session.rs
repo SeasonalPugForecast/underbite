@@ -30,7 +30,7 @@ use underbite_core::datum::Heights;
 use underbite_core::model::SourceError as ModelSourceError;
 use underbite_core::model::{
     CurrentSeries, FloodCategories, MarineConditions, Measurement, Requirements, TideSeries,
-    WaterConditions,
+    WaterConditions, WaveSample,
 };
 use underbite_core::provenance::{Attribution, Quality, SourceId, StationRef, ValueKind};
 use underbite_core::series::Series;
@@ -707,8 +707,9 @@ fn slot(m: Measurement, value: &FragmentValue) -> Slot {
 }
 
 /// Two values of one slot from one link as one: series by time, the newer sample winning a
-/// shared time (a later page carries the earlier ones); events from both; a predicted curve
-/// over an estimated one. Heights in different datums never merge: the first stays.
+/// shared time (a later page carries the earlier ones), except wave samples, which merge field
+/// by field (a standard file and a spectral file describe one sea state); events from both; a
+/// predicted curve over an estimated one. Heights in different datums never merge: the first stays.
 fn merge(old: FragmentValue, new: FragmentValue) -> FragmentValue {
     use FragmentValue as V;
     match (old, new) {
@@ -719,7 +720,7 @@ fn merge(old: FragmentValue, new: FragmentValue) -> FragmentValue {
         }),
         (V::Turbidity(a), V::Turbidity(b)) => V::Turbidity(concat(a, b)),
         (V::Vectors(a), V::Vectors(b)) => V::Vectors(concat(a, b)),
-        (V::WaveSeries(a), V::WaveSeries(b)) => V::WaveSeries(concat(a, b)),
+        (V::WaveSeries(a), V::WaveSeries(b)) => V::WaveSeries(concat_with(a, b, merge_waves)),
         (V::Wind(a), V::Wind(b)) => V::Wind(concat(a, b)),
         (V::TideSeries(a), V::TideSeries(b)) if a.datum == b.datum => {
             let mut events = [a.events, b.events].concat();
@@ -764,6 +765,11 @@ fn merge(old: FragmentValue, new: FragmentValue) -> FragmentValue {
 /// that reaches later. A many-sample series replaces a single latest value, unless that value
 /// is newer than all of the series (a history that ends before the latest reading).
 fn concat<T: Clone>(a: Series<T>, b: Series<T>) -> Series<T> {
+    concat_with(a, b, |_, new| new.clone())
+}
+
+/// [`concat`], with `join(a's value, b's value)` at a time both series share.
+fn concat_with<T: Clone>(a: Series<T>, b: Series<T>, join: impl Fn(&T, &T) -> T) -> Series<T> {
     let last = |s: &Series<T>| s.latest().map(|x| x.time);
     match (a.samples().len(), b.samples().len()) {
         (1, n) if n > 1 && last(&a) <= last(&b) => return b,
@@ -775,7 +781,35 @@ fn concat<T: Clone>(a: Series<T>, b: Series<T>) -> Series<T> {
     } else {
         a.provenance().clone()
     };
-    Series::new(provenance, [b.samples(), a.samples()].concat())
+    let mut samples = b.samples().to_vec();
+    for sample in &mut samples {
+        if let Ok(i) = (a.samples()).binary_search_by_key(&sample.time, |x| x.time) {
+            let old = &a.samples()[i];
+            sample.value = join(&old.value, &sample.value);
+            sample.quality = sample.quality.or(old.quality);
+        }
+    }
+    // `Series::new` keeps the first of a shared time: the joined one.
+    samples.extend_from_slice(a.samples());
+    Series::new(provenance, samples)
+}
+
+/// One sea state from two readings at one time: `new`'s fields where it has them, `old`'s
+/// elsewhere (the standard file's dominant period with the spectral file's trains).
+fn merge_waves(old: &WaveSample, new: &WaveSample) -> WaveSample {
+    WaveSample {
+        significant_height_m: new.significant_height_m.or(old.significant_height_m),
+        dominant_period_s: new.dominant_period_s.or(old.dominant_period_s),
+        mean_period_s: new.mean_period_s.or(old.mean_period_s),
+        direction_from_deg: new.direction_from_deg.or(old.direction_from_deg),
+        wind_waves: new.wind_waves.clone().or_else(|| old.wind_waves.clone()),
+        swells: if new.swells.is_empty() {
+            old.swells.clone()
+        } else {
+            new.swells.clone()
+        },
+        steepness: new.steepness.clone().or_else(|| old.steepness.clone()),
+    }
 }
 
 fn merge_option<T: Clone>(a: Option<Series<T>>, b: Option<Series<T>>) -> Option<Series<T>> {
@@ -1560,5 +1594,100 @@ mod tests {
             fragment(&[-60, -45, -30, -15]),
         ];
         assert_eq!(merged(&newer), [-60, -45, -30, -15, -5]);
+    }
+
+    /// The buoy's standard file and spectral file report one sea state at 13:40Z: the merged
+    /// sample keeps the standard file's dominant period and the spectral file's steepness.
+    #[test]
+    fn session_merges_wave_samples_of_one_time_field_by_field() {
+        use crate::ndbc::Ndbc;
+        use crate::request::Window;
+        use crate::testutil::fixture_bytes;
+        use underbite_core::provenance::StationKind;
+
+        // 2026-11-08 14:00:00 UTC.
+        let now = UnixTime(1_794_146_400);
+        let target = Target {
+            place: Place::Station {
+                station: StationRef {
+                    source: SourceId::NDBC,
+                    id: "44025".into(),
+                    name: "Long Island 30 NM south of Islip".into(),
+                    kind: StationKind::Buoy,
+                    latitude: 40.25,
+                    longitude: -73.16,
+                    bin: None,
+                    reference_id: None,
+                },
+                distance_m: Some(60_000.0),
+                relation: Relation::Nearby,
+            },
+            measurements: BTreeSet::from([Measurement::Waves]),
+            window: Window {
+                from: UnixTime(now.0 - 86_400),
+                to: now,
+            },
+            datum: None,
+        };
+        let link = Link {
+            source: Arc::new(Ndbc),
+            target,
+        };
+        let chains = BTreeMap::from([(
+            Measurement::Waves,
+            Chain {
+                links: vec![link],
+                max_age_s: Some(3_600),
+            },
+        )]);
+        let requirements = Requirements {
+            measurements: BTreeSet::from([Measurement::Waves]),
+            ..Requirements::default()
+        };
+        let mut s = Session::new(chains, requirements, fake::ctx(now));
+        let mut urls = Vec::new();
+        while let Some(request) = s.next_request() {
+            let url = request.url.clone();
+            let file = if request.resource == Resource::NdbcSpectralSummary {
+                "ndbc-44025.spec"
+            } else {
+                "ndbc-44025.txt"
+            };
+            s.on_response(&Response::new(200, &fixture_bytes("ndbc", file)));
+            urls.push(url);
+        }
+        assert_eq!(urls.len(), 2, "{urls:?}");
+        let out = s.finish(now);
+        let waves = out.marine.waves.unwrap();
+        let newest = waves.latest().unwrap();
+        assert_eq!(newest.time, UnixTime(now.0 - 20 * 60));
+        assert_eq!(newest.value.significant_height_m, Some(1.8));
+        assert_eq!(newest.value.dominant_period_s, Some(6.0));
+        assert_eq!(newest.value.mean_period_s, Some(4.6));
+        assert_eq!(newest.value.direction_from_deg, Some(281.0));
+        assert_eq!(newest.value.steepness.as_deref(), Some("VERY_STEEP"));
+        let periods = waves
+            .samples()
+            .iter()
+            .filter(|x| x.value.dominant_period_s.is_some());
+        assert_eq!(periods.count(), waves.samples().len());
+    }
+
+    #[test]
+    fn wave_fields_from_a_later_reading_win_and_absent_ones_keep_the_earlier() {
+        let old = WaveSample {
+            significant_height_m: Some(1.0),
+            dominant_period_s: Some(6.0),
+            ..WaveSample::default()
+        };
+        let new = WaveSample {
+            significant_height_m: Some(1.1),
+            steepness: Some("STEEP".into()),
+            ..WaveSample::default()
+        };
+        let merged = merge_waves(&old, &new);
+        assert_eq!(merged.significant_height_m, Some(1.1));
+        assert_eq!(merged.dominant_period_s, Some(6.0));
+        assert_eq!(merged.steepness.as_deref(), Some("STEEP"));
     }
 }

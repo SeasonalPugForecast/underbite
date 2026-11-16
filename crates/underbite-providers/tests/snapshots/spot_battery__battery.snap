@@ -353,6 +353,7 @@ expression: "replay::summary(&outcome, &served)"
           "time": 1793544000,
           "value": {
             "direction_from_deg": 119.0,
+            "dominant_period_s": 8.0,
             "mean_period_s": 3.9000000953674316,
             "significant_height_m": 0.699999988079071,
             "steepness": "N/A"
@@ -362,6 +363,7 @@ expression: "replay::summary(&outcome, &served)"
           "time": 1794145200,
           "value": {
             "direction_from_deg": 281.0,
+            "dominant_period_s": 6.0,
             "mean_period_s": 4.599999904632568,
             "significant_height_m": 1.7999999523162842,
             "steepness": "VERY_STEEP"
