@@ -95,6 +95,10 @@ pub(super) fn aged_state(
     }
 }
 
+/// The standard credit lines of the station sources.
+const CREDIT_NDBC: &str = "Observations: NOAA National Data Buoy Center";
+const CREDIT_COOPS: &str = "Observations: NOAA CO-OPS";
+
 /// The credit a station source is owed: the snapshot's own text when it has one, else `fallback`,
 /// else a standard line for the source.
 pub(super) fn station_credit(
@@ -104,8 +108,8 @@ pub(super) fn station_credit(
 ) -> CreditVm {
     let found = snapshot.attribution.iter().find(|a| a.source == *id);
     let standard = match id.as_str() {
-        "ndbc" => "Observations: NOAA National Data Buoy Center",
-        "coops" => "Observations: NOAA CO-OPS",
+        "ndbc" => CREDIT_NDBC,
+        "coops" => CREDIT_COOPS,
         _ => "",
     };
     let text = found.map_or_else(
@@ -290,7 +294,7 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
     let speed = f.wind_speed(Some(fix.0));
     let gust = fix.1.map(|g| f.wind_speed(Some(g)));
     let direction = fix.2.map(|d| f.direction(Some(d)));
-    let headline = format!("Wind {}", speed.full());
+    let headline = format!("{} {}", f.strings.card_title(CardId::Wind), speed.full());
     let footnote = match (station, weather) {
         (Some((p, _)), _) => f.footnote(&headline, p, now),
         (None, Some(w)) => weather_footnote(&f, &headline, w, now),
@@ -313,12 +317,12 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
         };
         let before = series.len();
         series.extend(line_series(
-            "Observed wind",
+            f.strings.get(Key::ObservedWind),
             SeriesRole::Observed,
             rows(|w| Some(w.speed_ms)),
         ));
         series.extend(line_series(
-            "Observed gusts",
+            f.strings.get(Key::ObservedGusts),
             SeriesRole::Observed,
             rows(|w| w.gust_ms),
         ));
@@ -339,12 +343,12 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
         };
         let before = series.len();
         series.extend(line_series(
-            "Forecast wind",
+            f.strings.get(Key::ForecastWind),
             SeriesRole::Forecast,
             rows(|v| Some(v.0)),
         ));
         series.extend(line_series(
-            "Forecast gusts",
+            f.strings.get(Key::ForecastGusts),
             SeriesRole::Forecast,
             rows(|v| v.1),
         ));
@@ -361,15 +365,22 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
         rules: Vec::new(),
         markers: Vec::new(),
         now_t: Some(now.0),
-        accessibility: format!("Wind chart: {} now.", speed.full()),
+        accessibility: f.strings.fmt(
+            Key::ChartNowAcc,
+            &[
+                ("title", f.strings.card_title(CardId::Wind)),
+                ("value", &speed.full()),
+                ("extra", ""),
+            ],
+        ),
     });
 
     let mut lines = Vec::new();
     if let Some(d) = &direction {
-        lines.push(format!("From {d}"));
+        lines.push(f.strings.fmt(Key::FromCap, &[("direction", d)]));
     }
     if let Some(g) = &gust {
-        lines.push(format!("Gusts {}", g.full()));
+        lines.push(f.strings.fmt(Key::GustsCap, &[("value", &g.full())]));
     }
     let spark = chart
         .as_ref()
@@ -379,32 +390,47 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
 
     let source_row = match (basis, observed.zip(newest), weather) {
         (WindBasis::Observed, Some((o, s)), _) => Some(Row {
-            label: "Station".to_owned(),
+            label: f.strings.get(Key::Station).to_owned(),
             value: o
                 .provenance()
                 .station
                 .as_ref()
                 .map_or_else(|| source_name(&o.provenance().source), |st| st.name.clone()),
-            detail: Some(format!("observed {}", f.clock(s.time))),
+            detail: Some(
+                f.strings
+                    .fmt(Key::ObservedAt, &[("time", &f.clock(s.time))]),
+            ),
         }),
         (_, _, Some(w)) => Some(Row {
-            label: "Forecast".to_owned(),
+            label: f.strings.get(Key::Forecast).to_owned(),
             value: w.provider.display_name().to_owned(),
             detail: Some(f.strings.get(Key::Modelled).to_owned()),
         }),
         _ => None,
     };
 
-    let basis_word = match basis {
-        WindBasis::Observed => "observed",
-        WindBasis::Forecast => "forecast",
-    };
-    let mut accessibility = format!("Wind {basis_word}: {}", speed.full());
+    let basis_word = f.strings.get(match basis {
+        WindBasis::Observed => Key::BasisObserved,
+        WindBasis::Forecast => Key::BasisForecast,
+    });
+    let mut accessibility = format!(
+        "{} {basis_word}: {}",
+        f.strings.card_title(CardId::Wind),
+        speed.full()
+    );
     if let Some(d) = &direction {
-        let _ = write!(accessibility, " from {d}");
+        let _ = write!(
+            accessibility,
+            " {}",
+            f.strings.fmt(Key::FromLower, &[("direction", d)])
+        );
     }
     if let Some(g) = &gust {
-        let _ = write!(accessibility, ", gusts {}", g.full());
+        let _ = write!(
+            accessibility,
+            ", {}",
+            f.strings.fmt(Key::GustsLower, &[("value", &g.full())])
+        );
     }
     accessibility.push('.');
 
@@ -432,7 +458,7 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
             hours,
             chart,
             sections: vec![Section {
-                title: "Source".to_owned(),
+                title: f.strings.get(Key::SectionSource).to_owned(),
                 rows: source_row.into_iter().collect(),
             }],
         },

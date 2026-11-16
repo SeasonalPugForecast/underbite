@@ -63,6 +63,9 @@ pub struct WavesFull {
     pub sections: Vec<Section>,
 }
 
+/// The credit of the wave model when the snapshot carries none.
+const CREDIT_WAVE_MODEL: &str = "Wave model: Open-Meteo.com";
+
 fn has_content(s: &WaveSample) -> bool {
     s.significant_height_m.is_some()
         || s.dominant_period_s.is_some()
@@ -118,12 +121,15 @@ fn now_vm(f: &Formatter, t: UnixTime, s: &WaveSample) -> WaveNowVm {
         wind_waves: s
             .wind_waves
             .as_ref()
-            .map(|t| train_vm(f, "Wind waves".to_owned(), t)),
+            .map(|t| train_vm(f, f.strings.get(Key::WindWaves).to_owned(), t)),
         swells: s
             .swells
             .iter()
             .enumerate()
-            .map(|(i, t)| train_vm(f, format!("Swell {}", i + 1), t))
+            .map(|(i, t)| {
+                let label = f.strings.fmt(Key::SwellN, &[("n", &(i + 1).to_string())]);
+                train_vm(f, label, t)
+            })
             .collect(),
         steepness: s.steepness.as_deref().and_then(steepness_text),
     }
@@ -208,24 +214,24 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
     let mut period_series = Vec::new();
     if let Some(o) = observed_shown {
         height_series.extend(line_series(
-            "Observed",
+            f.strings.get(Key::Observed),
             SeriesRole::Observed,
             chart_points(&z, o, start, now.0, height),
         ));
         period_series.extend(line_series(
-            "Observed",
+            f.strings.get(Key::Observed),
             SeriesRole::Observed,
             chart_points(&z, o, start, now.0, period),
         ));
     }
     if let Some(m) = forecast_shown {
         height_series.extend(line_series(
-            "Modelled",
+            f.strings.get(Key::ModelledCap),
             SeriesRole::Modelled,
             chart_points(&z, m, start, end, height),
         ));
         period_series.extend(line_series(
-            "Modelled",
+            f.strings.get(Key::ModelledCap),
             SeriesRole::Modelled,
             chart_points(&z, m, start, end, period),
         ));
@@ -240,11 +246,15 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
             rules: Vec::new(),
             markers: Vec::new(),
             now_t: Some(now.0),
-            accessibility: format!("{title} chart."),
+            accessibility: f.strings.fmt(Key::ChartOnly, &[("title", title)]),
         })
     };
-    let height_chart = chart("Wave height", input.units.height.symbol(), height_series);
-    let period_chart = chart("Wave period", "s", period_series);
+    let height_chart = chart(
+        f.strings.get(Key::WaveHeight),
+        input.units.height.symbol(),
+        height_series,
+    );
+    let period_chart = chart(f.strings.get(Key::WavePeriod), "s", period_series);
 
     // The headline: the buoy when shown, else the model.
     let (lead, lead_series, is_observed) =
@@ -262,7 +272,7 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
         details.push(format!("{} {}", p.text, p.unit));
     }
     if let Some(d) = &lead.direction {
-        details.push(format!("from {d}"));
+        details.push(f.strings.fmt(Key::FromLower, &[("direction", d)]));
     }
     if !details.is_empty() {
         lines.push(details.join(" · "));
@@ -270,7 +280,7 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
     match (is_observed, &forecast_vm) {
         (true, Some(m)) => {
             if let Some(h) = &m.significant_height {
-                lines.push(format!("Modelled {}", h.full()));
+                lines.push(f.strings.fmt(Key::ModelledHeight, &[("height", &h.full())]));
             }
         }
         (false, _) => lines.push(f.strings.get(Key::Modelled).to_owned()),
@@ -283,9 +293,9 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
         .unwrap_or_default();
 
     let label = if is_observed {
-        "Waves"
+        f.strings.card_title(CardId::Waves)
     } else {
-        "Modelled waves"
+        f.strings.get(Key::ModelledWaves)
     };
     let value = format!("{label} {}", headline.full());
     let p = lead_series.provenance();
@@ -302,26 +312,34 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
         card_credits.push(station_credit(
             snapshot,
             &m.provenance().source,
-            Some("Wave model: Open-Meteo.com"),
+            Some(CREDIT_WAVE_MODEL),
         ));
     }
 
     let mut rows = Vec::new();
     if let Some(o) = observed_shown {
-        rows.push(row_for(&f, "Buoy", o));
+        rows.push(row_for(&f, f.strings.get(Key::Buoy), o));
     }
     if let Some(m) = forecast_shown {
-        let mut row = row_for(&f, "Model", m);
+        let mut row = row_for(&f, f.strings.get(Key::ModelWord), m);
         row.detail = Some(f.strings.get(Key::Modelled).to_owned());
         rows.push(row);
     }
 
     let mut accessibility = value.clone();
     if let Some(p) = &lead.dominant_period {
-        let _ = write!(accessibility, ", period {} seconds", p.text);
+        let _ = write!(
+            accessibility,
+            ", {}",
+            f.strings.fmt(Key::PeriodSeconds, &[("value", &p.text)])
+        );
     }
     if let Some(d) = &lead.direction {
-        let _ = write!(accessibility, ", from {d}");
+        let _ = write!(
+            accessibility,
+            ", {}",
+            f.strings.fmt(Key::FromLower, &[("direction", d)])
+        );
     }
     accessibility.push('.');
 
@@ -346,7 +364,7 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
             height_chart,
             period_chart,
             sections: vec![Section {
-                title: "Sources".to_owned(),
+                title: f.strings.card_title(CardId::Sources).to_owned(),
                 rows,
             }],
         },

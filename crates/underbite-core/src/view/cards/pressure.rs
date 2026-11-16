@@ -161,7 +161,11 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
     let change = delta.map(|d| change_quantity(input.units.pressure, d, hpa));
     let trend = trend.map(|t| trend_vm(&f, t, change.as_ref()));
 
-    let headline = format!("Pressure {}", value.full());
+    let headline = format!(
+        "{} {}",
+        f.strings.card_title(CardId::Pressure),
+        value.full()
+    );
     let footnote = match (basis, observed, weather) {
         (Basis::Observed, Some(o), _) => f.footnote(&headline, o.provenance(), now),
         (_, _, Some(w)) => weather_footnote(&f, &headline, w, now),
@@ -181,7 +185,11 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
                 .collect(),
         );
         let any = !pts.is_empty();
-        series.extend(line_series("Observed pressure", SeriesRole::Observed, pts));
+        series.extend(line_series(
+            f.strings.get(Key::ObservedPressure),
+            SeriesRole::Observed,
+            pts,
+        ));
         if any || basis == Basis::Observed {
             chart_credits.push(station_credit(snapshot, &o.provenance().source, None));
         }
@@ -196,7 +204,11 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
                 .collect(),
         );
         let any = !pts.is_empty();
-        series.extend(line_series("Forecast pressure", SeriesRole::Forecast, pts));
+        series.extend(line_series(
+            f.strings.get(Key::ForecastPressure),
+            SeriesRole::Forecast,
+            pts,
+        ));
         if any || basis == Basis::Forecast {
             chart_credits.push(weather_credit(w));
         }
@@ -210,12 +222,18 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
         rules: Vec::new(),
         markers: Vec::new(),
         now_t: Some(now.0),
-        accessibility: format!(
-            "Pressure chart: {} now{}.",
-            value.full(),
-            trend
-                .as_ref()
-                .map_or(String::new(), |t| format!(", {}", t.text))
+        accessibility: f.strings.fmt(
+            Key::ChartNowAcc,
+            &[
+                ("title", f.strings.card_title(CardId::Pressure)),
+                ("value", &value.full()),
+                (
+                    "extra",
+                    &trend
+                        .as_ref()
+                        .map_or(String::new(), |t| format!(", {}", t.text)),
+                ),
+            ],
         ),
     });
 
@@ -232,30 +250,34 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
 
     let source_row = match (basis, observed.zip(newest), weather) {
         (Basis::Observed, Some((o, s)), _) => Row {
-            label: "Station".to_owned(),
+            label: f.strings.get(Key::Station).to_owned(),
             value: o
                 .provenance()
                 .station
                 .as_ref()
                 .map_or_else(|| source_name(&o.provenance().source), |st| st.name.clone()),
-            detail: Some(format!("observed {}", f.clock(s.time))),
+            detail: Some(
+                f.strings
+                    .fmt(Key::ObservedAt, &[("time", &f.clock(s.time))]),
+            ),
         },
         (_, _, Some(w)) => Row {
-            label: "Forecast".to_owned(),
+            label: f.strings.get(Key::Forecast).to_owned(),
             value: w.provider.display_name().to_owned(),
             detail: Some(f.strings.get(Key::Modelled).to_owned()),
         },
         _ => return None,
     };
 
-    let basis_word = if basis == Basis::Observed {
-        "observed"
+    let basis_word = f.strings.get(if basis == Basis::Observed {
+        Key::BasisObserved
     } else {
-        "forecast"
-    };
+        Key::BasisForecast
+    });
+    let title = f.strings.card_title(CardId::Pressure);
     let accessibility = match &trend {
-        Some(t) => format!("Pressure {basis_word}: {}, {}.", value.full(), t.text),
-        None => format!("Pressure {basis_word}: {}.", value.full()),
+        Some(t) => format!("{title} {basis_word}: {}, {}.", value.full(), t.text),
+        None => format!("{title} {basis_word}: {}.", value.full()),
     };
 
     Some(PressureCard {
@@ -279,7 +301,7 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
             change,
             chart,
             sections: vec![Section {
-                title: "Source".to_owned(),
+                title: f.strings.get(Key::SectionSource).to_owned(),
                 rows: vec![source_row],
             }],
         },

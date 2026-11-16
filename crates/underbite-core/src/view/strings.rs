@@ -344,6 +344,43 @@ keys! {
     CellsPerMl => ("{value} cells/mL", "{value} cells/mL"),
     SectionAlgae => ("Algae", "Algae"),
     Chlorophyll => ("Chlorophyll", "Chlorophyll"),
+    ObservedWind => ("Observed wind", "Observed wind"),
+    ObservedGusts => ("Observed gusts", "Observed gusts"),
+    ForecastWind => ("Forecast wind", "Forecast wind"),
+    ForecastGusts => ("Forecast gusts", "Forecast gusts"),
+    ObservedPressure => ("Observed pressure", "Observed pressure"),
+    ForecastPressure => ("Forecast pressure", "Forecast pressure"),
+    /// `{direction}`.
+    FromCap => ("From {direction}", "From {direction}"),
+    FromLower => ("from {direction}", "from {direction}"),
+    /// `{value}`.
+    GustsCap => ("Gusts {value}", "Gusts {value}"),
+    GustsLower => ("gusts {value}", "gusts {value}"),
+    /// `{time}`.
+    ObservedAt => ("observed {time}", "observed {time}"),
+    BasisObserved => ("observed", "observed"),
+    BasisForecast => ("forecast", "forecast"),
+    /// `{title}`, `{value}`, `{extra}` (a leading comma and the trend, or nothing).
+    ChartNowAcc => (
+        "{title} chart: {value} now{extra}.",
+        "{title} chart: {value} now{extra}.",
+    ),
+    /// `{title}`.
+    ChartOnly => ("{title} chart.", "{title} chart."),
+    Buoy => ("Buoy", "Buoy"),
+    ModelWord => ("Model", "Model"),
+    SectionSource => ("Source", "Source"),
+    /// `{height}`.
+    ModelledHeight => ("Modelled {height}", "Modelled {height}"),
+    ModelledCap => ("Modelled", "Modelled"),
+    ModelledWaves => ("Modelled waves", "Modelled waves"),
+    WindWaves => ("Wind waves", "Wind waves"),
+    /// `{n}`.
+    SwellN => ("Swell {n}", "Swell {n}"),
+    WaveHeight => ("Wave height", "Wave height"),
+    WavePeriod => ("Wave period", "Wave period"),
+    /// `{value}`.
+    PeriodSeconds => ("period {value} seconds", "period {value} seconds"),
     /// The placeholder for an unknown value.
     Missing => ("—", "—"),
 }
