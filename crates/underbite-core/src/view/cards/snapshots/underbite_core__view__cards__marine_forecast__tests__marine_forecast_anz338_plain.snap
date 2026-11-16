@@ -1,0 +1,90 @@
+---
+source: crates/underbite-core/src/view/cards/marine_forecast.rs
+expression: plain
+---
+{
+  "chrome": {
+    "id": "marine_forecast",
+    "title": "Marine forecast",
+    "footnote": "New York Harbor · Zone forecast · Issued 1:57 AM",
+    "credits": [
+      {
+        "source": "National Weather Service",
+        "text": "Marine forecast: NOAA National Weather Service",
+        "link": "https://forecast.weather.gov/shmrn.php?mz=ANZ338",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "text_only",
+        "text": "Text only: open the map for the picture."
+      }
+    ],
+    "accessibility": "Marine forecast for New York Harbor. Zone forecast, issued 1:57 am. Today: W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 3 seconds."
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 3 seconds.",
+      "unit": ""
+    },
+    "lines": [
+      "Today",
+      "New York Harbor · Issued 1:57 AM"
+    ],
+    "spark": []
+  },
+  "full": {
+    "zone_id": "ANZ338",
+    "zone_name": "New York Harbor",
+    "issued": "Issued 1:57 AM",
+    "product": "Zone forecast",
+    "headline": "W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 3 seconds.",
+    "periods": [
+      {
+        "name": "Today",
+        "text": "W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 3 seconds."
+      },
+      {
+        "name": "Tonight",
+        "text": "W winds 15 to 20 kt with gusts up to 25 kt. Waves around 2 ft. Wave Detail: W 2 ft at 2 seconds."
+      },
+      {
+        "name": "Mon",
+        "text": "NW winds 15 to 20 kt with gusts up to 25 kt. Waves 2 to 3 ft. Wave Detail: W 2 ft at 3 seconds."
+      },
+      {
+        "name": "Mon Night",
+        "text": "NW winds 15 to 20 kt, becoming W 10 to 15 kt after midnight. Waves around 2 ft. Wave Detail: NW 2 ft at 2 seconds."
+      },
+      {
+        "name": "Tue",
+        "text": "W winds 10 to 15 kt with gusts up to 20 kt. Waves around 2 ft. Wave Detail: W 1 ft at 2 seconds."
+      },
+      {
+        "name": "Tue Night",
+        "text": "W winds 10 to 15 kt. Waves 1 to 2 ft. Wave Detail: W 1 ft at 2 seconds."
+      },
+      {
+        "name": "Wed",
+        "text": "W winds 5 to 10 kt. Waves 1 to 2 ft."
+      },
+      {
+        "name": "Wed Night",
+        "text": "N winds 5 to 10 kt. Waves 1 ft or less."
+      },
+      {
+        "name": "Thu",
+        "text": "NE winds 5 to 10 kt. Waves 1 ft or less. Chance of rain."
+      },
+      {
+        "name": "Thu Night",
+        "text": "NE winds 20 to 25 kt with gusts up to 30 kt. Waves 2 to 3 ft. Rain likely."
+      }
+    ]
+  }
+}
