@@ -7,11 +7,14 @@
 match = "collections/latest-continuous"
 file = "../../raw/usgs/usgs-latest-continuous-croton-01375000.json"
 
-# Only the discharge series (00060) of the dam gauge was recorded; its gage height series
-# (00065) has no recording yet.
+# The dam gauge's discharge series (00060) and its gage height series (00065).
 [[route]]
 match = "collections/continuous/items?f=json&time_series_id=e32aab5ccc774c11b172102b97abc0d8"
 file = "../../raw/usgs/usgs-continuous-croton-01375000-00060-2026-11-01_2026-11-08.json"
+
+[[route]]
+match = "collections/continuous/items?f=json&time_series_id=1d9a520f9f5d468099e5726040bfe317"
+file = "../../raw/usgs/usgs-continuous-croton-01375000-00065-2026-11-01_2026-11-08.json"
 
 [[route]]
 match = "collections/daily/items"
@@ -24,6 +27,10 @@ file = "../../raw/usgs/usgs-statistics-normals-croton-01375000-00060-doy-percent
 [[route]]
 match = "site_type_code=ST"
 file = "../../raw/usgs/usgs-monitoring-locations-bbox-croton-st.json"
+
+[[route]]
+match = "site_type_code=ES"
+file = "../../raw/usgs/usgs-monitoring-locations-bbox-croton-es.json"
 
 [[route]]
 match = "site_type_code=LK"
@@ -51,6 +58,11 @@ match = "stations.json?type=currentpredictions"
 file = "../../raw/coops/coops-mdapi-stations-currentpredictions-newyork-trimmed.json"
 
 [[route]]
+match = "realtime2/HBMN6.txt"
+file = "../../raw/ndbc/ndbc-HBMN6.txt-404.html"
+status = 404
+
+[[route]]
 match = "ndbc.noaa.gov/activestations.xml"
 file = "../../raw/ndbc/ndbc-activestations.xml"
 
@@ -66,6 +78,54 @@ file = "../../raw/nwps/nwps-gauge-AUON6-stageflow-forecast.json"
 [[route]]
 match = "nwps/v1/gauges/AUON6"
 file = "../../raw/nwps/nwps-gauge-AUON6.json"
+
+[[route]]
+match = "nwps/v1/gauges/WNYN6/stageflow/forecast"
+file = "../../raw/nwps/nwps-gauge-WNYN6-stageflow-forecast.json"
+
+[[route]]
+match = "nwps/v1/gauges/WNYN6"
+file = "../../raw/nwps/nwps-gauge-WNYN6.json"
+
+[[route]]
+match = "nwps/v1/gauges/MAWN4/stageflow/forecast"
+file = "../../raw/nwps/nwps-gauge-MAWN4-stageflow-forecast.json"
+
+[[route]]
+match = "nwps/v1/gauges/MAWN4"
+file = "../../raw/nwps/nwps-gauge-MAWN4.json"
+
+[[route]]
+match = "nwps/v1/gauges/PMTN6/stageflow/forecast"
+file = "../../raw/nwps/nwps-gauge-PMTN6-stageflow-forecast.json"
+
+[[route]]
+match = "nwps/v1/gauges/PMTN6"
+file = "../../raw/nwps/nwps-gauge-PMTN6.json"
+
+[[route]]
+match = "nwps/v1/gauges/WPTN6/stageflow/forecast"
+file = "../../raw/nwps/nwps-gauge-WPTN6-stageflow-forecast.json"
+
+[[route]]
+match = "nwps/v1/gauges/WPTN6"
+file = "../../raw/nwps/nwps-gauge-WPTN6.json"
+
+[[route]]
+match = "nwps/v1/gauges/SUFN6/stageflow/forecast"
+file = "../../raw/nwps/nwps-gauge-SUFN6-stageflow-forecast.json"
+
+[[route]]
+match = "nwps/v1/gauges/SUFN6"
+file = "../../raw/nwps/nwps-gauge-SUFN6.json"
+
+[[route]]
+match = "nwps/v1/gauges/SADN4/stageflow/forecast"
+file = "../../raw/nwps/nwps-gauge-SADN4-stageflow-forecast.json"
+
+[[route]]
+match = "nwps/v1/gauges/SADN4"
+file = "../../raw/nwps/nwps-gauge-SADN4.json"
 
 [[route]]
 match = "nwps/v1/gauges?bbox"

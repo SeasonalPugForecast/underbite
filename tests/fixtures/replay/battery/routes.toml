@@ -93,6 +93,30 @@ file = "../../raw/ndbc/ndbc-44025.ocean-404.html"
 status = 404
 
 [[route]]
+match = "realtime2/44065.txt"
+file = "../../raw/ndbc/ndbc-44065-head300-2026-11-15.txt"
+
+[[route]]
+match = "realtime2/44065.spec"
+file = "../../raw/ndbc/ndbc-44065-spec-head150.spec"
+
+[[route]]
+match = "realtime2/ROBN4.txt"
+file = "../../raw/ndbc/ndbc-ROBN4-head300.txt"
+
+[[route]]
+match = "realtime2/MHRN6.txt"
+file = "../../raw/ndbc/ndbc-MHRN6-head300.txt"
+
+[[route]]
+match = "realtime2/KPTN6.txt"
+file = "../../raw/ndbc/ndbc-KPTN6-head300.txt"
+
+[[route]]
+match = "realtime2/SDHN4.txt"
+file = "../../raw/ndbc/ndbc-SDHN4-head300.txt"
+
+[[route]]
 match = "realtime2/BATN6.txt"
 file = "../../raw/ndbc/ndbc-BATN6-head300.txt"
 
@@ -154,14 +178,14 @@ file = "../../raw/open-meteo-marine/marine-40.70_-74.02-minutely15-1d.json"
 match = "marine-api.open-meteo.com/v1/marine"
 file = "../../raw/open-meteo-marine/marine-40.70_-74.02-hourly-2d.json"
 
-# 3DHP hydrography.
+# 3DHP hydrography, with geometry: the flowlines in the box and the waterbodies near the spot.
 [[route]]
 match = "3DHP_all/MapServer/50/query"
-file = "../../raw/hydro/hydro-50-battery-envelope.json"
+file = "../../raw/hydro/hydro-50-battery-geom.json"
 
 [[route]]
 match = "3DHP_all/MapServer/60/query"
-file = "../../raw/hydro/hydro-60-battery-envelope.json"
+file = "../../raw/hydro/hydro-60-battery-geom.json"
 
 # Storms: NHC and the Open-Meteo run metadata, then the point series (before the plain forecast;
 # whether's recording for New York City stands in until the spot's own is recorded).
