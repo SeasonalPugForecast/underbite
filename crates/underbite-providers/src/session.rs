@@ -388,13 +388,13 @@ impl Session {
                 }
                 Err(outcome) => {
                     let error = match &outcome {
-                        Outcome::NotSent(e) => Some(e.clone()),
-                        _ => None,
+                        Outcome::NotSent(e) => e.clone(),
+                        _ => SourceError::Unsupported("metered calls off".into()),
                     };
                     self.record(g, &request, outcome);
                     if request.required {
-                        self.fail(g, Some(&request.target.measurements), error.as_ref());
-                    } else if let Some(error) = error {
+                        self.fail(g, Some(&request.target.measurements), Some(&error));
+                    } else {
                         self.missed(g, &request, &error);
                     }
                 }
@@ -1472,6 +1472,32 @@ mod tests {
         assert_eq!(out.attempts[1].outcome, Outcome::Skipped);
         assert_eq!(out.sources[&WaterTemperature], SourceId::USGS);
         assert_eq!(shared.snapshot(), UsageLedger::new());
+    }
+
+    #[test]
+    fn session_says_why_a_skipped_required_request_passed_a_link_over() {
+        let marine = FakeSource::new("open-meteo-marine", &[WaterTemperature])
+            .plans(FakeRequest::required("https://marine.test/v1").metered())
+            .with_budget(Budget {
+                period: Period::Day,
+                limit: 10,
+            });
+        let (marine, (_, coops)) = (Arc::new(marine), usgs_and_coops());
+        let links = vec![link(&marine, "om", &[]), link(&coops, "8518750", &[])];
+        let chains = BTreeMap::from([(WaterTemperature, chain(links))]);
+        // No ledger: metered calls are off.
+        let (out, urls) = drive(session(chains), |_| {
+            Some((200, body("water_temperature", 60, 8.0)))
+        });
+        assert_eq!(urls, ["https://coops.test/temp"]);
+        assert_eq!(out.attempts[0].outcome, Outcome::Skipped);
+        assert_eq!(out.sources[&WaterTemperature], SourceId::COOPS);
+        assert_eq!(out.errors.len(), 1);
+        assert_eq!(out.errors[0].kind, SourceErrorKind::Other);
+        assert_eq!(
+            out.errors[0].message,
+            "open-meteo-marine: not supported: metered calls off, used coops"
+        );
     }
 
     /// A chain never borrows another chain's links: the Open-Meteo sea level is not a tide
