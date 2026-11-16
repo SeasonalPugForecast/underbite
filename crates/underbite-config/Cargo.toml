@@ -18,6 +18,7 @@ schemars.workspace = true
 
 [dev-dependencies]
 insta = { workspace = true, features = ["yaml", "json"] }
+underbite-core = { workspace = true, features = ["testdata"] }
 
 [lints]
 workspace = true

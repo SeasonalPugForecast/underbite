@@ -7,16 +7,13 @@ use std::process::ExitCode;
 use anyhow::{Context, anyhow, bail};
 use serde_json::Value;
 use underbite_config::export::parse_toml;
-use underbite_config::rivers::RiverRange;
 use underbite_config::schema::{Config, Severity, has_errors};
-use underbite_core::discover::hydro::{WaterTypeReason, WaterTypeSuggestion, WaterbodyKind};
-use underbite_core::model::{Spot, SpotSnapshot, WaterType, ZoneKind};
-use underbite_core::provenance::{SourceId, UsgsSiteType};
-use underbite_core::time::UnixTime;
-use underbite_core::view::{
-    Card, CardState, Quantity, RiverRanges, SolunarSettings, SpotView, ViewInput, build_view,
-};
-use underbite_fetch::{FetchOptions, fetch_spot, measurement_limits};
+use underbite_config::view_input::view_input;
+use underbite_core::discover::hydro::WaterTypeSuggestion;
+use underbite_core::model::{Spot, WaterType};
+use underbite_core::view::strings::Strings;
+use underbite_core::view::{Card, CardState, Quantity, SpotView, build_view};
+use underbite_fetch::{FetchOptions, fetch_spot};
 
 use crate::cli::Global;
 use crate::runtime::env::{Env, var};
@@ -77,7 +74,11 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
     if water_type.is_none() {
         eprintln!(
             "underbite: {}",
-            inferred_text(fetched.inferred.as_ref(), spot.water_type)
+            inferred_text(
+                fetched.inferred.as_ref(),
+                spot.water_type,
+                Strings::new(config.presentation.voice)
+            )
         );
     }
     let snapshot = fetched.snapshot;
@@ -161,10 +162,18 @@ fn default_config_path(env: &impl Fn(&str) -> Option<String>) -> anyhow::Result<
 }
 
 /// The water type a fetch inferred and why, or the one used when nothing pointed anywhere.
-fn inferred_text(inferred: Option<&WaterTypeSuggestion>, fallback: WaterType) -> String {
+fn inferred_text(
+    inferred: Option<&WaterTypeSuggestion>,
+    fallback: WaterType,
+    strings: Strings,
+) -> String {
     match inferred {
         Some(s) => {
-            let reasons: Vec<String> = s.reasons.iter().map(reason_text).collect();
+            let reasons: Vec<String> = s
+                .reasons
+                .iter()
+                .map(|r| strings.water_type_reason(r))
+                .collect();
             format!(
                 "water type {} (inferred: {}; --water-type sets another)",
                 water_type_name(s.water_type),
@@ -184,53 +193,6 @@ fn water_type_name(water: WaterType) -> String {
         .ok()
         .and_then(|v| v.as_str().map(str::to_owned))
         .unwrap_or_default()
-}
-
-/// One reason for an inferred water type.
-fn reason_text(reason: &WaterTypeReason) -> String {
-    let named = |name: &Option<String>, what: &str| match name {
-        Some(n) => format!("on {n} ({what})"),
-        None => format!("on an unnamed {what}"),
-    };
-    match reason {
-        WaterTypeReason::MarineZone { kind } => format!(
-            "in an NWS {} marine zone",
-            match kind {
-                ZoneKind::Coastal => "coastal",
-                ZoneKind::GreatLakesNearshore => "Great Lakes nearshore",
-                ZoneKind::GreatLakesOpen => "Great Lakes open",
-                ZoneKind::Offshore => "offshore",
-            }
-        ),
-        WaterTypeReason::Waterbody { name, kind, .. } => named(
-            name,
-            match kind {
-                WaterbodyKind::Lake => "lake",
-                WaterbodyKind::Reservoir => "reservoir",
-                WaterbodyKind::River => "river",
-                WaterbodyKind::Estuary => "estuary",
-                WaterbodyKind::Other => "waterbody",
-            },
-        ),
-        WaterTypeReason::BayName { name } => format!("{name} is named as a bay or harbor"),
-        WaterTypeReason::Stream { name, stream_order } => {
-            let what = match stream_order {
-                Some(order) => format!("stream of order {order}"),
-                None => "stream".to_owned(),
-            };
-            named(name, &what)
-        }
-        WaterTypeReason::UsgsSite { site_type } => format!(
-            "the nearest USGS site is {}",
-            match site_type {
-                UsgsSiteType::Stream => "on a stream",
-                UsgsSiteType::Lake => "on a lake",
-                UsgsSiteType::Estuary => "on an estuary",
-                UsgsSiteType::TidalStream => "on a tidal stream",
-                UsgsSiteType::Other => "of another kind",
-            }
-        ),
-    }
 }
 
 /// The id of an unnamed point, under which its pins, exclusions and last snapshot are kept:
@@ -261,47 +223,6 @@ fn parse_location(text: &str) -> anyhow::Result<(f64, f64)> {
 fn parse_water_type(text: &str) -> anyhow::Result<WaterType> {
     serde_json::from_value(Value::String(text.replace('-', "_")))
         .map_err(|_| anyhow!("unknown water type `{text}`"))
-}
-
-/// The user's ranges for the gauge the spot's discharge comes from: the entry for that USGS
-/// site, and none when the spot has no USGS discharge or no entry names its gauge.
-fn river_ranges(rivers: &[RiverRange], snapshot: &SpotSnapshot) -> Option<RiverRanges> {
-    let station = snapshot
-        .water
-        .discharge_m3s
-        .as_ref()?
-        .provenance()
-        .station
-        .as_ref()
-        .filter(|s| s.source == SourceId::USGS)?;
-    gauge_ranges(rivers, &station.id)
-}
-
-/// The ranges of the `[[rivers]]` entry for the USGS site `station_id`, as the USGS provider
-/// writes it (`USGS-01375000`).
-fn gauge_ranges(rivers: &[RiverRange], station_id: &str) -> Option<RiverRanges> {
-    RiverRange::find(rivers, station_id).map(RiverRange::to_ranges)
-}
-
-/// What `build_view` takes, from the configuration.
-fn view_input(config: &Config, snapshot: SpotSnapshot, now: UnixTime) -> ViewInput {
-    let river_ranges = river_ranges(&config.rivers, &snapshot);
-    ViewInput {
-        card_order: config.cards.order_for(snapshot.spot.water_type),
-        snapshot,
-        now,
-        units: config.units.display_units(),
-        voice: config.presentation.voice,
-        clock: config.presentation.clock,
-        timeline_span: config.presentation.timeline_span(),
-        limits: measurement_limits(&config.sources),
-        river_ranges,
-        #[allow(clippy::cast_possible_truncation)]
-        trout_stress_c: Some(config.thresholds.trout_stress_c as f32),
-        solunar: SolunarSettings {
-            show: config.windows.show_solunar,
-        },
-    }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -524,6 +445,9 @@ fn strings(v: Option<&Value>) -> Vec<&str> {
 mod tests {
     use super::*;
     use clap::Parser;
+    use underbite_core::discover::hydro::{WaterTypeReason, WaterbodyKind};
+    use underbite_core::model::ZoneKind;
+    use underbite_core::view::Voice;
 
     #[derive(Parser)]
     struct Cli {
@@ -587,38 +511,6 @@ mod tests {
         );
     }
 
-    fn range(site: &str, wadeable: f64) -> RiverRange {
-        RiverRange {
-            site: site.into(),
-            wadeable_below_cfs: Some(wadeable),
-            best_cfs: None,
-            blown_out_above_cfs: None,
-        }
-    }
-
-    #[test]
-    fn a_river_entry_applies_only_to_its_own_gauge() {
-        let croton = range("usgs:01375000", 300.0);
-        let other = range("usgs:01420500", 1200.0);
-        // One entry, for the spot's gauge.
-        let got = gauge_ranges(std::slice::from_ref(&croton), "USGS-01375000").unwrap();
-        assert_eq!(got, croton.to_ranges());
-        // One entry, for another gauge: nothing applies.
-        assert!(gauge_ranges(std::slice::from_ref(&other), "USGS-01375000").is_none());
-        // Two entries: the matching one applies, and none when neither matches.
-        let both = [other.clone(), croton.clone()];
-        assert_eq!(
-            gauge_ranges(&both, "USGS-01375000").unwrap(),
-            croton.to_ranges()
-        );
-        assert_eq!(
-            gauge_ranges(&both, "USGS-01420500").unwrap(),
-            other.to_ranges()
-        );
-        assert!(gauge_ranges(&both, "USGS-01372058").is_none());
-        assert!(gauge_ranges(&[], "USGS-01375000").is_none());
-    }
-
     #[test]
     fn the_window_is_not_a_flag() {
         // The cards' requirements set how many days are fetched.
@@ -663,7 +555,7 @@ mod tests {
             ],
         };
         assert_eq!(
-            inferred_text(Some(&s), WaterType::RiverStream),
+            inferred_text(Some(&s), WaterType::RiverStream, Strings::new(Voice::Plain)),
             "water type tidal_river_estuary (inferred: in an NWS coastal marine zone; on an \
              unnamed river; --water-type sets another)"
         );
@@ -671,8 +563,14 @@ mod tests {
             name: Some("Croton River".into()),
             stream_order: Some(7),
         };
-        assert_eq!(reason_text(&stream), "on Croton River (stream of order 7)");
-        assert!(inferred_text(None, WaterType::RiverStream).starts_with("water type river_stream"));
+        assert_eq!(
+            Strings::new(Voice::Plain).water_type_reason(&stream),
+            "on Croton River (stream of order 7)"
+        );
+        assert!(
+            inferred_text(None, WaterType::RiverStream, Strings::new(Voice::Plain))
+                .starts_with("water type river_stream")
+        );
     }
 
     #[test]

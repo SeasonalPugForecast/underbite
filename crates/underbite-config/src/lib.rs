@@ -11,4 +11,5 @@ pub mod rivers;
 pub mod schema;
 pub mod sources;
 pub mod units;
+pub mod view_input;
 pub mod windows;

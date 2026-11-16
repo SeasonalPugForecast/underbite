@@ -7,10 +7,12 @@ use std::sync::Arc;
 
 use underbite_config::schema::Config;
 use underbite_config::sources::{SourceGroup, SourcesConfig};
+use underbite_config::view_input::group_of;
+pub use underbite_config::view_input::measurement_limits;
 use underbite_core::discover::rank::{ChainSpec, Limits};
 use underbite_core::model::{Measurement, Requirements, WaterType};
 use underbite_core::provenance::SourceId;
-use underbite_core::view::{CardId, MeasurementLimit};
+use underbite_core::view::CardId;
 use underbite_providers::coops::{Coops, CoopsHarmonics};
 use underbite_providers::ndbc::Ndbc;
 use underbite_providers::nwps::Nwps;
@@ -64,12 +66,6 @@ pub(crate) fn water_source(id: &SourceId) -> Option<Arc<dyn Source>> {
 // ---------------------------------------------------------------------------------------------
 // Measurements, groups and chains
 // ---------------------------------------------------------------------------------------------
-
-/// Station observations of wind and pressure have no `[sources]` group: they come from CO-OPS
-/// and NDBC stations, nearest first, and count only while fresh.
-const OBSERVATION_CHAIN: [SourceId; 2] = [SourceId::COOPS, SourceId::NDBC];
-/// How old a station's wind or pressure may be, minutes.
-const OBSERVATION_MAX_AGE_MINUTES: u32 = 180;
 
 /// Salt water, where tides, tidal currents and marine models apply.
 fn is_salt(water: WaterType) -> bool {
@@ -155,46 +151,6 @@ pub fn requirements(config: &Config, water: WaterType) -> Requirements {
     }
 }
 
-/// The `[sources]` table that configures `measurement`, by name; `None` for station
-/// observations of wind and pressure, which have a fixed chain.
-pub(crate) fn group_name(measurement: Measurement) -> Option<&'static str> {
-    use Measurement as M;
-    Some(match measurement {
-        M::WaterTemperature => "water_temperature",
-        M::Tide => "tide",
-        M::TidalCurrent | M::OceanCurrent => "currents",
-        M::Discharge | M::GageHeight | M::FlowForecast | M::FloodCategories => "flow",
-        M::LakeLevel => "lake_level",
-        M::Waves | M::WavesForecast => "waves",
-        M::SeaSurfaceTemp | M::SeaSurfaceTempForecast => "sst",
-        M::Clarity | M::Turbidity => "clarity",
-        M::DissolvedOxygen
-        | M::Conductivity
-        | M::Salinity
-        | M::Ph
-        | M::Chlorophyll
-        | M::Cyanobacteria => "water_quality",
-        M::MarineForecast | M::MarineAlerts => "marine_forecast",
-        M::ObservedWind | M::ObservedPressure => return None,
-    })
-}
-
-/// The configured group of `measurement`, or the fixed observation chain.
-fn group_of(sources: &SourcesConfig, measurement: Measurement) -> SourceGroup {
-    let configured = group_name(measurement).and_then(|name| {
-        sources
-            .groups()
-            .into_iter()
-            .find(|(n, _)| *n == name)
-            .map(|(_, g)| g.clone())
-    });
-    configured.unwrap_or_else(|| SourceGroup {
-        chain: OBSERVATION_CHAIN.to_vec(),
-        max_distance_km: None,
-        max_age_minutes: Some(OBSERVATION_MAX_AGE_MINUTES),
-    })
-}
-
 /// The chain and limits of every required measurement: the configured sources a fetch runs
 /// that supply the measurement, in order, each once; gridded marine models only on marine
 /// water.
@@ -221,35 +177,6 @@ pub fn chain_specs(
                 limits: Limits::from_config(group.max_distance_km, group.max_age_minutes),
             };
             (m, spec)
-        })
-        .collect()
-}
-
-/// The user's distance and age limits per measurement, for greying values in the view.
-pub fn measurement_limits(sources: &SourcesConfig) -> Vec<MeasurementLimit> {
-    use Measurement as M;
-    let all = [
-        M::WaterTemperature,
-        M::Discharge,
-        M::GageHeight,
-        M::LakeLevel,
-        M::Turbidity,
-        M::Tide,
-        M::TidalCurrent,
-        M::Waves,
-        M::SeaSurfaceTemp,
-        M::ObservedWind,
-        M::ObservedPressure,
-    ];
-    all.into_iter()
-        .filter_map(|m| {
-            let group = group_of(sources, m);
-            let limit = MeasurementLimit {
-                measurement: m,
-                max_distance_m: group.max_distance_km.map(|km| (km * 1_000.0) as f32),
-                max_age_s: group.max_age_minutes.map(|min| i64::from(min) * 60),
-            };
-            (limit.max_distance_m.is_some() || limit.max_age_s.is_some()).then_some(limit)
         })
         .collect()
 }
@@ -330,6 +257,7 @@ mod tests {
     use super::*;
     use Measurement as M;
     use underbite_config::sources::KNOWN_SOURCES;
+    use underbite_config::view_input::OBSERVATION_CHAIN;
 
     fn ids(chain: &[Box<dyn Provider>]) -> Vec<ProviderId> {
         chain.iter().map(|p| p.id()).collect()
