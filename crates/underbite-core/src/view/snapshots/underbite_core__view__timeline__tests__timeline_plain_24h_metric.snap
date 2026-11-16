@@ -1,0 +1,1201 @@
+---
+source: crates/underbite-core/src/view/timeline.rs
+expression: build(&input).unwrap()
+---
+{
+  "start_t": 1794114000,
+  "end_t": 1794200400,
+  "step_minutes": 60,
+  "x_ticks": [
+    {
+      "t": 1794114000,
+      "label": "00:00",
+      "major": true
+    },
+    {
+      "t": 1794117600,
+      "label": "01:00",
+      "major": false
+    },
+    {
+      "t": 1794121200,
+      "label": "02:00",
+      "major": false
+    },
+    {
+      "t": 1794124800,
+      "label": "03:00",
+      "major": true
+    },
+    {
+      "t": 1794128400,
+      "label": "04:00",
+      "major": false
+    },
+    {
+      "t": 1794132000,
+      "label": "05:00",
+      "major": false
+    },
+    {
+      "t": 1794135600,
+      "label": "06:00",
+      "major": true
+    },
+    {
+      "t": 1794139200,
+      "label": "07:00",
+      "major": false
+    },
+    {
+      "t": 1794142800,
+      "label": "08:00",
+      "major": false
+    },
+    {
+      "t": 1794146400,
+      "label": "09:00",
+      "major": true
+    },
+    {
+      "t": 1794150000,
+      "label": "10:00",
+      "major": false
+    },
+    {
+      "t": 1794153600,
+      "label": "11:00",
+      "major": false
+    },
+    {
+      "t": 1794157200,
+      "label": "12:00",
+      "major": true
+    },
+    {
+      "t": 1794160800,
+      "label": "13:00",
+      "major": false
+    },
+    {
+      "t": 1794164400,
+      "label": "14:00",
+      "major": false
+    },
+    {
+      "t": 1794168000,
+      "label": "15:00",
+      "major": true
+    },
+    {
+      "t": 1794171600,
+      "label": "16:00",
+      "major": false
+    },
+    {
+      "t": 1794175200,
+      "label": "17:00",
+      "major": false
+    },
+    {
+      "t": 1794178800,
+      "label": "18:00",
+      "major": true
+    },
+    {
+      "t": 1794182400,
+      "label": "19:00",
+      "major": false
+    },
+    {
+      "t": 1794186000,
+      "label": "20:00",
+      "major": false
+    },
+    {
+      "t": 1794189600,
+      "label": "21:00",
+      "major": true
+    },
+    {
+      "t": 1794193200,
+      "label": "22:00",
+      "major": false
+    },
+    {
+      "t": 1794196800,
+      "label": "23:00",
+      "major": false
+    }
+  ],
+  "lanes": [
+    {
+      "kind": "tide",
+      "label": "Tide",
+      "chart": {
+        "title": "Tide · NOAA CO-OPS",
+        "unit": "m",
+        "x_ticks": [
+          {
+            "t": 1794114000,
+            "label": "00:00",
+            "major": true
+          },
+          {
+            "t": 1794117600,
+            "label": "01:00",
+            "major": false
+          },
+          {
+            "t": 1794121200,
+            "label": "02:00",
+            "major": false
+          },
+          {
+            "t": 1794124800,
+            "label": "03:00",
+            "major": true
+          },
+          {
+            "t": 1794128400,
+            "label": "04:00",
+            "major": false
+          },
+          {
+            "t": 1794132000,
+            "label": "05:00",
+            "major": false
+          },
+          {
+            "t": 1794135600,
+            "label": "06:00",
+            "major": true
+          },
+          {
+            "t": 1794139200,
+            "label": "07:00",
+            "major": false
+          },
+          {
+            "t": 1794142800,
+            "label": "08:00",
+            "major": false
+          },
+          {
+            "t": 1794146400,
+            "label": "09:00",
+            "major": true
+          },
+          {
+            "t": 1794150000,
+            "label": "10:00",
+            "major": false
+          },
+          {
+            "t": 1794153600,
+            "label": "11:00",
+            "major": false
+          },
+          {
+            "t": 1794157200,
+            "label": "12:00",
+            "major": true
+          },
+          {
+            "t": 1794160800,
+            "label": "13:00",
+            "major": false
+          },
+          {
+            "t": 1794164400,
+            "label": "14:00",
+            "major": false
+          },
+          {
+            "t": 1794168000,
+            "label": "15:00",
+            "major": true
+          },
+          {
+            "t": 1794171600,
+            "label": "16:00",
+            "major": false
+          },
+          {
+            "t": 1794175200,
+            "label": "17:00",
+            "major": false
+          },
+          {
+            "t": 1794178800,
+            "label": "18:00",
+            "major": true
+          },
+          {
+            "t": 1794182400,
+            "label": "19:00",
+            "major": false
+          },
+          {
+            "t": 1794186000,
+            "label": "20:00",
+            "major": false
+          },
+          {
+            "t": 1794189600,
+            "label": "21:00",
+            "major": true
+          },
+          {
+            "t": 1794193200,
+            "label": "22:00",
+            "major": false
+          },
+          {
+            "t": 1794196800,
+            "label": "23:00",
+            "major": false
+          }
+        ],
+        "series": [
+          {
+            "label": "Predicted",
+            "role": "predicted",
+            "style": "line",
+            "points": [
+              {
+                "t": 1794114000,
+                "value": 0.127,
+                "label": "0.1 m",
+                "major": true
+              },
+              {
+                "t": 1794117600,
+                "value": 0.017,
+                "label": "0.0 m",
+                "major": true
+              },
+              {
+                "t": 1794121200,
+                "value": 0.154,
+                "label": "0.2 m",
+                "major": true
+              },
+              {
+                "t": 1794124800,
+                "value": 0.502,
+                "label": "0.5 m",
+                "major": true
+              },
+              {
+                "t": 1794128400,
+                "value": 0.921,
+                "label": "0.9 m",
+                "major": true
+              },
+              {
+                "t": 1794132000,
+                "value": 1.303,
+                "label": "1.3 m",
+                "major": true
+              },
+              {
+                "t": 1794135600,
+                "value": 1.586,
+                "label": "1.6 m",
+                "major": true
+              },
+              {
+                "t": 1794139200,
+                "value": 1.71,
+                "label": "1.7 m",
+                "major": true
+              },
+              {
+                "t": 1794142800,
+                "value": 1.623,
+                "label": "1.6 m",
+                "major": true
+              },
+              {
+                "t": 1794146400,
+                "value": 1.345,
+                "label": "1.3 m",
+                "major": true
+              },
+              {
+                "t": 1794150000,
+                "value": 0.976,
+                "label": "1.0 m",
+                "major": true
+              },
+              {
+                "t": 1794153600,
+                "value": 0.612,
+                "label": "0.6 m",
+                "major": true
+              },
+              {
+                "t": 1794157200,
+                "value": 0.284,
+                "label": "0.3 m",
+                "major": true
+              },
+              {
+                "t": 1794160800,
+                "value": 0.054,
+                "label": "0.1 m",
+                "major": true
+              },
+              {
+                "t": 1794164400,
+                "value": 0.036,
+                "label": "0.0 m",
+                "major": true
+              },
+              {
+                "t": 1794168000,
+                "value": 0.26,
+                "label": "0.3 m",
+                "major": true
+              },
+              {
+                "t": 1794171600,
+                "value": 0.616,
+                "label": "0.6 m",
+                "major": true
+              },
+              {
+                "t": 1794175200,
+                "value": 0.97,
+                "label": "1.0 m",
+                "major": true
+              },
+              {
+                "t": 1794178800,
+                "value": 1.253,
+                "label": "1.3 m",
+                "major": true
+              },
+              {
+                "t": 1794182400,
+                "value": 1.413,
+                "label": "1.4 m",
+                "major": true
+              },
+              {
+                "t": 1794186000,
+                "value": 1.401,
+                "label": "1.4 m",
+                "major": true
+              },
+              {
+                "t": 1794189600,
+                "value": 1.204,
+                "label": "1.2 m",
+                "major": true
+              },
+              {
+                "t": 1794193200,
+                "value": 0.893,
+                "label": "0.9 m",
+                "major": true
+              },
+              {
+                "t": 1794196800,
+                "value": 0.576,
+                "label": "0.6 m",
+                "major": true
+              }
+            ]
+          }
+        ],
+        "bands": [],
+        "rules": [],
+        "markers": [
+          {
+            "kind": "low",
+            "t": 1794117540,
+            "value": 0.017,
+            "label": "Low 0.0 m"
+          },
+          {
+            "kind": "high",
+            "t": 1794139620,
+            "value": 1.711,
+            "label": "High 1.7 m"
+          },
+          {
+            "kind": "low",
+            "t": 1794162840,
+            "value": 0.012,
+            "label": "Low 0.0 m"
+          },
+          {
+            "kind": "high",
+            "t": 1794184020,
+            "value": 1.432,
+            "label": "High 1.4 m"
+          }
+        ],
+        "now_t": 1794142800,
+        "accessibility": "Tide: Low 0.0 m at 00:59, High 1.7 m at 07:07, Low 0.0 m at 13:34, High 1.4 m at 19:27"
+      }
+    },
+    {
+      "kind": "current",
+      "label": "Current",
+      "chart": {
+        "title": "Current",
+        "unit": "",
+        "x_ticks": [
+          {
+            "t": 1794114000,
+            "label": "00:00",
+            "major": true
+          },
+          {
+            "t": 1794117600,
+            "label": "01:00",
+            "major": false
+          },
+          {
+            "t": 1794121200,
+            "label": "02:00",
+            "major": false
+          },
+          {
+            "t": 1794124800,
+            "label": "03:00",
+            "major": true
+          },
+          {
+            "t": 1794128400,
+            "label": "04:00",
+            "major": false
+          },
+          {
+            "t": 1794132000,
+            "label": "05:00",
+            "major": false
+          },
+          {
+            "t": 1794135600,
+            "label": "06:00",
+            "major": true
+          },
+          {
+            "t": 1794139200,
+            "label": "07:00",
+            "major": false
+          },
+          {
+            "t": 1794142800,
+            "label": "08:00",
+            "major": false
+          },
+          {
+            "t": 1794146400,
+            "label": "09:00",
+            "major": true
+          },
+          {
+            "t": 1794150000,
+            "label": "10:00",
+            "major": false
+          },
+          {
+            "t": 1794153600,
+            "label": "11:00",
+            "major": false
+          },
+          {
+            "t": 1794157200,
+            "label": "12:00",
+            "major": true
+          },
+          {
+            "t": 1794160800,
+            "label": "13:00",
+            "major": false
+          },
+          {
+            "t": 1794164400,
+            "label": "14:00",
+            "major": false
+          },
+          {
+            "t": 1794168000,
+            "label": "15:00",
+            "major": true
+          },
+          {
+            "t": 1794171600,
+            "label": "16:00",
+            "major": false
+          },
+          {
+            "t": 1794175200,
+            "label": "17:00",
+            "major": false
+          },
+          {
+            "t": 1794178800,
+            "label": "18:00",
+            "major": true
+          },
+          {
+            "t": 1794182400,
+            "label": "19:00",
+            "major": false
+          },
+          {
+            "t": 1794186000,
+            "label": "20:00",
+            "major": false
+          },
+          {
+            "t": 1794189600,
+            "label": "21:00",
+            "major": true
+          },
+          {
+            "t": 1794193200,
+            "label": "22:00",
+            "major": false
+          },
+          {
+            "t": 1794196800,
+            "label": "23:00",
+            "major": false
+          }
+        ],
+        "series": [],
+        "bands": [],
+        "rules": [],
+        "markers": [],
+        "now_t": 1794142800,
+        "accessibility": "Current: No data for this spot yet."
+      }
+    },
+    {
+      "kind": "wind",
+      "label": "Wind",
+      "chart": {
+        "title": "Wind",
+        "unit": "",
+        "x_ticks": [
+          {
+            "t": 1794114000,
+            "label": "00:00",
+            "major": true
+          },
+          {
+            "t": 1794117600,
+            "label": "01:00",
+            "major": false
+          },
+          {
+            "t": 1794121200,
+            "label": "02:00",
+            "major": false
+          },
+          {
+            "t": 1794124800,
+            "label": "03:00",
+            "major": true
+          },
+          {
+            "t": 1794128400,
+            "label": "04:00",
+            "major": false
+          },
+          {
+            "t": 1794132000,
+            "label": "05:00",
+            "major": false
+          },
+          {
+            "t": 1794135600,
+            "label": "06:00",
+            "major": true
+          },
+          {
+            "t": 1794139200,
+            "label": "07:00",
+            "major": false
+          },
+          {
+            "t": 1794142800,
+            "label": "08:00",
+            "major": false
+          },
+          {
+            "t": 1794146400,
+            "label": "09:00",
+            "major": true
+          },
+          {
+            "t": 1794150000,
+            "label": "10:00",
+            "major": false
+          },
+          {
+            "t": 1794153600,
+            "label": "11:00",
+            "major": false
+          },
+          {
+            "t": 1794157200,
+            "label": "12:00",
+            "major": true
+          },
+          {
+            "t": 1794160800,
+            "label": "13:00",
+            "major": false
+          },
+          {
+            "t": 1794164400,
+            "label": "14:00",
+            "major": false
+          },
+          {
+            "t": 1794168000,
+            "label": "15:00",
+            "major": true
+          },
+          {
+            "t": 1794171600,
+            "label": "16:00",
+            "major": false
+          },
+          {
+            "t": 1794175200,
+            "label": "17:00",
+            "major": false
+          },
+          {
+            "t": 1794178800,
+            "label": "18:00",
+            "major": true
+          },
+          {
+            "t": 1794182400,
+            "label": "19:00",
+            "major": false
+          },
+          {
+            "t": 1794186000,
+            "label": "20:00",
+            "major": false
+          },
+          {
+            "t": 1794189600,
+            "label": "21:00",
+            "major": true
+          },
+          {
+            "t": 1794193200,
+            "label": "22:00",
+            "major": false
+          },
+          {
+            "t": 1794196800,
+            "label": "23:00",
+            "major": false
+          }
+        ],
+        "series": [],
+        "bands": [],
+        "rules": [],
+        "markers": [],
+        "now_t": 1794142800,
+        "accessibility": "Wind: No data for this spot yet."
+      }
+    },
+    {
+      "kind": "pressure",
+      "label": "Pressure",
+      "chart": {
+        "title": "Pressure",
+        "unit": "",
+        "x_ticks": [
+          {
+            "t": 1794114000,
+            "label": "00:00",
+            "major": true
+          },
+          {
+            "t": 1794117600,
+            "label": "01:00",
+            "major": false
+          },
+          {
+            "t": 1794121200,
+            "label": "02:00",
+            "major": false
+          },
+          {
+            "t": 1794124800,
+            "label": "03:00",
+            "major": true
+          },
+          {
+            "t": 1794128400,
+            "label": "04:00",
+            "major": false
+          },
+          {
+            "t": 1794132000,
+            "label": "05:00",
+            "major": false
+          },
+          {
+            "t": 1794135600,
+            "label": "06:00",
+            "major": true
+          },
+          {
+            "t": 1794139200,
+            "label": "07:00",
+            "major": false
+          },
+          {
+            "t": 1794142800,
+            "label": "08:00",
+            "major": false
+          },
+          {
+            "t": 1794146400,
+            "label": "09:00",
+            "major": true
+          },
+          {
+            "t": 1794150000,
+            "label": "10:00",
+            "major": false
+          },
+          {
+            "t": 1794153600,
+            "label": "11:00",
+            "major": false
+          },
+          {
+            "t": 1794157200,
+            "label": "12:00",
+            "major": true
+          },
+          {
+            "t": 1794160800,
+            "label": "13:00",
+            "major": false
+          },
+          {
+            "t": 1794164400,
+            "label": "14:00",
+            "major": false
+          },
+          {
+            "t": 1794168000,
+            "label": "15:00",
+            "major": true
+          },
+          {
+            "t": 1794171600,
+            "label": "16:00",
+            "major": false
+          },
+          {
+            "t": 1794175200,
+            "label": "17:00",
+            "major": false
+          },
+          {
+            "t": 1794178800,
+            "label": "18:00",
+            "major": true
+          },
+          {
+            "t": 1794182400,
+            "label": "19:00",
+            "major": false
+          },
+          {
+            "t": 1794186000,
+            "label": "20:00",
+            "major": false
+          },
+          {
+            "t": 1794189600,
+            "label": "21:00",
+            "major": true
+          },
+          {
+            "t": 1794193200,
+            "label": "22:00",
+            "major": false
+          },
+          {
+            "t": 1794196800,
+            "label": "23:00",
+            "major": false
+          }
+        ],
+        "series": [],
+        "bands": [],
+        "rules": [],
+        "markers": [],
+        "now_t": 1794142800,
+        "accessibility": "Pressure: No data for this spot yet."
+      }
+    },
+    {
+      "kind": "light",
+      "label": "Light",
+      "chart": {
+        "title": "Light · computed on device",
+        "unit": "",
+        "x_ticks": [
+          {
+            "t": 1794114000,
+            "label": "00:00",
+            "major": true
+          },
+          {
+            "t": 1794117600,
+            "label": "01:00",
+            "major": false
+          },
+          {
+            "t": 1794121200,
+            "label": "02:00",
+            "major": false
+          },
+          {
+            "t": 1794124800,
+            "label": "03:00",
+            "major": true
+          },
+          {
+            "t": 1794128400,
+            "label": "04:00",
+            "major": false
+          },
+          {
+            "t": 1794132000,
+            "label": "05:00",
+            "major": false
+          },
+          {
+            "t": 1794135600,
+            "label": "06:00",
+            "major": true
+          },
+          {
+            "t": 1794139200,
+            "label": "07:00",
+            "major": false
+          },
+          {
+            "t": 1794142800,
+            "label": "08:00",
+            "major": false
+          },
+          {
+            "t": 1794146400,
+            "label": "09:00",
+            "major": true
+          },
+          {
+            "t": 1794150000,
+            "label": "10:00",
+            "major": false
+          },
+          {
+            "t": 1794153600,
+            "label": "11:00",
+            "major": false
+          },
+          {
+            "t": 1794157200,
+            "label": "12:00",
+            "major": true
+          },
+          {
+            "t": 1794160800,
+            "label": "13:00",
+            "major": false
+          },
+          {
+            "t": 1794164400,
+            "label": "14:00",
+            "major": false
+          },
+          {
+            "t": 1794168000,
+            "label": "15:00",
+            "major": true
+          },
+          {
+            "t": 1794171600,
+            "label": "16:00",
+            "major": false
+          },
+          {
+            "t": 1794175200,
+            "label": "17:00",
+            "major": false
+          },
+          {
+            "t": 1794178800,
+            "label": "18:00",
+            "major": true
+          },
+          {
+            "t": 1794182400,
+            "label": "19:00",
+            "major": false
+          },
+          {
+            "t": 1794186000,
+            "label": "20:00",
+            "major": false
+          },
+          {
+            "t": 1794189600,
+            "label": "21:00",
+            "major": true
+          },
+          {
+            "t": 1794193200,
+            "label": "22:00",
+            "major": false
+          },
+          {
+            "t": 1794196800,
+            "label": "23:00",
+            "major": false
+          }
+        ],
+        "series": [],
+        "bands": [
+          {
+            "kind": "night",
+            "start_t": 1794114000,
+            "end_t": 1794135938,
+            "label": "Night"
+          },
+          {
+            "kind": "highlight",
+            "start_t": 1794135938,
+            "end_t": 1794137669,
+            "label": "Twilight"
+          },
+          {
+            "kind": "highlight",
+            "start_t": 1794137669,
+            "end_t": 1794140050,
+            "label": "Golden hour"
+          },
+          {
+            "kind": "highlight",
+            "start_t": 1794171932,
+            "end_t": 1794174313,
+            "label": "Golden hour"
+          },
+          {
+            "kind": "highlight",
+            "start_t": 1794174313,
+            "end_t": 1794176044,
+            "label": "Twilight"
+          },
+          {
+            "kind": "night",
+            "start_t": 1794176044,
+            "end_t": 1794200400,
+            "label": "Night"
+          }
+        ],
+        "rules": [],
+        "markers": [
+          {
+            "kind": "sunrise",
+            "t": 1794137669,
+            "value": null,
+            "label": "Sunrise 06:34"
+          },
+          {
+            "kind": "sunset",
+            "t": 1794174313,
+            "value": null,
+            "label": "Sunset 16:45"
+          }
+        ],
+        "now_t": 1794142800,
+        "accessibility": "Light: Sunrise 06:34, Sunset 16:45"
+      }
+    },
+    {
+      "kind": "solunar",
+      "label": "Solunar",
+      "chart": {
+        "title": "Solunar · computed on device",
+        "unit": "",
+        "x_ticks": [
+          {
+            "t": 1794114000,
+            "label": "00:00",
+            "major": true
+          },
+          {
+            "t": 1794117600,
+            "label": "01:00",
+            "major": false
+          },
+          {
+            "t": 1794121200,
+            "label": "02:00",
+            "major": false
+          },
+          {
+            "t": 1794124800,
+            "label": "03:00",
+            "major": true
+          },
+          {
+            "t": 1794128400,
+            "label": "04:00",
+            "major": false
+          },
+          {
+            "t": 1794132000,
+            "label": "05:00",
+            "major": false
+          },
+          {
+            "t": 1794135600,
+            "label": "06:00",
+            "major": true
+          },
+          {
+            "t": 1794139200,
+            "label": "07:00",
+            "major": false
+          },
+          {
+            "t": 1794142800,
+            "label": "08:00",
+            "major": false
+          },
+          {
+            "t": 1794146400,
+            "label": "09:00",
+            "major": true
+          },
+          {
+            "t": 1794150000,
+            "label": "10:00",
+            "major": false
+          },
+          {
+            "t": 1794153600,
+            "label": "11:00",
+            "major": false
+          },
+          {
+            "t": 1794157200,
+            "label": "12:00",
+            "major": true
+          },
+          {
+            "t": 1794160800,
+            "label": "13:00",
+            "major": false
+          },
+          {
+            "t": 1794164400,
+            "label": "14:00",
+            "major": false
+          },
+          {
+            "t": 1794168000,
+            "label": "15:00",
+            "major": true
+          },
+          {
+            "t": 1794171600,
+            "label": "16:00",
+            "major": false
+          },
+          {
+            "t": 1794175200,
+            "label": "17:00",
+            "major": false
+          },
+          {
+            "t": 1794178800,
+            "label": "18:00",
+            "major": true
+          },
+          {
+            "t": 1794182400,
+            "label": "19:00",
+            "major": false
+          },
+          {
+            "t": 1794186000,
+            "label": "20:00",
+            "major": false
+          },
+          {
+            "t": 1794189600,
+            "label": "21:00",
+            "major": true
+          },
+          {
+            "t": 1794193200,
+            "label": "22:00",
+            "major": false
+          },
+          {
+            "t": 1794196800,
+            "label": "23:00",
+            "major": false
+          }
+        ],
+        "series": [],
+        "bands": [
+          {
+            "kind": "solunar_minor",
+            "start_t": 1794133896,
+            "end_t": 1794137496,
+            "label": "Minor 05:31 to 06:31"
+          },
+          {
+            "kind": "solunar_major",
+            "start_t": 1794150309,
+            "end_t": 1794157509,
+            "label": "Major 10:05 to 12:05"
+          },
+          {
+            "kind": "solunar_minor",
+            "start_t": 1794169872,
+            "end_t": 1794173472,
+            "label": "Minor 15:31 to 16:31"
+          },
+          {
+            "kind": "solunar_major",
+            "start_t": 1794194934,
+            "end_t": 1794200400,
+            "label": "Major 22:28 to 00:28"
+          }
+        ],
+        "rules": [],
+        "markers": [],
+        "now_t": 1794142800,
+        "accessibility": "Solunar: Minor 05:31 to 06:31, Major 10:05 to 12:05, Minor 15:31 to 16:31, Major 22:28 to 00:28. A traditional cue, not a promise."
+      }
+    }
+  ]
+}
