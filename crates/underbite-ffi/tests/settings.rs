@@ -6,7 +6,8 @@ use std::path::PathBuf;
 use serde_json::{Value, json};
 use underbite_ffi::settings::{
     IssueSeverity, SettingsError, card_catalogue, default_settings_json, display_stops,
-    export_settings_toml, import_settings_toml, migrate_settings, parse_user_value,
+    export_settings_toml, format_duration, format_setting_value, import_settings_toml,
+    migrate_settings, parse_setting_value, parse_user_value, setting_field_keys, setting_stops,
     source_catalogue, unit_options, validate_settings,
 };
 
@@ -316,4 +317,198 @@ fn sample_settings_are_current() {
         kept, json,
         "run `UNDERBITE_WRITE_SAMPLES=1 cargo test -p underbite-ffi`"
     );
+}
+
+fn knots() -> String {
+    settings(|v| v["units"]["speed"] = json!("kn"))
+}
+
+fn parse(field: &str, text: &str, json: String) -> f64 {
+    parse_setting_value(field.into(), text.into(), json).unwrap()
+}
+
+fn format(field: &str, value: f64, json: String) -> String {
+    format_setting_value(field.into(), value, json).unwrap()
+}
+
+fn close(a: f64, b: f64) {
+    assert!((a - b).abs() < 1e-3 * b.abs().max(1.0), "{a} is not {b}");
+}
+
+#[test]
+fn every_field_key_is_accepted() {
+    let keys = setting_field_keys();
+    assert!(keys.contains(&"limits[].max_wind_kn".to_owned()));
+    assert!(keys.contains(&"sources.tide.max_age_minutes".to_owned()));
+    assert!(keys.contains(&"sources.storm.max_distance_km".to_owned()));
+    for key in keys {
+        assert!(
+            format_setting_value(key.clone(), 10.0, default_settings_json()).is_ok(),
+            "{key}"
+        );
+        assert!(
+            parse_setting_value(key.clone(), "10".into(), default_settings_json()).is_ok(),
+            "{key}"
+        );
+    }
+    // A list position is ignored; an unknown field is refused.
+    assert!(format_setting_value("limits[3].max_wind_kn".into(), 1.0, knots()).is_ok());
+    assert!(format_setting_value("limits[].name".into(), 1.0, knots()).is_err());
+    assert!(format_setting_value("sources.nope.max_age_minutes".into(), 1.0, knots()).is_err());
+}
+
+#[test]
+fn knots_fields_follow_the_speed_unit() {
+    let mph = settings(|v| v["units"]["speed"] = json!("mph"));
+    assert_eq!(format("limits[].max_wind_kn", 15.0, mph.clone()), "17 mph");
+    close(parse("limits[].max_wind_kn", "17.26", mph.clone()), 15.0);
+    close(parse("limits[].max_wind_kn", "20 kn", mph), 20.0);
+    // In knots the value passes through untouched.
+    assert_eq!(parse("limits[].max_gust_kn", "25", knots()), 25.0);
+    assert_eq!(format("limits[].max_gust_kn", 25.0, knots()), "25 kn");
+    assert_eq!(format("limits[].max_current_kn", 1.5, knots()), "1.5 kn");
+    // Decimal comma.
+    assert_eq!(parse("limits[].max_current_kn", "1,5", knots()), 1.5);
+    // Round trip through the written text (one decimal in m/s, so within a few percent).
+    let text = format("limits[].max_wind_kn", 18.0, metric());
+    assert_eq!(text, "9.3 m/s");
+    let back = parse("limits[].max_wind_kn", &text, metric());
+    assert!((back - 18.0).abs() < 0.2, "{back}");
+    // Typed in the unit shown, the stored value reads back exactly.
+    assert_eq!(
+        parse(
+            "limits[].max_wind_kn",
+            &format("limits[].max_wind_kn", 18.0, knots()),
+            knots()
+        ),
+        18.0
+    );
+}
+
+#[test]
+fn cfs_fields_follow_the_discharge_unit() {
+    assert_eq!(
+        format("rivers[].wadeable_below_cfs", 1200.0, cfs()),
+        "1,200 cfs"
+    );
+    assert_eq!(parse("rivers[].wadeable_below_cfs", "1,200", cfs()), 1200.0);
+    assert_eq!(parse("rivers[].best_cfs", "1.200,5", cfs()), 1200.5);
+    // Metric: 1,000 cfs is 28.3 m3/s.
+    assert_eq!(
+        format("rivers[].blown_out_above_cfs", 1000.0, metric()),
+        "28 m³/s"
+    );
+    close(
+        parse("rivers[].blown_out_above_cfs", "28,3", metric()),
+        999.5,
+    );
+    close(
+        parse("rivers[].blown_out_above_cfs", "1500 cfs", metric()),
+        1500.0,
+    );
+    let stops = setting_stops("rivers[].wadeable_below_cfs".into(), 0.0, 2000.0, metric()).unwrap();
+    assert_eq!(stops.first().unwrap().value, 0.0);
+    assert!(stops.len() >= 3);
+    // Stops carry cfs values and m3/s labels.
+    let second = &stops[1];
+    assert_eq!(
+        second.label,
+        format("rivers[].wadeable_below_cfs", second.value, metric())
+    );
+    assert!(second.label.ends_with("m³/s"));
+    assert!(second.value > 100.0 && second.value < 1500.0);
+    // In cfs the stops are round numbers.
+    let cfs_stops = setting_stops("rivers[].best_cfs".into(), 0.0, 2000.0, cfs()).unwrap();
+    let values: Vec<f64> = cfs_stops.iter().map(|s| s.value).collect();
+    assert_eq!(values, [0.0, 500.0, 1000.0, 1500.0, 2000.0]);
+    assert_eq!(cfs_stops[1].label, "500 cfs");
+}
+
+#[test]
+fn km_fields_follow_the_distance_unit() {
+    // Default distance unit is miles.
+    assert_eq!(
+        format("sources.tide.max_distance_km", 16.09344, cfs()),
+        "10 mi"
+    );
+    close(parse("sources.tide.max_distance_km", "10", cfs()), 16.09344);
+    close(
+        parse("limits[].min_visibility_km", "5 mi", metric()),
+        8.04672,
+    );
+    assert_eq!(
+        parse("storms.hurricane_distance_km", "3000", metric()),
+        3000.0
+    );
+    assert_eq!(
+        format("storms.hurricane_distance_km", 3000.0, metric()),
+        "3000 km"
+    );
+    assert_eq!(parse("limits[].min_visibility_km", "1,5", metric()), 1.5);
+    let stops = setting_stops("sources.flow.max_distance_km".into(), 0.0, 100.0, metric()).unwrap();
+    let values: Vec<f64> = stops.iter().map(|s| s.value).collect();
+    assert_eq!(values, [0.0, 50.0, 100.0]);
+    assert_eq!(stops[1].label, "50 km");
+}
+
+#[test]
+fn temperature_fields_follow_the_temperature_unit() {
+    // Stored in °C; the defaults read °F.
+    assert_eq!(format("limits[].min_air_temp_c", 0.0, cfs()), "32 °F");
+    close(parse("limits[].min_air_temp_c", "50", cfs()), 10.0);
+    close(parse("thresholds.trout_stress_c", "68 °F", metric()), 20.0);
+    assert_eq!(parse("thresholds.trout_stress_c", "20", metric()), 20.0);
+    assert_eq!(
+        format("thresholds.trout_stress_c", 20.0, metric()),
+        "20.0 °C"
+    );
+    close(parse("thresholds.trout_stress_c", "20,5", metric()), 20.5);
+    let stops = setting_stops("thresholds.trout_stress_c".into(), 10.0, 30.0, metric()).unwrap();
+    let values: Vec<f64> = stops.iter().map(|s| s.value).collect();
+    assert_eq!(values, [10.0, 15.0, 20.0, 25.0, 30.0]);
+}
+
+#[test]
+fn wave_heights_follow_the_height_unit() {
+    assert_eq!(format("limits[].max_wave_m", 1.0, cfs()), "3.3 ft");
+    close(parse("limits[].max_wave_m", "3.3", cfs()), 1.006);
+    assert_eq!(parse("limits[].max_wave_m", "1,2", metric()), 1.2);
+}
+
+#[test]
+fn minute_fields_are_durations() {
+    let f = |m| format("sources.tide.max_age_minutes", m, cfs());
+    assert_eq!(f(45.0), "45 min");
+    assert_eq!(f(90.0), "90 min");
+    assert_eq!(f(360.0), "6 h");
+    assert_eq!(f(2880.0), "2 d");
+    assert_eq!(parse("sources.tide.max_age_minutes", "45", cfs()), 45.0);
+    assert_eq!(parse("sources.tide.max_age_minutes", "2 h", cfs()), 120.0);
+    assert_eq!(parse("sources.tide.max_age_minutes", "1,5 h", cfs()), 90.0);
+    assert_eq!(parse("sources.tide.max_age_minutes", "1 d", cfs()), 1440.0);
+    assert_eq!(parse("sources.tide.max_age_minutes", "30 min", cfs()), 30.0);
+    assert!(
+        parse_setting_value("sources.tide.max_age_minutes".into(), "soon".into(), cfs()).is_err()
+    );
+    for m in [15.0, 90.0, 720.0, 4320.0] {
+        assert_eq!(parse("sources.tide.max_age_minutes", &f(m), cfs()), m);
+    }
+    let stops = setting_stops("sources.tide.max_age_minutes".into(), 0.0, 360.0, cfs()).unwrap();
+    let values: Vec<f64> = stops.iter().map(|s| s.value).collect();
+    assert_eq!(values, [0.0, 120.0, 240.0, 360.0]);
+    assert_eq!(stops[1].label, "2 h");
+    assert!(setting_stops("sources.tide.max_age_minutes".into(), 5.0, 5.0, cfs()).is_err());
+}
+
+#[test]
+fn durations_come_from_the_core() {
+    assert_eq!(format_duration(2700, cfs()).unwrap(), "45 min");
+    assert_eq!(format_duration(21_600, cfs()).unwrap(), "6 h");
+    assert_eq!(format_duration(172_800, cfs()).unwrap(), "2 d");
+}
+
+#[test]
+fn the_old_value_entry_still_reads_thousands_commas() {
+    let v = parse_user_value("discharge".into(), "1,200".into(), cfs()).unwrap();
+    assert!((v - 33.98).abs() < 0.01, "{v}");
 }

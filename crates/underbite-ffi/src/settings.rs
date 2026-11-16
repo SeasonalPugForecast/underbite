@@ -492,7 +492,19 @@ pub fn parse_user_value(
     settings_json: String,
 ) -> Result<f64, SettingsError> {
     let (units, kind) = units_and_kind(&measurement, &settings_json)?;
-    let mut unit = Unit::selected(kind, &units);
+    let (value, unit) = parse_typed(kind, Unit::selected(kind, &units), &text, false)?;
+    Ok(unit.to_canonical(value))
+}
+
+/// The number in `text` and the unit it is in: a trailing symbol of the kind's units wins over
+/// `default`. With `decimal_comma` a lone comma that does not group thousands is a decimal point.
+fn parse_typed(
+    kind: Kind,
+    default: Unit,
+    text: &str,
+    decimal_comma: bool,
+) -> Result<(f64, Unit), SettingsError> {
+    let mut unit = default;
     let mut number = text.trim();
     let lower = number.to_lowercase();
     // The longest symbol first, so "m³/s" is not read as ending in "s".
@@ -509,15 +521,33 @@ pub fn parse_user_value(
         unit = *found;
         number = number[..number.len() - symbol.len()].trim_end();
     }
-    let cleaned: String = number.chars().filter(|c| *c != ',').collect();
-    let value: f64 = cleaned
-        .trim()
-        .parse()
-        .map_err(|_| invalid(format!("`{}` is not a number", text.trim())))?;
-    if !value.is_finite() {
-        return Err(invalid(format!("`{}` is not a number", text.trim())));
-    }
-    Ok(unit.to_canonical(value))
+    let value = parse_number(number, decimal_comma)
+        .ok_or_else(|| invalid(format!("`{}` is not a number", text.trim())))?;
+    Ok((value, unit))
+}
+
+/// A finite number from text: thousands separators dropped, and with `decimal_comma` a comma
+/// that is not a thousands group ("1,5", "0,500", "1.200,5") read as the decimal point.
+fn parse_number(text: &str, decimal_comma: bool) -> Option<f64> {
+    let text = text.trim();
+    let comma_is_decimal = decimal_comma
+        && match (text.rfind(','), text.rfind('.')) {
+            (Some(c), Some(d)) => c > d,
+            (Some(c), None) => {
+                text.matches(',').count() == 1
+                    && (text.len() - c - 1 != 3 || text[..c].trim_start_matches('-') == "0")
+            }
+            _ => false,
+        };
+    let cleaned: String = if comma_is_decimal {
+        text.chars()
+            .filter(|c| *c != '.')
+            .map(|c| if c == ',' { '.' } else { c })
+            .collect()
+    } else {
+        text.chars().filter(|c| *c != ',').collect()
+    };
+    cleaned.trim().parse::<f64>().ok().filter(|v| v.is_finite())
 }
 
 /// One stop of a slider or a range editor: a canonical value and its label.
@@ -541,14 +571,19 @@ pub fn display_stops(
 ) -> Result<Vec<DisplayStop>, SettingsError> {
     let (units, kind) = units_and_kind(&measurement, &settings_json)?;
     let unit = Unit::selected(kind, &units);
-    let (low, high) = (unit.to_display(min), unit.to_display(max));
-    if !(low.is_finite() && high.is_finite() && high > low) {
-        return Err(invalid("the range needs a minimum below its maximum"));
-    }
+    Ok(stops_between(kind, &units, unit, min, max)?
+        .into_iter()
+        .map(|(value, label)| DisplayStop { value, label })
+        .collect())
+}
+
+/// The step of round stops across `low..high`: 1, 2, 5 or 10 times a power of ten, giving about
+/// four intervals.
+fn round_step(low: f64, high: f64) -> f64 {
     let raw = (high - low) / 4.0;
     let magnitude = 10f64.powf(raw.log10().floor());
     let normal = raw / magnitude;
-    let step = magnitude
+    magnitude
         * if normal <= 1.0 {
             1.0
         } else if normal <= 2.0 {
@@ -557,16 +592,28 @@ pub fn display_stops(
             5.0
         } else {
             10.0
-        };
-    let formatter = Formatter::new(units, Voice::Plain, TimeFormat::H12, "UTC");
+        }
+}
+
+/// Round stops of `unit` between two canonical values, as canonical values with their labels.
+fn stops_between(
+    kind: Kind,
+    units: &DisplayUnits,
+    unit: Unit,
+    min: f64,
+    max: f64,
+) -> Result<Vec<(f64, String)>, SettingsError> {
+    let (low, high) = (unit.to_display(min), unit.to_display(max));
+    if !(low.is_finite() && high.is_finite() && high > low) {
+        return Err(invalid("the range needs a minimum below its maximum"));
+    }
+    let step = round_step(low, high);
+    let formatter = Formatter::new(*units, Voice::Plain, TimeFormat::H12, "UTC");
     let mut stops = Vec::new();
     let mut k = (low / step).ceil();
     while k * step <= high + step * 1e-9 && stops.len() < 64 {
         let value = unit.to_canonical(k * step);
-        stops.push(DisplayStop {
-            value,
-            label: label(&formatter, kind, value),
-        });
+        stops.push((value, label(&formatter, kind, value)));
         k += 1.0;
     }
     Ok(stops)
@@ -593,6 +640,288 @@ fn label(f: &Formatter, kind: Kind, canonical: f64) -> String {
         Kind::Distance => f.distance(v),
     };
     format!("{} {}", q.text, q.unit)
+}
+
+// ---------------------------------------------------------------------------------------------
+// Settings fields
+// ---------------------------------------------------------------------------------------------
+//
+// A settings field keeps its value in the unit its name says (`max_wind_kn` in knots,
+// `wadeable_below_cfs` in cfs, `max_distance_km` in km, `max_age_minutes` in minutes). The
+// functions below take such a value and the field's key, and speak the user's unit in text:
+// Swift holds the stored value, shows the core's label and never converts.
+//
+// A key is the field's path in the settings with list positions written `[]`:
+// `limits[].max_wind_kn`, `rivers[].best_cfs`, `thresholds.trout_stress_c`,
+// `storms.hurricane_distance_km`, `sources.<group>.max_distance_km` and
+// `sources.<group>.max_age_minutes` for every source group. A position (`limits[2].max_wind_kn`)
+// is accepted and ignored. [`setting_field_keys`] lists every key.
+
+/// The source groups of `[sources]` that carry the distance and age limits.
+const SOURCE_GROUPS: [&str; 12] = [
+    "water_temperature",
+    "tide",
+    "currents",
+    "flow",
+    "lake_level",
+    "waves",
+    "sst",
+    "clarity",
+    "water_quality",
+    "marine_forecast",
+    "weather",
+    "storm",
+];
+
+/// The unit family of a settings field.
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum FieldUnit {
+    /// A measure of `kind`, stored in `stored`.
+    Measure(Kind, Unit),
+    /// Minutes, shown as a duration.
+    Minutes,
+}
+
+const WIND: FieldUnit = FieldUnit::Measure(Kind::WindSpeed, Unit::Speed(SpeedUnit::Kn));
+const CURRENT: FieldUnit = FieldUnit::Measure(Kind::CurrentSpeed, Unit::Speed(SpeedUnit::Kn));
+const FLOW: FieldUnit = FieldUnit::Measure(Kind::Discharge, Unit::Discharge(DischargeUnit::Cfs));
+const KM: FieldUnit = FieldUnit::Measure(Kind::Distance, Unit::Distance(DistanceUnit::Km));
+
+/// The keys that do not depend on a source group, with their units.
+const FIXED_FIELDS: [(&str, FieldUnit); 10] = [
+    ("limits[].max_wind_kn", WIND),
+    ("limits[].max_gust_kn", WIND),
+    (
+        "limits[].max_wave_m",
+        FieldUnit::Measure(Kind::Waves, Unit::Height(HeightUnit::M)),
+    ),
+    ("limits[].max_current_kn", CURRENT),
+    (
+        "limits[].min_air_temp_c",
+        FieldUnit::Measure(Kind::AirTemp, Unit::Temp(TempUnit::C)),
+    ),
+    ("limits[].min_visibility_km", KM),
+    ("rivers[].wadeable_below_cfs", FLOW),
+    ("rivers[].best_cfs", FLOW),
+    ("rivers[].blown_out_above_cfs", FLOW),
+    ("storms.hurricane_distance_km", KM),
+];
+
+/// `thresholds.trout_stress_c`, a water temperature.
+const TROUT_STRESS: (&str, FieldUnit) = (
+    "thresholds.trout_stress_c",
+    FieldUnit::Measure(Kind::WaterTemp, Unit::Temp(TempUnit::C)),
+);
+
+/// Every settings field key the functions here take: the limits, river ranges, thresholds, the
+/// storm distance and, for each source group, `sources.<group>.max_distance_km` and
+/// `sources.<group>.max_age_minutes`.
+#[uniffi::export]
+pub fn setting_field_keys() -> Vec<String> {
+    let mut keys: Vec<String> = FIXED_FIELDS.iter().map(|(k, _)| (*k).to_owned()).collect();
+    keys.push(TROUT_STRESS.0.to_owned());
+    for group in SOURCE_GROUPS {
+        keys.push(format!("sources.{group}.max_distance_km"));
+        keys.push(format!("sources.{group}.max_age_minutes"));
+    }
+    keys
+}
+
+/// The unit family of a field key, list positions ignored.
+fn field_unit(field: &str) -> Result<FieldUnit, SettingsError> {
+    let mut key = String::with_capacity(field.len());
+    let mut rest = field.trim();
+    while let Some(open) = rest.find('[') {
+        key.push_str(&rest[..open]);
+        let Some(close) = rest[open..].find(']') else {
+            break;
+        };
+        key.push_str("[]");
+        rest = &rest[open + close + 1..];
+    }
+    key.push_str(rest);
+    if let Some((_, unit)) = FIXED_FIELDS.iter().find(|(k, _)| *k == key) {
+        return Ok(*unit);
+    }
+    if key == TROUT_STRESS.0 {
+        return Ok(TROUT_STRESS.1);
+    }
+    if let Some(rest) = key.strip_prefix("sources.")
+        && let Some((group, name)) = rest.split_once('.')
+        && SOURCE_GROUPS.contains(&group)
+    {
+        match name {
+            "max_distance_km" => return Ok(KM),
+            "max_age_minutes" => return Ok(FieldUnit::Minutes),
+            _ => {}
+        }
+    }
+    Err(invalid(format!(
+        "`{field}` is not a settings field with a value to enter"
+    )))
+}
+
+/// Six significant digits: undoes the single-precision round trip of a unit conversion.
+fn tidy(v: f64) -> f64 {
+    if v == 0.0 || !v.is_finite() {
+        return v;
+    }
+    let scale = 10f64.powf(5.0 - v.abs().log10().floor());
+    (v * scale).round() / scale
+}
+
+/// A value of the field's stored unit in the unit `selected`.
+fn stored_to_selected(stored: Unit, selected: Unit, v: f64) -> f64 {
+    if stored == selected {
+        v
+    } else {
+        tidy(selected.to_display(stored.to_canonical(v)))
+    }
+}
+
+/// Minutes from text: a number, optionally with `min`, `h` or `d` after it.
+fn parse_minutes(text: &str) -> Result<f64, SettingsError> {
+    let lower = text.trim().to_lowercase();
+    let units: [(&[&str], f64); 3] = [
+        (&["days", "day", "d"], 1_440.0),
+        (&["hours", "hour", "hrs", "hr", "h"], 60.0),
+        (&["minutes", "minute", "mins", "min", "m"], 1.0),
+    ];
+    let mut number = lower.as_str();
+    let mut factor = 1.0;
+    'found: for (suffixes, f) in units {
+        for suffix in suffixes {
+            if let Some(n) = lower.strip_suffix(suffix) {
+                number = n;
+                factor = f;
+                break 'found;
+            }
+        }
+    }
+    let v = parse_number(number, true)
+        .ok_or_else(|| invalid(format!("`{}` is not a number", text.trim())))?;
+    Ok(tidy(v * factor))
+}
+
+/// Steps for minute stops that a clock reads easily: minutes, quarter hours, hours, days.
+const MINUTE_STEPS: [f64; 14] = [
+    1.0, 2.0, 5.0, 10.0, 15.0, 30.0, 60.0, 120.0, 180.0, 360.0, 720.0, 1_440.0, 2_880.0, 10_080.0,
+];
+
+/// What the user typed for a settings field, as the value in the field's stored unit. The text
+/// is a number in the user's unit for that kind of value, with a decimal point or comma, and may
+/// end with a unit symbol that then overrides it: "15" with knots chosen reads 15 for
+/// `limits[].max_wind_kn`, "30 mph" reads 26.07; "1,5" is 1.5. For a field in minutes the text
+/// may end with `min`, `h` or `d`: "2 h" reads 120.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn parse_setting_value(
+    field: String,
+    text: String,
+    settings_json: String,
+) -> Result<f64, SettingsError> {
+    match field_unit(&field)? {
+        FieldUnit::Minutes => parse_minutes(&text),
+        FieldUnit::Measure(kind, stored) => {
+            let (config, _) = load(&settings_json)?;
+            let units = config.units.display_units();
+            let (value, used) = parse_typed(kind, Unit::selected(kind, &units), &text, true)?;
+            Ok(if used == stored {
+                value
+            } else {
+                tidy(stored.to_display(used.to_canonical(value)))
+            })
+        }
+    }
+}
+
+/// A value of a settings field (in the field's stored unit) as the core writes it in the user's
+/// unit: "15 kn", "1,200 cfs", "3.3 ft", "54 °F", "2 h".
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn format_setting_value(
+    field: String,
+    value: f64,
+    settings_json: String,
+) -> Result<String, SettingsError> {
+    let (config, _) = load(&settings_json)?;
+    match field_unit(&field)? {
+        FieldUnit::Minutes => Ok(duration_text(&config, value * 60.0)),
+        FieldUnit::Measure(kind, stored) => {
+            let units = config.units.display_units();
+            let formatter = Formatter::new(units, Voice::Plain, TimeFormat::H12, "UTC");
+            Ok(label(&formatter, kind, stored.to_canonical(value)))
+        }
+    }
+}
+
+/// Round stops for a slider or range editor on a settings field, between `min` and `max` (in the
+/// field's stored unit): the value to store (in the stored unit) and the label in the user's unit.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn setting_stops(
+    field: String,
+    min: f64,
+    max: f64,
+    settings_json: String,
+) -> Result<Vec<DisplayStop>, SettingsError> {
+    let (config, _) = load(&settings_json)?;
+    match field_unit(&field)? {
+        FieldUnit::Minutes => {
+            if !(min.is_finite() && max.is_finite() && max > min) {
+                return Err(invalid("the range needs a minimum below its maximum"));
+            }
+            let raw = (max - min) / 4.0;
+            let step = MINUTE_STEPS
+                .into_iter()
+                .find(|s| *s >= raw)
+                .unwrap_or(MINUTE_STEPS[MINUTE_STEPS.len() - 1]);
+            let mut stops = Vec::new();
+            let mut k = (min / step).ceil();
+            while k * step <= max + 1e-9 && stops.len() < 64 {
+                let value = k * step;
+                stops.push(DisplayStop {
+                    value,
+                    label: duration_text(&config, value * 60.0),
+                });
+                k += 1.0;
+            }
+            Ok(stops)
+        }
+        FieldUnit::Measure(kind, stored) => {
+            let units = config.units.display_units();
+            let selected = Unit::selected(kind, &units);
+            let stops = stops_between(
+                kind,
+                &units,
+                selected,
+                stored.to_canonical(min),
+                stored.to_canonical(max),
+            )?;
+            Ok(stops
+                .into_iter()
+                .map(|(canonical, label)| DisplayStop {
+                    value: stored_to_selected(selected, stored, selected.to_display(canonical)),
+                    label,
+                })
+                .collect())
+        }
+    }
+}
+
+fn duration_text(config: &Config, seconds: f64) -> String {
+    let units = config.units.display_units();
+    Formatter::new(units, config.presentation.voice, TimeFormat::H12, "UTC")
+        .duration(seconds.round() as i64)
+}
+
+/// A time span as the core writes it: "45 min", "6 h", "2 d". The largest unit that divides the
+/// span evenly, minutes otherwise, in the user's voice.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn format_duration(seconds: i64, settings_json: String) -> Result<String, SettingsError> {
+    let (config, _) = load(&settings_json)?;
+    Ok(duration_text(&config, seconds as f64))
 }
 
 // ---------------------------------------------------------------------------------------------
