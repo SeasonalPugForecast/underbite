@@ -891,7 +891,17 @@ fn is_empty(value: &FragmentValue) -> bool {
                 && c.observed.as_ref().is_none_or(Series::is_empty)
         }
         V::ZoneForecast(z) => z.periods.is_empty(),
-        V::FloodCategories(f) => *f == FloodCategories::default(),
+        // The gauge's provenance alone is not a threshold.
+        V::FloodCategories(f) => {
+            let FloodCategories {
+                action,
+                minor,
+                moderate,
+                major,
+                provenance: _,
+            } = f;
+            [action, minor, moderate, major].iter().all(|h| h.is_none())
+        }
         V::Alerts(_) | V::Percentile(_) | V::Coverage { .. } => false,
     }
 }
@@ -1671,6 +1681,23 @@ mod tests {
             .iter()
             .filter(|x| x.value.dominant_period_s.is_some());
         assert_eq!(periods.count(), waves.samples().len());
+    }
+
+    #[test]
+    fn flood_categories_without_thresholds_are_empty_whatever_their_provenance() {
+        let gauge = FloodCategories {
+            provenance: Some(provenance(ValueKind::Observed, Quality::Provisional)),
+            ..FloodCategories::default()
+        };
+        assert!(is_empty(&FragmentValue::FloodCategories(gauge.clone())));
+        let action = FloodCategories {
+            action: Some(underbite_core::datum::Height {
+                datum: VerticalDatum::Gauge,
+                metres: 3.0,
+            }),
+            ..gauge
+        };
+        assert!(!is_empty(&FragmentValue::FloodCategories(action)));
     }
 
     #[test]
