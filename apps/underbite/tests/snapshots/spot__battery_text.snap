@@ -48,6 +48,17 @@ Current Flood 1.1 kn toward N 11° · Hudson River Entrance · 0.5 mi
 Not for navigation.
 Credit: Tide, water-level and current data: NOAA/NOS CO-OPS (https://tidesandcurrents.noaa.gov/)
 
+== Wind ==
+16 kn
+From WNW 290°
+Gusts 18 kn
+  gust: 18 kn
+  Source
+    Station: 8530973 - Robbins Reef, NJ (observed 8:54 AM)
+  speed: 16 kn
+Wind 16 kn · 8530973 - Robbins Reef, NJ · 4.1 mi downstream · 36 min ago
+Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa.gov/)
+
 == Water temperature ==
 60 °F
 Steady over 3 h
@@ -60,12 +71,12 @@ Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa
 
 == Waves ==
 3.6 ft
-from WNW 296°
+4.0 s · from WNW 296°
 Modelled 0.8 ft
   Sources
     Buoy: New York Harbor Entrance - 15 NM SE of Breezy Point , NY (28 mi)
     Model: Open-Meteo Marine (modelled)
-Waves 3.6 ft · New York Harbor Entrance - 15 NM SE of Breezy Point , NY · 28 mi · 50 min ago
+Waves 3.6 ft · New York Harbor Entrance - 15 NM SE of Breezy Point , NY · 28 mi · 40 min ago
 Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa.gov/)
 Credit: Weather data by Open-Meteo.com. Marine models: Copernicus Marine Service, ECMWF, NOAA NCEP, DWD, Copernicus Climate Change Service. Modelled, not suitable for coastal navigation. (https://open-meteo.com/)
 
@@ -119,6 +130,6 @@ Credit: Sun and moon positions from astronomical algorithms
   Water temperature, Pressure: 8518750 - The Battery, NY (NOAA NDBC, 0.2 mi, 42 min ago)
   Tide: NEW YORK (The Battery) (NOAA CO-OPS, 0.2 mi, —)
   Tidal current: Hudson River Entrance (NOAA CO-OPS, 0.5 mi, —)
-  Waves: New York Harbor Entrance - 15 NM SE of Breezy Point , NY (NOAA NDBC, 28 mi, 50 min ago)
-  Wind: 8530973 - Robbins Reef, NJ (NOAA NDBC, 4.1 mi, —)
+  Waves: New York Harbor Entrance - 15 NM SE of Breezy Point , NY (NOAA NDBC, 28 mi, 40 min ago)
+  Wind: 8530973 - Robbins Reef, NJ (NOAA NDBC, 4.1 mi, 36 min ago)
 Not for navigation.

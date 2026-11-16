@@ -94,7 +94,7 @@ status = 404
 
 [[route]]
 match = "realtime2/44065.txt"
-file = "../../raw/ndbc/ndbc-44065-head300-2026-11-15.txt"
+file = "../../raw/ndbc/ndbc-44065-head300.txt"
 
 [[route]]
 match = "realtime2/44065.spec"
@@ -102,19 +102,19 @@ file = "../../raw/ndbc/ndbc-44065-spec-head150.spec"
 
 [[route]]
 match = "realtime2/ROBN4.txt"
-file = "../../raw/ndbc/ndbc-ROBN4-head300.txt"
+file = "../../raw/ndbc/ndbc-ROBN4-2026-11-08.txt"
 
 [[route]]
 match = "realtime2/MHRN6.txt"
-file = "../../raw/ndbc/ndbc-MHRN6-head300.txt"
+file = "../../raw/ndbc/ndbc-MHRN6-2026-11-08.txt"
 
 [[route]]
 match = "realtime2/KPTN6.txt"
-file = "../../raw/ndbc/ndbc-KPTN6-head300.txt"
+file = "../../raw/ndbc/ndbc-KPTN6-2026-11-08.txt"
 
 [[route]]
 match = "realtime2/SDHN4.txt"
-file = "../../raw/ndbc/ndbc-SDHN4-head300.txt"
+file = "../../raw/ndbc/ndbc-SDHN4-2026-11-08.txt"
 
 [[route]]
 match = "realtime2/BATN6.txt"

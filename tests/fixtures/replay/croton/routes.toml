@@ -49,6 +49,14 @@ file = "../../raw/hydro/hydro-50-wptn6-geom.json"
 match = "geometry=-73.96000,41.39000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
 file = "../../raw/hydro/hydro-60-wptn6-geom.json"
 
+[[route]]
+match = "geometry=-73.62625,41.24027,-73.57375,41.27973&"
+file = "../../raw/hydro/hydro-50-xrvn6-geom.json"
+
+[[route]]
+match = "geometry=-73.60000,41.26000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
+file = "../../raw/hydro/hydro-60-xrvn6-geom.json"
+
 # USGS water data: the specific collections first, the site lookup last.
 [[route]]
 match = "collections/latest-continuous"

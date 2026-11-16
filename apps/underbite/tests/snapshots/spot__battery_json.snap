@@ -50,7 +50,7 @@ expression: json
             "text": "Provisional data, subject to revision."
           }
         ],
-        "accessibility": "Now. Tide 3.8 ft MLLW. Water temperature 60 °F. Current 1.1 kn. Sun and moon 1%."
+        "accessibility": "Now. Tide 3.8 ft MLLW. Water temperature 60 °F. Current 1.1 kn. Wind 16 kn. Sun and moon 1%."
       },
       "compact": {
         "headline": {
@@ -101,6 +101,19 @@ expression: json
               "unit": "kn"
             },
             "line": "Flood 1.1 kn toward N 11°",
+            "state": {
+              "state": "fresh"
+            }
+          },
+          {
+            "card": "wind",
+            "label": "Wind",
+            "headline": {
+              "value": 15.939525,
+              "text": "16",
+              "unit": "kn"
+            },
+            "line": "From WNW 290°",
             "state": {
               "state": "fresh"
             }
@@ -3043,6 +3056,1076 @@ expression: json
       }
     },
     {
+      "card": "wind",
+      "chrome": {
+        "id": "wind",
+        "title": "Wind",
+        "footnote": "Wind 16 kn · 8530973 - Robbins Reef, NJ · 4.1 mi downstream · 36 min ago",
+        "credits": [
+          {
+            "source": "NOAA NDBC",
+            "text": "Buoy observations: NOAA National Data Buoy Center",
+            "link": "https://www.ndbc.noaa.gov/",
+            "licence": null
+          }
+        ],
+        "state": {
+          "state": "fresh"
+        },
+        "notices": [],
+        "accessibility": "Wind observed: 16 kn from WNW 290°, gusts 18 kn."
+      },
+      "compact": {
+        "headline": {
+          "value": 15.939525,
+          "text": "16",
+          "unit": "kn"
+        },
+        "lines": [
+          "From WNW 290°",
+          "Gusts 18 kn"
+        ],
+        "spark": [
+          11.079913,
+          9.913607,
+          9.913607,
+          12.051835,
+          13.99568,
+          13.99568,
+          14.967602,
+          14.967602,
+          17.105831,
+          15.939525,
+          15.939525,
+          13.99568,
+          13.99568,
+          13.99568,
+          13.023758,
+          13.023758,
+          12.051835,
+          13.023758,
+          13.99568,
+          13.99568,
+          13.99568,
+          13.99568,
+          13.99568,
+          14.967602,
+          15.939525
+        ]
+      },
+      "full": {
+        "basis": "observed",
+        "speed": {
+          "value": 15.939525,
+          "text": "16",
+          "unit": "kn"
+        },
+        "gust": {
+          "value": 18.077755,
+          "text": "18",
+          "unit": "kn"
+        },
+        "direction": "WNW 290°",
+        "from_deg": 290.0,
+        "hours": [
+          {
+            "t": 1794137400,
+            "time": "6:30 AM",
+            "speed": {
+              "value": 11.079913,
+              "text": "11",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 13.023758,
+              "text": "13",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794137760,
+            "time": "6:36 AM",
+            "speed": {
+              "value": 9.913607,
+              "text": "10",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 12.051835,
+              "text": "12",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794138120,
+            "time": "6:42 AM",
+            "speed": {
+              "value": 9.913607,
+              "text": "10",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 12.051835,
+              "text": "12",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794138480,
+            "time": "6:48 AM",
+            "speed": {
+              "value": 12.051835,
+              "text": "12",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 13.023758,
+              "text": "13",
+              "unit": "kn"
+            },
+            "direction": "W 270°",
+            "from_deg": 270.0
+          },
+          {
+            "t": 1794138840,
+            "time": "6:54 AM",
+            "speed": {
+              "value": 13.99568,
+              "text": "14",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 14.967602,
+              "text": "15",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794139200,
+            "time": "7:00 AM",
+            "speed": {
+              "value": 13.99568,
+              "text": "14",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 15.939525,
+              "text": "16",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794139560,
+            "time": "7:06 AM",
+            "speed": {
+              "value": 14.967602,
+              "text": "15",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 17.105831,
+              "text": "17",
+              "unit": "kn"
+            },
+            "direction": "W 270°",
+            "from_deg": 270.0
+          },
+          {
+            "t": 1794139920,
+            "time": "7:12 AM",
+            "speed": {
+              "value": 14.967602,
+              "text": "15",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 18.077755,
+              "text": "18",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794140280,
+            "time": "7:18 AM",
+            "speed": {
+              "value": 17.105831,
+              "text": "17",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 19.049677,
+              "text": "19",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794140640,
+            "time": "7:24 AM",
+            "speed": {
+              "value": 15.939525,
+              "text": "16",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 18.077755,
+              "text": "18",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794141000,
+            "time": "7:30 AM",
+            "speed": {
+              "value": 15.939525,
+              "text": "16",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 17.105831,
+              "text": "17",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794141360,
+            "time": "7:36 AM",
+            "speed": {
+              "value": 13.99568,
+              "text": "14",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 17.105831,
+              "text": "17",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794141720,
+            "time": "7:42 AM",
+            "speed": {
+              "value": 13.99568,
+              "text": "14",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 15.939525,
+              "text": "16",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794142080,
+            "time": "7:48 AM",
+            "speed": {
+              "value": 13.99568,
+              "text": "14",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 15.939525,
+              "text": "16",
+              "unit": "kn"
+            },
+            "direction": "W 270°",
+            "from_deg": 270.0
+          },
+          {
+            "t": 1794142440,
+            "time": "7:54 AM",
+            "speed": {
+              "value": 13.023758,
+              "text": "13",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 14.967602,
+              "text": "15",
+              "unit": "kn"
+            },
+            "direction": "W 270°",
+            "from_deg": 270.0
+          },
+          {
+            "t": 1794142800,
+            "time": "8:00 AM",
+            "speed": {
+              "value": 13.023758,
+              "text": "13",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 14.967602,
+              "text": "15",
+              "unit": "kn"
+            },
+            "direction": "W 270°",
+            "from_deg": 270.0
+          },
+          {
+            "t": 1794143160,
+            "time": "8:06 AM",
+            "speed": {
+              "value": 12.051835,
+              "text": "12",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 14.967602,
+              "text": "15",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794143520,
+            "time": "8:12 AM",
+            "speed": {
+              "value": 13.023758,
+              "text": "13",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 17.105831,
+              "text": "17",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794143880,
+            "time": "8:18 AM",
+            "speed": {
+              "value": 13.99568,
+              "text": "14",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 17.105831,
+              "text": "17",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794144240,
+            "time": "8:24 AM",
+            "speed": {
+              "value": 13.99568,
+              "text": "14",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 17.105831,
+              "text": "17",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794144600,
+            "time": "8:30 AM",
+            "speed": {
+              "value": 13.99568,
+              "text": "14",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 18.077755,
+              "text": "18",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794144960,
+            "time": "8:36 AM",
+            "speed": {
+              "value": 13.99568,
+              "text": "14",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 17.105831,
+              "text": "17",
+              "unit": "kn"
+            },
+            "direction": "W 280°",
+            "from_deg": 280.0
+          },
+          {
+            "t": 1794145320,
+            "time": "8:42 AM",
+            "speed": {
+              "value": 13.99568,
+              "text": "14",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 18.077755,
+              "text": "18",
+              "unit": "kn"
+            },
+            "direction": "WNW 290°",
+            "from_deg": 290.0
+          },
+          {
+            "t": 1794145680,
+            "time": "8:48 AM",
+            "speed": {
+              "value": 14.967602,
+              "text": "15",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 18.077755,
+              "text": "18",
+              "unit": "kn"
+            },
+            "direction": "WNW 290°",
+            "from_deg": 290.0
+          },
+          {
+            "t": 1794146040,
+            "time": "8:54 AM",
+            "speed": {
+              "value": 15.939525,
+              "text": "16",
+              "unit": "kn"
+            },
+            "gust": {
+              "value": 18.077755,
+              "text": "18",
+              "unit": "kn"
+            },
+            "direction": "WNW 290°",
+            "from_deg": 290.0
+          }
+        ],
+        "chart": {
+          "title": "Wind",
+          "unit": "kn",
+          "x_ticks": [
+            {
+              "t": 1794139200,
+              "label": "7 AM",
+              "major": false
+            },
+            {
+              "t": 1794142800,
+              "label": "8 AM",
+              "major": false
+            },
+            {
+              "t": 1794146400,
+              "label": "9 AM",
+              "major": true
+            },
+            {
+              "t": 1794150000,
+              "label": "10 AM",
+              "major": false
+            },
+            {
+              "t": 1794153600,
+              "label": "11 AM",
+              "major": false
+            },
+            {
+              "t": 1794157200,
+              "label": "12 PM",
+              "major": true
+            },
+            {
+              "t": 1794160800,
+              "label": "1 PM",
+              "major": false
+            },
+            {
+              "t": 1794164400,
+              "label": "2 PM",
+              "major": false
+            },
+            {
+              "t": 1794168000,
+              "label": "3 PM",
+              "major": true
+            },
+            {
+              "t": 1794171600,
+              "label": "4 PM",
+              "major": false
+            },
+            {
+              "t": 1794175200,
+              "label": "5 PM",
+              "major": false
+            },
+            {
+              "t": 1794178800,
+              "label": "6 PM",
+              "major": true
+            },
+            {
+              "t": 1794182400,
+              "label": "7 PM",
+              "major": false
+            },
+            {
+              "t": 1794186000,
+              "label": "8 PM",
+              "major": false
+            },
+            {
+              "t": 1794189600,
+              "label": "9 PM",
+              "major": true
+            },
+            {
+              "t": 1794193200,
+              "label": "10 PM",
+              "major": false
+            },
+            {
+              "t": 1794196800,
+              "label": "11 PM",
+              "major": false
+            },
+            {
+              "t": 1794200400,
+              "label": "12 AM",
+              "major": true
+            },
+            {
+              "t": 1794204000,
+              "label": "1 AM",
+              "major": false
+            },
+            {
+              "t": 1794207600,
+              "label": "2 AM",
+              "major": false
+            },
+            {
+              "t": 1794211200,
+              "label": "3 AM",
+              "major": true
+            },
+            {
+              "t": 1794214800,
+              "label": "4 AM",
+              "major": false
+            },
+            {
+              "t": 1794218400,
+              "label": "5 AM",
+              "major": false
+            },
+            {
+              "t": 1794222000,
+              "label": "6 AM",
+              "major": true
+            },
+            {
+              "t": 1794225600,
+              "label": "7 AM",
+              "major": false
+            },
+            {
+              "t": 1794229200,
+              "label": "8 AM",
+              "major": false
+            },
+            {
+              "t": 1794232800,
+              "label": "9 AM",
+              "major": true
+            },
+            {
+              "t": 1794236400,
+              "label": "10 AM",
+              "major": false
+            },
+            {
+              "t": 1794240000,
+              "label": "11 AM",
+              "major": false
+            },
+            {
+              "t": 1794243600,
+              "label": "12 PM",
+              "major": true
+            },
+            {
+              "t": 1794247200,
+              "label": "1 PM",
+              "major": false
+            },
+            {
+              "t": 1794250800,
+              "label": "2 PM",
+              "major": false
+            },
+            {
+              "t": 1794254400,
+              "label": "3 PM",
+              "major": true
+            },
+            {
+              "t": 1794258000,
+              "label": "4 PM",
+              "major": false
+            },
+            {
+              "t": 1794261600,
+              "label": "5 PM",
+              "major": false
+            },
+            {
+              "t": 1794265200,
+              "label": "6 PM",
+              "major": true
+            },
+            {
+              "t": 1794268800,
+              "label": "7 PM",
+              "major": false
+            },
+            {
+              "t": 1794272400,
+              "label": "8 PM",
+              "major": false
+            },
+            {
+              "t": 1794276000,
+              "label": "9 PM",
+              "major": true
+            },
+            {
+              "t": 1794279600,
+              "label": "10 PM",
+              "major": false
+            },
+            {
+              "t": 1794283200,
+              "label": "11 PM",
+              "major": false
+            },
+            {
+              "t": 1794286800,
+              "label": "12 AM",
+              "major": true
+            },
+            {
+              "t": 1794290400,
+              "label": "1 AM",
+              "major": false
+            },
+            {
+              "t": 1794294000,
+              "label": "2 AM",
+              "major": false
+            },
+            {
+              "t": 1794297600,
+              "label": "3 AM",
+              "major": true
+            },
+            {
+              "t": 1794301200,
+              "label": "4 AM",
+              "major": false
+            },
+            {
+              "t": 1794304800,
+              "label": "5 AM",
+              "major": false
+            },
+            {
+              "t": 1794308400,
+              "label": "6 AM",
+              "major": true
+            },
+            {
+              "t": 1794312000,
+              "label": "7 AM",
+              "major": false
+            },
+            {
+              "t": 1794315600,
+              "label": "8 AM",
+              "major": false
+            },
+            {
+              "t": 1794319200,
+              "label": "9 AM",
+              "major": true
+            }
+          ],
+          "series": [
+            {
+              "label": "Observed wind",
+              "role": "observed",
+              "style": "line",
+              "points": [
+                {
+                  "t": 1794137400,
+                  "value": 11.079913,
+                  "label": "11 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794137760,
+                  "value": 9.913607,
+                  "label": "10 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794138120,
+                  "value": 9.913607,
+                  "label": "10 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794138480,
+                  "value": 12.051835,
+                  "label": "12 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794138840,
+                  "value": 13.99568,
+                  "label": "14 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794139200,
+                  "value": 13.99568,
+                  "label": "14 kn",
+                  "major": true
+                },
+                {
+                  "t": 1794139560,
+                  "value": 14.967602,
+                  "label": "15 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794139920,
+                  "value": 14.967602,
+                  "label": "15 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794140280,
+                  "value": 17.105831,
+                  "label": "17 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794140640,
+                  "value": 15.939525,
+                  "label": "16 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794141000,
+                  "value": 15.939525,
+                  "label": "16 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794141360,
+                  "value": 13.99568,
+                  "label": "14 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794141720,
+                  "value": 13.99568,
+                  "label": "14 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794142080,
+                  "value": 13.99568,
+                  "label": "14 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794142440,
+                  "value": 13.023758,
+                  "label": "13 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794142800,
+                  "value": 13.023758,
+                  "label": "13 kn",
+                  "major": true
+                },
+                {
+                  "t": 1794143160,
+                  "value": 12.051835,
+                  "label": "12 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794143520,
+                  "value": 13.023758,
+                  "label": "13 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794143880,
+                  "value": 13.99568,
+                  "label": "14 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794144240,
+                  "value": 13.99568,
+                  "label": "14 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794144600,
+                  "value": 13.99568,
+                  "label": "14 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794144960,
+                  "value": 13.99568,
+                  "label": "14 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794145320,
+                  "value": 13.99568,
+                  "label": "14 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794145680,
+                  "value": 14.967602,
+                  "label": "15 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794146040,
+                  "value": 15.939525,
+                  "label": "16 kn",
+                  "major": false
+                }
+              ]
+            },
+            {
+              "label": "Observed gusts",
+              "role": "observed",
+              "style": "line",
+              "points": [
+                {
+                  "t": 1794137400,
+                  "value": 13.023758,
+                  "label": "13 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794137760,
+                  "value": 12.051835,
+                  "label": "12 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794138120,
+                  "value": 12.051835,
+                  "label": "12 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794138480,
+                  "value": 13.023758,
+                  "label": "13 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794138840,
+                  "value": 14.967602,
+                  "label": "15 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794139200,
+                  "value": 15.939525,
+                  "label": "16 kn",
+                  "major": true
+                },
+                {
+                  "t": 1794139560,
+                  "value": 17.105831,
+                  "label": "17 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794139920,
+                  "value": 18.077755,
+                  "label": "18 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794140280,
+                  "value": 19.049677,
+                  "label": "19 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794140640,
+                  "value": 18.077755,
+                  "label": "18 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794141000,
+                  "value": 17.105831,
+                  "label": "17 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794141360,
+                  "value": 17.105831,
+                  "label": "17 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794141720,
+                  "value": 15.939525,
+                  "label": "16 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794142080,
+                  "value": 15.939525,
+                  "label": "16 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794142440,
+                  "value": 14.967602,
+                  "label": "15 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794142800,
+                  "value": 14.967602,
+                  "label": "15 kn",
+                  "major": true
+                },
+                {
+                  "t": 1794143160,
+                  "value": 14.967602,
+                  "label": "15 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794143520,
+                  "value": 17.105831,
+                  "label": "17 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794143880,
+                  "value": 17.105831,
+                  "label": "17 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794144240,
+                  "value": 17.105831,
+                  "label": "17 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794144600,
+                  "value": 18.077755,
+                  "label": "18 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794144960,
+                  "value": 17.105831,
+                  "label": "17 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794145320,
+                  "value": 18.077755,
+                  "label": "18 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794145680,
+                  "value": 18.077755,
+                  "label": "18 kn",
+                  "major": false
+                },
+                {
+                  "t": 1794146040,
+                  "value": 18.077755,
+                  "label": "18 kn",
+                  "major": false
+                }
+              ]
+            }
+          ],
+          "bands": [],
+          "rules": [],
+          "markers": [],
+          "now_t": 1794148200,
+          "accessibility": "Wind chart: 16 kn now."
+        },
+        "sections": [
+          {
+            "title": "Source",
+            "rows": [
+              {
+                "label": "Station",
+                "value": "8530973 - Robbins Reef, NJ",
+                "detail": "observed 8:54 AM"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "card": "water_temp",
       "chrome": {
         "id": "water_temp",
@@ -4726,7 +5809,7 @@ expression: json
       "chrome": {
         "id": "waves",
         "title": "Waves",
-        "footnote": "Waves 3.6 ft · New York Harbor Entrance - 15 NM SE of Breezy Point , NY · 28 mi · 50 min ago",
+        "footnote": "Waves 3.6 ft · New York Harbor Entrance - 15 NM SE of Breezy Point , NY · 28 mi · 40 min ago",
         "credits": [
           {
             "source": "NOAA NDBC",
@@ -4745,7 +5828,7 @@ expression: json
           "state": "fresh"
         },
         "notices": [],
-        "accessibility": "Waves 3.6 ft, from WNW 296°."
+        "accessibility": "Waves 3.6 ft, period 4.0 seconds, from WNW 296°."
       },
       "compact": {
         "headline": {
@@ -4754,12 +5837,17 @@ expression: json
           "unit": "ft"
         },
         "lines": [
-          "from WNW 296°",
+          "4.0 s · from WNW 296°",
           "Modelled 0.8 ft"
         ],
         "spark": [
           3.608924,
+          3.608924,
           3.28084,
+          3.28084,
+          3.608924,
+          3.608924,
+          3.608924,
           3.608924,
           3.608924,
           3.608924
@@ -4767,51 +5855,27 @@ expression: json
       },
       "full": {
         "observed": {
-          "t": 1794145200,
-          "time": "8:40 AM",
+          "t": 1794145800,
+          "time": "8:50 AM",
           "significant_height": {
             "value": 3.608924,
             "text": "3.6",
             "unit": "ft"
           },
-          "dominant_period": null,
+          "dominant_period": {
+            "value": 4.0,
+            "text": "4.0",
+            "unit": "s"
+          },
           "mean_period": {
             "value": 3.7,
             "text": "3.7",
             "unit": "s"
           },
           "direction": "WNW 296°",
-          "wind_waves": {
-            "label": "Wind waves",
-            "height": {
-              "value": 3.28084,
-              "text": "3.3",
-              "unit": "ft"
-            },
-            "period": {
-              "value": 4.2,
-              "text": "4.2",
-              "unit": "s"
-            },
-            "direction": "WNW"
-          },
-          "swells": [
-            {
-              "label": "Swell 1",
-              "height": {
-                "value": 0.98425204,
-                "text": "1.0",
-                "unit": "ft"
-              },
-              "period": {
-                "value": 10.8,
-                "text": "10.8",
-                "unit": "s"
-              },
-              "direction": "SE"
-            }
-          ],
-          "steepness": "Very steep"
+          "wind_waves": null,
+          "swells": [],
+          "steepness": null
         },
         "forecast": {
           "t": 1794146400,
@@ -5147,7 +6211,19 @@ expression: json
                   "major": false
                 },
                 {
+                  "t": 1794138600,
+                  "value": 3.608924,
+                  "label": "3.6 ft",
+                  "major": false
+                },
+                {
                   "t": 1794139800,
+                  "value": 3.28084,
+                  "label": "3.3 ft",
+                  "major": false
+                },
+                {
+                  "t": 1794140400,
                   "value": 3.28084,
                   "label": "3.3 ft",
                   "major": false
@@ -5159,13 +6235,31 @@ expression: json
                   "major": false
                 },
                 {
+                  "t": 1794142200,
+                  "value": 3.608924,
+                  "label": "3.6 ft",
+                  "major": false
+                },
+                {
                   "t": 1794143400,
                   "value": 3.608924,
                   "label": "3.6 ft",
                   "major": false
                 },
                 {
+                  "t": 1794144000,
+                  "value": 3.608924,
+                  "label": "3.6 ft",
+                  "major": false
+                },
+                {
                   "t": 1794145200,
+                  "value": 3.608924,
+                  "label": "3.6 ft",
+                  "major": false
+                },
+                {
+                  "t": 1794145800,
                   "value": 3.608924,
                   "label": "3.6 ft",
                   "major": false
@@ -5402,7 +6496,311 @@ expression: json
           "now_t": 1794148200,
           "accessibility": "Wave height chart."
         },
-        "period_chart": null,
+        "period_chart": {
+          "title": "Wave period",
+          "unit": "s",
+          "x_ticks": [
+            {
+              "t": 1794139200,
+              "label": "7 AM",
+              "major": false
+            },
+            {
+              "t": 1794142800,
+              "label": "8 AM",
+              "major": false
+            },
+            {
+              "t": 1794146400,
+              "label": "9 AM",
+              "major": true
+            },
+            {
+              "t": 1794150000,
+              "label": "10 AM",
+              "major": false
+            },
+            {
+              "t": 1794153600,
+              "label": "11 AM",
+              "major": false
+            },
+            {
+              "t": 1794157200,
+              "label": "12 PM",
+              "major": true
+            },
+            {
+              "t": 1794160800,
+              "label": "1 PM",
+              "major": false
+            },
+            {
+              "t": 1794164400,
+              "label": "2 PM",
+              "major": false
+            },
+            {
+              "t": 1794168000,
+              "label": "3 PM",
+              "major": true
+            },
+            {
+              "t": 1794171600,
+              "label": "4 PM",
+              "major": false
+            },
+            {
+              "t": 1794175200,
+              "label": "5 PM",
+              "major": false
+            },
+            {
+              "t": 1794178800,
+              "label": "6 PM",
+              "major": true
+            },
+            {
+              "t": 1794182400,
+              "label": "7 PM",
+              "major": false
+            },
+            {
+              "t": 1794186000,
+              "label": "8 PM",
+              "major": false
+            },
+            {
+              "t": 1794189600,
+              "label": "9 PM",
+              "major": true
+            },
+            {
+              "t": 1794193200,
+              "label": "10 PM",
+              "major": false
+            },
+            {
+              "t": 1794196800,
+              "label": "11 PM",
+              "major": false
+            },
+            {
+              "t": 1794200400,
+              "label": "12 AM",
+              "major": true
+            },
+            {
+              "t": 1794204000,
+              "label": "1 AM",
+              "major": false
+            },
+            {
+              "t": 1794207600,
+              "label": "2 AM",
+              "major": false
+            },
+            {
+              "t": 1794211200,
+              "label": "3 AM",
+              "major": true
+            },
+            {
+              "t": 1794214800,
+              "label": "4 AM",
+              "major": false
+            },
+            {
+              "t": 1794218400,
+              "label": "5 AM",
+              "major": false
+            },
+            {
+              "t": 1794222000,
+              "label": "6 AM",
+              "major": true
+            },
+            {
+              "t": 1794225600,
+              "label": "7 AM",
+              "major": false
+            },
+            {
+              "t": 1794229200,
+              "label": "8 AM",
+              "major": false
+            },
+            {
+              "t": 1794232800,
+              "label": "9 AM",
+              "major": true
+            },
+            {
+              "t": 1794236400,
+              "label": "10 AM",
+              "major": false
+            },
+            {
+              "t": 1794240000,
+              "label": "11 AM",
+              "major": false
+            },
+            {
+              "t": 1794243600,
+              "label": "12 PM",
+              "major": true
+            },
+            {
+              "t": 1794247200,
+              "label": "1 PM",
+              "major": false
+            },
+            {
+              "t": 1794250800,
+              "label": "2 PM",
+              "major": false
+            },
+            {
+              "t": 1794254400,
+              "label": "3 PM",
+              "major": true
+            },
+            {
+              "t": 1794258000,
+              "label": "4 PM",
+              "major": false
+            },
+            {
+              "t": 1794261600,
+              "label": "5 PM",
+              "major": false
+            },
+            {
+              "t": 1794265200,
+              "label": "6 PM",
+              "major": true
+            },
+            {
+              "t": 1794268800,
+              "label": "7 PM",
+              "major": false
+            },
+            {
+              "t": 1794272400,
+              "label": "8 PM",
+              "major": false
+            },
+            {
+              "t": 1794276000,
+              "label": "9 PM",
+              "major": true
+            },
+            {
+              "t": 1794279600,
+              "label": "10 PM",
+              "major": false
+            },
+            {
+              "t": 1794283200,
+              "label": "11 PM",
+              "major": false
+            },
+            {
+              "t": 1794286800,
+              "label": "12 AM",
+              "major": true
+            },
+            {
+              "t": 1794290400,
+              "label": "1 AM",
+              "major": false
+            },
+            {
+              "t": 1794294000,
+              "label": "2 AM",
+              "major": false
+            },
+            {
+              "t": 1794297600,
+              "label": "3 AM",
+              "major": true
+            },
+            {
+              "t": 1794301200,
+              "label": "4 AM",
+              "major": false
+            },
+            {
+              "t": 1794304800,
+              "label": "5 AM",
+              "major": false
+            },
+            {
+              "t": 1794308400,
+              "label": "6 AM",
+              "major": true
+            },
+            {
+              "t": 1794312000,
+              "label": "7 AM",
+              "major": false
+            },
+            {
+              "t": 1794315600,
+              "label": "8 AM",
+              "major": false
+            },
+            {
+              "t": 1794319200,
+              "label": "9 AM",
+              "major": true
+            }
+          ],
+          "series": [
+            {
+              "label": "Observed",
+              "role": "observed",
+              "style": "line",
+              "points": [
+                {
+                  "t": 1794138600,
+                  "value": 4.0,
+                  "label": "4.0 s",
+                  "major": false
+                },
+                {
+                  "t": 1794140400,
+                  "value": 4.0,
+                  "label": "4.0 s",
+                  "major": false
+                },
+                {
+                  "t": 1794142200,
+                  "value": 4.0,
+                  "label": "4.0 s",
+                  "major": false
+                },
+                {
+                  "t": 1794144000,
+                  "value": 4.0,
+                  "label": "4.0 s",
+                  "major": false
+                },
+                {
+                  "t": 1794145800,
+                  "value": 4.0,
+                  "label": "4.0 s",
+                  "major": false
+                }
+              ]
+            }
+          ],
+          "bands": [],
+          "rules": [],
+          "markers": [],
+          "now_t": 1794148200,
+          "accessibility": "Wave period chart."
+        },
         "sections": [
           {
             "title": "Sources",
@@ -6343,7 +7741,7 @@ expression: json
             "station_id": "44065",
             "source": "NOAA NDBC",
             "distance": "28 mi",
-            "age": "50 min ago",
+            "age": "40 min ago",
             "relation": "Nearby",
             "kind": "Observed",
             "state": {
@@ -6356,7 +7754,7 @@ expression: json
             "station_id": "robn4",
             "source": "NOAA NDBC",
             "distance": "4.1 mi",
-            "age": "—",
+            "age": "36 min ago",
             "relation": "Downstream",
             "kind": "Observed",
             "state": {
