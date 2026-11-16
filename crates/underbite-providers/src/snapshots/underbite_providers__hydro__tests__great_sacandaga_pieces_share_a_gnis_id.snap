@@ -1,0 +1,22 @@
+---
+source: crates/underbite-providers/src/hydro.rs
+expression: waters
+---
+- id: JOCEU
+  gnis_id: 973352
+  name: Great Sacandaga Lake
+  kind: lake
+  area_km2: 6.3999453399999995
+  rings: []
+- id: KZZHJ
+  gnis_id: ~
+  name: ~
+  kind: lake
+  area_km2: 0
+  rings: []
+- id: LS2ZK
+  gnis_id: 973352
+  name: Great Sacandaga Lake
+  kind: lake
+  area_km2: 1.90223528
+  rings: []

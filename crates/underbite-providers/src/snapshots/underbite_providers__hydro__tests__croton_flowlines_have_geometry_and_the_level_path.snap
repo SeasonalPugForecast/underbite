@@ -1,0 +1,193 @@
+---
+source: crates/underbite-providers/src/hydro.rs
+expression: summary
+---
+- - 1EPQC
+  - Croton River
+  - waterbody_connector
+  - 7
+  - 3767999
+  - 4171913
+  - 4148846
+  - 4194833
+  - - 2
+- - 1O5JH
+  - Purdy Brook
+  - surface_connector
+  - 2
+  - 4194832
+  - 4330391
+  - 4307885
+  - 4352774
+  - - 2
+- - 1Y1PM
+  - Croton River
+  - waterbody_connector
+  - 7
+  - 3767999
+  - 4009183
+  - 3985690
+  - 4032611
+  - - 173
+- - 2VYC1
+  - Croton River
+  - waterbody_connector
+  - 7
+  - 3767999
+  - 4148846
+  - 4125667
+  - 4171913
+  - - 2
+- - 4HTBD
+  - Croton River
+  - surface_connector
+  - 7
+  - 3767999
+  - 4125667
+  - 4102276
+  - 4148846
+  - - 139
+- - 4WKID
+  - Purdy Brook
+  - waterbody_connector
+  - 2
+  - 4194832
+  - 4194832
+  - 4171913
+  - 4217421
+  - - 31
+- - 6DY4L
+  - Croton River
+  - waterbody_connector
+  - 7
+  - 3767999
+  - 4055840
+  - 4032611
+  - 4079100
+  - - 317
+- - 7BYI0
+  - Croton River
+  - waterbody_connector
+  - 7
+  - 3767999
+  - 4032611
+  - 4009183
+  - 4055840
+  - - 138
+- - 7GLYY
+  - Bailey Brook
+  - channel_line
+  - 3
+  - 4217423
+  - 4262663
+  - 4239966
+  - 4285336
+  - - 583
+- - 8ETWJ
+  - Purdy Brook
+  - waterbody_connector
+  - 2
+  - 4194832
+  - 4352774
+  - 4330391
+  - 4375185
+  - - 4
+- - A5VKN
+  - Purdy Brook
+  - channel_line
+  - 2
+  - 4194832
+  - 4239961
+  - 4217421
+  - 4262657
+  - - 53
+- - AARAF
+  - Purdy Brook
+  - channel_line
+  - 2
+  - 4194832
+  - 4307885
+  - 4285330
+  - 4330391
+  - - 166
+- - AKH5G
+  - Purdy Brook
+  - channel_line
+  - 2
+  - 4194832
+  - 4217421
+  - 4194832
+  - 4239961
+  - - 279
+- - APL57
+  - Croton River
+  - waterbody_connector
+  - 7
+  - 3767999
+  - 4102276
+  - 4079100
+  - 4125667
+  - - 27
+- - B3XN7
+  - Indian Brook
+  - channel_line
+  - 1
+  - 3866398
+  - 4032615
+  - 4009185
+  - 4055844
+  - - 375
+- - BIR6E
+  - Purdy Brook
+  - waterbody_connector
+  - 1
+  - 4194832
+  - 4375185
+  - 4352774
+  - 0
+  - - 2
+- - BXAMB
+  - Purdy Brook
+  - waterbody_connector
+  - 2
+  - 4194832
+  - 4285330
+  - 4262657
+  - 4307885
+  - - 3
+- - CVDBB
+  - Indian Brook
+  - waterbody_connector
+  - 1
+  - 3866398
+  - 4079103
+  - 4055844
+  - 0
+  - - 3
+- - CZZOH
+  - Purdy Brook
+  - channel_line
+  - 2
+  - 4194832
+  - 4262657
+  - 4239961
+  - 4285330
+  - - 150
+- - DTE9J
+  - Croton River
+  - waterbody_connector
+  - 7
+  - 3767999
+  - 4079100
+  - 4055840
+  - 4102276
+  - - 120
+- - GLPE
+  - Indian Brook
+  - surface_connector
+  - 1
+  - 3866398
+  - 4055844
+  - 4032615
+  - 4079103
+  - - 2
