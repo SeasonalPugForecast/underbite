@@ -1,0 +1,564 @@
+---
+source: crates/underbite-core/src/view/cards/waves.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "waves",
+    "title": "Waves",
+    "footnote": "Waves 3.9 ft · NOAA NDBC · 19 mi · 15 min ago",
+    "credits": [
+      {
+        "source": "NOAA NDBC",
+        "text": "Observations: NOAA National Data Buoy Center",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "Open-Meteo Marine",
+        "text": "Wave model: Open-Meteo.com",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Waves 3.9 ft, period 9.0 seconds."
+  },
+  "compact": {
+    "headline": {
+      "value": 3.9370081,
+      "text": "3.9",
+      "unit": "ft"
+    },
+    "lines": [
+      "9.0 s",
+      "Modelled 3.3 ft"
+    ],
+    "spark": [
+      3.28084,
+      3.608924,
+      3.9370081
+    ]
+  },
+  "full": {
+    "observed": {
+      "t": 1793999100,
+      "time": "4:05 PM",
+      "significant_height": {
+        "value": 3.9370081,
+        "text": "3.9",
+        "unit": "ft"
+      },
+      "dominant_period": {
+        "value": 9.0,
+        "text": "9.0",
+        "unit": "s"
+      },
+      "mean_period": null,
+      "direction": null,
+      "wind_waves": {
+        "label": "Wind waves",
+        "height": {
+          "value": 1.9685041,
+          "text": "2.0",
+          "unit": "ft"
+        },
+        "period": {
+          "value": 4.0,
+          "text": "4.0",
+          "unit": "s"
+        },
+        "direction": "ESE"
+      },
+      "swells": [
+        {
+          "label": "Swell 1",
+          "height": {
+            "value": 2.952756,
+            "text": "3.0",
+            "unit": "ft"
+          },
+          "period": {
+            "value": 9.1,
+            "text": "9.1",
+            "unit": "s"
+          },
+          "direction": "SE"
+        },
+        {
+          "label": "Swell 2",
+          "height": {
+            "value": 0.656168,
+            "text": "0.7",
+            "unit": "ft"
+          },
+          "period": null,
+          "direction": null
+        }
+      ],
+      "steepness": "Very steep"
+    },
+    "forecast": {
+      "t": 1794000000,
+      "time": "4:20 PM",
+      "significant_height": {
+        "value": 3.28084,
+        "text": "3.3",
+        "unit": "ft"
+      },
+      "dominant_period": {
+        "value": 7.0,
+        "text": "7.0",
+        "unit": "s"
+      },
+      "mean_period": null,
+      "direction": "SE 135°",
+      "wind_waves": null,
+      "swells": [
+        {
+          "label": "Swell 1",
+          "height": {
+            "value": 2.624672,
+            "text": "2.6",
+            "unit": "ft"
+          },
+          "period": {
+            "value": 7.5,
+            "text": "7.5",
+            "unit": "s"
+          },
+          "direction": "SE 135°"
+        }
+      ],
+      "steepness": null
+    },
+    "height_chart": {
+      "title": "Wave height",
+      "unit": "ft",
+      "x_ticks": [
+        {
+          "t": 1793991600,
+          "label": "2 PM",
+          "major": false
+        },
+        {
+          "t": 1793995200,
+          "label": "3 PM",
+          "major": true
+        },
+        {
+          "t": 1793998800,
+          "label": "4 PM",
+          "major": false
+        },
+        {
+          "t": 1794002400,
+          "label": "5 PM",
+          "major": false
+        },
+        {
+          "t": 1794006000,
+          "label": "6 PM",
+          "major": true
+        },
+        {
+          "t": 1794009600,
+          "label": "7 PM",
+          "major": false
+        },
+        {
+          "t": 1794013200,
+          "label": "8 PM",
+          "major": false
+        },
+        {
+          "t": 1794016800,
+          "label": "9 PM",
+          "major": true
+        },
+        {
+          "t": 1794020400,
+          "label": "10 PM",
+          "major": false
+        },
+        {
+          "t": 1794024000,
+          "label": "11 PM",
+          "major": false
+        },
+        {
+          "t": 1794027600,
+          "label": "12 AM",
+          "major": true
+        },
+        {
+          "t": 1794031200,
+          "label": "1 AM",
+          "major": false
+        },
+        {
+          "t": 1794034800,
+          "label": "2 AM",
+          "major": false
+        },
+        {
+          "t": 1794038400,
+          "label": "3 AM",
+          "major": true
+        },
+        {
+          "t": 1794042000,
+          "label": "4 AM",
+          "major": false
+        },
+        {
+          "t": 1794045600,
+          "label": "5 AM",
+          "major": false
+        },
+        {
+          "t": 1794049200,
+          "label": "6 AM",
+          "major": true
+        },
+        {
+          "t": 1794052800,
+          "label": "7 AM",
+          "major": false
+        },
+        {
+          "t": 1794056400,
+          "label": "8 AM",
+          "major": false
+        },
+        {
+          "t": 1794060000,
+          "label": "9 AM",
+          "major": true
+        },
+        {
+          "t": 1794063600,
+          "label": "10 AM",
+          "major": false
+        },
+        {
+          "t": 1794067200,
+          "label": "11 AM",
+          "major": false
+        },
+        {
+          "t": 1794070800,
+          "label": "12 PM",
+          "major": true
+        },
+        {
+          "t": 1794074400,
+          "label": "1 PM",
+          "major": false
+        },
+        {
+          "t": 1794078000,
+          "label": "2 PM",
+          "major": false
+        },
+        {
+          "t": 1794081600,
+          "label": "3 PM",
+          "major": true
+        },
+        {
+          "t": 1794085200,
+          "label": "4 PM",
+          "major": false
+        }
+      ],
+      "series": [
+        {
+          "label": "Observed",
+          "role": "observed",
+          "style": "line",
+          "points": [
+            {
+              "t": 1793995500,
+              "value": 3.28084,
+              "label": "3.3 ft",
+              "major": false
+            },
+            {
+              "t": 1793997300,
+              "value": 3.608924,
+              "label": "3.6 ft",
+              "major": false
+            },
+            {
+              "t": 1793999100,
+              "value": 3.9370081,
+              "label": "3.9 ft",
+              "major": false
+            }
+          ]
+        },
+        {
+          "label": "Modelled",
+          "role": "modelled",
+          "style": "line",
+          "points": [
+            {
+              "t": 1793996400,
+              "value": 2.952756,
+              "label": "3.0 ft",
+              "major": false
+            },
+            {
+              "t": 1794000000,
+              "value": 3.28084,
+              "label": "3.3 ft",
+              "major": false
+            },
+            {
+              "t": 1794003600,
+              "value": 4.265092,
+              "label": "4.3 ft",
+              "major": false
+            },
+            {
+              "t": 1794007200,
+              "value": 4.92126,
+              "label": "4.9 ft",
+              "major": false
+            }
+          ]
+        }
+      ],
+      "bands": [],
+      "rules": [],
+      "markers": [],
+      "now_t": 1794000000,
+      "accessibility": "Wave height chart."
+    },
+    "period_chart": {
+      "title": "Wave period",
+      "unit": "s",
+      "x_ticks": [
+        {
+          "t": 1793991600,
+          "label": "2 PM",
+          "major": false
+        },
+        {
+          "t": 1793995200,
+          "label": "3 PM",
+          "major": true
+        },
+        {
+          "t": 1793998800,
+          "label": "4 PM",
+          "major": false
+        },
+        {
+          "t": 1794002400,
+          "label": "5 PM",
+          "major": false
+        },
+        {
+          "t": 1794006000,
+          "label": "6 PM",
+          "major": true
+        },
+        {
+          "t": 1794009600,
+          "label": "7 PM",
+          "major": false
+        },
+        {
+          "t": 1794013200,
+          "label": "8 PM",
+          "major": false
+        },
+        {
+          "t": 1794016800,
+          "label": "9 PM",
+          "major": true
+        },
+        {
+          "t": 1794020400,
+          "label": "10 PM",
+          "major": false
+        },
+        {
+          "t": 1794024000,
+          "label": "11 PM",
+          "major": false
+        },
+        {
+          "t": 1794027600,
+          "label": "12 AM",
+          "major": true
+        },
+        {
+          "t": 1794031200,
+          "label": "1 AM",
+          "major": false
+        },
+        {
+          "t": 1794034800,
+          "label": "2 AM",
+          "major": false
+        },
+        {
+          "t": 1794038400,
+          "label": "3 AM",
+          "major": true
+        },
+        {
+          "t": 1794042000,
+          "label": "4 AM",
+          "major": false
+        },
+        {
+          "t": 1794045600,
+          "label": "5 AM",
+          "major": false
+        },
+        {
+          "t": 1794049200,
+          "label": "6 AM",
+          "major": true
+        },
+        {
+          "t": 1794052800,
+          "label": "7 AM",
+          "major": false
+        },
+        {
+          "t": 1794056400,
+          "label": "8 AM",
+          "major": false
+        },
+        {
+          "t": 1794060000,
+          "label": "9 AM",
+          "major": true
+        },
+        {
+          "t": 1794063600,
+          "label": "10 AM",
+          "major": false
+        },
+        {
+          "t": 1794067200,
+          "label": "11 AM",
+          "major": false
+        },
+        {
+          "t": 1794070800,
+          "label": "12 PM",
+          "major": true
+        },
+        {
+          "t": 1794074400,
+          "label": "1 PM",
+          "major": false
+        },
+        {
+          "t": 1794078000,
+          "label": "2 PM",
+          "major": false
+        },
+        {
+          "t": 1794081600,
+          "label": "3 PM",
+          "major": true
+        },
+        {
+          "t": 1794085200,
+          "label": "4 PM",
+          "major": false
+        }
+      ],
+      "series": [
+        {
+          "label": "Observed",
+          "role": "observed",
+          "style": "line",
+          "points": [
+            {
+              "t": 1793995500,
+              "value": 9.0,
+              "label": "9.0 s",
+              "major": false
+            },
+            {
+              "t": 1793997300,
+              "value": 9.0,
+              "label": "9.0 s",
+              "major": false
+            },
+            {
+              "t": 1793999100,
+              "value": 9.0,
+              "label": "9.0 s",
+              "major": false
+            }
+          ]
+        },
+        {
+          "label": "Modelled",
+          "role": "modelled",
+          "style": "line",
+          "points": [
+            {
+              "t": 1793996400,
+              "value": 7.0,
+              "label": "7.0 s",
+              "major": false
+            },
+            {
+              "t": 1794000000,
+              "value": 7.0,
+              "label": "7.0 s",
+              "major": false
+            },
+            {
+              "t": 1794003600,
+              "value": 7.0,
+              "label": "7.0 s",
+              "major": false
+            },
+            {
+              "t": 1794007200,
+              "value": 7.0,
+              "label": "7.0 s",
+              "major": false
+            }
+          ]
+        }
+      ],
+      "bands": [],
+      "rules": [],
+      "markers": [],
+      "now_t": 1794000000,
+      "accessibility": "Wave period chart."
+    },
+    "sections": [
+      {
+        "title": "Sources",
+        "rows": [
+          {
+            "label": "Buoy",
+            "value": "NOAA NDBC",
+            "detail": "19 mi"
+          },
+          {
+            "label": "Model",
+            "value": "Open-Meteo Marine",
+            "detail": "modelled"
+          }
+        ]
+      }
+    ]
+  }
+}

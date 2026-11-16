@@ -1,0 +1,447 @@
+---
+source: crates/underbite-core/src/view/cards/pressure.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "pressure",
+    "title": "Pressure",
+    "footnote": "Pressure 1012 hPa · NOAA NDBC · 2.5 mi · 10 min ago",
+    "credits": [
+      {
+        "source": "NOAA NDBC",
+        "text": "Observations: NOAA National Data Buoy Center",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "Open-Meteo",
+        "text": "Weather data by Open-Meteo.com",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Pressure observed: 1012 hPa, Falling 3.0 hPa in 3 h."
+  },
+  "compact": {
+    "headline": {
+      "value": 1012.0,
+      "text": "1012",
+      "unit": "hPa"
+    },
+    "lines": [
+      "Falling 3.0 hPa in 3 h"
+    ],
+    "spark": [
+      1014.5,
+      1014.0,
+      1013.5,
+      1013.0,
+      1012.5,
+      1012.0
+    ]
+  },
+  "full": {
+    "value": {
+      "value": 1012.0,
+      "text": "1012",
+      "unit": "hPa"
+    },
+    "trend": {
+      "direction": "falling",
+      "text": "Falling 3.0 hPa in 3 h"
+    },
+    "change": {
+      "value": -3.0,
+      "text": "-3.0",
+      "unit": "hPa"
+    },
+    "chart": {
+      "title": "Pressure",
+      "unit": "hPa",
+      "x_ticks": [
+        {
+          "t": 1791201600,
+          "label": "8 AM",
+          "major": false
+        },
+        {
+          "t": 1791205200,
+          "label": "9 AM",
+          "major": true
+        },
+        {
+          "t": 1791208800,
+          "label": "10 AM",
+          "major": false
+        },
+        {
+          "t": 1791212400,
+          "label": "11 AM",
+          "major": false
+        },
+        {
+          "t": 1791216000,
+          "label": "12 PM",
+          "major": true
+        },
+        {
+          "t": 1791219600,
+          "label": "1 PM",
+          "major": false
+        },
+        {
+          "t": 1791223200,
+          "label": "2 PM",
+          "major": false
+        },
+        {
+          "t": 1791226800,
+          "label": "3 PM",
+          "major": true
+        },
+        {
+          "t": 1791230400,
+          "label": "4 PM",
+          "major": false
+        },
+        {
+          "t": 1791234000,
+          "label": "5 PM",
+          "major": false
+        },
+        {
+          "t": 1791237600,
+          "label": "6 PM",
+          "major": true
+        },
+        {
+          "t": 1791241200,
+          "label": "7 PM",
+          "major": false
+        },
+        {
+          "t": 1791244800,
+          "label": "8 PM",
+          "major": false
+        },
+        {
+          "t": 1791248400,
+          "label": "9 PM",
+          "major": true
+        },
+        {
+          "t": 1791252000,
+          "label": "10 PM",
+          "major": false
+        },
+        {
+          "t": 1791255600,
+          "label": "11 PM",
+          "major": false
+        },
+        {
+          "t": 1791259200,
+          "label": "12 AM",
+          "major": true
+        },
+        {
+          "t": 1791262800,
+          "label": "1 AM",
+          "major": false
+        },
+        {
+          "t": 1791266400,
+          "label": "2 AM",
+          "major": false
+        },
+        {
+          "t": 1791270000,
+          "label": "3 AM",
+          "major": true
+        },
+        {
+          "t": 1791273600,
+          "label": "4 AM",
+          "major": false
+        },
+        {
+          "t": 1791277200,
+          "label": "5 AM",
+          "major": false
+        },
+        {
+          "t": 1791280800,
+          "label": "6 AM",
+          "major": true
+        },
+        {
+          "t": 1791284400,
+          "label": "7 AM",
+          "major": false
+        },
+        {
+          "t": 1791288000,
+          "label": "8 AM",
+          "major": false
+        },
+        {
+          "t": 1791291600,
+          "label": "9 AM",
+          "major": true
+        },
+        {
+          "t": 1791295200,
+          "label": "10 AM",
+          "major": false
+        },
+        {
+          "t": 1791298800,
+          "label": "11 AM",
+          "major": false
+        }
+      ],
+      "series": [
+        {
+          "label": "Observed pressure",
+          "role": "observed",
+          "style": "line",
+          "points": [
+            {
+              "t": 1791202800,
+              "value": 1014.5,
+              "label": "1015 hPa",
+              "major": false
+            },
+            {
+              "t": 1791204600,
+              "value": 1014.0,
+              "label": "1014 hPa",
+              "major": false
+            },
+            {
+              "t": 1791206400,
+              "value": 1013.5,
+              "label": "1014 hPa",
+              "major": false
+            },
+            {
+              "t": 1791208200,
+              "value": 1013.0,
+              "label": "1013 hPa",
+              "major": false
+            },
+            {
+              "t": 1791210000,
+              "value": 1012.5,
+              "label": "1013 hPa",
+              "major": false
+            },
+            {
+              "t": 1791211800,
+              "value": 1012.0,
+              "label": "1012 hPa",
+              "major": false
+            }
+          ]
+        },
+        {
+          "label": "Forecast pressure",
+          "role": "forecast",
+          "style": "line",
+          "points": [
+            {
+              "t": 1791201600,
+              "value": 1019.56,
+              "label": "1020 hPa",
+              "major": true
+            },
+            {
+              "t": 1791205200,
+              "value": 1019.38,
+              "label": "1019 hPa",
+              "major": true
+            },
+            {
+              "t": 1791208800,
+              "value": 1019.2,
+              "label": "1019 hPa",
+              "major": true
+            },
+            {
+              "t": 1791212400,
+              "value": 1019.02,
+              "label": "1019 hPa",
+              "major": true
+            },
+            {
+              "t": 1791216000,
+              "value": 1018.84,
+              "label": "1019 hPa",
+              "major": true
+            },
+            {
+              "t": 1791219600,
+              "value": 1018.66,
+              "label": "1019 hPa",
+              "major": true
+            },
+            {
+              "t": 1791223200,
+              "value": 1018.48,
+              "label": "1018 hPa",
+              "major": true
+            },
+            {
+              "t": 1791226800,
+              "value": 1018.3,
+              "label": "1018 hPa",
+              "major": true
+            },
+            {
+              "t": 1791230400,
+              "value": 1018.12,
+              "label": "1018 hPa",
+              "major": true
+            },
+            {
+              "t": 1791234000,
+              "value": 1017.94,
+              "label": "1018 hPa",
+              "major": true
+            },
+            {
+              "t": 1791237600,
+              "value": 1017.76,
+              "label": "1018 hPa",
+              "major": true
+            },
+            {
+              "t": 1791241200,
+              "value": 1017.58,
+              "label": "1018 hPa",
+              "major": true
+            },
+            {
+              "t": 1791244800,
+              "value": 1017.4,
+              "label": "1017 hPa",
+              "major": true
+            },
+            {
+              "t": 1791248400,
+              "value": 1017.22,
+              "label": "1017 hPa",
+              "major": true
+            },
+            {
+              "t": 1791252000,
+              "value": 1017.04,
+              "label": "1017 hPa",
+              "major": true
+            },
+            {
+              "t": 1791255600,
+              "value": 1016.86,
+              "label": "1017 hPa",
+              "major": true
+            },
+            {
+              "t": 1791259200,
+              "value": 1016.68,
+              "label": "1017 hPa",
+              "major": true
+            },
+            {
+              "t": 1791262800,
+              "value": 1016.5,
+              "label": "1017 hPa",
+              "major": true
+            },
+            {
+              "t": 1791266400,
+              "value": 1016.32,
+              "label": "1016 hPa",
+              "major": true
+            },
+            {
+              "t": 1791270000,
+              "value": 1016.14,
+              "label": "1016 hPa",
+              "major": true
+            },
+            {
+              "t": 1791273600,
+              "value": 1015.96,
+              "label": "1016 hPa",
+              "major": true
+            },
+            {
+              "t": 1791277200,
+              "value": 1015.78,
+              "label": "1016 hPa",
+              "major": true
+            },
+            {
+              "t": 1791280800,
+              "value": 1015.6,
+              "label": "1016 hPa",
+              "major": true
+            },
+            {
+              "t": 1791284400,
+              "value": 1015.42,
+              "label": "1015 hPa",
+              "major": true
+            },
+            {
+              "t": 1791288000,
+              "value": 1015.24,
+              "label": "1015 hPa",
+              "major": true
+            },
+            {
+              "t": 1791291600,
+              "value": 1015.06,
+              "label": "1015 hPa",
+              "major": true
+            },
+            {
+              "t": 1791295200,
+              "value": 1014.88,
+              "label": "1015 hPa",
+              "major": true
+            },
+            {
+              "t": 1791298800,
+              "value": 1014.7,
+              "label": "1015 hPa",
+              "major": true
+            }
+          ]
+        }
+      ],
+      "bands": [],
+      "rules": [],
+      "markers": [],
+      "now_t": 1791212400,
+      "accessibility": "Pressure chart: 1012 hPa now, Falling 3.0 hPa in 3 h."
+    },
+    "sections": [
+      {
+        "title": "Source",
+        "rows": [
+          {
+            "label": "Station",
+            "value": "NOAA NDBC",
+            "detail": "observed 10:50 AM"
+          }
+        ]
+      }
+    ]
+  }
+}

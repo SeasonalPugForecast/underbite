@@ -1,0 +1,676 @@
+---
+source: crates/underbite-core/src/view/cards/wind.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "wind",
+    "title": "Wind",
+    "footnote": "Wind 13 mph · NOAA NDBC · 2.5 mi · 10 min ago",
+    "credits": [
+      {
+        "source": "NOAA NDBC",
+        "text": "Observations: NOAA National Data Buoy Center",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "Open-Meteo",
+        "text": "Weather data by Open-Meteo.com",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Wind observed: 13 mph from WSW 250°, gusts 20 mph."
+  },
+  "compact": {
+    "headline": {
+      "value": 13.4216175,
+      "text": "13",
+      "unit": "mph"
+    },
+    "lines": [
+      "From WSW 250°",
+      "Gusts 20 mph"
+    ],
+    "spark": [
+      11.184682,
+      12.303149,
+      13.4216175
+    ]
+  },
+  "full": {
+    "basis": "observed",
+    "speed": {
+      "value": 13.4216175,
+      "text": "13",
+      "unit": "mph"
+    },
+    "gust": {
+      "value": 20.132427,
+      "text": "20",
+      "unit": "mph"
+    },
+    "direction": "WSW 250°",
+    "from_deg": 250.0,
+    "hours": [
+      {
+        "t": 1791208200,
+        "time": "9:50 AM",
+        "speed": {
+          "value": 11.184682,
+          "text": "11",
+          "unit": "mph"
+        },
+        "gust": {
+          "value": 17.89549,
+          "text": "18",
+          "unit": "mph"
+        },
+        "direction": "WSW 250°",
+        "from_deg": 250.0
+      },
+      {
+        "t": 1791210000,
+        "time": "10:20 AM",
+        "speed": {
+          "value": 12.303149,
+          "text": "12",
+          "unit": "mph"
+        },
+        "gust": {
+          "value": 19.013958,
+          "text": "19",
+          "unit": "mph"
+        },
+        "direction": "WSW 250°",
+        "from_deg": 250.0
+      },
+      {
+        "t": 1791211800,
+        "time": "10:50 AM",
+        "speed": {
+          "value": 13.4216175,
+          "text": "13",
+          "unit": "mph"
+        },
+        "gust": {
+          "value": 20.132427,
+          "text": "20",
+          "unit": "mph"
+        },
+        "direction": "WSW 250°",
+        "from_deg": 250.0
+      }
+    ],
+    "chart": {
+      "title": "Wind",
+      "unit": "mph",
+      "x_ticks": [
+        {
+          "t": 1791201600,
+          "label": "8 AM",
+          "major": false
+        },
+        {
+          "t": 1791205200,
+          "label": "9 AM",
+          "major": true
+        },
+        {
+          "t": 1791208800,
+          "label": "10 AM",
+          "major": false
+        },
+        {
+          "t": 1791212400,
+          "label": "11 AM",
+          "major": false
+        },
+        {
+          "t": 1791216000,
+          "label": "12 PM",
+          "major": true
+        },
+        {
+          "t": 1791219600,
+          "label": "1 PM",
+          "major": false
+        },
+        {
+          "t": 1791223200,
+          "label": "2 PM",
+          "major": false
+        },
+        {
+          "t": 1791226800,
+          "label": "3 PM",
+          "major": true
+        },
+        {
+          "t": 1791230400,
+          "label": "4 PM",
+          "major": false
+        },
+        {
+          "t": 1791234000,
+          "label": "5 PM",
+          "major": false
+        },
+        {
+          "t": 1791237600,
+          "label": "6 PM",
+          "major": true
+        },
+        {
+          "t": 1791241200,
+          "label": "7 PM",
+          "major": false
+        },
+        {
+          "t": 1791244800,
+          "label": "8 PM",
+          "major": false
+        },
+        {
+          "t": 1791248400,
+          "label": "9 PM",
+          "major": true
+        },
+        {
+          "t": 1791252000,
+          "label": "10 PM",
+          "major": false
+        },
+        {
+          "t": 1791255600,
+          "label": "11 PM",
+          "major": false
+        },
+        {
+          "t": 1791259200,
+          "label": "12 AM",
+          "major": true
+        },
+        {
+          "t": 1791262800,
+          "label": "1 AM",
+          "major": false
+        },
+        {
+          "t": 1791266400,
+          "label": "2 AM",
+          "major": false
+        },
+        {
+          "t": 1791270000,
+          "label": "3 AM",
+          "major": true
+        },
+        {
+          "t": 1791273600,
+          "label": "4 AM",
+          "major": false
+        },
+        {
+          "t": 1791277200,
+          "label": "5 AM",
+          "major": false
+        },
+        {
+          "t": 1791280800,
+          "label": "6 AM",
+          "major": true
+        },
+        {
+          "t": 1791284400,
+          "label": "7 AM",
+          "major": false
+        },
+        {
+          "t": 1791288000,
+          "label": "8 AM",
+          "major": false
+        },
+        {
+          "t": 1791291600,
+          "label": "9 AM",
+          "major": true
+        },
+        {
+          "t": 1791295200,
+          "label": "10 AM",
+          "major": false
+        },
+        {
+          "t": 1791298800,
+          "label": "11 AM",
+          "major": false
+        }
+      ],
+      "series": [
+        {
+          "label": "Observed wind",
+          "role": "observed",
+          "style": "line",
+          "points": [
+            {
+              "t": 1791208200,
+              "value": 11.184682,
+              "label": "11 mph",
+              "major": false
+            },
+            {
+              "t": 1791210000,
+              "value": 12.303149,
+              "label": "12 mph",
+              "major": false
+            },
+            {
+              "t": 1791211800,
+              "value": 13.4216175,
+              "label": "13 mph",
+              "major": false
+            }
+          ]
+        },
+        {
+          "label": "Observed gusts",
+          "role": "observed",
+          "style": "line",
+          "points": [
+            {
+              "t": 1791208200,
+              "value": 17.89549,
+              "label": "18 mph",
+              "major": false
+            },
+            {
+              "t": 1791210000,
+              "value": 19.013958,
+              "label": "19 mph",
+              "major": false
+            },
+            {
+              "t": 1791211800,
+              "value": 20.132427,
+              "label": "20 mph",
+              "major": false
+            }
+          ]
+        },
+        {
+          "label": "Forecast wind",
+          "role": "forecast",
+          "style": "line",
+          "points": [
+            {
+              "t": 1791201600,
+              "value": 8.276665,
+              "label": "8 mph",
+              "major": true
+            },
+            {
+              "t": 1791205200,
+              "value": 8.612205,
+              "label": "9 mph",
+              "major": true
+            },
+            {
+              "t": 1791208800,
+              "value": 8.947745,
+              "label": "9 mph",
+              "major": true
+            },
+            {
+              "t": 1791212400,
+              "value": 9.283286,
+              "label": "9 mph",
+              "major": true
+            },
+            {
+              "t": 1791216000,
+              "value": 9.618827,
+              "label": "10 mph",
+              "major": true
+            },
+            {
+              "t": 1791219600,
+              "value": 9.954366,
+              "label": "10 mph",
+              "major": true
+            },
+            {
+              "t": 1791223200,
+              "value": 10.289907,
+              "label": "10 mph",
+              "major": true
+            },
+            {
+              "t": 1791226800,
+              "value": 10.625447,
+              "label": "11 mph",
+              "major": true
+            },
+            {
+              "t": 1791230400,
+              "value": 10.960988,
+              "label": "11 mph",
+              "major": true
+            },
+            {
+              "t": 1791234000,
+              "value": 11.296529,
+              "label": "11 mph",
+              "major": true
+            },
+            {
+              "t": 1791237600,
+              "value": 11.632069,
+              "label": "12 mph",
+              "major": true
+            },
+            {
+              "t": 1791241200,
+              "value": 11.96761,
+              "label": "12 mph",
+              "major": true
+            },
+            {
+              "t": 1791244800,
+              "value": 12.303149,
+              "label": "12 mph",
+              "major": true
+            },
+            {
+              "t": 1791248400,
+              "value": 12.63869,
+              "label": "13 mph",
+              "major": true
+            },
+            {
+              "t": 1791252000,
+              "value": 12.974231,
+              "label": "13 mph",
+              "major": true
+            },
+            {
+              "t": 1791255600,
+              "value": 13.309771,
+              "label": "13 mph",
+              "major": true
+            },
+            {
+              "t": 1791259200,
+              "value": 5.592341,
+              "label": "6 mph",
+              "major": true
+            },
+            {
+              "t": 1791262800,
+              "value": 5.9278812,
+              "label": "6 mph",
+              "major": true
+            },
+            {
+              "t": 1791266400,
+              "value": 6.2634215,
+              "label": "6 mph",
+              "major": true
+            },
+            {
+              "t": 1791270000,
+              "value": 6.5989623,
+              "label": "7 mph",
+              "major": true
+            },
+            {
+              "t": 1791273600,
+              "value": 6.934502,
+              "label": "7 mph",
+              "major": true
+            },
+            {
+              "t": 1791277200,
+              "value": 7.270043,
+              "label": "7 mph",
+              "major": true
+            },
+            {
+              "t": 1791280800,
+              "value": 7.6055837,
+              "label": "8 mph",
+              "major": true
+            },
+            {
+              "t": 1791284400,
+              "value": 7.9411244,
+              "label": "8 mph",
+              "major": true
+            },
+            {
+              "t": 1791288000,
+              "value": 8.276665,
+              "label": "8 mph",
+              "major": true
+            },
+            {
+              "t": 1791291600,
+              "value": 8.612205,
+              "label": "9 mph",
+              "major": true
+            },
+            {
+              "t": 1791295200,
+              "value": 8.947745,
+              "label": "9 mph",
+              "major": true
+            },
+            {
+              "t": 1791298800,
+              "value": 9.283286,
+              "label": "9 mph",
+              "major": true
+            }
+          ]
+        },
+        {
+          "label": "Forecast gusts",
+          "role": "forecast",
+          "style": "line",
+          "points": [
+            {
+              "t": 1791201600,
+              "value": 16.55333,
+              "label": "17 mph",
+              "major": true
+            },
+            {
+              "t": 1791205200,
+              "value": 17.22441,
+              "label": "17 mph",
+              "major": true
+            },
+            {
+              "t": 1791208800,
+              "value": 17.89549,
+              "label": "18 mph",
+              "major": true
+            },
+            {
+              "t": 1791212400,
+              "value": 18.566572,
+              "label": "19 mph",
+              "major": true
+            },
+            {
+              "t": 1791216000,
+              "value": 19.237654,
+              "label": "19 mph",
+              "major": true
+            },
+            {
+              "t": 1791219600,
+              "value": 19.908731,
+              "label": "20 mph",
+              "major": true
+            },
+            {
+              "t": 1791223200,
+              "value": 20.579815,
+              "label": "21 mph",
+              "major": true
+            },
+            {
+              "t": 1791226800,
+              "value": 21.250895,
+              "label": "21 mph",
+              "major": true
+            },
+            {
+              "t": 1791230400,
+              "value": 21.921976,
+              "label": "22 mph",
+              "major": true
+            },
+            {
+              "t": 1791234000,
+              "value": 22.593058,
+              "label": "23 mph",
+              "major": true
+            },
+            {
+              "t": 1791237600,
+              "value": 23.264137,
+              "label": "23 mph",
+              "major": true
+            },
+            {
+              "t": 1791241200,
+              "value": 23.93522,
+              "label": "24 mph",
+              "major": true
+            },
+            {
+              "t": 1791244800,
+              "value": 24.606298,
+              "label": "25 mph",
+              "major": true
+            },
+            {
+              "t": 1791248400,
+              "value": 25.27738,
+              "label": "25 mph",
+              "major": true
+            },
+            {
+              "t": 1791252000,
+              "value": 25.948462,
+              "label": "26 mph",
+              "major": true
+            },
+            {
+              "t": 1791255600,
+              "value": 26.619541,
+              "label": "27 mph",
+              "major": true
+            },
+            {
+              "t": 1791259200,
+              "value": 11.184682,
+              "label": "11 mph",
+              "major": true
+            },
+            {
+              "t": 1791262800,
+              "value": 11.8557625,
+              "label": "12 mph",
+              "major": true
+            },
+            {
+              "t": 1791266400,
+              "value": 12.526843,
+              "label": "13 mph",
+              "major": true
+            },
+            {
+              "t": 1791270000,
+              "value": 13.197925,
+              "label": "13 mph",
+              "major": true
+            },
+            {
+              "t": 1791273600,
+              "value": 13.869004,
+              "label": "14 mph",
+              "major": true
+            },
+            {
+              "t": 1791277200,
+              "value": 14.540086,
+              "label": "15 mph",
+              "major": true
+            },
+            {
+              "t": 1791280800,
+              "value": 15.211167,
+              "label": "15 mph",
+              "major": true
+            },
+            {
+              "t": 1791284400,
+              "value": 15.882249,
+              "label": "16 mph",
+              "major": true
+            },
+            {
+              "t": 1791288000,
+              "value": 16.55333,
+              "label": "17 mph",
+              "major": true
+            },
+            {
+              "t": 1791291600,
+              "value": 17.22441,
+              "label": "17 mph",
+              "major": true
+            },
+            {
+              "t": 1791295200,
+              "value": 17.89549,
+              "label": "18 mph",
+              "major": true
+            },
+            {
+              "t": 1791298800,
+              "value": 18.566572,
+              "label": "19 mph",
+              "major": true
+            }
+          ]
+        }
+      ],
+      "bands": [],
+      "rules": [],
+      "markers": [],
+      "now_t": 1791212400,
+      "accessibility": "Wind chart: 13 mph now."
+    },
+    "sections": [
+      {
+        "title": "Source",
+        "rows": [
+          {
+            "label": "Station",
+            "value": "NOAA NDBC",
+            "detail": "observed 10:50 AM"
+          }
+        ]
+      }
+    ]
+  }
+}

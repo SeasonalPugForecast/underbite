@@ -1,0 +1,420 @@
+---
+source: crates/underbite-core/src/view/cards/pressure.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "pressure",
+    "title": "Pressure",
+    "footnote": "Pressure 30.11 inHg · Open-Meteo · modelled · 5 min ago",
+    "credits": [
+      {
+        "source": "Open-Meteo",
+        "text": "Weather data by Open-Meteo.com",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Pressure forecast: 30.11 inHg, Steady 0.02 inHg in 3 h."
+  },
+  "compact": {
+    "headline": {
+      "value": 30.114674,
+      "text": "30.11",
+      "unit": "inHg"
+    },
+    "lines": [
+      "Steady 0.02 inHg in 3 h"
+    ],
+    "spark": [
+      30.107586,
+      30.102272,
+      30.096956,
+      30.09164,
+      30.086327,
+      30.081009,
+      30.075693,
+      30.07038,
+      30.065063,
+      30.059748,
+      30.054434,
+      30.049118,
+      30.043802,
+      30.038486,
+      30.03317,
+      30.027855,
+      30.02254,
+      30.017225,
+      30.01191,
+      30.006594,
+      30.00128,
+      29.995964,
+      29.990646,
+      29.985332,
+      29.980017,
+      29.9747,
+      29.969387,
+      29.964071
+    ]
+  },
+  "full": {
+    "value": {
+      "value": 30.114674,
+      "text": "30.11",
+      "unit": "inHg"
+    },
+    "trend": {
+      "direction": "steady",
+      "text": "Steady 0.02 inHg in 3 h"
+    },
+    "change": {
+      "value": -0.015947342,
+      "text": "-0.02",
+      "unit": "inHg"
+    },
+    "chart": {
+      "title": "Pressure",
+      "unit": "inHg",
+      "x_ticks": [
+        {
+          "t": 1791201600,
+          "label": "8 AM",
+          "major": false
+        },
+        {
+          "t": 1791205200,
+          "label": "9 AM",
+          "major": true
+        },
+        {
+          "t": 1791208800,
+          "label": "10 AM",
+          "major": false
+        },
+        {
+          "t": 1791212400,
+          "label": "11 AM",
+          "major": false
+        },
+        {
+          "t": 1791216000,
+          "label": "12 PM",
+          "major": true
+        },
+        {
+          "t": 1791219600,
+          "label": "1 PM",
+          "major": false
+        },
+        {
+          "t": 1791223200,
+          "label": "2 PM",
+          "major": false
+        },
+        {
+          "t": 1791226800,
+          "label": "3 PM",
+          "major": true
+        },
+        {
+          "t": 1791230400,
+          "label": "4 PM",
+          "major": false
+        },
+        {
+          "t": 1791234000,
+          "label": "5 PM",
+          "major": false
+        },
+        {
+          "t": 1791237600,
+          "label": "6 PM",
+          "major": true
+        },
+        {
+          "t": 1791241200,
+          "label": "7 PM",
+          "major": false
+        },
+        {
+          "t": 1791244800,
+          "label": "8 PM",
+          "major": false
+        },
+        {
+          "t": 1791248400,
+          "label": "9 PM",
+          "major": true
+        },
+        {
+          "t": 1791252000,
+          "label": "10 PM",
+          "major": false
+        },
+        {
+          "t": 1791255600,
+          "label": "11 PM",
+          "major": false
+        },
+        {
+          "t": 1791259200,
+          "label": "12 AM",
+          "major": true
+        },
+        {
+          "t": 1791262800,
+          "label": "1 AM",
+          "major": false
+        },
+        {
+          "t": 1791266400,
+          "label": "2 AM",
+          "major": false
+        },
+        {
+          "t": 1791270000,
+          "label": "3 AM",
+          "major": true
+        },
+        {
+          "t": 1791273600,
+          "label": "4 AM",
+          "major": false
+        },
+        {
+          "t": 1791277200,
+          "label": "5 AM",
+          "major": false
+        },
+        {
+          "t": 1791280800,
+          "label": "6 AM",
+          "major": true
+        },
+        {
+          "t": 1791284400,
+          "label": "7 AM",
+          "major": false
+        },
+        {
+          "t": 1791288000,
+          "label": "8 AM",
+          "major": false
+        },
+        {
+          "t": 1791291600,
+          "label": "9 AM",
+          "major": true
+        },
+        {
+          "t": 1791295200,
+          "label": "10 AM",
+          "major": false
+        },
+        {
+          "t": 1791298800,
+          "label": "11 AM",
+          "major": false
+        }
+      ],
+      "series": [
+        {
+          "label": "Forecast pressure",
+          "role": "forecast",
+          "style": "line",
+          "points": [
+            {
+              "t": 1791201600,
+              "value": 30.107586,
+              "label": "30.11 inHg",
+              "major": true
+            },
+            {
+              "t": 1791205200,
+              "value": 30.102272,
+              "label": "30.10 inHg",
+              "major": true
+            },
+            {
+              "t": 1791208800,
+              "value": 30.096956,
+              "label": "30.10 inHg",
+              "major": true
+            },
+            {
+              "t": 1791212400,
+              "value": 30.09164,
+              "label": "30.09 inHg",
+              "major": true
+            },
+            {
+              "t": 1791216000,
+              "value": 30.086327,
+              "label": "30.09 inHg",
+              "major": true
+            },
+            {
+              "t": 1791219600,
+              "value": 30.081009,
+              "label": "30.08 inHg",
+              "major": true
+            },
+            {
+              "t": 1791223200,
+              "value": 30.075693,
+              "label": "30.08 inHg",
+              "major": true
+            },
+            {
+              "t": 1791226800,
+              "value": 30.07038,
+              "label": "30.07 inHg",
+              "major": true
+            },
+            {
+              "t": 1791230400,
+              "value": 30.065063,
+              "label": "30.07 inHg",
+              "major": true
+            },
+            {
+              "t": 1791234000,
+              "value": 30.059748,
+              "label": "30.06 inHg",
+              "major": true
+            },
+            {
+              "t": 1791237600,
+              "value": 30.054434,
+              "label": "30.05 inHg",
+              "major": true
+            },
+            {
+              "t": 1791241200,
+              "value": 30.049118,
+              "label": "30.05 inHg",
+              "major": true
+            },
+            {
+              "t": 1791244800,
+              "value": 30.043802,
+              "label": "30.04 inHg",
+              "major": true
+            },
+            {
+              "t": 1791248400,
+              "value": 30.038486,
+              "label": "30.04 inHg",
+              "major": true
+            },
+            {
+              "t": 1791252000,
+              "value": 30.03317,
+              "label": "30.03 inHg",
+              "major": true
+            },
+            {
+              "t": 1791255600,
+              "value": 30.027855,
+              "label": "30.03 inHg",
+              "major": true
+            },
+            {
+              "t": 1791259200,
+              "value": 30.02254,
+              "label": "30.02 inHg",
+              "major": true
+            },
+            {
+              "t": 1791262800,
+              "value": 30.017225,
+              "label": "30.02 inHg",
+              "major": true
+            },
+            {
+              "t": 1791266400,
+              "value": 30.01191,
+              "label": "30.01 inHg",
+              "major": true
+            },
+            {
+              "t": 1791270000,
+              "value": 30.006594,
+              "label": "30.01 inHg",
+              "major": true
+            },
+            {
+              "t": 1791273600,
+              "value": 30.00128,
+              "label": "30.00 inHg",
+              "major": true
+            },
+            {
+              "t": 1791277200,
+              "value": 29.995964,
+              "label": "30.00 inHg",
+              "major": true
+            },
+            {
+              "t": 1791280800,
+              "value": 29.990646,
+              "label": "29.99 inHg",
+              "major": true
+            },
+            {
+              "t": 1791284400,
+              "value": 29.985332,
+              "label": "29.99 inHg",
+              "major": true
+            },
+            {
+              "t": 1791288000,
+              "value": 29.980017,
+              "label": "29.98 inHg",
+              "major": true
+            },
+            {
+              "t": 1791291600,
+              "value": 29.9747,
+              "label": "29.97 inHg",
+              "major": true
+            },
+            {
+              "t": 1791295200,
+              "value": 29.969387,
+              "label": "29.97 inHg",
+              "major": true
+            },
+            {
+              "t": 1791298800,
+              "value": 29.964071,
+              "label": "29.96 inHg",
+              "major": true
+            }
+          ]
+        }
+      ],
+      "bands": [],
+      "rules": [],
+      "markers": [],
+      "now_t": 1791212400,
+      "accessibility": "Pressure chart: 30.11 inHg now, Steady 0.02 inHg in 3 h."
+    },
+    "sections": [
+      {
+        "title": "Source",
+        "rows": [
+          {
+            "label": "Forecast",
+            "value": "Open-Meteo",
+            "detail": "modelled"
+          }
+        ]
+      }
+    ]
+  }
+}
