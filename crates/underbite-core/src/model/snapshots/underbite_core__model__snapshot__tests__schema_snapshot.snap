@@ -1346,6 +1346,13 @@ expression: schemas
       },
       "MarineAlert": {
         "properties": {
+          "description": {
+            "description": "The NWS description as issued (paragraphs kept), for the full form.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "ends": {
             "anyOf": [
               {
@@ -1378,6 +1385,13 @@ expression: schemas
           },
           "id": {
             "type": "string"
+          },
+          "instruction": {
+            "description": "The NWS instruction as issued.",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "onset": {
             "anyOf": [

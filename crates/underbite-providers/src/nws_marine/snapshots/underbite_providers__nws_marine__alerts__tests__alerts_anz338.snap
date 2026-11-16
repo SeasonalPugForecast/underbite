@@ -7,6 +7,8 @@ expression: a
     "id": "urn:oid:2.49.0.1.840.0.59e16cc8ba4c86b00bee7c5e08c327085a29588b.003.1",
     "event": "Small Craft Advisory",
     "headline": "Small Craft Advisory issued November 8 at 1:48AM EST until November 9 at 6:00PM EST by NWS Upton NY",
+    "description": "* WHAT...West winds 10 to 20 kt with gusts up to 30 kt.\n\n* WHERE...Long Island Sound, New York Harbor, Peconic and Gardiners Bays, and South Shore Bays from Jones Inlet through Shinnecock Bay.\n\n* WHEN...Until 6 PM EST Monday.\n\n* IMPACTS...Conditions will be hazardous to small craft.",
+    "instruction": "Inexperienced mariners, especially those operating smaller vessels, should avoid navigating in hazardous conditions.",
     "onset": 1794120480,
     "ends": 1794265200,
     "expires": 1794168000,

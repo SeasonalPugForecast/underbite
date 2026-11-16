@@ -33,6 +33,10 @@ pub struct AlertVm {
     pub origin: AlertOrigin,
     pub event: String,
     pub headline: Option<String>,
+    /// The source's description, whole and as issued, for the full form.
+    pub description: Option<String>,
+    /// What the source tells the reader to do, whole and as issued.
+    pub instruction: Option<String>,
     pub severity: AlertSeverity,
     pub severity_label: String,
     pub onset: Option<String>,
@@ -121,6 +125,8 @@ fn marine_entry(f: &Formatter, a: &MarineAlert) -> Entry {
             origin: AlertOrigin::Marine,
             event: a.event.clone(),
             headline: a.headline.clone(),
+            description: a.description.clone(),
+            instruction: a.instruction.clone(),
             severity: a.severity,
             severity_label: severity_label(a.severity).to_owned(),
             onset: a.onset.map(|t| when(f, t)),
@@ -140,8 +146,11 @@ fn weather_entry(f: &Formatter, a: &Alert) -> Entry {
             id: a.id.clone().unwrap_or_else(|| a.title.clone()),
             origin: AlertOrigin::Weather,
             event: a.title.clone(),
-            // The source's full text, as written: the card type has no separate body.
-            headline: (!a.description.is_empty()).then(|| a.description.clone()),
+            headline: None,
+            // The source's full text, as written.
+            description: (!a.description.is_empty()).then(|| a.description.clone()),
+            // whether's alerts carry no separate instruction.
+            instruction: None,
             severity,
             severity_label: severity_label(severity).to_owned(),
             onset: Some(when(f, a.start)),
@@ -284,10 +293,21 @@ mod tests {
 
     /// The recorded ANZ338 alert, as the provider would parse it.
     fn anz338_alerts() -> Vec<MarineAlert> {
+        recorded_alerts("alerts-active-zone-ANZ338.geo.json", AlertSeverity::Minor)
+    }
+
+    /// A recorded NWS alert file, with the NWS text joined the way the provider joins it.
+    fn recorded_alerts(file: &str, severity: AlertSeverity) -> Vec<MarineAlert> {
         let path = format!(
-            "{}/../../tests/fixtures/raw/nws-marine/alerts-active-zone-ANZ338.geo.json",
+            "{}/../../tests/fixtures/raw/nws-marine/{file}",
             env!("CARGO_MANIFEST_DIR")
         );
+        let unwrap = |s: &str| {
+            s.split("\n\n")
+                .map(|para| para.replace('\n', " "))
+                .collect::<Vec<_>>()
+                .join("\n\n")
+        };
         let text = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{path}: {e}"));
         let json: serde_json::Value = serde_json::from_str(&text).unwrap();
         json["features"]
@@ -303,10 +323,12 @@ mod tests {
                     id: p["id"].as_str().unwrap().into(),
                     event: p["event"].as_str().unwrap().into(),
                     headline: p["headline"].as_str().map(Into::into),
+                    description: p["description"].as_str().map(unwrap),
+                    instruction: p["instruction"].as_str().map(unwrap),
                     onset: time("onset"),
                     ends: time("ends"),
                     expires: time("expires"),
-                    severity: AlertSeverity::Minor,
+                    severity,
                     zones: p["geocode"]["UGC"]
                         .as_array()
                         .unwrap()
@@ -364,6 +386,41 @@ mod tests {
         assert_eq!(a.onset.as_deref(), Some("Nov 8, 1:48 AM"));
         assert_eq!(a.ends.as_deref(), Some("Nov 9, 6:00 PM"));
         insta::assert_json_snapshot!("alerts_marine_luna", card);
+    }
+
+    #[test]
+    fn the_full_form_carries_the_whole_description_and_instruction() {
+        for voice in [Voice::Luna, Voice::Plain] {
+            let input = marine_input(voice);
+            let source = &input.snapshot.marine.marine_alerts[0];
+            let card = build(&input).unwrap();
+            let a = &card.full.alerts[0];
+            assert_eq!(a.description, source.description);
+            assert_eq!(a.instruction, source.instruction);
+            assert!(a.description.as_deref().unwrap().contains("* IMPACTS..."));
+            assert!(
+                a.instruction
+                    .as_deref()
+                    .unwrap()
+                    .starts_with("Inexperienced mariners")
+            );
+        }
+    }
+
+    #[test]
+    fn the_gale_warning_shows_its_description_and_instruction() {
+        let mut input = marine_input(Voice::Plain);
+        input.now = at("2026-11-15T12:00:00Z");
+        input.snapshot.marine.marine_alerts = recorded_alerts(
+            "alerts-active-zone-GMZ250-gale-warning.geo.json",
+            AlertSeverity::Moderate,
+        );
+        let card = build(&input).unwrap();
+        let a = &card.full.alerts[0];
+        assert_eq!(a.event, "Gale Warning");
+        assert!(a.description.as_deref().unwrap().contains("* IMPACTS..."));
+        assert!(a.instruction.as_deref().unwrap().contains("Remain in port"));
+        insta::assert_json_snapshot!("alerts_gale_plain", card);
     }
 
     #[test]

@@ -31,6 +31,8 @@ struct Properties {
     id: String,
     event: String,
     headline: Option<String>,
+    description: Option<String>,
+    instruction: Option<String>,
     onset: Option<String>,
     effective: Option<String>,
     ends: Option<String>,
@@ -78,6 +80,29 @@ fn time(text: Option<&str>) -> Option<UnixTime> {
     text.and_then(parse_rfc3339)
 }
 
+/// NWS text is hard-wrapped at about 65 columns: a single line break inside a paragraph becomes a
+/// space, paragraph breaks (two or more line breaks) stay, and nothing else changes.
+fn unwrap_lines(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut chars = text.chars().peekable();
+    while let Some(c) = chars.next() {
+        if c != '\n' {
+            out.push(c);
+            continue;
+        }
+        let mut run = 1;
+        while chars.next_if_eq(&'\n').is_some() {
+            run += 1;
+        }
+        if run == 1 {
+            out.push(' ');
+        } else {
+            out.extend(std::iter::repeat_n('\n', run));
+        }
+    }
+    out
+}
+
 /// The active alerts in a `/alerts/active` body: actual alerts only (not tests or exercises, not
 /// cancellations), one per VTEC key (the first, with the zones of all its copies), in the order
 /// the NWS listed them. An empty list is normal.
@@ -108,6 +133,8 @@ pub fn parse(body: &[u8]) -> Result<Vec<MarineAlert>, SourceError> {
             id: p.id,
             event: p.event,
             headline: p.headline,
+            description: p.description.as_deref().map(unwrap_lines),
+            instruction: p.instruction.as_deref().map(unwrap_lines),
             onset: time(p.onset.as_deref()).or(time(p.effective.as_deref())),
             ends: time(p.ends.as_deref()),
             expires: time(p.expires.as_deref()),
@@ -200,5 +227,46 @@ mod tests {
         assert_eq!(a.len(), 1);
         assert_eq!(a[0].id, "a");
         assert_eq!(a[0].zones, ["GMZ250", "GMZ255"]);
+    }
+
+    #[test]
+    fn nws_alerts_description_and_instruction_keep_paragraphs_and_join_wrapped_lines() {
+        let a = alerts("alerts-active-zone-ANZ338.geo.json");
+        let description = a[0].description.as_deref().unwrap();
+        assert!(description.starts_with(
+            "* WHAT...West winds 10 to 20 kt with gusts up to 30 kt.\n\n* WHERE...Long Island Sound, New York Harbor, Peconic and Gardiners Bays"
+        ));
+        assert!(description.ends_with("* IMPACTS...Conditions will be hazardous to small craft."));
+        assert_eq!(description.matches("\n\n").count(), 3);
+        assert!(!description.contains("and\nGardiners"));
+        assert_eq!(
+            a[0].instruction.as_deref(),
+            Some(
+                "Inexperienced mariners, especially those operating smaller vessels, should avoid navigating in hazardous conditions."
+            )
+        );
+        let g = alerts("alerts-active-zone-GMZ250-gale-warning.geo.json");
+        // Spacing inside the text is the NWS's own.
+        assert!(
+            g[0].instruction
+                .as_deref()
+                .unwrap()
+                .contains("hazardous conditions.  Remain in port")
+        );
+        insta::assert_json_snapshot!("alerts_gmz250", g);
+    }
+
+    #[test]
+    fn nws_alerts_unwrap_lines_only_touches_single_breaks() {
+        assert_eq!(unwrap_lines("a\nb\n\nc\n\n\nd "), "a b\n\nc\n\n\nd ");
+    }
+
+    #[test]
+    fn alerts_decode_without_description_or_instruction() {
+        let old = r#"{"id":"x","event":"Gale Warning","severity":"moderate"}"#;
+        let a: MarineAlert = serde_json::from_str(old).unwrap();
+        assert_eq!(a.description, None);
+        assert_eq!(a.instruction, None);
+        assert!(!serde_json::to_string(&a).unwrap().contains("description"));
     }
 }

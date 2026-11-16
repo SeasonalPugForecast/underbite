@@ -1,0 +1,58 @@
+---
+source: crates/underbite-core/src/view/cards/alerts.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "alerts",
+    "title": "Alerts",
+    "footnote": null,
+    "credits": [
+      {
+        "source": "National Weather Service",
+        "text": "Marine alerts: NOAA National Weather Service",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Alerts: 1 active. Gale Warning."
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "Gale Warning",
+      "unit": ""
+    },
+    "lines": [
+      "Until Nov 16, 7:00 PM"
+    ],
+    "spark": []
+  },
+  "full": {
+    "alerts": [
+      {
+        "id": "urn:oid:2.49.0.1.840.0.be9dd3bbb14007e994682fa6efbe97d7a0bb2de5.001.2",
+        "origin": "marine",
+        "event": "Gale Warning",
+        "headline": "Gale Warning issued November 15 at 1:55PM CST until November 16 at 6:00PM CST by NWS Corpus Christi TX",
+        "description": "* WHAT...For the Small Craft Advisory, southeast winds around 20 knots with gusts up to 25 knots. For the Gale Warning, northeast winds 20 to 30 knots with gusts up to 35 knots and seas 8 to 13 feet expected.\n\n* WHERE...Coastal waters from Baffin Bay to Port Aransas out 20 NM, Coastal waters from Port Aransas to Matagorda Ship Channel out 20 NM, Waters from Baffin Bay to Port Aransas from 20 to 60 NM and Waters from Port Aransas to Matagorda Ship Channel from 20 to 60 NM.\n\n* WHEN...For the Small Craft Advisory, until midnight CST tonight. For the Gale Warning, from midnight tonight to 6 PM CST Monday.\n\n* IMPACTS...Gale force winds and high seas will result in dangerous marine conditions which could result in capsized or damaged vessels.",
+        "instruction": "Mariners should consider altering plans to avoid possible hazardous conditions.  Remain in port, seek safe harbor, alter course, and/or secure the vessel for severe wind and seas.",
+        "severity": "moderate",
+        "severity_label": "Moderate",
+        "onset": "Nov 16, 1:00 AM",
+        "ends": "Nov 16, 7:00 PM",
+        "expires": "Nov 15, 11:00 PM",
+        "zones": [
+          "GMZ250",
+          "GMZ255",
+          "GMZ270",
+          "GMZ275"
+        ]
+      }
+    ]
+  }
+}

@@ -475,6 +475,8 @@ pub mod testdata {
                 id: "urn:oid:example".into(),
                 event: "Small Craft Advisory".into(),
                 headline: Some("Small Craft Advisory in effect".into()),
+                description: None,
+                instruction: None,
                 onset: Some(at(0)),
                 ends: Some(at(600)),
                 expires: Some(at(300)),

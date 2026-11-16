@@ -202,6 +202,12 @@ pub struct MarineAlert {
     pub event: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub headline: Option<String>,
+    /// The NWS description as issued (paragraphs kept), for the full form.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    /// The NWS instruction as issued.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub instruction: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub onset: Option<UnixTime>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
