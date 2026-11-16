@@ -34,6 +34,7 @@ struct AreasView: View {
                     removing = offsets.first.flatMap { areas.indices.contains($0) ? areas[$0] : nil }
                 }
             }
+            .readableText()
             .environment(\.editMode, .constant(.active))
             .overlay {
                 if store.areas.isEmpty {

@@ -3,7 +3,9 @@ import UnderbiteKit
 
 /// The day timeline: one row per lane on one shared time axis, scrolled together. Hours are a
 /// fixed width, so a wider screen shows more of them. Tap an hour to read its values; each lane's
-/// credits and notices sit underneath, whole.
+/// credits and notices sit underneath, whole. The words drawn in the strip stop growing at the
+/// largest standard text size (a lane's values are read aloud and are on the card pages); the
+/// lane names, the readings and the credits follow every size.
 struct DayTimelineView: View {
     let timeline: ViewModel.Timeline
     /// The ids of the cards the page shows: a lane follows its card.
@@ -11,6 +13,9 @@ struct DayTimelineView: View {
 
     @State private var selected: Int64?
     @State private var position = ScrollPosition()
+    /// The part of the strip on screen, so labels are placed where they can be read whole.
+    @State private var visible: ClosedRange<CGFloat> = 0...0
+    @Environment(\.sunMode) private var sunMode
 
     private let axisHeight: CGFloat = 20
     private let rowSpacing: CGFloat = 6
@@ -21,8 +26,11 @@ struct DayTimelineView: View {
 
     private var stripWidth: CGFloat { CGFloat(TimelineLayout.width(timeline)) }
 
+    /// The height of a lane's name, which follows every text size.
+    @ScaledMetric(relativeTo: .caption) private var labelHeight: CGFloat = 16
+
     private func rowHeight(_ lane: ViewModel.TimelineLane) -> CGFloat {
-        lane.chart.series.isEmpty ? 48 : 88
+        max(lane.chart.series.isEmpty ? 48 : 88, labelHeight + 12)
     }
 
     private var stripHeight: CGFloat {
@@ -34,7 +42,7 @@ struct DayTimelineView: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .top, spacing: 8) {
                     labels
-                    strip
+                    strip.dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                 }
                 if let selected { readings(at: selected) }
                 ForEach(lanes, id: \.kind) { lane in
@@ -46,6 +54,12 @@ struct DayTimelineView: View {
             .background(
                 Color(.secondarySystemGroupedBackground),
                 in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay {
+                if sunMode {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Palette.cardStroke(sunMode), lineWidth: 2)
+                }
+            }
         }
     }
 
@@ -57,8 +71,8 @@ struct DayTimelineView: View {
             ForEach(lanes, id: \.kind) { lane in
                 Text(lane.label)
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                    .foregroundStyle(.readableSecondary)
+                    .fixedSize()
                     .frame(height: rowHeight(lane), alignment: .center)
             }
         }
@@ -70,12 +84,19 @@ struct DayTimelineView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             ZStack(alignment: .topLeading) {
                 VStack(alignment: .leading, spacing: rowSpacing) {
-                    TimelineAxis(timeline: timeline).frame(height: axisHeight)
+                    TimelineAxis(timeline: timeline, visible: visible).frame(height: axisHeight)
                     ForEach(lanes, id: \.kind) { lane in
-                        LaneRow(timeline: timeline, lane: lane)
+                        LaneRow(timeline: timeline, lane: lane, sunMode: sunMode)
+                            .overlay {
+                                LaneLabels(timeline: timeline, lane: lane, visible: visible)
+                            }
                             .frame(width: stripWidth, height: rowHeight(lane))
                             .accessibilityElement()
                             .accessibilityLabel(Text(lane.chart.accessibility))
+                            .accessibilityChartDescriptor(
+                                ChartAudioGraph(
+                                    chart: lane.chart,
+                                    yDomain: TimelineLayout.range(of: lane) ?? 0...1))
                     }
                 }
                 if let selected {
@@ -87,10 +108,17 @@ struct DayTimelineView: View {
                         .allowsHitTesting(false)
                 }
                 if let now = TimelineLayout.now(timeline) {
+                    // Below the hour labels, so it never covers one.
                     Rectangle()
                         .fill(Color.red)
-                        .frame(width: 1.5, height: stripHeight)
-                        .offset(x: CGFloat(TimelineLayout.x(now, start: timeline.startT)))
+                        .frame(
+                            width: 1.5 * Palette.strokeScale(sunMode),
+                            height: stripHeight - axisHeight
+                        )
+                        .offset(
+                            x: CGFloat(TimelineLayout.x(now, start: timeline.startT)),
+                            y: axisHeight
+                        )
                         .allowsHitTesting(false)
                         .accessibilityHidden(true)
                 }
@@ -103,6 +131,12 @@ struct DayTimelineView: View {
             }
         }
         .scrollPosition($position)
+        .onScrollGeometryChange(for: ClosedRange<CGFloat>.self) { geometry in
+            let rect = geometry.visibleRect
+            return rect.minX.rounded(.down)...max(rect.minX, rect.maxX).rounded(.up)
+        } action: { _, now in
+            visible = now
+        }
         .task(id: TimelineLayout.now(timeline)) {
             // Open a little before now, so the coming hours show; again when now moves.
             position.scrollTo(x: CGFloat(anchorX))
@@ -110,9 +144,11 @@ struct DayTimelineView: View {
         .frame(height: stripHeight)
     }
 
+    /// The hour line a little before now, so the first hour label shows whole.
     private var anchorX: Double {
         guard let now = TimelineLayout.now(timeline) else { return 0 }
-        return max(0, TimelineLayout.x(now, start: timeline.startT) - 60)
+        let x = TimelineLayout.x(now, start: timeline.startT) - 60
+        return max(0, (x / TimelineLayout.hourWidth).rounded(.down) * TimelineLayout.hourWidth)
     }
 
     // MARK: The selected hour
@@ -143,7 +179,7 @@ private struct LaneFootnote: View {
     var body: some View {
         if !lane.credits.isEmpty || !lane.notices.isEmpty {
             VStack(alignment: .leading, spacing: 2) {
-                Text(lane.label).font(.caption2.weight(.semibold))
+                Text(lane.label).font(.caption.weight(.semibold))
                 NoticeList(notices: lane.notices)
                 CreditsLine(credits: lane.credits)
             }
@@ -155,12 +191,15 @@ private struct LaneFootnote: View {
 // MARK: - Drawing
 
 /// The time ticks along the top, labelled by the view model, and the hour grid.
+/// A label that either edge of the part on screen would cut is left out until it is whole.
 private struct TimelineAxis: View {
     let timeline: ViewModel.Timeline
+    let visible: ClosedRange<CGFloat>
 
     var body: some View {
         Canvas { context, size in
             var lastEnd: CGFloat = -.infinity
+            let shown = visible.upperBound > visible.lowerBound ? visible : 0...size.width
             for tick in timeline.xTicks {
                 let x = CGFloat(TimelineLayout.x(tick.t, start: timeline.startT))
                 var line = Path()
@@ -169,14 +208,23 @@ private struct TimelineAxis: View {
                 context.stroke(line, with: .color(.secondary), lineWidth: 1)
                 let text = context.resolve(
                     Text(tick.label).font(.caption2.weight(tick.major ? .semibold : .regular))
-                        .foregroundStyle(tick.major ? Color.primary : Color.secondary))
+                        .foregroundStyle(Color.primary))
                 let width = text.measure(in: size).width
-                guard x + 3 >= lastEnd + 4, x + 3 + width <= size.width + 40 else { continue }
-                context.draw(text, at: CGPoint(x: x + 3, y: size.height / 2 - 1), anchor: .leading)
-                lastEnd = x + 3 + width
+                let left = x + 3
+                guard left >= lastEnd + 4, left >= shown.lowerBound,
+                    left + width <= shown.upperBound
+                else { continue }
+                context.draw(text, at: CGPoint(x: left, y: size.height / 2 - 1), anchor: .leading)
+                lastEnd = left + width
             }
         }
-        .accessibilityHidden(true)
+        .accessibilityElement()
+        .accessibilityLabel(Text(Self.spoken(timeline)))
+    }
+
+    /// The axis read aloud: its major ticks, in the view's words.
+    static func spoken(_ timeline: ViewModel.Timeline) -> String {
+        timeline.xTicks.filter(\.major).map(\.label).joined(separator: ", ")
     }
 }
 
@@ -184,6 +232,7 @@ private struct TimelineAxis: View {
 private struct LaneRow: View {
     let timeline: ViewModel.Timeline
     let lane: ViewModel.TimelineLane
+    let sunMode: Bool
 
     private let topInset: CGFloat = 16
     private let bottomInset: CGFloat = 15
@@ -211,9 +260,9 @@ private struct LaneRow: View {
                 let a = CGFloat(TimelineLayout.x(band.startT, start: timeline.startT))
                 let b = CGFloat(TimelineLayout.x(band.endT, start: timeline.startT))
                 let rect = CGRect(x: a, y: 0, width: max(b - a, 1), height: size.height)
-                context.fill(Path(rect), with: .color(Self.color(band.kind)))
+                context.fill(Path(rect), with: .color(Self.color(band.kind, sunMode: sunMode)))
                 let text = context.resolve(
-                    Text(band.label).font(.caption2).foregroundStyle(Color.secondary))
+                    Text(band.label).font(.caption2).foregroundStyle(Color.primary))
                 if text.measure(in: size).width + 6 <= rect.width {
                     context.draw(
                         text, at: CGPoint(x: rect.minX + 4, y: size.height - 8), anchor: .leading)
@@ -229,6 +278,7 @@ private struct LaneRow: View {
                 let f = (value - range.lowerBound) / (range.upperBound - range.lowerBound)
                 return plotBottom - CGFloat(f) * (plotBottom - plotTop)
             }
+            let stroke = Palette.strokeScale(sunMode)
             let gap = Int64(timeline.stepMinutes) * 60 * 3
             for (index, series) in chart.series.enumerated() {
                 let color: Color = index == 0 ? .accentColor : .orange
@@ -240,7 +290,10 @@ private struct LaneRow: View {
                 case "dots":
                     for point in points {
                         context.fill(
-                            Path(ellipseIn: CGRect(x: point.x - 2, y: point.y - 2, width: 4, height: 4)),
+                            Path(
+                                ellipseIn: CGRect(
+                                    x: point.x - 2 * stroke, y: point.y - 2 * stroke,
+                                    width: 4 * stroke, height: 4 * stroke)),
                             with: .color(color))
                     }
                 case "bars":
@@ -274,15 +327,15 @@ private struct LaneRow: View {
                         context.stroke(
                             line, with: .color(color),
                             style: StrokeStyle(
-                                lineWidth: 2, lineCap: .round, lineJoin: .round,
+                                lineWidth: 2 * stroke, lineCap: .round, lineJoin: .round,
                                 dash: dashed ? [5, 3] : []))
                     }
                 }
             }
 
-            // Markers: a dot on the curve where they have a value, a rule where they do not.
-            var lastEnd: CGFloat = -.infinity
-            for marker in chart.markers.sorted(by: { $0.t < $1.t }) {
+            // Markers: a dot on the curve where they have a value, a rule where they do not;
+            // their words are drawn over this by `LaneLabels`.
+            for marker in chart.markers {
                 let x = CGFloat(TimelineLayout.x(marker.t, start: timeline.startT))
                 if let value = marker.value {
                     let point = CGPoint(x: x, y: y(value))
@@ -294,27 +347,21 @@ private struct LaneRow: View {
                     rule.move(to: CGPoint(x: x, y: 0))
                     rule.addLine(to: CGPoint(x: x, y: size.height))
                     context.stroke(
-                        rule, with: .color(Self.markerColor(marker.kind)), lineWidth: 1.5)
+                        rule, with: .color(Self.markerColor(marker.kind)),
+                        lineWidth: 1.5 * stroke)
                 }
-                let text = context.resolve(
-                    Text(marker.label).font(.caption2.weight(.medium)).foregroundStyle(Color.primary))
-                let width = text.measure(in: size).width
-                var left = x + 4
-                if left + width > size.width { left = x - 4 - width }
-                guard left >= lastEnd + 4, left >= 0 else { continue }
-                context.draw(text, at: CGPoint(x: left, y: 8), anchor: .leading)
-                lastEnd = left + width
             }
         }
     }
 
-    static func color(_ kind: String) -> Color {
-        switch kind {
-        case "night": .indigo.opacity(0.22)
-        case "slack": .gray.opacity(0.3)
-        case "solunar_major": .green.opacity(0.35)
-        case "solunar_minor": .green.opacity(0.18)
-        default: .yellow.opacity(0.3)
+    static func color(_ kind: String, sunMode: Bool) -> Color {
+        let strength = Palette.fillScale(sunMode)
+        return switch kind {
+        case "night": .indigo.opacity(0.22 * strength)
+        case "slack": .gray.opacity(0.3 * strength)
+        case "solunar_major": .green.opacity(0.35 * strength)
+        case "solunar_minor": .green.opacity(0.18 * strength)
+        default: .yellow.opacity(0.3 * strength)
         }
     }
 
@@ -323,5 +370,39 @@ private struct LaneRow: View {
         case "sunrise", "sunset": .orange
         default: .secondary
         }
+    }
+}
+
+/// A lane's marker words ("High 4.3 ft", "Sunset 4:37 PM"): right of their marker, or left of
+/// it where the right would run past the part on screen, and left out while neither fits whole.
+private struct LaneLabels: View {
+    let timeline: ViewModel.Timeline
+    let lane: ViewModel.TimelineLane
+    let visible: ClosedRange<CGFloat>
+
+    var body: some View {
+        Canvas { context, size in
+            let shown = visible.upperBound > visible.lowerBound ? visible : 0...size.width
+            let low = max(0, shown.lowerBound)
+            let high = min(size.width, shown.upperBound)
+            var lastEnd: CGFloat = -.infinity
+            for marker in lane.chart.markers.sorted(by: { $0.t < $1.t }) {
+                let x = CGFloat(TimelineLayout.x(marker.t, start: timeline.startT))
+                let text = context.resolve(
+                    Text(marker.label).font(.caption2.weight(.medium))
+                        .foregroundStyle(Color.primary))
+                let width = text.measure(in: size).width
+                var left = x + 4
+                if left + width > high { left = x - 4 - width }
+                guard left >= lastEnd + 4, left >= low, left + width <= high else { continue }
+                let box = CGRect(x: left - 2, y: 1, width: width + 4, height: 15)
+                context.fill(
+                    Path(roundedRect: box, cornerRadius: 3),
+                    with: .color(Color(.secondarySystemGroupedBackground).opacity(0.85)))
+                context.draw(text, at: CGPoint(x: left, y: 8), anchor: .leading)
+                lastEnd = left + width
+            }
+        }
+        .allowsHitTesting(false)
     }
 }

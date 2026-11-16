@@ -31,6 +31,7 @@ struct SourcesView: View {
                 }
             }
         }
+        .readableText()
         .environment(\.editMode, $editMode)
         .navigationTitle("Sources")
         .navigationBarTitleDisplayMode(.inline)
@@ -128,7 +129,7 @@ private struct ChainRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.name)
                 if let detail {
-                    Text(detail).font(.caption).foregroundStyle(.secondary)
+                    Text(detail).font(.caption).foregroundStyle(.readableSecondary)
                 }
             }
         }

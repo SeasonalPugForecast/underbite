@@ -45,6 +45,8 @@ struct RootTabs: View {
                 showsWelcome = false
             }
         }
+        // Buttons and links in a blue that small text can be read in, the welcome's too.
+        .tint(Palette.accent)
     }
 }
 
@@ -56,11 +58,22 @@ private struct ComingSection: View {
 
     var body: some View {
         NavigationStack {
-            ContentUnavailableView {
-                Label("\(title) is coming", systemImage: systemImage)
-            } description: {
+            VStack(spacing: 12) {
+                Image(systemName: systemImage)
+                    .font(.largeTitle)
+                    .foregroundStyle(.readableSecondary)
+                    .accessibilityHidden(true)
+                Text("\(title) is coming")
+                    .font(.title2.bold())
+                    .multilineTextAlignment(.center)
                 Text(text)
+                    .foregroundStyle(.readableSecondary)
+                    .multilineTextAlignment(.center)
             }
+            .padding()
+            .frame(maxWidth: 420)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .accessibilityElement(children: .combine)
             .navigationTitle(title)
         }
     }
@@ -68,7 +81,8 @@ private struct ComingSection: View {
 
 /// The launch arguments the app reads, in debug builds only (screenshots, UI tests):
 /// `-open-spot <id>` opens that spot, `-tab <map|spots|trips|log|settings>` opens that section, `-welcome` shows the welcome,
-/// and `-seed` (a screenshot run) skips the first launch's welcome.
+/// `-seed` (a screenshot run) or `-sample` (a UI test) skips the first launch's welcome, and
+/// `-sunMode` shows sun mode for that launch only.
 enum LaunchArguments {
     private static var arguments: [String] {
         #if DEBUG
@@ -89,6 +103,9 @@ enum LaunchArguments {
     static var initialTab: AppTab? {
         value(after: "-tab").flatMap(AppTab.init(rawValue:))
     }
+
+    /// `-sunMode` shows sun mode for that launch, without saving it.
+    static var sunMode: Bool { arguments.contains("-sunMode") }
 
     /// Whether to show the welcome: asked for with `-welcome`, else on the first launch
     /// outside screenshot runs.

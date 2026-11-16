@@ -108,6 +108,7 @@ struct RefreshPage: View {
                 Text("Data is fetched when the app opens and older than about two thirds of this, and again while it is open. Low Power Mode waits longer.")
             }
         }
+        .readableText()
         .navigationTitle("Refresh")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -133,6 +134,26 @@ struct VoicePage: View {
                 Text("Luna adds a little personality to captions and empty screens. Safety text, alerts and the \"not for navigation\" notes are always plain.")
             }
         }
+    }
+}
+
+/// Sun mode: a display preference of this device, kept with the refresh interval.
+struct SunModePage: View {
+    @Environment(SpotStore.self) private var store
+
+    var body: some View {
+        Form {
+            Section {
+                Toggle(
+                    "Sun mode",
+                    isOn: Binding(get: { store.sunMode }, set: { store.setSunMode($0) }))
+            } footer: {
+                Text("Higher contrast, bolder text and heavier lines and outlines, for reading the screen in bright sun. Values and words stay the same.")
+            }
+        }
+        .readableText()
+        .navigationTitle("Sun mode")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

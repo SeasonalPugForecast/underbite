@@ -36,7 +36,7 @@ struct SpotEditorView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Suggested: \(option.label)")
                         ForEach(hint.reasons, id: \.self) { reason in
-                            Text(reason).font(.caption).foregroundStyle(.secondary)
+                            Text(reason).font(.caption).foregroundStyle(.readableSecondary)
                         }
                     }
                     .accessibilityElement(children: .combine)
@@ -70,6 +70,7 @@ struct SpotEditorView: View {
                 Button("Delete spot", role: .destructive) { confirmsDelete = true }
             }
         }
+        .readableText()
         .navigationTitle("Edit spot")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

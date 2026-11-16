@@ -17,10 +17,17 @@ struct AttributionView: View {
                         Text(source.name).font(.headline)
                         Text(source.credit).font(.subheadline)
                         if let license = source.license {
-                            Text(license).font(.caption).foregroundStyle(.secondary)
+                            Text(license).font(.caption).foregroundStyle(.readableSecondary)
                         }
                         if let url = source.url.flatMap(URL.init(string:)) {
-                            Link(url.host() ?? source.name, destination: url).font(.caption)
+                            // A full-height target, read as the source's site, not its address.
+                            Link(destination: url) {
+                                Label(url.host() ?? source.name, systemImage: "safari")
+                                    .frame(minHeight: 44, alignment: .leading)
+                                    .contentShape(Rectangle())
+                            }
+                            .font(.subheadline)
+                            .accessibilityLabel(Text("\(source.name) website"))
                         }
                     }
                     .accessibilityElement(children: .contain)
@@ -34,6 +41,7 @@ struct AttributionView: View {
                 NavigationLink("Acknowledgements") { AcknowledgementsView() }
             }
         }
+        .readableText()
         .navigationTitle("Attribution")
         .navigationBarTitleDisplayMode(.inline)
     }

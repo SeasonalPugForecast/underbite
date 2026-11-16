@@ -53,7 +53,7 @@ struct LunaEmptyState: View {
                 .font(.title3.bold())
                 .multilineTextAlignment(.center)
             Text(kind.text(voice))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.readableSecondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: 420)
@@ -84,7 +84,7 @@ struct LunaLoading: View {
                 ProgressView()
             }
             Text(voice.pick(luna: "Luna's fetching the water…", plain: "Loading…"))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.readableSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .combine)

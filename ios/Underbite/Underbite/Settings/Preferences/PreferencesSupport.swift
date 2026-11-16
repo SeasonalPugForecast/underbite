@@ -52,6 +52,7 @@ struct PreferencePage<Content: View>: View {
         Form {
             content(SettingsAccess(store: store, problem: $problem))
         }
+        .readableText()
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .alert(
@@ -109,12 +110,18 @@ struct QuantityRow: View {
                     in: 0...Double(stops.count - 1), step: 1
                 ) {
                     Text(title)
-                } minimumValueLabel: {
-                    Text(stops.first?.label ?? "").font(.caption2)
-                } maximumValueLabel: {
-                    Text(stops.last?.label ?? "").font(.caption2)
                 }
                 .accessibilityValue(entry.label(of: value))
+                // The ends under the slider rather than beside it, so they grow with the text
+                // size and leave the slider its width.
+                HStack(alignment: .firstTextBaseline) {
+                    Text(stops.first?.label ?? "")
+                    Spacer(minLength: 8)
+                    Text(stops.last?.label ?? "").multilineTextAlignment(.trailing)
+                }
+                .font(.caption)
+                .foregroundStyle(.readableSecondary)
+                .accessibilityHidden(true)
                 TextField("Type a value", text: $typed)
                     .keyboardType(.numbersAndPunctuation)
                     .textInputAutocapitalization(.never)
@@ -122,10 +129,10 @@ struct QuantityRow: View {
                     .submitLabel(.done)
                     .onSubmit { commit(entry) }
                 if let typedProblem {
-                    Text(typedProblem).font(.caption).foregroundStyle(.red)
+                    Text(typedProblem).font(.caption).foregroundStyle(Palette.error)
                 }
             } else if optional {
-                Text(offLabel).font(.subheadline).foregroundStyle(.secondary)
+                Text(offLabel).font(.subheadline).foregroundStyle(.readableSecondary)
             }
         }
     }

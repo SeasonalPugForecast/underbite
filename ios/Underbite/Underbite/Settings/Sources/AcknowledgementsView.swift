@@ -26,7 +26,7 @@ struct AcknowledgementsView: View {
                     } label: {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("\(crate.name) \(crate.version)")
-                            Text(crate.license).font(.caption).foregroundStyle(.secondary)
+                            Text(crate.license).font(.caption).foregroundStyle(.readableSecondary)
                         }
                     }
                 }
@@ -36,6 +36,7 @@ struct AcknowledgementsView: View {
                 Text("The Rust crates in the app's core.")
             }
         }
+        .readableText()
         .navigationTitle("Acknowledgements")
         .navigationBarTitleDisplayMode(.inline)
     }

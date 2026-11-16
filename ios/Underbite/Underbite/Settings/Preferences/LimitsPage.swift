@@ -11,7 +11,7 @@ struct LimitsPage: View {
                     NavigationLink(value: LimitRoute(index: index)) {
                         VStack(alignment: .leading) {
                             Text(limit.name)
-                            Text(summary(limit)).font(.caption).foregroundStyle(.secondary)
+                            Text(summary(limit)).font(.caption).foregroundStyle(.readableSecondary)
                         }
                     }
                 }

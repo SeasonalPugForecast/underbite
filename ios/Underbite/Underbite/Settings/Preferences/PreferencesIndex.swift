@@ -4,7 +4,7 @@ import SwiftUI
 /// `NavigationLink(value:)` and `navigationDestination(for: PreferencePageID.self)`, or list
 /// them all with `PreferencesLinks`.
 enum PreferencePageID: String, CaseIterable, Hashable, Identifiable {
-    case units, limits, rivers, fishing, freshness, refresh, voice, privacy
+    case units, limits, rivers, fishing, freshness, refresh, voice, display, privacy
 
     var id: String { rawValue }
 
@@ -17,6 +17,7 @@ enum PreferencePageID: String, CaseIterable, Hashable, Identifiable {
         case .freshness: "Freshness and distance"
         case .refresh: "Refresh"
         case .voice: "Voice"
+        case .display: "Sun mode"
         case .privacy: "Privacy"
         }
     }
@@ -30,6 +31,7 @@ enum PreferencePageID: String, CaseIterable, Hashable, Identifiable {
         case .freshness: "clock.arrow.circlepath"
         case .refresh: "arrow.clockwise"
         case .voice: "text.bubble"
+        case .display: "sun.max"
         case .privacy: "lock"
         }
     }
@@ -44,6 +46,7 @@ enum PreferencePageID: String, CaseIterable, Hashable, Identifiable {
         case .freshness: FreshnessPage()
         case .refresh: RefreshPage()
         case .voice: VoicePage()
+        case .display: SunModePage()
         case .privacy: PrivacyPage()
         }
     }

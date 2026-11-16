@@ -58,6 +58,8 @@ struct CustomizeView: View {
                             Text(type.label).tag(String?.some(type.id))
                         }
                     }
+                    // Every choice as a row: a menu's value would be cut at large text sizes.
+                    .pickerStyle(.inline)
                     if let target {
                         Toggle(
                             "Own layout for \(label(for: target))",
@@ -75,12 +77,12 @@ struct CustomizeView: View {
                     editable.move(fromOffsets: source, toOffset: destination)
                 }
             } header: {
-                Text("Cards")
+                Text("Cards").font(.subheadline)
             } footer: {
                 Text("Drag the handles to reorder. A card with no data for a spot does not show.")
             }
             if let problem {
-                Section { Text(problem).foregroundStyle(.red) }
+                Section { Text(problem).foregroundStyle(Palette.error) }
             }
             Section {
                 Button("Restore the default layout", role: .destructive) {
@@ -88,6 +90,7 @@ struct CustomizeView: View {
                 }
             }
         }
+        .readableText()
         // The list stays in editing mode: handles and switches, one tap away from nothing else.
         .environment(\.editMode, $editMode)
         .navigationTitle("Customize")

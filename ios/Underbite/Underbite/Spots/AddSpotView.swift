@@ -67,6 +67,7 @@ struct AddSpotView: View {
                     }
                 }
             }
+            .readableText()
             .navigationTitle("Add a spot")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -114,10 +115,10 @@ struct AddSpotView: View {
             .disabled(finding)
             if chosen != nil {
                 Label("Location found", systemImage: "checkmark.circle")
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Palette.success)
             }
             if let findError {
-                Text(findError).foregroundStyle(.orange)
+                Text(findError).foregroundStyle(Palette.warning)
             }
         } footer: {
             Text("Your location is read once, and only kept if you save it as a spot.")
@@ -141,7 +142,7 @@ struct AddSpotView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(item.name ?? "Place")
                         if let address = item.address?.shortAddress {
-                            Text(address).font(.caption).foregroundStyle(.secondary)
+                            Text(address).font(.caption).foregroundStyle(.readableSecondary)
                         }
                     }
                 }
@@ -150,7 +151,7 @@ struct AddSpotView: View {
                     chosen.map { sameSpot($0, item.location.coordinate) } == true ? .isSelected : [])
             }
             if let searchError {
-                Text(searchError).foregroundStyle(.orange)
+                Text(searchError).foregroundStyle(Palette.warning)
             }
         } footer: {
             Text("What you type goes to Apple's Maps service to find the place. Underbite keeps nothing of it.")
@@ -189,7 +190,7 @@ struct AddSpotView: View {
                 .autocorrectionDisabled()
             if !typed.isEmpty, chosen == nil {
                 Text("Type latitude and longitude in decimal degrees, like 40.7033, -74.0170.")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Palette.warning)
             }
         } footer: {
             Text("Decimal degrees: north and east are positive.")

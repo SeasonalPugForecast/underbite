@@ -9,6 +9,8 @@ nonisolated private struct StoredState: Codable {
     var areas: [Area] = []
     var activeID: String?
     var refreshMinutes = RefreshPolicy.defaultMinutes
+    /// Sun mode; absent from files written before it existed.
+    var sunMode: Bool?
 }
 
 /// One row of the spot list and the page header, as `view_model` returns it: the core wrote
@@ -60,6 +62,9 @@ final class SpotStore {
     private(set) var activeID: String?
     /// How often data refreshes, in minutes (one of `RefreshPolicy.choices`).
     private(set) var refreshMinutes = RefreshPolicy.defaultMinutes
+    /// Sun mode: high contrast and heavier strokes for reading in bright light. A display
+    /// preference of this device, like the refresh interval; it changes no value or word.
+    private(set) var sunMode = false
     /// The settings, current version, as JSON.
     private(set) var settingsJSON: String
     /// What migrating the saved settings changed or found wrong.
@@ -155,6 +160,7 @@ final class SpotStore {
             refreshMinutes =
                 RefreshPolicy.choices.contains(state.refreshMinutes)
                 ? state.refreshMinutes : RefreshPolicy.defaultMinutes
+            sunMode = state.sunMode ?? false
         }
         loadSettings()
         if activeID == nil || !spots.contains(where: { $0.id == activeID }) {
@@ -283,6 +289,12 @@ final class SpotStore {
     func setRefreshMinutes(_ minutes: Int) {
         guard RefreshPolicy.choices.contains(minutes) else { return }
         refreshMinutes = minutes
+        saveState()
+    }
+
+    func setSunMode(_ on: Bool) {
+        guard on != sunMode else { return }
+        sunMode = on
         saveState()
     }
 
@@ -595,7 +607,8 @@ final class SpotStore {
     private func saveState() {
         files.write(
             StoredState(
-                spots: spots, areas: areas, activeID: activeID, refreshMinutes: refreshMinutes),
+                spots: spots, areas: areas, activeID: activeID, refreshMinutes: refreshMinutes,
+                sunMode: sunMode),
             "state.json")
     }
 }

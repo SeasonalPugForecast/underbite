@@ -2,7 +2,8 @@ import Charts
 import SwiftUI
 import UnderbiteKit
 
-/// A displayed value: the text the view made, then its unit, smaller.
+/// A displayed value: the text the view made, then its unit, smaller. One text, so a value
+/// too wide for the line at a large text size wraps rather than being cut.
 struct QuantityText: View {
     let quantity: ViewModel.Quantity
     var font: Font = .system(.title, design: .rounded, weight: .bold)
@@ -13,36 +14,45 @@ struct QuantityText: View {
             Text(quantity.text)
                 .font(.headline)
                 .fixedSize(horizontal: false, vertical: true)
+        } else if quantity.unit.isEmpty {
+            Text(quantity.text).font(font)
+                .fixedSize(horizontal: false, vertical: true)
         } else {
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(quantity.text).font(font)
-                if !quantity.unit.isEmpty {
-                    Text(quantity.unit).font(.subheadline).foregroundStyle(.secondary)
-                }
-            }
+            let value = Text(quantity.text).font(font)
+            let unit = Text(quantity.unit).font(.subheadline).foregroundStyle(.readableSecondary)
+            Text("\(value) \(unit)")
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
 
-/// A card's compact form: the headline, up to two lines and a sparkline.
+/// A card's compact form: the headline, up to two lines and a sparkline, which moves under
+/// the words at the accessibility text sizes so they keep the card's width.
 struct CompactBody: View {
     let compact: ViewModel.Compact
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        let stacked = typeSize.isAccessibilitySize
+        let layout =
+            stacked
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: 12))
+        layout {
             VStack(alignment: .leading, spacing: 4) {
                 QuantityText(quantity: compact.headline)
                 ForEach(Array(compact.lines.enumerated()), id: \.offset) { _, line in
                     Text(line)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.readableSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            Spacer(minLength: 0)
+            .frame(maxWidth: stacked ? .infinity : nil, alignment: .leading)
+            if !stacked { Spacer(minLength: 0) }
             if compact.spark.count >= 2 {
                 Sparkline(values: compact.spark)
-                    .frame(width: 84, height: 40)
+                    .frame(width: stacked ? 140 : 84, height: stacked ? 56 : 40)
             }
         }
     }
@@ -51,12 +61,14 @@ struct CompactBody: View {
 /// A line through values already in display units; no axes, the card's words carry the meaning.
 struct Sparkline: View {
     let values: [Double]
+    @Environment(\.sunMode) private var sunMode
 
     var body: some View {
         Chart(Array(values.enumerated()), id: \.offset) { index, value in
             LineMark(x: .value("Order", index), y: .value("Value", value))
                 .interpolationMethod(.monotone)
                 .foregroundStyle(.tint)
+                .lineStyle(StrokeStyle(lineWidth: 2 * Palette.strokeScale(sunMode)))
         }
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)

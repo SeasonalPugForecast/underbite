@@ -212,10 +212,11 @@ private struct SpotList: View {
     private func header(for section: SpotSection) -> some View {
         switch section.kind {
         case .pinned:
-            Label("Pinned", systemImage: "pin")
+            Label("Pinned", systemImage: "pin").foregroundStyle(.readableSecondary)
         case .area(let id):
             if let area = store.areas.first(where: { $0.id == id }) {
                 Text(area.name)
+                    .foregroundStyle(.readableSecondary)
                     .contextMenu {
                         Button("Rename", systemImage: "pencil") {
                             areaName = area.name
@@ -228,7 +229,7 @@ private struct SpotList: View {
                     }
             }
         case .unassigned:
-            if !store.areas.isEmpty { Text("Other spots") }
+            if !store.areas.isEmpty { Text("Other spots").foregroundStyle(.readableSecondary) }
         }
     }
 
@@ -292,7 +293,7 @@ private struct SpotRow: View {
                 }
             }
             if let label = listing?.waterTypeLabel {
-                Text(label).font(.subheadline).foregroundStyle(.secondary)
+                Text(label).font(.subheadline).foregroundStyle(.readableSecondary)
             }
             SpotStatusLine(status: listing?.status)
         }
@@ -300,12 +301,18 @@ private struct SpotRow: View {
     }
 }
 
-/// "updated 6 min ago", or the error, or a spinner while it fetches.
+/// "updated 6 min ago", or the error, or a spinner while it fetches; one under the other at the
+/// accessibility text sizes.
 struct SpotStatusLine: View {
     let status: SpotListing.Status?
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        HStack(spacing: 6) {
+        let layout =
+            typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+            : AnyLayout(HStackLayout(spacing: 6))
+        layout {
             if status?.refreshing == true { ProgressView().controlSize(.mini) }
             if let updated = status?.updated {
                 Text(updated)
@@ -313,11 +320,12 @@ struct SpotStatusLine: View {
                 Text("Not updated yet")
             }
             if let error = status?.error {
-                Text(error).foregroundStyle(.orange).lineLimit(2)
+                Text(error).foregroundStyle(Palette.warning)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .font(.caption)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.readableSecondary)
     }
 }
 

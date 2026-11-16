@@ -11,6 +11,7 @@ struct UnderbiteApp: App {
             RootTabs()
                 .environment(store)
                 .environment(\.voiceStyle, voice)
+                .sunMode(store.sunMode || LaunchArguments.sunMode)
                 .task { await store.refreshOnOpen() }
                 .onChange(of: phase) { _, phase in
                     switch phase {

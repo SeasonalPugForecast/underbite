@@ -81,7 +81,7 @@ struct SettingsView: View {
                 Label("Sources", systemImage: "list.number").tag(SettingsDestination.sources)
                 Label("Keys and accounts", systemImage: "key").tag(SettingsDestination.keys)
             } header: {
-                Text("Data")
+                Text("Data").foregroundStyle(.readableSecondary)
             }
             Section {
                 row(.units)
@@ -91,14 +91,15 @@ struct SettingsView: View {
                 row(.freshness)
                 row(.refresh)
             } header: {
-                Text("Units and limits")
+                Text("Units and limits").foregroundStyle(.readableSecondary)
             }
             Section {
                 Label("Cards", systemImage: "rectangle.grid.1x2").tag(SettingsDestination.cards)
                 row(.voice)
+                row(.display)
                 row(.privacy)
             } header: {
-                Text("Look and privacy")
+                Text("Look and privacy").foregroundStyle(.readableSecondary)
             }
             Section {
                 Label("About", systemImage: "pawprint").tag(SettingsDestination.about)
@@ -113,7 +114,7 @@ struct SettingsView: View {
                 Label("Acknowledgements", systemImage: "doc.text")
                     .tag(SettingsDestination.acknowledgements)
             } header: {
-                Text("About")
+                Text("About").foregroundStyle(.readableSecondary)
             }
         }
         .navigationTitle("Settings")

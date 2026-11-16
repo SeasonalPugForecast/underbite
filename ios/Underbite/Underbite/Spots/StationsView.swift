@@ -36,7 +36,7 @@ struct StationsView: View {
             Section {
                 if let problem = store.stationProblems[spotID] {
                     Text("Some stations could not be looked up: \(problem)")
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Palette.warning)
                 }
             } footer: {
                 Text(
@@ -44,6 +44,7 @@ struct StationsView: View {
                 )
             }
         }
+        .readableText()
         .overlay {
             if groups.isEmpty {
                 if looking {
@@ -112,13 +113,13 @@ private struct StationRowView: View {
                 Text(row.name).font(.headline)
                 Text(row.detail)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.readableSecondary)
                 ForEach(row.reasons, id: \.self) { reason in
                     Text(reason)
                         .font(.caption)
                         .foregroundStyle(
                             row.used || row.excluded
-                                ? AnyShapeStyle(.secondary) : AnyShapeStyle(.orange))
+                                ? AnyShapeStyle(.readableSecondary) : AnyShapeStyle(Palette.warning))
                 }
             }
             .accessibilityElement(children: .combine)

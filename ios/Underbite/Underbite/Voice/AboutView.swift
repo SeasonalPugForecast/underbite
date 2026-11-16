@@ -18,7 +18,7 @@ struct AboutView: View {
                         .font(.title.bold())
                     Text("Version \(appVersion), core \(coreVersion())")
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.readableSecondary)
                 }
                 .frame(maxWidth: .infinity)
                 .accessibilityElement(children: .combine)
@@ -38,6 +38,7 @@ struct AboutView: View {
                 Text("There is no account, no server of ours and no analytics. Spot coordinates leave your device only, rounded, to the data providers you choose, or in what you share yourself. The photo above stays in the app on this device.")
             }
         }
+        .readableText()
         .navigationTitle("About")
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: pickerItem) { _, item in
@@ -67,7 +68,7 @@ struct AboutView: View {
                     .overlay {
                         Image(systemName: "pawprint")
                             .font(.largeTitle)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.readableSecondary)
                     }
                     .accessibilityHidden(true)
             }
@@ -83,7 +84,7 @@ struct AboutView: View {
             }
             Text("Optional. The photo stays on this device and is never shared or uploaded.")
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.readableSecondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)

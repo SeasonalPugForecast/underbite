@@ -10,16 +10,24 @@ struct CardDetailView: View {
     var body: some View {
         List {
             if let compact = card.compact {
+                // A header, not a row: a row's rounded corners clip the first letters of
+                // the lines that reach its leading edge.
                 Section {
+                } header: {
                     CompactBody(compact: compact)
-                        .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets())
+                        .foregroundStyle(Color.primary)
+                        .textCase(nil)
+                        .padding(.bottom, 4)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel(
+                            Text(card.chrome?.accessibility ?? compact.headline.text))
                 }
             }
             if let chrome = card.chrome { charts(chrome) }
             details
             if let chrome = card.chrome { footer(chrome) }
         }
+        .readableText()
         .navigationTitle(card.chrome?.title ?? "")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -71,11 +79,11 @@ struct CardDetailView: View {
                     VStack(alignment: .trailing) {
                         QuantityText(quantity: item.headline, font: .headline)
                         if let line = item.line {
-                            Text(line).font(.caption).foregroundStyle(.secondary)
+                            Text(line).font(.caption).foregroundStyle(.readableSecondary)
                         }
                     }
                 }
-                .opacity(CardStyle.isGreyed(item.state) ? 0.55 : 1)
+                .greyed(CardStyle.isGreyed(item.state))
             }
         }
     }
@@ -83,7 +91,7 @@ struct CardDetailView: View {
     @ViewBuilder private func tideRows(_ full: ViewModel.TideFull) -> some View {
         Section {
             Text(full.stageLabel)
-            if let label = full.datumLabel { Text(label).foregroundStyle(.secondary) }
+            if let label = full.datumLabel { Text(label).foregroundStyle(.readableSecondary) }
             ForEach(full.next, id: \.t) { event in tideEvent(event) }
         }
         ForEach(full.days, id: \.date) { day in
@@ -141,7 +149,7 @@ struct CardDetailView: View {
             if let range = full.rangeStatus { Text(range.text) }
             if let percentile = full.percentile {
                 Text(percentile.text)
-                Text(percentile.classLabel).foregroundStyle(.secondary)
+                Text(percentile.classLabel).foregroundStyle(.readableSecondary)
             }
             ForEach(Array(full.floodCategories.enumerated()), id: \.offset) { _, category in
                 LabeledContent(category.label) { QuantityText(quantity: category.stage, font: .body) }
@@ -198,7 +206,7 @@ struct CardDetailView: View {
                     HStack {
                         QuantityText(quantity: hour.speed, font: .body)
                         if let gust = hour.gust { QuantityText(quantity: gust, font: .body) }
-                        if let direction = hour.direction { Text(direction).foregroundStyle(.secondary) }
+                        if let direction = hour.direction { Text(direction).foregroundStyle(.readableSecondary) }
                     }
                 }
             }
@@ -226,7 +234,7 @@ struct CardDetailView: View {
                 ForEach(day.periods, id: \.startT) { period in
                     VStack(alignment: .leading) {
                         LabeledContent(period.label, value: period.range)
-                        Text(period.causeLabel).font(.caption).foregroundStyle(.secondary)
+                        Text(period.causeLabel).font(.caption).foregroundStyle(.readableSecondary)
                     }
                 }
             }
@@ -237,7 +245,7 @@ struct CardDetailView: View {
     private func forecastRows(_ full: ViewModel.MarineForecastFull) -> some View {
         Section {
             Text(full.zoneName).font(.headline)
-            Text("\(full.product) · \(full.issued)").foregroundStyle(.secondary)
+            Text("\(full.product) · \(full.issued)").foregroundStyle(.readableSecondary)
             ForEach(Array(full.periods.enumerated()), id: \.offset) { _, period in
                 VStack(alignment: .leading, spacing: 2) {
                     Text(period.name).font(.subheadline.weight(.semibold))
@@ -275,12 +283,12 @@ struct CardDetailView: View {
         ForEach(full.alerts) { alert in
             Section(alert.event) {
                 if let headline = alert.headline { Text(headline).font(.headline) }
-                if let span = AlertsBanner.span(alert) { Text(span).foregroundStyle(.secondary) }
-                Text(alert.severityLabel).foregroundStyle(.secondary)
+                if let span = AlertsBanner.span(alert) { Text(span).foregroundStyle(.readableSecondary) }
+                Text(alert.severityLabel).foregroundStyle(.readableSecondary)
                 if let description = alert.description { Text(description) }
                 if let instruction = alert.instruction { Text(instruction) }
                 if !alert.zones.isEmpty {
-                    Text(alert.zones.joined(separator: ", ")).font(.caption).foregroundStyle(.secondary)
+                    Text(alert.zones.joined(separator: ", ")).font(.caption).foregroundStyle(.readableSecondary)
                 }
             }
         }
@@ -293,17 +301,17 @@ struct CardDetailView: View {
                     LabeledContent(use.measurement, value: use.station)
                     Text([use.distance, use.age, use.relation].compactMap { $0 }.joined(separator: " · "))
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.readableSecondary)
                     StateReason(state: use.state)
                 }
-                .opacity(CardStyle.isGreyed(use.state) ? 0.55 : 1)
+                .greyed(CardStyle.isGreyed(use.state))
             }
         }
         if !full.errors.isEmpty {
             Section {
                 ForEach(Array(full.errors.enumerated()), id: \.offset) { _, error in
                     Label("\(error.source): \(error.message)", systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Palette.warning)
                 }
             }
         }
@@ -321,7 +329,7 @@ struct CardDetailView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         LabeledContent(row.label, value: row.value)
                         if let detail = row.detail {
-                            Text(detail).font(.caption).foregroundStyle(.secondary)
+                            Text(detail).font(.caption).foregroundStyle(.readableSecondary)
                         }
                     }
                 }
@@ -334,7 +342,7 @@ struct CardDetailView: View {
         Section {
             StateReason(state: chrome.state)
             if let footnote = chrome.footnote {
-                Text(footnote).font(.footnote).foregroundStyle(.secondary)
+                Text(footnote).font(.footnote).foregroundStyle(.readableSecondary)
             }
         }
         if case .sources(let sources) = card {
@@ -355,7 +363,7 @@ struct CardDetailView: View {
                             Text(credit.text)
                         }
                         if let licence = credit.licence {
-                            Text(licence).font(.caption).foregroundStyle(.secondary)
+                            Text(licence).font(.caption).foregroundStyle(.readableSecondary)
                         }
                     }
                 }

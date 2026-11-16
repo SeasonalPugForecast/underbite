@@ -49,7 +49,7 @@ struct KeysView: View {
                 if !(copernicus?.implemented ?? false) {
                     Text("Not available yet. The switch stays off until the app can use it.")
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.readableSecondary)
                 }
                 LabeledContent("User name", value: keys.copernicusUser ? "Saved" : "Not saved")
                 TextField("User name", text: $userDraft)
@@ -83,6 +83,7 @@ struct KeysView: View {
                 }
             }
         }
+        .readableText()
         .navigationTitle("Keys and accounts")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { keys = KeyState(store: KeychainStore()) }

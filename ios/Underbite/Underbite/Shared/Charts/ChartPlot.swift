@@ -11,7 +11,9 @@ struct ChartValueBand: Hashable {
 }
 
 /// What a chart's marks look like. Colours carry the series' role; the line style and weight
-/// carry it too, so no meaning rests on colour alone.
+/// carry it too, so no meaning rests on colour alone. The pairs drawn together (predicted and
+/// observed, a flood stage and the user's range) are blue against orange or red, which
+/// colour-blind eyes tell apart.
 enum ChartPalette {
     static func color(role: String) -> Color {
         switch role {
@@ -31,22 +33,28 @@ enum ChartPalette {
 
     static func width(role: String) -> CGFloat { role == "observed" ? 3 : 2 }
 
-    static func band(kind: String) -> Color {
+    /// A shaded span's fill; `strength` is 1, or more in sun mode.
+    static func band(kind: String, strength: Double = 1) -> Color {
         switch kind {
-        case "night": Color.indigo.opacity(0.14)
-        case "slack": Color.green.opacity(0.18)
-        case "solunar_major": Color.purple.opacity(0.18)
-        case "solunar_minor": Color.purple.opacity(0.09)
-        default: Color.yellow.opacity(0.18)
+        case "night": Color.indigo.opacity(0.14 * strength)
+        case "slack": Color.green.opacity(0.18 * strength)
+        case "solunar_major": Color.purple.opacity(0.18 * strength)
+        case "solunar_minor": Color.purple.opacity(0.09 * strength)
+        default: Color.yellow.opacity(0.18 * strength)
         }
     }
 
     static func rule(kind: String) -> Color {
         switch kind {
         case "flood_category": .red
-        case "user_range": .green
+        case "user_range": .blue
         default: .orange
         }
+    }
+
+    /// Rules differ by dash too: a flood stage long dashes, the user's range short ones.
+    static func ruleDash(kind: String) -> [CGFloat] {
+        kind == "user_range" ? [2, 3] : [5, 3]
     }
 
     static func symbol(marker kind: String) -> String? {
@@ -135,6 +143,9 @@ struct ChartPlot: View {
     let chart: ViewModel.Chart
     var valueBand: ChartValueBand?
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.sunMode) private var sunMode
+
+    private var stroke: CGFloat { Palette.strokeScale(sunMode) }
 
     var body: some View {
         let geometry = ChartGeometry(
@@ -152,7 +163,7 @@ struct ChartPlot: View {
                 AxisTick()
                 AxisValueLabel {
                     if let t = value.as(Double.self), let label = tickLabels[t] {
-                        Text(label).font(.caption2)
+                        Text(label).font(.caption)
                     }
                 }
             }
@@ -162,14 +173,18 @@ struct ChartPlot: View {
                 AxisGridLine()
                 AxisValueLabel {
                     if let v = value.as(Double.self), let label = geometry.yLabels[v] {
-                        Text(label).font(.caption2)
+                        Text(label).font(.caption)
                     }
                 }
             }
         }
+        // The plot's words stop growing at the largest standard size, so the curve keeps its
+        // room; the key under it and the audio graph carry every value at any size.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .frame(height: sizeClass == .regular ? 340 : 240)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(chart.accessibility))
+        .accessibilityChartDescriptor(ChartAudioGraph(chart: chart, yDomain: geometry.yDomain))
     }
 
     @ChartContentBuilder private func marks(_ geometry: ChartGeometry) -> some ChartContent {
@@ -178,7 +193,8 @@ struct ChartPlot: View {
                 xStart: .value("From", Double(band.startT)),
                 xEnd: .value("To", Double(band.endT))
             )
-            .foregroundStyle(ChartPalette.band(kind: band.kind))
+            .foregroundStyle(
+                ChartPalette.band(kind: band.kind, strength: Palette.fillScale(sunMode)))
         }
         if let band = geometry.band {
             RectangleMark(
@@ -187,7 +203,7 @@ struct ChartPlot: View {
                 yStart: .value("Low", band.low),
                 yEnd: .value("High", band.high)
             )
-            .foregroundStyle(Color.mint.opacity(0.16))
+            .foregroundStyle(Color.mint.opacity(0.16 * Palette.fillScale(sunMode)))
         }
         if geometry.drawsZero {
             RuleMark(y: .value("Zero", 0.0)).foregroundStyle(.secondary.opacity(0.6))
@@ -195,21 +211,24 @@ struct ChartPlot: View {
         ForEach(Array(geometry.rules.enumerated()), id: \.offset) { _, rule in
             RuleMark(y: .value("Rule", rule.value))
                 .foregroundStyle(ChartPalette.rule(kind: rule.kind))
-                .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [5, 3]))
+                .lineStyle(
+                    StrokeStyle(lineWidth: 1.5 * stroke, dash: ChartPalette.ruleDash(kind: rule.kind)))
                 .annotation(position: .top, alignment: .leading, spacing: 1) {
-                    Text(rule.label).font(.caption2).foregroundStyle(.secondary)
+                    Text(rule.label).font(.caption).foregroundStyle(.readableSecondary)
                 }
+        }
+        // Now goes under the curves and the event labels, which sit on a backing of their own
+        // so the line never runs through their words.
+        if let now = chart.nowT {
+            RuleMark(x: .value("Now", Double(now)))
+                .foregroundStyle(Color.red.opacity(0.8))
+                .lineStyle(StrokeStyle(lineWidth: 1.5 * stroke))
         }
         ForEach(Array(chart.series.enumerated()), id: \.offset) { index, series in
             seriesMarks(series, index: index)
         }
         ForEach(Array(chart.markers.enumerated()), id: \.offset) { _, marker in
             markerMark(marker)
-        }
-        if let now = chart.nowT {
-            RuleMark(x: .value("Now", Double(now)))
-                .foregroundStyle(Color.red.opacity(0.8))
-                .lineStyle(StrokeStyle(lineWidth: 1.5))
         }
     }
 
@@ -244,7 +263,7 @@ struct ChartPlot: View {
                 .foregroundStyle(color)
                 .lineStyle(
                     StrokeStyle(
-                        lineWidth: ChartPalette.width(role: series.role),
+                        lineWidth: ChartPalette.width(role: series.role) * stroke,
                         dash: ChartPalette.dash(role: series.role)))
             }
         }
@@ -257,15 +276,20 @@ struct ChartPlot: View {
                 .foregroundStyle(marker.kind == "low" ? Color.teal : Color.blue)
                 .annotation(
                     position: marker.kind == "low" ? .bottom : .top,
-                    spacing: 2,
+                    spacing: 4,
                     overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
                 ) {
-                    Text(marker.label).font(.caption2.weight(.medium))
+                    Text(marker.label)
+                        .font(.caption.weight(.medium))
+                        .padding(.horizontal, 3)
+                        .background(
+                            Color(.secondarySystemGroupedBackground).opacity(0.9),
+                            in: RoundedRectangle(cornerRadius: 3))
                 }
         } else if let symbol = ChartPalette.symbol(marker: marker.kind) {
             RuleMark(x: .value("Time", Double(marker.t)))
                 .foregroundStyle(Color.orange.opacity(0.7))
-                .lineStyle(StrokeStyle(lineWidth: 1, dash: [2, 3]))
+                .lineStyle(StrokeStyle(lineWidth: 1 * stroke, dash: [2, 3]))
                 .annotation(
                     position: .top, spacing: 0,
                     overflowResolution: .init(x: .fit(to: .chart), y: .disabled)
@@ -276,7 +300,7 @@ struct ChartPlot: View {
         } else {
             RuleMark(x: .value("Time", Double(marker.t)))
                 .foregroundStyle(Color.green.opacity(0.7))
-                .lineStyle(StrokeStyle(lineWidth: 1, dash: [2, 3]))
+                .lineStyle(StrokeStyle(lineWidth: 1 * stroke, dash: [2, 3]))
         }
     }
 }
@@ -294,7 +318,7 @@ struct ChartBlock: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(chart.title).font(.headline)
                 if !chart.unit.isEmpty {
-                    Text(chart.unit).font(.subheadline).foregroundStyle(.secondary)
+                    Text(chart.unit).font(.subheadline).foregroundStyle(.readableSecondary)
                 }
             }
             .accessibilityHidden(true)
@@ -348,7 +372,7 @@ struct ChartKey: View {
             ForEach(Array(notes.enumerated()), id: \.offset) { _, note in Text(note) }
         }
         .font(.caption)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.readableSecondary)
         .fixedSize(horizontal: false, vertical: true)
         .accessibilityHidden(true)
     }

@@ -24,6 +24,14 @@ struct ConditionsView: View {
             .navigationDestination(item: $openCard) { CardDetailView(card: $0) }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
+                    // Outdoors, one tap away: high contrast and heavier lines for bright sun.
+                    Toggle(
+                        "Sun mode", systemImage: "sun.max",
+                        isOn: Binding(get: { store.sunMode }, set: { store.setSunMode($0) })
+                    )
+                    .toggleStyle(.button)
+                }
+                ToolbarItem(placement: .primaryAction) {
                     Button("Customize", systemImage: "slider.horizontal.3") { customizing = true }
                 }
             }
@@ -231,17 +239,17 @@ private struct PageHeader: View {
                 if status?.refreshing == true { ProgressView().controlSize(.mini) }
             }
             .font(.subheadline)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.readableSecondary)
             if let error = status?.error {
                 Label(error, systemImage: "exclamationmark.triangle")
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Palette.warning)
                     .fixedSize(horizontal: false, vertical: true)
             }
             ForEach(Array(notices.enumerated()), id: \.offset) { _, notice in
                 Text(notice.text)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.readableSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -259,26 +267,27 @@ struct AlertsBanner: View {
         VStack(alignment: .leading, spacing: 10) {
             ForEach(card.full.alerts) { alert in
                 HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "exclamationmark.triangle.fill")
+                    Image(systemName: Self.symbol(alert.severity))
                         .foregroundStyle(Self.tint(alert.severity))
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(alert.headline ?? alert.event).font(.headline)
+                        // Primary on the tinted banner, where secondary text would be faint.
                         if let span = Self.span(alert) {
-                            Text(span).font(.subheadline).foregroundStyle(.secondary)
+                            Text(span).font(.subheadline)
                         }
-                        Text(alert.severityLabel).font(.caption).foregroundStyle(.secondary)
+                        Text(alert.severityLabel).font(.caption.weight(.medium))
                     }
                     .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right")
                         .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.readableTertiary)
                         .accessibilityHidden(true)
                 }
             }
-            NoticeList(notices: card.chrome.notices)
-            CreditsLine(credits: card.chrome.credits)
+            NoticeList(notices: card.chrome.notices, onTint: true)
+            CreditsLine(credits: card.chrome.credits, onTint: true)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -302,6 +311,14 @@ struct AlertsBanner: View {
         case (let start?, nil): return start
         case (nil, let end?): return end
         case (nil, nil): return nil
+        }
+    }
+
+    /// A warning's shape as well as its colour: an octagon for the severe ones.
+    static func symbol(_ severity: String) -> String {
+        switch severity {
+        case "extreme", "severe": "exclamationmark.octagon.fill"
+        default: "exclamationmark.triangle.fill"
         }
     }
 

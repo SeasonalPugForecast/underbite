@@ -24,18 +24,20 @@ struct RiversPage: View {
                 if rivers.isEmpty { Text("No gauges yet.") }
             }
             Section {
-                TextField("USGS gauge number, such as 01420500", text: $gauge)
+                TextField("Gauge number", text: $gauge)
                     .keyboardType(.numbersAndPunctuation)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .onSubmit { add(access) }
                 if let gaugeProblem {
-                    Text(gaugeProblem).font(.caption).foregroundStyle(.red)
+                    Text(gaugeProblem).font(.caption).foregroundStyle(Palette.error)
                 }
                 Button("Add a gauge", systemImage: "plus") { add(access) }
                     .disabled(gauge.trimmingCharacters(in: .whitespaces).isEmpty)
             } header: {
                 Text("Add a gauge")
+            } footer: {
+                Text("A USGS gauge number, such as 01420500.")
             }
         }
         .navigationDestination(for: RiverRoute.self) { RiverEditorPage(index: $0.index) }
