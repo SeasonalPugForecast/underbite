@@ -392,6 +392,9 @@ const LEDGER_KEY: &str = "ledger";
 const COVERAGE_KEY: &str = "coverage";
 /// How long a coverage check counts before a station is checked again, seconds.
 const COVERAGE_MAX_AGE_S: i64 = 24 * 3_600;
+/// Rounds of coverage checks and ranking one discovery runs at most: a check can promote
+/// stations nobody has checked yet into the plan, and those are checked in the next round.
+const COVERAGE_ROUNDS: usize = 3;
 
 /// One fetch's way out: the transport, the response cache and the call ledger shared by the
 /// sessions. Requests go out one at a time.
@@ -1071,6 +1074,39 @@ fn check_coverage(
     changed
 }
 
+/// Ranks, checks the planned stations nobody has checked yet and ranks again, until no planned
+/// station is unchecked (or [`COVERAGE_ROUNDS`] have run), so the next fetch starts from the
+/// same plan.
+fn settle(
+    host: &Host<'_>,
+    ctx: &FetchContext,
+    spot_id: &str,
+    rankings: &mut DiscoveryCache,
+    input: &mut DiscoveryInput,
+) -> (Ranking, Plan) {
+    let mut ranking = rankings.ranking(spot_id, input).clone();
+    let mut plan = ranking.plan(DEFAULT_STATIONS_PER_SOURCE);
+    for _ in 0..COVERAGE_ROUNDS {
+        if !check_coverage(
+            host,
+            ctx,
+            &ranking,
+            &plan,
+            &input.candidates,
+            &mut input.observed,
+        ) {
+            return (ranking, plan);
+        }
+        ranking = rankings.ranking(spot_id, input).clone();
+        plan = ranking.plan(DEFAULT_STATIONS_PER_SOURCE);
+    }
+    tracing::debug!(
+        rounds = COVERAGE_ROUNDS,
+        "coverage checks left for the next fetch"
+    );
+    (ranking, plan)
+}
+
 /// What discovery found for a spot.
 #[derive(Debug)]
 pub(crate) struct Discovery {
@@ -1161,19 +1197,7 @@ pub(crate) fn discover(
         joins,
         bin_depths_m: lists.bin_depths_m,
     };
-    let mut ranking = rankings.ranking(&spot.id, &input).clone();
-    let mut plan = ranking.plan(DEFAULT_STATIONS_PER_SOURCE);
-    if check_coverage(
-        host,
-        ctx,
-        &ranking,
-        &plan,
-        &input.candidates,
-        &mut input.observed,
-    ) {
-        ranking = rankings.ranking(&spot.id, &input).clone();
-        plan = ranking.plan(DEFAULT_STATIONS_PER_SOURCE);
-    }
+    let (ranking, plan) = settle(host, ctx, &spot.id, &mut rankings, &mut input);
     host.keep(NS_DISCOVERY, COVERAGE_KEY, &input.observed);
     host.keep(NS_DISCOVERY, &spot_key, &rankings);
     Discovery {
@@ -1999,18 +2023,30 @@ mod tests {
         // CO-OPS water levels stand in for the station's own temperature sensor.
         assert_eq!(first_link(&d, M::WaterTemperature).1, "8518750");
 
-        // Discovery checks the planned buoys' files once per run, so a second run probes the
-        // stations the first run's check promoted; the third run changes nothing. Later runs
-        // take the lists from the cache.
-        discovered(&battery(), &transport, &cache);
+        // Discovery checks the planned buoys' files until its plan settles, the stations a
+        // check promotes included: the next run starts from the same plan, checks no file and
+        // takes the lists from the cache.
+        let buoys = |d: &Discovery| -> Vec<String> {
+            d.plan.chains[&M::WaterTemperature]
+                .links
+                .iter()
+                .filter(|l| l.source == SourceId::NDBC)
+                .filter_map(|l| match &l.place {
+                    LinkPlace::Station { station, .. } => Some(station.id.clone()),
+                    LinkPlace::Point { .. } => None,
+                })
+                .collect()
+        };
+        assert_eq!(buoys(&d), ["batn6", "robn4", "mhrn6"]);
         let sent = transport.seen().len();
         let again = discovered(&battery(), &transport, &cache);
-        assert_eq!(again.plan, discovered(&battery(), &transport, &cache).plan);
+        assert_eq!(again.plan, d.plan);
         assert_eq!(first_link(&again, M::TidalCurrent).1, "NYH1927");
         let lists = [
             "stations.json",
             "activestations.xml",
             "monitoring-locations",
+            "realtime2/",
         ];
         assert!(
             transport.seen()[sent..]
