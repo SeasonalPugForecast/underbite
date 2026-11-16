@@ -9,6 +9,7 @@ use crate::model::{AlertSeverity, MarineAlert};
 use crate::provenance::SourceId;
 use crate::time::UnixTime;
 use crate::view::format::Formatter;
+use crate::view::strings::{Key, SafetyKey, source_name};
 use crate::view::{CardChrome, CardId, CardState, Compact, CreditVm, Quantity, ViewInput};
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -80,14 +81,12 @@ fn same_alert(a: &Entry, b: &Entry) -> bool {
             || a.vm.zones.iter().any(|z| b.vm.zones.contains(z)))
 }
 
+/// The credit text of the marine alerts when the snapshot carries none.
+const CREDIT_MARINE_ALERTS: &str = "Marine alerts: NOAA National Weather Service";
+
+/// How the alert source grades the alert: safety text, the same in every voice.
 const fn severity_label(severity: AlertSeverity) -> &'static str {
-    match severity {
-        AlertSeverity::Extreme => "Extreme",
-        AlertSeverity::Severe => "Severe",
-        AlertSeverity::Moderate => "Moderate",
-        AlertSeverity::Minor => "Minor",
-        AlertSeverity::Unknown => "Unknown severity",
-    }
+    SafetyKey::severity(severity).text()
 }
 
 const fn severity_rank(severity: AlertSeverity) -> u8 {
@@ -158,6 +157,7 @@ fn weather_entry(f: &Formatter, a: &Alert) -> Entry {
 
 /// Marine alerts and the weather provider's alerts, each advisory once, still in effect.
 /// The alert text is the source's, verbatim, whatever the voice.
+#[allow(clippy::too_many_lines)]
 pub fn build(input: &ViewInput) -> Option<AlertsCard> {
     let snapshot = &input.snapshot;
     let now = input.now;
@@ -208,11 +208,8 @@ pub fn build(input: &ViewInput) -> Option<AlertsCard> {
             .iter()
             .find(|a| a.source == SourceId::NWS);
         credits.push(CreditVm {
-            source: "National Weather Service".to_owned(),
-            text: found.map_or_else(
-                || "Marine alerts: NOAA National Weather Service".to_owned(),
-                |a| a.credit.clone(),
-            ),
+            source: source_name(&SourceId::NWS),
+            text: found.map_or_else(|| CREDIT_MARINE_ALERTS.to_owned(), |a| a.credit.clone()),
             link: found.and_then(|a| a.url.clone()),
             licence: None,
         });
@@ -229,13 +226,23 @@ pub fn build(input: &ViewInput) -> Option<AlertsCard> {
     let title = f.strings.card_title(CardId::Alerts).to_owned();
     let count = alerts.len();
     let events: Vec<&str> = alerts.iter().map(|a| a.event.as_str()).collect();
-    let accessibility = format!("{title}: {count} active. {}.", events.join(", "));
+    let accessibility = f.strings.fmt(
+        Key::AlertsAcc,
+        &[
+            ("title", &title),
+            ("count", &count.to_string()),
+            ("events", &events.join(", ")),
+        ],
+    );
     let lines = [
         top.ends
             .as_ref()
             .or(top.expires.as_ref())
-            .map(|t| format!("Until {t}")),
-        (count > 1).then(|| format!("{} more", count - 1)),
+            .map(|t| f.strings.fmt(Key::UntilTime, &[("time", t)])),
+        (count > 1).then(|| {
+            f.strings
+                .fmt(Key::MoreCount, &[("n", &(count - 1).to_string())])
+        }),
     ]
     .into_iter()
     .flatten()

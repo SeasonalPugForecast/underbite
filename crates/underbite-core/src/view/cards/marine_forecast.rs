@@ -6,6 +6,7 @@ use serde::Serialize;
 use crate::model::{Measurement, ZoneProduct};
 use crate::provenance::SourceId;
 use crate::view::format::Formatter;
+use crate::view::strings::{Key, source_name};
 use crate::view::{
     CardChrome, CardId, CardState, Compact, CreditVm, NoticeKind, Quantity, ViewInput,
 };
@@ -19,14 +20,17 @@ fn zone_page(zone_id: &str) -> String {
     format!("https://forecast.weather.gov/shmrn.php?mz={zone_id}")
 }
 
-const fn product_label(product: ZoneProduct) -> &'static str {
-    match product {
-        ZoneProduct::ZoneApi => "Zone forecast",
-        ZoneProduct::Cwf => "Coastal waters forecast",
-        ZoneProduct::Nsh => "Nearshore marine forecast",
-        ZoneProduct::Glf => "Open lake forecast",
-        ZoneProduct::Off => "Offshore waters forecast",
-    }
+/// The credit text of the zone forecast when the snapshot carries none.
+const CREDIT_MARINE_FORECAST: &str = "Marine forecast: NOAA National Weather Service";
+
+const fn product_label(f: &Formatter, product: ZoneProduct) -> &'static str {
+    f.strings.get(match product {
+        ZoneProduct::ZoneApi => Key::ProductZone,
+        ZoneProduct::Cwf => Key::ProductCwf,
+        ZoneProduct::Nsh => Key::ProductNsh,
+        ZoneProduct::Glf => Key::ProductGlf,
+        ZoneProduct::Off => Key::ProductOff,
+    })
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -66,15 +70,18 @@ pub fn build(input: &ViewInput) -> Option<MarineForecastCard> {
     let now = input.now;
     let same_day = f.date_of(forecast.issued) == f.date_of(now);
     let issued = if same_day {
-        format!("Issued {}", f.clock(forecast.issued))
+        f.strings
+            .fmt(Key::IssuedAt, &[("time", &f.clock(forecast.issued))])
     } else {
-        format!(
-            "Issued {}, {}",
-            f.date_of(forecast.issued),
-            f.clock(forecast.issued)
+        f.strings.fmt(
+            Key::IssuedOn,
+            &[
+                ("date", &f.date_of(forecast.issued)),
+                ("time", &f.clock(forecast.issued)),
+            ],
         )
     };
-    let product = product_label(forecast.product).to_owned();
+    let product = product_label(&f, forecast.product).to_owned();
     let periods: Vec<ForecastPeriodVm> = forecast
         .periods
         .iter()
@@ -106,22 +113,23 @@ pub fn build(input: &ViewInput) -> Option<MarineForecastCard> {
             .iter()
             .find(|a| a.source == SourceId::NWS);
         CreditVm {
-            source: "National Weather Service".to_owned(),
-            text: found.map_or_else(
-                || "Marine forecast: NOAA National Weather Service".to_owned(),
-                |a| a.credit.clone(),
-            ),
+            source: source_name(&SourceId::NWS),
+            text: found.map_or_else(|| CREDIT_MARINE_FORECAST.to_owned(), |a| a.credit.clone()),
             link: Some(zone_page(&forecast.id)),
             licence: None,
         }
     };
     let title = f.strings.card_title(CardId::MarineForecast).to_owned();
-    let accessibility = format!(
-        "{title} for {}. {product}, {}. {}: {}",
-        forecast.name,
-        issued.to_lowercase(),
-        first.name,
-        first.text
+    let accessibility = f.strings.fmt(
+        Key::MarineForecastAcc,
+        &[
+            ("title", &title),
+            ("zone", &forecast.name),
+            ("product", &product),
+            ("issued", &issued.to_lowercase()),
+            ("period", &first.name),
+            ("text", &first.text),
+        ],
     );
     Some(MarineForecastCard {
         chrome: CardChrome {

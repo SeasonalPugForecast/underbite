@@ -10,7 +10,7 @@ use crate::series::Series;
 use crate::time::UnixTime;
 use crate::view::cards::flow::card_state;
 use crate::view::format::Formatter;
-use crate::view::strings::{Key, source_name};
+use crate::view::strings::{Key, Strings, source_name};
 use crate::view::{
     CardChrome, CardId, CardState, Compact, CreditVm, Notice, NoticeKind, Quantity, ViewInput,
 };
@@ -18,6 +18,19 @@ use crate::view::{
 const PROVISIONAL_STATEMENT: &str = "https://waterdata.usgs.gov/provisional-data-statement/";
 const OPEN_METEO: &str = "https://open-meteo.com/";
 const OPEN_METEO_LICENCE: &str = "https://open-meteo.com/en/licence";
+/// Licences as the sources state them.
+const PUBLIC_DOMAIN: &str = "Public domain";
+const CC_BY_4: &str = "CC BY 4.0";
+/// What Open-Meteo's model providers are called as a credit.
+const MODEL_PROVIDERS: &str = "Open-Meteo model providers";
+/// The credit lines of the sources, as they ask to be credited.
+const CREDIT_USGS: &str = "U.S. Geological Survey";
+const CREDIT_COOPS: &str = "Tide, water-level and current data: NOAA/NOS CO-OPS";
+const CREDIT_HARMONICS: &str = "Computed on this device from NOAA CO-OPS harmonic constants";
+const CREDIT_NDBC: &str = "Observations: NOAA National Data Buoy Center";
+const CREDIT_NWPS: &str = "River forecasts: NOAA National Water Prediction Service";
+const CREDIT_NWS: &str = "Marine forecasts and alerts: NOAA National Weather Service";
+const CREDIT_OPEN_METEO: &str = "Weather data by Open-Meteo.com";
 /// The model providers Open-Meteo's marine data comes from, as its terms ask them credited.
 const MARINE_MODELS: &str = "Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), \
     ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service \
@@ -207,107 +220,95 @@ fn used(snapshot: &SpotSnapshot) -> Vec<Used<'_>> {
     out
 }
 
-const fn measurement_label(m: Measurement) -> &'static str {
-    match m {
-        Measurement::WaterTemperature => "Water temperature",
-        Measurement::Discharge => "River flow",
-        Measurement::GageHeight => "Gage height",
-        Measurement::LakeLevel => "Lake level",
-        Measurement::Turbidity => "Turbidity",
-        Measurement::DissolvedOxygen => "Dissolved oxygen",
-        Measurement::Conductivity => "Conductivity",
-        Measurement::Salinity => "Salinity",
-        Measurement::Ph => "pH",
-        Measurement::Chlorophyll => "Chlorophyll",
-        Measurement::Clarity => "Water clarity",
-        Measurement::Cyanobacteria => "Cyanobacteria",
-        Measurement::Tide => "Tide",
-        Measurement::TidalCurrent => "Tidal current",
-        Measurement::OceanCurrent => "Ocean current",
-        Measurement::Waves => "Waves",
-        Measurement::WavesForecast => "Wave forecast",
-        Measurement::SeaSurfaceTemp => "Sea surface temperature",
-        Measurement::SeaSurfaceTempForecast => "Sea surface temperature forecast",
-        Measurement::MarineForecast => "Marine forecast",
-        Measurement::MarineAlerts => "Marine alerts",
-        Measurement::FloodCategories => "Flood categories",
-        Measurement::FlowForecast => "River forecast",
-        Measurement::ObservedWind => "Wind",
-        Measurement::ObservedPressure => "Pressure",
-    }
+fn measurement_label(f: &Formatter, m: Measurement) -> &'static str {
+    f.strings.get(match m {
+        Measurement::WaterTemperature => Key::MeasWaterTemperature,
+        Measurement::Discharge => Key::MeasDischarge,
+        Measurement::GageHeight => Key::MeasGageHeight,
+        Measurement::LakeLevel => Key::MeasLakeLevel,
+        Measurement::Turbidity => Key::MeasTurbidity,
+        Measurement::DissolvedOxygen => Key::MeasDissolvedOxygen,
+        Measurement::Conductivity => Key::MeasConductivity,
+        Measurement::Salinity => Key::MeasSalinity,
+        Measurement::Ph => Key::MeasPh,
+        Measurement::Chlorophyll => Key::MeasChlorophyll,
+        Measurement::Clarity => Key::MeasClarity,
+        Measurement::Cyanobacteria => Key::MeasCyanobacteria,
+        Measurement::Tide => Key::MeasTide,
+        Measurement::TidalCurrent => Key::MeasTidalCurrent,
+        Measurement::OceanCurrent => Key::MeasOceanCurrent,
+        Measurement::Waves => Key::MeasWaves,
+        Measurement::WavesForecast => Key::MeasWavesForecast,
+        Measurement::SeaSurfaceTemp => Key::MeasSeaSurfaceTemp,
+        Measurement::SeaSurfaceTempForecast => Key::MeasSeaSurfaceTempForecast,
+        Measurement::MarineForecast => Key::MeasMarineForecast,
+        Measurement::MarineAlerts => Key::MeasMarineAlerts,
+        Measurement::FloodCategories => Key::MeasFloodCategories,
+        Measurement::FlowForecast => Key::MeasFlowForecast,
+        Measurement::ObservedWind => Key::MeasWind,
+        Measurement::ObservedPressure => Key::MeasPressure,
+    })
 }
 
-const fn relation_label(r: Relation) -> &'static str {
-    match r {
-        Relation::SameWaterBody => "Same water body",
-        Relation::Upstream => "Upstream",
-        Relation::Downstream => "Downstream",
-        Relation::Nearby => "Nearby",
-        Relation::Gridded => "Model grid",
-        Relation::Satellite => "Satellite",
-    }
+fn relation_label(f: &Formatter, r: Relation) -> &'static str {
+    f.strings.get(match r {
+        Relation::SameWaterBody => Key::RelSameWaterBody,
+        Relation::Upstream => Key::RelUpstream,
+        Relation::Downstream => Key::RelDownstream,
+        Relation::Nearby => Key::RelNearby,
+        Relation::Gridded => Key::RelModelGrid,
+        Relation::Satellite => Key::RelSatellite,
+    })
 }
 
-const fn kind_label(k: ValueKind) -> &'static str {
-    match k {
-        ValueKind::Observed => "Observed",
-        ValueKind::Predicted => "Predicted",
-        ValueKind::Modelled => "Modelled",
-        ValueKind::Satellite => "Satellite",
-        ValueKind::Computed => "Computed",
-    }
+fn kind_label(f: &Formatter, k: ValueKind) -> &'static str {
+    f.strings.get(match k {
+        ValueKind::Observed => Key::Observed,
+        ValueKind::Predicted => Key::Predicted,
+        ValueKind::Modelled => Key::ModelledCap,
+        ValueKind::Satellite => Key::RelSatellite,
+        ValueKind::Computed => Key::Computed,
+    })
 }
 
-const fn error_kind_label(k: SourceErrorKind) -> &'static str {
-    match k {
-        SourceErrorKind::RateLimited => "Rate limited",
-        SourceErrorKind::NotFound => "Not found",
-        SourceErrorKind::NoData => "No data",
-        SourceErrorKind::Stale => "Out of date",
-        SourceErrorKind::Parse => "Unreadable response",
-        SourceErrorKind::Transport => "Connection problem",
-        SourceErrorKind::Other => "Failed",
-    }
+fn error_kind_label(f: &Formatter, k: SourceErrorKind) -> &'static str {
+    f.strings.get(match k {
+        SourceErrorKind::RateLimited => Key::ErrRateLimited,
+        SourceErrorKind::NotFound => Key::ErrNotFound,
+        SourceErrorKind::NoData => Key::ErrNoData,
+        SourceErrorKind::Stale => Key::ErrStale,
+        SourceErrorKind::Parse => Key::ErrParse,
+        SourceErrorKind::Transport => Key::ErrTransport,
+        SourceErrorKind::Other => Key::ErrOther,
+    })
 }
 
 /// The credit a source is owed: the snapshot's own wording and link when it has them.
 fn credit_for(snapshot: &SpotSnapshot, id: &SourceId) -> CreditVm {
     let (text, link, licence) = match id.as_str() {
         "usgs" => (
-            "U.S. Geological Survey",
+            CREDIT_USGS,
             "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
-            Some("Public domain"),
+            Some(PUBLIC_DOMAIN),
         ),
         "coops" => (
-            "Tide, water-level and current data: NOAA/NOS CO-OPS",
+            CREDIT_COOPS,
             "https://tidesandcurrents.noaa.gov/",
-            Some("Public domain"),
+            Some(PUBLIC_DOMAIN),
         ),
         "coops-harmonics" => (
-            "Computed on this device from NOAA CO-OPS harmonic constants",
+            CREDIT_HARMONICS,
             "https://tidesandcurrents.noaa.gov/",
-            Some("Public domain"),
+            Some(PUBLIC_DOMAIN),
         ),
         "ndbc" => (
-            "Observations: NOAA National Data Buoy Center",
+            CREDIT_NDBC,
             "https://www.ndbc.noaa.gov/",
-            Some("Public domain"),
+            Some(PUBLIC_DOMAIN),
         ),
-        "nwps" => (
-            "River forecasts: NOAA National Water Prediction Service",
-            "https://water.noaa.gov/",
-            Some("Public domain"),
-        ),
-        "nws" => (
-            "Marine forecasts and alerts: NOAA National Weather Service",
-            "https://www.weather.gov/",
-            Some("Public domain"),
-        ),
-        "open-meteo-marine" => (
-            "Weather data by Open-Meteo.com",
-            OPEN_METEO,
-            Some("CC BY 4.0"),
-        ),
+        "nwps" => (CREDIT_NWPS, "https://water.noaa.gov/", Some(PUBLIC_DOMAIN)),
+        "nws" => (CREDIT_NWS, "https://www.weather.gov/", Some(PUBLIC_DOMAIN)),
+        "open-meteo-marine" => (CREDIT_OPEN_METEO, OPEN_METEO, Some(CC_BY_4)),
         _ => ("", "", None),
     };
     let found = snapshot.attribution.iter().find(|a| a.source == *id);
@@ -334,7 +335,7 @@ fn add(out: &mut Vec<CreditVm>, credit: CreditVm) {
 
 /// Every credit owed: the snapshot's attributions and each value's source, with Open-Meteo's
 /// model providers and the provisional-data statement where they apply.
-fn credits(snapshot: &SpotSnapshot, used: &[Used<'_>]) -> Vec<CreditVm> {
+fn credits(snapshot: &SpotSnapshot, used: &[Used<'_>], strings: Strings) -> Vec<CreditVm> {
     let mut ids: Vec<SourceId> = snapshot
         .attribution
         .iter()
@@ -362,7 +363,7 @@ fn credits(snapshot: &SpotSnapshot, used: &[Used<'_>]) -> Vec<CreditVm> {
                 source: w.provider.display_name().to_owned(),
                 text: w.provider.attribution().to_owned(),
                 link: (w.provider == ProviderId::OpenMeteo).then(|| OPEN_METEO.to_owned()),
-                licence: (w.provider == ProviderId::OpenMeteo).then(|| "CC BY 4.0".to_owned()),
+                licence: (w.provider == ProviderId::OpenMeteo).then(|| CC_BY_4.to_owned()),
             },
         );
         for p in &w.supplemented_by {
@@ -382,7 +383,7 @@ fn credits(snapshot: &SpotSnapshot, used: &[Used<'_>]) -> Vec<CreditVm> {
                 .iter()
                 .map(|m| whether_core::models::short_name(m))
                 .collect();
-            models.push(format!("Weather models: {}", names.join(", ")));
+            models.push(strings.fmt(Key::WeatherModels, &[("models", &names.join(", "))]));
         }
     }
     if seen.contains(&SourceId::OPEN_METEO_MARINE) {
@@ -392,7 +393,7 @@ fn credits(snapshot: &SpotSnapshot, used: &[Used<'_>]) -> Vec<CreditVm> {
         add(
             &mut out,
             CreditVm {
-                source: "Open-Meteo model providers".to_owned(),
+                source: MODEL_PROVIDERS.to_owned(),
                 text: models.join(". "),
                 link: Some(OPEN_METEO_LICENCE.to_owned()),
                 licence: None,
@@ -407,7 +408,7 @@ fn credits(snapshot: &SpotSnapshot, used: &[Used<'_>]) -> Vec<CreditVm> {
             &mut out,
             CreditVm {
                 source: source_name(&SourceId::USGS),
-                text: "Provisional data statement".to_owned(),
+                text: strings.get(Key::ProvisionalStatement).to_owned(),
                 link: Some(PROVISIONAL_STATEMENT.to_owned()),
                 licence: None,
             },
@@ -421,13 +422,13 @@ fn station_uses(input: &ViewInput, f: &Formatter, used: &[Used<'_>]) -> Vec<Stat
     for u in used {
         let p = u.provenance;
         let Some(station) = &p.station else { continue };
-        let measurement = measurement_label(u.measurement);
+        let measurement = measurement_label(f, u.measurement);
         // Predictions and computed curves have no age to speak of.
         let aged = matches!(p.kind, ValueKind::Observed | ValueKind::Satellite);
         let latest = u.latest.unwrap_or(p.observed_at);
         let state = card_state(input, f, u.measurement, p, aged.then_some(latest));
         // One row per station and kind of value, naming everything it supplies.
-        let kind = kind_label(p.kind);
+        let kind = kind_label(f, p.kind);
         if let Some(row) = out.iter_mut().find(|s| {
             s.station_id == station.id && s.source == source_name(&p.source) && s.kind == kind
         }) {
@@ -451,7 +452,7 @@ fn station_uses(input: &ViewInput, f: &Formatter, used: &[Used<'_>]) -> Vec<Stat
             } else {
                 f.strings.get(Key::Missing).to_owned()
             },
-            relation: relation_label(p.relation).to_owned(),
+            relation: relation_label(f, p.relation).to_owned(),
             kind: kind.to_owned(),
             state,
         });
@@ -459,18 +460,19 @@ fn station_uses(input: &ViewInput, f: &Formatter, used: &[Used<'_>]) -> Vec<Stat
     out
 }
 
-fn error_vm(e: &SourceError) -> SourceErrorVm {
+fn error_vm(f: &Formatter, e: &SourceError) -> SourceErrorVm {
     SourceErrorVm {
         source: source_name(&e.source),
-        measurement: e.measurement.map(|m| measurement_label(m).to_owned()),
-        kind: error_kind_label(e.kind).to_owned(),
+        measurement: e.measurement.map(|m| measurement_label(f, m).to_owned()),
+        kind: error_kind_label(f, e.kind).to_owned(),
         // The source's own plain message: "USGS: rate limited, used NWPS stage".
         message: e.message.clone(),
     }
 }
 
-fn plural(n: usize, one: &str, many: &str) -> String {
-    format!("{n} {}", if n == 1 { one } else { many })
+fn plural(f: &Formatter, n: usize, one: Key, many: Key) -> String {
+    f.strings
+        .fmt(if n == 1 { one } else { many }, &[("n", &n.to_string())])
 }
 
 /// Every credit, station and problem behind the page.
@@ -478,9 +480,9 @@ pub fn build(input: &ViewInput) -> Option<SourcesCard> {
     let snapshot = &input.snapshot;
     let f = Formatter::for_input(input);
     let used = used(snapshot);
-    let credits = credits(snapshot, &used);
+    let credits = credits(snapshot, &used, f.strings);
     let stations = station_uses(input, &f, &used);
-    let errors: Vec<SourceErrorVm> = snapshot.errors.iter().map(error_vm).collect();
+    let errors: Vec<SourceErrorVm> = snapshot.errors.iter().map(|e| error_vm(&f, e)).collect();
     if credits.is_empty() && stations.is_empty() && errors.is_empty() {
         return None;
     }
@@ -504,8 +506,9 @@ pub fn build(input: &ViewInput) -> Option<SourcesCard> {
         accessibility.push_str(&e.message);
     }
     let lines = [
-        (!stations.is_empty()).then(|| plural(stations.len(), "station", "stations")),
-        (!errors.is_empty()).then(|| plural(errors.len(), "problem", "problems")),
+        (!stations.is_empty())
+            .then(|| plural(&f, stations.len(), Key::StationOne, Key::StationMany)),
+        (!errors.is_empty()).then(|| plural(&f, errors.len(), Key::ProblemOne, Key::ProblemMany)),
     ]
     .into_iter()
     .flatten()
@@ -515,7 +518,7 @@ pub fn build(input: &ViewInput) -> Option<SourcesCard> {
             headline: Quantity {
                 value: Some(credits.len() as f32),
                 text: credits.len().to_string(),
-                unit: "sources".to_owned(),
+                unit: f.strings.get(Key::UnitSources).to_owned(),
             },
             lines,
             spark: Vec::new(),

@@ -7,7 +7,7 @@
 
 use whether_core::time::Weekday;
 
-use crate::model::{MoonPhase, PrincipalPhase, TideKind, WaterType};
+use crate::model::{AlertSeverity, MoonPhase, PrincipalPhase, TideKind, WaterType};
 use crate::provenance::SourceId;
 use crate::view::{CardId, NoticeKind, Voice};
 
@@ -381,6 +381,79 @@ keys! {
     WavePeriod => ("Wave period", "Wave period"),
     /// `{value}`.
     PeriodSeconds => ("period {value} seconds", "period {value} seconds"),
+    ProductZone => ("Zone forecast", "Zone forecast"),
+    ProductCwf => ("Coastal waters forecast", "Coastal waters forecast"),
+    ProductNsh => ("Nearshore marine forecast", "Nearshore marine forecast"),
+    ProductGlf => ("Open lake forecast", "Open lake forecast"),
+    ProductOff => ("Offshore waters forecast", "Offshore waters forecast"),
+    /// `{time}`.
+    IssuedAt => ("Issued {time}", "Issued {time}"),
+    /// `{date}`, `{time}`.
+    IssuedOn => ("Issued {date}, {time}", "Issued {date}, {time}"),
+    /// `{title}`, `{zone}`, `{product}`, `{issued}`, `{period}`, `{text}`.
+    MarineForecastAcc => (
+        "{title} for {zone}. {product}, {issued}. {period}: {text}",
+        "{title} for {zone}. {product}, {issued}. {period}: {text}",
+    ),
+    /// `{time}`.
+    UntilTime => ("Until {time}", "Until {time}"),
+    /// `{n}`.
+    MoreCount => ("{n} more", "{n} more"),
+    /// `{title}`, `{count}`, `{events}`.
+    AlertsAcc => (
+        "{title}: {count} active. {events}.",
+        "{title}: {count} active. {events}.",
+    ),
+    /// `{models}`.
+    WeatherModels => ("Weather models: {models}", "Weather models: {models}"),
+    MeasWaterTemperature => ("Water temperature", "Water temperature"),
+    MeasDischarge => ("River flow", "River flow"),
+    MeasGageHeight => ("Gage height", "Gage height"),
+    MeasLakeLevel => ("Lake level", "Lake level"),
+    MeasTurbidity => ("Turbidity", "Turbidity"),
+    MeasDissolvedOxygen => ("Dissolved oxygen", "Dissolved oxygen"),
+    MeasConductivity => ("Conductivity", "Conductivity"),
+    MeasSalinity => ("Salinity", "Salinity"),
+    MeasPh => ("pH", "pH"),
+    MeasChlorophyll => ("Chlorophyll", "Chlorophyll"),
+    MeasClarity => ("Water clarity", "Water clarity"),
+    MeasCyanobacteria => ("Cyanobacteria", "Cyanobacteria"),
+    MeasTide => ("Tide", "Tide"),
+    MeasTidalCurrent => ("Tidal current", "Tidal current"),
+    MeasOceanCurrent => ("Ocean current", "Ocean current"),
+    MeasWaves => ("Waves", "Waves"),
+    MeasWavesForecast => ("Wave forecast", "Wave forecast"),
+    MeasSeaSurfaceTemp => ("Sea surface temperature", "Sea surface temperature"),
+    MeasSeaSurfaceTempForecast => (
+        "Sea surface temperature forecast",
+        "Sea surface temperature forecast",
+    ),
+    MeasMarineForecast => ("Marine forecast", "Marine forecast"),
+    MeasMarineAlerts => ("Marine alerts", "Marine alerts"),
+    MeasFloodCategories => ("Flood categories", "Flood categories"),
+    MeasFlowForecast => ("River forecast", "River forecast"),
+    MeasWind => ("Wind", "Wind"),
+    MeasPressure => ("Pressure", "Pressure"),
+    RelSameWaterBody => ("Same water body", "Same water body"),
+    RelUpstream => ("Upstream", "Upstream"),
+    RelDownstream => ("Downstream", "Downstream"),
+    RelNearby => ("Nearby", "Nearby"),
+    RelModelGrid => ("Model grid", "Model grid"),
+    RelSatellite => ("Satellite", "Satellite"),
+    Computed => ("Computed", "Computed"),
+    ErrRateLimited => ("Rate limited", "Rate limited"),
+    ErrNotFound => ("Not found", "Not found"),
+    ErrNoData => ("No data", "No data"),
+    ErrStale => ("Out of date", "Out of date"),
+    ErrParse => ("Unreadable response", "Unreadable response"),
+    ErrTransport => ("Connection problem", "Connection problem"),
+    ErrOther => ("Failed", "Failed"),
+    UnitSources => ("sources", "sources"),
+    /// `{n}`.
+    StationOne => ("{n} station", "{n} station"),
+    StationMany => ("{n} stations", "{n} stations"),
+    ProblemOne => ("{n} problem", "{n} problem"),
+    ProblemMany => ("{n} problems", "{n} problems"),
     /// The placeholder for an unknown value.
     Missing => ("—", "—"),
 }
@@ -400,9 +473,26 @@ pub enum SafetyKey {
     RegulationsLink,
     /// `{threshold}`: the user's trout-stress temperature.
     TroutStress,
+    /// How serious an alert is, as the alert source grades it.
+    SeverityExtreme,
+    SeveritySevere,
+    SeverityModerate,
+    SeverityMinor,
+    SeverityUnknown,
 }
 
 impl SafetyKey {
+    /// The key of an alert severity.
+    pub const fn severity(severity: AlertSeverity) -> Self {
+        match severity {
+            AlertSeverity::Extreme => Self::SeverityExtreme,
+            AlertSeverity::Severe => Self::SeveritySevere,
+            AlertSeverity::Moderate => Self::SeverityModerate,
+            AlertSeverity::Minor => Self::SeverityMinor,
+            AlertSeverity::Unknown => Self::SeverityUnknown,
+        }
+    }
+
     /// The one text.
     pub const fn text(self) -> &'static str {
         match self {
@@ -416,6 +506,11 @@ impl SafetyKey {
             Self::TraditionalCue => "A traditional cue, not a promise.",
             Self::TextOnly => "Text only: open the map for the picture.",
             Self::TroutStress => "Consider not fishing for trout above {threshold}.",
+            Self::SeverityExtreme => "Extreme",
+            Self::SeveritySevere => "Severe",
+            Self::SeverityModerate => "Moderate",
+            Self::SeverityMinor => "Minor",
+            Self::SeverityUnknown => "Unknown severity",
             Self::RegulationsLink => {
                 "Check the official source for current regulations; this is not legal advice."
             }
@@ -636,6 +731,11 @@ mod tests {
             SafetyKey::TextOnly,
             SafetyKey::RegulationsLink,
             SafetyKey::TroutStress,
+            SafetyKey::SeverityExtreme,
+            SafetyKey::SeveritySevere,
+            SafetyKey::SeverityModerate,
+            SafetyKey::SeverityMinor,
+            SafetyKey::SeverityUnknown,
         ] {
             assert_eq!(luna.safety(key), plain.safety(key));
             assert!(!key.text().contains("Luna"));
