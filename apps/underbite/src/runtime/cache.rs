@@ -6,8 +6,6 @@
 //! redacted URL. Neither URLs nor keys appear in a file or in a file name, a response to a
 //! keyed request is never written, and a request for a fresh copy bypasses the cache.
 
-#![allow(dead_code)] // The fetch driver and the commands are the callers; they are wired in separately.
-
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
@@ -26,8 +24,6 @@ const VERSION_DIR: &str = "v1";
 pub(crate) const COOPS_STATION_LIST_TTL_S: i64 = 7 * 86_400;
 /// How long the other stations lists stay valid, seconds.
 pub(crate) const STATION_LIST_TTL_S: i64 = 86_400;
-/// How long harmonic constants stay valid, seconds.
-pub(crate) const HARMONICS_TTL_S: i64 = 90 * 86_400;
 
 /// A value with when it was stored.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -53,6 +49,16 @@ struct ResponseMeta {
     rate_limit_remaining: Option<u32>,
 }
 
+/// The environment names the cache directory with a relative path.
+#[derive(Debug, thiserror::Error)]
+#[error("{name} is a relative path ({}); set an absolute one or unset it", path.display())]
+pub(crate) struct RelativeCacheDir {
+    /// The variable.
+    pub(crate) name: &'static str,
+    /// Its value.
+    pub(crate) path: PathBuf,
+}
+
 /// The cache directory.
 #[derive(Clone, Debug)]
 pub(crate) struct Cache {
@@ -65,16 +71,34 @@ impl Cache {
         Self { dir: dir.into() }
     }
 
-    /// The default cache: `$XDG_CACHE_HOME/underbite/v1`, or `$HOME/.cache/underbite/v1`.
-    /// `lookup` reads the environment, so tests inject theirs.
-    pub(crate) fn from_env(lookup: impl Fn(&str) -> Option<String>) -> Option<Self> {
-        let absolute = |name: &str| lookup(name).map(PathBuf::from).filter(|p| p.is_absolute());
-        let root =
-            absolute("XDG_CACHE_HOME").or_else(|| absolute("HOME").map(|h| h.join(".cache")))?;
-        Some(Self::at(root.join("underbite").join(VERSION_DIR)))
+    /// The default cache: `$XDG_CACHE_HOME/underbite/v1`, or `$HOME/.cache/underbite/v1`;
+    /// none when neither is set. An empty variable counts as unset. A relative path in the
+    /// variable used is an error rather than passed over, so the cache never lands somewhere
+    /// the environment did not name. `lookup` reads the environment, so tests inject theirs.
+    pub(crate) fn from_env(
+        lookup: impl Fn(&str) -> Option<String>,
+    ) -> Result<Option<Self>, RelativeCacheDir> {
+        let set = |name: &'static str| {
+            lookup(name)
+                .filter(|v| !v.is_empty())
+                .map(|v| (name, PathBuf::from(v)))
+        };
+        let Some((name, path)) = set("XDG_CACHE_HOME").or_else(|| set("HOME")) else {
+            return Ok(None);
+        };
+        if !path.is_absolute() {
+            return Err(RelativeCacheDir { name, path });
+        }
+        let root = if name == "HOME" {
+            path.join(".cache")
+        } else {
+            path
+        };
+        Ok(Some(Self::at(root.join("underbite").join(VERSION_DIR))))
     }
 
     /// The directory.
+    #[cfg(test)]
     pub(crate) fn dir(&self) -> &Path {
         &self.dir
     }
@@ -146,6 +170,7 @@ impl Cache {
     }
 
     /// Deletes a stored value; a missing one is not an error.
+    #[cfg(test)]
     pub(crate) fn remove(&self, namespace: &str, key: &str) -> io::Result<()> {
         match fs::remove_file(self.value_path(namespace, key)?) {
             Err(e) if e.kind() != io::ErrorKind::NotFound => Err(e),
@@ -312,19 +337,24 @@ mod tests {
                     .map(|(_, v)| (*v).to_string())
             }
         };
-        let xdg = Cache::from_env(env(&[("XDG_CACHE_HOME", "/x/cache"), ("HOME", "/h")]));
-        assert_eq!(xdg.expect("dir").dir(), Path::new("/x/cache/underbite/v1"));
-        let home = Cache::from_env(env(&[("HOME", "/h")]));
+        let dir = |pairs| Cache::from_env(env(pairs)).map(|c| c.map(|c| c.dir().to_path_buf()));
         assert_eq!(
-            home.expect("dir").dir(),
-            Path::new("/h/.cache/underbite/v1")
+            dir(&[("XDG_CACHE_HOME", "/x/cache"), ("HOME", "h")]).expect("absolute"),
+            Some(PathBuf::from("/x/cache/underbite/v1"))
         );
-        let relative = Cache::from_env(env(&[("XDG_CACHE_HOME", "rel"), ("HOME", "/h")]));
         assert_eq!(
-            relative.expect("dir").dir(),
-            Path::new("/h/.cache/underbite/v1")
+            dir(&[("HOME", "/h")]).expect("absolute"),
+            Some(PathBuf::from("/h/.cache/underbite/v1"))
         );
-        assert!(Cache::from_env(env(&[])).is_none());
+        assert_eq!(
+            dir(&[("XDG_CACHE_HOME", ""), ("HOME", "/h")]).expect("absolute"),
+            Some(PathBuf::from("/h/.cache/underbite/v1"))
+        );
+        let relative = dir(&[("XDG_CACHE_HOME", "rel"), ("HOME", "/h")]).expect_err("relative");
+        assert_eq!(relative.name, "XDG_CACHE_HOME");
+        assert!(relative.to_string().contains("(rel)"), "{relative}");
+        assert!(dir(&[("HOME", "h")]).is_err());
+        assert_eq!(dir(&[]).expect("unset"), None);
     }
 
     #[test]

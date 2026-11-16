@@ -25,8 +25,9 @@ use underbite_providers::request::{
 use underbite_providers::session::{Chain, Link, Session};
 use underbite_providers::source::{FetchContext, FragmentValue, Fragments, Source};
 
-use super::stations::Env;
 use crate::cli::Global;
+use crate::runtime::env::Env;
+use crate::runtime::fetch::Host;
 use crate::runtime::transport::{Call, Fetched};
 
 /// Arguments of `underbite tides`.
@@ -83,25 +84,10 @@ struct Detail {
     timezone: Option<String>,
 }
 
-/// One request through the cache and the transport.
-fn send(env: &Env, call: &Call) -> anyhow::Result<Fetched> {
-    if let Some(hit) = env
-        .cache
-        .as_ref()
-        .and_then(|c| c.load_response(call, env.now))
-    {
-        return Ok(hit);
-    }
-    let fetched = env
-        .transport
-        .send(call)
-        .with_context(|| format!("request to {}", call.redacted_url()))?;
-    if let Some(cache) = &env.cache
-        && let Err(e) = cache.store_response(call, &fetched, env.now)
-    {
-        tracing::warn!(error = %e, "response not cached");
-    }
-    Ok(fetched)
+/// One request through the host, the URL (redacted) named when it fails.
+fn send(host: &Host<'_>, call: &Call) -> anyhow::Result<Fetched> {
+    host.send(call)
+        .with_context(|| format!("request to {}", call.redacted_url()))
 }
 
 fn target_for(place: Place, window: Window) -> Target {
@@ -114,20 +100,20 @@ fn target_for(place: Place, window: Window) -> Target {
 }
 
 /// The tide prediction station `id` from CO-OPS's list.
-fn find_station(env: &Env, ctx: &FetchContext, id: &str) -> anyhow::Result<StationRef> {
+fn find_station(host: &Host<'_>, ctx: &FetchContext, id: &str) -> anyhow::Result<StationRef> {
     let point = ctx.round(Coordinates {
         latitude: 0.0,
         longitude: 0.0,
     });
     let window = Window {
-        from: env.now,
-        to: env.now,
+        from: ctx.now,
+        to: ctx.now,
     };
     let request = mdapi::stations_request(
         StationList::TidePredictions,
         target_for(Place::Point(point), window),
     );
-    let fetched = send(env, &Call::from(&request))?;
+    let fetched = send(host, &Call::from(&request))?;
     let Metadata::Stations(list) = mdapi::parse(&request, &fetched.as_response())
         .map_err(|e| anyhow!("CO-OPS station list: {e}"))?
     else {
@@ -140,14 +126,14 @@ fn find_station(env: &Env, ctx: &FetchContext, id: &str) -> anyhow::Result<Stati
 }
 
 /// The zone the station's clock shows; UTC (and a note) when CO-OPS does not say.
-fn station_zone(env: &Env, id: &str) -> (TimeZone, String) {
+fn station_zone(host: &Host<'_>, id: &str) -> (TimeZone, String) {
     let found = (|| -> anyhow::Result<String> {
         let url = format!("{}/stations/{id}.json", mdapi::BASE);
         let call = Call::get(url).with_cache(CacheHint {
             max_age: Some(DETAILS_AGE_S),
             ..CacheHint::default()
         });
-        let fetched = send(env, &call)?;
+        let fetched = send(host, &call)?;
         if !(200..300).contains(&fetched.status) {
             bail!("HTTP {}", fetched.status);
         }
@@ -176,7 +162,7 @@ fn station_zone(env: &Env, id: &str) -> (TimeZone, String) {
 
 /// NOAA's published predictions, one request per range the API allows.
 fn online(
-    env: &Env,
+    host: &Host<'_>,
     ctx: &FetchContext,
     place: Place,
     window: Window,
@@ -194,7 +180,7 @@ fn online(
             || (curve && r.resource == Resource::CoopsTideCurve)
     }) {
         ran += 1;
-        for found in parse_with(&Coops, request, &send(env, &Call::from(request))?, ctx)? {
+        for found in parse_with(&Coops, request, &send(host, &Call::from(request))?, ctx)? {
             match (request.resource, found) {
                 (Resource::CoopsTideCurve, t) => {
                     if let Some(c) = &t.curve {
@@ -255,7 +241,7 @@ fn parse_with(
 /// subordinate station, its reference's and its offsets), through the session that follows the
 /// metadata requests.
 fn offline(
-    env: &Env,
+    host: &Host<'_>,
     ctx: &FetchContext,
     place: Place,
     window: Window,
@@ -279,12 +265,12 @@ fn offline(
     );
     while let Some(request) = session.next_request() {
         let call = Call::from(&request.clone());
-        match send(env, &call) {
+        match send(host, &call) {
             Ok(fetched) => session.on_response(&fetched.as_response()),
             Err(e) => session.on_transport_error(&format!("{e:#}")),
         }
     }
-    let outcome = session.finish(env.now);
+    let outcome = session.finish(ctx.now);
     outcome.marine.tide.ok_or_else(|| {
         let why: Vec<String> = outcome
             .errors
@@ -305,6 +291,7 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
         bail!("--days is 1 to {MAX_DAYS}");
     }
     let env = Env::from_global(global)?;
+    let host = env.host();
     let config = Config::default();
     let ctx = FetchContext::new(env.now, env.options.user_agent.clone())
         .with_coordinate_precision(config.sources.coordinate_precision);
@@ -321,22 +308,22 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
         to: UnixTime(first.0 + i64::from(args.days) * DAY_S - 1),
     };
 
-    let station = find_station(&env, &ctx, &args.station)?;
+    let station = find_station(&host, &ctx, &args.station)?;
     let place = Place::Station {
         station: station.clone(),
         distance_m: None,
         relation: Relation::Nearby,
     };
-    let (tz, zone_name) = station_zone(&env, &station.id);
+    let (tz, zone_name) = station_zone(&host, &station.id);
     let (tide, computed, credit) = if args.offline {
         (
-            offline(&env, &ctx, place, window)?,
+            offline(&host, &ctx, place, window)?,
             true,
             CoopsHarmonics.attribution(),
         )
     } else {
         (
-            online(&env, &ctx, place, window, args.json)?,
+            online(&host, &ctx, place, window, args.json)?,
             false,
             Coops.attribution(),
         )

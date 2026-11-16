@@ -10,13 +10,12 @@ use underbite_config::export::parse_toml;
 use underbite_config::rivers::RiverRange;
 use underbite_config::schema::{Config, Severity, has_errors};
 use underbite_core::model::{Spot, SpotSnapshot, WaterType};
-use underbite_core::time::{UnixTime, parse_rfc3339};
+use underbite_core::time::UnixTime;
 use underbite_core::view::{Card, CardState, SolunarSettings, SpotView, ViewInput, build_view};
 
 use crate::cli::Global;
-use crate::runtime::cache::Cache;
-use crate::runtime::fetch::{FetchOptions, fetch_spot_with, measurement_limits};
-use crate::runtime::transport::{Replay, Transport, UreqTransport, user_agent};
+use crate::runtime::env::{Env, var};
+use crate::runtime::fetch::{fetch_spot_with, measurement_limits};
 
 /// Arguments of `underbite spot`.
 #[derive(Debug, clap::Args)]
@@ -47,29 +46,20 @@ pub(crate) struct Args {
 
 /// Runs `underbite spot`.
 pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
-    let env = |name: &str| std::env::var(name).ok();
-    let config = load_config(args.config.as_deref(), &env)?;
-    let now = match &global.now {
-        Some(text) => parse_rfc3339(text).ok_or_else(|| anyhow!("--now: not an RFC 3339 time"))?,
-        None => clock(),
-    };
+    let config = load_config(args.config.as_deref(), &var)?;
     let (latitude, longitude) = parse_location(&args.location)?;
     let water_type = args
         .water_type
         .as_deref()
         .map(parse_water_type)
         .transpose()?;
-    let options = FetchOptions::from_env(env);
-
-    let replay;
-    let ureq;
-    let (transport, cache): (&dyn Transport, Option<Cache>) = if let Some(dir) = &global.replay {
-        replay = Replay::load(dir).context("--replay")?;
-        (&replay, None)
-    } else {
-        ureq = UreqTransport::new(&user_agent());
-        (&ureq, Cache::from_env(env))
-    };
+    let env = Env::from_global(global)?;
+    let (now, transport, cache, options) = (
+        env.now,
+        env.transport.as_ref(),
+        env.cache.as_ref(),
+        &env.options,
+    );
 
     let spot_for = |water_type| Spot {
         // Two decimals is what leaves the device, so it is all the id carries.
@@ -87,8 +77,8 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
             &config,
             now,
             transport,
-            cache.as_ref(),
-            &options,
+            cache,
+            options,
         )
         .snapshot
     };
@@ -118,14 +108,6 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
         print!("{}", render(&view)?);
     }
     Ok(ExitCode::SUCCESS)
-}
-
-/// The current time; the only place the app reads the clock.
-fn clock() -> UnixTime {
-    let secs = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map_or(0, |d| i64::try_from(d.as_secs()).unwrap_or(0));
-    UnixTime(secs)
 }
 
 /// The configuration at `path`, or the user's, or the defaults when there is none. Warnings

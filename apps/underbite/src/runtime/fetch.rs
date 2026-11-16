@@ -18,7 +18,6 @@
 //! `SpotSnapshot` with its
 //! credits and the errors of the sources that were passed over. The snapshot and the call ledger
 //! are saved; every request is logged only through `redact_url`.
-#![allow(dead_code)] // The spot, stations and tides commands call these; they are wired in separately.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
@@ -66,7 +65,7 @@ use underbite_core::provenance::Attribution;
 use underbite_core::time::standard_offset;
 use underbite_core::time::{local_date, local_date_bounds, zone};
 use underbite_providers::session::usage::OPEN_METEO;
-use underbite_providers::session::{Attempt, Chain, Link, Session, SessionOutcome};
+use underbite_providers::session::{Chain, Link, Session, SessionOutcome};
 use underbite_providers::source::{Period, Secrets};
 use underbite_providers::storms::{StormOptions, StormOutcome, StormWatchPlan};
 use underbite_providers::usgs::statistics::Reading;
@@ -87,8 +86,10 @@ use whether_providers::{
 // ---------------------------------------------------------------------------------------------
 
 /// The water and marine sources this tool runs, by configuration id. Other ids in a chain
-/// (sources not implemented yet) are skipped at run time.
-pub(crate) const WATER_SOURCES: [SourceId; 7] = [
+/// (sources not implemented yet) are skipped at run time. [`water_source`] is the registry;
+/// this list checks it.
+#[cfg(test)]
+const WATER_SOURCES: [SourceId; 7] = [
     SourceId::COOPS,
     SourceId::COOPS_HARMONICS,
     SourceId::USGS,
@@ -427,11 +428,6 @@ impl<'a> Host<'a> {
         }
     }
 
-    /// The ledger the sessions spend from.
-    pub(crate) fn usage(&self) -> &SharedUsage {
-        &self.usage
-    }
-
     /// Saves the ledger; a metered request goes out only after this succeeds.
     fn save_usage(&self) -> Result<(), String> {
         let Some(cache) = self.cache else {
@@ -442,8 +438,10 @@ impl<'a> Host<'a> {
             .map_err(|e| format!("the call ledger was not saved: {e}"))
     }
 
-    /// Sends `call`, or answers it from the response cache, and stores what may be stored.
-    fn send(&self, call: &Call) -> Result<Fetched, TransportError> {
+    /// Sends `call`, or answers it from the response cache, and stores what may be stored. A
+    /// call that asks for a fresh copy goes out and is not stored. Every request any command
+    /// sends goes through here.
+    pub(crate) fn send(&self, call: &Call) -> Result<Fetched, TransportError> {
         if let Some(hit) = self.cache.and_then(|c| c.load_response(call, self.now)) {
             tracing::debug!(url = %call.redacted_url(), "cached");
             return Ok(hit);
@@ -1786,29 +1784,14 @@ impl FetchOptions {
 pub(crate) struct SpotFetch {
     /// Everything known about the spot.
     pub(crate) snapshot: SpotSnapshot,
-    /// The stations per measurement with the reasons for their places.
-    pub(crate) ranking: Ranking,
     /// The links the water session took.
+    #[cfg(test)]
     pub(crate) plan: Plan,
-    /// Every water request, in order, with what became of it.
-    pub(crate) attempts: Vec<Attempt>,
 }
 
 /// Fetches everything a spot's cards need at `now`: discovery, the water and marine session,
-/// the weather, the sky; caches updated and the call ledger saved. The USGS key comes from
-/// `USGS_API_KEY`.
-pub(crate) fn fetch_spot(
-    spot: &Spot,
-    config: &Config,
-    now: UnixTime,
-    transport: &dyn Transport,
-    cache: Option<&Cache>,
-) -> SpotSnapshot {
-    let options = FetchOptions::from_env(|name| std::env::var(name).ok());
-    fetch_spot_with(spot, config, now, transport, cache, &options).snapshot
-}
-
-/// [`fetch_spot`] with explicit options, returning how the snapshot came about too.
+/// the weather, the sky; caches updated and the call ledger saved. Returns the snapshot and
+/// how it came about.
 pub(crate) fn fetch_spot_with(
     spot: &Spot,
     config: &Config,
@@ -1906,9 +1889,8 @@ pub(crate) fn fetch_spot_with(
     }
     SpotFetch {
         snapshot,
-        ranking: discovery.ranking,
+        #[cfg(test)]
         plan: discovery.plan,
-        attempts: water.attempts,
     }
 }
 

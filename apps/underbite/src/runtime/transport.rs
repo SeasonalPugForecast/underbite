@@ -4,8 +4,6 @@
 //! (the weather and storm sessions). Network I/O lives only here: the sessions build requests
 //! and parse bytes. Every URL that reaches a message or a log goes through [`redact_url`].
 
-#![allow(dead_code)] // The fetch driver is the only caller; it is wired in separately.
-
 use std::fmt;
 use std::fs;
 use std::io::Read;
@@ -395,6 +393,7 @@ impl Replay {
     }
 
     /// Every URL requested so far (redacted), in order.
+    #[cfg(test)]
     pub(crate) fn seen(&self) -> Vec<String> {
         self.seen.lock().map(|s| s.clone()).unwrap_or_default()
     }

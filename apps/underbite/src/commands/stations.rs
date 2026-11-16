@@ -3,8 +3,6 @@
 
 use std::fmt::Write as _;
 use std::process::ExitCode;
-use std::str::FromStr;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::{Context, bail};
 use clap::Subcommand;
@@ -13,16 +11,12 @@ use underbite_config::schema::Config;
 use underbite_core::discover::rank::{CoverageState, MeasurementRanking, Reason, StationKey};
 use underbite_core::model::{Measurement, Spot, WaterType};
 use underbite_core::provenance::{Relation, SourceId};
-use underbite_core::time::UnixTime;
 use underbite_core::view::format::Formatter;
 use underbite_providers::source::FetchContext;
 
 use crate::cli::Global;
-use crate::runtime::cache::Cache;
-use crate::runtime::fetch::{
-    FetchOptions, Host, chain_specs, discover, load_choices, requirements, save_choices,
-};
-use crate::runtime::transport::{Replay, Transport, UreqTransport, user_agent};
+use crate::runtime::env::Env;
+use crate::runtime::fetch::{chain_specs, discover, load_choices, requirements, save_choices};
 
 /// Arguments of `underbite stations`.
 #[derive(Debug, clap::Args)]
@@ -65,40 +59,6 @@ pub(crate) enum Action {
         #[arg(long)]
         json: bool,
     },
-}
-
-/// What every command that talks to the sources needs: the transport (the network, or recorded
-/// responses), the cache, and the current time.
-pub(super) struct Env {
-    pub(super) transport: Box<dyn Transport>,
-    pub(super) cache: Option<Cache>,
-    pub(super) now: UnixTime,
-    pub(super) options: FetchOptions,
-}
-
-impl Env {
-    /// The environment the global options ask for.
-    pub(super) fn from_global(global: &Global) -> anyhow::Result<Self> {
-        let transport: Box<dyn Transport> = match &global.replay {
-            Some(dir) => Box::new(Replay::load(dir)?),
-            None => Box::new(UreqTransport::new(&user_agent())),
-        };
-        let now = if let Some(text) = &global.now {
-            let ts = jiff::Timestamp::from_str(text)
-                .with_context(|| format!("--now {text:?} is not an RFC 3339 time"))?;
-            UnixTime(ts.as_second())
-        } else {
-            let secs = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
-            UnixTime(i64::try_from(secs)?)
-        };
-        let lookup = |name: &str| std::env::var(name).ok();
-        Ok(Self {
-            transport,
-            cache: Cache::from_env(lookup),
-            now,
-            options: FetchOptions::from_env(lookup),
-        })
-    }
 }
 
 /// Parses `lat,lon`.
@@ -322,12 +282,7 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
         }
     }
     let chains = chain_specs(&config.sources, &wanted, water);
-    let host = Host::new(
-        env.transport.as_ref(),
-        env.cache.as_ref(),
-        env.now,
-        env.options.allow_metered,
-    );
+    let host = env.host();
     let ctx = FetchContext::new(env.now, env.options.user_agent.clone())
         .with_coordinate_precision(config.sources.coordinate_precision)
         .with_secrets(env.options.secrets.clone());

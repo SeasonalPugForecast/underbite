@@ -18,8 +18,8 @@ use underbite_providers::request::{
 use underbite_providers::source::{FetchContext, Source};
 use underbite_providers::usgs::Usgs;
 
-use super::stations::Env;
 use crate::cli::Global;
+use crate::runtime::env::Env;
 use crate::runtime::transport::Call;
 
 /// Arguments of `underbite record`.
@@ -269,6 +269,14 @@ fn carries_secret(request: &Request) -> bool {
             .any(|(name, _)| is_secret_header(name))
 }
 
+/// The call that records `request`: the request as the app sends it, asking for a fresh copy,
+/// so a recording is never answered from the cache nor stored in it.
+fn recording_call(request: &Request) -> Call {
+    let mut call = Call::from(request);
+    call.cache.fresh = true;
+    call
+}
+
 /// The file a recording is written to; an existing one is kept unless `force`.
 fn destination(
     out: &Path,
@@ -308,9 +316,9 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
         );
     }
     let path = destination(&args.out, &plan, args.name.as_deref(), args.force)?;
-    let call = Call::from(&plan.request);
+    let call = recording_call(&plan.request);
     let fetched = env
-        .transport
+        .host()
         .send(&call)
         .with_context(|| format!("request to {}", call.redacted_url()))?;
     if !(200..300).contains(&fetched.status) {
@@ -423,6 +431,27 @@ mod tests {
         assert!(!carries_secret(
             &plan(&a, "latest-continuous", &ctx()).unwrap().request
         ));
+    }
+
+    #[test]
+    fn a_recording_is_the_apps_request_and_never_answered_from_the_cache() {
+        use crate::runtime::cache::Cache;
+        use crate::runtime::transport::Fetched;
+
+        let dir = tempfile::tempdir().unwrap();
+        let cache = Cache::at(dir.path());
+        let a = args(&["ndbc", "txt", "--station", "44025"]);
+        let p = plan(&a, "txt", &ctx()).unwrap();
+        let plain = Call::from(&p.request);
+        let old = Fetched {
+            cache_max_age: Some(3_600),
+            ..Fetched::new(200, "old")
+        };
+        assert!(cache.store_response(&plain, &old, ctx().now).unwrap());
+        let call = recording_call(&p.request);
+        assert_eq!((&call.url, &call.headers), (&plain.url, &plain.headers));
+        assert!(cache.load_response(&call, ctx().now).is_none());
+        assert!(!cache.store_response(&call, &old, ctx().now).unwrap());
     }
 
     #[test]
