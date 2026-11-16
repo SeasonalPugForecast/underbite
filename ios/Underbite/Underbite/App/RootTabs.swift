@@ -5,8 +5,8 @@ enum AppTab: String, CaseIterable, Hashable {
     case map, spots, trips, log, settings
 }
 
-/// The five sections: a tab bar on the iPhone (and in a narrow iPad window), a sidebar on the
-/// iPad. The welcome comes up on the first launch.
+/// The five sections: a tab bar on the iPhone and the iPad (the iPad can still switch to the sidebar
+/// from it, so the Spots list is not covered by default). The welcome comes up on the first launch.
 struct RootTabs: View {
     @State private var selection = LaunchArguments.initialTab ?? .map
     @AppStorage("welcomeSeen") private var welcomeSeen = false
@@ -35,7 +35,7 @@ struct RootTabs: View {
             }
         }
         .tabViewStyle(.sidebarAdaptable)
-        .defaultAdaptableTabBarPlacement(.sidebar)
+        .defaultAdaptableTabBarPlacement(.tabBar)
         .onAppear {
             showsWelcome = LaunchArguments.showsWelcome(seen: welcomeSeen)
         }
@@ -67,7 +67,7 @@ private struct ComingSection: View {
 }
 
 /// The launch arguments the app reads, in debug builds only (screenshots, UI tests):
-/// `-tab <map|spots|trips|log|settings>` opens that section, `-welcome` shows the welcome,
+/// `-open-spot <id>` opens that spot, `-tab <map|spots|trips|log|settings>` opens that section, `-welcome` shows the welcome,
 /// and `-seed` (a screenshot run) skips the first launch's welcome.
 enum LaunchArguments {
     private static var arguments: [String] {

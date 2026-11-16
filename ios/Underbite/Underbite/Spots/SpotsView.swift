@@ -45,7 +45,9 @@ struct SpotsView: View {
         .onAppear {
             if sizeClass == .regular, selection == nil { selection = store.activeID }
             #if DEBUG
-                DebugLaunch.apply(store: store) { sheet = .stations($0) }
+                DebugLaunch.apply(
+                    store: store, openStations: { sheet = .stations($0) },
+                    openSpot: { selection = $0 })
             #endif
         }
         .onChange(of: sizeClass) { _, now in
@@ -301,7 +303,9 @@ struct SpotStatusLine: View {
     enum DebugLaunch {
         private static var applied = false
 
-        static func apply(store: SpotStore, openStations: (String) -> Void) {
+        static func apply(
+            store: SpotStore, openStations: (String) -> Void, openSpot: (String) -> Void
+        ) {
             let arguments = ProcessInfo.processInfo.arguments
             guard !applied else { return }
             applied = true
@@ -314,6 +318,11 @@ struct SpotStatusLine: View {
             }
             if arguments.contains("-demoStations"), store.spot(SeedSpots.battery.id) != nil {
                 openStations(SeedSpots.battery.id)
+            }
+            if let index = arguments.firstIndex(of: "-open-spot"), index + 1 < arguments.count,
+                store.spot(arguments[index + 1]) != nil
+            {
+                openSpot(arguments[index + 1])
             }
         }
     }
