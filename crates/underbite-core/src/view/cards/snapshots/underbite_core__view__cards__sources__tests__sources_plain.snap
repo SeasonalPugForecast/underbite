@@ -1,0 +1,241 @@
+---
+source: crates/underbite-core/src/view/cards/sources.rs
+expression: build(&input).unwrap()
+---
+{
+  "chrome": {
+    "id": "sources",
+    "title": "Sources",
+    "footnote": null,
+    "credits": [],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "not_for_navigation",
+        "text": "Not for navigation."
+      },
+      {
+        "kind": "provisional",
+        "text": "Provisional data, subject to revision."
+      }
+    ],
+    "accessibility": "Sources: NOAA CO-OPS, USGS, NOAA NDBC, copernicus, cyan, NOAA NWPS, Open-Meteo Marine, National Weather Service, Open-Meteo, Open-Meteo model providers, USGS. USGS: rate limited, used NWPS stage coops: HTTP 503 Service Unavailable, used coops-harmonics"
+  },
+  "compact": {
+    "headline": {
+      "value": 11.0,
+      "text": "11",
+      "unit": "sources"
+    },
+    "lines": [
+      "9 stations",
+      "2 problems"
+    ],
+    "spark": []
+  },
+  "full": {
+    "credits": [
+      {
+        "source": "NOAA CO-OPS",
+        "text": "NOAA CO-OPS",
+        "link": "https://tidesandcurrents.noaa.gov",
+        "licence": "Public domain"
+      },
+      {
+        "source": "USGS",
+        "text": "U.S. Geological Survey",
+        "link": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+        "licence": "Public domain"
+      },
+      {
+        "source": "NOAA NDBC",
+        "text": "Observations: NOAA National Data Buoy Center",
+        "link": "https://www.ndbc.noaa.gov/",
+        "licence": "Public domain"
+      },
+      {
+        "source": "copernicus",
+        "text": "copernicus",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "cyan",
+        "text": "cyan",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "NOAA NWPS",
+        "text": "River forecasts: NOAA National Water Prediction Service",
+        "link": "https://water.noaa.gov/",
+        "licence": "Public domain"
+      },
+      {
+        "source": "Open-Meteo Marine",
+        "text": "Weather data by Open-Meteo.com",
+        "link": "https://open-meteo.com/",
+        "licence": "CC BY 4.0"
+      },
+      {
+        "source": "National Weather Service",
+        "text": "Marine forecasts and alerts: NOAA National Weather Service",
+        "link": "https://www.weather.gov/",
+        "licence": "Public domain"
+      },
+      {
+        "source": "Open-Meteo",
+        "text": "Weather data by Open-Meteo.com",
+        "link": "https://open-meteo.com/",
+        "licence": "CC BY 4.0"
+      },
+      {
+        "source": "Open-Meteo model providers",
+        "text": "Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean)",
+        "link": "https://open-meteo.com/en/licence",
+        "licence": null
+      },
+      {
+        "source": "USGS",
+        "text": "Provisional data statement",
+        "link": "https://waterdata.usgs.gov/provisional-data-statement/",
+        "licence": null
+      }
+    ],
+    "stations": [
+      {
+        "measurement": "Water temperature, River flow, Gage height, Lake level, Turbidity, Dissolved oxygen, Conductivity, pH, Chlorophyll",
+        "station": "The Battery",
+        "station_id": "8518750",
+        "source": "USGS",
+        "distance": "0.4 mi",
+        "age": "just now",
+        "relation": "Same water body",
+        "kind": "Observed",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "measurement": "Salinity, Waves, Sea surface temperature, Wind, Pressure",
+        "station": "The Battery",
+        "station_id": "8518750",
+        "source": "NOAA NDBC",
+        "distance": "0.4 mi",
+        "age": "just now",
+        "relation": "Same water body",
+        "kind": "Observed",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "measurement": "Water clarity",
+        "station": "The Battery",
+        "station_id": "8518750",
+        "source": "copernicus",
+        "distance": "0.4 mi",
+        "age": "just now",
+        "relation": "Same water body",
+        "kind": "Satellite",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "measurement": "Cyanobacteria",
+        "station": "The Battery",
+        "station_id": "8518750",
+        "source": "cyan",
+        "distance": "0.4 mi",
+        "age": "just now",
+        "relation": "Same water body",
+        "kind": "Satellite",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "measurement": "River forecast",
+        "station": "The Battery",
+        "station_id": "8518750",
+        "source": "NOAA NWPS",
+        "distance": "0.4 mi",
+        "age": "—",
+        "relation": "Same water body",
+        "kind": "Predicted",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "measurement": "River flow, Lake level",
+        "station": "The Battery",
+        "station_id": "8518750",
+        "source": "USGS",
+        "distance": "0.4 mi",
+        "age": "—",
+        "relation": "Same water body",
+        "kind": "Computed",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "measurement": "Tide, Tidal current",
+        "station": "The Battery",
+        "station_id": "8518750",
+        "source": "NOAA CO-OPS",
+        "distance": "0.4 mi",
+        "age": "—",
+        "relation": "Same water body",
+        "kind": "Predicted",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "measurement": "Ocean current",
+        "station": "The Battery",
+        "station_id": "8518750",
+        "source": "copernicus",
+        "distance": "0.4 mi",
+        "age": "—",
+        "relation": "Same water body",
+        "kind": "Modelled",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "measurement": "Wave forecast, Sea surface temperature forecast",
+        "station": "The Battery",
+        "station_id": "8518750",
+        "source": "Open-Meteo Marine",
+        "distance": "0.4 mi",
+        "age": "—",
+        "relation": "Same water body",
+        "kind": "Modelled",
+        "state": {
+          "state": "fresh"
+        }
+      }
+    ],
+    "errors": [
+      {
+        "source": "USGS",
+        "measurement": "River flow",
+        "kind": "Rate limited",
+        "message": "USGS: rate limited, used NWPS stage"
+      },
+      {
+        "source": "NOAA CO-OPS",
+        "measurement": "Tide",
+        "kind": "Connection problem",
+        "message": "coops: HTTP 503 Service Unavailable, used coops-harmonics"
+      }
+    ]
+  }
+}
