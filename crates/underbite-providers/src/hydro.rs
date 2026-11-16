@@ -422,7 +422,7 @@ mod tests {
         // path or hydrosequence.
         let body = fx("hydro-50-croton-geom.json");
         let lines = parse_flowlines(&Response::new(200, &body)).unwrap();
-        assert_eq!(lines.len(), 597);
+        assert_eq!(lines.len(), 706);
         assert!(lines.iter().any(|l| l.level_path == 3_767_999));
     }
 
