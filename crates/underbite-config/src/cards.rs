@@ -19,15 +19,29 @@ pub struct CardLayout {
     pub order: Vec<CardId>,
     /// Cards never shown.
     pub hidden: Vec<CardId>,
+    /// Set on a layout this version ships for a water type (rivers, ponds and ice): the user
+    /// did not write it, so the base hidden list applies to it, and a base order the user
+    /// changed replaces its order. Never written to a file and not part of the schema.
+    #[serde(skip)]
+    #[schemars(skip)]
+    pub inherited: bool,
 }
 
 impl CardLayout {
-    fn of(order: &[CardId]) -> Self {
+    /// A layout this version ships.
+    fn shipped(order: &[CardId]) -> Self {
         Self {
             order: order.to_vec(),
             hidden: Vec::new(),
+            inherited: true,
         }
     }
+}
+
+// serde's `skip_serializing_if` hands over a reference to the field.
+#[allow(clippy::ref_option)]
+fn is_inherited(layout: &Option<CardLayout>) -> bool {
+    layout.as_ref().is_none_or(|l| l.inherited)
 }
 
 /// `[cards]`; a `[cards.<water type>]` table overrides the base layout for that water type.
@@ -37,7 +51,7 @@ pub struct CardsConfig {
     pub order: Vec<CardId>,
     pub hidden: Vec<CardId>,
     /// `river_stream`.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "is_inherited")]
     pub river: Option<CardLayout>,
     /// `lake_reservoir`.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -56,9 +70,9 @@ pub struct CardsConfig {
     pub offshore: Option<CardLayout>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub great_lakes: Option<CardLayout>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "is_inherited")]
     pub pond: Option<CardLayout>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "is_inherited")]
     pub ice: Option<CardLayout>,
     /// Ids dropped on reading, as (path, id); never written.
     #[serde(skip)]
@@ -73,7 +87,7 @@ impl Default for CardsConfig {
             SunMoon, Tide, WaterTemp, Waves, Wind, Windows,
         };
         // Alerts sit near the top everywhere: a card shows only when it has something to say.
-        let fresh = CardLayout::of(&[
+        let fresh = CardLayout::shipped(&[
             Now, Alerts, Flow, WaterTemp, Clarity, Windows, Wind, SunMoon, Stocking, Sources,
         ]);
         Self {
@@ -126,10 +140,20 @@ impl CardsConfig {
         .as_ref()
     }
 
-    /// The cards to show for a water type, in order, hidden ones removed. An override replaces
-    /// the base hidden list as well as the base order.
+    /// The cards to show for a water type, in order, hidden ones removed. An override the user
+    /// wrote replaces the base hidden list as well as the base order (an empty override order
+    /// keeps the base order). A layout this version ships takes the base hidden list, and keeps
+    /// its own order only while the base order is the shipped one.
     pub fn order_for(&self, water_type: WaterType) -> Vec<CardId> {
         let (order, hidden) = match self.layout(water_type) {
+            Some(l) if l.inherited => {
+                let base_is_shipped = self.order == Self::default().order;
+                if base_is_shipped && !l.order.is_empty() {
+                    (&l.order, &self.hidden)
+                } else {
+                    (&self.order, &self.hidden)
+                }
+            }
             Some(l) if l.order.is_empty() => (&self.order, &l.hidden),
             Some(l) => (&l.order, &l.hidden),
             None => (&self.order, &self.hidden),
@@ -151,6 +175,7 @@ impl CardsConfig {
                 Some(CardLayout {
                     order: self.order.clone(),
                     hidden: self.hidden.clone(),
+                    inherited: false,
                 }),
             ),
             ("cards.river", self.river.clone()),
@@ -225,6 +250,7 @@ impl From<RawCards> for CardsConfig {
             Some(r) => Some(CardLayout {
                 order: ids(r.order, &format!("cards.{name}.order"), &mut dropped),
                 hidden: ids(r.hidden, &format!("cards.{name}.hidden"), &mut dropped),
+                inherited: false,
             }),
             None => default.clone(),
         };
@@ -330,6 +356,72 @@ mod tests {
         .unwrap();
         assert_eq!(c.order_for(WaterType::Surf), [CardId::Tide]);
         assert_eq!(c.order_for(WaterType::BayInshore), [CardId::Wind]);
+    }
+
+    fn parsed(text: &str) -> CardsConfig {
+        toml::from_str(text).unwrap()
+    }
+
+    #[test]
+    fn a_hidden_card_stays_hidden_for_the_shipped_water_types() {
+        let c = parsed("hidden = [\"wind\"]");
+        for wt in [WaterType::RiverStream, WaterType::Pond, WaterType::Ice] {
+            let order = c.order_for(wt);
+            assert!(!order.contains(&CardId::Wind), "{wt:?}");
+            // The shipped order is kept.
+            assert_eq!(order.first(), Some(&CardId::Now), "{wt:?}");
+            assert!(order.contains(&CardId::Clarity), "{wt:?}");
+        }
+        assert!(!c.order_for(WaterType::BayInshore).contains(&CardId::Wind));
+    }
+
+    #[test]
+    fn the_shipped_orders_stay_when_the_user_sets_nothing() {
+        let c = parsed("");
+        assert_eq!(c, CardsConfig::default());
+        assert_eq!(c.order_for(WaterType::RiverStream)[2], CardId::Flow);
+        assert_eq!(c.order_for(WaterType::BayInshore)[2], CardId::StormAhead);
+        // A user override of its own hidden list still replaces the base list.
+        let c = parsed("hidden = [\"wind\"]\n[river]\nhidden = [\"flow\"]");
+        let river = c.order_for(WaterType::RiverStream);
+        assert!(river.contains(&CardId::Wind));
+        assert!(!river.contains(&CardId::Flow));
+    }
+
+    #[test]
+    fn a_user_base_order_reaches_water_types_without_their_own_override() {
+        let c = parsed("order = [\"tide\", \"wind\", \"sources\"]");
+        assert_eq!(
+            c.order_for(WaterType::RiverStream),
+            [CardId::Tide, CardId::Wind, CardId::Sources]
+        );
+        assert_eq!(c.order_for(WaterType::Pond), c.order_for(WaterType::Ice));
+        // A user override order still wins.
+        let c = parsed("order = [\"tide\"]\n[river]\norder = [\"flow\", \"wind\"]");
+        assert_eq!(
+            c.order_for(WaterType::RiverStream),
+            [CardId::Flow, CardId::Wind]
+        );
+        assert_eq!(c.order_for(WaterType::Pond), [CardId::Tide]);
+    }
+
+    #[test]
+    fn shipped_layouts_are_not_written_and_survive_a_round_trip() {
+        let c = CardsConfig {
+            hidden: vec![CardId::Wind],
+            ..CardsConfig::default()
+        };
+        let text = toml::to_string(&c).unwrap();
+        assert!(!text.contains("river"), "{text}");
+        let back: CardsConfig = toml::from_str(&text).unwrap();
+        assert!(
+            !back
+                .order_for(WaterType::RiverStream)
+                .contains(&CardId::Wind)
+        );
+        // A layout the user wrote is written.
+        let mine = parsed("[river]\norder = [\"flow\"]");
+        assert!(toml::to_string(&mine).unwrap().contains("river"));
     }
 
     #[test]
