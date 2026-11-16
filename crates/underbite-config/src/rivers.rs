@@ -34,10 +34,22 @@ impl RiverRange {
         }
     }
 
-    /// The entry for a gauge written `usgs:<number>`, if the user set one.
+    /// The entry for a gauge, given as `usgs:<number>` or as USGS writes the site
+    /// (`USGS-<number>`), if the user set one. Entries for other gauges are never returned.
     pub fn find<'a>(rivers: &'a [Self], site: &str) -> Option<&'a Self> {
-        rivers.iter().find(|r| r.site == site)
+        let wanted = site_number(site)?;
+        rivers
+            .iter()
+            .find(|r| site_number(&r.site).is_some_and(|n| n == wanted))
     }
+}
+
+/// The USGS site number of `usgs:<number>` or `USGS-<number>`; `None` for anything else.
+fn site_number(site: &str) -> Option<&str> {
+    let (prefix, number) = site.trim().split_at_checked(5)?;
+    let number = number.trim();
+    let known = prefix.eq_ignore_ascii_case("usgs:") || prefix.eq_ignore_ascii_case("usgs-");
+    (known && !number.is_empty()).then_some(number)
 }
 
 #[cfg(test)]
@@ -56,5 +68,31 @@ mod tests {
         assert!((v.wadeable_below_m3s.unwrap() - 33.98).abs() < 0.01);
         assert!((v.best_max_m3s.unwrap() - 25.485).abs() < 0.01);
         assert!(v.blown_out_above_m3s.is_none());
+    }
+
+    fn entry(site: &str, cfs: f64) -> RiverRange {
+        RiverRange {
+            site: site.into(),
+            wadeable_below_cfs: Some(cfs),
+            best_cfs: None,
+            blown_out_above_cfs: None,
+        }
+    }
+
+    #[test]
+    fn a_gauge_finds_only_its_own_entry() {
+        let rivers = [entry("usgs:01420500", 1.0), entry("usgs:01375000", 2.0)];
+        assert_eq!(
+            RiverRange::find(&rivers, "usgs:01375000").unwrap().site,
+            "usgs:01375000"
+        );
+        // The way the USGS provider writes the site.
+        assert_eq!(
+            RiverRange::find(&rivers, "USGS-01420500").unwrap().site,
+            "usgs:01420500"
+        );
+        assert!(RiverRange::find(&rivers, "usgs:99999999").is_none());
+        assert!(RiverRange::find(&rivers, "ndbc:44025").is_none());
+        assert!(RiverRange::find(&rivers, "usgs:").is_none());
     }
 }

@@ -11,9 +11,11 @@ use underbite_config::rivers::RiverRange;
 use underbite_config::schema::{Config, Severity, has_errors};
 use underbite_core::discover::hydro::{WaterTypeReason, WaterTypeSuggestion, WaterbodyKind};
 use underbite_core::model::{Spot, SpotSnapshot, WaterType, ZoneKind};
-use underbite_core::provenance::UsgsSiteType;
+use underbite_core::provenance::{SourceId, UsgsSiteType};
 use underbite_core::time::UnixTime;
-use underbite_core::view::{Card, CardState, SolunarSettings, SpotView, ViewInput, build_view};
+use underbite_core::view::{
+    Card, CardState, Quantity, RiverRanges, SolunarSettings, SpotView, ViewInput, build_view,
+};
 
 use crate::cli::Global;
 use crate::runtime::env::{Env, var};
@@ -111,7 +113,7 @@ fn load_config(
 ) -> anyhow::Result<Config> {
     let (path, explicit) = match path {
         Some(p) => (Some(p.to_path_buf()), true),
-        None => (default_config_path(env), false),
+        None => (default_config_path(env)?, false),
     };
     let Some(path) = path else {
         return Ok(Config::default());
@@ -138,12 +140,31 @@ fn load_config(
     Ok(config)
 }
 
-/// `$XDG_CONFIG_HOME/underbite/config.toml`, else `$HOME/.config/underbite/config.toml`.
-fn default_config_path(env: &impl Fn(&str) -> Option<String>) -> Option<PathBuf> {
-    let absolute = |name: &str| env(name).map(PathBuf::from).filter(|p| p.is_absolute());
-    let base =
-        absolute("XDG_CONFIG_HOME").or_else(|| absolute("HOME").map(|h| h.join(".config")))?;
-    Some(base.join("underbite").join("config.toml"))
+/// `$XDG_CONFIG_HOME/underbite/config.toml`, else `$HOME/.config/underbite/config.toml`; none
+/// when neither is set. An empty variable counts as unset. A relative path in the variable
+/// used is an error, as for the cache, so the file is never looked for somewhere the
+/// environment did not name.
+fn default_config_path(env: &impl Fn(&str) -> Option<String>) -> anyhow::Result<Option<PathBuf>> {
+    let set = |name: &'static str| {
+        env(name)
+            .filter(|v| !v.is_empty())
+            .map(|v| (name, PathBuf::from(v)))
+    };
+    let Some((name, path)) = set("XDG_CONFIG_HOME").or_else(|| set("HOME")) else {
+        return Ok(None);
+    };
+    if !path.is_absolute() {
+        bail!(
+            "{name} is a relative path ({}); it must be absolute",
+            path.display()
+        );
+    }
+    let base = if name == "HOME" {
+        path.join(".config")
+    } else {
+        path
+    };
+    Ok(Some(base.join("underbite").join("config.toml")))
 }
 
 /// The water type a fetch inferred and why, or the one used when nothing pointed anywhere.
@@ -249,12 +270,29 @@ fn parse_water_type(text: &str) -> anyhow::Result<WaterType> {
         .map_err(|_| anyhow!("unknown water type `{text}`"))
 }
 
+/// The user's ranges for the gauge the spot's discharge comes from: the entry for that USGS
+/// site, and none when the spot has no USGS discharge or no entry names its gauge.
+fn river_ranges(rivers: &[RiverRange], snapshot: &SpotSnapshot) -> Option<RiverRanges> {
+    let station = snapshot
+        .water
+        .discharge_m3s
+        .as_ref()?
+        .provenance()
+        .station
+        .as_ref()
+        .filter(|s| s.source == SourceId::USGS)?;
+    gauge_ranges(rivers, &station.id)
+}
+
+/// The ranges of the `[[rivers]]` entry for the USGS site `station_id`, as the USGS provider
+/// writes it (`USGS-01375000`).
+fn gauge_ranges(rivers: &[RiverRange], station_id: &str) -> Option<RiverRanges> {
+    RiverRange::find(rivers, station_id).map(RiverRange::to_ranges)
+}
+
 /// What `build_view` takes, from the configuration.
 fn view_input(config: &Config, snapshot: SpotSnapshot, now: UnixTime) -> ViewInput {
-    let river_ranges = match config.rivers.as_slice() {
-        [only] => Some(RiverRange::to_ranges(only)),
-        _ => None,
-    };
+    let river_ranges = river_ranges(&config.rivers, &snapshot);
     ViewInput {
         card_order: config.cards.order_for(snapshot.spot.water_type),
         snapshot,
@@ -468,16 +506,16 @@ fn render_alert(out: &mut String, alert: &Value) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// A quantity as `text unit`.
+/// A quantity as the view's own `Quantity::full` writes it; an object that is only a text is
+/// that text.
 fn quantity(q: &Value) -> String {
-    let text = q.get("text").and_then(Value::as_str).unwrap_or_default();
-    match q
-        .get("unit")
-        .and_then(Value::as_str)
-        .filter(|u| !u.is_empty())
-    {
-        Some(unit) => format!("{text} {unit}"),
-        None => text.to_owned(),
+    match serde_json::from_value::<Quantity>(q.clone()) {
+        Ok(q) => q.full(),
+        Err(_) => q
+            .get("text")
+            .and_then(Value::as_str)
+            .unwrap_or_default()
+            .to_owned(),
     }
 }
 
@@ -530,6 +568,18 @@ mod tests {
     }
 
     #[test]
+    fn quantities_are_joined_as_the_view_writes_them() {
+        let q = |text: &str, unit: &str, value: Option<f32>| {
+            quantity(&serde_json::json!({"value": value, "text": text, "unit": unit}))
+        };
+        assert_eq!(q("1", "%", Some(1.0)), "1%");
+        assert_eq!(q("1,200", "cfs", Some(1200.0)), "1,200 cfs");
+        assert_eq!(q("--", "cfs", None), "--");
+        assert_eq!(q("NE", "", Some(0.0)), "NE");
+        assert_eq!(quantity(&serde_json::json!({"text": "Calm"})), "Calm");
+    }
+
+    #[test]
     fn error_rows_name_their_measurement() {
         let errors = serde_json::json!([
             {"source": "NOAA CO-OPS", "measurement": "Water temperature", "kind": "No data",
@@ -542,6 +592,38 @@ mod tests {
             out,
             "  Problem: NOAA CO-OPS, Water temperature: no recent data\n  Problem: NWS: timed out\n"
         );
+    }
+
+    fn range(site: &str, wadeable: f64) -> RiverRange {
+        RiverRange {
+            site: site.into(),
+            wadeable_below_cfs: Some(wadeable),
+            best_cfs: None,
+            blown_out_above_cfs: None,
+        }
+    }
+
+    #[test]
+    fn a_river_entry_applies_only_to_its_own_gauge() {
+        let croton = range("usgs:01375000", 300.0);
+        let other = range("usgs:01420500", 1200.0);
+        // One entry, for the spot's gauge.
+        let got = gauge_ranges(std::slice::from_ref(&croton), "USGS-01375000").unwrap();
+        assert_eq!(got, croton.to_ranges());
+        // One entry, for another gauge: nothing applies.
+        assert!(gauge_ranges(std::slice::from_ref(&other), "USGS-01375000").is_none());
+        // Two entries: the matching one applies, and none when neither matches.
+        let both = [other.clone(), croton.clone()];
+        assert_eq!(
+            gauge_ranges(&both, "USGS-01375000").unwrap(),
+            croton.to_ranges()
+        );
+        assert_eq!(
+            gauge_ranges(&both, "USGS-01420500").unwrap(),
+            other.to_ranges()
+        );
+        assert!(gauge_ranges(&both, "USGS-01372058").is_none());
+        assert!(gauge_ranges(&[], "USGS-01375000").is_none());
     }
 
     #[test]
@@ -621,15 +703,38 @@ mod tests {
             _ => None,
         };
         assert_eq!(
-            default_config_path(&env),
+            default_config_path(&env).unwrap(),
             Some(PathBuf::from("/x/cfg/underbite/config.toml"))
         );
         let home_only = |name: &str| (name == "HOME").then(|| "/h".to_owned());
         assert_eq!(
-            default_config_path(&home_only),
+            default_config_path(&home_only).unwrap(),
             Some(PathBuf::from("/h/.config/underbite/config.toml"))
         );
-        assert_eq!(default_config_path(&|_: &str| None), None);
+        let empty = |name: &str| match name {
+            "XDG_CONFIG_HOME" => Some(String::new()),
+            "HOME" => Some("/h".to_owned()),
+            _ => None,
+        };
+        assert_eq!(
+            default_config_path(&empty).unwrap(),
+            Some(PathBuf::from("/h/.config/underbite/config.toml"))
+        );
+        assert_eq!(default_config_path(&|_: &str| None).unwrap(), None);
+    }
+
+    #[test]
+    fn a_relative_config_home_is_an_error() {
+        let relative = |name: &str| match name {
+            "XDG_CONFIG_HOME" => Some("cfg".to_owned()),
+            "HOME" => Some("/h".to_owned()),
+            _ => None,
+        };
+        let err = default_config_path(&relative).unwrap_err();
+        assert!(err.to_string().contains("XDG_CONFIG_HOME"), "{err}");
+        assert!(load_config(None, &relative).is_err());
+        let home = |name: &str| (name == "HOME").then(|| "h".to_owned());
+        assert!(default_config_path(&home).is_err());
     }
 
     #[test]
