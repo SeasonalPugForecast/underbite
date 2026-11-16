@@ -124,10 +124,38 @@ impl Formatter {
         }
     }
 
-    /// A height above a datum: "4.2 ft MLLW". The datum is part of the unit. A height in a
-    /// model's mean sea level is never printed as a number.
+    /// A height above a datum: "4.2 ft MLLW" (tide heights, in the height unit). The datum is
+    /// part of the unit. A height in a model's mean sea level is never printed as a number.
     pub fn height(&self, h: Option<Height>) -> Quantity {
-        let unit = self.units.height;
+        self.height_in(self.units.height, h)
+    }
+
+    /// A river stage or flood stage in the stage unit: "4.2 ft gage datum".
+    pub fn stage(&self, h: Option<Height>) -> Quantity {
+        self.height_in(self.units.stage, h)
+    }
+
+    /// A lake or reservoir level in the lake level unit.
+    pub fn lake_level(&self, h: Option<Height>) -> Quantity {
+        self.height_in(self.units.lake_level, h)
+    }
+
+    /// A river stage change, in the stage unit.
+    pub fn stage_length(&self, metres: Option<f32>) -> Quantity {
+        self.length_in(self.units.stage, metres)
+    }
+
+    /// A lake level without a datum, or a change in it, in the lake level unit.
+    pub fn lake_level_length(&self, metres: Option<f32>) -> Quantity {
+        self.length_in(self.units.lake_level, metres)
+    }
+
+    /// A wave height, in the wave unit: "3.3 ft".
+    pub fn wave_height(&self, metres: Option<f32>) -> Quantity {
+        self.length_in(self.units.waves, metres)
+    }
+
+    fn height_in(&self, unit: crate::units::HeightUnit, h: Option<Height>) -> Quantity {
         let Some(h) = h else {
             return self.missing(unit.symbol());
         };
@@ -138,9 +166,12 @@ impl Formatter {
         Self::quantity(unit.from_canonical(h.metres), 1, &label)
     }
 
-    /// A length or a difference that has no datum: wave height, depth, a rise: "3.3 ft".
+    /// A length or a difference that has no datum: depth, a rise: "3.3 ft".
     pub fn length(&self, metres: Option<f32>) -> Quantity {
-        let unit = self.units.height;
+        self.length_in(self.units.height, metres)
+    }
+
+    fn length_in(&self, unit: crate::units::HeightUnit, metres: Option<f32>) -> Quantity {
         match metres {
             Some(m) => Self::quantity(unit.from_canonical(m), 1, unit.symbol()),
             None => self.missing(unit.symbol()),
@@ -257,6 +288,35 @@ impl Formatter {
                 format!("{h}:{:02} {ampm}", l.minute)
             }
         }
+    }
+
+    /// Every local midnight in the spot's zone from `from` to `to`, both inclusive: 23 or 25
+    /// hours apart across a daylight-saving change.
+    pub fn local_midnights(&self, from: UnixTime, to: UnixTime) -> Vec<UnixTime> {
+        let mut out = Vec::new();
+        let Ok(start) = Timestamp::from_second(from.0) else {
+            return out;
+        };
+        let mut day = start.to_zoned(self.tz.clone()).date();
+        // A day with no midnight (a zone that skips it) is skipped; the loop is bounded by
+        // the span.
+        for _ in 0..=400 {
+            let Ok(midnight) = day.to_zoned(self.tz.clone()) else {
+                break;
+            };
+            let t = midnight.timestamp().as_second();
+            if t > to.0 {
+                break;
+            }
+            if t >= from.0 {
+                out.push(UnixTime(t));
+            }
+            let Ok(next) = day.tomorrow() else {
+                break;
+            };
+            day = next;
+        }
+        out
     }
 
     /// An axis label: "4 PM" or "16:00".

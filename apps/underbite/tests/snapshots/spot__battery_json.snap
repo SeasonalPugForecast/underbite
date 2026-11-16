@@ -3162,12 +3162,7 @@ expression: json
           "unit": "°F",
           "x_ticks": [
             {
-              "t": 1794038040,
-              "label": "Nov 7",
-              "major": true
-            },
-            {
-              "t": 1794124440,
+              "t": 1794114000,
               "label": "Nov 8",
               "major": true
             }
@@ -6896,577 +6891,577 @@ expression: json
                 {
                   "t": 1794114000,
                   "value": 0.4166667,
-                  "label": "0.4 ft",
+                  "label": "0.4 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794115800,
                   "value": 0.15091863,
-                  "label": "0.2 ft",
+                  "label": "0.2 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794117600,
                   "value": 0.055774283,
-                  "label": "0.1 ft",
+                  "label": "0.1 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794119400,
                   "value": 0.17388451,
-                  "label": "0.2 ft",
+                  "label": "0.2 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794121200,
                   "value": 0.5052493,
-                  "label": "0.5 ft",
+                  "label": "0.5 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794123000,
                   "value": 1.0170604,
-                  "label": "1.0 ft",
+                  "label": "1.0 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794124800,
                   "value": 1.6469816,
-                  "label": "1.6 ft",
+                  "label": "1.6 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794126600,
                   "value": 2.3326774,
-                  "label": "2.3 ft",
+                  "label": "2.3 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794128400,
                   "value": 3.0216537,
-                  "label": "3.0 ft",
+                  "label": "3.0 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794130200,
                   "value": 3.6778216,
-                  "label": "3.7 ft",
+                  "label": "3.7 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794132000,
                   "value": 4.2749343,
-                  "label": "4.3 ft",
+                  "label": "4.3 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794133800,
                   "value": 4.790026,
-                  "label": "4.8 ft",
+                  "label": "4.8 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794135600,
                   "value": 5.203412,
-                  "label": "5.2 ft",
+                  "label": "5.2 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794137400,
                   "value": 5.485564,
-                  "label": "5.5 ft",
+                  "label": "5.5 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794139200,
                   "value": 5.610236,
-                  "label": "5.6 ft",
+                  "label": "5.6 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794141000,
                   "value": 5.5577426,
-                  "label": "5.6 ft",
+                  "label": "5.6 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794142800,
                   "value": 5.3248034,
-                  "label": "5.3 ft",
+                  "label": "5.3 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794144600,
                   "value": 4.9311023,
-                  "label": "4.9 ft",
+                  "label": "4.9 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794146400,
                   "value": 4.4127297,
-                  "label": "4.4 ft",
+                  "label": "4.4 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794148200,
                   "value": 3.8188977,
-                  "label": "3.8 ft",
+                  "label": "3.8 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794150000,
                   "value": 3.2020998,
-                  "label": "3.2 ft",
+                  "label": "3.2 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794151800,
                   "value": 2.5918636,
-                  "label": "2.6 ft",
+                  "label": "2.6 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794153600,
                   "value": 2.007874,
-                  "label": "2.0 ft",
+                  "label": "2.0 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794155400,
                   "value": 1.4468504,
-                  "label": "1.4 ft",
+                  "label": "1.4 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794157200,
                   "value": 0.9317586,
-                  "label": "0.9 ft",
+                  "label": "0.9 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794159000,
                   "value": 0.49212602,
-                  "label": "0.5 ft",
+                  "label": "0.5 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794160800,
                   "value": 0.17716536,
-                  "label": "0.2 ft",
+                  "label": "0.2 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794162600,
                   "value": 0.03937008,
-                  "label": "0.0 ft",
+                  "label": "0.0 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794164400,
                   "value": 0.11811023,
-                  "label": "0.1 ft",
+                  "label": "0.1 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794166200,
                   "value": 0.40026248,
-                  "label": "0.4 ft",
+                  "label": "0.4 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794168000,
                   "value": 0.85301834,
-                  "label": "0.9 ft",
+                  "label": "0.9 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794169800,
                   "value": 1.414042,
-                  "label": "1.4 ft",
+                  "label": "1.4 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794171600,
                   "value": 2.0209973,
-                  "label": "2.0 ft",
+                  "label": "2.0 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794173400,
                   "value": 2.621391,
-                  "label": "2.6 ft",
+                  "label": "2.6 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794175200,
                   "value": 3.1824148,
-                  "label": "3.2 ft",
+                  "label": "3.2 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794177000,
                   "value": 3.6876638,
-                  "label": "3.7 ft",
+                  "label": "3.7 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794178800,
                   "value": 4.1108923,
-                  "label": "4.1 ft",
+                  "label": "4.1 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794180600,
                   "value": 4.4356956,
-                  "label": "4.4 ft",
+                  "label": "4.4 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794182400,
                   "value": 4.6358266,
-                  "label": "4.6 ft",
+                  "label": "4.6 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794184200,
                   "value": 4.694882,
-                  "label": "4.7 ft",
+                  "label": "4.7 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794186000,
                   "value": 4.596457,
-                  "label": "4.6 ft",
+                  "label": "4.6 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794187800,
                   "value": 4.343832,
-                  "label": "4.3 ft",
+                  "label": "4.3 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794189600,
                   "value": 3.9501312,
-                  "label": "4.0 ft",
+                  "label": "4.0 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794191400,
                   "value": 3.4612858,
-                  "label": "3.5 ft",
+                  "label": "3.5 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794193200,
                   "value": 2.92979,
-                  "label": "2.9 ft",
+                  "label": "2.9 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794195000,
                   "value": 2.395013,
-                  "label": "2.4 ft",
+                  "label": "2.4 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794196800,
                   "value": 1.8897637,
-                  "label": "1.9 ft",
+                  "label": "1.9 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794198600,
                   "value": 1.4206036,
-                  "label": "1.4 ft",
+                  "label": "1.4 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794200400,
                   "value": 0.9940945,
-                  "label": "1.0 ft",
+                  "label": "1.0 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794202200,
                   "value": 0.62007874,
-                  "label": "0.6 ft",
+                  "label": "0.6 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794204000,
                   "value": 0.33464566,
-                  "label": "0.3 ft",
+                  "label": "0.3 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794205800,
                   "value": 0.18372704,
-                  "label": "0.2 ft",
+                  "label": "0.2 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794207600,
                   "value": 0.21981628,
-                  "label": "0.2 ft",
+                  "label": "0.2 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794209400,
                   "value": 0.4658793,
-                  "label": "0.5 ft",
+                  "label": "0.5 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794211200,
                   "value": 0.9120735,
-                  "label": "0.9 ft",
+                  "label": "0.9 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794213000,
                   "value": 1.5124671,
-                  "label": "1.5 ft",
+                  "label": "1.5 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794214800,
                   "value": 2.194882,
-                  "label": "2.2 ft",
+                  "label": "2.2 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794216600,
                   "value": 2.8969817,
-                  "label": "2.9 ft",
+                  "label": "2.9 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794218400,
                   "value": 3.5728345,
-                  "label": "3.6 ft",
+                  "label": "3.6 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794220200,
                   "value": 4.17979,
-                  "label": "4.2 ft",
+                  "label": "4.2 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794222000,
                   "value": 4.7014437,
-                  "label": "4.7 ft",
+                  "label": "4.7 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794223800,
                   "value": 5.11811,
-                  "label": "5.1 ft",
+                  "label": "5.1 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794225600,
                   "value": 5.413386,
-                  "label": "5.4 ft",
+                  "label": "5.4 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794227400,
                   "value": 5.5643044,
-                  "label": "5.6 ft",
+                  "label": "5.6 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794229200,
                   "value": 5.5577426,
-                  "label": "5.6 ft",
+                  "label": "5.6 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794231000,
                   "value": 5.3805776,
-                  "label": "5.4 ft",
+                  "label": "5.4 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794232800,
                   "value": 5.03937,
-                  "label": "5.0 ft",
+                  "label": "5.0 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794234600,
                   "value": 4.5603676,
-                  "label": "4.6 ft",
+                  "label": "4.6 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794236400,
                   "value": 3.9829395,
-                  "label": "4.0 ft",
+                  "label": "4.0 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794238200,
                   "value": 3.3661418,
-                  "label": "3.4 ft",
+                  "label": "3.4 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794240000,
                   "value": 2.7493439,
-                  "label": "2.7 ft",
+                  "label": "2.7 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794241800,
                   "value": 2.1620734,
-                  "label": "2.2 ft",
+                  "label": "2.2 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794243600,
                   "value": 1.6141733,
-                  "label": "1.6 ft",
+                  "label": "1.6 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794245400,
                   "value": 1.105643,
-                  "label": "1.1 ft",
+                  "label": "1.1 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794247200,
                   "value": 0.65288717,
-                  "label": "0.7 ft",
+                  "label": "0.7 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794249000,
                   "value": 0.2952756,
-                  "label": "0.3 ft",
+                  "label": "0.3 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794250800,
                   "value": 0.082021,
-                  "label": "0.1 ft",
+                  "label": "0.1 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794252600,
                   "value": 0.059055116,
-                  "label": "0.1 ft",
+                  "label": "0.1 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794254400,
                   "value": 0.24934383,
-                  "label": "0.2 ft",
+                  "label": "0.2 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794256200,
                   "value": 0.63648295,
-                  "label": "0.6 ft",
+                  "label": "0.6 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794258000,
                   "value": 1.1646981,
-                  "label": "1.2 ft",
+                  "label": "1.2 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794259800,
                   "value": 1.7683727,
-                  "label": "1.8 ft",
+                  "label": "1.8 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794261600,
                   "value": 2.3818898,
-                  "label": "2.4 ft",
+                  "label": "2.4 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794263400,
                   "value": 2.9593177,
-                  "label": "3.0 ft",
+                  "label": "3.0 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794265200,
                   "value": 3.4678478,
-                  "label": "3.5 ft",
+                  "label": "3.5 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794267000,
                   "value": 3.894357,
-                  "label": "3.9 ft",
+                  "label": "3.9 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794268800,
                   "value": 4.225722,
-                  "label": "4.2 ft",
+                  "label": "4.2 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794270600,
                   "value": 4.4488187,
-                  "label": "4.4 ft",
+                  "label": "4.4 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794272400,
                   "value": 4.547244,
-                  "label": "4.5 ft",
+                  "label": "4.5 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794274200,
                   "value": 4.507874,
-                  "label": "4.5 ft",
+                  "label": "4.5 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794276000,
                   "value": 4.320866,
-                  "label": "4.3 ft",
+                  "label": "4.3 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794277800,
                   "value": 3.992782,
-                  "label": "4.0 ft",
+                  "label": "4.0 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794279600,
                   "value": 3.5531495,
-                  "label": "3.6 ft",
+                  "label": "3.6 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794281400,
                   "value": 3.0479004,
-                  "label": "3.0 ft",
+                  "label": "3.0 ft MLLW",
                   "major": false
                 },
                 {
                   "t": 1794283200,
                   "value": 2.5262465,
-                  "label": "2.5 ft",
+                  "label": "2.5 ft MLLW",
                   "major": true
                 },
                 {
                   "t": 1794285000,
                   "value": 2.027559,
-                  "label": "2.0 ft",
+                  "label": "2.0 ft MLLW",
                   "major": false
                 }
               ]
@@ -7479,56 +7474,68 @@ expression: json
               "kind": "low",
               "t": 1794117540,
               "value": 0.055774283,
-              "label": "Low 0.1 ft"
+              "label": "Low 0.1 ft MLLW"
             },
             {
               "kind": "high",
               "t": 1794139620,
               "value": 5.613517,
-              "label": "High 5.6 ft"
+              "label": "High 5.6 ft MLLW"
             },
             {
               "kind": "low",
               "t": 1794162840,
               "value": 0.03937008,
-              "label": "Low 0.0 ft"
+              "label": "Low 0.0 ft MLLW"
             },
             {
               "kind": "high",
               "t": 1794184020,
               "value": 4.698163,
-              "label": "High 4.7 ft"
+              "label": "High 4.7 ft MLLW"
             },
             {
               "kind": "low",
               "t": 1794206400,
               "value": 0.17388451,
-              "label": "Low 0.2 ft"
+              "label": "Low 0.2 ft MLLW"
             },
             {
               "kind": "high",
               "t": 1794228240,
               "value": 5.5839896,
-              "label": "High 5.6 ft"
+              "label": "High 5.6 ft MLLW"
             },
             {
               "kind": "low",
               "t": 1794251880,
               "value": 0.04265092,
-              "label": "Low 0.0 ft"
+              "label": "Low 0.0 ft MLLW"
             },
             {
               "kind": "high",
               "t": 1794272820,
               "value": 4.5505247,
-              "label": "High 4.6 ft"
+              "label": "High 4.6 ft MLLW"
             }
           ],
           "now_t": 1794148200,
-          "accessibility": "Tide: Low 0.1 ft at 12:59 AM, High 5.6 ft at 7:07 AM, Low 0.0 ft at 1:34 PM, High 4.7 ft at 7:27 PM, Low 0.2 ft at 1:40 AM, High 5.6 ft at 7:44 AM, Low 0.0 ft at 2:18 PM, High 4.6 ft at 8:07 PM"
+          "accessibility": "Tide: Low 0.1 ft MLLW at 12:59 AM, High 5.6 ft MLLW at 7:07 AM, Low 0.0 ft MLLW at 1:34 PM, High 4.7 ft MLLW at 7:27 PM, Low 0.2 ft MLLW at 1:40 AM, High 5.6 ft MLLW at 7:44 AM, Low 0.0 ft MLLW at 2:18 PM, High 4.6 ft MLLW at 8:07 PM"
         },
-        "credits": [],
-        "notices": []
+        "credits": [
+          {
+            "source": "NOAA CO-OPS",
+            "text": "Tide, water-level and current data: NOAA/NOS CO-OPS",
+            "link": "https://tidesandcurrents.noaa.gov/",
+            "licence": null
+          }
+        ],
+        "notices": [
+          {
+            "kind": "not_for_navigation",
+            "text": "Not for navigation."
+          }
+        ]
       },
       {
         "kind": "current",
@@ -8467,8 +8474,20 @@ expression: json
           "now_t": 1794148200,
           "accessibility": "Current: Slack 4:40 AM, Slack 10:41 AM, Slack 5:40 PM, Slack 10:37 PM, Slack 5:14 AM, Slack 11:24 AM, Slack 6:32 PM, Slack 11:10 PM"
         },
-        "credits": [],
-        "notices": []
+        "credits": [
+          {
+            "source": "NOAA CO-OPS",
+            "text": "Tide, water-level and current data: NOAA/NOS CO-OPS",
+            "link": "https://tidesandcurrents.noaa.gov/",
+            "licence": null
+          }
+        ],
+        "notices": [
+          {
+            "kind": "not_for_navigation",
+            "text": "Not for navigation."
+          }
+        ]
       },
       {
         "kind": "wind",
@@ -9333,7 +9352,14 @@ expression: json
           "now_t": 1794148200,
           "accessibility": "Light: Sunrise 6:34 AM, Sunset 4:45 PM, Sunrise 6:35 AM, Sunset 4:44 PM"
         },
-        "credits": [],
+        "credits": [
+          {
+            "source": "Computed on device",
+            "text": "Sun and moon positions from astronomical algorithms",
+            "link": null,
+            "licence": null
+          }
+        ],
         "notices": []
       },
       {
@@ -9640,7 +9666,14 @@ expression: json
           "now_t": 1794148200,
           "accessibility": "Solunar: Small nibble 5:31 to 6:31 AM, Big nibble 10:05 AM to 12:05 PM, Small nibble 3:31 to 4:31 PM, Big nibble 10:28 PM to 12:28 AM, Small nibble 6:37 to 7:37 AM, Big nibble 10:53 AM to 12:53 PM, Small nibble 4:03 to 5:03 PM, Big nibble 11:17 PM to 1:17 AM. A traditional cue, not a promise."
         },
-        "credits": [],
+        "credits": [
+          {
+            "source": "Computed on device",
+            "text": "Sun and moon positions from astronomical algorithms",
+            "link": null,
+            "licence": null
+          }
+        ],
         "notices": []
       }
     ]

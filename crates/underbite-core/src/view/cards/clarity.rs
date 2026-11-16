@@ -11,6 +11,7 @@ use crate::view::cards::flow::{
     card_state, chart_series, chart_vm, credits, is_unreliable, qty, quality_notices, row,
     sample_quality, spark, unreliable_text,
 };
+use crate::view::cards::wind::latest_at;
 use crate::view::format::Formatter;
 use crate::view::strings::Key;
 use crate::view::{
@@ -161,6 +162,13 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
         .chain(cyano.map(Series::provenance))
         .collect();
     let main = provs.first().copied()?;
+    // The age is that of the newest sample at or before now in the series that leads.
+    let shown_at = turbidity
+        .map(|s| latest_at(s, now).map(|x| x.time))
+        .or_else(|| chlorophyll.map(|s| latest_at(s, now).map(|x| x.time)))
+        .or_else(|| kd490.map(|s| latest_at(s, now).map(|x| x.time)))
+        .or_else(|| cyano.map(|s| latest_at(s, now).map(|x| x.time)))
+        .flatten();
     let headline = turbidity_q
         .clone()
         .or_else(|| chlorophyll_q.clone())
@@ -203,7 +211,12 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
         chrome: CardChrome {
             id: CardId::Clarity,
             title,
-            footnote: Some(f.footnote(&format!("{label} {}", headline.full()), main, now)),
+            footnote: Some(f.footnote_aged(
+                &format!("{label} {}", headline.full()),
+                main,
+                now,
+                shown_at,
+            )),
             credits: credits(input, &provs),
             state: card_state(input, &f, measurement, main, latest),
             notices: quality_notices(&f, &qualities),
@@ -276,6 +289,26 @@ mod tests {
             assert_eq!(c.compact.headline.full(), "2.1 FNU");
             assert_eq!(c.chrome.notices.len(), 1);
         }
+    }
+
+    #[test]
+    fn the_footnote_age_is_that_of_the_newest_sample_at_or_before_now() {
+        let mut input = bronx(us(), Voice::Plain);
+        let s = input.snapshot.water.turbidity.take().unwrap();
+        let mut p = s.provenance().clone();
+        p.observed_at = UnixTime(NOW - 2 * 86_400);
+        let mut samples = s.samples().to_vec();
+        // A value ahead of now is not the one shown.
+        samples.push(Sample::new(
+            UnixTime(NOW + 3_600),
+            Turbidity {
+                value: 9.0,
+                unit: TurbidityUnit::Fnu,
+            },
+        ));
+        input.snapshot.water.turbidity = Some(Series::new(p, samples));
+        let text = card(&input).chrome.footnote.unwrap();
+        assert!(text.ends_with("just now"), "{text}");
     }
 
     #[test]

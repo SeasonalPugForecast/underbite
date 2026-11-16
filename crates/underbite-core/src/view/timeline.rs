@@ -6,18 +6,23 @@
 
 use jiff::tz::TimeZone;
 
-use crate::datum::VerticalDatum;
+use crate::datum::{Height, VerticalDatum};
 use crate::model::{
     CurrentEvent, CurrentKind, Polar, SkyDay, SolunarKind, TideKind, TideSourceKind,
 };
 use crate::time::{UnixTime, local_date, local_date_bounds, zone};
+use crate::view::cards::current::notices as current_notices;
+use crate::view::cards::flow::credits as station_credits;
 use crate::view::cards::solunar::{kind_label, range_text};
+use crate::view::cards::sun_moon::computed_credit;
+use crate::view::cards::tide::{credits as tide_credits, notices as tide_notices};
 use crate::view::chart::{self, Zoned, level_at, speed_at};
 use crate::view::format::{Formatter, Phase};
 use crate::view::strings::{Key, SafetyKey, source_name};
 use crate::view::{
     BandKind, CardId, ChartBand, ChartMarker, ChartPoint, ChartSeries, ChartTick, ChartVm,
-    LaneKind, MarkerKind, Quantity, SeriesRole, SeriesStyle, TimelineLane, TimelineVm, ViewInput,
+    CreditVm, LaneKind, MarkerKind, Notice, Quantity, SeriesRole, SeriesStyle, TimelineLane,
+    TimelineVm, ViewInput,
 };
 
 /// The widest gap a curve or hourly series is interpolated across.
@@ -145,6 +150,7 @@ fn extremes(points: &[ChartPoint], f: &Formatter) -> String {
 // Tide
 // ---------------------------------------------------------------------------------------------
 
+#[allow(clippy::too_many_lines)]
 fn tide_lane(ctx: &Ctx) -> ChartVm {
     let name = ctx.f.strings.card_title(CardId::Tide);
     let Some(tide) = ctx.input.snapshot.marine.tide.as_ref() else {
@@ -166,7 +172,12 @@ fn tide_lane(ctx: &Ctx) -> ChartVm {
     let series_points: Vec<ChartPoint> = if shown {
         ctx.points(
             |t| levels.iter().find(|(s, _)| *s == t).map(|(_, v)| *v),
-            |m| f.length(Some(m)),
+            |m| {
+                f.height(Some(Height {
+                    datum: tide.datum,
+                    metres: m,
+                }))
+            },
         )
     } else {
         // A relative curve: scaled to 0..1, labelled with the time, never with a height.
@@ -191,7 +202,12 @@ fn tide_lane(ctx: &Ctx) -> ChartVm {
         .filter(|e| ctx.in_window(e.time.0))
         .map(|e| {
             let word = f.strings.tide_kind(e.kind);
-            let q = shown.then(|| f.length(e.height_m));
+            let q = shown.then(|| {
+                f.height(e.height_m.map(|metres| Height {
+                    datum: tide.datum,
+                    metres,
+                }))
+            });
             ChartMarker {
                 kind: match e.kind {
                     TideKind::High => MarkerKind::High,
@@ -633,6 +649,79 @@ fn solunar_lane(ctx: &Ctx) -> ChartVm {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Credits and notices
+// ---------------------------------------------------------------------------------------------
+
+/// True when the wind (and pressure) lane takes its values from the forecast.
+fn forecast_has(ctx: &Ctx, has: impl Fn(&whether_core::model::Hourly) -> bool) -> bool {
+    ctx.input
+        .snapshot
+        .weather
+        .as_ref()
+        .is_some_and(|w| w.hourly.iter().any(has))
+}
+
+/// The credit of a weather forecast provider.
+fn weather_credit(weather: &whether_core::model::WeatherSnapshot) -> CreditVm {
+    CreditVm {
+        source: weather.provider.display_name().to_owned(),
+        text: weather.provider.attribution().to_owned(),
+        link: None,
+        licence: None,
+    }
+}
+
+/// The sources and notices of a lane that has something to show, as its card gives them.
+fn lane_extras(ctx: &Ctx, kind: LaneKind) -> (Vec<CreditVm>, Vec<Notice>) {
+    let snapshot = &ctx.input.snapshot;
+    match kind {
+        LaneKind::Tide => snapshot
+            .marine
+            .tide
+            .as_ref()
+            .map_or_else(Default::default, |t| {
+                (
+                    tide_credits(snapshot, &t.provenance.source),
+                    tide_notices(&ctx.f, t),
+                )
+            }),
+        LaneKind::Current => {
+            snapshot
+                .marine
+                .tidal_current
+                .as_ref()
+                .map_or_else(Default::default, |c| {
+                    (
+                        tide_credits(snapshot, &c.provenance.source),
+                        current_notices(&ctx.f, c),
+                    )
+                })
+        }
+        LaneKind::Wind => {
+            let credit = match (&snapshot.weather, &snapshot.marine.observed_wind) {
+                (Some(w), _) if forecast_has(ctx, |h| h.wind_speed.is_some()) => {
+                    Some(weather_credit(w))
+                }
+                (_, Some(obs)) => station_credits(ctx.input, &[obs.provenance()]).pop(),
+                _ => None,
+            };
+            (credit.into_iter().collect(), Vec::new())
+        }
+        LaneKind::Pressure => {
+            let credit = match (&snapshot.weather, &snapshot.marine.observed_pressure_hpa) {
+                (Some(w), _) if forecast_has(ctx, |h| h.pressure_msl.is_some()) => {
+                    Some(weather_credit(w))
+                }
+                (_, Some(obs)) => station_credits(ctx.input, &[obs.provenance()]).pop(),
+                _ => None,
+            };
+            (credit.into_iter().collect(), Vec::new())
+        }
+        LaneKind::Light | LaneKind::Solunar => (vec![computed_credit(ctx.f.strings)], Vec::new()),
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
 // Build
 // ---------------------------------------------------------------------------------------------
 
@@ -695,12 +784,21 @@ pub fn build(input: &ViewInput) -> Option<TimelineVm> {
         x_ticks: ctx.ticks.clone(),
         lanes: lanes
             .into_iter()
-            .map(|(kind, label, chart)| TimelineLane {
-                kind,
-                label: label.to_owned(),
-                chart,
-                credits: Vec::new(),
-                notices: Vec::new(),
+            .map(|(kind, label, chart)| {
+                let empty =
+                    chart.series.is_empty() && chart.bands.is_empty() && chart.markers.is_empty();
+                let (credits, notices) = if empty {
+                    (Vec::new(), Vec::new())
+                } else {
+                    lane_extras(&ctx, kind)
+                };
+                TimelineLane {
+                    kind,
+                    label: label.to_owned(),
+                    chart,
+                    credits,
+                    notices,
+                }
             })
             .collect(),
     })
@@ -801,7 +899,10 @@ mod tests {
         let times: Vec<i64> = tide.iter().map(|p| p.t).collect();
         let expected: Vec<i64> = (0..24).map(|i| midnight + i * 3_600).collect();
         assert_eq!(times, expected);
-        assert!(tide.iter().all(|p| p.label.ends_with(" ft")));
+        assert!(tide.iter().all(|p| p.label.ends_with(" ft MLLW")));
+        // The markers carry the datum too.
+        let markers = &lane(&vm, LaneKind::Tide).markers;
+        assert!(markers.iter().all(|m| m.label.ends_with(" ft MLLW")));
         assert_eq!(vm.x_ticks.len(), 24);
         assert_eq!(vm.x_ticks[0].label, "12 AM");
         assert_eq!(vm.x_ticks[15].label, "3 PM");
@@ -889,6 +990,47 @@ mod tests {
         input.solunar.show = false;
         let hidden = build(&input).unwrap();
         assert!(hidden.lanes.iter().all(|l| l.kind != LaneKind::Solunar));
+    }
+
+    fn lane_of(vm: &TimelineVm, kind: LaneKind) -> &TimelineLane {
+        vm.lanes.iter().find(|l| l.kind == kind).unwrap()
+    }
+
+    #[test]
+    fn lanes_carry_their_credits_and_notices() {
+        use crate::view::NoticeKind;
+        let kinds = |l: &TimelineLane| l.notices.iter().map(|n| n.kind).collect::<Vec<_>>();
+        let mut input = input();
+        let vm = build(&input).unwrap();
+        let tide = lane_of(&vm, LaneKind::Tide);
+        assert_eq!(kinds(tide), [NoticeKind::NotForNavigation]);
+        assert_ne!(tide.credits.len(), 0);
+        // Lanes with nothing to show credit and warn of nothing.
+        let current = lane_of(&vm, LaneKind::Current);
+        assert!(current.credits.is_empty() && current.notices.is_empty());
+        // Light is computed on the device and carries no notice.
+        let light = lane_of(&vm, LaneKind::Light);
+        assert_eq!(light.credits.len(), 1);
+        assert_eq!(light.notices.len(), 0);
+
+        // A subordinate station's tide is approximate.
+        input.snapshot.marine.tide.as_mut().unwrap().source_kind =
+            TideSourceKind::SubordinateStation;
+        let vm = build(&input).unwrap();
+        assert_eq!(
+            kinds(lane_of(&vm, LaneKind::Tide)),
+            [NoticeKind::NotForNavigation, NoticeKind::Approximate]
+        );
+
+        // A model-mean tide shows times only and carries the sea-level notice.
+        let tide = input.snapshot.marine.tide.as_mut().unwrap();
+        tide.source_kind = TideSourceKind::ModelMean;
+        tide.datum = VerticalDatum::ModelMean;
+        let vm = build(&input).unwrap();
+        assert_eq!(
+            kinds(lane_of(&vm, LaneKind::Tide)),
+            [NoticeKind::NotForNavigation, NoticeKind::Modelled]
+        );
     }
 
     #[test]

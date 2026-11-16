@@ -5,9 +5,10 @@ use serde::Serialize;
 
 use crate::datum::{Height, VerticalDatum};
 use crate::model::{FloodCategories, Measurement, Percentile, PercentileBasis, PercentileClass};
-use crate::provenance::{Provenance, Quality, SourceId};
+use crate::provenance::{Provenance, Quality, SourceId, StationRef};
 use crate::series::{Sample, Series};
 use crate::time::{LocalDate, UnixTime};
+use crate::view::cards::wind::latest_at;
 use crate::view::format::{Formatter, number, ordinal};
 use crate::view::strings::{Key, source_name};
 use crate::view::{
@@ -191,7 +192,7 @@ pub(super) fn card_state(
 
 /// Credits for the sources behind a card, from the snapshot's attributions; provisional USGS
 /// values add the provisional data statement.
-pub(super) fn credits(input: &ViewInput, provs: &[&Provenance]) -> Vec<CreditVm> {
+pub(in crate::view) fn credits(input: &ViewInput, provs: &[&Provenance]) -> Vec<CreditVm> {
     let f = Formatter::for_input(input);
     let mut out: Vec<CreditVm> = Vec::new();
     for p in provs {
@@ -239,19 +240,16 @@ pub(super) fn quality_notices(f: &Formatter, qualities: &[Quality]) -> Vec<Notic
     }
 }
 
-/// Day ticks along the span, labelled with the date.
+/// Day ticks along the span, on the local midnights of the spot's zone, labelled with the date.
 pub(super) fn ticks(f: &Formatter, from: UnixTime, to: UnixTime) -> Vec<ChartTick> {
-    let mut out = Vec::new();
-    let mut t = from.0;
-    while t <= to.0 {
-        out.push(ChartTick {
-            t,
-            label: f.date_of(UnixTime(t)),
+    f.local_midnights(from, to)
+        .into_iter()
+        .map(|t| ChartTick {
+            t: t.0,
+            label: f.date_of(t),
             major: true,
-        });
-        t += 86_400;
-    }
-    out
+        })
+        .collect()
 }
 
 /// Chart points from samples; `show` gives the display quantity of a canonical value. The first,
@@ -588,6 +586,42 @@ fn flood_list(c: &FloodCategories) -> Vec<(Key, Height)> {
     .collect()
 }
 
+/// A station id without the `USGS-` prefix some lists put in front of a site number.
+fn bare_id(id: &str) -> &str {
+    id.strip_prefix("USGS-").unwrap_or(id)
+}
+
+/// True when the flood gauge is the stage station itself or its forecast join: the same
+/// station, or one that names the other as its reference.
+fn same_gauge(flood: &StationRef, other: &StationRef) -> bool {
+    let names = |a: &StationRef, b: &StationRef| {
+        a.reference_id
+            .as_deref()
+            .is_some_and(|r| bare_id(r) == bare_id(&b.id))
+    };
+    (flood.source == other.source && bare_id(&flood.id) == bare_id(&other.id))
+        || names(flood, other)
+        || names(other, flood)
+}
+
+/// The flood stages of the spot's own gauge: those whose gauge is the gage-height station or
+/// the forecast's station, never another river's. Stages without a recorded gauge are not shown.
+fn own_flood_stages<'a>(
+    c: Option<&'a FloodCategories>,
+    gage: Option<&Provenance>,
+    forecast: Option<&Provenance>,
+) -> Option<(&'a FloodCategories, &'a Provenance)> {
+    let c = c?;
+    let p = c.provenance.as_ref()?;
+    let site = p.station.as_ref()?;
+    [gage, forecast]
+        .into_iter()
+        .flatten()
+        .filter_map(|q| q.station.as_ref())
+        .any(|s| same_gauge(site, s))
+        .then_some((c, p))
+}
+
 fn forecast_after(series: &Series<f32>, now: UnixTime) -> &[Sample<f32>] {
     observed_after(series, now)
 }
@@ -642,8 +676,24 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
 
     let show_q = |v: f32| f.discharge(Some(v));
     let fr = &f;
-    let stage_show =
-        |datum: VerticalDatum| move |v: f32| fr.height(Some(Height { datum, metres: v }));
+    let stage_show = |datum: VerticalDatum| {
+        move |v: f32| {
+            let h = Some(Height { datum, metres: v });
+            if lake_level {
+                fr.lake_level(h)
+            } else {
+                fr.stage(h)
+            }
+        }
+    };
+    // A change in stage, or a level with no datum, in the group's unit.
+    let stage_delta = |m: Option<f32>| {
+        if lake_level {
+            f.lake_level_length(m)
+        } else {
+            f.stage_length(m)
+        }
+    };
 
     // Values now.
     let dq = discharge.and_then(|s| s.latest().map(|l| (s, l)));
@@ -666,7 +716,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         .or_else(|| {
             sq.and_then(|(h, _)| {
                 trend(&f, h.series.samples(), STAGE_TREND_M, &|d| {
-                    f.length(Some(d)).full()
+                    stage_delta(Some(d)).full()
                 })
             })
         });
@@ -680,7 +730,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
     let pct_datum = pct_source.and_then(|p| p.datum).or(stage.map(|h| h.datum));
     let show_pct = |v: f32| match (discharge.is_some(), pct_datum) {
         (false, Some(datum)) => stage_show(datum)(v),
-        (false, None) => f.length(Some(v)),
+        (false, None) => stage_delta(Some(v)),
         (true, _) => f.discharge(Some(v)),
     };
     let percentile = pct_source.and_then(|p| percentile_vm(&f, p, &show_pct));
@@ -691,16 +741,17 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         .and_then(|r| range_status(&f, r, dq_quality));
 
     // Flood categories stay in their own (usually gage) datum.
-    let flood: Vec<(Key, Height)> = w
-        .flood_categories
-        .as_ref()
-        .map(flood_list)
-        .unwrap_or_default();
+    let own_flood = own_flood_stages(
+        w.flood_categories.as_ref(),
+        stage.map(|h| h.series.provenance()),
+        s_forecast.map(|h| h.series.provenance()),
+    );
+    let flood: Vec<(Key, Height)> = own_flood.map(|(c, _)| flood_list(c)).unwrap_or_default();
     let flood_categories: Vec<FloodCategoryVm> = flood
         .iter()
         .map(|(label, h)| FloodCategoryVm {
             label: f.strings.get(*label).to_owned(),
-            stage: f.height(Some(*h)),
+            stage: f.stage(Some(*h)),
         })
         .collect();
 
@@ -777,7 +828,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
                 .iter()
                 .filter(|(_, h)| h.datum == datum)
                 .filter_map(|(label, h)| {
-                    let q = f.height(Some(*h));
+                    let q = f.stage(Some(*h));
                     q.value.map(|value| ChartRule {
                         kind: RuleKind::FloodCategory,
                         value,
@@ -848,6 +899,20 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
             rows,
         });
     }
+    // The gauge the flood stages belong to, named and credited.
+    if let Some((_, p)) = own_flood {
+        sections.push(Section {
+            title: f.strings.get(Key::MeasFloodCategories).to_owned(),
+            rows: vec![Row {
+                label: f.strings.get(Key::Station).to_owned(),
+                value: p
+                    .station
+                    .as_ref()
+                    .map_or_else(|| source_name(&p.source), |s| s.name.clone()),
+                detail: Some(source_name(&p.source)),
+            }],
+        });
+    }
     let mut qualities: Vec<Quality> = Vec::new();
     qualities.extend(dq_quality.map(|(_, q)| q));
     qualities.extend(sq_quality);
@@ -900,6 +965,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         .chain(sq.map(|(h, _)| h.series.provenance()))
         .chain(q_forecast.map(Series::provenance))
         .chain(s_forecast.map(|h| h.series.provenance()))
+        .chain(own_flood.map(|(_, p)| p))
         .collect();
     let measurement = if discharge.is_some() {
         Measurement::Discharge
@@ -918,7 +984,19 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
     } else {
         Key::Stage
     });
-    let footnote = main_prov.map(|p| f.footnote(&format!("{label} {}", headline.full()), p, now));
+    // The age is that of the newest sample at or before now in the series that leads.
+    let shown_at = if let Some(s) = discharge {
+        latest_at(s, now)
+    } else if let Some(h) = stage {
+        latest_at(&h.series, now)
+    } else if let Some(s) = q_forecast {
+        latest_at(s, now)
+    } else {
+        s_forecast.and_then(|h| latest_at(&h.series, now))
+    }
+    .map(|x| x.time);
+    let footnote = main_prov
+        .map(|p| f.footnote_aged(&format!("{label} {}", headline.full()), p, now, shown_at));
     let title = if lake_level {
         f.strings.get(Key::LakeLevel).to_owned()
     } else {
@@ -1141,6 +1219,7 @@ mod tests {
     use crate::datum::Heights;
     use crate::model::PercentileThresholds;
     use crate::provenance::{StationKind, UsgsSiteType, ValueKind};
+    use crate::units::HeightUnit;
     use crate::view::Voice;
 
     fn card(input: &ViewInput) -> FlowCard {
@@ -1265,6 +1344,17 @@ mod tests {
         assert_eq!(c.chrome.notices.len(), 0);
     }
 
+    fn nwps_gauge(id: &str, name: &str) -> Provenance {
+        prov(
+            SourceId::NWPS,
+            id,
+            name,
+            StationKind::NwpsGauge,
+            ValueKind::Modelled,
+            Quality::Provisional,
+        )
+    }
+
     /// COHN6 forecast stage, flood categories at 17, 20, 21 and 22 ft above the gauge datum.
     fn cohn6_input(units: crate::view::DisplayUnits) -> ViewInput {
         let mut input = croton_input(units, Voice::Plain);
@@ -1297,7 +1387,7 @@ mod tests {
             minor: h(20.0),
             moderate: h(21.0),
             major: h(22.0),
-            provenance: None,
+            provenance: Some(nwps_gauge("COHN6", "Mohawk River at Cohoes")),
         });
         // An observed stage in another datum is never merged into the forecast chart.
         input.snapshot.water.gage_height = Some(Heights {
@@ -1351,9 +1441,94 @@ mod tests {
     }
 
     #[test]
+    fn flood_stages_name_and_credit_the_gauge_they_belong_to() {
+        let mut input = cohn6_input(us());
+        input
+            .snapshot
+            .attribution
+            .push(crate::provenance::Attribution {
+                source: SourceId::NWPS,
+                credit: "NOAA National Water Prediction Service".into(),
+                url: None,
+            });
+        let c = card(&input);
+        let section = c
+            .full
+            .sections
+            .iter()
+            .find(|s| s.title == "Flood categories")
+            .unwrap();
+        assert_eq!(section.rows[0].value, "Mohawk River at Cohoes");
+        assert!(
+            c.chrome
+                .credits
+                .iter()
+                .any(|cr| cr.text == "NOAA National Water Prediction Service")
+        );
+        // The observed gauge joined to the forecast gauge (the NWPS gauge names its USGS site).
+        let mut joined = cohn6_input(us());
+        joined.snapshot.water.stage_forecast = None;
+        let mut gauge = nwps_gauge("COHN6", "Mohawk River at Cohoes");
+        gauge.station.as_mut().unwrap().reference_id = Some("01375000".into());
+        joined
+            .snapshot
+            .water
+            .flood_categories
+            .as_mut()
+            .unwrap()
+            .provenance = Some(gauge);
+        joined.snapshot.water.gage_height = Some(Heights {
+            datum: VerticalDatum::Gauge,
+            series: run(croton(Quality::Provisional), NOW, 900, &[1.2, 1.3]),
+        });
+        let c = card(&joined);
+        assert_eq!(c.full.flood_categories.len(), 4);
+        assert_eq!(c.full.stage_chart.unwrap().rules.len(), 4);
+    }
+
+    #[test]
+    fn another_gauges_flood_stages_are_not_shown() {
+        let mut input = cohn6_input(us());
+        input
+            .snapshot
+            .water
+            .flood_categories
+            .as_mut()
+            .unwrap()
+            .provenance = Some(nwps_gauge("WNYN6", "Hackensack River at New Milford"));
+        let c = card(&input);
+        assert_eq!(c.full.flood_categories.len(), 0);
+        assert_eq!(c.full.stage_chart.unwrap().rules.len(), 0);
+        assert!(
+            c.full
+                .sections
+                .iter()
+                .all(|s| s.title != "Flood categories")
+        );
+        assert!(c.chrome.credits.iter().all(|cr| cr.source != "NWPS"));
+        // Stages with no recorded gauge are not shown either.
+        let mut input = cohn6_input(us());
+        input
+            .snapshot
+            .water
+            .flood_categories
+            .as_mut()
+            .unwrap()
+            .provenance = None;
+        assert_eq!(card(&input).full.flood_categories.len(), 0);
+    }
+
+    #[test]
     fn flood_lines_are_not_drawn_in_another_datum() {
         let mut input = cohn6_input(us());
         input.snapshot.water.stage_forecast = None;
+        input
+            .snapshot
+            .water
+            .flood_categories
+            .as_mut()
+            .unwrap()
+            .provenance = Some(croton(Quality::Provisional));
         let c = card(&input);
         let chart = c.full.stage_chart.unwrap();
         assert_eq!(chart.rules.len(), 0);
@@ -1407,6 +1582,85 @@ mod tests {
         assert_eq!(pct.thresholds[0].value.full(), "755.0 ft NGVD29");
         assert!(c.full.discharge.is_none());
         assert_eq!(c.chrome.notices.len(), 0);
+    }
+
+    #[test]
+    fn stage_and_lake_level_use_their_own_units_not_the_tide_unit() {
+        let mut units = us();
+        units.stage = HeightUnit::M;
+        units.lake_level = HeightUnit::M;
+        let mut input = croton_input(units, Voice::Plain);
+        input.snapshot.water.gage_height = Some(Heights {
+            datum: VerticalDatum::Navd88,
+            series: run(croton(Quality::Provisional), NOW, 900, &[1.2, 1.3]),
+        });
+        let c = card(&input);
+        assert_eq!(c.full.gage_height.as_ref().unwrap().full(), "1.3 m NAVD88");
+        assert_eq!(
+            c.full.stage_chart.as_ref().unwrap().unit,
+            "m NAVD88",
+            "stage chart"
+        );
+        // Tide heights stay in feet.
+        assert_eq!(
+            Formatter::for_input(&input)
+                .height(Some(Height {
+                    datum: VerticalDatum::Mllw,
+                    metres: 0.3048,
+                }))
+                .full(),
+            "1.0 ft MLLW"
+        );
+
+        let mut lake = croton_input(units, Voice::Plain);
+        lake.snapshot.water.discharge_m3s = None;
+        lake.snapshot.water.discharge_percentile_for_date = None;
+        lake.snapshot.water.level = Some(Heights {
+            datum: VerticalDatum::Ngvd29,
+            series: run(croton(Quality::Approved), NOW, 900, &[230.0, 230.5]),
+        });
+        let c = card(&lake);
+        assert_eq!(
+            c.full.gage_height.as_ref().unwrap().full(),
+            "230.5 m NGVD29"
+        );
+        lake.units.lake_level = HeightUnit::Ft;
+        let c = card(&lake);
+        assert_eq!(
+            c.full.gage_height.as_ref().unwrap().full(),
+            "756.2 ft NGVD29"
+        );
+    }
+
+    #[test]
+    fn chart_day_ticks_fall_on_local_midnights_across_the_november_change() {
+        let input = croton_input(us(), Voice::Plain);
+        assert_eq!(input.snapshot.spot.time_zone, "America/New_York");
+        let f = Formatter::for_input(&input);
+        // Friday 30 October noon EDT to Tuesday 3 November noon EST; clocks went back on the 1st.
+        let ticks = ticks(&f, UnixTime(1_793_376_000), UnixTime(1_793_725_200));
+        let at: Vec<i64> = ticks.iter().map(|t| t.t).collect();
+        assert_eq!(
+            at,
+            [1_793_419_200, 1_793_505_600, 1_793_595_600, 1_793_682_000]
+        );
+        let labels: Vec<&str> = ticks.iter().map(|t| t.label.as_str()).collect();
+        assert_eq!(labels, ["Oct 31", "Nov 1", "Nov 2", "Nov 3"]);
+        // The day the clocks went back is 25 hours long.
+        assert_eq!(at[2] - at[1], 25 * 3_600);
+    }
+
+    #[test]
+    fn the_footnote_age_is_that_of_the_newest_sample_at_or_before_now() {
+        let mut input = croton_input(us(), Voice::Plain);
+        let mut p = croton(Quality::Provisional);
+        p.observed_at = UnixTime(NOW - 2 * 86_400);
+        // Samples from an hour ago to now, and one ahead of now.
+        let mut s = run(p, NOW + 3_600, 3_600, &[1.0, 2.0, 3.0]);
+        s = Series::new(s.provenance().clone(), s.samples().to_vec());
+        input.snapshot.water.discharge_m3s = Some(s);
+        let text = build(&input).unwrap().chrome.footnote.unwrap();
+        assert!(text.ends_with("just now"), "{text}");
     }
 
     #[test]

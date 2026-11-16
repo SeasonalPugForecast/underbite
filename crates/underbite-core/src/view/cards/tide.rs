@@ -12,12 +12,13 @@ use crate::provenance::{Provenance, Quality, SourceId};
 use crate::series::Series;
 use crate::time::{UnixTime, day_number};
 use crate::view::cards::sun_moon::{MoonPhaseVm, day_label};
+use crate::view::cards::wind::latest_at;
 use crate::view::chart::{Zoned, grid, level_at, ticks, window};
 use crate::view::format::Formatter;
 use crate::view::strings::{Key, source_name};
 use crate::view::{
     BandKind, CardChrome, CardId, CardState, ChartBand, ChartMarker, ChartPoint, ChartSeries,
-    ChartVm, Compact, CreditVm, MarkerKind, NoticeKind, Quantity, Row, Section, SeriesRole,
+    ChartVm, Compact, CreditVm, MarkerKind, Notice, NoticeKind, Quantity, Row, Section, SeriesRole,
     SeriesStyle, TimedLabel, ViewInput,
 };
 
@@ -91,7 +92,7 @@ pub struct TideFull {
 const SLACK_MINUTES: f64 = 15.0;
 
 /// The credits owed for a series: the source's, and for on-device harmonics also the data's.
-pub(super) fn credits(snapshot: &SpotSnapshot, source: &SourceId) -> Vec<CreditVm> {
+pub(in crate::view) fn credits(snapshot: &SpotSnapshot, source: &SourceId) -> Vec<CreditVm> {
     let ids = if *source == SourceId::COOPS_HARMONICS {
         vec![SourceId::COOPS, SourceId::COOPS_HARMONICS]
     } else {
@@ -121,6 +122,24 @@ fn default_credit(id: &SourceId) -> String {
         "open-meteo-marine" => CREDIT_OPEN_METEO.to_owned(),
         _ => source_name(id),
     }
+}
+
+/// The notices a tide carries: never for navigation, and either the sea-level model's notice or
+/// the approximate one (a subordinate station, no curve, or an estimated curve).
+pub(in crate::view) fn notices(f: &Formatter, tide: &TideSeries) -> Vec<Notice> {
+    let mut notices = vec![f.notice(NoticeKind::NotForNavigation)];
+    if tide.source_kind == TideSourceKind::ModelMean {
+        notices.push(f.sea_level_notice());
+    } else if tide.source_kind == TideSourceKind::SubordinateStation
+        || tide.curve.is_none()
+        || tide
+            .curve
+            .as_ref()
+            .is_some_and(|c| c.provenance().quality == Quality::Estimated)
+    {
+        notices.push(f.notice(NoticeKind::Approximate));
+    }
+    notices
 }
 
 /// Fresh, or far when the station lies beyond the user's distance limit.
@@ -484,18 +503,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
         unit: String::new(),
     });
 
-    let mut notices = vec![f.notice(NoticeKind::NotForNavigation)];
-    if model {
-        notices.push(f.sea_level_notice());
-    } else if tide.source_kind == TideSourceKind::SubordinateStation
-        || tide.curve.is_none()
-        || tide
-            .curve
-            .as_ref()
-            .is_some_and(|c| c.provenance().quality == Quality::Estimated)
-    {
-        notices.push(f.notice(NoticeKind::Approximate));
-    }
+    let notices = notices(&f, tide);
     let card_state = if next_all.is_none() {
         CardState::Unavailable {
             reason: f.strings.get(Key::NoData).to_owned(),
@@ -524,11 +532,17 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
         chrome: CardChrome {
             id: CardId::Tide,
             title: f.strings.card_title(CardId::Tide).to_owned(),
-            footnote: Some(f.footnote(
-                &format!("{} {value_text}", f.strings.card_title(CardId::Tide)),
-                p,
-                now,
-            )),
+            footnote: Some(
+                f.footnote_aged(
+                    &format!("{} {value_text}", f.strings.card_title(CardId::Tide)),
+                    p,
+                    now,
+                    tide.curve
+                        .as_ref()
+                        .and_then(|c| latest_at(c, now))
+                        .map(|s| s.time),
+                ),
+            ),
             credits: credits(snapshot, &p.source),
             state: card_state,
             notices,
@@ -679,6 +693,20 @@ mod tests {
     use crate::units::{HeightUnit, SpeedUnit};
     use crate::view::Voice;
     use whether_core::presentation::TimeFormat;
+
+    #[test]
+    fn the_footnote_age_is_that_of_the_curve_sample_at_or_before_now() {
+        let mut input = input();
+        let tide = input.snapshot.marine.tide.as_mut().unwrap();
+        tide.provenance.kind = crate::provenance::ValueKind::Observed;
+        tide.provenance.observed_at = UnixTime(input.now.0 - 2 * 86_400);
+        let text = build(&input).unwrap().chrome.footnote.unwrap();
+        assert!(!text.contains("2 d ago"), "{text}");
+        assert!(
+            text.ends_with("min ago") || text.ends_with("just now"),
+            "{text}"
+        );
+    }
 
     #[test]
     fn next_event_is_the_evening_low_in_feet_mllw() {

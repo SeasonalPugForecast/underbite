@@ -293,69 +293,44 @@ expression: json
           ]
         },
         "range_status": null,
-        "flood_categories": [
-          {
-            "label": "Minor",
-            "stage": {
-              "value": 6.0,
-              "text": "6.0",
-              "unit": "ft gage datum"
-            }
-          },
-          {
-            "label": "Moderate",
-            "stage": {
-              "value": 8.0,
-              "text": "8.0",
-              "unit": "ft gage datum"
-            }
-          },
-          {
-            "label": "Major",
-            "stage": {
-              "value": 10.0,
-              "text": "10.0",
-              "unit": "ft gage datum"
-            }
-          }
-        ],
+        "flood_categories": [],
         "chart": {
           "title": "Discharge",
           "unit": "cfs",
           "x_ticks": [
             {
-              "t": 1793543400,
-              "label": "Nov 1",
-              "major": true
-            },
-            {
-              "t": 1793629800,
+              "t": 1793595600,
               "label": "Nov 2",
               "major": true
             },
             {
-              "t": 1793716200,
+              "t": 1793682000,
               "label": "Nov 3",
               "major": true
             },
             {
-              "t": 1793802600,
+              "t": 1793768400,
               "label": "Nov 4",
               "major": true
             },
             {
-              "t": 1793889000,
+              "t": 1793854800,
               "label": "Nov 5",
               "major": true
             },
             {
-              "t": 1793975400,
+              "t": 1793941200,
               "label": "Nov 6",
               "major": true
             },
             {
-              "t": 1794061800,
+              "t": 1794027600,
               "label": "Nov 7",
+              "major": true
+            },
+            {
+              "t": 1794114000,
+              "label": "Nov 8",
               "major": true
             }
           ],
@@ -4075,38 +4050,38 @@ expression: json
           "unit": "ft gage datum",
           "x_ticks": [
             {
-              "t": 1793543400,
-              "label": "Nov 1",
-              "major": true
-            },
-            {
-              "t": 1793629800,
+              "t": 1793595600,
               "label": "Nov 2",
               "major": true
             },
             {
-              "t": 1793716200,
+              "t": 1793682000,
               "label": "Nov 3",
               "major": true
             },
             {
-              "t": 1793802600,
+              "t": 1793768400,
               "label": "Nov 4",
               "major": true
             },
             {
-              "t": 1793889000,
+              "t": 1793854800,
               "label": "Nov 5",
               "major": true
             },
             {
-              "t": 1793975400,
+              "t": 1793941200,
               "label": "Nov 6",
               "major": true
             },
             {
-              "t": 1794061800,
+              "t": 1794027600,
               "label": "Nov 7",
+              "major": true
+            },
+            {
+              "t": 1794114000,
+              "label": "Nov 8",
               "major": true
             }
           ],
@@ -7816,23 +7791,7 @@ expression: json
             }
           ],
           "bands": [],
-          "rules": [
-            {
-              "kind": "flood_category",
-              "value": 6.0,
-              "label": "Minor 6.0 ft gage datum"
-            },
-            {
-              "kind": "flood_category",
-              "value": 8.0,
-              "label": "Moderate 8.0 ft gage datum"
-            },
-            {
-              "kind": "flood_category",
-              "value": 10.0,
-              "label": "Major 10.0 ft gage datum"
-            }
-          ],
+          "rules": [],
           "markers": [],
           "now_t": null,
           "accessibility": "Stage: now 1.1 ft gage datum, highest 2.0 ft gage datum, lowest 1.1 ft gage datum"
@@ -10314,7 +10273,14 @@ expression: json
           "now_t": 1794148200,
           "accessibility": "Light: Sunrise 6:34 AM, Sunset 4:43 PM, Sunrise 6:36 AM, Sunset 4:42 PM"
         },
-        "credits": [],
+        "credits": [
+          {
+            "source": "Computed on device",
+            "text": "Sun and moon positions from astronomical algorithms",
+            "link": null,
+            "licence": null
+          }
+        ],
         "notices": []
       },
       {
@@ -10621,7 +10587,14 @@ expression: json
           "now_t": 1794148200,
           "accessibility": "Solunar: Small nibble 5:32 to 6:32 AM, Big nibble 10:04 AM to 12:04 PM, Small nibble 3:29 to 4:29 PM, Big nibble 10:28 PM to 12:28 AM, Small nibble 6:38 to 7:38 AM, Big nibble 10:52 AM to 12:52 PM, Small nibble 4:00 to 5:00 PM, Big nibble 11:17 PM to 1:17 AM. A traditional cue, not a promise."
         },
-        "credits": [],
+        "credits": [
+          {
+            "source": "Computed on device",
+            "text": "Sun and moon positions from astronomical algorithms",
+            "link": null,
+            "licence": null
+          }
+        ],
         "notices": []
       }
     ]

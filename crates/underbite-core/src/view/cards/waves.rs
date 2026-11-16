@@ -104,7 +104,7 @@ fn direction_text(f: &Formatter, d: &WaveDirection) -> String {
 fn train_vm(f: &Formatter, label: String, t: &WaveTrain) -> WaveTrainVm {
     WaveTrainVm {
         label,
-        height: t.height_m.map(|h| f.length(Some(h))),
+        height: t.height_m.map(|h| f.wave_height(Some(h))),
         period: seconds(t.period_s),
         direction: t.direction_from.as_ref().map(|d| direction_text(f, d)),
     }
@@ -114,7 +114,7 @@ fn now_vm(f: &Formatter, t: UnixTime, s: &WaveSample) -> WaveNowVm {
     WaveNowVm {
         t: t.0,
         time: f.clock(t),
-        significant_height: s.significant_height_m.map(|h| f.length(Some(h))),
+        significant_height: s.significant_height_m.map(|h| f.wave_height(Some(h))),
         dominant_period: seconds(s.dominant_period_s),
         mean_period: seconds(s.mean_period_s),
         direction: s.direction_from_deg.map(|d| f.direction(Some(d))),
@@ -208,7 +208,7 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
     let forecast_shown = forecast_series.filter(|_| forecast_vm.is_some());
 
     // Observed and modelled stay in separate series on the same axis.
-    let height = |s: &WaveSample| s.significant_height_m.map(|h| f.length(Some(h)));
+    let height = |s: &WaveSample| s.significant_height_m.map(|h| f.wave_height(Some(h)));
     let period = |s: &WaveSample| seconds(s.dominant_period_s);
     let mut height_series = Vec::new();
     let mut period_series = Vec::new();
@@ -251,7 +251,7 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
     };
     let height_chart = chart(
         f.strings.get(Key::WaveHeight),
-        input.units.height.symbol(),
+        input.units.waves.symbol(),
         height_series,
     );
     let period_chart = chart(f.strings.get(Key::WavePeriod), "s", period_series);
@@ -483,6 +483,20 @@ mod tests {
                 sample(2, 1.5),
             ],
         )
+    }
+
+    #[test]
+    fn wave_heights_use_the_wave_unit_not_the_tide_unit() {
+        let mut input = buoy_input();
+        input.units.height = crate::units::HeightUnit::Ft;
+        input.units.waves = crate::units::HeightUnit::M;
+        let card = build(&input).unwrap();
+        let observed = card.full.observed.as_ref().unwrap();
+        assert_eq!(
+            observed.significant_height.as_ref().unwrap().full(),
+            "1.2 m"
+        );
+        assert_eq!(card.full.height_chart.as_ref().unwrap().unit, "m");
     }
 
     #[test]

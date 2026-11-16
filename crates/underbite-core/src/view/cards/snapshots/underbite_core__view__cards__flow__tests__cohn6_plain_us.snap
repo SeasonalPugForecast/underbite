@@ -162,13 +162,7 @@ expression: card(&cohn6_input(us()))
     "chart": {
       "title": "Discharge",
       "unit": "cfs",
-      "x_ticks": [
-        {
-          "t": 1793978400,
-          "label": "Nov 6",
-          "major": true
-        }
-      ],
+      "x_ticks": [],
       "series": [
         {
           "label": "Observed",
@@ -337,13 +331,7 @@ expression: card(&cohn6_input(us()))
     "stage_chart": {
       "title": "Stage",
       "unit": "ft gage datum",
-      "x_ticks": [
-        {
-          "t": 1794010800,
-          "label": "Nov 6",
-          "major": true
-        }
-      ],
+      "x_ticks": [],
       "series": [
         {
           "label": "Forecast",
@@ -432,6 +420,16 @@ expression: card(&cohn6_input(us()))
             "label": "Forecast crest",
             "value": "20.4 ft gage datum",
             "detail": "Nov 6, 9:20 PM"
+          }
+        ]
+      },
+      {
+        "title": "Flood categories",
+        "rows": [
+          {
+            "label": "Station",
+            "value": "Mohawk River at Cohoes",
+            "detail": "NOAA NWPS"
           }
         ]
       }

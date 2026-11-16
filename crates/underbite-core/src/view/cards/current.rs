@@ -7,13 +7,14 @@ use crate::model::{CurrentEvent, CurrentKind, CurrentSeries, Measurement};
 use crate::provenance::{Quality, StationKind};
 use crate::time::UnixTime;
 use crate::view::cards::tide::{credits, state};
+use crate::view::cards::wind::latest_at;
 use crate::view::chart::{Zoned, grid, speed_at, ticks, window};
 use crate::view::format::{Formatter, Phase};
 use crate::view::strings::{Key, source_name};
 use crate::view::{
     BandKind, CardChrome, CardId, CardState, ChartBand, ChartMarker, ChartPoint, ChartSeries,
-    ChartVm, Compact, MarkerKind, NoticeKind, Quantity, Row, Section, SeriesRole, SeriesStyle,
-    ViewInput,
+    ChartVm, Compact, MarkerKind, Notice, NoticeKind, Quantity, Row, Section, SeriesRole,
+    SeriesStyle, ViewInput,
 };
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -68,6 +69,27 @@ pub struct CurrentFull {
     /// Speed over time with slack windows highlighted.
     pub chart: Option<ChartVm>,
     pub sections: Vec<Section>,
+}
+
+/// The notices a current carries: never for navigation, and the approximate one for a
+/// subordinate station, a missing curve or an estimated curve.
+pub(in crate::view) fn notices(f: &Formatter, series: &CurrentSeries) -> Vec<Notice> {
+    let mut notices = vec![f.notice(NoticeKind::NotForNavigation)];
+    let subordinate = series
+        .provenance
+        .station
+        .as_ref()
+        .is_some_and(|s| s.kind == StationKind::CurrentSubordinate);
+    if subordinate
+        || series.curve.is_none()
+        || series
+            .curve
+            .as_ref()
+            .is_some_and(|c| c.provenance().quality == Quality::Estimated)
+    {
+        notices.push(f.notice(NoticeKind::Approximate));
+    }
+    notices
 }
 
 /// Below this speed (m/s, about 0.1 kn) the water counts as slack.
@@ -295,20 +317,7 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
     if let Some(n) = &next_slack {
         lines.push(f.strings.fmt(Key::NextSlack, &[("time", &n.time)]));
     }
-    let mut notices = vec![f.notice(NoticeKind::NotForNavigation)];
-    let subordinate = p
-        .station
-        .as_ref()
-        .is_some_and(|s| s.kind == StationKind::CurrentSubordinate);
-    if subordinate
-        || series.curve.is_none()
-        || series
-            .curve
-            .as_ref()
-            .is_some_and(|c| c.provenance().quality == Quality::Estimated)
-    {
-        notices.push(f.notice(NoticeKind::Approximate));
-    }
+    let notices = notices(&f, series);
     let card_state = if upcoming.is_empty() && speed.is_none() {
         CardState::Unavailable {
             reason: f.strings.get(Key::NoData).to_owned(),
@@ -336,11 +345,18 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
         chrome: CardChrome {
             id: CardId::Current,
             title: f.strings.card_title(CardId::Current).to_owned(),
-            footnote: Some(f.footnote(
-                &format!("{} {line}", f.strings.card_title(CardId::Current)),
-                p,
-                now,
-            )),
+            footnote: Some(
+                f.footnote_aged(
+                    &format!("{} {line}", f.strings.card_title(CardId::Current)),
+                    p,
+                    now,
+                    series
+                        .curve
+                        .as_ref()
+                        .and_then(|c| latest_at(c, now))
+                        .map(|s| s.time),
+                ),
+            ),
             credits: credits(snapshot, &p.source),
             state: card_state,
             notices,
@@ -448,6 +464,20 @@ mod tests {
             provenance: prov,
         });
         input
+    }
+
+    #[test]
+    fn the_footnote_age_is_that_of_the_curve_sample_at_or_before_now() {
+        let mut input = nyh1927();
+        let series = input.snapshot.marine.tidal_current.as_mut().unwrap();
+        series.provenance.kind = ValueKind::Observed;
+        series.provenance.observed_at = UnixTime(input.now.0 - 2 * 86_400);
+        let text = build(&input).unwrap().chrome.footnote.unwrap();
+        assert!(!text.contains("2 d ago"), "{text}");
+        assert!(
+            text.ends_with("min ago") || text.ends_with("just now"),
+            "{text}"
+        );
     }
 
     #[test]

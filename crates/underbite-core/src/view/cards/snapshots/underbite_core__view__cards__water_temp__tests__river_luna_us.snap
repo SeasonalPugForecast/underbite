@@ -82,13 +82,7 @@ expression: "card(&river(us(), Voice::Luna, 19.0, 21.0))"
     "chart": {
       "title": "Water temperature",
       "unit": "°F",
-      "x_ticks": [
-        {
-          "t": 1793978400,
-          "label": "Nov 6",
-          "major": true
-        }
-      ],
+      "x_ticks": [],
       "series": [
         {
           "label": "Observed",

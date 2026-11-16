@@ -63,13 +63,7 @@ expression: "card(&bronx(metric(), Voice::Plain))"
     "chart": {
       "title": "Turbidity",
       "unit": "FNU",
-      "x_ticks": [
-        {
-          "t": 1793997300,
-          "label": "Nov 6",
-          "major": true
-        }
-      ],
+      "x_ticks": [],
       "series": [
         {
           "label": "Observed",
