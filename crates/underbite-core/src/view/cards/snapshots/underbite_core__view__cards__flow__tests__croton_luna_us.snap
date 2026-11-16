@@ -1,0 +1,318 @@
+---
+source: crates/underbite-core/src/view/cards/flow.rs
+expression: "card(&croton_input(us(), Voice::Luna))"
+---
+{
+  "chrome": {
+    "id": "flow",
+    "title": "River flow",
+    "footnote": "Flow 12 cfs · Croton River at New Croton Dam · 1.5 mi · just now",
+    "credits": [
+      {
+        "source": "USGS",
+        "text": "U.S. Geological Survey",
+        "link": "https://www.usgs.gov",
+        "licence": null
+      },
+      {
+        "source": "USGS",
+        "text": "Provisional data statement",
+        "link": "https://waterdata.usgs.gov/provisional-data-statement/",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "provisional",
+        "text": "Provisional data, subject to revision."
+      }
+    ],
+    "accessibility": "River flow: 12 cfs, normal, 45th percentile for Nov 8"
+  },
+  "compact": {
+    "headline": {
+      "value": 12.4,
+      "text": "12",
+      "unit": "cfs"
+    },
+    "lines": [
+      "normal, 45th percentile for Nov 8",
+      "Luna's watching Croton River at New Croton Dam, 1.5 mi"
+    ],
+    "spark": [
+      11.0,
+      11.058333,
+      11.116667,
+      11.175,
+      11.233334,
+      11.291667,
+      11.349999,
+      11.408334,
+      11.466667,
+      11.525,
+      11.583333,
+      11.641666,
+      11.7,
+      11.758333,
+      11.816667,
+      11.875,
+      11.933332,
+      11.991666,
+      12.05,
+      12.108334,
+      12.166666,
+      12.224999,
+      12.283333,
+      12.341665,
+      12.4
+    ]
+  },
+  "full": {
+    "discharge": {
+      "value": 12.4,
+      "text": "12",
+      "unit": "cfs"
+    },
+    "trend": {
+      "direction": "rising",
+      "text": "Rising 1 cfs in 3 h"
+    },
+    "gage_height": null,
+    "percentile": {
+      "text": "normal, 45th percentile for Nov 8",
+      "class": "normal",
+      "class_label": "Normal",
+      "basis": "USGS statistics (beta)",
+      "sample": "approved data only, 93 years",
+      "thresholds": [
+        {
+          "label": "5th percentile",
+          "value": {
+            "value": 0.63399994,
+            "text": "1",
+            "unit": "cfs"
+          }
+        },
+        {
+          "label": "50th percentile",
+          "value": {
+            "value": 14.999999,
+            "text": "15",
+            "unit": "cfs"
+          }
+        },
+        {
+          "label": "95th percentile",
+          "value": {
+            "value": 1180.0,
+            "text": "1,180",
+            "unit": "cfs"
+          }
+        }
+      ]
+    },
+    "range_status": null,
+    "flood_categories": [],
+    "chart": {
+      "title": "Discharge",
+      "unit": "cfs",
+      "x_ticks": [
+        {
+          "t": 1793978400,
+          "label": "Nov 6",
+          "major": true
+        }
+      ],
+      "series": [
+        {
+          "label": "Observed",
+          "role": "observed",
+          "style": "line",
+          "points": [
+            {
+              "t": 1793978400,
+              "value": 11.0,
+              "label": "11 cfs",
+              "major": true
+            },
+            {
+              "t": 1793979300,
+              "value": 11.058333,
+              "label": "11 cfs",
+              "major": false
+            },
+            {
+              "t": 1793980200,
+              "value": 11.116667,
+              "label": "11 cfs",
+              "major": false
+            },
+            {
+              "t": 1793981100,
+              "value": 11.175,
+              "label": "11 cfs",
+              "major": false
+            },
+            {
+              "t": 1793982000,
+              "value": 11.233334,
+              "label": "11 cfs",
+              "major": false
+            },
+            {
+              "t": 1793982900,
+              "value": 11.291667,
+              "label": "11 cfs",
+              "major": false
+            },
+            {
+              "t": 1793983800,
+              "value": 11.349999,
+              "label": "11 cfs",
+              "major": false
+            },
+            {
+              "t": 1793984700,
+              "value": 11.408334,
+              "label": "11 cfs",
+              "major": false
+            },
+            {
+              "t": 1793985600,
+              "value": 11.466667,
+              "label": "11 cfs",
+              "major": false
+            },
+            {
+              "t": 1793986500,
+              "value": 11.525,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793987400,
+              "value": 11.583333,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793988300,
+              "value": 11.641666,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793989200,
+              "value": 11.7,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793990100,
+              "value": 11.758333,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793991000,
+              "value": 11.816667,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793991900,
+              "value": 11.875,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793992800,
+              "value": 11.933332,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793993700,
+              "value": 11.991666,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793994600,
+              "value": 12.05,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793995500,
+              "value": 12.108334,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793996400,
+              "value": 12.166666,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793997300,
+              "value": 12.224999,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793998200,
+              "value": 12.283333,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1793999100,
+              "value": 12.341665,
+              "label": "12 cfs",
+              "major": false
+            },
+            {
+              "t": 1794000000,
+              "value": 12.4,
+              "label": "12 cfs",
+              "major": true
+            }
+          ]
+        }
+      ],
+      "bands": [],
+      "rules": [],
+      "markers": [],
+      "now_t": 1794000000,
+      "accessibility": "Discharge: now 12 cfs, highest 12 cfs, lowest 11 cfs"
+    },
+    "stage_chart": null,
+    "sections": [
+      {
+        "title": "Normal for this date",
+        "rows": [
+          {
+            "label": "Basis",
+            "value": "USGS statistics (beta)",
+            "detail": null
+          },
+          {
+            "label": "Sample",
+            "value": "approved data only, 93 years",
+            "detail": null
+          },
+          {
+            "label": "Median",
+            "value": "15 cfs",
+            "detail": null
+          }
+        ]
+      }
+    ]
+  }
+}

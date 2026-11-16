@@ -1,0 +1,265 @@
+---
+source: crates/underbite-core/src/view/cards/water_temp.rs
+expression: "card(&river(us(), Voice::Luna, 19.0, 21.0))"
+---
+{
+  "chrome": {
+    "id": "water_temp",
+    "title": "Water temperature",
+    "footnote": "Water 70 °F · Croton River at New Croton Dam · 1.5 mi · just now",
+    "credits": [
+      {
+        "source": "USGS",
+        "text": "U.S. Geological Survey",
+        "link": "https://www.usgs.gov",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Water temperature: 70 °F, Rising 1.8 °F in 3 h. Consider not fishing for trout above 68 °F."
+  },
+  "compact": {
+    "headline": {
+      "value": 69.8,
+      "text": "70",
+      "unit": "°F"
+    },
+    "lines": [
+      "Consider not fishing for trout above 68 °F.",
+      "Rising 1.8 °F in 3 h"
+    ],
+    "spark": [
+      66.2,
+      66.35,
+      66.5,
+      66.65,
+      66.8,
+      66.95,
+      67.1,
+      67.25,
+      67.4,
+      67.55,
+      67.700005,
+      67.85,
+      68.0,
+      68.15,
+      68.299995,
+      68.45,
+      68.6,
+      68.75,
+      68.9,
+      69.05,
+      69.2,
+      69.35,
+      69.5,
+      69.65,
+      69.8
+    ]
+  },
+  "full": {
+    "value": {
+      "value": 69.8,
+      "text": "70",
+      "unit": "°F"
+    },
+    "basis": "measured",
+    "trend": {
+      "direction": "rising",
+      "text": "Rising 1.8 °F in 3 h"
+    },
+    "trout_stress": {
+      "exceeded": true,
+      "threshold": {
+        "value": 68.0,
+        "text": "68",
+        "unit": "°F"
+      },
+      "text": "Consider not fishing for trout above 68 °F."
+    },
+    "chart": {
+      "title": "Water temperature",
+      "unit": "°F",
+      "x_ticks": [
+        {
+          "t": 1793978400,
+          "label": "Nov 6",
+          "major": true
+        }
+      ],
+      "series": [
+        {
+          "label": "Observed",
+          "role": "observed",
+          "style": "line",
+          "points": [
+            {
+              "t": 1793978400,
+              "value": 66.2,
+              "label": "66 °F",
+              "major": true
+            },
+            {
+              "t": 1793979300,
+              "value": 66.35,
+              "label": "66 °F",
+              "major": false
+            },
+            {
+              "t": 1793980200,
+              "value": 66.5,
+              "label": "67 °F",
+              "major": false
+            },
+            {
+              "t": 1793981100,
+              "value": 66.65,
+              "label": "67 °F",
+              "major": false
+            },
+            {
+              "t": 1793982000,
+              "value": 66.8,
+              "label": "67 °F",
+              "major": false
+            },
+            {
+              "t": 1793982900,
+              "value": 66.95,
+              "label": "67 °F",
+              "major": false
+            },
+            {
+              "t": 1793983800,
+              "value": 67.1,
+              "label": "67 °F",
+              "major": false
+            },
+            {
+              "t": 1793984700,
+              "value": 67.25,
+              "label": "67 °F",
+              "major": false
+            },
+            {
+              "t": 1793985600,
+              "value": 67.4,
+              "label": "67 °F",
+              "major": false
+            },
+            {
+              "t": 1793986500,
+              "value": 67.55,
+              "label": "68 °F",
+              "major": false
+            },
+            {
+              "t": 1793987400,
+              "value": 67.700005,
+              "label": "68 °F",
+              "major": false
+            },
+            {
+              "t": 1793988300,
+              "value": 67.85,
+              "label": "68 °F",
+              "major": false
+            },
+            {
+              "t": 1793989200,
+              "value": 68.0,
+              "label": "68 °F",
+              "major": false
+            },
+            {
+              "t": 1793990100,
+              "value": 68.15,
+              "label": "68 °F",
+              "major": false
+            },
+            {
+              "t": 1793991000,
+              "value": 68.299995,
+              "label": "68 °F",
+              "major": false
+            },
+            {
+              "t": 1793991900,
+              "value": 68.45,
+              "label": "68 °F",
+              "major": false
+            },
+            {
+              "t": 1793992800,
+              "value": 68.6,
+              "label": "69 °F",
+              "major": false
+            },
+            {
+              "t": 1793993700,
+              "value": 68.75,
+              "label": "69 °F",
+              "major": false
+            },
+            {
+              "t": 1793994600,
+              "value": 68.9,
+              "label": "69 °F",
+              "major": false
+            },
+            {
+              "t": 1793995500,
+              "value": 69.05,
+              "label": "69 °F",
+              "major": false
+            },
+            {
+              "t": 1793996400,
+              "value": 69.2,
+              "label": "69 °F",
+              "major": false
+            },
+            {
+              "t": 1793997300,
+              "value": 69.35,
+              "label": "69 °F",
+              "major": false
+            },
+            {
+              "t": 1793998200,
+              "value": 69.5,
+              "label": "70 °F",
+              "major": false
+            },
+            {
+              "t": 1793999100,
+              "value": 69.65,
+              "label": "70 °F",
+              "major": false
+            },
+            {
+              "t": 1794000000,
+              "value": 69.8,
+              "label": "70 °F",
+              "major": true
+            }
+          ]
+        }
+      ],
+      "bands": [],
+      "rules": [
+        {
+          "kind": "threshold",
+          "value": 68.0,
+          "label": "Trout stress 68 °F"
+        }
+      ],
+      "markers": [],
+      "now_t": 1794000000,
+      "accessibility": "Water temperature: now 70 °F, highest 70 °F, lowest 66 °F"
+    },
+    "sections": []
+  }
+}

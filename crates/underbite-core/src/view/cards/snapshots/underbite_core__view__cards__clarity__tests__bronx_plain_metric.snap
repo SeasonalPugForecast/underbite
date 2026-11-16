@@ -1,0 +1,116 @@
+---
+source: crates/underbite-core/src/view/cards/clarity.rs
+expression: "card(&bronx(metric(), Voice::Plain))"
+---
+{
+  "chrome": {
+    "id": "clarity",
+    "title": "Water clarity",
+    "footnote": "Turbidity 2.1 FNU · Bronx River at NY Botanical Garden · 2.4 km · just now",
+    "credits": [
+      {
+        "source": "USGS",
+        "text": "U.S. Geological Survey",
+        "link": "https://www.usgs.gov",
+        "licence": null
+      },
+      {
+        "source": "USGS",
+        "text": "Provisional data statement",
+        "link": "https://waterdata.usgs.gov/provisional-data-statement/",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "provisional",
+        "text": "Provisional data, subject to revision."
+      }
+    ],
+    "accessibility": "Water clarity: 2.1 FNU, slightly turbid. Satellite clarity is unavailable: no current source"
+  },
+  "compact": {
+    "headline": {
+      "value": 2.1,
+      "text": "2.1",
+      "unit": "FNU"
+    },
+    "lines": [
+      "Slightly turbid",
+      "Bronx River at NY Botanical Garden, 2.4 km"
+    ],
+    "spark": [
+      2.4,
+      2.3,
+      2.2,
+      2.1
+    ]
+  },
+  "full": {
+    "turbidity": {
+      "value": 2.1,
+      "text": "2.1",
+      "unit": "FNU"
+    },
+    "description": "Slightly turbid",
+    "chlorophyll": null,
+    "kd490": {
+      "available": false,
+      "value": null,
+      "note": "Unavailable: no current satellite source"
+    },
+    "chart": {
+      "title": "Turbidity",
+      "unit": "FNU",
+      "x_ticks": [
+        {
+          "t": 1793997300,
+          "label": "Nov 6",
+          "major": true
+        }
+      ],
+      "series": [
+        {
+          "label": "Observed",
+          "role": "observed",
+          "style": "line",
+          "points": [
+            {
+              "t": 1793997300,
+              "value": 2.4,
+              "label": "2.4 FNU",
+              "major": true
+            },
+            {
+              "t": 1793998200,
+              "value": 2.3,
+              "label": "2.3 FNU",
+              "major": false
+            },
+            {
+              "t": 1793999100,
+              "value": 2.2,
+              "label": "2.2 FNU",
+              "major": false
+            },
+            {
+              "t": 1794000000,
+              "value": 2.1,
+              "label": "2.1 FNU",
+              "major": true
+            }
+          ]
+        }
+      ],
+      "bands": [],
+      "rules": [],
+      "markers": [],
+      "now_t": 1794000000,
+      "accessibility": "Turbidity: now 2.1 FNU, highest 2.4 FNU, lowest 2.1 FNU"
+    },
+    "sections": []
+  }
+}

@@ -1,0 +1,318 @@
+---
+source: crates/underbite-core/src/view/cards/flow.rs
+expression: "card(&croton_input(metric(), Voice::Plain))"
+---
+{
+  "chrome": {
+    "id": "flow",
+    "title": "River flow",
+    "footnote": "Flow 0.4 m³/s · Croton River at New Croton Dam · 2.4 km · just now",
+    "credits": [
+      {
+        "source": "USGS",
+        "text": "U.S. Geological Survey",
+        "link": "https://www.usgs.gov",
+        "licence": null
+      },
+      {
+        "source": "USGS",
+        "text": "Provisional data statement",
+        "link": "https://waterdata.usgs.gov/provisional-data-statement/",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "provisional",
+        "text": "Provisional data, subject to revision."
+      }
+    ],
+    "accessibility": "River flow: 0.4 m³/s, normal, 45th percentile for Nov 8"
+  },
+  "compact": {
+    "headline": {
+      "value": 0.35112888,
+      "text": "0.4",
+      "unit": "m³/s"
+    },
+    "lines": [
+      "normal, 45th percentile for Nov 8",
+      "Croton River at New Croton Dam, 2.4 km"
+    ],
+    "spark": [
+      0.31148532,
+      0.31313714,
+      0.31478894,
+      0.31644076,
+      0.31809258,
+      0.3197444,
+      0.3213962,
+      0.32304803,
+      0.32469985,
+      0.32635164,
+      0.32800347,
+      0.3296553,
+      0.3313071,
+      0.3329589,
+      0.33461073,
+      0.33626255,
+      0.33791435,
+      0.33956617,
+      0.341218,
+      0.34286982,
+      0.3445216,
+      0.34617344,
+      0.34782526,
+      0.34947705,
+      0.35112888
+    ]
+  },
+  "full": {
+    "discharge": {
+      "value": 0.35112888,
+      "text": "0.4",
+      "unit": "m³/s"
+    },
+    "trend": {
+      "direction": "rising",
+      "text": "Rising 0.0 m³/s in 3 h"
+    },
+    "gage_height": null,
+    "percentile": {
+      "text": "normal, 45th percentile for Nov 8",
+      "class": "normal",
+      "class_label": "Normal",
+      "basis": "USGS statistics (beta)",
+      "sample": "approved data only, 93 years",
+      "thresholds": [
+        {
+          "label": "5th percentile",
+          "value": {
+            "value": 0.01795288,
+            "text": "0.0",
+            "unit": "m³/s"
+          }
+        },
+        {
+          "label": "50th percentile",
+          "value": {
+            "value": 0.42475268,
+            "text": "0.4",
+            "unit": "m³/s"
+          }
+        },
+        {
+          "label": "95th percentile",
+          "value": {
+            "value": 33.41388,
+            "text": "33.4",
+            "unit": "m³/s"
+          }
+        }
+      ]
+    },
+    "range_status": null,
+    "flood_categories": [],
+    "chart": {
+      "title": "Discharge",
+      "unit": "m³/s",
+      "x_ticks": [
+        {
+          "t": 1793978400,
+          "label": "Nov 6",
+          "major": true
+        }
+      ],
+      "series": [
+        {
+          "label": "Observed",
+          "role": "observed",
+          "style": "line",
+          "points": [
+            {
+              "t": 1793978400,
+              "value": 0.31148532,
+              "label": "0.3 m³/s",
+              "major": true
+            },
+            {
+              "t": 1793979300,
+              "value": 0.31313714,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793980200,
+              "value": 0.31478894,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793981100,
+              "value": 0.31644076,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793982000,
+              "value": 0.31809258,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793982900,
+              "value": 0.3197444,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793983800,
+              "value": 0.3213962,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793984700,
+              "value": 0.32304803,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793985600,
+              "value": 0.32469985,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793986500,
+              "value": 0.32635164,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793987400,
+              "value": 0.32800347,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793988300,
+              "value": 0.3296553,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793989200,
+              "value": 0.3313071,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793990100,
+              "value": 0.3329589,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793991000,
+              "value": 0.33461073,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793991900,
+              "value": 0.33626255,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793992800,
+              "value": 0.33791435,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793993700,
+              "value": 0.33956617,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793994600,
+              "value": 0.341218,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793995500,
+              "value": 0.34286982,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793996400,
+              "value": 0.3445216,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793997300,
+              "value": 0.34617344,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793998200,
+              "value": 0.34782526,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1793999100,
+              "value": 0.34947705,
+              "label": "0.3 m³/s",
+              "major": false
+            },
+            {
+              "t": 1794000000,
+              "value": 0.35112888,
+              "label": "0.4 m³/s",
+              "major": true
+            }
+          ]
+        }
+      ],
+      "bands": [],
+      "rules": [],
+      "markers": [],
+      "now_t": 1794000000,
+      "accessibility": "Discharge: now 0.4 m³/s, highest 0.4 m³/s, lowest 0.3 m³/s"
+    },
+    "stage_chart": null,
+    "sections": [
+      {
+        "title": "Normal for this date",
+        "rows": [
+          {
+            "label": "Basis",
+            "value": "USGS statistics (beta)",
+            "detail": null
+          },
+          {
+            "label": "Sample",
+            "value": "approved data only, 93 years",
+            "detail": null
+          },
+          {
+            "label": "Median",
+            "value": "0.4 m³/s",
+            "detail": null
+          }
+        ]
+      }
+    ]
+  }
+}

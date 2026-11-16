@@ -1,0 +1,265 @@
+---
+source: crates/underbite-core/src/view/cards/water_temp.rs
+expression: "card(&river(metric(), Voice::Plain, 12.0, 13.0))"
+---
+{
+  "chrome": {
+    "id": "water_temp",
+    "title": "Water temperature",
+    "footnote": "Water 13.0 °C · Croton River at New Croton Dam · 2.4 km · just now",
+    "credits": [
+      {
+        "source": "USGS",
+        "text": "U.S. Geological Survey",
+        "link": "https://www.usgs.gov",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Water temperature: 13.0 °C, Rising 0.5 °C in 3 h"
+  },
+  "compact": {
+    "headline": {
+      "value": 13.0,
+      "text": "13.0",
+      "unit": "°C"
+    },
+    "lines": [
+      "Rising 0.5 °C in 3 h",
+      "Croton River at New Croton Dam, 2.4 km"
+    ],
+    "spark": [
+      12.0,
+      12.041667,
+      12.083333,
+      12.125,
+      12.166667,
+      12.208333,
+      12.25,
+      12.291667,
+      12.333333,
+      12.375,
+      12.416667,
+      12.458333,
+      12.5,
+      12.541667,
+      12.583333,
+      12.625,
+      12.666667,
+      12.708333,
+      12.75,
+      12.791667,
+      12.833333,
+      12.875,
+      12.916667,
+      12.958333,
+      13.0
+    ]
+  },
+  "full": {
+    "value": {
+      "value": 13.0,
+      "text": "13.0",
+      "unit": "°C"
+    },
+    "basis": "measured",
+    "trend": {
+      "direction": "rising",
+      "text": "Rising 0.5 °C in 3 h"
+    },
+    "trout_stress": {
+      "exceeded": false,
+      "threshold": {
+        "value": 20.0,
+        "text": "20.0",
+        "unit": "°C"
+      },
+      "text": "Consider not fishing for trout above 20.0 °C."
+    },
+    "chart": {
+      "title": "Water temperature",
+      "unit": "°C",
+      "x_ticks": [
+        {
+          "t": 1793978400,
+          "label": "Nov 6",
+          "major": true
+        }
+      ],
+      "series": [
+        {
+          "label": "Observed",
+          "role": "observed",
+          "style": "line",
+          "points": [
+            {
+              "t": 1793978400,
+              "value": 12.0,
+              "label": "12.0 °C",
+              "major": true
+            },
+            {
+              "t": 1793979300,
+              "value": 12.041667,
+              "label": "12.0 °C",
+              "major": false
+            },
+            {
+              "t": 1793980200,
+              "value": 12.083333,
+              "label": "12.1 °C",
+              "major": false
+            },
+            {
+              "t": 1793981100,
+              "value": 12.125,
+              "label": "12.1 °C",
+              "major": false
+            },
+            {
+              "t": 1793982000,
+              "value": 12.166667,
+              "label": "12.2 °C",
+              "major": false
+            },
+            {
+              "t": 1793982900,
+              "value": 12.208333,
+              "label": "12.2 °C",
+              "major": false
+            },
+            {
+              "t": 1793983800,
+              "value": 12.25,
+              "label": "12.3 °C",
+              "major": false
+            },
+            {
+              "t": 1793984700,
+              "value": 12.291667,
+              "label": "12.3 °C",
+              "major": false
+            },
+            {
+              "t": 1793985600,
+              "value": 12.333333,
+              "label": "12.3 °C",
+              "major": false
+            },
+            {
+              "t": 1793986500,
+              "value": 12.375,
+              "label": "12.4 °C",
+              "major": false
+            },
+            {
+              "t": 1793987400,
+              "value": 12.416667,
+              "label": "12.4 °C",
+              "major": false
+            },
+            {
+              "t": 1793988300,
+              "value": 12.458333,
+              "label": "12.5 °C",
+              "major": false
+            },
+            {
+              "t": 1793989200,
+              "value": 12.5,
+              "label": "12.5 °C",
+              "major": false
+            },
+            {
+              "t": 1793990100,
+              "value": 12.541667,
+              "label": "12.5 °C",
+              "major": false
+            },
+            {
+              "t": 1793991000,
+              "value": 12.583333,
+              "label": "12.6 °C",
+              "major": false
+            },
+            {
+              "t": 1793991900,
+              "value": 12.625,
+              "label": "12.6 °C",
+              "major": false
+            },
+            {
+              "t": 1793992800,
+              "value": 12.666667,
+              "label": "12.7 °C",
+              "major": false
+            },
+            {
+              "t": 1793993700,
+              "value": 12.708333,
+              "label": "12.7 °C",
+              "major": false
+            },
+            {
+              "t": 1793994600,
+              "value": 12.75,
+              "label": "12.8 °C",
+              "major": false
+            },
+            {
+              "t": 1793995500,
+              "value": 12.791667,
+              "label": "12.8 °C",
+              "major": false
+            },
+            {
+              "t": 1793996400,
+              "value": 12.833333,
+              "label": "12.8 °C",
+              "major": false
+            },
+            {
+              "t": 1793997300,
+              "value": 12.875,
+              "label": "12.9 °C",
+              "major": false
+            },
+            {
+              "t": 1793998200,
+              "value": 12.916667,
+              "label": "12.9 °C",
+              "major": false
+            },
+            {
+              "t": 1793999100,
+              "value": 12.958333,
+              "label": "13.0 °C",
+              "major": false
+            },
+            {
+              "t": 1794000000,
+              "value": 13.0,
+              "label": "13.0 °C",
+              "major": true
+            }
+          ]
+        }
+      ],
+      "bands": [],
+      "rules": [
+        {
+          "kind": "threshold",
+          "value": 20.0,
+          "label": "Trout stress 20.0 °C"
+        }
+      ],
+      "markers": [],
+      "now_t": 1794000000,
+      "accessibility": "Water temperature: now 13.0 °C, highest 13.0 °C, lowest 12.0 °C"
+    },
+    "sections": []
+  }
+}
