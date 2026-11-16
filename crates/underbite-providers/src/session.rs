@@ -761,14 +761,15 @@ fn merge(old: FragmentValue, new: FragmentValue) -> FragmentValue {
 }
 
 /// Both series by time, `b`'s sample winning a shared time, with the provenance of the one
-/// that reaches later. A many-sample series replaces a single latest value.
+/// that reaches later. A many-sample series replaces a single latest value, unless that value
+/// is newer than all of the series (a history that ends before the latest reading).
 fn concat<T: Clone>(a: Series<T>, b: Series<T>) -> Series<T> {
+    let last = |s: &Series<T>| s.latest().map(|x| x.time);
     match (a.samples().len(), b.samples().len()) {
-        (1, n) if n > 1 => return b,
-        (n, 1) if n > 1 => return a,
+        (1, n) if n > 1 && last(&a) <= last(&b) => return b,
+        (n, 1) if n > 1 && last(&b) <= last(&a) => return a,
         _ => {}
     }
-    let last = |s: &Series<T>| s.latest().map(|x| x.time);
     let provenance = if last(&b) >= last(&a) {
         b.provenance().clone()
     } else {
@@ -1229,12 +1230,13 @@ mod tests {
         assert_eq!(out.errors, Vec::<ModelSourceError>::new());
         assert_eq!(out.sources[&Discharge], SourceId::USGS);
         assert_eq!(out.sources[&GageHeight], SourceId::USGS);
-        // The week's record (to 8 November 00:00, 12.9 ft³/s) stands in for the single newest
-        // value (13:45, 12.4 ft³/s), as a many-sample series always does.
+        // The week's record ends at 8 November 00:00; the newest value (13:45, 12.4 ft³/s)
+        // follows it.
         let q = out.water.discharge_m3s.unwrap();
-        assert_eq!(q.samples().len(), 673);
+        assert_eq!(q.samples().len(), 674);
+        assert_eq!(q.latest().unwrap().time, UnixTime(1_794_145_500));
         let q = q.latest().unwrap().value;
-        assert!((q - 0.365).abs() < 0.001, "{q}");
+        assert!((q - 0.351).abs() < 0.001, "{q}");
         let stage = out.water.gage_height.unwrap();
         let stage = stage.series.latest().unwrap().value;
         assert!((stage - 0.335).abs() < 0.001, "{stage}");
@@ -1541,15 +1543,22 @@ mod tests {
             measurement: Discharge,
             value: FragmentValue::Series(series(m, ValueKind::Observed, Quality::Provisional)),
         };
-        let fragments = [
+        let merged = |fragments: &[Fragment]| {
+            let mut values = accept(Discharge, fragments, NOW, None).unwrap();
+            let Some(FragmentValue::Series(s)) = values.remove(&Slot::Main) else {
+                panic!("a discharge series expected");
+            };
+            minutes(&s)
+        };
+        // A series reaching past the latest value replaces it.
+        let covered = [fragment(&[-20]), fragment(&[-60, -45, -30, -15])];
+        assert_eq!(merged(&covered), [-60, -45, -30, -15]);
+        // A latest value newer than every page stays after them.
+        let newer = [
             fragment(&[-5]),
             fragment(&[-60, -45]),
             fragment(&[-60, -45, -30, -15]),
         ];
-        let mut values = accept(Discharge, &fragments, NOW, None).unwrap();
-        let Some(FragmentValue::Series(s)) = values.remove(&Slot::Main) else {
-            panic!("a discharge series expected");
-        };
-        assert_eq!(minutes(&s), [-60, -45, -30, -15]);
+        assert_eq!(merged(&newer), [-60, -45, -30, -15, -5]);
     }
 }
