@@ -1442,7 +1442,7 @@ dependencies = [
 [[package]]
 name = "whether-core"
 version = "0.1.0"
-source = "git+ssh://git@nas.local:2222/savery/whether.git?rev=34bb5c081614aec442f79c6ac9fef8db124a1e97#34bb5c081614aec442f79c6ac9fef8db124a1e97"
+source = "git+https://github.com/SeasonalPugForecast/whether.git?rev=61e6ef7e1c7e906e1623414ee736a0e89b22d9cb#61e6ef7e1c7e906e1623414ee736a0e89b22d9cb"
 dependencies = [
  "bitflags",
  "libm",
@@ -1454,7 +1454,7 @@ dependencies = [
 [[package]]
 name = "whether-providers"
 version = "0.1.0"
-source = "git+ssh://git@nas.local:2222/savery/whether.git?rev=34bb5c081614aec442f79c6ac9fef8db124a1e97#34bb5c081614aec442f79c6ac9fef8db124a1e97"
+source = "git+https://github.com/SeasonalPugForecast/whether.git?rev=61e6ef7e1c7e906e1623414ee736a0e89b22d9cb#61e6ef7e1c7e906e1623414ee736a0e89b22d9cb"
 dependencies = [
  "bitflags",
  "libm",

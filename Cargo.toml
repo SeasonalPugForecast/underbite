@@ -18,8 +18,8 @@ underbite-fetch = { path = "crates/underbite-fetch" }
 
 # whether's crates, pinned by revision. They opt into features explicitly, so each
 # consumer here names the features it needs.
-whether-core = { git = "ssh://git@nas.local:2222/savery/whether.git", rev = "34bb5c081614aec442f79c6ac9fef8db124a1e97", default-features = false }
-whether-providers = { git = "ssh://git@nas.local:2222/savery/whether.git", rev = "34bb5c081614aec442f79c6ac9fef8db124a1e97", default-features = false }
+whether-core = { git = "https://github.com/SeasonalPugForecast/whether.git", rev = "61e6ef7e1c7e906e1623414ee736a0e89b22d9cb", default-features = false }
+whether-providers = { git = "https://github.com/SeasonalPugForecast/whether.git", rev = "61e6ef7e1c7e906e1623414ee736a0e89b22d9cb", default-features = false }
 
 # External crates: the versions whether pins, with std enabled.
 serde = { version = "1.0.229", features = ["derive"] }
