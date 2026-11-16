@@ -779,13 +779,6 @@ expression: schema
             }
           ]
         },
-        "description": {
-          "description": "\"Clear\", \"Slightly turbid\", ...",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
         "kd490": {
           "$ref": "#/$defs/Kd490Vm"
         },

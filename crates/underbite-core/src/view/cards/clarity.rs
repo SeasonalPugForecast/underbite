@@ -39,25 +39,10 @@ pub struct Kd490Vm {
 pub struct ClarityFull {
     /// The unit symbol is the source's own: FNU, FTU or NTU, never converted.
     pub turbidity: Option<Quantity>,
-    /// "Clear", "Slightly turbid", ...
-    pub description: Option<String>,
     pub chlorophyll: Option<Quantity>,
     pub kd490: Kd490Vm,
     pub chart: Option<ChartVm>,
     pub sections: Vec<Section>,
-}
-
-/// A plain-words reading of a turbidity value; the methods differ, so it is a rough guide.
-const fn describe_turbidity(value: f32) -> &'static str {
-    if value < 2.0 {
-        "Clear"
-    } else if value < 10.0 {
-        "Slightly turbid"
-    } else if value < 50.0 {
-        "Turbid"
-    } else {
-        "Very turbid"
-    }
 }
 
 fn after<T>(samples: &[Sample<T>], from: UnixTime) -> &[Sample<T>] {
@@ -83,7 +68,6 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
     let latest_t = turbidity.and_then(|s| s.latest().map(|l| (s, l)));
     let turbidity_q: Option<Quantity> =
         latest_t.map(|(_, l)| f.turbidity(Some(l.value.value), l.value.unit));
-    let description = latest_t.map(|(_, l)| describe_turbidity(l.value.value).to_owned());
     let chlorophyll_q = chlorophyll
         .and_then(|s| s.latest())
         .map(|l| qty(l.value, 1, "µg/L"));
@@ -180,7 +164,6 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
     if let Some(q) = turbidity_quality.filter(|q| is_unreliable(*q)) {
         lines.push(unreliable_text(q).to_owned());
     }
-    lines.extend(description.clone());
     if let Some(c) = &chlorophyll_q {
         lines.push(format!("Chlorophyll {}", c.full()));
     }
@@ -189,10 +172,6 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
 
     let title = f.strings.card_title(CardId::Clarity).to_owned();
     let mut accessibility = format!("{title}: {}", headline.full());
-    if let Some(d) = &description {
-        accessibility.push_str(", ");
-        accessibility.push_str(&d.to_lowercase());
-    }
     if !kd490_vm.available {
         accessibility.push_str(". Satellite clarity is unavailable: no current source");
     }
@@ -230,7 +209,6 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
         },
         full: ClarityFull {
             turbidity: turbidity_q,
-            description,
             chlorophyll: chlorophyll_q,
             kd490: kd490_vm,
             chart,
@@ -289,7 +267,6 @@ mod tests {
             let c = card(&bronx(units, Voice::Plain));
             assert_eq!(c.full.turbidity.as_ref().unwrap().full(), "2.1 FNU");
             assert_eq!(c.compact.headline.full(), "2.1 FNU");
-            assert_eq!(c.full.description.as_deref(), Some("Slightly turbid"));
             assert_eq!(c.chrome.notices.len(), 1);
         }
     }

@@ -30,7 +30,7 @@ expression: "card(&bronx(us(), Voice::Luna))"
         "text": "Provisional data, subject to revision."
       }
     ],
-    "accessibility": "Water clarity: 2.1 FNU, slightly turbid. Satellite clarity is unavailable: no current source"
+    "accessibility": "Water clarity: 2.1 FNU. Satellite clarity is unavailable: no current source"
   },
   "compact": {
     "headline": {
@@ -39,7 +39,6 @@ expression: "card(&bronx(us(), Voice::Luna))"
       "unit": "FNU"
     },
     "lines": [
-      "Slightly turbid",
       "Luna's watching Bronx River at NY Botanical Garden, 1.5 mi"
     ],
     "spark": [
@@ -55,7 +54,6 @@ expression: "card(&bronx(us(), Voice::Luna))"
       "text": "2.1",
       "unit": "FNU"
     },
-    "description": "Slightly turbid",
     "chlorophyll": null,
     "kd490": {
       "available": false,
