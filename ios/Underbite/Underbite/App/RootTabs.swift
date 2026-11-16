@@ -95,6 +95,6 @@ enum LaunchArguments {
     static func showsWelcome(seen: Bool) -> Bool {
         let all = arguments
         if all.contains("-welcome") { return true }
-        return !seen && !all.contains("-seed")
+        return !seen && !all.contains("-seed") && !all.contains("-sample")
     }
 }

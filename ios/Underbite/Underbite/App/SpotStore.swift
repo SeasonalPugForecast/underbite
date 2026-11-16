@@ -50,6 +50,10 @@ final class SpotStore {
     /// another in).
     typealias Discoverer =
         @Sendable (SpotInfo, String, Keys, Int64, FetchHost) async throws -> DiscoveryOutcome
+    /// Builds the page JSON from the spots, the active index, the settings and now (the core's
+    /// `view_model`; tests and the sample mode may stand another in).
+    typealias PageBuilder =
+        @Sendable ([SpotEntry], UInt32, String, Int64) throws -> String
 
     private(set) var spots: [Spot] = []
     private(set) var areas: [Area] = []
@@ -88,6 +92,7 @@ final class SpotStore {
     @ObservationIgnored private let lowPower: @Sendable () -> Bool
     @ObservationIgnored private let fetcher: Fetcher
     @ObservationIgnored private let discoverer: Discoverer
+    @ObservationIgnored private let pageBuilder: PageBuilder
     @ObservationIgnored private var caches: [String: SpotCache] = [:]
     @ObservationIgnored private var queue = RefreshQueue()
     /// The spots whose stations wait to be looked up, before any fetch still waiting.
@@ -122,6 +127,9 @@ final class SpotStore {
             try await UnderbiteKit.discoverStations(
                 spot: spot, settingsJson: settings, keys: keys, allowMetered: true, now: now,
                 host: host)
+        },
+        pageBuilder: @escaping PageBuilder = { spots, active, settings, now in
+            try viewModel(spots: spots, active: active, settingsJson: settings, now: now)
         }
     ) {
         self.files = files
@@ -131,6 +139,7 @@ final class SpotStore {
         self.lowPower = lowPower
         self.fetcher = fetcher
         self.discoverer = discoverer
+        self.pageBuilder = pageBuilder
         settingsJSON = defaultSettingsJson()
         load()
     }
@@ -553,6 +562,7 @@ final class SpotStore {
         let busy = refreshing
         let settings = settingsJSON
         let now = clock()
+        let build = pageBuilder
         let built = await Task.detached(priority: .userInitiated) {
             () -> (String, [SpotListing]) in
             let entries = order.map { spot -> SpotEntry in
@@ -564,8 +574,7 @@ final class SpotStore {
                     refreshing: busy.contains(spot.id))
             }
             guard
-                let json = try? viewModel(
-                    spots: entries, active: UInt32(active), settingsJson: settings, now: now),
+                let json = try? build(entries, UInt32(active), settings, now),
                 let head = try? Self.decoder.decode(PageHead.self, from: Data(json.utf8))
             else { return ("", []) }
             return (json, head.spots)
