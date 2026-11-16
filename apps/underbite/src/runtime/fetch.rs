@@ -879,7 +879,9 @@ fn hydro_pages<T>(
     Ok(out)
 }
 
-/// The relation of each station to the spot from the flowlines and waterbodies around it.
+/// The relation of each station to the spot from the flowlines and waterbodies around it. A
+/// station or spot off the mapped streams has no known relation and is left out; a `Nearby`
+/// between two placed ones (a tributary, another river) is known and kept.
 fn relations(
     host: &Host<'_>,
     ctx: &FetchContext,
@@ -907,9 +909,16 @@ fn relations(
         &waterbodies,
         HydroOptions::default(),
     );
+    let placed = |hint: &hydrography::RelationHint| {
+        hint.relation != Relation::Nearby
+            || !hint
+                .reasons
+                .iter()
+                .any(|r| matches!(r, hydrography::HydroReason::NotOnMappedStream { .. }))
+    };
     Ok(hints
         .into_iter()
-        .filter(|(_, hint)| hint.relation != Relation::Nearby)
+        .filter(|(_, hint)| placed(hint))
         .map(|((source, id), hint)| (StationKey::new(source, id), hint.relation))
         .collect())
 }
@@ -2033,6 +2042,12 @@ mod tests {
         assert_eq!(katonah.station.id, "KTNN6");
         assert!(katonah.reasons.iter().any(|r| matches!(r,
             underbite_core::discover::rank::Reason::ForecastGaugeFor { site } if site.id == "USGS-01374901")));
+        // The hydrography around the dam does not reach Katonah: kept on distance, as nearby.
+        let nearby = underbite_core::discover::rank::Reason::Relation {
+            relation: Relation::Nearby,
+        };
+        assert_eq!(katonah.relation, Relation::Nearby);
+        assert!(katonah.reasons.contains(&nearby), "{:?}", katonah.reasons);
     }
 
     fn fetched(spot: &Spot, config: &Config, scenario: &str, cache: &Cache) -> (SpotFetch, Replay) {
