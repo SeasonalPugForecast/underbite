@@ -13,8 +13,10 @@ use underbite_config::schema::Config;
 use underbite_core::discover::cache::StationChoices;
 use underbite_core::discover::rank::{CoverageState, MeasurementRanking, Reason, StationKey};
 use underbite_core::model::{Measurement, Spot, WaterType};
-use underbite_core::provenance::{Relation, SourceId};
+use underbite_core::provenance::SourceId;
+use underbite_core::time::UnixTime;
 use underbite_core::view::format::Formatter;
+use underbite_core::view::stations::{reason_text, relation_text};
 use underbite_fetch::store::parse_station_key;
 use underbite_fetch::{requirements, stations_near};
 
@@ -129,46 +131,11 @@ fn parse_name<T: serde::de::DeserializeOwned>(what: &str, name: &str) -> anyhow:
         .map_err(|_| anyhow::anyhow!("unknown {what} {name:?}"))
 }
 
-fn relation_text(relation: Relation) -> &'static str {
-    match relation {
-        Relation::SameWaterBody => "same water body",
-        Relation::Upstream => "upstream",
-        Relation::Downstream => "downstream",
-        Relation::Nearby => "nearby",
-        Relation::Gridded => "model grid cell",
-        Relation::Satellite => "satellite",
-    }
-}
-
 fn coverage_text(state: CoverageState) -> &'static str {
     match state {
         CoverageState::Reported => "reports values",
         CoverageState::Listed => "listed, not confirmed",
         CoverageState::NotReported => "no recent values",
-    }
-}
-
-/// A ranking reason in words; distances and ages come from the formatter.
-fn reason_text(f: &Formatter, reason: &Reason, now: i64) -> String {
-    match reason {
-        Reason::Pinned => "pinned by you".into(),
-        Reason::Excluded => "excluded by you".into(),
-        Reason::TooFar {
-            distance_m,
-            limit_m,
-        } => f.far_reason(*distance_m, *limit_m),
-        Reason::Stale { age_s, limit_s } => f.stale_reason(*age_s, *limit_s),
-        Reason::WeakAndVariable => "weak and variable current: no predictions".into(),
-        Reason::OtherBin { kept } => format!("bin {kept} of this station is used"),
-        Reason::Reported { at } => format!("latest value {}", f.age(now - at.0)),
-        Reason::Listed => "listed, not confirmed to report".into(),
-        Reason::NotReported { .. } => "checked: no recent values".into(),
-        Reason::Relation { relation } => relation_text(*relation).into(),
-        Reason::OtherWaterBody { .. } => "on another river or a tributary".into(),
-        Reason::NotPlaced => "not found on the mapped streams, so maybe another river".into(),
-        Reason::ForecastGaugeFor { site } => format!("forecast gauge for {}", site.id),
-        Reason::Secondary => "not the station's main product".into(),
-        Reason::Distance { distance_m } => format!("{} away", f.distance(Some(*distance_m)).full()),
     }
 }
 
@@ -208,7 +175,7 @@ fn describe(
             s.station.id,
             s.station.name,
             f.distance(Some(s.distance_m)).full(),
-            relation_text(s.relation),
+            relation_text(f, s.relation),
             if s.pinned { " [pinned]" } else { "" },
         );
         let _ = writeln!(out, "     {}", coverage_text(s.coverage));
@@ -217,7 +184,7 @@ fn describe(
             .iter()
             .filter(|r| !matches!(r, Reason::Listed | Reason::NotReported { .. }))
         {
-            let _ = writeln!(out, "     - {}", reason_text(f, reason, now));
+            let _ = writeln!(out, "     - {}", reason_text(f, reason, UnixTime(now)));
         }
     }
     if ranking.stations.len() > limit {
@@ -247,7 +214,7 @@ fn describe(
             d.station.id,
             d.station.name,
             f.distance(Some(d.distance_m)).full(),
-            reason_text(f, &d.reason, now),
+            reason_text(f, &d.reason, UnixTime(now)),
         );
     }
     out
