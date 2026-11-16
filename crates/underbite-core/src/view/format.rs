@@ -356,6 +356,21 @@ impl Formatter {
         self.strings.fmt(key, &[("n", &n.to_string())])
     }
 
+    /// A time span: "45 min", "6 h", "2 d". The largest of days, hours and minutes that divides
+    /// the span evenly; minutes (rounded down) when none does.
+    pub fn duration(&self, seconds: i64) -> String {
+        let s = seconds.max(0);
+        let (key, n) = if s >= 86_400 && s % 86_400 == 0 {
+            (Key::AgeDays, s / 86_400)
+        } else if s >= 3_600 && s % 3_600 == 0 {
+            (Key::AgeHours, s / 3_600)
+        } else {
+            (Key::AgeMinutes, s / 60)
+        };
+        let text = self.strings.fmt(key, &[("n", &n.to_string())]);
+        text.trim_end_matches(" ago").to_owned()
+    }
+
     /// The header line: "updated 6 min ago".
     pub fn updated(&self, fetched: UnixTime, now: UnixTime) -> String {
         let s = (now.0 - fetched.0).max(0);
@@ -786,6 +801,17 @@ mod tests {
         assert_eq!(f.age(-5), "just now");
         assert_eq!(f.updated(UnixTime(0), UnixTime(360)), "updated 6 min ago");
         assert_eq!(f.updated(UnixTime(0), UnixTime(5)), "updated just now");
+    }
+
+    #[test]
+    fn durations() {
+        let f = fmt(us(), Voice::Plain, TimeFormat::H12);
+        assert_eq!(f.duration(0), "0 min");
+        assert_eq!(f.duration(2_700), "45 min");
+        assert_eq!(f.duration(5_400), "90 min");
+        assert_eq!(f.duration(21_600), "6 h");
+        assert_eq!(f.duration(172_800), "2 d");
+        assert_eq!(f.duration(-5), "0 min");
     }
 
     #[test]
