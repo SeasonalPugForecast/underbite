@@ -1,0 +1,119 @@
+---
+source: crates/underbite-core/src/view/cards/now.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "now",
+    "title": "Now",
+    "footnote": null,
+    "credits": [
+      {
+        "source": "NOAA CO-OPS",
+        "text": "NOAA CO-OPS",
+        "link": "https://tidesandcurrents.noaa.gov",
+        "licence": null
+      },
+      {
+        "source": "USGS",
+        "text": "U.S. Geological Survey",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "USGS",
+        "text": "Provisional data statement",
+        "link": "https://waterdata.usgs.gov/provisional-data-statement/",
+        "licence": null
+      },
+      {
+        "source": "NOAA NDBC",
+        "text": "Observations: NOAA National Data Buoy Center",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "not_for_navigation",
+        "text": "Not for navigation."
+      },
+      {
+        "kind": "provisional",
+        "text": "Provisional data, subject to revision."
+      }
+    ],
+    "accessibility": "Now. Tide 4.9 ft MLLW. Water temperature 58 °F. Current 1.6 kn. Wind 13 mph."
+  },
+  "compact": {
+    "headline": {
+      "value": 4.92126,
+      "text": "4.9",
+      "unit": "ft MLLW"
+    },
+    "lines": [
+      "Water temperature 58 °F",
+      "Current 1.6 kn"
+    ],
+    "spark": []
+  },
+  "full": {
+    "items": [
+      {
+        "card": "tide",
+        "label": "Tide",
+        "headline": {
+          "value": 4.92126,
+          "text": "4.9",
+          "unit": "ft MLLW"
+        },
+        "line": "— · High 4:30 PM",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "card": "water_temp",
+        "label": "Water temperature",
+        "headline": {
+          "value": 58.28,
+          "text": "58",
+          "unit": "°F"
+        },
+        "line": "Luna's watching The Battery, 0.4 mi",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "card": "current",
+        "label": "Current",
+        "headline": {
+          "value": 1.5550756,
+          "text": "1.6",
+          "unit": "kn"
+        },
+        "line": "Ebb 1.6 kn toward SSW 200°",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "card": "wind",
+        "label": "Wind",
+        "headline": {
+          "value": 13.4216175,
+          "text": "13",
+          "unit": "mph"
+        },
+        "line": "From WSW 250°",
+        "state": {
+          "state": "fresh"
+        }
+      }
+    ]
+  }
+}

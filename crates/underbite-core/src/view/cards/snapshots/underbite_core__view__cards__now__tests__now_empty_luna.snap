@@ -1,0 +1,30 @@
+---
+source: crates/underbite-core/src/view/cards/now.rs
+expression: build(&input).unwrap()
+---
+{
+  "chrome": {
+    "id": "now",
+    "title": "Now",
+    "footnote": null,
+    "credits": [],
+    "state": {
+      "state": "unavailable",
+      "reason": "Luna found nothing here yet."
+    },
+    "notices": [],
+    "accessibility": "No data for this spot yet."
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "—",
+      "unit": ""
+    },
+    "lines": [],
+    "spark": []
+  },
+  "full": {
+    "items": []
+  }
+}

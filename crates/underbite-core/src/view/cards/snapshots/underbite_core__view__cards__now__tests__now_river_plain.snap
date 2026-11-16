@@ -1,0 +1,102 @@
+---
+source: crates/underbite-core/src/view/cards/now.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "now",
+    "title": "Now",
+    "footnote": null,
+    "credits": [
+      {
+        "source": "USGS",
+        "text": "U.S. Geological Survey",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "USGS",
+        "text": "Provisional data statement",
+        "link": "https://waterdata.usgs.gov/provisional-data-statement/",
+        "licence": null
+      },
+      {
+        "source": "NOAA NWPS",
+        "text": "NOAA NWPS",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "NOAA NDBC",
+        "text": "Observations: NOAA National Data Buoy Center",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "provisional",
+        "text": "Provisional data, subject to revision."
+      }
+    ],
+    "accessibility": "Now. Water temperature 58 °F. River flow 12 cfs. Wind 13 mph."
+  },
+  "compact": {
+    "headline": {
+      "value": 58.28,
+      "text": "58",
+      "unit": "°F"
+    },
+    "lines": [
+      "River flow 12 cfs",
+      "Wind 13 mph"
+    ],
+    "spark": []
+  },
+  "full": {
+    "items": [
+      {
+        "card": "water_temp",
+        "label": "Water temperature",
+        "headline": {
+          "value": 58.28,
+          "text": "58",
+          "unit": "°F"
+        },
+        "line": "The Battery, 0.4 mi",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "card": "flow",
+        "label": "River flow",
+        "headline": {
+          "value": 12.006987,
+          "text": "12",
+          "unit": "cfs"
+        },
+        "line": "normal, 48th percentile for Nov 8",
+        "state": {
+          "state": "fresh"
+        }
+      },
+      {
+        "card": "wind",
+        "label": "Wind",
+        "headline": {
+          "value": 13.4216175,
+          "text": "13",
+          "unit": "mph"
+        },
+        "line": "From WSW 250°",
+        "state": {
+          "state": "fresh"
+        }
+      }
+    ]
+  }
+}
