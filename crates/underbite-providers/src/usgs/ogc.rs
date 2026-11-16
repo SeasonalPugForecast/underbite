@@ -666,6 +666,7 @@ fn continuous_request(
     };
     Ok(with_key(
         Request::new(url, Resource::UsgsContinuous, wanted)
+            .optional()
             .metered()
             .max_age_hint(300)
             .with_carry(carry.text()?),
@@ -782,6 +783,7 @@ pub(super) fn daily_requests(
         };
         requests.push(with_key(
             Request::new(url, Resource::UsgsDaily, wanted)
+                .optional()
                 .metered()
                 .max_age_hint(3_600)
                 .with_carry(carry.text()?),
@@ -844,7 +846,8 @@ pub(super) fn follow_up(
                 Request::new(href, request.resource, target.clone()).with_carry(carry.text()?);
             next.headers.clone_from(&request.headers);
             next.cache = request.cache;
-            next.required = request.required;
+            // History never outranks the latest value: its pages are optional too.
+            next.required = false;
             next.metered = request.metered;
             Ok(vec![next])
         }
@@ -919,6 +922,56 @@ mod tests {
             Some(V::Series(s)) => s,
             other => panic!("no series for {m:?}: {other:?}"),
         }
+    }
+
+    #[test]
+    fn history_requests_and_their_pages_are_optional() {
+        use Measurement::{Discharge, GageHeight};
+        let usgs = Usgs::default();
+        let ctx = ctx();
+        let both = target("01375000", &[Discharge, GageHeight]);
+        let plan = usgs
+            .plan(&both, &Requirements::default(), &ctx)
+            .unwrap()
+            .remove(0);
+        assert!(
+            plan.required,
+            "the latest-continuous request stays required"
+        );
+
+        let latest = fixture_bytes("usgs", "usgs-latest-continuous-croton-01375000.json");
+        let history = usgs
+            .follow_up(&plan, &Response::new(200, &latest), &ctx)
+            .unwrap();
+        assert_eq!(history.len(), 2);
+        assert!(history.iter().all(|r| !r.required));
+
+        let page = fixture_bytes(
+            "usgs",
+            "usgs-continuous-croton-01375000-00060-paging-limit3.json",
+        );
+        let first = continuous_request("e32a", spec("00060").unwrap(), &both, &ctx).unwrap();
+        let mut required = first.clone();
+        required.required = true;
+        let next = usgs
+            .follow_up(&required, &Response::new(200, &page), &ctx)
+            .unwrap();
+        assert!(!next[0].required, "paging a history is optional");
+
+        let daily = fixture_bytes(
+            "usgs",
+            "usgs-daily-croton-01375000-00060-paging-limit3.json",
+        );
+        let reqs = usgs
+            .daily_requests(&target("01375000", &[Discharge]), &ctx)
+            .unwrap();
+        assert!(reqs.iter().all(|r| !r.required));
+        let mut required = reqs[0].clone();
+        required.required = true;
+        let next = usgs
+            .follow_up(&required, &Response::new(200, &daily), &ctx)
+            .unwrap();
+        assert!(!next[0].required);
     }
 
     #[test]
