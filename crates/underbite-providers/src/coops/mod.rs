@@ -482,8 +482,10 @@ mod tests {
         );
         assert_eq!(count(&requests, Resource::CoopsCurrentEvents), 1);
         assert_eq!(count(&requests, Resource::CoopsCurrentCurve), 2);
-        assert!(requests.iter().all(|r| r.url.ends_with("&bin=13")));
+        assert!(requests.iter().all(|r| r.url.contains("&bin=13")));
         assert!(requests[0].url.contains("interval=max_slack"));
+        assert!(!requests[0].url.contains("vel_type"));
+        assert!(requests[1].url.ends_with("&vel_type=default"));
         assert!(requests[0].required && !requests[1].required);
         assert!(requests.iter().all(|r| !r.url.contains("datum")));
     }

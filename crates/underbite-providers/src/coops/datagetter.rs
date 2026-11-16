@@ -77,6 +77,12 @@ pub fn url(query: &Query<'_>) -> String {
     if let Some(bin) = query.bin {
         url = url.param("bin", bin.to_string());
     }
+    // The service has answered a curve request without `vel_type` in the speed and direction
+    // shape; asking for the default pins the signed major-axis velocity. `max_slack` only
+    // has the default.
+    if query.product == "currents_predictions" && query.interval != Some("max_slack") {
+        url = url.param("vel_type", "default");
+    }
     url.finish()
 }
 
@@ -171,10 +177,6 @@ struct CurrentRow {
     time: String,
     #[serde(rename = "Velocity_Major")]
     velocity: Option<Number>,
-    #[serde(rename = "Speed")]
-    speed: Option<Number>,
-    #[serde(rename = "Direction")]
-    direction: Option<Number>,
     #[serde(rename = "meanFloodDir")]
     flood_dir: Option<Number>,
     #[serde(rename = "meanEbbDir")]
@@ -183,13 +185,6 @@ struct CurrentRow {
     bin: Option<Number>,
     #[serde(rename = "Depth")]
     depth: Option<Number>,
-}
-
-/// What a current curve request carries to [`current_curve`] when the service answers with speed
-/// and direction: the flood direction that tells the sign.
-#[derive(Deserialize)]
-struct FloodCarry {
-    flood_dir_deg: f32,
 }
 
 fn parse_error(message: impl Into<String>) -> SourceError {
@@ -514,45 +509,27 @@ pub fn current_events(
     })
 }
 
-/// `currents_predictions` at 6 minutes: the signed major-axis curve. The shape is detected from
-/// the field names: `Velocity_Major` is used as it is; `Speed` and `Direction` are signed by
-/// whether the direction is within 90 degrees of the flood direction the request carries
-/// (`{"flood_dir_deg":…}`), and fail without it. An answer with event types is the
-/// `max_slack` response a subordinate station gives to any interval, and is refused.
+/// `currents_predictions` at 6 minutes: the signed major-axis curve (`Velocity_Major`, which
+/// the request asks for with `vel_type=default`). The speed and direction shape has no sign
+/// and is refused, as is an answer with event types: the `max_slack` response a subordinate
+/// station gives to any interval.
 pub fn current_curve(
     request: &Request,
     body: &[u8],
     now: UnixTime,
 ) -> Result<CurrentSeries, SourceError> {
     let rows = current_rows(body)?;
-    let carried = request
-        .carry()
-        .map(|c| serde_json::from_str::<FloodCarry>(c).map(|c| c.flood_dir_deg))
-        .transpose()
-        .map_err(|e| parse_error(e.to_string()))?;
     let mut samples = Vec::with_capacity(rows.len());
     for row in &rows {
         if row.kind.is_some() {
             return Err(parse_error("events in a current curve response"));
         }
-        let v = if let Some(v) = value(row.velocity.as_ref())? {
-            v
-        } else if let (Some(speed), Some(dir)) =
-            (value(row.speed.as_ref())?, value(row.direction.as_ref())?)
-        {
-            let flood = carried
-                .ok_or_else(|| parse_error("speed and direction without a flood direction"))?;
-            let apart = (dir - flood + 540.0).rem_euclid(360.0) - 180.0;
-            if apart.abs() <= 90.0 { speed } else { -speed }
-        } else {
-            return Err(parse_error(
-                "current row with neither Velocity_Major nor Speed",
-            ));
+        let Some(v) = value(row.velocity.as_ref())? else {
+            return Err(parse_error("current row without Velocity_Major"));
         };
         samples.push(Sample::new(time(&row.time)?, canonical(v, "cm/s")?));
     }
     let mut series = current_series(request, &rows, now)?;
-    series.flood_dir_deg = series.flood_dir_deg.or(carried);
     series.curve = Some(Series::new(series.provenance.clone(), samples));
     Ok(series)
 }
@@ -676,6 +653,12 @@ mod tests {
         };
         assert!(url(&currents).ends_with("interval=max_slack&format=json&bin=13"));
         assert!(!url(&currents).contains("datum"));
+        let curve = Query {
+            interval: Some("6"),
+            ..currents
+        };
+        assert!(url(&curve).ends_with("interval=6&format=json&bin=13&vel_type=default"));
+        assert!(!url(&query).contains("vel_type"));
     }
 
     #[test]
@@ -839,25 +822,18 @@ mod tests {
     }
 
     #[test]
-    fn current_curve_detects_speed_and_direction() {
+    fn current_curve_refuses_speed_and_direction() {
         let body = checked("coops-NYH1927-bin13-speed-dir-6min-2026-11-08.json");
-        let plain = current_request(
+        let request = current_request(
             Resource::CoopsCurrentCurve,
             "NYH1927",
             StationKind::CurrentHarmonic,
             13,
         );
         assert!(matches!(
-            current_curve(&plain, &body, NOW),
-            Err(SourceError::Parse(m)) if m.contains("flood direction")
+            current_curve(&request, &body, NOW),
+            Err(SourceError::Parse(m)) if m.contains("Velocity_Major")
         ));
-        let carried = plain.with_carry(r#"{"flood_dir_deg":11.0}"#);
-        let series = current_curve(&carried, &body, NOW).unwrap();
-        let curve = series.curve.unwrap();
-        assert_eq!(curve.samples().len(), 240);
-        assert!((curve.samples()[0].value - 0.60056).abs() < 1e-5);
-        assert!(curve.samples().iter().any(|s| s.value < 0.0));
-        assert_eq!(series.flood_dir_deg, Some(11.0));
     }
 
     #[test]
