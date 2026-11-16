@@ -33,6 +33,6 @@ multiple-versions = "allow"
 [sources]
 unknown-registry = "deny"
 unknown-git = "deny"
-# whether, on the project's Gitea, pinned by revision.
+# whether, on GitHub, pinned by revision.
 allow-git = ["https://github.com/SeasonalPugForecast/whether.git"]
 required-git-spec = "rev"
