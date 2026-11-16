@@ -62,8 +62,7 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
     );
 
     let spot_for = |water_type| Spot {
-        // Two decimals is what leaves the device, so it is all the id carries.
-        id: format!("cli-{latitude:.2}_{longitude:.2}"),
+        id: point_id(latitude, longitude),
         name: args.name.clone().unwrap_or_else(|| "Spot".to_owned()),
         latitude,
         longitude,
@@ -151,6 +150,18 @@ fn default_config_path(env: &impl Fn(&str) -> Option<String>) -> Option<PathBuf>
     let base =
         absolute("XDG_CONFIG_HOME").or_else(|| absolute("HOME").map(|h| h.join(".config")))?;
     Some(base.join("underbite").join("config.toml"))
+}
+
+/// The id of an unnamed point, under which its pins, exclusions and last snapshot are kept:
+/// the point to two decimals, what leaves the device, so every point in one rounding cell is
+/// one spot. `spot` and `stations` share it.
+pub(crate) fn point_id(latitude: f64, longitude: f64) -> String {
+    // Rounded first, so a value just below zero does not print as `-0.00`.
+    let cell = |v: f64| {
+        let r = (v * 100.0).round() / 100.0;
+        if r == 0.0 { 0.0 } else { r }
+    };
+    format!("cli-{:.2}_{:.2}", cell(latitude), cell(longitude))
 }
 
 /// Parses `lat,lon`.
@@ -369,6 +380,15 @@ mod tests {
         assert!(parse_location("40.7").is_err());
         assert!(parse_location("91,0").is_err());
         assert!(parse_location("a,b").is_err());
+    }
+
+    #[test]
+    fn a_point_id_is_its_rounding_cell() {
+        assert_eq!(point_id(40.7033, -74.0170), "cli-40.70_-74.02");
+        assert_eq!(point_id(40.7049, -74.0151), point_id(40.7033, -74.0170));
+        assert_ne!(point_id(40.7051, -74.0170), point_id(40.7033, -74.0170));
+        assert_eq!(point_id(-0.001, 0.004), point_id(0.001, -0.004));
+        assert_eq!(point_id(-0.001, 0.004), "cli-0.00_0.00");
     }
 
     #[test]

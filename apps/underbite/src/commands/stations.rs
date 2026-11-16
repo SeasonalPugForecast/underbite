@@ -14,6 +14,7 @@ use underbite_core::provenance::{Relation, SourceId};
 use underbite_core::view::format::Formatter;
 use underbite_providers::source::FetchContext;
 
+use super::spot::point_id;
 use crate::cli::Global;
 use crate::runtime::env::Env;
 use crate::runtime::fetch::{chain_specs, discover, load_choices, requirements, save_choices};
@@ -94,11 +95,6 @@ fn parse_key(text: &str) -> anyhow::Result<StationKey> {
 fn parse_name<T: serde::de::DeserializeOwned>(what: &str, name: &str) -> anyhow::Result<T> {
     serde_json::from_value(serde_json::Value::String(name.to_owned()))
         .map_err(|_| anyhow::anyhow!("unknown {what} {name:?}"))
-}
-
-/// The id a point's choices are stored under.
-fn spot_id(latitude: f64, longitude: f64) -> String {
-    format!("{latitude:.4},{longitude:.4}")
 }
 
 fn relation_text(relation: Relation) -> &'static str {
@@ -245,7 +241,7 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
         .map(|m| parse_name("measurement", m))
         .collect::<Result<_, _>>()?;
     let env = Env::from_global(global)?;
-    let id = spot_id(latitude, longitude);
+    let id = point_id(latitude, longitude);
 
     if !(pin.is_empty() && exclude.is_empty() && clear.is_empty()) {
         let cache = env.cache.as_ref().context(
