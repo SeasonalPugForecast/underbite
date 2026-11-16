@@ -753,9 +753,22 @@ fn shots(remote: &Remote, list: &[Shot]) -> String {
                 if i == 0 { 12 } else { 8 },
             ));
             if shot.dark {
+                // The appearance is set while the app is not running, and read back
+                // before the launch: a running app can keep its old look.
                 steps.push(format!(
-                    "xcrun simctl ui {sim} appearance dark; {}; xcrun simctl ui {sim} appearance light",
-                    launch_line(&sim, &dir, &format!("{}-dark", shot.name), &shot.args, 5)
+                    "xcrun simctl terminate {sim} {BUNDLE_ID} 2>/dev/null || true; \
+                     xcrun simctl ui {sim} appearance dark; sleep 2; \
+                     [ \"$(xcrun simctl ui {sim} appearance)\" = dark ] || \
+                     {{ echo \"appearance did not switch to dark\" >&2; }}; {}; \
+                     xcrun simctl terminate {sim} {BUNDLE_ID} 2>/dev/null || true; \
+                     xcrun simctl ui {sim} appearance light",
+                    launch_line(
+                        &sim,
+                        &dir,
+                        &format!("{}-dark", shot.name),
+                        &shot.args,
+                        if i == 0 { 12 } else { 8 }
+                    )
                 ));
             }
         }
@@ -1641,6 +1654,16 @@ mod tests {
                 "{line}"
             );
         }
+        // Dark is set with the app stopped, read back, then launched with the light wait.
+        let dark = line.find("appearance dark").unwrap();
+        let readback = line[dark..].find("appearance)\" = dark").unwrap() + dark;
+        let launch = line[readback..].find("simctl launch").unwrap() + readback;
+        assert!(
+            line[dark - 200..dark].contains("simctl terminate"),
+            "{line}"
+        );
+        assert!(line[launch..].contains("sleep 8;"), "{line}");
+        assert!(!line.contains("sleep 5;"), "{line}");
         assert!(line.contains(".screens/iphone/now.png"), "{line}");
         assert!(line.contains(".screens/ipad/days-dark.png"), "{line}");
         assert!(!line.contains("now-dark"), "{line}");

@@ -15,7 +15,7 @@ dark
 
 - **Line 1** is the launch arguments, split on whitespace (blank for none). They are passed to
   `xcrun simctl launch` as they stand; the app reads them only in debug builds.
-- **Line 2** is optional: `dark` also takes a dark-appearance screenshot of the same launch.
+- **Line 2** is optional: `dark` also takes a dark-appearance screenshot of the same launch (the appearance is set with the app stopped, read back, then the app is launched with the same wait as the light shot; light is restored afterwards).
 - Nothing else is allowed. A name may hold letters, digits, `-`, `_` and `.`; files are taken in
   sorted order, so a numeric prefix (`10-now.args`) fixes the order.
 
