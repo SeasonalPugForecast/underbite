@@ -8,9 +8,10 @@ pub mod mdapi;
 
 pub use harmonics::CoopsHarmonics;
 
-use underbite_core::datum::VerticalDatum;
-use underbite_core::model::{Measurement, Requirements};
+use underbite_core::datum::{Heights, VerticalDatum};
+use underbite_core::model::{CurrentSeries, Measurement, Requirements, TideSeries, TideSourceKind};
 use underbite_core::provenance::{Attribution, SourceId, StationKind, StationRef};
+use underbite_core::series::{Series, Vector};
 use underbite_core::time::UnixTime;
 
 use crate::request::{Place, Request, Resource, Response, Target};
@@ -202,6 +203,46 @@ fn specs(kind: StationKind, wants: impl Fn(Measurement) -> bool) -> Vec<Spec> {
     specs
 }
 
+fn station_kind(request: &Request) -> Option<StationKind> {
+    match &request.target.place {
+        Place::Station { station, .. } => Some(station.kind),
+        Place::Point(_) | Place::Zone(_) => None,
+    }
+}
+
+/// A water-level station's observations as its tide: such a station has no predictions for
+/// them to attach to, so they stand alone (no events, no curve).
+fn observed_tide(level: Heights) -> TideSeries {
+    TideSeries {
+        // The station's own record passed through; the model has no observation-only kind.
+        source_kind: TideSourceKind::HarmonicStation,
+        datum: level.datum,
+        events: Vec::new(),
+        curve: None,
+        provenance: level.series.provenance().clone(),
+        observed: Some(level.series),
+    }
+}
+
+/// A PORTS meter's observations as its tidal current: the meter has no predictions for them to
+/// attach to, so they stand alone (no events, no curve, no flood or ebb direction).
+fn observed_current(request: &Request, currents: Series<Vector>) -> CurrentSeries {
+    let bin = match &request.target.place {
+        Place::Station { station, .. } => station.bin,
+        Place::Point(_) | Place::Zone(_) => None,
+    };
+    CurrentSeries {
+        events: Vec::new(),
+        curve: None,
+        flood_dir_deg: None,
+        ebb_dir_deg: None,
+        bin,
+        depth_m: None,
+        provenance: currents.provenance().clone(),
+        observed: Some(currents),
+    }
+}
+
 impl Source for Coops {
     fn id(&self) -> SourceId {
         SourceId::COOPS
@@ -300,10 +341,15 @@ impl Source for Coops {
                 Measurement::Tide,
                 FragmentValue::TideSeries(datagetter::tide_curve(request, body, now)?),
             ),
-            Resource::CoopsWaterLevel => (
-                Measurement::Tide,
-                FragmentValue::Heights(datagetter::water_level(request, body)?),
-            ),
+            Resource::CoopsWaterLevel => {
+                let level = datagetter::water_level(request, body)?;
+                let value = if station_kind(request) == Some(StationKind::WaterLevel) {
+                    FragmentValue::TideSeries(observed_tide(level))
+                } else {
+                    FragmentValue::Heights(level)
+                };
+                (Measurement::Tide, value)
+            }
             Resource::CoopsWaterTemperature => (
                 Measurement::WaterTemperature,
                 FragmentValue::Series(datagetter::scalar(request, body, "degC")?),
@@ -324,10 +370,15 @@ impl Source for Coops {
                 Measurement::TidalCurrent,
                 FragmentValue::CurrentSeries(datagetter::current_curve(request, body, now)?),
             ),
-            Resource::CoopsCurrents => (
-                Measurement::TidalCurrent,
-                FragmentValue::Vectors(datagetter::observed_currents(request, body)?),
-            ),
+            Resource::CoopsCurrents => {
+                let currents = datagetter::observed_currents(request, body)?;
+                let value = if station_kind(request) == Some(StationKind::PortsCurrentMeter) {
+                    FragmentValue::CurrentSeries(observed_current(request, currents))
+                } else {
+                    FragmentValue::Vectors(currents)
+                };
+                (Measurement::TidalCurrent, value)
+            }
             other => {
                 return Err(SourceError::Unsupported(format!(
                     "{other:?} is not a CO-OPS data API resource"
@@ -340,8 +391,6 @@ impl Source for Coops {
 
 #[cfg(test)]
 mod tests {
-    use underbite_core::model::TideSourceKind;
-
     use super::*;
     use crate::source::Fragment;
     use crate::testutil::fixture_bytes;
@@ -592,6 +641,50 @@ mod tests {
             panic!("not a tide series");
         };
         assert_eq!(series.source_kind, TideSourceKind::SubordinateStation);
+    }
+
+    #[test]
+    fn observations_stand_alone_only_at_stations_without_predictions() {
+        use Measurement as M;
+        use StationKind as K;
+        let level = |kind| {
+            let fragments = parse(
+                Resource::CoopsWaterLevel,
+                "8518750",
+                kind,
+                None,
+                M::Tide,
+                "coops-8518750-water-level-2026-11-07.json",
+                200,
+            );
+            fragments.unwrap().remove(0).value
+        };
+        let FragmentValue::TideSeries(tide) = level(K::WaterLevel) else {
+            panic!("a water-level station's tide is its observations");
+        };
+        assert!(tide.events.is_empty() && tide.curve.is_none());
+        let observed = tide.observed.unwrap();
+        assert!(!observed.is_empty());
+        assert_eq!(tide.datum, VerticalDatum::Mllw);
+        assert_eq!(tide.provenance, *observed.provenance());
+        assert!(matches!(level(K::TideHarmonic), FragmentValue::Heights(_)));
+
+        let currents = parse(
+            Resource::CoopsCurrents,
+            "n06010",
+            K::PortsCurrentMeter,
+            Some(4),
+            M::TidalCurrent,
+            "coops-n06010-currents-2026-11-07.json",
+            200,
+        )
+        .unwrap();
+        let FragmentValue::CurrentSeries(current) = &currents[0].value else {
+            panic!("a PORTS meter's current is its observations");
+        };
+        assert!(current.events.is_empty() && current.curve.is_none());
+        assert_eq!(current.bin, Some(4));
+        assert!(current.observed.as_ref().is_some_and(|o| !o.is_empty()));
     }
 
     #[test]

@@ -676,7 +676,8 @@ fn accept(
             _ => true,
         }
     });
-    // Observations attach to a main series in their datum, never alone.
+    // Observations attach to a main series in their datum, never alone (a station without
+    // predictions gives its observations as the main series instead).
     let attaches = match (values.get(&Slot::Main), values.get(&Slot::Observed)) {
         (Some(FragmentValue::TideSeries(t)), Some(FragmentValue::Heights(h))) => t.datum == h.datum,
         (Some(_), _) => true,
@@ -1707,6 +1708,65 @@ mod tests {
             .iter()
             .filter(|x| x.value.dominant_period_s.is_some());
         assert_eq!(periods.count(), waves.samples().len());
+    }
+
+    /// A water-level station has no predictions: its observed level is the tide it gives.
+    #[test]
+    fn session_keeps_a_water_level_stations_observations_as_its_tide() {
+        use crate::coops::Coops;
+        use crate::request::Window;
+        use crate::testutil::fixture_bytes;
+        use underbite_core::provenance::StationKind;
+
+        // 2026-11-08 00:00:00 UTC, six minutes after the last reading.
+        let now = UnixTime(1_794_096_000);
+        let target = Target {
+            place: Place::Station {
+                station: StationRef {
+                    source: SourceId::COOPS,
+                    id: "8518750".into(),
+                    name: "The Battery".into(),
+                    kind: StationKind::WaterLevel,
+                    latitude: 40.7006,
+                    longitude: -74.0142,
+                    bin: None,
+                    reference_id: None,
+                },
+                distance_m: Some(500.0),
+                relation: Relation::SameWaterBody,
+            },
+            measurements: BTreeSet::from([Tide]),
+            window: Window {
+                from: UnixTime(now.0 - 86_400),
+                to: UnixTime(now.0 + 86_400),
+            },
+            datum: Some(VerticalDatum::Mllw),
+        };
+        let link = Link {
+            source: Arc::new(Coops),
+            target,
+        };
+        let chains = BTreeMap::from([(Tide, chain(vec![link]))]);
+        let requirements = Requirements {
+            measurements: BTreeSet::from([Tide]),
+            ..Requirements::default()
+        };
+        let mut s = Session::new(chains, requirements, fake::ctx(now));
+        let bytes = fixture_bytes("coops", "coops-8518750-water-level-2026-11-07.json");
+        let mut sent = 0;
+        while let Some(request) = s.next_request() {
+            assert_eq!(request.resource, Resource::CoopsWaterLevel);
+            s.on_response(&Response::new(200, &bytes));
+            sent += 1;
+        }
+        assert_eq!(sent, 1);
+        let out = s.finish(now);
+        assert!(out.errors.is_empty(), "{:?}", out.errors);
+        assert_eq!(out.sources[&Tide], SourceId::COOPS);
+        let tide = out.marine.tide.unwrap();
+        assert!(tide.events.is_empty() && tide.curve.is_none());
+        let observed = tide.observed.unwrap();
+        assert_eq!(observed.latest().unwrap().time, UnixTime(now.0 - 360));
     }
 
     #[test]
