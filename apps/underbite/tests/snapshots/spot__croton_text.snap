@@ -1,0 +1,76 @@
+---
+source: apps/underbite/tests/spot.rs
+expression: text
+---
+Croton River (River or stream, updated just now)
+
+== River flow ==
+12.4 cfs
+normal, 45th percentile for Nov 8
+Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.0 mi
+  discharge: 12.4 cfs
+  gage height: 1.1 ft gage datum
+  percentile: normal, 45th percentile for Nov 8
+  Normal for this date
+    Basis: USGS statistics (beta)
+    Sample: approved data only, 93 years
+    Median: 15.0 cfs
+  trend: Falling 0.5 cfs in 14 h
+Flow 12.4 cfs · CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY · 0.0 mi upstream · 45 min ago
+Provisional data, subject to revision.
+Credit: U.S. Geological Survey (https://waterdata.usgs.gov)
+Credit: Provisional data statement (https://waterdata.usgs.gov/provisional-data-statement/)
+
+== Wind ==
+7 kn
+From SW 221°
+Gusts 15 kn
+  gust: 15 kn
+  Source
+    Forecast: Open-Meteo (modelled)
+  speed: 7 kn
+Wind 7 kn · Open-Meteo · modelled · just now
+Credit: Weather data by Open-Meteo.com
+
+== Sun and moon ==
+1 %
+Sunrise 6:34 AM · Sunset 4:43 PM
+Waning crescent · Moonrise 6:02 AM
+  Sun
+    Nautical dawn: 5:32 AM
+    Civil dawn: 6:05 AM
+    Sunrise: 6:34 AM
+    Golden hour ends: 7:15 AM
+    Golden hour starts: 4:03 PM
+    Sunset: 4:43 PM
+    Civil dusk: 5:12 PM
+    Nautical dusk: 5:45 PM
+    Day length: 10 h 09 min
+  Moon
+    Waning crescent: 1% lit
+    Moonrise: 6:02 AM
+    Moonset: 3:59 PM
+    Moon overhead: 11:04 AM
+    Moon underfoot: 11:28 PM
+    New moon: Nov 9 2:02 AM
+Credit: Sun and moon positions from astronomical algorithms
+
+== Sources ==
+7 sources
+2 stations
+5 problems
+  Credit: U.S. Geological Survey (https://waterdata.usgs.gov)
+  Credit: NOAA National Water Prediction Service (https://water.noaa.gov/)
+  Credit: Weather data by Open-Meteo.com (https://open-meteo.com)
+  Credit: Weather data by Open-Meteo.com (CC BY 4.0); ECMWF data CC BY 4.0. (https://open-meteo.com/)
+  Credit: USGS TNM / NGTOC - 3D National Hydrographic Program (3DHP). Features may not reflect current conditions and are not for critical use. (https://www.usgs.gov/3d-hydrography-program)
+  Credit: Weather data by Open-Meteo.com (https://open-meteo.com/)
+  Credit: Provisional data statement (https://waterdata.usgs.gov/provisional-data-statement/)
+  Problem: NOAA NDBC: ndbc: not found
+  Problem: NOAA NWPS: nwps: no data: the gauge defines no flood stages, used nwps
+  Problem: NOAA NWPS: nwps: no data: the forecast has no values
+  Problem: NOAA NWPS: nwps: no data: the forecast has no values
+  Problem: NOAA NWPS: nwps: no data: the forecast has no values
+  River flow, Gage height: CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY (USGS, 0.0 mi, 45 min ago)
+  River flow: CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY (USGS, 0.0 mi, —)
+Provisional data, subject to revision.

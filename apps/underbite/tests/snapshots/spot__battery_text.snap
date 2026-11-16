@@ -1,0 +1,114 @@
+---
+source: apps/underbite/tests/spot.rs
+expression: text
+---
+The Battery (Tidal river or estuary, updated just now)
+
+== Tide ==
+3.8 ft MLLW
+Falling · Low 1:34 PM
+0.0 ft MLLW
+  above MLLW
+  height now: 3.8 ft MLLW
+  Low 1:34 PM (0.0 ft MLLW)
+  High 7:27 PM (4.7 ft MLLW)
+  Station
+    Station: NEW YORK (The Battery) (0.2 mi)
+    Heights: above MLLW
+  Falling
+Tide 3.8 ft MLLW · NEW YORK (The Battery) · 0.2 mi
+Not for navigation.
+Credit: Tide, water-level and current data: NOAA/NOS CO-OPS (https://tidesandcurrents.noaa.gov/)
+
+== Current ==
+1.1 kn
+Flood 1.1 kn toward N 11°
+Next slack 10:41 AM
+  Flood
+  Station
+    Station: Hudson River Entrance (0.5 mi)
+    Depth: Bin 13 at 6.9 ft
+  speed now: 1.1 kn
+Current Flood 1.1 kn toward N 11° · Hudson River Entrance · 0.5 mi
+Not for navigation.
+Credit: Tide, water-level and current data: NOAA/NOS CO-OPS (https://tidesandcurrents.noaa.gov/)
+
+== Wind ==
+7 kn
+From SW 221°
+Gusts 15 kn
+  gust: 15 kn
+  Source
+    Forecast: Open-Meteo (modelled)
+  speed: 7 kn
+Wind 7 kn · Open-Meteo · modelled · just now
+Credit: Weather data by Open-Meteo.com
+
+== Water temperature ==
+60 °F
+Steady over 3 h
+Luna's watching 8518750 - The Battery, NY, 0.2 mi
+  trend: Steady over 3 h
+  value: 60 °F
+Water 60 °F · 8518750 - The Battery, NY · 0.2 mi · 42 min ago
+Provisional data, subject to revision.
+Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa.gov/)
+
+== Waves ==
+3.6 ft
+from WNW 296°
+Modelled 0.8 ft
+  Sources
+    Buoy: New York Harbor Entrance - 15 NM SE of Breezy Point , NY (28 mi)
+    Model: Open-Meteo Marine (modelled)
+Waves 3.6 ft · New York Harbor Entrance - 15 NM SE of Breezy Point , NY · 28 mi · just now
+Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa.gov/)
+Credit: Weather data by Open-Meteo.com. Marine models: Copernicus Marine Service, ECMWF, NOAA NCEP, DWD, Copernicus Climate Change Service. Modelled, not suitable for coastal navigation. (https://open-meteo.com/)
+
+== Sun and moon ==
+1 %
+Sunrise 6:34 AM · Sunset 4:45 PM
+Waning crescent · Moonrise 6:01 AM
+  Sun
+    Nautical dawn: 5:32 AM
+    Civil dawn: 6:05 AM
+    Sunrise: 6:34 AM
+    Golden hour ends: 7:14 AM
+    Golden hour starts: 4:05 PM
+    Sunset: 4:45 PM
+    Civil dusk: 5:14 PM
+    Nautical dusk: 5:46 PM
+    Day length: 10 h 11 min
+  Moon
+    Waning crescent: 1% lit
+    Moonrise: 6:01 AM
+    Moonset: 4:01 PM
+    Moon overhead: 11:05 AM
+    Moon underfoot: 11:28 PM
+    New moon: Nov 9 2:02 AM
+Credit: Sun and moon positions from astronomical algorithms
+
+== Sources ==
+9 sources
+5 stations
+5 problems
+  Credit: Buoy observations: NOAA National Data Buoy Center (https://www.ndbc.noaa.gov/)
+  Credit: Tide, water-level and current data: NOAA/NOS CO-OPS (https://tidesandcurrents.noaa.gov/)
+  Credit: Weather data by Open-Meteo.com. Marine models: Copernicus Marine Service, ECMWF, NOAA NCEP, DWD, Copernicus Climate Change Service. Modelled, not suitable for coastal navigation. (https://open-meteo.com/)
+  Credit: NOAA National Weather Service (https://www.weather.gov/)
+  Credit: Weather data by Open-Meteo.com (https://open-meteo.com)
+  Credit: Weather data by Open-Meteo.com (CC BY 4.0); ECMWF data CC BY 4.0. (https://open-meteo.com/)
+  Credit: USGS TNM / NGTOC - 3D National Hydrographic Program (3DHP). Features may not reflect current conditions and are not for critical use. (https://www.usgs.gov/3d-hydrography-program)
+  Credit: Weather data by Open-Meteo.com (https://open-meteo.com/)
+  Credit: Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean) (https://open-meteo.com/en/licence)
+  Problem: NOAA CO-OPS: coops: no recent data, used ndbc
+  Problem: NOAA CO-OPS: coops: no recent data, used ndbc
+  Problem: NOAA CO-OPS: coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc
+  Problem: NOAA CO-OPS: coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc
+  Problem: NOAA CO-OPS: coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc
+  Water temperature: 8518750 - The Battery, NY (NOAA NDBC, 0.2 mi, 42 min ago)
+  Tide: NEW YORK (The Battery) (NOAA CO-OPS, 0.2 mi, —)
+  Tidal current: Hudson River Entrance (NOAA CO-OPS, 0.5 mi, —)
+  Waves: New York Harbor Entrance - 15 NM SE of Breezy Point , NY (NOAA NDBC, 28 mi, just now)
+  Wind: 8530973 - Robbins Reef, NJ (NOAA NDBC, 4.1 mi, just now)
+Not for navigation.
