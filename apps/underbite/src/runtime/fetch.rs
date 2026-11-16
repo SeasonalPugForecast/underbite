@@ -20,13 +20,16 @@
 //! are saved; every request is logged only through `redact_url`.
 
 use std::collections::{BTreeMap, BTreeSet};
-use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 
 use serde::{Deserialize, Serialize};
 use underbite_config::schema::Config;
 use underbite_config::sources::{SourceGroup, SourcesConfig};
 use underbite_core::discover::cache::{DiscoveryCache, ObservedCoverage, StationChoices};
-use underbite_core::discover::hydro::{self as hydrography, HydroOptions, Point};
+use underbite_core::discover::hydro::{
+    self as hydrography, HydroOptions, Point, WaterTypeSuggestion,
+};
 use underbite_core::discover::rank::{
     ChainSpec, DEFAULT_STATIONS_PER_SOURCE, DiscoveryInput, Limits, LinkPlace, Plan, Ranking,
     StationKey, distance_m,
@@ -35,7 +38,7 @@ use underbite_core::model::{
     Coverage, Measurement, Requirements, SourceError as ModelSourceError, Spot, StationCandidate,
     WaterType,
 };
-use underbite_core::provenance::{Relation, SourceId, StationKind, StationRef};
+use underbite_core::provenance::{Relation, SourceId, StationKind, StationRef, UsgsSiteType};
 use underbite_core::time::UnixTime;
 use underbite_core::units::{Canonical, to_canonical};
 use underbite_core::view::{CardId, MeasurementLimit};
@@ -45,6 +48,7 @@ use underbite_providers::hydro;
 use underbite_providers::ndbc::{self, Ndbc};
 use underbite_providers::nwps::{self, Nwps};
 use underbite_providers::nws_marine::NwsMarine;
+use underbite_providers::nws_marine::zones as nws_zones;
 use underbite_providers::open_meteo_marine::OpenMeteoMarine;
 use underbite_providers::request::{
     CacheHint, Coordinates, Place, Request, Resource, Response, RoundedPoint, Target, Window,
@@ -60,7 +64,7 @@ use super::transport::{Call, Fetched, Transport, TransportError, user_agent};
 use jiff::tz::TimeZone;
 use underbite_core::astro::solunar::{DayBounds, SolunarSettings, sky_conditions};
 use underbite_core::model::{Percentile, StormWatch, WaterConditions};
-use underbite_core::model::{SkyConditions, SourceErrorKind, SpotSnapshot};
+use underbite_core::model::{SkyConditions, SourceErrorKind, SpotSnapshot, ZoneKind};
 use underbite_core::provenance::Attribution;
 use underbite_core::time::standard_offset;
 use underbite_core::time::{local_date, local_date_bounds, zone};
@@ -405,6 +409,10 @@ pub(crate) struct Host<'a> {
     now: UnixTime,
     usage: SharedUsage,
     allow_metered: bool,
+    /// Whether responses are kept for the rest of the fetch (see [`Host::keeping`]).
+    keep_responses: AtomicBool,
+    /// The responses kept, answered again without the transport or the ledger.
+    kept: Mutex<Vec<(Call, Fetched)>>,
 }
 
 impl<'a> Host<'a> {
@@ -425,7 +433,34 @@ impl<'a> Host<'a> {
             now,
             usage: SharedUsage::new(ledger),
             allow_metered,
+            keep_responses: AtomicBool::new(false),
+            kept: Mutex::new(Vec::new()),
         }
+    }
+
+    /// Runs `f` with every response it receives kept for the rest of the fetch, so the same
+    /// requests later (from discovery or a session) are answered without going out again,
+    /// with or without a cache on disk. Only for a few lookups: the bodies stay in memory.
+    fn keeping<T>(&self, f: impl FnOnce() -> T) -> T {
+        self.keep_responses.store(true, Ordering::Relaxed);
+        let out = f();
+        self.keep_responses.store(false, Ordering::Relaxed);
+        out
+    }
+
+    /// A kept response to the same request as `call`; never for a fresh copy.
+    fn kept(&self, call: &Call) -> Option<Fetched> {
+        if call.cache.fresh {
+            return None;
+        }
+        let same = |c: &Call| {
+            c.url == call.url
+                && c.method == call.method
+                && c.body == call.body
+                && c.headers == call.headers
+        };
+        let kept = self.kept.lock().ok()?;
+        kept.iter().find(|(c, _)| same(c)).map(|(_, f)| f.clone())
     }
 
     /// Saves the ledger; a metered request goes out only after this succeeds.
@@ -442,9 +477,13 @@ impl<'a> Host<'a> {
     /// call that asks for a fresh copy goes out and is not stored. Every request any command
     /// sends goes through here.
     pub(crate) fn send(&self, call: &Call) -> Result<Fetched, TransportError> {
+        if let Some(hit) = self.kept(call) {
+            tracing::debug!(url = %call.redacted_url(), "kept");
+            return Ok(hit);
+        }
         if let Some(hit) = self.cache.and_then(|c| c.load_response(call, self.now)) {
             tracing::debug!(url = %call.redacted_url(), "cached");
-            return Ok(hit);
+            return Ok(self.remember(call, hit));
         }
         tracing::debug!(url = %call.redacted_url(), "GET");
         let fetched = self.transport.send(call)?;
@@ -458,15 +497,29 @@ impl<'a> Host<'a> {
         {
             tracing::warn!(error = %e, "response not cached");
         }
-        Ok(fetched)
+        Ok(self.remember(call, fetched))
+    }
+
+    /// Keeps `fetched` while [`Host::keeping`] runs; returns it.
+    fn remember(&self, call: &Call, fetched: Fetched) -> Fetched {
+        if self.keep_responses.load(Ordering::Relaxed)
+            && !call.cache.fresh
+            && let Ok(mut kept) = self.kept.lock()
+        {
+            kept.push((call.clone(), fetched.clone()));
+        }
+        fetched
     }
 
     /// Sends a request of `source` outside a session: a metered one spends from the ledger
     /// (saved first) unless the cache answers it.
     fn get(&self, source: &dyn Source, request: &Request) -> Result<Fetched, SourceError> {
         let call = Call::from(request);
-        if let Some(hit) = self.cache.and_then(|c| c.load_response(&call, self.now)) {
+        if let Some(hit) = self.kept(&call) {
             return Ok(hit);
+        }
+        if let Some(hit) = self.cache.and_then(|c| c.load_response(&call, self.now)) {
+            return Ok(self.remember(&call, hit));
         }
         if request.metered {
             let budget = source.budget().ok_or_else(|| {
@@ -1752,6 +1805,159 @@ fn fetch_normals(
 }
 
 // ---------------------------------------------------------------------------------------------
+// The water type
+// ---------------------------------------------------------------------------------------------
+
+/// How far from the spot the nearest USGS site may be to tell its water type, metres.
+const NEAREST_SITE_M: f64 = HYDRO_RADIUS_M;
+
+/// The kind of the NWS marine zone the spot lies in, through the same point and zone lookups
+/// the marine forecast makes. `None` on land, outside the NWS's area or when a lookup fails.
+fn marine_zone(host: &Host<'_>, ctx: &FetchContext, spot: &Spot) -> Option<ZoneKind> {
+    let found = (|| -> Result<Option<ZoneKind>, SourceError> {
+        let target = Target {
+            measurements: BTreeSet::from([Measurement::MarineForecast]),
+            ..point_target(spot_point(ctx, spot), host.now)
+        };
+        let send = |request: &Request| {
+            host.send(&Call::from(request))
+                .map_err(|e| SourceError::Transport(e.to_string()))
+        };
+        let Some(point) = NwsMarine
+            .plan(&target, &Requirements::default(), ctx)?
+            .into_iter()
+            .find(|r| r.resource == Resource::NwsPoint)
+        else {
+            return Ok(None);
+        };
+        let answer = send(&point)?;
+        let Some(zones) = NwsMarine
+            .follow_up(&point, &answer.as_response(), ctx)?
+            .into_iter()
+            .find(|r| r.resource == Resource::NwsZones)
+        else {
+            return Ok(None);
+        };
+        let answer = send(&zones)?;
+        let body = check_response(&zones, &answer.as_response())?;
+        Ok(nws_zones::marine_zone(body)?.map(|z| z.kind))
+    })();
+    found.unwrap_or_else(|e| {
+        tracing::debug!(error = %e, "marine zone of the spot");
+        None
+    })
+}
+
+/// The spot rounded by the context.
+fn spot_point(ctx: &FetchContext, spot: &Spot) -> RoundedPoint {
+    ctx.round(Coordinates {
+        latitude: spot.latitude,
+        longitude: spot.longitude,
+    })
+}
+
+/// Where the spot lies on the mapped streams and waterbodies, from the same 3DHP queries
+/// discovery makes around it.
+fn spot_position(
+    host: &Host<'_>,
+    ctx: &FetchContext,
+    spot: &Spot,
+) -> Result<hydrography::HydroPosition, SourceError> {
+    let at = Coordinates {
+        latitude: spot.latitude,
+        longitude: spot.longitude,
+    };
+    let flowlines = hydro_pages(
+        host,
+        hydro::flowlines_query(at, HYDRO_RADIUS_M, ctx)?,
+        hydro::parse_flowlines,
+    )?;
+    let waterbodies = hydro_pages(
+        host,
+        hydro::waterbodies_query(at, HYDRO_RADIUS_M, ctx)?,
+        hydro::parse_waterbodies,
+    )?;
+    Ok(
+        hydrography::Hydro::new(&flowlines, &waterbodies, HydroOptions::default())
+            .locate_spot(Point::new(spot.latitude, spot.longitude)),
+    )
+}
+
+/// The type of the nearest USGS site within [`NEAREST_SITE_M`], from the site list discovery
+/// reads (the cached one while it is valid).
+fn nearest_usgs_site(host: &Host<'_>, ctx: &FetchContext, spot: &Spot) -> Option<UsgsSiteType> {
+    let point = spot_point(ctx, spot);
+    let list = match host.cached::<StoredList>(
+        NS_STATIONS,
+        &area_key("usgs", point),
+        STATION_LIST_TTL_S,
+    ) {
+        Some(list) => list,
+        // Not stored here: discovery stores it, asking again through the kept responses.
+        None => usgs_list(host, &point_target(point, host.now), ctx)
+            .inspect_err(|e| tracing::debug!(error = %e, "USGS sites near the spot"))
+            .ok()?,
+    };
+    list.candidates
+        .iter()
+        .filter_map(|c| match c.station.kind {
+            StationKind::UsgsSite(site_type) => Some((
+                distance_m(
+                    spot.latitude,
+                    spot.longitude,
+                    c.station.latitude,
+                    c.station.longitude,
+                ),
+                site_type,
+            )),
+            _ => None,
+        })
+        .filter(|(d, _)| *d <= NEAREST_SITE_M)
+        .min_by(|a, b| a.0.total_cmp(&b.0))
+        .map(|(_, site_type)| site_type)
+}
+
+/// Suggests the spot's water type from its NWS marine zone, its place on the mapped streams and
+/// waterbodies and the nearest USGS site, each looked up only when the configuration runs its
+/// source. The responses are kept, so discovery and the sessions do not ask again.
+fn infer_water_type(
+    host: &Host<'_>,
+    ctx: &FetchContext,
+    spot: &Spot,
+    sources: &SourcesConfig,
+) -> Option<WaterTypeSuggestion> {
+    host.keeping(|| {
+        let zone = sources
+            .marine_forecast
+            .chain
+            .contains(&SourceId::NWS)
+            .then(|| marine_zone(host, ctx, spot))
+            .flatten();
+        // Offshore and Great Lakes zones settle it.
+        let settled = matches!(
+            zone,
+            Some(ZoneKind::Offshore | ZoneKind::GreatLakesNearshore | ZoneKind::GreatLakesOpen)
+        );
+        let position = if settled {
+            hydrography::HydroPosition::default()
+        } else {
+            spot_position(host, ctx, spot).unwrap_or_else(|e| {
+                tracing::debug!(error = %e, "hydrography of the spot");
+                hydrography::HydroPosition::default()
+            })
+        };
+        let usgs = sources
+            .groups()
+            .iter()
+            .any(|(_, g)| g.chain.contains(&SourceId::USGS));
+        let site = (usgs && !settled)
+            .then(|| nearest_usgs_site(host, ctx, spot))
+            .flatten();
+        hydrography::infer_water_type(&position, site, zone, HydroOptions::default())
+    })
+}
+
+// ---------------------------------------------------------------------------------------------
 // One spot, end to end
 // ---------------------------------------------------------------------------------------------
 
@@ -1764,6 +1970,9 @@ pub(crate) struct FetchOptions {
     pub(crate) secrets: Secrets,
     /// `underbite/<version>`.
     pub(crate) user_agent: String,
+    /// Whether the spot's water type is inferred before planning, the spot's own one used
+    /// only when nothing points anywhere.
+    pub(crate) infer_water_type: bool,
 }
 
 impl FetchOptions {
@@ -1775,6 +1984,7 @@ impl FetchOptions {
                 usgs_api_key: lookup("USGS_API_KEY").filter(|k| !k.trim().is_empty()),
             },
             user_agent: user_agent(),
+            infer_water_type: false,
         }
     }
 }
@@ -1784,14 +1994,17 @@ impl FetchOptions {
 pub(crate) struct SpotFetch {
     /// Everything known about the spot.
     pub(crate) snapshot: SpotSnapshot,
+    /// The water type inferred, with its reasons, when it was asked for and something
+    /// pointed to one.
+    pub(crate) inferred: Option<WaterTypeSuggestion>,
     /// The links the water session took.
     #[cfg(test)]
     pub(crate) plan: Plan,
 }
 
-/// Fetches everything a spot's cards need at `now`: discovery, the water and marine session,
-/// the weather, the sky; caches updated and the call ledger saved. Returns the snapshot and
-/// how it came about.
+/// Fetches everything a spot's cards need at `now`: the water type when it is to be inferred,
+/// discovery, the water and marine session, the weather, the sky; caches updated and the call
+/// ledger saved. Returns the snapshot and how it came about.
 pub(crate) fn fetch_spot_with(
     spot: &Spot,
     config: &Config,
@@ -1804,12 +2017,22 @@ pub(crate) fn fetch_spot_with(
     let ctx = FetchContext::new(now, options.user_agent.clone())
         .with_coordinate_precision(config.sources.coordinate_precision)
         .with_secrets(options.secrets.clone());
-    let rounded = ctx
-        .round(Coordinates {
-            latitude: spot.latitude,
-            longitude: spot.longitude,
-        })
-        .coordinates();
+    let rounded = spot_point(&ctx, spot).coordinates();
+    let inferred = options
+        .infer_water_type
+        .then(|| infer_water_type(&host, &ctx, spot, &config.sources))
+        .flatten();
+    let inferred_spot;
+    let spot = match &inferred {
+        Some(suggestion) => {
+            inferred_spot = Spot {
+                water_type: suggestion.water_type,
+                ..spot.clone()
+            };
+            &inferred_spot
+        }
+        None => spot,
+    };
     let requirements = requirements(config, spot.water_type);
     let chains = chain_specs(&config.sources, &requirements, spot.water_type);
     let previous: Option<SpotSnapshot> = host.stored(NS_SPOT, &Cache::spot_key(&spot.id));
@@ -1889,6 +2112,7 @@ pub(crate) fn fetch_spot_with(
     }
     SpotFetch {
         snapshot,
+        inferred,
         #[cfg(test)]
         plan: discovery.plan,
     }
@@ -2583,6 +2807,7 @@ mod tests {
             allow_metered: true,
             secrets: Secrets::default(),
             user_agent: "underbite/test".into(),
+            infer_water_type: false,
         };
         let out = fetch_spot_with(spot, config, now(), &transport, Some(cache), &options);
         (out, transport)
@@ -2768,6 +2993,113 @@ mod tests {
     }
 
     #[test]
+    fn the_battery_without_a_water_type_is_inferred_tidal_and_fetched_once() {
+        use underbite_core::discover::hydro::WaterTypeReason;
+
+        let transport = replay("battery");
+        let options = FetchOptions {
+            allow_metered: true,
+            secrets: Secrets::default(),
+            user_agent: "underbite/test".into(),
+            infer_water_type: true,
+        };
+        // A river until inferred otherwise; no cache, so only the kept responses avoid
+        // asking twice.
+        let spot = Spot {
+            water_type: WaterType::RiverStream,
+            ..battery()
+        };
+        let out = fetch_spot_with(&spot, &Config::default(), now(), &transport, None, &options);
+        let inferred = out.inferred.expect("inferred");
+        assert_eq!(inferred.water_type, WaterType::TidalRiverEstuary);
+        assert_eq!(
+            inferred.reasons.first(),
+            Some(&WaterTypeReason::MarineZone {
+                kind: ZoneKind::Coastal
+            }),
+            "{:?}",
+            inferred.reasons
+        );
+        assert!(inferred.reasons.len() > 1, "{:?}", inferred.reasons);
+        let s = &out.snapshot;
+        assert_eq!(s.spot.water_type, WaterType::TidalRiverEstuary);
+        assert!(s.marine.tide.is_some() && s.marine.marine_forecast.is_some());
+
+        let seen = transport.seen();
+        let looked_up = |url: &str| {
+            [
+                "api.weather.gov/points/",
+                "api.weather.gov/zones?",
+                "3DHP_all",
+            ]
+            .iter()
+            .chain(&["monitoring-locations", "time-series-metadata"])
+            .any(|part| url.contains(part))
+        };
+        let lookups: Vec<&String> = seen.iter().filter(|u| looked_up(u)).collect();
+        assert!(lookups.len() >= 4, "{lookups:?}");
+        for url in &lookups {
+            let times = seen.iter().filter(|u| u == url).count();
+            assert_eq!(times, 1, "{url} asked {times} times");
+        }
+    }
+
+    #[test]
+    fn the_croton_below_the_dam_is_inferred_a_river() {
+        use underbite_core::discover::hydro::{WaterTypeReason, WaterbodyKind};
+
+        // The recordings hold no NWS lookup for the Croton: the failed one leaves no zone.
+        let transport = replay("croton");
+        let host = Host::new(&transport, None, now(), true);
+        let config = Config::default();
+        let inferred =
+            infer_water_type(&host, &ctx(), &croton(), &config.sources).expect("inferred");
+        assert_eq!(inferred.water_type, WaterType::RiverStream);
+        assert_eq!(
+            inferred.reasons,
+            [WaterTypeReason::Waterbody {
+                name: None,
+                kind: WaterbodyKind::River,
+                area_km2: 0.11,
+            }]
+        );
+    }
+
+    #[test]
+    fn inference_asks_only_the_sources_the_configuration_runs() {
+        let transport = replay("battery");
+        let host = Host::new(&transport, None, now(), true);
+        let mut config = Config::default();
+        config.sources.marine_forecast.chain.clear();
+        for group in [
+            &mut config.sources.water_temperature,
+            &mut config.sources.tide,
+            &mut config.sources.currents,
+            &mut config.sources.flow,
+            &mut config.sources.lake_level,
+            &mut config.sources.waves,
+            &mut config.sources.sst,
+            &mut config.sources.clarity,
+            &mut config.sources.water_quality,
+        ] {
+            group.chain.retain(|id| *id != SourceId::USGS);
+        }
+        let inferred = infer_water_type(&host, &ctx(), &battery(), &config.sources);
+        let seen = transport.seen();
+        assert!(
+            seen.iter().all(|u| !u.contains("api.weather.gov")
+                && !u.contains("monitoring-locations")
+                && !u.contains("time-series-metadata")),
+            "{seen:?}"
+        );
+        // The hydrography alone: a river polygon with no tidal hint.
+        assert!(inferred.is_none_or(|s| s.reasons.iter().all(|r| !matches!(
+            r,
+            underbite_core::discover::hydro::WaterTypeReason::MarineZone { .. }
+        ))),);
+    }
+
+    #[test]
     fn the_storm_point_is_reused_for_three_hours() {
         let dir = tempfile::tempdir().expect("tempdir");
         let cache = Cache::at(dir.path());
@@ -2777,6 +3109,7 @@ mod tests {
             allow_metered: true,
             secrets: Secrets::default(),
             user_agent: "underbite/test".into(),
+            infer_water_type: false,
         };
         let later = UnixTime(now().0 + 3_600);
         let again = fetch_spot_with(

@@ -9,13 +9,15 @@ use serde_json::Value;
 use underbite_config::export::parse_toml;
 use underbite_config::rivers::RiverRange;
 use underbite_config::schema::{Config, Severity, has_errors};
-use underbite_core::model::{Spot, SpotSnapshot, WaterType};
+use underbite_core::discover::hydro::{WaterTypeReason, WaterTypeSuggestion, WaterbodyKind};
+use underbite_core::model::{Spot, SpotSnapshot, WaterType, ZoneKind};
+use underbite_core::provenance::UsgsSiteType;
 use underbite_core::time::UnixTime;
 use underbite_core::view::{Card, CardState, SolunarSettings, SpotView, ViewInput, build_view};
 
 use crate::cli::Global;
 use crate::runtime::env::{Env, var};
-use crate::runtime::fetch::{fetch_spot_with, measurement_limits};
+use crate::runtime::fetch::{FetchOptions, fetch_spot_with, measurement_limits};
 
 /// Arguments of `underbite spot`.
 #[derive(Debug, clap::Args)]
@@ -54,44 +56,36 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
         .map(parse_water_type)
         .transpose()?;
     let env = Env::from_global(global)?;
-    let (now, transport, cache, options) = (
-        env.now,
-        env.transport.as_ref(),
-        env.cache.as_ref(),
-        &env.options,
-    );
-
-    let spot_for = |water_type| Spot {
+    let now = env.now;
+    let spot = Spot {
         id: point_id(latitude, longitude),
         name: args.name.clone().unwrap_or_else(|| "Spot".to_owned()),
         latitude,
         longitude,
-        water_type,
+        // Without a type given, the fetch infers one; a river when nothing points anywhere.
+        water_type: water_type.unwrap_or(WaterType::RiverStream),
         water_body: None,
         time_zone: args.tz.clone().unwrap_or_default(),
     };
-    let fetch = |water_type| {
-        fetch_spot_with(
-            &spot_for(water_type),
-            &config,
-            now,
-            transport,
-            cache,
-            options,
-        )
-        .snapshot
+    let options = FetchOptions {
+        infer_water_type: water_type.is_none(),
+        ..env.options.clone()
     };
-    let snapshot = if let Some(water) = water_type {
-        fetch(water)
-    } else {
-        // A river first: a gauge reporting discharge settles it, else tidal water.
-        let first = fetch(WaterType::RiverStream);
-        if first.water.discharge_m3s.is_some() {
-            first
-        } else {
-            fetch(WaterType::TidalRiverEstuary)
-        }
-    };
+    let fetched = fetch_spot_with(
+        &spot,
+        &config,
+        now,
+        env.transport.as_ref(),
+        env.cache.as_ref(),
+        &options,
+    );
+    if water_type.is_none() {
+        eprintln!(
+            "underbite: {}",
+            inferred_text(fetched.inferred.as_ref(), spot.water_type)
+        );
+    }
+    let snapshot = fetched.snapshot;
 
     for e in &snapshot.errors {
         eprintln!("underbite: {}: {}", e.source.as_str(), e.message);
@@ -150,6 +144,79 @@ fn default_config_path(env: &impl Fn(&str) -> Option<String>) -> Option<PathBuf>
     let base =
         absolute("XDG_CONFIG_HOME").or_else(|| absolute("HOME").map(|h| h.join(".config")))?;
     Some(base.join("underbite").join("config.toml"))
+}
+
+/// The water type a fetch inferred and why, or the one used when nothing pointed anywhere.
+fn inferred_text(inferred: Option<&WaterTypeSuggestion>, fallback: WaterType) -> String {
+    match inferred {
+        Some(s) => {
+            let reasons: Vec<String> = s.reasons.iter().map(reason_text).collect();
+            format!(
+                "water type {} (inferred: {}; --water-type sets another)",
+                water_type_name(s.water_type),
+                reasons.join("; ")
+            )
+        }
+        None => format!(
+            "water type {} (nothing pointed to one; --water-type sets another)",
+            water_type_name(fallback)
+        ),
+    }
+}
+
+/// A water type as `--water-type` spells it.
+fn water_type_name(water: WaterType) -> String {
+    serde_json::to_value(water)
+        .ok()
+        .and_then(|v| v.as_str().map(str::to_owned))
+        .unwrap_or_default()
+}
+
+/// One reason for an inferred water type.
+fn reason_text(reason: &WaterTypeReason) -> String {
+    let named = |name: &Option<String>, what: &str| match name {
+        Some(n) => format!("on {n} ({what})"),
+        None => format!("on an unnamed {what}"),
+    };
+    match reason {
+        WaterTypeReason::MarineZone { kind } => format!(
+            "in an NWS {} marine zone",
+            match kind {
+                ZoneKind::Coastal => "coastal",
+                ZoneKind::GreatLakesNearshore => "Great Lakes nearshore",
+                ZoneKind::GreatLakesOpen => "Great Lakes open",
+                ZoneKind::Offshore => "offshore",
+            }
+        ),
+        WaterTypeReason::Waterbody { name, kind, .. } => named(
+            name,
+            match kind {
+                WaterbodyKind::Lake => "lake",
+                WaterbodyKind::Reservoir => "reservoir",
+                WaterbodyKind::River => "river",
+                WaterbodyKind::Estuary => "estuary",
+                WaterbodyKind::Other => "waterbody",
+            },
+        ),
+        WaterTypeReason::BayName { name } => format!("{name} is named as a bay or harbor"),
+        WaterTypeReason::Stream { name, stream_order } => {
+            let what = match stream_order {
+                Some(order) => format!("stream of order {order}"),
+                None => "stream".to_owned(),
+            };
+            named(name, &what)
+        }
+        WaterTypeReason::UsgsSite { site_type } => format!(
+            "the nearest USGS site is {}",
+            match site_type {
+                UsgsSiteType::Stream => "on a stream",
+                UsgsSiteType::Lake => "on a lake",
+                UsgsSiteType::Estuary => "on an estuary",
+                UsgsSiteType::TidalStream => "on a tidal stream",
+                UsgsSiteType::Other => "of another kind",
+            }
+        ),
+    }
 }
 
 /// The id of an unnamed point, under which its pins, exclusions and last snapshot are kept:
@@ -389,6 +456,34 @@ mod tests {
         assert_ne!(point_id(40.7051, -74.0170), point_id(40.7033, -74.0170));
         assert_eq!(point_id(-0.001, 0.004), point_id(0.001, -0.004));
         assert_eq!(point_id(-0.001, 0.004), "cli-0.00_0.00");
+    }
+
+    #[test]
+    fn the_inferred_water_type_says_why() {
+        let s = WaterTypeSuggestion {
+            water_type: WaterType::TidalRiverEstuary,
+            reasons: vec![
+                WaterTypeReason::MarineZone {
+                    kind: ZoneKind::Coastal,
+                },
+                WaterTypeReason::Waterbody {
+                    name: None,
+                    kind: WaterbodyKind::River,
+                    area_km2: 175.6,
+                },
+            ],
+        };
+        assert_eq!(
+            inferred_text(Some(&s), WaterType::RiverStream),
+            "water type tidal_river_estuary (inferred: in an NWS coastal marine zone; on an \
+             unnamed river; --water-type sets another)"
+        );
+        let stream = WaterTypeReason::Stream {
+            name: Some("Croton River".into()),
+            stream_order: Some(7),
+        };
+        assert_eq!(reason_text(&stream), "on Croton River (stream of order 7)");
+        assert!(inferred_text(None, WaterType::RiverStream).starts_with("water type river_stream"));
     }
 
     #[test]

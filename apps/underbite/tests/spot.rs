@@ -127,6 +127,31 @@ fn a_pin_made_with_stations_applies_to_spot_at_the_same_point() {
 }
 
 #[test]
+fn the_battery_is_inferred_tidal_water_with_its_reasons() {
+    let out = run("battery", &[BATTERY, "--snapshot"]);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(out.status.success(), "{stderr}");
+    assert!(
+        stderr.contains("water type tidal_river_estuary (inferred: in an NWS coastal marine zone"),
+        "{stderr}"
+    );
+    let snap: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(snap["spot"]["water_type"], "tidal_river_estuary");
+}
+
+#[test]
+fn a_given_water_type_is_not_inferred() {
+    let out = run(
+        "battery",
+        &[BATTERY, "--water-type", "bay_inshore", "--snapshot"],
+    );
+    assert!(out.status.success());
+    assert!(!String::from_utf8_lossy(&out.stderr).contains("inferred"));
+    let snap: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(snap["spot"]["water_type"], "bay_inshore");
+}
+
+#[test]
 fn a_relative_cache_directory_is_refused() {
     let out = Command::new(env!("CARGO_BIN_EXE_underbite"))
         .env_clear()
