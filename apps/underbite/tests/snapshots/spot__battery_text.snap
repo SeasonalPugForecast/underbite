@@ -17,6 +17,18 @@ Credit: Sun and moon positions from astronomical algorithms
 == Alerts ==
 Small Craft Advisory
 Until Nov 9, 6:00 PM
+  Small Craft Advisory issued November 8 at 1:48AM EST until November 9 at 6:00PM EST by NWS Upton NY
+    Severity: Minor · From: Nov 8, 1:48 AM · Until: Nov 9, 6:00 PM · Expires: Nov 8, 3:00 PM
+
+    * WHAT...West winds 10 to 20 kt with gusts up to 30 kt.
+
+    * WHERE...Long Island Sound, New York Harbor, Peconic and Gardiners Bays, and South Shore Bays from Jones Inlet through Shinnecock Bay.
+
+    * WHEN...Until 6 PM EST Monday.
+
+    * IMPACTS...Conditions will be hazardous to small craft.
+
+    Inexperienced mariners, especially those operating smaller vessels, should avoid navigating in hazardous conditions.
 Credit: NOAA National Weather Service (https://www.weather.gov/)
 
 == Tide ==
@@ -124,9 +136,9 @@ Credit: Sun and moon positions from astronomical algorithms
   Credit: USGS TNM / NGTOC - 3D National Hydrographic Program (3DHP). Features may not reflect current conditions and are not for critical use. (https://www.usgs.gov/3d-hydrography-program)
   Credit: Weather data by Open-Meteo.com (https://open-meteo.com/)
   Credit: Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean) (https://open-meteo.com/en/licence)
-  Problem: NOAA CO-OPS: coops: no recent data, used ndbc (1 more)
-  Problem: NOAA CO-OPS: coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc (2 more)
-  Problem: NOAA CO-OPS: coops: no recent data, used ndbc (2 more)
+  Problem: NOAA CO-OPS, Water temperature: coops: no recent data, used ndbc (1 more)
+  Problem: NOAA CO-OPS, Wind: coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc (2 more)
+  Problem: NOAA CO-OPS, Pressure: coops: no recent data, used ndbc (2 more)
   Water temperature, Pressure: 8518750 - The Battery, NY (NOAA NDBC, 0.2 mi, 42 min ago)
   Tide: NEW YORK (The Battery) (NOAA CO-OPS, 0.2 mi, —)
   Tidal current: Hudson River Entrance (NOAA CO-OPS, 0.5 mi, —)

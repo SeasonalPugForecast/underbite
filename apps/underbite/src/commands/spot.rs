@@ -375,7 +375,20 @@ fn render_full_item(out: &mut String, key: &str, item: &Value) -> anyhow::Result
         ("errors", Value::Array(errors)) => {
             for e in errors {
                 let text = |k: &str| e.get(k).and_then(Value::as_str).unwrap_or_default();
-                writeln!(out, "  Problem: {}: {}", text("source"), text("message"))?;
+                match e.get("measurement").and_then(Value::as_str) {
+                    Some(m) => writeln!(
+                        out,
+                        "  Problem: {}, {m}: {}",
+                        text("source"),
+                        text("message")
+                    )?,
+                    None => writeln!(out, "  Problem: {}: {}", text("source"), text("message"))?,
+                }
+            }
+        }
+        ("alerts", Value::Array(alerts)) => {
+            for a in alerts {
+                render_alert(out, a)?;
             }
         }
         ("sections", Value::Array(sections)) => {
@@ -412,6 +425,49 @@ fn render_full_item(out: &mut String, key: &str, item: &Value) -> anyhow::Result
     Ok(())
 }
 
+/// One alert of the alerts card: its headline (or event), severity and times, then the
+/// description and instruction whole, as issued, one indented line per line of the source.
+fn render_alert(out: &mut String, alert: &Value) -> anyhow::Result<()> {
+    let text = |k: &str| {
+        alert
+            .get(k)
+            .and_then(Value::as_str)
+            .filter(|s| !s.is_empty())
+    };
+    writeln!(
+        out,
+        "  {}",
+        text("headline").or(text("event")).unwrap_or_default()
+    )?;
+    let mut facts = Vec::new();
+    for (label, key) in [
+        ("Severity", "severity_label"),
+        ("From", "onset"),
+        ("Until", "ends"),
+        ("Expires", "expires"),
+    ] {
+        if let Some(v) = text(key) {
+            facts.push(format!("{label}: {v}"));
+        }
+    }
+    if !facts.is_empty() {
+        writeln!(out, "    {}", facts.join(" · "))?;
+    }
+    for key in ["description", "instruction"] {
+        if let Some(body) = text(key) {
+            writeln!(out)?;
+            for line in body.lines() {
+                if line.trim().is_empty() {
+                    writeln!(out)?;
+                } else {
+                    writeln!(out, "    {line}")?;
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
 /// A quantity as `text unit`.
 fn quantity(q: &Value) -> String {
     let text = q.get("text").and_then(Value::as_str).unwrap_or_default();
@@ -436,6 +492,64 @@ fn strings(v: Option<&Value>) -> Vec<&str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use clap::Parser;
+
+    #[derive(Parser)]
+    struct Cli {
+        #[command(flatten)]
+        args: Args,
+    }
+
+    #[test]
+    fn alerts_print_their_description_and_instruction_whole() {
+        let description = format!(
+            "* WHAT...West winds 10 to 20 kt.\n\n* IMPACTS...{}",
+            "Conditions will be hazardous to small craft. ".repeat(20)
+        );
+        let alert = serde_json::json!({
+            "event": "Small Craft Advisory",
+            "headline": null,
+            "description": description,
+            "instruction": "Remain in port.",
+            "severity_label": "Minor",
+            "onset": "Nov 8, 1:48 AM",
+            "ends": "Nov 9, 6:00 PM",
+            "expires": null,
+        });
+        let mut out = String::new();
+        render_full_item(&mut out, "alerts", &serde_json::json!([alert])).unwrap();
+        assert!(out.starts_with("  Small Craft Advisory\n"), "{out}");
+        assert!(
+            out.contains("    Severity: Minor · From: Nov 8, 1:48 AM · Until: Nov 9, 6:00 PM\n"),
+            "{out}"
+        );
+        for line in description.lines().chain(["Remain in port."]) {
+            assert!(out.contains(line), "{line:?} missing from {out}");
+        }
+        assert!(!out.contains("Expires"), "{out}");
+    }
+
+    #[test]
+    fn error_rows_name_their_measurement() {
+        let errors = serde_json::json!([
+            {"source": "NOAA CO-OPS", "measurement": "Water temperature", "kind": "No data",
+             "message": "no recent data"},
+            {"source": "NWS", "measurement": null, "kind": "Failed", "message": "timed out"},
+        ]);
+        let mut out = String::new();
+        render_full_item(&mut out, "errors", &errors).unwrap();
+        assert_eq!(
+            out,
+            "  Problem: NOAA CO-OPS, Water temperature: no recent data\n  Problem: NWS: timed out\n"
+        );
+    }
+
+    #[test]
+    fn the_window_is_not_a_flag() {
+        // The cards' requirements set how many days are fetched.
+        assert!(Cli::try_parse_from(["spot", "40.70,-74.02"]).is_ok());
+        assert!(Cli::try_parse_from(["spot", "40.70,-74.02", "--days", "3"]).is_err());
+    }
 
     #[test]
     fn locations_allow_negative_values() {
