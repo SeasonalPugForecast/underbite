@@ -8,23 +8,7 @@ struct WelcomeView: View {
     @Environment(\.voiceStyle) private var voice
 
     var body: some View {
-        #if DEBUG
-            // Screenshot runs: `-about` shows the About screen in place of the welcome.
-            if ProcessInfo.processInfo.arguments.contains("-about") {
-                NavigationStack {
-                    AboutView()
-                        .toolbar {
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Done", action: onDone)
-                            }
-                        }
-                }
-            } else {
-                welcome
-            }
-        #else
-            welcome
-        #endif
+        welcome
     }
 
     private var welcome: some View {
@@ -41,7 +25,7 @@ struct WelcomeView: View {
                 )
                 .font(.title3)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.readableSecondary)
 
                 VStack(alignment: .leading, spacing: 14) {
                     point("mappin.and.ellipse", "Add the places you fish, or search for a place, drop a pin or type coordinates.")
