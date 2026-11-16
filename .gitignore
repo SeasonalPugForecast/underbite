@@ -4,3 +4,10 @@
 .DS_Store
 /CLAUDE.md
 /.claude/
+
+# iOS build products and local settings.
+/ios/UnderbiteKit/UnderbiteFFI.xcframework
+/ios/UnderbiteKit/Sources/UnderbiteKit/underbite_ffi.swift
+/target/ios-*
+/ios/Underbite/Signing.local.xcconfig
+/ios/remote.local.toml

@@ -1,3 +1,5 @@
 [toolchain]
 channel = "1.99"
 components = ["rustfmt", "clippy", "rust-src"]
+# The iOS static libraries are cross-compiled on the build hosts.
+targets = ["aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-apple-darwin"]

@@ -34,9 +34,14 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }
 anyhow = "1.0.104"
 quick-xml = "0.42.0"
 
+# The iOS bridge, at whether's versions so the git dependency unifies.
+uniffi = "0.32.2"
+async-trait = "0.1.92"
+
 # Tests.
 tempfile = "3.27.0"
 insta = { version = "1.49.0", features = ["yaml"] }
+pollster = "1.0.1"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
