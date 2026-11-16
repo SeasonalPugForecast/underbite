@@ -144,6 +144,24 @@ expression: "replay::summary(&outcome, &served)"
       "moderate": {
         "datum": "gauge",
         "metres": 6.4008002281188965
+      },
+      "provenance": {
+        "distance_m": 163000.0,
+        "kind": "observed",
+        "observed_at": 1794148200,
+        "quality": "approved",
+        "relation": "nearby",
+        "source": "nwps",
+        "station": {
+          "bin": null,
+          "id": "COHN6",
+          "kind": "nwps_gauge",
+          "latitude": 42.7733,
+          "longitude": -73.7078,
+          "name": "Mohawk River at Cohoes NY",
+          "reference_id": null,
+          "source": "nwps"
+        }
       }
     },
     "gage_height": {

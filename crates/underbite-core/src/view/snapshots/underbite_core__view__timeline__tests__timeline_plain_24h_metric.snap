@@ -440,7 +440,9 @@ expression: build(&input).unwrap()
         ],
         "now_t": 1794142800,
         "accessibility": "Tide: Low 0.0 m at 00:59, High 1.7 m at 07:07, Low 0.0 m at 13:34, High 1.4 m at 19:27"
-      }
+      },
+      "credits": [],
+      "notices": []
     },
     {
       "kind": "current",
@@ -576,7 +578,9 @@ expression: build(&input).unwrap()
         "markers": [],
         "now_t": 1794142800,
         "accessibility": "Current: No data for this spot yet."
-      }
+      },
+      "credits": [],
+      "notices": []
     },
     {
       "kind": "wind",
@@ -712,7 +716,9 @@ expression: build(&input).unwrap()
         "markers": [],
         "now_t": 1794142800,
         "accessibility": "Wind: No data for this spot yet."
-      }
+      },
+      "credits": [],
+      "notices": []
     },
     {
       "kind": "pressure",
@@ -848,7 +854,9 @@ expression: build(&input).unwrap()
         "markers": [],
         "now_t": 1794142800,
         "accessibility": "Pressure: No data for this spot yet."
-      }
+      },
+      "credits": [],
+      "notices": []
     },
     {
       "kind": "light",
@@ -1034,7 +1042,9 @@ expression: build(&input).unwrap()
         ],
         "now_t": 1794142800,
         "accessibility": "Light: Sunrise 06:34, Sunset 16:45"
-      }
+      },
+      "credits": [],
+      "notices": []
     },
     {
       "kind": "solunar",
@@ -1195,7 +1205,9 @@ expression: build(&input).unwrap()
         "markers": [],
         "now_t": 1794142800,
         "accessibility": "Solunar: Minor 05:31 to 06:31, Major 10:05 to 12:05, Minor 15:31 to 16:31, Major 22:28 to 00:28. A traditional cue, not a promise."
-      }
+      },
+      "credits": [],
+      "notices": []
     }
   ]
 }

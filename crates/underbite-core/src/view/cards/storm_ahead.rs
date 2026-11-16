@@ -830,7 +830,11 @@ mod tests {
     fn metric(input: &mut ViewInput) {
         input.units = DisplayUnits {
             temperature: TempUnit::C,
+            air_temperature: TempUnit::C,
             height: HeightUnit::M,
+            stage: HeightUnit::M,
+            lake_level: HeightUnit::M,
+            waves: HeightUnit::M,
             discharge: crate::units::DischargeUnit::M3s,
             current_speed: SpeedUnit::Ms,
             wind_speed: SpeedUnit::Kmh,

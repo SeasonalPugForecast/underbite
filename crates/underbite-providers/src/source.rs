@@ -1314,12 +1314,7 @@ mod tests {
                 product: ZoneProduct::ZoneApi,
                 periods: Vec::new(),
             }),
-            FragmentValue::FloodCategories(FloodCategories {
-                action: None,
-                minor: None,
-                moderate: None,
-                major: None,
-            }),
+            FragmentValue::FloodCategories(FloodCategories::default()),
         ];
         let all: BTreeSet<Measurement> = serde_json::from_str(
             r#"["water_temperature","discharge","gage_height","lake_level","turbidity",

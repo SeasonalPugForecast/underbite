@@ -699,6 +699,8 @@ pub fn build(input: &ViewInput) -> Option<TimelineVm> {
                 kind,
                 label: label.to_owned(),
                 chart,
+                credits: Vec::new(),
+                notices: Vec::new(),
             })
             .collect(),
     })

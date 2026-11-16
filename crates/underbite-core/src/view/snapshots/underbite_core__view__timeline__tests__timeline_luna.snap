@@ -440,7 +440,9 @@ expression: build(&input).unwrap()
         ],
         "now_t": 1794142800,
         "accessibility": "Tide: Low 0.1 ft at 12:59 AM, High 5.6 ft at 7:07 AM, Low 0.0 ft at 1:34 PM, High 4.7 ft at 7:27 PM"
-      }
+      },
+      "credits": [],
+      "notices": []
     },
     {
       "kind": "current",
@@ -576,7 +578,9 @@ expression: build(&input).unwrap()
         "markers": [],
         "now_t": 1794142800,
         "accessibility": "Current: Luna found nothing here yet."
-      }
+      },
+      "credits": [],
+      "notices": []
     },
     {
       "kind": "wind",
@@ -712,7 +716,9 @@ expression: build(&input).unwrap()
         "markers": [],
         "now_t": 1794142800,
         "accessibility": "Wind: Luna found nothing here yet."
-      }
+      },
+      "credits": [],
+      "notices": []
     },
     {
       "kind": "pressure",
@@ -848,7 +854,9 @@ expression: build(&input).unwrap()
         "markers": [],
         "now_t": 1794142800,
         "accessibility": "Pressure: Luna found nothing here yet."
-      }
+      },
+      "credits": [],
+      "notices": []
     },
     {
       "kind": "light",
@@ -1034,7 +1042,9 @@ expression: build(&input).unwrap()
         ],
         "now_t": 1794142800,
         "accessibility": "Light: Sunrise 6:34 AM, Sunset 4:45 PM"
-      }
+      },
+      "credits": [],
+      "notices": []
     },
     {
       "kind": "solunar",
@@ -1195,7 +1205,9 @@ expression: build(&input).unwrap()
         "markers": [],
         "now_t": 1794142800,
         "accessibility": "Solunar: Small nibble 5:31 to 6:31 AM, Big nibble 10:05 AM to 12:05 PM, Small nibble 3:31 to 4:31 PM, Big nibble 10:28 PM to 12:28 AM. A traditional cue, not a promise."
-      }
+      },
+      "credits": [],
+      "notices": []
     }
   ]
 }

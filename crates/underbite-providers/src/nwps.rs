@@ -236,6 +236,7 @@ pub fn parse_gauge(body: &[u8]) -> Result<Gauge, SourceError> {
         minor: threshold("minor")?,
         moderate: threshold("moderate")?,
         major: threshold("major")?,
+        provenance: None,
     };
     let notes = raw
         .hydronotes
@@ -509,13 +510,13 @@ impl Source for Nwps {
         &self,
         request: &Request,
         response: &Response<'_>,
-        _ctx: &FetchContext,
+        ctx: &FetchContext,
         out: &mut Fragments,
     ) -> Result<(), SourceError> {
         let body = check_response(request, response)?;
         match request.resource {
             Resource::NwpsGauge => {
-                let gauge = parse_gauge(body)?;
+                let mut gauge = parse_gauge(body)?;
                 for credit in gauge.credits {
                     out.credit(credit);
                 }
@@ -524,6 +525,8 @@ impl Source for Nwps {
                         "the gauge defines no flood stages".into(),
                     )));
                 }
+                gauge.flood_categories.provenance =
+                    Some(categories_provenance(&request.target, ctx.now));
                 out.push(
                     Measurement::FloodCategories,
                     FragmentValue::FloodCategories(gauge.flood_categories),
@@ -576,6 +579,17 @@ impl Source for Nwps {
                 "NWPS does not parse {other:?}"
             ))),
         }
+    }
+}
+
+/// Provenance of a gauge's flood stages: thresholds the forecast office set for that gauge,
+/// read at `now`.
+fn categories_provenance(target: &Target, now: UnixTime) -> Provenance {
+    Provenance {
+        observed_at: now,
+        kind: ValueKind::Observed,
+        quality: Quality::Approved,
+        ..forecast_provenance(target, now)
     }
 }
 

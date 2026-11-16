@@ -9288,7 +9288,9 @@ expression: json
           "markers": [],
           "now_t": 1794148200,
           "accessibility": "Tide: Luna found nothing here yet."
-        }
+        },
+        "credits": [],
+        "notices": []
       },
       {
         "kind": "current",
@@ -9544,7 +9546,9 @@ expression: json
           "markers": [],
           "now_t": 1794148200,
           "accessibility": "Current: Luna found nothing here yet."
-        }
+        },
+        "credits": [],
+        "notices": []
       },
       {
         "kind": "wind",
@@ -9800,7 +9804,9 @@ expression: json
           "markers": [],
           "now_t": 1794148200,
           "accessibility": "Wind: Luna found nothing here yet."
-        }
+        },
+        "credits": [],
+        "notices": []
       },
       {
         "kind": "pressure",
@@ -10056,7 +10062,9 @@ expression: json
           "markers": [],
           "now_t": 1794148200,
           "accessibility": "Pressure: Luna found nothing here yet."
-        }
+        },
+        "credits": [],
+        "notices": []
       },
       {
         "kind": "light",
@@ -10404,7 +10412,9 @@ expression: json
           ],
           "now_t": 1794148200,
           "accessibility": "Light: Sunrise 6:34 AM, Sunset 4:43 PM, Sunrise 6:36 AM, Sunset 4:42 PM"
-        }
+        },
+        "credits": [],
+        "notices": []
       },
       {
         "kind": "solunar",
@@ -10709,7 +10719,9 @@ expression: json
           "markers": [],
           "now_t": 1794148200,
           "accessibility": "Solunar: Small nibble 5:32 to 6:32 AM, Big nibble 10:04 AM to 12:04 PM, Small nibble 3:29 to 4:29 PM, Big nibble 10:28 PM to 12:28 AM, Small nibble 6:38 to 7:38 AM, Big nibble 10:52 AM to 12:52 PM, Small nibble 4:00 to 5:00 PM, Big nibble 11:17 PM to 1:17 AM. A traditional cue, not a promise."
-        }
+        },
+        "credits": [],
+        "notices": []
       }
     ]
   },

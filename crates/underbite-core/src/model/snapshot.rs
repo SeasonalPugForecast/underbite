@@ -372,6 +372,10 @@ pub mod testdata {
                     datum: VerticalDatum::Gauge,
                     metres: 3.0,
                 }),
+                provenance: Some(Provenance {
+                    quality: Quality::Approved,
+                    ..prov(SourceId::NWPS, ValueKind::Observed)
+                }),
             }),
             discharge_percentile_for_date: Some(percentile(PercentileBasis::StatisticsApi)),
             level_percentile_for_date: Some(Percentile {

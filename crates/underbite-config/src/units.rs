@@ -106,12 +106,15 @@ impl UnitsConfig {
         self.wind.unwrap_or(self.speed)
     }
 
-    /// The units the view takes today: one height unit (the tide's) and one temperature (the
-    /// water's); the finer groups are for the view to adopt as it grows fields for them.
+    /// The units the view takes, one per measurement group.
     pub fn display_units(&self) -> DisplayUnits {
         DisplayUnits {
             temperature: self.water_temp,
+            air_temperature: self.air_temp(),
             height: self.tide(),
+            stage: self.stage(),
+            lake_level: self.lake_level(),
+            waves: self.waves(),
             discharge: self.discharge,
             current_speed: self.current(),
             wind_speed: self.wind(),

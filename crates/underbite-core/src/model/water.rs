@@ -26,7 +26,7 @@ pub struct Turbidity {
 }
 
 /// NWPS flood stage thresholds, each absent when the gauge does not define it.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct FloodCategories {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub action: Option<Height>,
@@ -36,6 +36,10 @@ pub struct FloodCategories {
     pub moderate: Option<Height>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub major: Option<Height>,
+    /// The gauge that defines them, so a display can name and credit it and check it is the
+    /// spot's own; absent in files written before it was recorded.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub provenance: Option<Provenance>,
 }
 
 /// Where a [`Percentile`] came from.

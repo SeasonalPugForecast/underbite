@@ -540,7 +540,11 @@ mod tests {
     fn us() -> DisplayUnits {
         DisplayUnits {
             temperature: TempUnit::F,
+            air_temperature: TempUnit::F,
             height: HeightUnit::Ft,
+            stage: HeightUnit::Ft,
+            lake_level: HeightUnit::Ft,
+            waves: HeightUnit::Ft,
             discharge: DischargeUnit::Cfs,
             current_speed: SpeedUnit::Kn,
             wind_speed: SpeedUnit::Mph,
@@ -552,7 +556,11 @@ mod tests {
     fn metric() -> DisplayUnits {
         DisplayUnits {
             temperature: TempUnit::C,
+            air_temperature: TempUnit::C,
             height: HeightUnit::M,
+            stage: HeightUnit::M,
+            lake_level: HeightUnit::M,
+            waves: HeightUnit::M,
             discharge: DischargeUnit::M3s,
             current_speed: SpeedUnit::Ms,
             wind_speed: SpeedUnit::Kmh,

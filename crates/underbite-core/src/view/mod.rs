@@ -42,9 +42,18 @@ pub enum Voice {
 /// The unit the user reads each kind of value in.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct DisplayUnits {
+    /// Water temperature.
     pub temperature: TempUnit,
-    /// Tide heights, gage height, wave heights, depths.
+    /// Air temperature.
+    pub air_temperature: TempUnit,
+    /// Tide heights and depths.
     pub height: HeightUnit,
+    /// River stage (gage height) and flood stages.
+    pub stage: HeightUnit,
+    /// Lake and reservoir levels.
+    pub lake_level: HeightUnit,
+    /// Wave heights.
+    pub waves: HeightUnit,
     pub discharge: DischargeUnit,
     pub current_speed: SpeedUnit,
     pub wind_speed: SpeedUnit,
@@ -519,6 +528,11 @@ pub struct TimelineLane {
     pub kind: LaneKind,
     pub label: String,
     pub chart: ChartVm,
+    /// Sources of the lane's data: the timeline stands alone (iPad, widgets), away from the
+    /// cards' credits.
+    pub credits: Vec<CreditVm>,
+    /// Notices the lane's data carries, such as "Not for navigation." on tides and currents.
+    pub notices: Vec<Notice>,
 }
 
 /// The day timeline: lanes that share one time axis.
@@ -590,7 +604,11 @@ mod tests {
             snapshot,
             units: DisplayUnits {
                 temperature: TempUnit::F,
+                air_temperature: TempUnit::F,
                 height: HeightUnit::Ft,
+                stage: HeightUnit::Ft,
+                lake_level: HeightUnit::Ft,
+                waves: HeightUnit::Ft,
                 discharge: DischargeUnit::Cfs,
                 current_speed: SpeedUnit::Kn,
                 wind_speed: SpeedUnit::Mph,

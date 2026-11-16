@@ -986,7 +986,11 @@ pub(super) mod fixtures {
     pub(in crate::view) fn us() -> DisplayUnits {
         DisplayUnits {
             temperature: TempUnit::F,
+            air_temperature: TempUnit::F,
             height: HeightUnit::Ft,
+            stage: HeightUnit::Ft,
+            lake_level: HeightUnit::Ft,
+            waves: HeightUnit::Ft,
             discharge: DischargeUnit::Cfs,
             current_speed: SpeedUnit::Kn,
             wind_speed: SpeedUnit::Mph,
@@ -998,7 +1002,11 @@ pub(super) mod fixtures {
     pub(in crate::view) fn metric() -> DisplayUnits {
         DisplayUnits {
             temperature: TempUnit::C,
+            air_temperature: TempUnit::C,
             height: HeightUnit::M,
+            stage: HeightUnit::M,
+            lake_level: HeightUnit::M,
+            waves: HeightUnit::M,
             discharge: DischargeUnit::M3s,
             current_speed: SpeedUnit::Ms,
             wind_speed: SpeedUnit::Kmh,
@@ -1289,6 +1297,7 @@ mod tests {
             minor: h(20.0),
             moderate: h(21.0),
             major: h(22.0),
+            provenance: None,
         });
         // An observed stage in another datum is never merged into the forecast chart.
         input.snapshot.water.gage_height = Some(Heights {

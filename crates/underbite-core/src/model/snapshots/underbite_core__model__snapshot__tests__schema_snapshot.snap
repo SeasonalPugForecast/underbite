@@ -957,6 +957,17 @@ expression: schemas
                 "type": "null"
               }
             ]
+          },
+          "provenance": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Provenance"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The gauge that defines them, so a display can name and credit it and check it is the\nspot's own; absent in files written before it was recorded."
           }
         },
         "type": "object"

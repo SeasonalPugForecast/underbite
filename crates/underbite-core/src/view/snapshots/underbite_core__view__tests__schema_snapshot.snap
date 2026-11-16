@@ -2631,17 +2631,33 @@ expression: schema
         "chart": {
           "$ref": "#/$defs/ChartVm"
         },
+        "credits": {
+          "description": "Sources of the lane's data: the timeline stands alone (iPad, widgets), away from the\ncards' credits.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CreditVm"
+          }
+        },
         "kind": {
           "$ref": "#/$defs/LaneKind"
         },
         "label": {
           "type": "string"
+        },
+        "notices": {
+          "description": "Notices the lane's data carries, such as \"Not for navigation.\" on tides and currents.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Notice"
+          }
         }
       },
       "required": [
         "kind",
         "label",
-        "chart"
+        "chart",
+        "credits",
+        "notices"
       ]
     },
     "TimelineVm": {
