@@ -11,11 +11,11 @@ use crate::derive::pressure::{Trend, forecast_trend, observed_trend};
 use crate::model::Measurement;
 use crate::time::UnixTime;
 use crate::units::{PressureUnit, pressure_from_hpa};
-use crate::view::cards::tide::{Zoned, ticks, window};
 use crate::view::cards::wind::{
     aged_state, latest_at, line_series, max_age, points, station_credit, weather_credit,
     weather_footnote,
 };
+use crate::view::chart::{Zoned, ticks, window};
 use crate::view::format::Formatter;
 use crate::view::strings::{Key, source_name};
 use crate::view::{

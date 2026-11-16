@@ -21,7 +21,7 @@ use crate::model::SpotSnapshot;
 use crate::time::UnixTime;
 use crate::units::{HeightUnit, SpeedUnit};
 use crate::view::cards::sun_moon::day_label;
-use crate::view::cards::tide::Zoned;
+use crate::view::chart::Zoned;
 use crate::view::format::{Formatter, number};
 use crate::view::strings::Key;
 use crate::view::{

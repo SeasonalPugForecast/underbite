@@ -1,14 +1,13 @@
 //! Tidal current speed, direction and slack times.
 
-use std::time::Duration;
-
 use schemars::JsonSchema;
 use serde::Serialize;
 
 use crate::model::{CurrentEvent, CurrentKind, CurrentSeries, Measurement};
 use crate::provenance::{Quality, StationKind};
 use crate::time::UnixTime;
-use crate::view::cards::tide::{Zoned, credits, grid, state, ticks, window};
+use crate::view::cards::tide::{credits, state};
+use crate::view::chart::{Zoned, grid, speed_at, ticks, window};
 use crate::view::format::{Formatter, Phase};
 use crate::view::strings::{Key, source_name};
 use crate::view::{
@@ -75,19 +74,6 @@ pub struct CurrentFull {
 const SLACK_MS: f32 = 0.05;
 /// How far either side of a slack event the window reaches when there is no curve, seconds.
 const SLACK_HALF_WINDOW_S: i64 = 15 * 60;
-const MAX_GAP: Duration = Duration::from_hours(3);
-
-/// The signed speed at `t`: the curve, else a cosine between the neighbouring events.
-fn speed_at(series: &CurrentSeries, events: &[CurrentEvent], t: UnixTime) -> Option<f32> {
-    if let Some(v) = series.curve.as_ref().and_then(|c| c.at(t, MAX_GAP)) {
-        return Some(v);
-    }
-    let before = events.iter().rfind(|e| e.time <= t)?;
-    let after = events.iter().find(|e| e.time > t)?;
-    let fraction = (t.0 - before.time.0) as f32 / (after.time.0 - before.time.0) as f32;
-    let k = (1.0 - (std::f32::consts::PI * fraction).cos()) / 2.0;
-    Some(before.speed_ms + (after.speed_ms - before.speed_ms) * k)
-}
 
 fn event_vm(f: &Formatter, e: &CurrentEvent) -> CurrentEventVm {
     let max = |phase| format!("Max {}", f.phase(phase).to_lowercase());

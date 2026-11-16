@@ -6,6 +6,7 @@
 //! and maps so they cross the foreign-function bridge as plain records and enums.
 
 pub mod cards;
+pub mod chart;
 pub mod format;
 pub mod strings;
 pub mod timeline;

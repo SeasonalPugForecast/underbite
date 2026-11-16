@@ -3,12 +3,6 @@
 use schemars::JsonSchema;
 use serde::Serialize;
 
-use std::time::Duration;
-
-use jiff::Timestamp;
-use jiff::tz::TimeZone;
-use whether_core::time::{LocalDateTime, Weekday};
-
 use crate::datum::{Height, VerticalDatum};
 use crate::derive::tide_stage::{TideDirection, tide_stage};
 use crate::model::{
@@ -17,14 +11,15 @@ use crate::model::{
 };
 use crate::provenance::{Provenance, Quality, SourceId};
 use crate::series::Series;
-use crate::time::{UnixTime, UtcOffset, day_number, zone};
-use crate::view::cards::sun_moon::MoonPhaseVm;
+use crate::time::{UnixTime, day_number};
+use crate::view::cards::sun_moon::{MoonPhaseVm, day_label};
+use crate::view::chart::{Zoned, grid, level_at, ticks, window};
 use crate::view::format::Formatter;
 use crate::view::strings::{Key, source_name};
 use crate::view::{
     BandKind, CardChrome, CardId, CardState, ChartBand, ChartMarker, ChartPoint, ChartSeries,
-    ChartTick, ChartVm, Compact, CreditVm, MarkerKind, NoticeKind, Quantity, Row, Section,
-    SeriesRole, SeriesStyle, TimedLabel, ViewInput,
+    ChartVm, Compact, CreditVm, MarkerKind, NoticeKind, Quantity, Row, Section, SeriesRole,
+    SeriesStyle, TimedLabel, ViewInput,
 };
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -93,76 +88,8 @@ pub struct TideFull {
     pub sections: Vec<Section>,
 }
 
-/// How much past a chart shows before now.
-pub(super) const LOOKBACK_S: i64 = 3 * 3_600;
-/// The widest gap a curve is interpolated across.
-const MAX_GAP: Duration = Duration::from_hours(3);
 /// Within this many minutes of a high or low the water is called slack.
 const SLACK_MINUTES: f64 = 15.0;
-
-/// A spot's zone, for the hour-of-day questions the formatter does not answer.
-pub(super) struct Zoned(TimeZone);
-
-impl Zoned {
-    pub(super) fn new(name: &str) -> Self {
-        Self(zone(name).unwrap_or(TimeZone::UTC))
-    }
-
-    pub(super) fn local(&self, t: UnixTime) -> LocalDateTime {
-        let offset = Timestamp::from_second(t.0).map_or(0, |ts| self.0.to_offset(ts).seconds());
-        t.to_local(UtcOffset(offset))
-    }
-
-    pub(super) fn on_the_hour(&self, t: i64) -> bool {
-        self.local(UnixTime(t)).minute == 0
-    }
-
-    /// "Sun Nov 8".
-    fn day_label(&self, f: &Formatter, t: UnixTime) -> String {
-        let local = self.local(t);
-        let weekday = match local.weekday {
-            Weekday::Mon => "Mon",
-            Weekday::Tue => "Tue",
-            Weekday::Wed => "Wed",
-            Weekday::Thu => "Thu",
-            Weekday::Fri => "Fri",
-            Weekday::Sat => "Sat",
-            Weekday::Sun => "Sun",
-        };
-        format!("{weekday} {}", f.date(local.date))
-    }
-}
-
-/// The span a chart covers: a little of the past and the requested hours ahead.
-pub(super) fn window(input: &ViewInput) -> (i64, i64) {
-    (
-        input.now.0 - LOOKBACK_S,
-        input.now.0 + i64::from(input.timeline_span.hours) * 3_600,
-    )
-}
-
-/// Instants on a grid of `step_minutes` (aligned to UTC) from `start` to `end`.
-pub(super) fn grid(start: i64, end: i64, step_minutes: u16) -> Vec<i64> {
-    let step = i64::from(step_minutes.max(1)) * 60;
-    let first = (start + step - 1).div_euclid(step) * step;
-    // INVARIANT: the step is at least 60 and at most 65,535 minutes in seconds, so it fits usize.
-    (first..=end)
-        .step_by(usize::try_from(step).unwrap_or(60))
-        .collect()
-}
-
-/// An axis tick on every local hour, major every third.
-pub(super) fn ticks(z: &Zoned, f: &Formatter, start: i64, end: i64) -> Vec<ChartTick> {
-    grid(start, end, 15)
-        .into_iter()
-        .filter(|t| z.on_the_hour(*t))
-        .map(|t| ChartTick {
-            t,
-            label: f.hour_label(UnixTime(t)),
-            major: z.local(UnixTime(t)).hour.is_multiple_of(3),
-        })
-        .collect()
-}
 
 /// The credits owed for a series: the source's, and for on-device harmonics also the data's.
 pub(super) fn credits(snapshot: &SpotSnapshot, source: &SourceId) -> Vec<CreditVm> {
@@ -227,30 +154,6 @@ fn kind_label(kind: TideKind) -> &'static str {
         TideKind::High => "High",
         TideKind::Low => "Low",
     }
-}
-
-fn cosine(a: f32, b: f32, fraction: f32) -> f32 {
-    a + (b - a) * (1.0 - (std::f32::consts::PI * fraction).cos()) / 2.0
-}
-
-/// The level at `t` in metres: the curve, else a cosine between the neighbouring events.
-fn level_at(tide: &TideSeries, t: UnixTime) -> Option<f32> {
-    if let Some(v) = tide.curve.as_ref().and_then(|c| c.at(t, MAX_GAP)) {
-        return Some(v);
-    }
-    let before = tide
-        .events
-        .iter()
-        .filter(|e| e.time <= t)
-        .max_by_key(|e| e.time)?;
-    let after = tide
-        .events
-        .iter()
-        .filter(|e| e.time > t)
-        .min_by_key(|e| e.time)?;
-    let span = (after.time.0 - before.time.0) as f32;
-    let fraction = (t.0 - before.time.0) as f32 / span;
-    Some(cosine(before.height_m?, after.height_m?, fraction))
 }
 
 fn event_vm(f: &Formatter, tide: &TideSeries, shown: bool, e: &TideEvent) -> TideEventVm {
@@ -386,7 +289,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
     };
     let stage_label = stage_text.to_owned();
     let height_now = shown
-        .then(|| level_at(tide, now))
+        .then(|| level_at(tide, &events, now))
         .flatten()
         .map(|m| height(Some(m)));
 
@@ -394,7 +297,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
     let step = input.timeline_span.step_minutes;
     let levels: Vec<(i64, f32)> = grid(start, end, step)
         .into_iter()
-        .filter_map(|t| Some((t, level_at(tide, UnixTime(t))?)))
+        .filter_map(|t| Some((t, level_at(tide, &events, UnixTime(t))?)))
         .collect();
     let (lo, hi) = levels
         .iter()
@@ -516,7 +419,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
                 })
             };
             days.push(TideDayVm {
-                date: z.day_label(&f, e.time),
+                date: day_label(&f, date),
                 events: Vec::new(),
                 sunrise: sky.and_then(|d| timed("Sunrise", d.sun.sunrise)),
                 sunset: sky.and_then(|d| timed("Sunset", d.sun.sunset)),

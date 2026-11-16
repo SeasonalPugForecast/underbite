@@ -11,7 +11,8 @@ use crate::model::{Measurement, SpotSnapshot, Wind};
 use crate::provenance::{Provenance, SourceId};
 use crate::series::{Sample, Series};
 use crate::time::UnixTime;
-use crate::view::cards::tide::{Zoned, state, ticks, window};
+use crate::view::cards::tide::state;
+use crate::view::chart::{Zoned, ticks, window};
 use crate::view::format::Formatter;
 use crate::view::strings::{Key, source_name};
 use crate::view::{

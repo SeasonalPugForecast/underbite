@@ -4,18 +4,15 @@
 //! requested step. Steps are walked as instants, so a daylight-saving day has 23 or 25 hourly
 //! steps. A lane with no data is still present, with no series, bands or markers, so rows line up.
 
-use std::time::Duration;
-
-use jiff::Timestamp;
 use jiff::tz::TimeZone;
 
 use crate::datum::VerticalDatum;
 use crate::model::{
-    CurrentEvent, CurrentKind, CurrentSeries, Polar, SkyDay, SolunarKind, TideEvent, TideKind,
-    TideSeries, TideSourceKind,
+    CurrentEvent, CurrentKind, Polar, SkyDay, SolunarKind, TideKind, TideSourceKind,
 };
-use crate::time::{UnixTime, UtcOffset, local_date, local_date_bounds, zone};
+use crate::time::{UnixTime, local_date, local_date_bounds, zone};
 use crate::view::cards::solunar::{kind_label, range_text};
+use crate::view::chart::{self, Zoned, level_at, speed_at};
 use crate::view::format::{Formatter, Phase};
 use crate::view::strings::{Key, source_name};
 use crate::view::{
@@ -24,30 +21,14 @@ use crate::view::{
 };
 
 /// The widest gap a curve or hourly series is interpolated across.
-const MAX_GAP: Duration = Duration::from_hours(3);
 /// Half the span marked as slack around a slack event, seconds.
 const SLACK_HALF_WINDOW_S: i64 = 15 * 60;
-
-/// A spot's zone, for the hour-of-day questions the formatter does not answer.
-struct Local(TimeZone);
-
-impl Local {
-    fn minute_of_hour(&self, t: i64) -> (u8, u8) {
-        let offset = Timestamp::from_second(t).map_or(0, |ts| self.0.to_offset(ts).seconds());
-        let l = UnixTime(t).to_local(UtcOffset(offset));
-        (l.hour, l.minute)
-    }
-
-    fn on_the_hour(&self, t: i64) -> bool {
-        self.minute_of_hour(t).1 == 0
-    }
-}
 
 /// What every lane needs.
 struct Ctx<'a> {
     input: &'a ViewInput,
     f: Formatter,
-    local: Local,
+    local: Zoned,
     start: i64,
     end: i64,
     /// Instants, one per step, from `start` while before `end`.
@@ -162,21 +143,6 @@ fn extremes(points: &[ChartPoint], f: &Formatter) -> String {
 // Tide
 // ---------------------------------------------------------------------------------------------
 
-fn cosine(a: f32, b: f32, fraction: f32) -> f32 {
-    a + (b - a) * (1.0 - (std::f32::consts::PI * fraction).cos()) / 2.0
-}
-
-/// The level at `t` in metres: the curve, else a cosine between the neighbouring events.
-fn level_at(tide: &TideSeries, events: &[TideEvent], t: UnixTime) -> Option<f32> {
-    if let Some(v) = tide.curve.as_ref().and_then(|c| c.at(t, MAX_GAP)) {
-        return Some(v);
-    }
-    let before = events.iter().rfind(|e| e.time <= t)?;
-    let after = events.iter().find(|e| e.time > t)?;
-    let fraction = (t.0 - before.time.0) as f32 / (after.time.0 - before.time.0) as f32;
-    Some(cosine(before.height_m?, after.height_m?, fraction))
-}
-
 fn tide_lane(ctx: &Ctx) -> ChartVm {
     let name = "Tide";
     let Some(tide) = ctx.input.snapshot.marine.tide.as_ref() else {
@@ -280,17 +246,6 @@ fn tide_lane(ctx: &Ctx) -> ChartVm {
 // Current
 // ---------------------------------------------------------------------------------------------
 
-/// The signed speed at `t`: the curve, else a cosine between the neighbouring events.
-fn speed_at(series: &CurrentSeries, events: &[CurrentEvent], t: UnixTime) -> Option<f32> {
-    if let Some(v) = series.curve.as_ref().and_then(|c| c.at(t, MAX_GAP)) {
-        return Some(v);
-    }
-    let before = events.iter().rfind(|e| e.time <= t)?;
-    let after = events.iter().find(|e| e.time > t)?;
-    let fraction = (t.0 - before.time.0) as f32 / (after.time.0 - before.time.0) as f32;
-    Some(cosine(before.speed_ms, after.speed_ms, fraction))
-}
-
 fn current_lane(ctx: &Ctx) -> ChartVm {
     let name = "Current";
     let Some(series) = ctx.input.snapshot.marine.tidal_current.as_ref() else {
@@ -365,7 +320,7 @@ fn current_lane(ctx: &Ctx) -> ChartVm {
 // ---------------------------------------------------------------------------------------------
 
 /// Linear interpolation over (time, value) pairs sorted by time; none beyond the data or across
-/// a gap wider than [`MAX_GAP`].
+/// a gap wider than [`chart::MAX_GAP`].
 fn interpolate(points: &[(i64, f32)], t: i64) -> Option<f32> {
     let i = points.partition_point(|(s, _)| *s <= t);
     let (t0, v0) = *points.get(i.checked_sub(1)?)?;
@@ -373,7 +328,7 @@ fn interpolate(points: &[(i64, f32)], t: i64) -> Option<f32> {
         return Some(v0);
     }
     let (t1, v1) = *points.get(i)?;
-    if t1 - t0 > MAX_GAP.as_secs().try_into().unwrap_or(i64::MAX) {
+    if t1 - t0 > chart::MAX_GAP.as_secs().try_into().unwrap_or(i64::MAX) {
         return None;
     }
     Some(v0 + (v1 - v0) * ((t - t0) as f32 / (t1 - t0) as f32))
@@ -681,17 +636,8 @@ pub fn build(input: &ViewInput) -> Option<TimelineVm> {
         .take_while(|t| *t < end)
         .collect();
     let f = Formatter::for_input(input);
-    let local = Local(tz.clone());
-    // Axis ticks on every local hour (found at quarter-hour instants), major every third.
-    let ticks: Vec<ChartTick> = std::iter::successors(Some(start), |t| Some(t + 900))
-        .take_while(|t| *t < end)
-        .filter(|t| local.on_the_hour(*t))
-        .map(|t| ChartTick {
-            t,
-            label: f.hour_label(UnixTime(t)),
-            major: local.minute_of_hour(t).0.is_multiple_of(3),
-        })
-        .collect();
+    let local = Zoned::from_zone(tz.clone());
+    let ticks = chart::ticks(&local, &f, start, end - 1);
     let ctx = Ctx {
         input,
         f,
@@ -735,7 +681,7 @@ mod tests {
     use super::*;
     use crate::astro::solunar::{DayBounds, SolunarSettings, sky_conditions};
     use crate::datum::VerticalDatum;
-    use crate::model::{TideKind, TideSeries};
+    use crate::model::{TideEvent, TideKind, TideSeries};
     use crate::provenance::{Provenance, Quality, ValueKind};
     use crate::series::{Sample, Series};
     use crate::time::{LocalDate, parse_coops, parse_rfc3339};

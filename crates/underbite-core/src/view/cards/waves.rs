@@ -8,10 +8,10 @@ use serde::Serialize;
 use crate::model::{Measurement, WaveDirection, WaveSample, WaveSeries, WaveTrain};
 use crate::series::Sample;
 use crate::time::UnixTime;
-use crate::view::cards::tide::{Zoned, ticks, window};
 use crate::view::cards::wind::{
     aged_state, latest_at, line_series, max_age, points, station_credit,
 };
+use crate::view::chart::{Zoned, ticks, window};
 use crate::view::format::Formatter;
 use crate::view::strings::{Key, source_name};
 use crate::view::{
