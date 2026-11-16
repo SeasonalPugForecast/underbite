@@ -7,8 +7,11 @@
 
 use whether_core::time::Weekday;
 
-use crate::model::{AlertSeverity, MoonPhase, PrincipalPhase, TideKind, WaterType};
-use crate::provenance::SourceId;
+use crate::discover::hydro::{WaterTypeReason, WaterbodyKind};
+use crate::model::{
+    AlertSeverity, Measurement, MoonPhase, PrincipalPhase, TideKind, WaterType, ZoneKind,
+};
+use crate::provenance::{SourceId, UsgsSiteType};
 use crate::view::{CardId, NoticeKind, Voice};
 
 /// Declares [`Key`], its list and its table in one place.
@@ -440,6 +443,39 @@ keys! {
     RelNearby => ("Nearby", "Nearby"),
     RelModelGrid => ("Model grid", "Model grid"),
     RelSatellite => ("Satellite", "Satellite"),
+    /// `{kind}`: a zone kind below.
+    WtReasonZone => ("in an NWS {kind} marine zone", "in an NWS {kind} marine zone"),
+    ZoneCoastal => ("coastal", "coastal"),
+    ZoneGreatLakesNearshore => ("Great Lakes nearshore", "Great Lakes nearshore"),
+    ZoneGreatLakesOpen => ("Great Lakes open", "Great Lakes open"),
+    ZoneOffshore => ("offshore", "offshore"),
+    /// `{name}`, `{what}`.
+    WtReasonOn => ("on {name} ({what})", "on {name} ({what})"),
+    /// `{what}`.
+    WtReasonOnUnnamed => ("on an unnamed {what}", "on an unnamed {what}"),
+    BodyLake => ("lake", "lake"),
+    BodyReservoir => ("reservoir", "reservoir"),
+    BodyRiver => ("river", "river"),
+    BodyEstuary => ("estuary", "estuary"),
+    BodyOther => ("waterbody", "waterbody"),
+    /// `{name}`.
+    WtReasonBay => (
+        "{name} is named as a bay or harbor",
+        "{name} is named as a bay or harbor",
+    ),
+    /// `{order}`.
+    StreamOfOrder => ("stream of order {order}", "stream of order {order}"),
+    StreamPlain => ("stream", "stream"),
+    /// `{kind}`: a site kind below.
+    WtReasonUsgs => (
+        "the nearest USGS site is {kind}",
+        "the nearest USGS site is {kind}",
+    ),
+    SiteStream => ("on a stream", "on a stream"),
+    SiteLake => ("on a lake", "on a lake"),
+    SiteEstuary => ("on an estuary", "on an estuary"),
+    SiteTidalStream => ("on a tidal stream", "on a tidal stream"),
+    SiteOther => ("of another kind", "of another kind"),
     Computed => ("Computed", "Computed"),
     ErrRateLimited => ("Rate limited", "Rate limited"),
     ErrNotFound => ("Not found", "Not found"),
@@ -625,6 +661,91 @@ impl Strings {
         fill(key.text(), args)
     }
 
+    /// What a measurement is called: "River flow", "Water temperature", ...
+    pub const fn measurement(self, m: Measurement) -> &'static str {
+        self.get(match m {
+            Measurement::WaterTemperature => Key::MeasWaterTemperature,
+            Measurement::Discharge => Key::MeasDischarge,
+            Measurement::GageHeight => Key::MeasGageHeight,
+            Measurement::LakeLevel => Key::MeasLakeLevel,
+            Measurement::Turbidity => Key::MeasTurbidity,
+            Measurement::DissolvedOxygen => Key::MeasDissolvedOxygen,
+            Measurement::Conductivity => Key::MeasConductivity,
+            Measurement::Salinity => Key::MeasSalinity,
+            Measurement::Ph => Key::MeasPh,
+            Measurement::Chlorophyll => Key::MeasChlorophyll,
+            Measurement::Clarity => Key::MeasClarity,
+            Measurement::Cyanobacteria => Key::MeasCyanobacteria,
+            Measurement::Tide => Key::MeasTide,
+            Measurement::TidalCurrent => Key::MeasTidalCurrent,
+            Measurement::OceanCurrent => Key::MeasOceanCurrent,
+            Measurement::Waves => Key::MeasWaves,
+            Measurement::WavesForecast => Key::MeasWavesForecast,
+            Measurement::SeaSurfaceTemp => Key::MeasSeaSurfaceTemp,
+            Measurement::SeaSurfaceTempForecast => Key::MeasSeaSurfaceTempForecast,
+            Measurement::MarineForecast => Key::MeasMarineForecast,
+            Measurement::MarineAlerts => Key::MeasMarineAlerts,
+            Measurement::FloodCategories => Key::MeasFloodCategories,
+            Measurement::FlowForecast => Key::MeasFlowForecast,
+            Measurement::ObservedWind => Key::MeasWind,
+            Measurement::ObservedPressure => Key::MeasPressure,
+        })
+    }
+
+    /// One reason a water type was suggested, in words: "in an NWS coastal marine zone",
+    /// "on Croton River (stream of order 7)".
+    pub fn water_type_reason(self, reason: &WaterTypeReason) -> String {
+        let named = |name: &Option<String>, what: &str| match name {
+            Some(n) => self.fmt(Key::WtReasonOn, &[("name", n), ("what", what)]),
+            None => self.fmt(Key::WtReasonOnUnnamed, &[("what", what)]),
+        };
+        match reason {
+            WaterTypeReason::MarineZone { kind } => self.fmt(
+                Key::WtReasonZone,
+                &[(
+                    "kind",
+                    self.get(match kind {
+                        ZoneKind::Coastal => Key::ZoneCoastal,
+                        ZoneKind::GreatLakesNearshore => Key::ZoneGreatLakesNearshore,
+                        ZoneKind::GreatLakesOpen => Key::ZoneGreatLakesOpen,
+                        ZoneKind::Offshore => Key::ZoneOffshore,
+                    }),
+                )],
+            ),
+            WaterTypeReason::Waterbody { name, kind, .. } => named(
+                name,
+                self.get(match kind {
+                    WaterbodyKind::Lake => Key::BodyLake,
+                    WaterbodyKind::Reservoir => Key::BodyReservoir,
+                    WaterbodyKind::River => Key::BodyRiver,
+                    WaterbodyKind::Estuary => Key::BodyEstuary,
+                    WaterbodyKind::Other => Key::BodyOther,
+                }),
+            ),
+            WaterTypeReason::BayName { name } => self.fmt(Key::WtReasonBay, &[("name", name)]),
+            WaterTypeReason::Stream { name, stream_order } => {
+                let what = match stream_order {
+                    Some(order) => self.fmt(Key::StreamOfOrder, &[("order", &order.to_string())]),
+                    None => self.get(Key::StreamPlain).to_owned(),
+                };
+                named(name, &what)
+            }
+            WaterTypeReason::UsgsSite { site_type } => self.fmt(
+                Key::WtReasonUsgs,
+                &[(
+                    "kind",
+                    self.get(match site_type {
+                        UsgsSiteType::Stream => Key::SiteStream,
+                        UsgsSiteType::Lake => Key::SiteLake,
+                        UsgsSiteType::Estuary => Key::SiteEstuary,
+                        UsgsSiteType::TidalStream => Key::SiteTidalStream,
+                        UsgsSiteType::Other => Key::SiteOther,
+                    }),
+                )],
+            ),
+        }
+    }
+
     /// The card title.
     pub const fn card_title(self, id: CardId) -> &'static str {
         let luna = matches!(self.voice, Voice::Luna);
@@ -801,5 +922,56 @@ mod tests {
             };
             assert_eq!(names(plain), names(luna), "{key:?}");
         }
+    }
+
+    #[test]
+    fn water_type_reasons_read_in_both_voices() {
+        let reasons = [
+            WaterTypeReason::MarineZone {
+                kind: ZoneKind::Coastal,
+            },
+            WaterTypeReason::Waterbody {
+                name: None,
+                kind: WaterbodyKind::River,
+                area_km2: 175.6,
+            },
+            WaterTypeReason::Stream {
+                name: Some("Croton River".into()),
+                stream_order: Some(7),
+            },
+            WaterTypeReason::UsgsSite {
+                site_type: UsgsSiteType::TidalStream,
+            },
+        ];
+        for voice in [Voice::Plain, Voice::Luna] {
+            let text: Vec<String> = reasons
+                .iter()
+                .map(|r| Strings::new(voice).water_type_reason(r))
+                .collect();
+            assert_eq!(
+                text,
+                [
+                    "in an NWS coastal marine zone",
+                    "on an unnamed river",
+                    "on Croton River (stream of order 7)",
+                    "the nearest USGS site is on a tidal stream",
+                ]
+            );
+        }
+        let bay = WaterTypeReason::BayName {
+            name: "Jamaica Bay".into(),
+        };
+        assert_eq!(
+            Strings::new(Voice::Plain).water_type_reason(&bay),
+            "Jamaica Bay is named as a bay or harbor"
+        );
+    }
+
+    #[test]
+    fn measurements_have_labels() {
+        assert_eq!(
+            Strings::new(Voice::Plain).measurement(Measurement::Discharge),
+            "River flow"
+        );
     }
 }

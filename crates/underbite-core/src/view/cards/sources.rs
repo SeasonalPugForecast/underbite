@@ -198,33 +198,7 @@ fn used(snapshot: &SpotSnapshot, now: UnixTime) -> Vec<Used<'_>> {
 }
 
 fn measurement_label(f: &Formatter, m: Measurement) -> &'static str {
-    f.strings.get(match m {
-        Measurement::WaterTemperature => Key::MeasWaterTemperature,
-        Measurement::Discharge => Key::MeasDischarge,
-        Measurement::GageHeight => Key::MeasGageHeight,
-        Measurement::LakeLevel => Key::MeasLakeLevel,
-        Measurement::Turbidity => Key::MeasTurbidity,
-        Measurement::DissolvedOxygen => Key::MeasDissolvedOxygen,
-        Measurement::Conductivity => Key::MeasConductivity,
-        Measurement::Salinity => Key::MeasSalinity,
-        Measurement::Ph => Key::MeasPh,
-        Measurement::Chlorophyll => Key::MeasChlorophyll,
-        Measurement::Clarity => Key::MeasClarity,
-        Measurement::Cyanobacteria => Key::MeasCyanobacteria,
-        Measurement::Tide => Key::MeasTide,
-        Measurement::TidalCurrent => Key::MeasTidalCurrent,
-        Measurement::OceanCurrent => Key::MeasOceanCurrent,
-        Measurement::Waves => Key::MeasWaves,
-        Measurement::WavesForecast => Key::MeasWavesForecast,
-        Measurement::SeaSurfaceTemp => Key::MeasSeaSurfaceTemp,
-        Measurement::SeaSurfaceTempForecast => Key::MeasSeaSurfaceTempForecast,
-        Measurement::MarineForecast => Key::MeasMarineForecast,
-        Measurement::MarineAlerts => Key::MeasMarineAlerts,
-        Measurement::FloodCategories => Key::MeasFloodCategories,
-        Measurement::FlowForecast => Key::MeasFlowForecast,
-        Measurement::ObservedWind => Key::MeasWind,
-        Measurement::ObservedPressure => Key::MeasPressure,
-    })
+    f.strings.measurement(m)
 }
 
 fn relation_label(f: &Formatter, r: Relation) -> &'static str {
