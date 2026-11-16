@@ -1,0 +1,126 @@
+datasetID,title,maxTime,dataStructure
+,,UTC,
+noaacwS3AOLCIchlaSectorKDDaily,"Chlorophyll, Copernicus S-3A OLCI, Near Real-Time, Sector KD 300m, Level 3, 90 days ago - present, Daily",2026-11-14T07:15:01Z,grid
+noaacwS3BOLCIchlaSectorKDDaily,"Chlorophyll, Copernicus S-3B OLCI, Near Real-Time, Sector KD 300m, Level 3, 90 days ago - present, Daily",2026-11-10T07:30:34Z,grid
+noaacwNPPN20S3AkdSCIDINEOF2kmDaily,"Kd490 (Gap-filled DINEOF), NOAA S-NPP NOAA-20 VIIRS and Copernicus S-3A OLCI, Science Quality, Global 2km, 2018-recent, Daily",2026-11-05T12:00:00Z,grid
+noaacwNPPN20S3AkdSCIDINEOFDaily,"Kd490 (Gap-filled DINEOF), NOAA S-NPP NOAA-20 VIIRS and Copernicus S-3A OLCI, Science Quality, Global 9km, 2018-recent, Daily",2026-11-05T12:00:00Z,grid
+noaacwN20VIIRSkd490NSWUSDaily,"Kd490 (NIR-SWIR), NOAA-20 VIIRS, NRT/Science Quality, 750m Sector US00 (United States), 2025-present, Daily",2026-11-10T19:52:32Z,grid
+noaacwN21VIIRSkd490NSWUSDaily,"Kd490 (NIR-SWIR), NOAA-21 VIIRS, NRT/Science Quality, 750m Sector US00 (United States), 2025-present, Daily",2026-11-14T19:22:22Z,grid
+noaacwNPPN20VIIRSkd490Daily,"Kd490, NOAA S-NPP NOAA-20 VIIRS, Science Quality, Merged Global 4km, Level 3, 2019 to 2026-11-02, Daily",2021-09-01T12:00:00Z,grid
+noaacwNPPVIIRSkd490SectorUWDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector UW, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T13:25:28Z,grid
+noaacwNPPVIIRSkd490SectorUXDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector UX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T11:57:17Z,grid
+noaacwNPPVIIRSkd490SectorUYDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector UY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T12:05:05Z,grid
+noaacwNPPVIIRSkd490SectorUZDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector UZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T21:33:23Z,grid
+noaacwNPPVIIRSkd490SectorVWDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector VW, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T20:10:10Z,grid
+noaacwNPPVIIRSkd490SectorVXDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector VX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T20:16:34Z,grid
+noaacwNPPVIIRSkd490SectorVYDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector VY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T19:44:34Z,grid
+noaacwNPPVIIRSkd490SectorVZDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector VZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T19:51:41Z,grid
+noaacwNPPVIIRSkd490SectorWUDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector WU, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T16:43:54Z,grid
+noaacwNPPVIIRSkd490SectorWXDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector WX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T16:06:55Z,grid
+noaacwNPPVIIRSkd490SectorWYDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector WY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T14:45:07Z,grid
+noaacwNPPVIIRSkd490SectorWZDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector WZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T14:47:15Z,grid
+noaacwNPPVIIRSkd490SectorXWDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector XW, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T13:19:47Z,grid
+noaacwNPPVIIRSkd490SectorXXDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector XX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T12:40:40Z,grid
+noaacwNPPVIIRSkd490SectorXYDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector XY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T11:18:09Z,grid
+noaacwNPPVIIRSkd490SectorXZDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector XZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T11:23:51Z,grid
+noaacwNPPVIIRSkd490SectorYWDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector YW, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T08:16:47Z,grid
+noaacwNPPVIIRSkd490SectorYXDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector YX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T07:41:13Z,grid
+noaacwNPPVIIRSkd490SectorYYDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector YY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T07:06:22Z,grid
+noaacwNPPVIIRSkd490SectorYZDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector YZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T06:20:08Z,grid
+noaacwNPPVIIRSkd490SectorZWDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector ZW, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T13:19:47Z,grid
+noaacwNPPVIIRSkd490SectorZXDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector ZX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T05:05:27Z,grid
+noaacwNPPVIIRSkd490SectorZYDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector ZY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T02:53:10Z,grid
+noaacwNPPVIIRSkd490SectorZZDaily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector ZZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T04:37:43Z,grid
+noaacwNPPVIIRSkd490Daily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2017 to 2026-11-02,  Daily",2026-11-12T12:00:00Z,grid
+noaacwNPPVIIRSkd490Weekly,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2017 to 2026-11-02,  Weekly",2026-11-02T12:00:00Z,grid
+noaacwNPPVIIRSSCIkd490SectorUWDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector UW, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T11:23:53Z,grid
+noaacwNPPVIIRSSCIkd490SectorUXDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector UX, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T11:31:00Z,grid
+noaacwNPPVIIRSSCIkd490SectorUYDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector UY, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T11:44:30Z,grid
+noaacwNPPVIIRSSCIkd490SectorUZDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector UZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T11:55:53Z,grid
+noaacwNPPVIIRSkd490MonthlyVV00,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector VV00 (Pacific Region), 2012 to 2026-11-02, Monthly",2026-04-16T17:41:51Z,grid
+noaacwNPPVIIRSSCIkd490SectorVWDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector VW, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T19:51:43Z,grid
+noaacwNPPVIIRSSCIkd490SectorVXDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector VX, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T19:56:42Z,grid
+noaacwNPPVIIRSSCIkd490SectorVYDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector VY, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T18:34:54Z,grid
+noaacwNPPVIIRSSCIkd490SectorVZDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector VZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T12:52:47Z,grid
+noaacwNPPVIIRSSCIkd490SectorWUDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector WU, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T16:28:17Z,grid
+noaacwNPPVIIRSSCIkd490SectorWXDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector WX, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T16:30:25Z,grid
+noaacwNPPVIIRSSCIkd490SectorWYDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector WY, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T15:07:55Z,grid
+noaacwNPPVIIRSSCIkd490SectorWZDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector WZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T11:30:43Z,grid
+noaacwNPPVIIRSSCIkd490SectorXWDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector XW, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T11:42:49Z,grid
+noaacwNPPVIIRSSCIkd490SectorXXDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector XX, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T11:49:56Z,grid
+noaacwNPPVIIRSSCIkd490SectorXYDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector XY, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T10:27:25Z,grid
+noaacwNPPVIIRSSCIkd490SectorXZDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector XZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T08:58:31Z,grid
+noaacwNPPVIIRSSCIkd490SectorYWDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector YW, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T08:19:23Z,grid
+noaacwNPPVIIRSSCIkd490SectorYXDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector YX, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T08:22:56Z,grid
+noaacwNPPVIIRSSCIkd490SectorYYDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector YY, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T07:00:26Z,grid
+noaacwNPPVIIRSSCIkd490SectorYZDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector YZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T07:15:22Z,grid
+noaacwNPPVIIRSSCIkd490SectorZWDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector ZW, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T04:05:29Z,grid
+noaacwNPPVIIRSSCIkd490SectorZXDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector ZX, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T03:22:48Z,grid
+noaacwNPPVIIRSSCIkd490SectorZYDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector ZY, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T03:34:10Z,grid
+noaacwNPPVIIRSSCIkd490SectorZZDaily,"Kd490, NOAA S-NPP VIIRS, Science Quality, 750m Sector ZZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T12:14:48Z,grid
+noaacwNPPVIIRSSQkd490Daily,"Kd490, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Daily",2026-11-06T12:00:00Z,grid
+noaacwNPPVIIRSSQkd490Monthly,"Kd490, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Monthly",2026-09-01T12:00:00Z,grid
+noaacwNPPVIIRSSQkd490Weekly,"Kd490, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Weekly",2026-10-08T12:00:00Z,grid
+noaacwecnNPPVIIRSSQkd490EastCoastAnnual,"Kd490, NOAA S-NPP VIIRS, Science Quality, U.S. East Coast 750m, Level 3, 2012 to 2026-11-02, Annual",2022-07-02T19:20:08Z,grid
+noaacwecnNPPVIIRSSQkd490EastCoastSeasonal,"Kd490, NOAA S-NPP VIIRS, Science Quality, U.S. East Coast 750m, Level 3, 2012 to 2026-11-02, Seasonal",2026-08-16T05:36:53Z,grid
+noaacwN20VIIRSkd490SectorUSDaily,"Kd490, NOAA-20 VIIRS, NRT/Science Quality, 750m Sector US00 (United States), 2025-present, Daily",2026-11-11T19:34:18Z,grid
+noaacwN21VIIRSkd490SectorUSDaily,"Kd490, NOAA-21 VIIRS, NRT/Science Quality, 750m Sector US00 (United States), 2025-present, Daily",2026-11-11T19:27:55Z,grid
+noaacwN20VIIRSkdparNSWUSDaily,"KdPAR (NIR-SWIR), NOAA-20 VIIRS, NRT/Science Quality, 750m Sector US00 (United States), 2025-present, Daily",2026-11-14T19:31:36Z,grid
+noaacwN21VIIRSkdparNSWUSDaily,"KdPAR (NIR-SWIR), NOAA-21 VIIRS, NRT/Science Quality, 750m Sector US00 (United States), 2025-present, Daily",2026-11-14T19:22:22Z,grid
+noaacwNPPN20VIIRSkdparDaily,"KdPAR, NOAA S-NPP NOAA-20 VIIRS, Science Quality, Merged Global 4km, Level 3, 2019 to 2026-11-02, Daily",2021-09-01T12:00:00Z,grid
+noaacwNPPVIIRSkdPARSectorUWDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector UW, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T13:25:28Z,grid
+noaacwNPPVIIRSkdPARSectorUXDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector UX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T11:57:17Z,grid
+noaacwNPPVIIRSkdPARSectorUYDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector UY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T12:05:05Z,grid
+noaacwNPPVIIRSkdPARSectorUZDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector UZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T21:33:23Z,grid
+noaacwNPPVIIRSkdPARSectorVWDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector VW, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T20:10:10Z,grid
+noaacwNPPVIIRSkdPARSectorVXDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector VX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T20:16:34Z,grid
+noaacwNPPVIIRSkdPARSectorVYDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector VY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T19:44:34Z,grid
+noaacwNPPVIIRSkdPARSectorVZDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector VZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T19:51:41Z,grid
+noaacwNPPVIIRSkdPARSectorWUDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector WU, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T16:43:54Z,grid
+noaacwNPPVIIRSkdPARSectorWXDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector WX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T16:06:55Z,grid
+noaacwNPPVIIRSkdPARSectorWYDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector WY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T14:45:07Z,grid
+noaacwNPPVIIRSkdPARSectorWZDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector WZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T14:47:15Z,grid
+noaacwNPPVIIRSkdPARSectorXWDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector XW, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T13:19:47Z,grid
+noaacwNPPVIIRSkdPARSectorXXDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector XX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T12:40:40Z,grid
+noaacwNPPVIIRSkdPARSectorXYDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector XY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T11:18:09Z,grid
+noaacwNPPVIIRSkdPARSectorXZDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector XZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T11:23:51Z,grid
+noaacwNPPVIIRSkdPARSectorYWDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector YW, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T08:16:47Z,grid
+noaacwNPPVIIRSkdPARSectorYXDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector YX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T07:41:13Z,grid
+noaacwNPPVIIRSkdPARSectorYYDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector YY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T07:06:22Z,grid
+noaacwNPPVIIRSkdPARSectorYZDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector YZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T06:20:08Z,grid
+noaacwNPPVIIRSkdPARSectorZWDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector ZW, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T13:19:47Z,grid
+noaacwNPPVIIRSkdPARSectorZXDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector ZX, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T05:05:27Z,grid
+noaacwNPPVIIRSkdPARSectorZYDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector ZY, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T02:53:10Z,grid
+noaacwNPPVIIRSkdPARSectorZZDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, 750m Sector ZZ, Daily (S-NPP end of mission 2026-11-02)",2026-11-12T04:37:43Z,grid
+noaacwNPPVIIRSkdparDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2015 to 2026-11-02,  Daily",2026-11-12T12:00:00Z,grid
+noaacwNPPVIIRSkdparWeekly,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2015 to 2026-11-02,  Weekly",2026-11-05T12:00:00Z,grid
+noaacwNPPVIIRSSCIkdPARSectorUWDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector UW, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T11:23:53Z,grid
+noaacwNPPVIIRSSCIkdPARSectorUXDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector UX, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T11:31:00Z,grid
+noaacwNPPVIIRSSCIkdPARSectorUYDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector UY, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T11:44:30Z,grid
+noaacwNPPVIIRSSCIkdPARSectorUZDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector UZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T11:55:53Z,grid
+noaacwNPPVIIRSkdparMonthlyVV00,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector VV00 (Pacific Region), 2012 to 2026-11-02, Monthly",2026-04-16T17:41:51Z,grid
+noaacwNPPVIIRSSCIkdPARSectorVWDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector VW, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T19:51:43Z,grid
+noaacwNPPVIIRSSCIkdPARSectorVXDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector VX, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T19:56:42Z,grid
+noaacwNPPVIIRSSCIkdPARSectorVYDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector VY, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T18:34:54Z,grid
+noaacwNPPVIIRSSCIkdPARSectorVZDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector VZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T12:52:47Z,grid
+noaacwNPPVIIRSSCIkdPARSectorWUDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector WU, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T16:28:17Z,grid
+noaacwNPPVIIRSSCIkdPARSectorWXDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector WX, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T16:30:25Z,grid
+noaacwNPPVIIRSSCIkdPARSectorWYDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector WY, Daily (S-NPP end of mission 2026-11-02)",2025-08-19T15:07:55Z,grid
+noaacwNPPVIIRSSCIkdPARSectorWZDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector WZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T11:30:43Z,grid
+noaacwNPPVIIRSSCIkdPARSectorXWDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector XW, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T11:42:49Z,grid
+noaacwNPPVIIRSSCIkdPARSectorXXDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector XX, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T11:49:56Z,grid
+noaacwNPPVIIRSSCIkdPARSectorXYDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector XY, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T10:27:25Z,grid
+noaacwNPPVIIRSSCIkdPARSectorXZDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector XZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T08:58:31Z,grid
+noaacwNPPVIIRSSCIkdPARSectorYWDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector YW, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T08:19:23Z,grid
+noaacwNPPVIIRSSCIkdPARSectorYXDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector YX, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T08:22:56Z,grid
+noaacwNPPVIIRSSCIkdPARSectorYYDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector YY, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T07:00:26Z,grid
+noaacwNPPVIIRSSCIkdPARSectorYZDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector YZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T07:15:22Z,grid
+noaacwNPPVIIRSSCIkdPARSectorZWDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector ZW, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T04:05:29Z,grid
+noaacwNPPVIIRSSCIkdPARSectorZXDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector ZX, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T03:22:48Z,grid
+noaacwNPPVIIRSSCIkdPARSectorZYDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector ZY, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T03:34:10Z,grid
+noaacwNPPVIIRSSCIkdPARSectorZZDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, 750m Sector ZZ, Daily (S-NPP end of mission 2026-11-02)",2025-08-18T12:14:48Z,grid
+noaacwNPPVIIRSSQkdparDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Daily",2026-11-06T12:00:00Z,grid
+noaacwNPPVIIRSSQkdparMonthly,"KdPAR, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Monthly",2026-09-01T12:00:00Z,grid
+noaacwNPPVIIRSSQkdparWeekly,"KdPAR, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Weekly",2026-10-08T12:00:00Z,grid
+noaacwN20VIIRSkdparSectorUSDaily,"KdPAR, NOAA-20 VIIRS, NRT/Science Quality, 750m Sector US00 (United States), 2025-present, Daily",2026-11-11T19:34:18Z,grid
+noaacwN21VIIRSkdparSectorUSDaily,"KdPAR, NOAA-21 VIIRS, NRT/Science Quality, 750m Sector US00 (United States), 2025-present, Daily",2026-11-11T19:27:55Z,grid

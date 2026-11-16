@@ -1,0 +1,49 @@
+datasetID,title,maxTime
+,,UTC
+noaacwNPPN20S3ASCIDINEOF2kmDaily,"Chlorophyll (Gap-filled DINEOF), NOAA S-NPP NOAA-20 VIIRS and Copernicus S-3A OLCI, Science Quality, Global 2km, 2018-recent, Daily",2026-11-05T12:00:00Z
+erdMWk4901day,"Diffuse Attenuation Coef. K490, Aqua MODIS, NPP, 0.0125\u00b0, West US, 2002-present (1 Day Composite)",2026-11-15T12:00:00Z
+erdMWk4901day_LonPM180,"Diffuse Attenuation Coef. K490, Aqua MODIS, NPP, 0.0125\u00b0, West US, 2002-present (1 Day Composite), Lon+/-180",2026-11-15T12:00:00Z
+erdMWk49014day,"Diffuse Attenuation Coef. K490, Aqua MODIS, NPP, 0.0125\u00b0, West US, 2002-present (14 Day Composite)",2026-11-09T00:00:00Z
+erdMWk49014day_LonPM180,"Diffuse Attenuation Coef. K490, Aqua MODIS, NPP, 0.0125\u00b0, West US, 2002-present (14 Day Composite), Lon+/-180",2026-11-09T00:00:00Z
+erdMWk4903day,"Diffuse Attenuation Coef. K490, Aqua MODIS, NPP, 0.0125\u00b0, West US, 2002-present (3 Day Composite)",2026-11-14T12:00:00Z
+erdMWk4903day_LonPM180,"Diffuse Attenuation Coef. K490, Aqua MODIS, NPP, 0.0125\u00b0, West US, 2002-present (3 Day Composite), Lon+/-180",2026-11-14T12:00:00Z
+erdMWk4908day,"Diffuse Attenuation Coef. K490, Aqua MODIS, NPP, 0.0125\u00b0, West US, 2002-present (8 Day Composite)",2026-11-12T00:00:00Z
+erdMWk4908day_LonPM180,"Diffuse Attenuation Coef. K490, Aqua MODIS, NPP, 0.0125\u00b0, West US, 2002-present (8 Day Composite), Lon+/-180",2026-11-12T00:00:00Z
+erdMWk490mday,"Diffuse Attenuation Coef. K490, Aqua MODIS, NPP, 0.0125\u00b0, West US, 2002-present (Monthly Composite)",2026-10-16T12:00:00Z
+erdMWk490mday_LonPM180,"Diffuse Attenuation Coef. K490, Aqua MODIS, NPP, 0.0125\u00b0, West US, 2002-present (Monthly Composite), Lon+/-180",2026-10-16T12:00:00Z
+erdMH1kd4901day_R2022NRT,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, R2022 NRT, 2003-present (1 Day Composite)",2026-11-15T12:00:00Z
+erdMH1kd4908day_R2022NRT,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, R2022 NRT, 2003-present (8 Day Composite)",2026-11-05T00:00:00Z
+erdMH1kd490mday_R2022NRT,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, R2022 NRT, 2003-present (Monthly Composite)",2026-10-16T00:00:00Z
+erdMH1kd4901day_R2022SQ,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, R2022 SQ, 2003-present (1 Day Composite)",2025-10-31T12:00:00Z
+erdMH1kd4908day_R2022SQ,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, R2022 SQ, 2003-present (8 Day Composite)",2025-10-28T00:00:00Z
+erdMH1kd490mday_R2022SQ,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, R2022 SQ, 2003-present (Monthly Composite)",2025-10-16T00:00:00Z
+erdMH1kd4901day,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-2022 (1 Day Composite)",2022-07-26T12:00:00Z
+erdMH1kd4901day_Lon0360,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-2022 (1 Day Composite), Lon0360",2022-07-26T12:00:00Z
+erdMH1kd4908day,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-2022 (8 Day Composite)",2022-05-29T00:00:00Z
+erdMH1kd4908day_Lon0360,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-2022 (8 Day Composite), Lon0360",2022-05-29T00:00:00Z
+erdMH1kd490mday,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-2022 (Monthly Composite)",2022-05-16T00:00:00Z
+erdMH1kd490mday_Lon0360,"Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-2022 (Monthly Composite), Lon0360",2022-05-16T00:00:00Z
+noaacwNPPN20S3AkdSCIDINEOF2kmDaily,"Kd490 (Gap-filled DINEOF), NOAA S-NPP NOAA-20 VIIRS and Copernicus S-3A OLCI, Science Quality, Global 2km, 2018-recent, Daily",2026-11-05T12:00:00Z
+nesdisNPPN20S3AkdSCIDINEOFDaily,"Kd490 (Gap-filled DINEOF), NOAA S-NPP NOAA-20 VIIRS and Copernicus S-3A OLCI, Science Quality, Global 9km, 2018-recent, Daily",2026-11-05T12:00:00Z
+nesdisVHNkd490Daily,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2017 to 2026-11-02,  Daily",2026-11-12T12:00:00Z
+nesdisVHNkd490Daily_Lon0360,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2017 to 2026-11-02,  Daily, Lon0360",2026-11-12T12:00:00Z
+nesdisVHNkd490Weekly,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2017 to 2026-11-02,  Weekly",2026-11-02T12:00:00Z
+nesdisVHNkd490Weekly_Lon0360,"Kd490, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2017 to 2026-11-02,  Weekly, Lon0360",2026-11-02T12:00:00Z
+nesdisVHNSQkd490Daily,"Kd490, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Daily",2026-11-06T12:00:00Z
+nesdisVHNSQkd490Daily_Lon0360,"Kd490, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Daily, Lon0360",2026-11-06T12:00:00Z
+nesdisVHNSQkd490Monthly,"Kd490, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Monthly",2026-09-01T12:00:00Z
+nesdisVHNSQkd490Monthly_Lon0360,"Kd490, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Monthly, Lon0360",2026-09-01T12:00:00Z
+nesdisVHNSQkd490Weekly,"Kd490, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Weekly",2026-10-08T12:00:00Z
+nesdisVHNSQkd490Weekly_Lon0360,"Kd490, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Weekly, Lon0360",2026-10-08T12:00:00Z
+nesdisVHNkdparDaily,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2015 to 2026-11-02,  Daily",2026-11-12T12:00:00Z
+nesdisVHNkdparDaily_Lon0360,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2015 to 2026-11-02,  Daily, Lon0360",2026-11-12T12:00:00Z
+nesdisVHNkdparWeekly,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2015 to 2026-11-02,  Weekly",2026-11-05T12:00:00Z
+nesdisVHNkdparWeekly_Lon0360,"KdPAR, NOAA S-NPP VIIRS, Near Real-Time, Global 4km, Level 3, 2015 to 2026-11-02,  Weekly, Lon0360",2026-11-05T12:00:00Z
+nesdisVHNSQkdparDaily,"KdPAR, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Daily",2026-11-06T12:00:00Z
+nesdisVHNSQkdparDaily_Lon0360,"KdPAR, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Daily, Lon0360",2026-11-06T12:00:00Z
+nesdisVHNSQkdparMonthly,"KdPAR, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Monthly",2026-09-01T12:00:00Z
+nesdisVHNSQkdparMonthly_Lon0360,"KdPAR, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Monthly, Lon0360",2026-09-01T12:00:00Z
+nesdisVHNSQkdparWeekly,"KdPAR, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Weekly",2026-10-08T12:00:00Z
+nesdisVHNSQkdparWeekly_Lon0360,"KdPAR, NOAA S-NPP VIIRS, Science Quality, Global 4km, Level 3, 2012 to 2026-11-02, Weekly, Lon0360",2026-10-08T12:00:00Z
+noaacwNPPN20S3AspmSCIDINEOF2kmDaily,"Suspended Particulate Matter (Gap-filled DINEOF), NOAA S-NPP NOAA-20 VIIRS and Copernicus S-3A OLCI, Science Quality, Global 2km, 2018-recent, Daily",2026-11-05T12:00:00Z
+nesdisNPPN20S3AspmSCIDINEOFDaily,"Suspended Particulate Matter (Gap-filled DINEOF), NOAA S-NPP NOAA-20 VIIRS and Copernicus S-3A OLCI, Science Quality, Global 9km, 2018-recent, Daily",2026-11-05T12:00:00Z

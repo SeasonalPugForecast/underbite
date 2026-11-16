@@ -16,6 +16,7 @@ request URL and the recording date:
 - [nws-marine](raw/nws-marine/README.md)
 - [erddap](raw/erddap/README.md)
 - [gibs](raw/gibs/README.md)
+- [glerl](raw/glerl/README.md)
 - [ncds](raw/ncds/README.md)
 - [bathymetry](raw/bathymetry/README.md)
 - [tier2](raw/tier2/README.md)
