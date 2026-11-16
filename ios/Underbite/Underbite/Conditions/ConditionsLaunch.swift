@@ -1,22 +1,13 @@
 import Foundation
 
 /// Launch arguments of the conditions screens, read in debug builds only (screenshots, UI
-/// tests): `-customize` opens the Customize sheet on the conditions page, and
-/// `-open-spot <id>` asks the spots list to open that spot.
+/// tests): `-customize` opens the Customize sheet on the conditions page.
 enum ConditionsLaunch {
-    private static var arguments: [String] {
+    static var opensCustomize: Bool {
         #if DEBUG
-            ProcessInfo.processInfo.arguments
+            ProcessInfo.processInfo.arguments.contains("-customize")
         #else
-            []
+            false
         #endif
-    }
-
-    static var opensCustomize: Bool { arguments.contains("-customize") }
-
-    static var openSpotID: String? {
-        guard let index = arguments.firstIndex(of: "-open-spot"), index + 1 < arguments.count
-        else { return nil }
-        return arguments[index + 1]
     }
 }
