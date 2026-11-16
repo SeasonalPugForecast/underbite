@@ -7,8 +7,9 @@ use serde_json::{Value, json};
 use underbite_ffi::settings::{
     IssueSeverity, SettingsError, card_catalogue, default_settings_json, display_stops,
     export_settings_toml, format_duration, format_setting_value, import_settings_toml,
-    migrate_settings, parse_setting_value, parse_user_value, setting_field_keys, setting_stops,
-    source_catalogue, unit_options, validate_settings,
+    measurement_titles, migrate_settings, parse_setting_value, parse_user_value,
+    setting_field_keys, setting_stops, source_catalogue, unit_options, validate_settings,
+    water_type_options,
 };
 
 fn settings(edit: impl FnOnce(&mut Value)) -> String {
@@ -272,6 +273,46 @@ fn the_card_catalogue_follows_the_users_order_and_voice() {
         "Fishing windows"
     );
     assert!(card_catalogue("swamp".into(), cfs()).is_err());
+}
+
+#[test]
+fn water_types_come_with_the_cores_names_in_picker_order() {
+    let options = water_type_options(cfs()).unwrap();
+    let ids: Vec<&str> = options.iter().map(|o| o.id.as_str()).collect();
+    assert_eq!(
+        ids,
+        [
+            "river_stream",
+            "lake_reservoir",
+            "tidal_river_estuary",
+            "bay_inshore",
+            "surf",
+            "nearshore",
+            "offshore",
+            "great_lakes",
+            "pond",
+            "ice"
+        ]
+    );
+    assert_eq!(options[2].label, "Tidal river or estuary");
+    assert_eq!(options[9].label, "Ice fishing");
+    // Both voices name the kinds of water alike, so no second label is sent.
+    assert!(options.iter().all(|o| o.plain_label.is_none()));
+    let plain = settings(|v| v["presentation"]["voice"] = json!("plain"));
+    assert_eq!(water_type_options(plain).unwrap(), options);
+    assert!(water_type_options("not json".into()).is_err());
+}
+
+#[test]
+fn measurement_titles_cover_every_measurement_by_id() {
+    let titles = measurement_titles(cfs()).unwrap();
+    assert_eq!(titles.len(), 25);
+    assert_eq!(titles[0].id, "tide");
+    let title = |id: &str| titles.iter().find(|t| t.id == id).map(|t| t.title.as_str());
+    assert_eq!(title("discharge"), Some("River flow"));
+    assert_eq!(title("observed_wind"), Some("Wind"));
+    assert_eq!(title("ph"), Some("pH"));
+    assert!(measurement_titles("{".into()).is_err());
 }
 
 #[test]

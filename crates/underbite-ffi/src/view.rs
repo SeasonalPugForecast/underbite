@@ -3,12 +3,16 @@
 //! The view is `underbite-core`'s `SpotView`, passed through as JSON without reshaping. The
 //! settings become a `ViewInput` through `underbite-config`, the command line's own.
 
+use std::collections::BTreeMap;
+
 use serde::Serialize;
 use underbite_config::schema::Config;
 use underbite_config::view_input::view_input;
-use underbite_core::model::{SpotSnapshot, WaterType};
+use underbite_core::discover::rank::MeasurementRanking;
+use underbite_core::model::{Measurement, SpotSnapshot, WaterType};
 use underbite_core::time::UnixTime;
 use underbite_core::view::format::Formatter;
+use underbite_core::view::stations;
 use underbite_core::view::{Card, CardId, SpotView, build_view};
 
 use crate::settings::{SettingsError, load};
@@ -186,6 +190,105 @@ pub fn view_model(
         view,
     };
     serde_json::to_string(&page).map_err(|e| invalid("view", &e))
+}
+
+/// One station of a spot's station choices, every word written by the core.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct StationRow {
+    /// The station as `pin_station` and the others take it: `coops:8518750`,
+    /// `coops:NYH1927:13`.
+    pub key: String,
+    /// The station's name.
+    pub name: String,
+    /// The source's id (`coops`).
+    pub source: String,
+    /// The source's name: "NOAA CO-OPS".
+    pub source_name: String,
+    /// The station's id with its bin: "8518750", "NYH1927 · Bin 13".
+    pub station: String,
+    /// "0.4 mi", in the settings' unit.
+    pub distance: String,
+    /// "Same water body", "Nearby", ...; none for a station left out.
+    pub relation: Option<String>,
+    /// The line under the name: "NOAA CO-OPS 8518750 · 0.4 mi · Nearby".
+    pub detail: String,
+    /// Why it has its place, or why it was left out: "Latest value 6 min ago".
+    pub reasons: Vec<String>,
+    /// Always used for the spot.
+    pub pinned: bool,
+    /// Never used for the spot.
+    pub excluded: bool,
+    /// The ranking uses it.
+    pub used: bool,
+}
+
+/// The stations of one measurement.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct StationGroup {
+    /// The measurement's id (`"water_temperature"`).
+    pub measurement: String,
+    /// "Water temperature".
+    pub title: String,
+    /// The stations used, best first, then the ones the user excluded.
+    pub rows: Vec<StationRow>,
+    /// "3 not used", when other stations were left out.
+    pub left_out_title: Option<String>,
+    /// Those stations, each with why.
+    pub left_out: Vec<StationRow>,
+}
+
+impl From<stations::StationRow> for StationRow {
+    fn from(r: stations::StationRow) -> Self {
+        Self {
+            key: r.key,
+            name: r.name,
+            source: r.source,
+            source_name: r.source_name,
+            station: r.station,
+            distance: r.distance,
+            relation: r.relation,
+            detail: r.detail,
+            reasons: r.reasons,
+            pinned: r.pinned,
+            excluded: r.excluded,
+            used: r.used,
+        }
+    }
+}
+
+/// The station choices of a spot as rows, from `discover_stations`'s `stations_json`: per
+/// measurement (in the order lists of them read) the stations used with their distance in the
+/// settings' unit, their relation and the reasons for their place, then the ones the user
+/// excluded, and the others left out with why. `now` is Unix seconds.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn station_rows(
+    stations_json: String,
+    settings_json: String,
+    now: i64,
+) -> Result<Vec<StationGroup>, ViewError> {
+    let (config, _) = load(&settings_json)?;
+    let rankings: BTreeMap<Measurement, MeasurementRanking> =
+        serde_json::from_str(&stations_json).map_err(|e| invalid("stations", &e))?;
+    let f = Formatter::new(
+        config.units.display_units(),
+        config.presentation.voice,
+        config.presentation.clock,
+        "UTC",
+    );
+    Ok(stations::station_rows(&rankings, &f, UnixTime(now))
+        .into_iter()
+        .map(|g| StationGroup {
+            measurement: serde_json::to_value(g.measurement)
+                .ok()
+                .and_then(|v| v.as_str().map(str::to_owned))
+                .unwrap_or_default(),
+            title: g.title,
+            rows: g.rows.into_iter().map(StationRow::from).collect(),
+            left_out_title: g.left_out_title,
+            left_out: g.left_out.into_iter().map(StationRow::from).collect(),
+        })
+        .collect())
 }
 
 /// A credit a display owes.

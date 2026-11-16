@@ -13,7 +13,7 @@ use underbite_ffi::fetch::{
     discover_stations, exclude_station, fetch_spot, pin_station,
 };
 use underbite_ffi::settings::default_settings_json;
-use underbite_ffi::view::SpotInfo;
+use underbite_ffi::view::{SpotInfo, station_rows};
 use underbite_providers::request::redact_url;
 
 /// The time the replay scenarios were recorded for.
@@ -568,4 +568,102 @@ fn a_station_key_that_is_not_one_fails_the_call() {
         );
     }
     assert_eq!(host.values(), Vec::<String>::new());
+}
+
+// ---------------------------------------------------------------------------------------------
+// The station rows
+// ---------------------------------------------------------------------------------------------
+
+fn discovered(spot: SpotInfo, host: &Arc<Replay>) -> String {
+    pollster::block_on(discover_stations(
+        spot,
+        default_settings_json(),
+        Keys::default(),
+        true,
+        now(),
+        host.host(),
+    ))
+    .expect("discovered")
+    .stations_json
+}
+
+#[test]
+fn the_battery_rows_have_distance_relation_and_reasons_in_words() {
+    let host = Replay::new("battery");
+    let groups =
+        station_rows(discovered(battery(), &host), default_settings_json(), now()).expect("rows");
+    assert_eq!(groups[0].measurement, "tide");
+    assert_eq!(groups[0].title, "Tide");
+    let first = &groups[0].rows[0];
+    assert_eq!(first.key, "coops:8518750");
+    assert_eq!(first.source_name, "NOAA CO-OPS");
+    assert!(first.distance.ends_with(" mi"), "{}", first.distance);
+    assert!(first.relation.is_some());
+    assert!(
+        first.detail.starts_with("NOAA CO-OPS 8518750 · "),
+        "{}",
+        first.detail
+    );
+    assert_ne!(first.reasons, Vec::<String>::new());
+    assert!(first.used && !first.pinned && !first.excluded);
+
+    // Metric settings give kilometres.
+    let metric = settings(|v| v["units"]["distance"] = Value::from("km"));
+    let km = station_rows(discovered(battery(), &host), metric, now()).expect("rows");
+    assert!(km[0].rows[0].distance.ends_with(" km"));
+
+    // Every key the rows give is one the pin calls take.
+    for row in groups.iter().flat_map(|g| g.rows.iter().chain(&g.left_out)) {
+        pin_station("other".into(), row.key.clone(), now(), host.host()).expect(&row.key);
+    }
+}
+
+#[test]
+fn an_excluded_station_stays_listed_with_its_reason() {
+    let host = Replay::new("battery");
+    exclude_station("battery".into(), "coops:8518750".into(), now(), host.host())
+        .expect("excluded");
+    let groups =
+        station_rows(discovered(battery(), &host), default_settings_json(), now()).expect("rows");
+    let tide = groups
+        .iter()
+        .find(|g| g.measurement == "tide")
+        .expect("tide");
+    let row = tide
+        .rows
+        .iter()
+        .find(|r| r.key == "coops:8518750")
+        .expect("listed");
+    assert!(row.excluded && !row.used);
+    assert_eq!(row.reasons, ["Excluded by you"]);
+    assert_ne!(tide.rows[0].key, "coops:8518750");
+}
+
+#[test]
+fn croton_rows_read_usgs_sites_and_say_why_others_were_left_out() {
+    let host = Replay::new("croton");
+    let groups =
+        station_rows(discovered(croton(), &host), default_settings_json(), now()).expect("rows");
+    let flow = groups
+        .iter()
+        .find(|g| g.measurement == "discharge")
+        .expect("river flow");
+    assert_eq!(flow.title, "River flow");
+    let site = &flow.rows[0];
+    assert!(site.key.starts_with("usgs:USGS-"), "{}", site.key);
+    assert_eq!(site.source_name, "USGS");
+    assert!(site.relation.is_some());
+    for left in groups.iter().flat_map(|g| &g.left_out) {
+        assert_eq!(left.reasons.len(), 1, "{left:?}");
+        assert!(!left.used);
+    }
+}
+
+#[test]
+fn unreadable_stations_fail_the_rows() {
+    assert!(station_rows("[]".into(), default_settings_json(), now()).is_err());
+    assert_eq!(
+        station_rows("{}".into(), default_settings_json(), now()).expect("rows"),
+        []
+    );
 }

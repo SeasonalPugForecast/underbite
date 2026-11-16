@@ -17,7 +17,7 @@ use underbite_core::units::{
     pressure_to_hpa,
 };
 use underbite_core::view::format::Formatter;
-use underbite_core::view::strings::{Strings, source_name};
+use underbite_core::view::strings::{MEASUREMENTS, Strings, WATER_TYPES, source_name};
 use underbite_core::view::{CardId, DisplayUnits, Voice};
 use underbite_providers::coops::{Coops, CoopsHarmonics};
 use underbite_providers::ndbc::Ndbc;
@@ -971,6 +971,66 @@ pub fn card_catalogue(
             .map(|id| info(id, false)),
     );
     Ok(cards)
+}
+
+// ---------------------------------------------------------------------------------------------
+// Water types and measurements
+// ---------------------------------------------------------------------------------------------
+
+/// A kind of water, for a picker.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct WaterTypeOption {
+    /// The id spots and settings use (`"river_stream"`).
+    pub id: String,
+    /// Its name in the user's voice: "River or stream".
+    pub label: String,
+    /// Its name in the plain voice, for `VoiceOver`, when the user's voice words it differently.
+    pub plain_label: Option<String>,
+}
+
+/// Every kind of water, in the order a picker lists them, named in the settings' voice.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn water_type_options(settings_json: String) -> Result<Vec<WaterTypeOption>, SettingsError> {
+    let (config, _) = load(&settings_json)?;
+    let strings = Strings::new(config.presentation.voice);
+    let plain = Strings::new(Voice::Plain);
+    Ok(WATER_TYPES
+        .into_iter()
+        .map(|w| {
+            let label = strings.water_type(w).to_owned();
+            let plain_label = Some(plain.water_type(w).to_owned()).filter(|p| *p != label);
+            WaterTypeOption {
+                id: unit_id(w),
+                label,
+                plain_label,
+            }
+        })
+        .collect())
+}
+
+/// A measurement's name.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct MeasurementTitle {
+    /// The id the core writes (`"water_temperature"`).
+    pub id: String,
+    /// "Water temperature", in the user's voice.
+    pub title: String,
+}
+
+/// Every measurement with its name in the settings' voice, in the order lists of them read.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn measurement_titles(settings_json: String) -> Result<Vec<MeasurementTitle>, SettingsError> {
+    let (config, _) = load(&settings_json)?;
+    let strings = Strings::new(config.presentation.voice);
+    Ok(MEASUREMENTS
+        .into_iter()
+        .map(|m| MeasurementTitle {
+            id: unit_id(m),
+            title: strings.measurement(m).to_owned(),
+        })
+        .collect())
 }
 
 // ---------------------------------------------------------------------------------------------
