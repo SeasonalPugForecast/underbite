@@ -11,11 +11,13 @@
 //! `Debug`, and a request that carries one is marked so the app never writes its response to a
 //! disk cache.
 
+use std::collections::BTreeMap;
 use std::fmt;
 use std::future::ready;
 use std::sync::Arc;
 
 use underbite_config::schema::Config;
+use underbite_core::discover::rank::Ranking;
 use underbite_core::model::{SourceError, Spot, WaterType};
 use underbite_core::time::UnixTime;
 use underbite_core::view::strings::Strings;
@@ -586,6 +588,25 @@ pub async fn discover_stations(
             .map_err(|e| invalid("stations", &e))?,
         errors: found.errors.iter().map(SourceIssue::from).collect(),
     })
+}
+
+/// The rankings a spot's discovery stores through the host: per spot id, the ranking of
+/// [`library::discover`]. Only the rankings are read.
+#[derive(serde::Deserialize)]
+struct StoredRankings {
+    spots: BTreeMap<String, Ranking>,
+}
+
+/// The stations the last fetch or lookup of the spot `spot_id` ranked, read from what it
+/// stored through `host`, in the shape of [`discover_stations`]'s `stations_json`; `None` when
+/// nothing readable is stored. No request is made: a list can show them at once.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn stored_stations(spot_id: String, host: Arc<dyn FetchHost>) -> Option<String> {
+    let text = host.load(store::DISCOVERY.to_owned(), store::spot_key(&spot_id))?;
+    let stored: store::Stored<StoredRankings> = serde_json::from_str(&text).ok()?;
+    let ranking = stored.value.spots.get(&spot_id)?;
+    serde_json::to_string(&ranking.measurements).ok()
 }
 
 /// Always use the station `key` (`"coops:8518750"`, `"coops:NYH1927:13"` for one current bin,

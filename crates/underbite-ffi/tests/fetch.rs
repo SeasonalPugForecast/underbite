@@ -10,7 +10,7 @@ use underbite_core::model::{SpotSnapshot, WaterType};
 use underbite_core::time::parse_rfc3339;
 use underbite_ffi::fetch::{
     FetchError, FetchHost, FetchOptions, HostError, HostRequest, HostResponse, Keys, clear_station,
-    discover_stations, exclude_station, fetch_spot, pin_station,
+    discover_stations, exclude_station, fetch_spot, pin_station, stored_stations,
 };
 use underbite_ffi::settings::default_settings_json;
 use underbite_ffi::view::{SpotInfo, station_rows};
@@ -657,6 +657,34 @@ fn croton_rows_read_usgs_sites_and_say_why_others_were_left_out() {
         assert_eq!(left.reasons.len(), 1, "{left:?}");
         assert!(!left.used);
     }
+}
+
+#[test]
+fn a_fetch_leaves_its_stations_to_read_without_a_request() {
+    let host = Replay::new("battery");
+    assert_eq!(stored_stations("battery".into(), host.host()), None);
+    fetched(
+        battery(),
+        default_settings_json(),
+        Keys::default(),
+        METERED,
+        &host,
+    );
+    let sent = host.urls().len();
+    let stored = stored_stations("battery".into(), host.host()).expect("stored");
+    assert_eq!(host.urls().len(), sent, "read without a request");
+    // The same ranking a lookup gives, and rows read from it.
+    assert_eq!(stored, discovered(battery(), &host));
+    let groups = station_rows(stored, default_settings_json(), now()).expect("rows");
+    assert_eq!(groups[0].rows[0].key, "coops:8518750");
+    // Another spot has none, and an unreadable value is none.
+    assert_eq!(stored_stations("croton".into(), host.host()), None);
+    host.store(
+        "discovery".into(),
+        underbite_fetch::store::spot_key("battery"),
+        "not json".into(),
+    );
+    assert_eq!(stored_stations("battery".into(), host.host()), None);
 }
 
 #[test]
