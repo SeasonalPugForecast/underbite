@@ -7,11 +7,12 @@
 //! [`Session::next_request`], perform it, report it with [`Session::on_response`] or
 //! [`Session::on_transport_error`], and end with [`Session::finish`].
 //!
-//! A link that fails a required request, has no value for a measurement, or only values older
-//! than the chain's `max_age_s`, hands that measurement to its next link and records why. Each
-//! measurement takes all its values from one link: one series never mixes sources. Within a link,
-//! fragments of one measurement merge by time (pages, chunks, an events response with a curve
-//! response).
+//! A link that has no value for a measurement, or only values older than the chain's
+//! `max_age_s`, hands that measurement to its next link and records why. A required request that
+//! fails does the same for the measurements it serves, and only for those: the link's other
+//! measurements keep their requests and the values already received. Each measurement takes all
+//! its values from one link: one series never mixes sources. Within a link, fragments of one
+//! measurement merge by time (pages, chunks, an events response with a curve response).
 //!
 //! Metered requests spend from a [`SharedUsage`] ledger. A 429 stops the source's pool (every
 //! Open-Meteo API shares one) for the rest of the fetch, and its `Retry-After` pauses the pool in
@@ -137,7 +138,7 @@ struct Group {
     source: Arc<dyn Source>,
     target: Target,
     pending: VecDeque<Request>,
-    /// Whether a request went out; others may join only before.
+    /// Whether a request went out or failed; others may join only before.
     sent: bool,
     open: bool,
     follow_ups: u32,
@@ -387,7 +388,7 @@ impl Session {
                     };
                     self.record(g, &request, outcome);
                     if request.required {
-                        self.fail(g, error.as_ref());
+                        self.fail(g, Some(&request.target.measurements), error.as_ref());
                     }
                 }
             }
@@ -440,7 +441,7 @@ impl Session {
                     .plan(&group.target, &self.requirements, &self.ctx)
                 {
                     Ok(requests) => self.groups[g].pending = requests.into(),
-                    Err(error) => self.fail(g, Some(&error)),
+                    Err(error) => self.fail(g, None, Some(&error)),
                 }
             }
         }
@@ -502,32 +503,55 @@ impl Session {
         }
     }
 
-    /// A sent request failed: a rate limit stops its pool, and a required one fails its link.
+    /// A sent request failed: a rate limit stops its pool, and a required one fails the
+    /// measurements it serves.
     fn failed(&mut self, g: usize, request: &Request, error: SourceError) {
         if matches!(error, SourceError::RateLimited { .. }) {
             let id = self.groups[g].source.id();
             self.stopped.insert(pool(&id), error.clone());
         }
         if request.required {
-            self.fail(g, Some(&error));
+            self.fail(g, Some(&request.target.measurements), Some(&error));
         }
         self.record(g, request, Outcome::Failed(error));
     }
 
-    /// Closes a failed link and moves its measurements to their next links.
-    fn fail(&mut self, g: usize, error: Option<&SourceError>) {
-        let group = &mut self.groups[g];
-        group.open = false;
-        group.pending.clear();
-        let id = group.source.id();
-        for track in self.tracks.values_mut() {
-            if track.state == State::Running(g) {
-                if let Some(error) = error {
-                    track.failures.push((id.clone(), error.clone()));
-                }
-                track.at += 1;
-                track.state = State::Waiting;
+    /// Moves the link's measurements among `served` (all of them for `None` or an empty set)
+    /// to their next links. The link keeps the requests that still serve a measurement left
+    /// on it, and closes when none is left.
+    fn fail(
+        &mut self,
+        g: usize,
+        served: Option<&BTreeSet<Measurement>>,
+        error: Option<&SourceError>,
+    ) {
+        let served = served.filter(|s| !s.is_empty());
+        let id = self.groups[g].source.id();
+        let mut left = BTreeSet::new();
+        for (m, track) in &mut self.tracks {
+            if track.state != State::Running(g) {
+                continue;
             }
+            if served.is_some_and(|s| !s.contains(m)) {
+                left.insert(*m);
+                continue;
+            }
+            if let Some(error) = error {
+                track.failures.push((id.clone(), error.clone()));
+            }
+            track.at += 1;
+            track.state = State::Waiting;
+        }
+        let group = &mut self.groups[g];
+        if left.is_empty() {
+            group.open = false;
+            group.pending.clear();
+        } else {
+            // Its plan is settled: a measurement joining now would plan the failed request again.
+            group.sent = true;
+            (group.pending).retain(|r| {
+                r.target.measurements.is_empty() || !r.target.measurements.is_disjoint(&left)
+            });
         }
     }
 
@@ -868,7 +892,9 @@ mod tests {
     use underbite_core::series::Sample;
     use usage::UsageLedger;
 
-    use Measurement::{Discharge, SeaSurfaceTemp, SeaSurfaceTempForecast, Tide, WaterTemperature};
+    use Measurement::{
+        Discharge, ObservedPressure, SeaSurfaceTemp, SeaSurfaceTempForecast, Tide, WaterTemperature,
+    };
 
     /// 2026-11-15 12:00:00 UTC.
     const NOW: UnixTime = UnixTime(1_794_744_000);
@@ -964,6 +990,144 @@ mod tests {
         assert_eq!(out.errors[0].message, "usgs: HTTP 500, used coops");
         assert_eq!(out.stations[0].id, "8518750");
         assert_eq!(out.attribution[0].credit, "Test data from coops");
+    }
+
+    /// A fake that plans one required request per measurement, at `<base>/<measurement>` and
+    /// serving only that measurement, as CO-OPS asks for one product at a time.
+    struct PerProduct {
+        fake: FakeSource,
+        base: &'static str,
+    }
+
+    impl Source for PerProduct {
+        fn id(&self) -> SourceId {
+            self.fake.id()
+        }
+
+        fn attribution(&self) -> Attribution {
+            self.fake.attribution()
+        }
+
+        fn measurements(&self) -> &[Measurement] {
+            self.fake.measurements()
+        }
+
+        fn plan(
+            &self,
+            target: &Target,
+            _requirements: &Requirements,
+            _ctx: &FetchContext,
+        ) -> Result<Vec<Request>, SourceError> {
+            let served = (target.measurements.iter()).filter(|m| self.measurements().contains(m));
+            let requests = served.map(|&m| {
+                let name = serde_json::to_value(m).unwrap();
+                let url = format!("{}/{}", self.base, name.as_str().unwrap());
+                let target = Target {
+                    measurements: BTreeSet::from([m]),
+                    ..target.clone()
+                };
+                Request::new(url, Resource::Fake, target)
+            });
+            Ok(requests.collect())
+        }
+
+        fn parse(
+            &self,
+            request: &Request,
+            response: &Response<'_>,
+            ctx: &FetchContext,
+            out: &mut Fragments,
+        ) -> Result<(), SourceError> {
+            self.fake.parse(request, response, ctx, out)
+        }
+    }
+
+    const NO_DATA: &str = r#"{"error":{"message":"No data was found. This product may not be offered at this station at the requested time."}}"#;
+
+    #[test]
+    fn session_fails_only_the_measurements_of_a_failed_request() {
+        let coops = Arc::new(PerProduct {
+            fake: FakeSource::new("coops", &[WaterTemperature, ObservedPressure]),
+            base: "https://coops.test",
+        });
+        let coops_link = |m: Measurement| Link {
+            source: Arc::clone(&coops) as Arc<dyn Source>,
+            target: fake::target("8516945", &[m], NOW),
+        };
+        let ndbc = Arc::new(source(
+            "ndbc",
+            &[ObservedPressure],
+            &[FakeRequest::required("https://ndbc.test/KPTN6.txt")],
+        ));
+        let pressure_links = vec![
+            coops_link(ObservedPressure),
+            link(&ndbc, "KPTN6", &[ObservedPressure]),
+        ];
+        let chains = BTreeMap::from([
+            (WaterTemperature, chain(vec![coops_link(WaterTemperature)])),
+            (ObservedPressure, chain(pressure_links)),
+        ]);
+        let (out, urls) = drive(session(chains), |url| {
+            Some(match url.rsplit('/').next() {
+                Some("water_temperature") => (200, body("water_temperature", 60, 11.5)),
+                Some("observed_pressure") => (200, NO_DATA.to_string()),
+                _ => (200, body("observed_pressure", 600, 1_013.0)),
+            })
+        });
+        // Both products go to one link; the pressure's "no data" leaves the temperature on it.
+        assert_eq!(
+            urls,
+            [
+                "https://coops.test/water_temperature",
+                "https://coops.test/observed_pressure",
+                "https://ndbc.test/KPTN6.txt",
+            ]
+        );
+        assert_eq!(out.sources[&WaterTemperature], SourceId::COOPS);
+        assert_eq!(out.water.temperature_c.unwrap().samples()[0].value, 11.5);
+        assert_eq!(out.sources[&ObservedPressure], SourceId::NDBC);
+        let pressure = out.marine.observed_pressure_hpa.unwrap();
+        assert_eq!(pressure.samples()[0].value, 1_013.0);
+        assert_eq!(out.errors.len(), 1, "{:?}", out.errors);
+        assert_eq!(out.errors[0].measurement, Some(ObservedPressure));
+        assert_eq!(out.errors[0].kind, SourceErrorKind::NoData);
+        assert!(
+            out.errors[0].message.starts_with("coops: ")
+                && out.errors[0].message.ends_with(", used ndbc"),
+            "{}",
+            out.errors[0].message
+        );
+        let stations: Vec<&str> = out.stations.iter().map(|s| s.id.as_str()).collect();
+        assert_eq!(stations, ["8516945", "KPTN6"]);
+    }
+
+    #[test]
+    fn session_falls_back_for_every_measurement_a_failed_request_serves() {
+        let (usgs, coops) = usgs_and_coops();
+        let temperature_links = vec![
+            link(&usgs, "01", &[WaterTemperature]),
+            link(&coops, "8518750", &[WaterTemperature]),
+        ];
+        let chains = BTreeMap::from([
+            (WaterTemperature, chain(temperature_links)),
+            (Discharge, chain(vec![link(&usgs, "01", &[Discharge])])),
+        ]);
+        let (out, urls) = drive(session(chains), |url| {
+            Some(if url.contains("usgs") {
+                (503, String::new())
+            } else {
+                (200, body("water_temperature", 60, 12.0))
+            })
+        });
+        assert_eq!(
+            urls,
+            ["https://usgs.test/latest", "https://coops.test/temp"]
+        );
+        assert_eq!(out.sources[&WaterTemperature], SourceId::COOPS);
+        assert!(!out.sources.contains_key(&Discharge));
+        let failed: Vec<_> = (out.errors.iter()).map(|e| e.measurement).collect();
+        assert_eq!(failed, [Some(WaterTemperature), Some(Discharge)]);
+        assert_eq!(out.attempts[0].measurements.len(), 2);
     }
 
     #[test]
