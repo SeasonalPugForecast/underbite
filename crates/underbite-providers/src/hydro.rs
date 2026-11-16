@@ -8,9 +8,10 @@
 //! or [`parse_waterbodies`]; [`next_page`] asks for the following page of a large answer.
 //!
 //! Location privacy: the request is centred on the spot rounded by the context
-//! ([`FetchContext::round`]), and the search reaches at least [`MIN_RADIUS_M`] around that
-//! centre, which covers the spot wherever it lies inside the rounding cell. The caller snaps the
-//! exact spot to the returned geometry on the device, so the precise position never leaves it.
+//! ([`FetchContext::round`]), and the search radius (at least [`MIN_RADIUS_M`]) grows by the
+//! rounding cell's half-diagonal, so it reaches as far around the spot wherever the spot lies
+//! inside the cell, at any `coordinate_precision`. The caller snaps the exact spot to the
+//! returned geometry on the device, so the precise position never leaves it.
 //!
 //! The service answers errors under HTTP 200 with an `error` object, and silently ignores a
 //! `geometry` it cannot parse, returning up to 2500 features; [`envelope_from_url`] reads the
@@ -97,14 +98,15 @@ pub struct HydroQuery {
 /// Flowlines in a box around the spot, with geometry, ordered by `hydrosequence`.
 ///
 /// The box is centred on the context-rounded spot and reaches `radius_m` (at least
-/// [`MIN_RADIUS_M`]) in every direction.
+/// [`MIN_RADIUS_M`]) plus the rounding cell's half-diagonal in every direction.
 pub fn flowlines_query(
     spot: Coordinates,
     radius_m: f64,
     ctx: &FetchContext,
 ) -> Result<HydroQuery, SourceError> {
     let centre = ctx.round(spot).coordinates();
-    let (xmin, ymin, xmax, ymax) = envelope(centre, radius_m)?;
+    let radius = search_radius(centre, radius_m, ctx.coordinate_precision());
+    let (xmin, ymin, xmax, ymax) = envelope(centre, radius)?;
     let url = format!(
         "{BASE_URL}/50/query?where=1=1&geometry={xmin:.5},{ymin:.5},{xmax:.5},{ymax:.5}\
 &geometryType=esriGeometryEnvelope&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects\
@@ -114,16 +116,18 @@ pub fn flowlines_query(
     Ok(query(url, Layer::Flowline, 0))
 }
 
-/// Waterbodies within `radius_m` (at least [`MIN_RADIUS_M`]) of the rounded spot, with outlines
-/// generalised by [`WATERBODY_GENERALISATION_DEG`], ordered by `id3dhp`.
+/// Waterbodies within `radius_m` (at least [`MIN_RADIUS_M`]) plus the rounding cell's
+/// half-diagonal of the rounded spot, with outlines generalised by
+/// [`WATERBODY_GENERALISATION_DEG`], ordered by `id3dhp`.
 pub fn waterbodies_query(
     spot: Coordinates,
     radius_m: f64,
     ctx: &FetchContext,
 ) -> Result<HydroQuery, SourceError> {
     let centre = ctx.round(spot).coordinates();
-    envelope(centre, radius_m)?;
-    let distance = radius_m.max(MIN_RADIUS_M).round();
+    let radius = search_radius(centre, radius_m, ctx.coordinate_precision());
+    envelope(centre, radius)?;
+    let distance = radius.round();
     let url = format!(
         "{BASE_URL}/60/query?where=1=1&geometry={:.5},{:.5}&geometryType=esriGeometryPoint\
 &inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance={distance}\
@@ -142,6 +146,22 @@ fn query(url: String, layer: Layer, offset: u32) -> HydroQuery {
         offset,
         max_age_s: MAX_AGE_S,
     }
+}
+
+/// `radius_m` (at least [`MIN_RADIUS_M`]) plus the half-diagonal of the rounding cell around
+/// `centre`, metres: a cell of `decimals` is 10^-decimals degrees on a side, and its longitude
+/// side is measured at the cell's edge nearer the equator, where it is widest.
+fn search_radius(centre: Coordinates, radius_m: f64, decimals: u8) -> f64 {
+    let radius = if radius_m.is_finite() {
+        radius_m.max(MIN_RADIUS_M)
+    } else {
+        MIN_RADIUS_M
+    };
+    let half_deg = 0.5 * 10f64.powi(-i32::from(decimals));
+    let widest = (centre.latitude.abs() - half_deg).clamp(0.0, 90.0);
+    let north = half_deg * METRES_PER_DEGREE;
+    let east = north * widest.to_radians().cos();
+    radius + north.hypot(east)
 }
 
 /// The envelope `(xmin, ymin, xmax, ymax)` around `centre`, validated.
@@ -588,9 +608,10 @@ mod tests {
         // Centred on the rounded spot (41.23, -73.86), not the exact one.
         assert!((f64::midpoint(xmin, xmax) + 73.86).abs() < 1e-4);
         assert!((f64::midpoint(ymin, ymax) - 41.23).abs() < 1e-4);
-        // The exact spot is inside, and the box reaches at least 1.5 km each way.
+        // The exact spot is inside, and the box reaches at least 1.5 km each way from it.
         assert!(xmin < -73.8589 && -73.8589 < xmax && ymin < 41.2250 && 41.2250 < ymax);
-        assert!((ymax - ymin) * METRES_PER_DEGREE / 2.0 >= MIN_RADIUS_M - 1.0);
+        assert!((ymax - 41.2250) * METRES_PER_DEGREE >= MIN_RADIUS_M);
+        assert!((41.2250 - ymin) * METRES_PER_DEGREE >= MIN_RADIUS_M);
         assert!(!q.url.contains("73.8589") && !q.url.contains("41.225"));
         assert_eq!(q.max_age_s, MAX_AGE_S);
     }
@@ -601,10 +622,51 @@ mod tests {
         assert!(q.url.contains(
             "/60/query?where=1=1&geometry=-73.86000,41.23000&geometryType=esriGeometryPoint"
         ));
-        assert!(q.url.contains("distance=3000&units=esriSRUnit_Meter"));
+        // 3 km plus the half-diagonal of a 0.01-degree cell at 41.2 degrees (557 m by 419 m).
+        assert!(
+            q.url.contains("distance=3696&units=esriSRUnit_Meter"),
+            "{}",
+            q.url
+        );
         assert!(q.url.contains("outSR=4326"));
         assert!(q.url.contains("maxAllowableOffset=0.0005"));
         assert!(!q.url.contains(' '));
+    }
+
+    /// At one decimal the spot can lie 5 km from the request centre: the search still reaches
+    /// the minimum radius around it.
+    #[test]
+    fn coarse_rounding_still_covers_the_spot() {
+        let spot = Coordinates {
+            latitude: 41.249,
+            longitude: -73.86,
+        };
+        let coarse = ctx().with_coordinate_precision(1);
+        let q = flowlines_query(spot, 0.0, &coarse).unwrap();
+        let [xmin, ymin, xmax, ymax] = envelope_from_url(&q.url).expect("valid envelope");
+        assert!((f64::midpoint(ymin, ymax) - 41.2).abs() < 1e-4);
+        assert!((f64::midpoint(xmin, xmax) + 73.9).abs() < 1e-4);
+        let dlat = MIN_RADIUS_M / METRES_PER_DEGREE;
+        let dlon = dlat / spot.latitude.to_radians().cos();
+        assert!(ymax >= spot.latitude + dlat && ymin <= spot.latitude - dlat);
+        assert!(xmax >= spot.longitude + dlon && xmin <= spot.longitude - dlon);
+
+        let w = waterbodies_query(spot, 0.0, &coarse).unwrap();
+        assert!(w.url.contains("geometry=-73.90000,41.20000&"), "{}", w.url);
+        let distance: f64 = w
+            .url
+            .split('&')
+            .find_map(|p| p.strip_prefix("distance="))
+            .and_then(|d| d.parse().ok())
+            .expect("a distance");
+        let north = (spot.latitude - 41.2) * METRES_PER_DEGREE;
+        let east = (spot.longitude + 73.9) * METRES_PER_DEGREE * spot.latitude.to_radians().cos();
+        assert!(distance >= MIN_RADIUS_M + north.hypot(east), "{distance}");
+
+        let whole = ctx().with_coordinate_precision(0);
+        let w = waterbodies_query(spot, 0.0, &whole).unwrap();
+        assert!(w.url.contains("geometry=-74.00000,41.00000&"), "{}", w.url);
+        assert!(w.url.contains("distance=71424&"), "{}", w.url);
     }
 
     #[test]
