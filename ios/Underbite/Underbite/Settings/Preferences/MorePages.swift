@@ -19,7 +19,7 @@ struct FishingPage: View {
                     }
                     .disabled(settings.thresholds.troutStressC == Preferences.defaultTroutStressC)
                 } footer: {
-                    Text("Above this water temperature the water temperature card warns that trout are stressed. The usual threshold is 20 °C (68 °F).")
+                    Text("Above this water temperature the water temperature card warns that trout are stressed. The usual threshold is \(Preferences.Entry(Preferences.troutStress, settingsJSON: access.json).label(of: Preferences.defaultTroutStressC)).")
                 }
                 Section {
                     Toggle(
@@ -57,13 +57,12 @@ struct FreshnessPage: View {
                         ) {
                             Text("Any age").tag(0)
                             ForEach(choices(including: group.maxAgeMinutes), id: \.self) { minutes in
-                                Text(Duration.seconds(minutes * 60).formatted(
-                                    .units(allowed: [.days, .hours, .minutes], width: .wide)
-                                )).tag(minutes)
+                                Text(Preferences.duration(minutes: minutes, settingsJSON: access.json))
+                                    .tag(minutes)
                             }
                         }
                         QuantityRow(
-                            title: "Farthest station", quantity: Preferences.distance,
+                            title: "Farthest station", quantity: Preferences.distance(of: kind),
                             settingsJSON: access.json, value: group.maxDistanceKm,
                             offLabel: "Any distance"
                         ) { value in
@@ -100,9 +99,8 @@ struct RefreshPage: View {
                         get: { store.refreshMinutes }, set: { store.setRefreshMinutes($0) })
                 ) {
                     ForEach(RefreshPolicy.choices, id: \.self) { minutes in
-                        Text(Duration.seconds(minutes * 60).formatted(
-                            .units(allowed: [.hours, .minutes], width: .wide))
-                        ).tag(minutes)
+                        Text(Preferences.duration(minutes: minutes, settingsJSON: store.settingsJSON))
+                            .tag(minutes)
                     }
                 }
                 .pickerStyle(.inline)

@@ -84,8 +84,8 @@ struct QuantityRow: View {
     @State private var typedProblem: String?
 
     var body: some View {
-        let entry = try? Preferences.Entry(quantity, settingsJSON: settingsJSON)
-        let stops = entry.flatMap { try? Preferences.stopsHolding(value, entry: $0) } ?? []
+        let entry = Preferences.Entry(quantity, settingsJSON: settingsJSON)
+        let stops = (try? Preferences.stopsHolding(value, entry: entry)) ?? []
         VStack(alignment: .leading, spacing: 8) {
             if optional {
                 Toggle(
@@ -96,8 +96,8 @@ struct QuantityRow: View {
             } else {
                 Text(title)
             }
-            if let value, let entry, stops.count > 1 {
-                LabeledContent("Now", value: label(of: value, stops: stops))
+            if let value, stops.count > 1 {
+                LabeledContent("Now", value: entry.label(of: value))
                     .font(.subheadline)
                 Slider(
                     value: Binding(
@@ -114,7 +114,7 @@ struct QuantityRow: View {
                 } maximumValueLabel: {
                     Text(stops.last?.label ?? "").font(.caption2)
                 }
-                .accessibilityValue(label(of: value, stops: stops))
+                .accessibilityValue(entry.label(of: value))
                 TextField("Type a value", text: $typed)
                     .keyboardType(.numbersAndPunctuation)
                     .textInputAutocapitalization(.never)
@@ -132,13 +132,6 @@ struct QuantityRow: View {
 
     private func defaultValue(_ stops: [Preferences.Stop]) -> Double? {
         stops.isEmpty ? nil : stops[stops.count / 2].value
-    }
-
-    /// The core's label of the stop nearest the value; "About" when the value is between stops.
-    private func label(of value: Double, stops: [Preferences.Stop]) -> String {
-        guard let index = Preferences.nearest(stops, to: value) else { return "" }
-        let text = stops[index].label
-        return Preferences.isOnStop(stops, value) ? text : "About \(text)"
     }
 
     private func commit(_ entry: Preferences.Entry) {

@@ -91,11 +91,12 @@ nonisolated enum Preferences {
         /// The measurement the core's value entry knows it as.
         var measurement: Quantity {
             switch self {
-            case .wind, .gust: .init(name: "wind", unit: "kn", low: 0, high: 40)
-            case .wave: .init(name: "waves", unit: "m", low: 0, high: 5)
-            case .current: .init(name: "current", unit: "kn", low: 0, high: 5)
-            case .airTemp: .init(name: "air_temp", unit: "°C", low: -10, high: 40)
-            case .visibility: .init(name: "distance", unit: "km", low: 0, high: 20)
+            case .wind: .init(field: "limits[].max_wind_kn", low: 0, high: 40)
+            case .gust: .init(field: "limits[].max_gust_kn", low: 0, high: 60)
+            case .wave: .init(field: "limits[].max_wave_m", low: 0, high: 5)
+            case .current: .init(field: "limits[].max_current_kn", low: 0, high: 5)
+            case .airTemp: .init(field: "limits[].min_air_temp_c", low: -10, high: 40)
+            case .visibility: .init(field: "limits[].min_visibility_km", low: 0, high: 20)
             }
         }
 
@@ -122,11 +123,10 @@ nonisolated enum Preferences {
         }
     }
 
-    /// A kind of value: the core's name for it, the unit the settings field holds it in (the
-    /// symbol the core's entry understands) and the span a slider covers, in that field unit.
+    /// A settings field with a value to enter (the core's field key, such as
+    /// `limits[].max_wind_kn`) and the span a slider covers, in the field's stored unit.
     struct Quantity: Equatable {
-        var name: String
-        var unit: String
+        var field: String
         var low: Double
         var high: Double
     }
@@ -177,10 +177,18 @@ nonisolated enum Preferences {
     }
 
     /// The spans of the river ranges, in cubic feet per second.
-    static let flow = Quantity(name: "discharge", unit: "cfs", low: 0, high: 5000)
-    static let floodFlow = Quantity(name: "discharge", unit: "cfs", low: 0, high: 20000)
-    static let troutStress = Quantity(name: "water_temp", unit: "°C", low: 5, high: 30)
-    static let distance = Quantity(name: "distance", unit: "km", low: 0, high: 200)
+    static let bestFlow = Quantity(field: "rivers[].best_cfs", low: 0, high: 5000)
+    static let flow = Quantity(field: "rivers[].wadeable_below_cfs", low: 0, high: 5000)
+    static let floodFlow = Quantity(field: "rivers[].blown_out_above_cfs", low: 0, high: 20000)
+    static let troutStress = Quantity(field: "thresholds.trout_stress_c", low: 5, high: 30)
+    static func distance(of kind: SourceKind) -> Quantity {
+        Quantity(field: "sources.\(kind.fieldGroup).max_distance_km", low: 0, high: 200)
+    }
+
+    /// The age field of a source group, in minutes.
+    static func ageField(of kind: SourceKind) -> String {
+        "sources.\(kind.fieldGroup).max_age_minutes"
+    }
 
     /// The default trout stress threshold of the core, in degrees Celsius.
     static let defaultTroutStressC = 20.0
@@ -192,6 +200,16 @@ nonisolated enum Preferences {
         case waterTemperature, tide, currents, flow, lakeLevel, waves, sst, clarity
         case waterQuality, marineForecast, weather, storm
         var id: String { rawValue }
+
+        /// The group's name in the settings (`water_temperature`), as the field keys use it.
+        var fieldGroup: String {
+            var name = ""
+            for character in rawValue {
+                if character.isUppercase { name += "_" }
+                name += character.lowercased()
+            }
+            return name
+        }
 
         var title: String {
             switch self {
@@ -264,49 +282,41 @@ nonisolated enum Preferences {
         var label: String
     }
 
-    /// Converts between a field's unit and the core's canonical values, using the core.
+    /// Typing, showing and stepping one settings field through the core: values are in the
+    /// field's stored unit, labels and typed text in the user's unit.
     struct Entry {
         let settingsJSON: String
-        let measurement: Quantity
-        /// Canonical units in one field unit, as the core reports it (`1 kn` as m/s).
-        let canonicalPerField: Double
+        let quantity: Quantity
 
-        init(_ measurement: Quantity, settingsJSON: String) throws {
+        init(_ quantity: Quantity, settingsJSON: String) {
             self.settingsJSON = settingsJSON
-            self.measurement = measurement
-            let one = try parseUserValue(
-                measurement: measurement.name, text: "1 \(measurement.unit)",
-                settingsJson: settingsJSON)
-            guard one.isFinite, one != 0 else {
-                throw Rejected(message: "No unit factor for \(measurement.name).")
-            }
-            canonicalPerField = one
+            self.quantity = quantity
         }
 
-        /// A typed value, in the user's unit as typed (a decimal comma too), as the field holds it.
+        /// What was typed (a decimal comma, a unit symbol) as the field's value; the core reads it.
         func field(fromTyped text: String) throws -> Double {
-            let canonical = try parseUserValue(
-                measurement: measurement.name, text: text, settingsJson: settingsJSON)
-            return fromCanonical(canonical)
+            try parseSettingValue(field: quantity.field, text: text, settingsJson: settingsJSON)
         }
 
-        func fromCanonical(_ canonical: Double) -> Double {
-            canonical / canonicalPerField
+        /// The value as the core writes it in the user's unit.
+        func label(of value: Double) -> String {
+            (try? formatSettingValue(field: quantity.field, value: value, settingsJson: settingsJSON))
+                ?? ""
         }
 
-        func toCanonical(_ field: Double) -> Double {
-            field * canonicalPerField
-        }
-
-        /// Round stops across `low...high` (in the field's unit), labelled by the core.
+        /// Round stops across `low...high`, labelled by the core.
         func stops(low: Double, high: Double) throws -> [Stop] {
-            try displayStops(
-                measurement: measurement.name, min: toCanonical(low), max: toCanonical(high),
-                settingsJson: settingsJSON
-            ).map { Stop(value: fromCanonical($0.value), label: $0.label) }
+            try settingStops(
+                field: quantity.field, min: low, max: high, settingsJson: settingsJSON
+            ).map { Stop(value: $0.value, label: $0.label) }
         }
 
-        func stops() throws -> [Stop] { try stops(low: measurement.low, high: measurement.high) }
+        func stops() throws -> [Stop] { try stops(low: quantity.low, high: quantity.high) }
+    }
+
+    /// A time span in minutes as the core writes it ("2 h").
+    static func duration(minutes: Int, settingsJSON: String) -> String {
+        (try? formatDuration(seconds: Int64(minutes) * 60, settingsJson: settingsJSON)) ?? ""
     }
 
     /// The words of a failed settings call: the core's message for a value it cannot read, the
@@ -331,18 +341,11 @@ nonisolated enum Preferences {
         stops.indices.min { abs(stops[$0].value - value) < abs(stops[$1].value - value) }
     }
 
-    /// Whether `value` is one of the stops (so its label is its own).
-    static func isOnStop(_ stops: [Stop], _ value: Double) -> Bool {
-        guard let index = nearest(stops, to: value) else { return false }
-        let step = stops.count > 1 ? abs(stops[1].value - stops[0].value) : 1
-        return abs(stops[index].value - value) <= step * 0.001
-    }
-
     /// The stops around a stored value, so its own label is there when it is a round one:
     /// the slider's span widened to hold it.
     static func stopsHolding(_ value: Double?, entry: Entry) throws -> [Stop] {
-        var low = entry.measurement.low
-        var high = entry.measurement.high
+        var low = entry.quantity.low
+        var high = entry.quantity.high
         if let value {
             low = min(low, value)
             high = max(high, value)

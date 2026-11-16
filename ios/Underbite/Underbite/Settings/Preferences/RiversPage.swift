@@ -96,13 +96,13 @@ struct RiverEditorPage: View {
     @ViewBuilder
     private func bestRange(_ river: Settings.RiverRange, _ access: SettingsAccess) -> some View {
         let best = river.bestCfs.flatMap { $0.count == 2 ? $0 : nil }
-        let entry = try? Preferences.Entry(Preferences.flow, settingsJSON: access.json)
+        let entry = Preferences.Entry(Preferences.bestFlow, settingsJSON: access.json)
         Toggle(
             "Best range",
             isOn: Binding(
                 get: { best != nil },
                 set: { on in
-                    guard on, let stops = try? entry?.stops(), stops.count > 2 else {
+                    guard on, let stops = try? entry.stops(), stops.count > 2 else {
                         update(access) { $0.bestCfs = nil }
                         return
                     }
@@ -112,13 +112,13 @@ struct RiverEditorPage: View {
                 }))
         if let best {
             QuantityRow(
-                title: "Best from", quantity: Preferences.flow, settingsJSON: access.json,
+                title: "Best from", quantity: Preferences.bestFlow, settingsJSON: access.json,
                 value: best[0], optional: false
             ) { value in
                 if let value { update(access) { $0.bestCfs = [value, best[1]] } }
             }
             QuantityRow(
-                title: "Best up to", quantity: Preferences.flow, settingsJSON: access.json,
+                title: "Best up to", quantity: Preferences.bestFlow, settingsJSON: access.json,
                 value: best[1], optional: false
             ) { value in
                 if let value { update(access) { $0.bestCfs = [best[0], value] } }

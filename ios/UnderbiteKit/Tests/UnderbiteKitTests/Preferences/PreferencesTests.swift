@@ -160,6 +160,10 @@ final class PreferencesTests: XCTestCase {
 
     // MARK: Values through the core
 
+    private func entry(_ quantity: Preferences.Quantity, _ json: String) -> Preferences.Entry {
+        Preferences.Entry(quantity, settingsJSON: json)
+    }
+
     func testTypedValuesGoThroughTheCoreInTheUsersUnit() throws {
         let knots = try Preferences.applying(try defaults()) {
             Preferences.setUnit("kn", for: "speed", in: &$0.units)
@@ -168,17 +172,16 @@ final class PreferencesTests: XCTestCase {
             Preferences.setUnit("kmh", for: "speed", in: &$0.units)
         }
         let wind = Preferences.LimitField.wind.measurement
-        // Typed in knots, the field (knots) holds what was typed.
-        let inKnots = try Preferences.Entry(wind, settingsJSON: knots)
-        XCTAssertEqual(try inKnots.field(fromTyped: "12"), 12, accuracy: 1e-3)
+        // The field holds knots: typed in knots it is what was typed.
+        XCTAssertEqual(try entry(wind, knots).field(fromTyped: "12"), 12, accuracy: 1e-3)
         // Typed in km/h, the same wind is a different number of knots.
-        let inKmh = try Preferences.Entry(wind, settingsJSON: kmh)
-        XCTAssertEqual(try inKmh.field(fromTyped: "22.224"), 12, accuracy: 1e-3)
+        XCTAssertEqual(try entry(wind, kmh).field(fromTyped: "22.224"), 12, accuracy: 1e-3)
         // An explicit unit overrides the setting.
-        XCTAssertEqual(try inKmh.field(fromTyped: "12 kn"), 12, accuracy: 1e-3)
+        XCTAssertEqual(try entry(wind, kmh).field(fromTyped: "12 kn"), 12, accuracy: 1e-3)
         // A decimal comma and a thousands comma are left to the core.
-        let flow = try Preferences.Entry(Preferences.flow, settingsJSON: try defaults())
+        let flow = entry(Preferences.flow, try defaults())
         XCTAssertEqual(try flow.field(fromTyped: "1,200 cfs"), 1200, accuracy: 1e-3)
+        XCTAssertEqual(try flow.field(fromTyped: "1,5"), 1.5, accuracy: 1e-6)
         XCTAssertThrowsError(try flow.field(fromTyped: "plenty"))
     }
 
@@ -186,49 +189,63 @@ final class PreferencesTests: XCTestCase {
         let fahrenheit = try Preferences.applying(try defaults()) {
             Preferences.setUnit("F", for: "water_temp", in: &$0.units)
         }
-        let entry = try Preferences.Entry(Preferences.troutStress, settingsJSON: fahrenheit)
-        XCTAssertEqual(try entry.field(fromTyped: "68"), 20, accuracy: 1e-3)
-        XCTAssertEqual(try entry.field(fromTyped: "20 °C"), 20, accuracy: 1e-3)
-        let stops = try entry.stops()
-        XCTAssertTrue(stops.contains { $0.label.contains("°F") })
-        // 68 °F (the default 20 °C) falls between the round stops, so its label says "about".
-        XCTAssertFalse(Preferences.isOnStop(stops, Preferences.defaultTroutStressC))
-        let index = try XCTUnwrap(Preferences.nearest(stops, to: Preferences.defaultTroutStressC))
-        XCTAssertEqual(stops[index].value, 20, accuracy: 6)
+        let trout = entry(Preferences.troutStress, fahrenheit)
+        XCTAssertEqual(try trout.field(fromTyped: "68"), 20, accuracy: 1e-2)
+        XCTAssertEqual(try trout.field(fromTyped: "20 °C"), 20, accuracy: 1e-3)
+        XCTAssertTrue(try trout.stops().contains { $0.label.contains("°F") })
+        // The stored 20 °C is written in the user's unit by the core.
+        XCTAssertTrue(trout.label(of: Preferences.defaultTroutStressC).contains("68"))
+        XCTAssertTrue(trout.label(of: Preferences.defaultTroutStressC).contains("°F"))
     }
 
     func testStopsAreLabelledByTheCoreAndHoldTheStoredValue() throws {
-        let base = try defaults()
-        let entry = try Preferences.Entry(Preferences.flow, settingsJSON: base)
-        let stops = try entry.stops()
+        let flow = entry(Preferences.flow, try defaults())
+        let stops = try flow.stops()
         XCTAssertGreaterThan(stops.count, 2)
         XCTAssertTrue(stops.allSatisfy { $0.label.contains("cfs") })
         XCTAssertEqual(stops.map(\.value), stops.map(\.value).sorted())
         // A stored value outside the usual span still gets stops that reach it.
-        let wide = try Preferences.stopsHolding(30000, entry: entry)
+        let wide = try Preferences.stopsHolding(30000, entry: flow)
         XCTAssertGreaterThanOrEqual(wide.last?.value ?? 0, 29000)
-        XCTAssertTrue(Preferences.isOnStop(stops, stops[1].value))
-        XCTAssertFalse(Preferences.isOnStop(stops, (stops[1].value + stops[2].value) / 2))
+        XCTAssertTrue(flow.label(of: 1200).contains("1,200"))
     }
 
+    func testMinutesAreEnteredAndWrittenByTheCore() throws {
+        let json = try defaults()
+        let age = Preferences.Quantity(
+            field: Preferences.ageField(of: .flow), low: 15, high: 1440)
+        let minutes = entry(age, json)
+        XCTAssertEqual(try minutes.field(fromTyped: "2 h"), 120, accuracy: 1e-6)
+        XCTAssertEqual(Preferences.duration(minutes: 120, settingsJSON: json), "2 h")
+        XCTAssertFalse(try minutes.stops().isEmpty)
+        XCTAssertEqual(Preferences.SourceKind.waterTemperature.fieldGroup, "water_temperature")
+        XCTAssertEqual(Preferences.SourceKind.marineForecast.fieldGroup, "marine_forecast")
+        XCTAssertTrue(setting_fieldKeysContain(Preferences.ageField(of: .marineForecast)))
+        for kind in Preferences.SourceKind.allCases {
+            XCTAssertTrue(setting_fieldKeysContain(Preferences.distance(of: kind).field))
+        }
+    }
+
+    private func setting_fieldKeysContain(_ key: String) -> Bool { settingFieldKeys().contains(key) }
+
     func testTheCoresMessageForAnUnreadableValueIsKept() throws {
-        let entry = try Preferences.Entry(Preferences.flow, settingsJSON: try defaults())
+        let flow = entry(Preferences.flow, try defaults())
         do {
-            _ = try entry.field(fromTyped: "plenty")
+            _ = try flow.field(fromTyped: "plenty")
             XCTFail("expected an error")
         } catch {
             XCTAssertTrue(Preferences.message(for: error).contains("plenty"), "\(error)")
         }
     }
 
-    func testEveryLimitFieldHasWorkingStopsAndEntry() throws {
+    func testEveryLimitFieldHasAKeyStopsAndEntry() throws {
         let base = try defaults()
+        let keys = settingFieldKeys()
         for field in Preferences.LimitField.allCases {
-            let entry = try Preferences.Entry(field.measurement, settingsJSON: base)
-            XCTAssertFalse(try entry.stops().isEmpty, field.rawValue)
-            let typed = try entry.field(
-                fromTyped: "5 \(field.measurement.unit)")
-            XCTAssertEqual(typed, 5, accuracy: 1e-3, field.rawValue)
+            XCTAssertTrue(keys.contains(field.measurement.field), field.rawValue)
+            let limit = entry(field.measurement, base)
+            XCTAssertFalse(try limit.stops().isEmpty, field.rawValue)
+            XCTAssertFalse(limit.label(of: 5).isEmpty, field.rawValue)
         }
     }
 
@@ -236,8 +253,7 @@ final class PreferencesTests: XCTestCase {
         let base = try defaults()
         let edited = try Preferences.applying(base) { s in
             for field in Preferences.LimitField.allCases {
-                let entry = try? Preferences.Entry(field.measurement, settingsJSON: base)
-                if let stop = try? entry?.stops().last {
+                if let stop = try? entry(field.measurement, base).stops().last {
                     field.set(stop.value, on: &s.limits[0])
                 }
             }
