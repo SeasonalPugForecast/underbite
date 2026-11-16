@@ -1,6 +1,6 @@
 # NASA GIBS (Global Imagery Browse Services)
 
-Verified on 2026-11-08 (UTC) with `curl` against `gibs.earthdata.nasa.gov` and the GIBS API documentation (`https://nasa-gibs.github.io/gibs-api-docs/`). Fixtures: `tests/fixtures/raw/gibs/` (index in its `README.md`).
+Verified on 2026-11-08 and re-checked on 2026-11-16 (UTC; see "Re-check, 2026-11-16") with `curl` against `gibs.earthdata.nasa.gov` and the GIBS API documentation (`https://nasa-gibs.github.io/gibs-api-docs/`). Fixtures: `tests/fixtures/raw/gibs/` (index in its `README.md`).
 
 ## Endpoints
 
@@ -67,9 +67,34 @@ Layer time dimensions in the capabilities are ISO 8601 repeating intervals such 
 - No surface-current layer. The SST and chlorophyll layers are colourised imagery: the pixel colour maps back to a value only through the colour map, with quantisation (SST steps of 0.15 degree_C). Values for the point inspector and the edge detector come from ERDDAP grids, not from these tiles.
 - No bathymetry layer was looked for.
 
+## Re-check, 2026-11-16
+
+The capabilities document was fetched once (5,842,410 bytes, 1,330 layers, `cache-control: public, max-age=1800`, served by CloudFront) and the layers below were read from it; an excerpt of the eleven layers is the fixture `wmts-epsg3857-best-capabilities.excerpt-2026-11-16.xml`. The end of the last `<Dimension>` range is the newest date.
+
+| Layer id | Advertised on 2026-11-16 | Range end | Matrix set |
+|---|---|---|---|
+| `VIIRS_NOAA20_CorrectedReflectance_TrueColor` | yes | 2026-11-16 (partial day) | `GoogleMapsCompatible_Level9`, JPEG |
+| `VIIRS_NOAA21_CorrectedReflectance_TrueColor` | yes | 2026-11-16 | Level9, JPEG |
+| `VIIRS_SNPP_CorrectedReflectance_TrueColor` | yes, ended | 2026-11-02 | Level9, JPEG |
+| `MODIS_Aqua_CorrectedReflectance_TrueColor` | yes | 2026-11-16 | Level9, JPEG |
+| `MODIS_Terra_CorrectedReflectance_TrueColor` | yes | 2026-11-17 (the date runs ahead of UTC) | Level9, JPEG |
+| `GHRSST_L4_MUR_Sea_Surface_Temperature` | yes | 2026-11-15 | `GoogleMapsCompatible_Level7`, PNG |
+| `GHRSST_L4_MUR25_Sea_Surface_Temperature` | yes | 2026-11-15 | Level6, PNG |
+| `VIIRS_NOAA20_Chlorophyll_a` | yes | 2026-11-16 | Level7, PNG |
+| `VIIRS_NOAA21_Chlorophyll_a` | yes | 2026-11-16 | Level7, PNG |
+| `OCI_PACE_Chlorophyll_a` | yes | 2026-11-16 | Level7, PNG |
+| `S3A_OLCI_Chlorophyll_a`, `S3B_OLCI_Chlorophyll_a` | yes | 2026-11-15 | Level7, PNG |
+| `MODIS_Aqua_L2_Chlorophyll_A`, `MODIS_Terra_L2_Chlorophyll_A` | yes | 2026-11-16 | Level7, PNG |
+| `VIIRS_SNPP_L2_Chlorophyll_A`, `VIIRS_SNPP_L2_Sea_Surface_Temp_Day` | yes, ended | 2026-11-02 | Level7, PNG |
+| `MODIS_Aqua_L2_Sea_Surface_Temp_Day`, `MODIS_Terra_L2_Sea_Surface_Temp_Day` | yes | 2026-11-16 | Level7, PNG |
+
+All ids listed in the table above for NOAA-20, NOAA-21, MODIS and PACE are still advertised; none is missing. Layers carry several `<Dimension>` ranges where the archive has gaps; only the end of the last range was used here. A NOAA-21 chlorophyll tile for 2026-11-15 (zoom 7, x 37, y 48) answered `200 image/png`, 256 x 256 (fixture), with `layer-identifier-actual: VIIRS_NOAA21_Chlorophyll_a_v2022.0_NRT` and `layer-time-actual: 2026-11-15T00:00:00Z`.
+
+Clarity layers: the identifier search of 2026-11-16 (`kd`, attenuation, turbidity, clarity, Secchi, SPM, CDOM, Rrs, IOP, backscatter, absorption, transparency, water quality, euphotic, diffuse) found no Kd490 or water-clarity layer. The only hits were unrelated (CERES diffuse flux, MERRA-2 turbulence, particulate matter in air). PACE appears as chlorophyll, true colour, PAR and orbit tracks only. Kd490 comes from ERDDAP (`erddap.md`).
+
 ## Authentication, limits, availability
 
-- No authentication. The documentation page fetched (`access-basics`) lists no key, quota or rate limit and no usage policy; none was encountered in about 15 tile requests. A numeric limit is **unverified**.
+- No authentication. The documentation page fetched (`access-basics`) lists no key, quota or rate limit and no usage policy; none was encountered in about 15 tile requests. A numeric limit is **unverified**. On 2026-11-16 the GIBS documentation pages `access-basics` and `access-advanced-topics` were read again and state no rate limit, quota, throttling or usage policy (the advanced page mentions only the browser's per-domain connection limit under domain sharding); a web search found no official figure. About 3 requests to `gibs.earthdata.nasa.gov` on 2026-11-16 (capabilities, one tile, one repeat) showed no rate-limit headers (`cache-control`, `access-control-allow-origin` and CloudFront headers only). A community forum post (Earthdata Forum, "Recommendations to avoid Blacklisting") mentions a limit of 20 to 60 requests a minute whose service is not stated, and could not be re-read (404); treat the figure as unverified.
 - Failure modes seen: `404` (no data for that date), `400` (zoom deeper than the set). No 5xx.
 - Latency: the VIIRS and MODIS true-colour and MUR layers had the previous UTC day by 14:20 UTC. Today's tile exists but is incomplete.
 

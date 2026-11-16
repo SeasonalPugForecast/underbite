@@ -1,6 +1,6 @@
 # NOAA CoastWatch ERDDAP (SST, chlorophyll, Kd490, HF radar currents)
 
-Verified on 2026-11-08 (UTC) against live servers with `curl`, from the ERDDAP server documentation and from each dataset's own metadata (`.das`). Fixtures: `tests/fixtures/raw/erddap/` (index in its `README.md`).
+Verified on 2026-11-08 and re-checked on 2026-11-16 (UTC; the Kd490 and limits sections below) against live servers with `curl`, from the ERDDAP server documentation and from each dataset's own metadata (`.das`). Fixtures: `tests/fixtures/raw/erddap/` (index in its `README.md`).
 
 ## Servers
 
@@ -22,6 +22,7 @@ Redirect to know about: on the pfeg node, data requests (`.json`, `.csv`, ...) f
 | VIIRS chlorophyll-a, NOAA-20, near real time, global 4 km | coastwatch.noaa.gov | `noaacwN20VIIRSchlaDaily` | `chlor_a` (mg m^-3, OC3) | 0.0375 degree (4 km), 4788 x 9602, with an `altitude` axis of length 1 | daily, 12:00Z, irregular (days without a swath are missing from the time axis) | 2026-11-05T12:00Z (3 days before the check) | clouds and no-data are `null` / `NaN`; raw `_FillValue` NaN; `valid_min` 0.001, `valid_max` 1000 |
 | VIIRS chlorophyll-a, S-NPP, near real time, global 4 km | coastwatch.noaa.gov (also under pfeg id `nesdisVHNchlaDaily`, which redirects) | `noaacwNPPVIIRSchlaDaily` | `chlor_a` | same grid | daily 12:00Z | 2026-11-06T12:00Z | as above |
 | VIIRS Kd490, S-NPP, near real time, global 4 km | coastwatch.noaa.gov (pfeg id `nesdisVHNkd490Daily` redirects) | `noaacwNPPVIIRSkd490Daily` | `kd_490` (m^-1) | same grid | daily 12:00Z | 2026-11-06T12:00Z | `null` / `NaN`; raw `_FillValue` -6.5534 |
+| VIIRS Kd490, NOAA-21, near real time / science quality, NIR-SWIR algorithm, US sector US00, 750 m | coastwatch.noaa.gov | `noaacwN21VIIRSkd490NSWUSDaily` | `kd_490` (m^-1); also `l2_flags`, `qa_score` | 0.0075 degree (750 m), lat 0.00375..59.99625, lon -142.38375..-52.39125, with an `altitude` axis of length 1 | daily composite, centred time about 19:00 to 19:45Z (not 12:00Z), days missing from the axis | 2026-11-14T19:22:22Z (2 days before the 2026-11-16 check) | `null` / `NaN`; raw `_FillValue` -32.768. See "Kd490 re-check, 2026-11-16" |
 | HF radar surface currents, US East Coast and Gulf of Mexico, 6 km | pfeg | `ucsdHfrE6` | `water_u`, `water_v` (m s-1, eastward and northward); also `DOPx`, `DOPy`, `hdop`, `number_of_sites`, `number_of_radials` | about 0.054 degree latitude by 0.058 degree longitude (about 6 km), lat 21.74..46.49, lon -97.88..-57.23 | hourly, on the hour | 2026-11-08T08:00Z (about 6 h before the check) | `null` in JSON; raw `_FillValue` -327.67 |
 
 Other datasets seen and not chosen:
@@ -34,11 +35,65 @@ Other datasets seen and not chosen:
 
 Observations that affect clients:
 
-- **S-NPP ends.** The dataset titles on `coastwatch.noaa.gov` say "S-NPP end of mission 2026-11-02" and GIBS stops S-NPP imagery on 2026-11-02. NOAA-20 (and NOAA-21 in GIBS) carry on. No NOAA-20 or NOAA-21 near-real-time Kd490 dataset was found; the S-NPP Kd490 series is likely to stop growing. Treat the Kd490 layer as at risk and re-check before relying on it.
+- **S-NPP ends.** The dataset titles on `coastwatch.noaa.gov` say "S-NPP end of mission 2026-11-02" and GIBS stops S-NPP imagery on 2026-11-02. NOAA-20 (and NOAA-21 in GIBS) carry on. The 2026-11-08 search missed the NOAA-20 and NOAA-21 Kd490 datasets of the 750 m US sector; the 2026-11-16 re-check (below) found them. Use `noaacwN21VIIRSkd490NSWUSDaily` for Kd490.
 - Chlorophyll coverage on a given day is patchy: for the test box (stride 3) the NOAA-20 series from 2026-10-15 to 2026-11-05 had 63 to 66 valid cells of 88 on 12 days and 0 to 4 on 8 days; the newest day (2026-11-05) was empty. The app must step back to the latest day with data (date picker per §6.7).
 - Latitude order differs: `jplMURSST41` and `ucsdHfrE6` list latitude ascending; the 4 km VIIRS datasets list it descending (the first row of the subset is 40.78125 N). A parser must read the coordinates from each row, never assume the order.
 - Longitude is -180..180 on the unsuffixed ids. The `_Lon0360` variants exist for the datasets listed and are not needed.
 - MUR revises history: "the data for the most recent 7 days is usually revised every day" (dataset `history`), with a nominal 4-day latency for the final version replacing a 1-day near-real-time version. Re-fetch rather than cache the latest week indefinitely.
+
+## Kd490 re-check, 2026-11-16
+
+Searched on 2026-11-16 (about 23:45 UTC) with `tabledap/allDatasets.csv` on both CoastWatch nodes (title matches for `Kd`, attenuation, turbidity, PACE, OLCI, Secchi, reflectance, SPM; fixtures `coastwatch-noaa-alldatasets-kd-search-2026-11-16.csv` and `pfeg-alldatasets-kd-search-2026-11-16.csv`) and on GIBS (see `gibs.md`).
+
+**A current Kd490 product exists: `noaacwN21VIIRSkd490NSWUSDaily`** (coastwatch.noaa.gov). The 2026-11-08 note was wrong to say none was found; the dataset was not in the search then.
+
+| Item | Value |
+|---|---|
+| Title | "Kd490 (NIR-SWIR), NOAA-21 VIIRS, NRT/Science Quality, 750m Sector US00 (United States), 2025-present, Daily" |
+| Variable | `kd_490`, `m^-1` (`.das`), long name "Diffuse Attenuation Coefficient at 490 nm", reference Wang et al. (2009); `l2_flags` and `qa_score` are also served and are not needed |
+| Axes | `[time][altitude][latitude][longitude]`, altitude 0.0 |
+| Grid | 0.0075 degrees (750 m); latitude 0.00375 to 59.99625; longitude -142.38375 to -52.39125 (covers New York Harbor and the Great Lakes; not Alaska or Hawaii); latitude listed descending in the data (first row 40.79625) |
+| Time axis | 2025-01-01T19:10:29Z to 2026-11-14T19:22:22Z; one composite per day centred on the pass (19:xx Z), never 12:00Z; days absent from the axis between 2026-10-20 and 2026-11-14: 10-22, 10-31, 11-01, 11-02, 11-05 |
+| Latest at check | 2026-11-14T19:22:22Z (`.das` `time_coverage_end`, and `time[(last)]`) |
+| Lag | about 2 days on the check date; the day-of-year in the processing history (`V2026318`) is 2026-11-14 |
+| Missing | `null` in JSON, `NaN` in CSV; raw `_FillValue` and `missing_value` -32.768 |
+| Values seen | New York box 40.0 to 40.8 N, 73.0 to 74.2 W at stride 6 on 2026-11-11: 313 of 486 cells with a value, 0.08 to 1.48 m^-1; western Lake Erie box 41.4 to 42.0 N, 82.5 to 83.5 W at stride 6 on 2026-11-10: 94 of 322, 0.28 to 2.94 m^-1 |
+| Cloud | cloudy days are mostly `null`: New York had 0 cells on 2026-11-13 and 2026-11-14 and 3 on 2026-11-12; Lake Erie 0 on 2026-11-07 and 2026-11-11 and 43 to 94 on 2026-11-08 to 2026-11-10. The app must step back to the newest day with data, as for chlorophyll. |
+| Algorithm | NOAA MSL12 v1.8+, "Daily Merge kd490 from NOAA-21 VIIRS"; license text is the usual "may be used and redistributed for free but is not intended for legal use" (see License) |
+
+Request (fixtures `noaacwn21viirskd490nswusdaily-kd490-ny-subset-2026-11-11.json` and `...-erie-subset-2026-11-10.json`):
+
+```
+https://coastwatch.noaa.gov/erddap/griddap/noaacwN21VIIRSkd490NSWUSDaily.json?kd_490%5B(2026-11-11T19:27:55Z)%5D%5B(0.0)%5D%5B(40.0):6:(40.8)%5D%5B(-74.2):6:(-73.0)%5D
+# time axis, to choose a day
+https://coastwatch.noaa.gov/erddap/griddap/noaacwN21VIIRSkd490NSWUSDaily.json?time%5B(2026-10-20):1:(last)%5D
+```
+
+Because the time of day varies, a client cannot build the time value from a date. It requests the time axis for the last 10 to 14 days (about 700 bytes), then asks for `kd_490` at one of the listed times (`(last)` also works, for the newest). The time axis of the same days for the other datasets is in the fixtures.
+
+Other Kd490 datasets seen on 2026-11-16 (newest time in the dataset list):
+
+| Dataset id | Newest time | Verdict |
+|---|---|---|
+| `noaacwN20VIIRSkd490NSWUSDaily` (NOAA-20, same grid and algorithm) | 2026-11-10T19:52:32Z | works, 6 days behind NOAA-21; second choice |
+| `noaacwN21VIIRSkd490SectorUSDaily` / `noaacwN20VIIRSkd490SectorUSDaily` (standard algorithm, same sector) | 2026-11-11T19:27:55Z / 2026-11-11T19:34:18Z | work, 3 days behind the NIR-SWIR variant for NOAA-21 |
+| `noaacwNPPVIIRSkd490Daily` (S-NPP, 4 km, global; pfeg `nesdisVHNkd490Daily`) | 2026-11-12T12:00:00Z | still grew after the mission end (the 2026-11-08 note saw 2026-11-06); window 2025-11-16 to 2026-11-12, "EXPERIMENTAL" in its summary; on 2026-11-12 only 5 of 726 New York cells had a value (fixture); do not rely on it |
+| `noaacwNPPVIIRSkd490Sector??Daily` (S-NPP 750 m sectors) | to 2026-11-12 | S-NPP; the science-quality sectors stopped 2025-08-19 |
+| `erdMH1kd4901day_R2022NRT` (pfeg; Aqua MODIS L3SMI, global 4 km, variable `Kd_490`, unit `m-1`, latitude descending, `NaN` missing, daily 12:00Z) | 2026-11-15T12:00:00Z (1 day lag) | time axis current, but coverage is poor: 0 valid cells in a 5 degree box around New York on 2026-11-11 and 2026-11-14 (and 0 in the 0.8 x 1.2 degree box on 11-11 to 11-15), 74 of 2,989 on 2026-10-20 and 895 on 2026-09-20; cause not established. Third choice. |
+| `erdMWk4901day` (West US only) | 2026-11-15 | does not cover New York or Lake Erie |
+| `noaacwNPPN20VIIRSkd490Daily` | 2021-09-01 | ended; the title is misleading |
+| `noaacwNPPN20S3AkdSCIDINEOF2kmDaily`, `...DINEOFDaily` | 2026-11-05 | gap-filled (interpolated) Kd490 from VIIRS and OLCI; 2 km and 9 km global; not observations |
+
+Not found: no PACE OCI or Sentinel-3 OLCI Kd490 grid on either node (OLCI appears only as chlorophyll sectors and the Long Island Sound 300 m colour product `noaacwappsS3ABcolorLISDaily`, which ends 2025-02-28). GIBS has no Kd490 layer (`gibs.md`).
+
+Recommendation recorded for the catalogue: Kd490 can use `noaacwN21VIIRSkd490NSWUSDaily`, with `noaacwN20VIIRSkd490NSWUSDaily` as a fallback. Both depend on a US-sector product labelled "2025-present"; their title says NRT/Science Quality, and the dataset has no stated end date.
+
+### Request limits (2026-11-16)
+
+- The ERDDAP griddap documentation (`https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html`) states no numeric limit on request count or size: "griddap is designed to handle requests of any size"; it warns that "requests for a long time range" (more than about 30 time points) "are prone to time out failures, which often appear as Proxy Errors" and advises several smaller requests; it asks users to "be kind to other ERDDAP users: run just one script or curl command at a time". The page also exposes no quota, `Retry-After` or rate-limit header description; the part after character 100,000 of the page was not read.
+- Observed: about 45 requests to three nodes (`coastwatch.noaa.gov` about 25, `coastwatch.pfeg.noaa.gov` about 15, `apps.glerl.noaa.gov` 4) between 23:42 and 00:05 UTC at one request every 6 to 8 seconds (under 10 per minute per host) drew no `429` and no `503`. Response headers carried no rate-limit fields (`Server: Apache`, `Erddap-Server: 2.31.1`).
+- The `429` and its headers were not provoked and remain **unverified**. The 2026-11-08 observation stands: about 12 requests in a minute to pfeg answered `429`.
+- Size: a 4-D subset costs one JSON row per cell; the 486-row New York subset is 39 KB, the 726-row 4 km one 53 KB. A request of the whole 0.8 x 1.2 degree box at 750 m would be 107 x 161 = 17,227 rows (about 1.2 MB); use stride 4 to 6 for map layers or draw from fewer cells.
 
 ## griddap request syntax (verified)
 
@@ -111,15 +166,18 @@ Units come from the response's own `columnUnits`. The core can read them rather 
 
 - Each dataset states its terms in its `license` attribute (`.das`). ERDDAP's `legal.html` adds: "The data from some datasets may be subject to usage limitations or restrictions", and that the service and data are provided "as is" with no warranty.
 - `jplMURSST41`: "These data are available free of charge under the JPL PO.DAAC data policy. The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." Requested acknowledgement (`acknowledgement` attribute): "These data were provided by JPL under support by NASA MEaSUREs program." Credit line suggested for the app: "SST: NASA JPL MUR (MEaSUREs), via NOAA CoastWatch ERDDAP".
-- VIIRS chlorophyll and Kd490: `license` points to NASA's data and information policy (`https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/`): open, no restrictions. Credit line: "Ocean colour: NOAA CoastWatch / NOAA STAR VIIRS".
+- VIIRS chlorophyll and Kd490 (the 4 km datasets): `license` points to NASA's data and information policy (`https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/`): open, no restrictions. Credit line: "Ocean colour: NOAA CoastWatch / NOAA STAR VIIRS".
 - `ucsdHfrE6`: `license` "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, ERD, NOAA, nor the United States Government ... makes any warranty". Creator: "NOAA IOOS Surface Currents Program" (HFRNet, Scripps/UCSD). Credit line: "Surface currents: NOAA IOOS HF Radar Network".
 - Not for navigation: none of these datasets carries the wording; the app adds it to current and SST layers (HF radar surface currents are estimates of the upper 2.4 m and are not for navigation).
 - The ERDDAP server citation requested on its information page: "Simons, R.A., and Chris John. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD."
 
+- `noaacwN21VIIRSkd490NSWUSDaily`: `license` is the "may be used and redistributed for free but is not intended for legal use" text with the no-warranty clause; creator "NOAA CoastWatch" (`https://coastwatch.noaa.gov`), institution "NOAA NESDIS STAR". Credit line: "Water clarity: NOAA CoastWatch / NOAA STAR VIIRS".
+- `erdMH1kd4901day_R2022NRT`: `license` points to NASA's data and information policy; data from NASA OBPG (`oceancolor.gsfc.nasa.gov`).
+
 ## What was not verified
 
-- Rate limit thresholds and the `429` response headers.
+- Rate limit thresholds and the `429` response headers (no `429` occurred on 2026-11-16 while keeping under 10 requests a minute per host).
 - The numeric maximum size of a griddap request.
 - `.transparentPng` drawing parameters and binary formats.
-- Which VIIRS 750 m sector covers New York and whether it is fed after S-NPP's end of mission.
+- Which S-NPP VIIRS 750 m sector covers New York (the NOAA-20 and NOAA-21 Kd490 datasets above need no sector letter).
 - Holdings of `upwell.pfeg.noaa.gov`.
