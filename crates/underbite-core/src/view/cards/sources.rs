@@ -202,14 +202,7 @@ fn measurement_label(f: &Formatter, m: Measurement) -> &'static str {
 }
 
 fn relation_label(f: &Formatter, r: Relation) -> &'static str {
-    f.strings.get(match r {
-        Relation::SameWaterBody => Key::RelSameWaterBody,
-        Relation::Upstream => Key::RelUpstream,
-        Relation::Downstream => Key::RelDownstream,
-        Relation::Nearby => Key::RelNearby,
-        Relation::Gridded => Key::RelModelGrid,
-        Relation::Satellite => Key::RelSatellite,
-    })
+    f.strings.relation(r)
 }
 
 fn kind_label(f: &Formatter, k: ValueKind) -> &'static str {

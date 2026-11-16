@@ -11,7 +11,7 @@ use crate::discover::hydro::{WaterTypeReason, WaterbodyKind};
 use crate::model::{
     AlertSeverity, Measurement, MoonPhase, PrincipalPhase, TideKind, WaterType, ZoneKind,
 };
-use crate::provenance::{SourceId, UsgsSiteType};
+use crate::provenance::{Relation, SourceId, UsgsSiteType};
 use crate::view::{CardId, NoticeKind, Voice};
 
 /// Declares [`Key`], its list and its table in one place.
@@ -443,6 +443,44 @@ keys! {
     RelNearby => ("Nearby", "Nearby"),
     RelModelGrid => ("Model grid", "Model grid"),
     RelSatellite => ("Satellite", "Satellite"),
+    StationPinned => ("Pinned by you", "Pinned by you"),
+    StationExcluded => ("Excluded by you", "Excluded by you"),
+    StationWeakAndVariable => (
+                "Weak and variable current: no predictions",
+                "Weak and variable current: no predictions",
+            ),
+    /// `{bin}`.
+    StationOtherBin => (
+                "Bin {bin} of this station is used instead",
+                "Bin {bin} of this station is used instead",
+            ),
+    /// `{age}`: "6 min ago".
+    StationReported => ("Latest value {age}", "Latest value {age}"),
+    StationListed => (
+                "Listed, not yet seen to report",
+                "Listed, not yet seen to report",
+            ),
+    /// `{age}`: "2 h ago".
+    StationNotReported => (
+                "Checked {age}: no recent values",
+                "Checked {age}: no recent values",
+            ),
+    StationOtherWater => (
+                "On another river or a tributary",
+                "On another river or a tributary",
+            ),
+    StationNotPlaced => (
+                "Not on the mapped streams, so maybe another river",
+                "Not on the mapped streams, so maybe another river",
+            ),
+    /// `{site}`: the site's id.
+    StationForecastGauge => ("Forecast gauge for {site}", "Forecast gauge for {site}"),
+    StationSecondary => (
+                "Not the station's main product",
+                "Not the station's main product",
+            ),
+    /// `{n}`: the stations left out of one measurement.
+    StationsNotUsed => ("{n} not used", "Luna passed over {n}"),
     /// `{kind}`: a zone kind below.
     WtReasonZone => ("in an NWS {kind} marine zone", "in an NWS {kind} marine zone"),
     ZoneCoastal => ("coastal", "coastal"),
@@ -692,6 +730,18 @@ impl Strings {
         })
     }
 
+    /// How a station relates to the spot: "Same water body", "Upstream", ...
+    pub const fn relation(self, relation: Relation) -> &'static str {
+        self.get(match relation {
+            Relation::SameWaterBody => Key::RelSameWaterBody,
+            Relation::Upstream => Key::RelUpstream,
+            Relation::Downstream => Key::RelDownstream,
+            Relation::Nearby => Key::RelNearby,
+            Relation::Gridded => Key::RelModelGrid,
+            Relation::Satellite => Key::RelSatellite,
+        })
+    }
+
     /// One reason a water type was suggested, in words: "in an NWS coastal marine zone",
     /// "on Croton River (stream of order 7)".
     pub fn water_type_reason(self, reason: &WaterTypeReason) -> String {
@@ -836,6 +886,50 @@ impl Strings {
     }
 }
 
+/// Every kind of water, in the order a picker lists them.
+pub const WATER_TYPES: [WaterType; 10] = [
+    WaterType::RiverStream,
+    WaterType::LakeReservoir,
+    WaterType::TidalRiverEstuary,
+    WaterType::BayInshore,
+    WaterType::Surf,
+    WaterType::Nearshore,
+    WaterType::Offshore,
+    WaterType::GreatLakes,
+    WaterType::Pond,
+    WaterType::Ice,
+];
+
+/// Every measurement, in the order lists of them read: the water's level and movement first,
+/// then its temperature and flow, its quality, the sea, then the forecasts and the air.
+pub const MEASUREMENTS: [Measurement; 25] = [
+    Measurement::Tide,
+    Measurement::TidalCurrent,
+    Measurement::WaterTemperature,
+    Measurement::Discharge,
+    Measurement::GageHeight,
+    Measurement::LakeLevel,
+    Measurement::Turbidity,
+    Measurement::Clarity,
+    Measurement::DissolvedOxygen,
+    Measurement::Conductivity,
+    Measurement::Salinity,
+    Measurement::Ph,
+    Measurement::Chlorophyll,
+    Measurement::Cyanobacteria,
+    Measurement::OceanCurrent,
+    Measurement::Waves,
+    Measurement::WavesForecast,
+    Measurement::SeaSurfaceTemp,
+    Measurement::SeaSurfaceTempForecast,
+    Measurement::MarineForecast,
+    Measurement::MarineAlerts,
+    Measurement::FloodCategories,
+    Measurement::FlowForecast,
+    Measurement::ObservedWind,
+    Measurement::ObservedPressure,
+];
+
 /// Fills `{name}` placeholders; unknown placeholders stay as written.
 fn fill(template: &str, args: &[(&str, &str)]) -> String {
     let mut out = template.to_owned();
@@ -965,6 +1059,63 @@ mod tests {
             Strings::new(Voice::Plain).water_type_reason(&bay),
             "Jamaica Bay is named as a bay or harbor"
         );
+    }
+
+    #[test]
+    fn the_lists_hold_every_water_type_and_measurement_once() {
+        // A new variant fails to compile here until it is placed in its list.
+        let water_index = |w: WaterType| match w {
+            WaterType::RiverStream => 0,
+            WaterType::LakeReservoir => 1,
+            WaterType::TidalRiverEstuary => 2,
+            WaterType::BayInshore => 3,
+            WaterType::Surf => 4,
+            WaterType::Nearshore => 5,
+            WaterType::Offshore => 6,
+            WaterType::GreatLakes => 7,
+            WaterType::Pond => 8,
+            WaterType::Ice => 9,
+        };
+        for (i, w) in WATER_TYPES.into_iter().enumerate() {
+            assert_eq!(water_index(w), i);
+        }
+        let measurement_seen = |m: Measurement| match m {
+            Measurement::WaterTemperature
+            | Measurement::Discharge
+            | Measurement::GageHeight
+            | Measurement::LakeLevel
+            | Measurement::Turbidity
+            | Measurement::DissolvedOxygen
+            | Measurement::Conductivity
+            | Measurement::Salinity
+            | Measurement::Ph
+            | Measurement::Chlorophyll
+            | Measurement::Clarity
+            | Measurement::Cyanobacteria
+            | Measurement::Tide
+            | Measurement::TidalCurrent
+            | Measurement::OceanCurrent
+            | Measurement::Waves
+            | Measurement::WavesForecast
+            | Measurement::SeaSurfaceTemp
+            | Measurement::SeaSurfaceTempForecast
+            | Measurement::MarineForecast
+            | Measurement::MarineAlerts
+            | Measurement::FloodCategories
+            | Measurement::FlowForecast
+            | Measurement::ObservedWind
+            | Measurement::ObservedPressure => MEASUREMENTS.contains(&m),
+        };
+        let distinct: std::collections::BTreeSet<_> = MEASUREMENTS.into_iter().collect();
+        assert_eq!(distinct.len(), MEASUREMENTS.len());
+        assert!(MEASUREMENTS.into_iter().all(measurement_seen));
+    }
+
+    #[test]
+    fn relations_have_labels() {
+        let plain = Strings::new(Voice::Plain);
+        assert_eq!(plain.relation(Relation::SameWaterBody), "Same water body");
+        assert_eq!(plain.relation(Relation::Gridded), "Model grid");
     }
 
     #[test]
