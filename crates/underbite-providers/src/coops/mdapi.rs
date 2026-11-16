@@ -35,7 +35,8 @@ pub const STATION_AGE_S: u32 = 30 * 86_400;
 
 /// Unit assumed for additive (`F`) height offsets: feet. The response states no unit and the
 /// CO-OPS documentation does not define `F`; subordinate-station offsets are published in
-/// feet. Check with `live_tide_offsets_additive_unit` (ignored; needs the network).
+/// feet. Unverified: a live check against a subordinate station with additive offsets and
+/// published heights would settle it.
 pub const ADDITIVE_OFFSET_UNIT: SourceUnit = SourceUnit::Ft;
 
 /// Which station list to fetch (`stations.json?type=…`).
