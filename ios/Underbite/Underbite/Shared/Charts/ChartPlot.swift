@@ -81,7 +81,18 @@ struct ChartGeometry {
         let t0 = times.min() ?? 0
         let t1 = times.max() ?? t0 + 1
         xDomain = t0...(t1 > t0 ? t1 : t0 + 1)
-        xTicks = compact ? chart.xTicks.filter(\.major) : chart.xTicks
+        // The view's ticks, thinned by position only (never relabelled) so the labels fit: the
+        // major ones on a narrow screen, and at most `limit` of them.
+        var offered = compact ? chart.xTicks.filter(\.major) : chart.xTicks
+        let limit = compact ? 5 : 12
+        var stride = max(1, (offered.count + limit - 1) / limit)
+        if !compact, stride > 1 {
+            // Hourly ticks, major every third: keep the stride a whole number of majors and
+            // start on a major so the labels land on regular hours.
+            stride = (stride + 2) / 3 * 3
+            if let first = offered.firstIndex(where: \.major) { offered.removeFirst(first) }
+        }
+        xTicks = offered.enumerated().filter { $0.offset % stride == 0 }.map(\.element)
 
         let values = points.map(\.value)
         let lo = values.min() ?? 0
@@ -176,7 +187,7 @@ struct ChartPlot: View {
                 yStart: .value("Low", band.low),
                 yEnd: .value("High", band.high)
             )
-            .foregroundStyle(Color.gray.opacity(0.22))
+            .foregroundStyle(Color.mint.opacity(0.16))
         }
         if geometry.drawsZero {
             RuleMark(y: .value("Zero", 0.0)).foregroundStyle(.secondary.opacity(0.6))
@@ -328,7 +339,7 @@ struct ChartKey: View {
             }
             if let band = valueBand {
                 HStack(spacing: 6) {
-                    RoundedRectangle(cornerRadius: 2).fill(Color.gray.opacity(0.35))
+                    RoundedRectangle(cornerRadius: 2).fill(Color.mint.opacity(0.35))
                         .frame(width: 18, height: 10)
                     Text(band.label)
                 }
