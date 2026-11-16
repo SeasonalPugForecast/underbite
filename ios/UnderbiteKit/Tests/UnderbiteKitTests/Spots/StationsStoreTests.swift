@@ -209,6 +209,30 @@ final class StationsStoreTests: XCTestCase {
         XCTAssertEqual(calls.value, 0)
     }
 
+    func testAFetchKeepsTheStationsItRankedWithTheSpot() async {
+        let lookups = Shared(0)
+        let (s, _) = store(
+            in: directory,
+            // A fetch ranks the stations as a lookup does and stores the ranking on its host.
+            fetcher: { spot, settings, keys, _, at, host in
+                _ = try await discoverStations(
+                    spot: spot, settingsJson: settings, keys: keys, allowMetered: false, now: at,
+                    host: host)
+                return SpotFetchOutcome(snapshotJson: "{}", errors: [], suggestion: nil)
+            },
+            discoverer: { _, _, _, _, _ in
+                lookups.value += 1
+                return DiscoveryOutcome(stationsJson: "{}", errors: [])
+            })
+        s.add(SeedSpots.battery)
+        XCTAssertNil(s.cache(SeedSpots.battery.id).stationsJSON)
+        let before = s.stationsRevision
+        await s.refresh()
+        XCTAssertNotNil(s.cache(SeedSpots.battery.id).stationsJSON)
+        XCTAssertGreaterThan(s.stationsRevision, before)
+        XCTAssertEqual(lookups.value, 0, "no lookup was needed")
+    }
+
     func testAnOfflineLookupKeepsTheStationsItHadAndSaysWhy() async {
         let offline = Shared(false)
         let (s, _) = store(

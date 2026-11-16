@@ -430,6 +430,11 @@ final class SpotStore {
                 held.snapshotJSON = outcome.snapshotJson
                 held.lastSuccess = now
                 held.error = nil
+                // The stations the fetch ranked, so the list shows them before any lookup.
+                if let stations = storedStations(spotId: id, host: host) {
+                    held.stationsJSON = stations
+                    stationsRevision += 1
+                }
             }
         } catch {
             held.error = String(describing: error)
