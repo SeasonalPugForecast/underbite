@@ -1317,6 +1317,7 @@ pub(crate) fn discover(
             .unwrap_or_default(),
         observed,
         relations,
+        spot_placed: false,
         joins,
         bin_depths_m: lists.bin_depths_m,
     };

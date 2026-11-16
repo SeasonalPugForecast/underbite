@@ -16,11 +16,12 @@
 //! 6. by source, id and bin, so equal stations keep a stable order.
 //!
 //! A station is dropped when excluded, beyond the distance limit, older than the age limit,
-//! when the hydrography puts it on other water than a river spot's own for a river measurement
-//! (a pin overrides these three), when it is a weak-and-variable current station (no
-//! predictions), or when it is a current bin other than the one kept for its station: a pinned
-//! bin, else the bin nearest the surface. A river station the hydrography does not reach is
-//! kept by distance, as `Nearby`, with that relation among its reasons.
+//! when the hydrography puts it on other water than a river spot's own for a river measurement,
+//! or when it places the spot but not the station (a pin overrides these four), when it is a
+//! weak-and-variable current station (no predictions), or when it is a current bin other than
+//! the one kept for its station: a pinned bin, else the bin nearest the surface. When the
+//! hydrography does not place the spot, a river station is kept by distance, as `Nearby`, with
+//! that relation among its reasons.
 
 use std::cmp::Ordering;
 use std::collections::btree_map::Entry;
@@ -156,6 +157,9 @@ pub struct DiscoveryInput {
     /// listed here has a known relation, `Nearby` included (a tributary, another river); a
     /// station missing from it is one the hydrography does not reach.
     pub relations: BTreeMap<StationKey, Relation>,
+    /// Whether the hydrography places the spot on the river network. River measurements then
+    /// take only stations it places on the spot's own water.
+    pub spot_placed: bool,
     /// Forecast gauges and the site each one forecasts (an NWPS gauge and its USGS site, by
     /// `usgsId`). The gauge takes the site's relation, pin and exclusion.
     pub joins: BTreeMap<StationKey, StationKey>,
@@ -210,6 +214,9 @@ pub enum Reason {
     OtherWaterBody {
         relation: Relation,
     },
+    /// For a river measurement, the hydrography places the spot on the network but not the
+    /// station: whether it is on the spot's own river is unknown.
+    NotPlaced,
     ForecastGaugeFor {
         site: StationKey,
     },
@@ -584,11 +591,14 @@ fn judge(
     }
     let known = known_relation(input, key, site);
     let river = is_river(measurement);
-    if river
-        && let Some(relation) = known
-        && relation_class(relation) == OTHER_WATER
-    {
-        over.push(Reason::OtherWaterBody { relation });
+    if river {
+        match known {
+            Some(relation) if relation_class(relation) == OTHER_WATER => {
+                over.push(Reason::OtherWaterBody { relation });
+            }
+            None if input.spot_placed => over.push(Reason::NotPlaced),
+            _ => {}
+        }
     }
     if !pinned && let Some(first) = over.first() {
         return Err(first.clone());
@@ -1243,12 +1253,13 @@ mod tests {
                 (M::FloodCategories, chain(&["nwps"], None, None)),
             ]),
             // The brook joins the river at its mouth, and the Hackensack is another river;
-            // the hydrography does not reach Katonah.
+            // the hydrography places the spot but does not reach Katonah.
             relations: BTreeMap::from([
                 (dam.clone(), Relation::Upstream),
                 (brook.clone(), Relation::Nearby),
                 (hackensack.clone(), Relation::Nearby),
             ]),
+            spot_placed: true,
             ..DiscoveryInput::default()
         };
         let ranking = rank(&input);
@@ -1262,15 +1273,24 @@ mod tests {
         let temp = &ranking.measurements[&M::WaterTemperature];
         assert_eq!(ids(temp), ["USGS-01375000", "USGS-0137499455"]);
 
-        // Katonah is kept on distance alone, as nearby; West Nyack is dropped.
+        // Katonah is not placed and West Nyack is on another river: both are dropped.
         let floods = &ranking.measurements[&M::FloodCategories];
-        assert_eq!(ids(floods), ["KTNN6"]);
-        let nearby = Reason::Relation {
-            relation: Relation::Nearby,
-        };
-        assert!(floods.stations[0].reasons.contains(&nearby));
-        assert_eq!(floods.stations[0].relation, Relation::Nearby);
+        assert_eq!(ids(floods), [] as [&str; 0]);
+        assert_eq!(dropped(floods, "KTNN6"), [&Reason::NotPlaced]);
         assert_eq!(dropped(floods, "WNYN6"), [&other]);
+        // Water temperature takes an unplaced station by distance.
+        input.candidates.push(candidate(
+            site("USGS-01374901", 41.266_11, -73.666_11),
+            &flow,
+        ));
+        let ranking = rank(&input);
+        assert_eq!(
+            dropped(&ranking.measurements[&M::Discharge], "USGS-01374901"),
+            [&Reason::NotPlaced]
+        );
+        let temp = &ranking.measurements[&M::WaterTemperature];
+        assert_eq!(ids(temp).last(), Some(&"USGS-01374901"));
+        input.candidates.pop();
 
         // A gauge takes its site's relation over its own `Nearby`; a pin keeps other water.
         input
@@ -1288,6 +1308,54 @@ mod tests {
         assert_eq!(floods.stations[1].relation, Relation::Upstream);
         let discharge = &ranking.measurements[&M::Discharge];
         assert_eq!(ids(discharge), ["USGS-0137499455", "USGS-01375000"]);
+
+        // A pin keeps a station the hydrography does not place, and says so.
+        input.joins.clear();
+        input
+            .relations
+            .remove(&StationKey::new(SourceId::NWPS, "KTNN6"));
+        input.choices.pin(StationKey::new(SourceId::NWPS, "KTNN6"));
+        let ranking = rank(&input);
+        let floods = &ranking.measurements[&M::FloodCategories];
+        let katonah = floods
+            .stations
+            .iter()
+            .find(|s| s.station.id == "KTNN6")
+            .expect("pinned");
+        assert!(katonah.reasons.contains(&Reason::NotPlaced));
+        assert_eq!(katonah.relation, Relation::Nearby);
+    }
+
+    #[test]
+    fn a_spot_off_the_network_keeps_river_stations_by_distance() {
+        let gauge = |id, lat, lon| {
+            let st = station(SourceId::NWPS, id, StationKind::NwpsGauge, lat, lon);
+            candidate(st, &[(M::FloodCategories, Some(ago(30)))])
+        };
+        // The hydrography places neither the spot nor any gauge: no relation is known.
+        let input = DiscoveryInput {
+            latitude: 41.2252,
+            longitude: -73.8588,
+            now: now(),
+            candidates: vec![
+                gauge("WNYN6", 41.095_56, -73.964_44),
+                gauge("KTNN6", 41.266_11, -73.666_11),
+            ],
+            chains: BTreeMap::from([(M::FloodCategories, chain(&["nwps"], None, None))]),
+            spot_placed: false,
+            ..DiscoveryInput::default()
+        };
+        let ranking = rank(&input);
+        let floods = &ranking.measurements[&M::FloodCategories];
+        assert_eq!(ids(floods), ["KTNN6", "WNYN6"]);
+        let nearby = Reason::Relation {
+            relation: Relation::Nearby,
+        };
+        for s in &floods.stations {
+            assert_eq!(s.relation, Relation::Nearby);
+            assert!(s.reasons.contains(&nearby), "{:?}", s.reasons);
+        }
+        assert_eq!(floods.dropped, []);
     }
 
     #[test]

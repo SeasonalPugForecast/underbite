@@ -177,6 +177,7 @@ fn reason_text(f: &Formatter, reason: &Reason, now: i64) -> String {
         Reason::NotReported { .. } => "checked: no recent values".into(),
         Reason::Relation { relation } => relation_text(*relation).into(),
         Reason::OtherWaterBody { .. } => "on another river or a tributary".into(),
+        Reason::NotPlaced => "not found on the mapped streams, so maybe another river".into(),
         Reason::ForecastGaugeFor { site } => format!("forecast gauge for {}", site.id),
         Reason::Secondary => "not the station's main product".into(),
         Reason::Distance { distance_m } => format!("{} away", f.distance(Some(*distance_m)).full()),
