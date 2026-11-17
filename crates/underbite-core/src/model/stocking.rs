@@ -60,7 +60,7 @@ mod tests {
                 max_m: 0.3,
             }),
             planned,
-            source: SourceId::new("ny-dec-stocking"),
+            source: SourceId::NY_DEC_STOCKING,
         }
     }
 

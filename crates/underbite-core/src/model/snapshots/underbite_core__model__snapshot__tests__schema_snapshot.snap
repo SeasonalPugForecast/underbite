@@ -1081,6 +1081,10 @@ expression: schemas
             "description": "The beach's name as the source writes it.",
             "type": "string"
           },
+          "provenance": {
+            "$ref": "#/$defs/Provenance",
+            "description": "Where the forecast came from (a model run, so `Modelled`), for its credit and age."
+          },
           "valid_at": {
             "$ref": "#/$defs/UnixTime",
             "description": "The time the forecast is valid for."
@@ -1090,7 +1094,8 @@ expression: schemas
           "location",
           "level",
           "valid_at",
-          "distance_m"
+          "distance_m",
+          "provenance"
         ],
         "type": "object"
       },

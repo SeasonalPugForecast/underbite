@@ -37,6 +37,26 @@ impl SourceId {
     pub const NWS: SourceId = SourceId::from_static("nws");
     /// USGS 3D Hydrography Program network.
     pub const USGS_3DHP: SourceId = SourceId::from_static("usgs-3dhp");
+    /// US Army Corps of Engineers water management (CWMS Data API).
+    pub const CWMS: SourceId = SourceId::from_static("cwms");
+    /// US Bureau of Reclamation RISE.
+    pub const RISE: SourceId = SourceId::from_static("rise");
+    /// EPA Cyanobacteria Assessment Network.
+    pub const CYAN: SourceId = SourceId::from_static("cyan");
+    /// NOAA NCCOS harmful algal bloom forecasts.
+    pub const NOAA_HAB: SourceId = SourceId::from_static("noaa-hab");
+    /// New York State DEC fish stocking lists.
+    pub const NY_DEC_STOCKING: SourceId = SourceId::from_static("ny-dec-stocking");
+    /// OpenStreetMap through the Overpass API.
+    pub const OVERPASS: SourceId = SourceId::from_static("overpass");
+    /// USGS Protected Areas Database of the United States.
+    pub const PADUS: SourceId = SourceId::from_static("padus");
+    /// Global Biodiversity Information Facility.
+    pub const GBIF: SourceId = SourceId::from_static("gbif");
+    /// iNaturalist.
+    pub const INATURALIST: SourceId = SourceId::from_static("inaturalist");
+    /// USGS Nonindigenous Aquatic Species.
+    pub const USGS_NAS: SourceId = SourceId::from_static("usgs-nas");
 
     /// A compile-time id.
     pub const fn from_static(id: &'static str) -> Self {

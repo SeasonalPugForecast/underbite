@@ -354,11 +354,7 @@ pub mod testdata {
                 ValueKind::Satellite,
                 &[0.4],
             )),
-            cyanobacteria_cells_ml: Some(f32s(
-                SourceId::new("cyan"),
-                ValueKind::Satellite,
-                &[1500.0],
-            )),
+            cyanobacteria_cells_ml: Some(f32s(SourceId::CYAN, ValueKind::Satellite, &[1500.0])),
             discharge_forecast_m3s: Some(f32s(SourceId::NWPS, ValueKind::Predicted, &[0.5, 0.6])),
             stage_forecast: Some(Heights {
                 datum: VerticalDatum::Gauge,
@@ -390,19 +386,15 @@ pub mod testdata {
             }),
             reservoir: Some(ReservoirInfo {
                 project: "Beltzville Lake".into(),
-                outflow_m3s: Some(f32s(SourceId::new("cwms"), ValueKind::Observed, &[1.1])),
-                inflow_m3s: Some(f32s(SourceId::new("cwms"), ValueKind::Observed, &[0.9])),
+                outflow_m3s: Some(f32s(SourceId::CWMS, ValueKind::Observed, &[1.1])),
+                inflow_m3s: Some(f32s(SourceId::CWMS, ValueKind::Observed, &[0.9])),
                 links: vec![ExternalLink {
                     label: "USACE Philadelphia District".into(),
                     url: "https://www.nap.usace.army.mil".into(),
                 }],
             }),
             bloom: Some(BloomInfo {
-                cyan_max_cells_ml: Some(f32s(
-                    SourceId::new("cyan"),
-                    ValueKind::Satellite,
-                    &[9000.0],
-                )),
+                cyan_max_cells_ml: Some(f32s(SourceId::CYAN, ValueKind::Satellite, &[9000.0])),
                 cyan_valid_cells: Some(412),
                 cyan_image_date: Some(LocalDate {
                     year: 2026,
@@ -415,6 +407,7 @@ pub mod testdata {
                     confidence: Some(0.9),
                     valid_at: at(180),
                     distance_m: 3200.0,
+                    provenance: prov(SourceId::NOAA_HAB, ValueKind::Modelled),
                 }),
                 links: vec![],
             }),
@@ -600,7 +593,7 @@ pub mod testdata {
                         max_m: 0.3,
                     }),
                     planned: false,
-                    source: SourceId::new("ny-dec-stocking"),
+                    source: SourceId::NY_DEC_STOCKING,
                 },
                 StockingEvent {
                     waterbody: "Croton River".into(),
@@ -611,7 +604,7 @@ pub mod testdata {
                     number_estimate: None,
                     size_m: None,
                     planned: true,
-                    source: SourceId::new("ny-dec-stocking"),
+                    source: SourceId::NY_DEC_STOCKING,
                 },
             ],
             stations: vec![station()],

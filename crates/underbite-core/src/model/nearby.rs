@@ -107,7 +107,7 @@ mod tests {
             AccessGeometry::Polygon(vec![vec![p, p, p]]),
         ] {
             let f = AccessFeature {
-                source: SourceId::new("overpass"),
+                source: SourceId::OVERPASS,
                 kind: AccessKind::Ramp,
                 name: None,
                 geometry,
@@ -121,7 +121,7 @@ mod tests {
     #[test]
     fn species_record_round_trips_and_has_no_person_fields() {
         let r = SpeciesRecord {
-            source: SourceId::new("inaturalist"),
+            source: SourceId::INATURALIST,
             id: "1".into(),
             taxon: "Morone saxatilis".into(),
             latitude: 40.7,

@@ -60,6 +60,8 @@ pub struct HabForecast {
     pub valid_at: UnixTime,
     /// From the spot to the beach, metres.
     pub distance_m: f32,
+    /// Where the forecast came from (a model run, so `Modelled`), for its credit and age.
+    pub provenance: Provenance,
 }
 
 /// Bloom data for the spot's lake or coast. The `CyAN` mean stays in `cyanobacteria_cells_ml`.
