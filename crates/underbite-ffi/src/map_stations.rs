@@ -72,6 +72,10 @@ const CLOSE_ZOOM: f64 = 9.0;
 const NWPS_REFRESH_S: i64 = 3_600;
 /// How old an observed flood category may be and still colour a pin.
 const NWPS_STATE_MAX_AGE_S: i64 = 6 * 3_600;
+/// How long a cell's USGS sites answer when one of its site-type searches failed: long enough
+/// that panning back and forth spends no more requests, short enough that the missing type is
+/// soon asked again.
+const PARTIAL_SITES_TTL_S: i64 = 3_600;
 /// A USGS site whose list says its newest value is older than this is shown without a value,
 /// and not asked about (the list's series ends lag by about a day at most).
 const USGS_REPORTING_WITHIN_S: i64 = 30 * 86_400;
@@ -391,6 +395,21 @@ fn cells(view: &View) -> Option<Vec<Cell>> {
 struct StoredStations {
     #[serde(default)]
     candidates: Vec<StationCandidate>,
+    /// Some of the searches behind the list failed: it is kept for
+    /// [`PARTIAL_SITES_TTL_S`] only.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    partial: bool,
+}
+
+impl StoredStations {
+    /// How long the list answers before it is fetched again.
+    const fn ttl_s(&self) -> i64 {
+        if self.partial {
+            PARTIAL_SITES_TTL_S
+        } else {
+            STATION_LIST_TTL_S
+        }
+    }
 }
 
 /// A cell's NWPS gauges with their observed flood categories.
@@ -617,7 +636,10 @@ async fn whole_list(
     };
     match got.and_then(|f| list.parse(&request, &f)) {
         Ok(candidates) => {
-            let stored = StoredStations { candidates };
+            let stored = StoredStations {
+                candidates,
+                partial: false,
+            };
             link.keep(&ours, &stored);
             stored.candidates
         }
@@ -702,15 +724,18 @@ async fn usgs_sites(
         let stored = link.load::<StoredStations>(&key);
         let due = stored
             .as_ref()
-            .is_none_or(|s| !link.fresh(s.saved_at, STATION_LIST_TTL_S));
+            .is_none_or(|s| !link.fresh(s.saved_at, s.value.ttl_s()));
         if due && fetch && !refused && fetched < MAX_FETCHED_CELLS {
             fetched += 1;
             match usgs_cell(link, cell, ctx).await {
                 Ok((candidates, gaps)) => {
-                    let stored = StoredStations { candidates };
-                    if gaps.is_empty() {
-                        link.keep(&key, &stored);
-                    }
+                    // Kept even when a site type failed, for a short while, so that panning
+                    // does not search the cell again and again.
+                    let stored = StoredStations {
+                        candidates,
+                        partial: !gaps.is_empty(),
+                    };
+                    link.keep(&key, &stored);
                     errors.extend(
                         gaps.iter()
                             .map(|e| issue(SourceId::USGS, "station list", e)),

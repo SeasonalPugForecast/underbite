@@ -172,6 +172,19 @@ impl FetchHost for Recorded {
         let Some((_, file)) = self.routes.iter().find(|(m, _)| url.contains(m)) else {
             panic!("no recorded response for {}", redact_url(&url));
         };
+        if let Some(status) = file.strip_prefix("status:") {
+            return Ok(HostResponse {
+                status: status.parse().expect("a status"),
+                body: Vec::new(),
+                content_type: None,
+                date: None,
+                expires: None,
+                last_modified: None,
+                etag: None,
+                retry_after: None,
+                rate_limit_remaining: None,
+            });
+        }
         let path = raw(file);
         let body = std::fs::read(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
         let content_type = if Path::new(file)
@@ -442,6 +455,56 @@ fn nwps_gauges_show_their_flood_category() {
     let urls = host.urls();
     assert_eq!(urls.len(), 2, "{urls:?}");
     assert!(urls.iter().all(|u| u.contains("nwps/v1/gauges?bbox")));
+}
+
+#[test]
+fn a_failed_site_search_is_not_asked_again_within_the_hour() {
+    // The lake search fails for every cell; the other site types answer.
+    let sites: Vec<(&str, &str)> = [("site_type_code=LK", "status:503")]
+        .iter()
+        .chain(CROTON_SITES)
+        .copied()
+        .collect();
+    let host = Recorded::new(&sites);
+    let at = |t: i64| {
+        pollster::block_on(map_stations(
+            CROTON[0],
+            CROTON[1],
+            CROTON[2],
+            CROTON[3],
+            12.0,
+            settings(&["usgs-gauges"]),
+            Keys::default(),
+            t,
+            host.host(),
+        ))
+        .expect("pins")
+    };
+    let site_searches = |host: &Recorded| {
+        host.urls()
+            .iter()
+            .filter(|u| u.contains("site_type_code=") || u.contains("time-series-metadata"))
+            .count()
+    };
+    let first = at(now());
+    assert!(
+        first.errors.iter().any(|e| e.source == "usgs"),
+        "{:?}",
+        first.errors
+    );
+    assert_eq!(site_searches(&host), 20);
+    pin(&first, "usgs:USGS-01375000");
+
+    // Within the hour the sites found answer, and no search is spent again.
+    host.forget_requests();
+    let again = at(now() + 600);
+    assert_eq!(site_searches(&host), 0, "{:?}", host.urls());
+    pin(&again, "usgs:USGS-01375000");
+
+    // After it the cells are searched again.
+    host.forget_requests();
+    at(now() + 3_601);
+    assert_eq!(site_searches(&host), 20);
 }
 
 #[test]
