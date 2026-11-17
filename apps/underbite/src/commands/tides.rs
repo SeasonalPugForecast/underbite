@@ -2,6 +2,7 @@
 //! computed on the device from the station's harmonic constants.
 
 use std::collections::BTreeSet;
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::sync::Arc;
 
@@ -10,9 +11,14 @@ use jiff::tz::TimeZone;
 use serde::Deserialize;
 use serde_json::json;
 use underbite_config::schema::Config;
+use underbite_core::astro::tide::TideHarmonics;
 use underbite_core::datum::Height;
+use underbite_core::datum::VerticalDatum;
 use underbite_core::model::{Measurement, Requirements, TideEvent, TideKind, TideSeries};
-use underbite_core::provenance::{Relation, SourceId, StationKind, StationRef};
+use underbite_core::offline::tables::{TideStation, tide_table};
+use underbite_core::provenance::{
+    Provenance, Quality, Relation, SourceId, StationKind, StationRef, ValueKind,
+};
 use underbite_core::time::{LocalDate, UnixTime, local_date, local_date_bounds, parse_date, zone};
 use underbite_core::view::Quantity;
 use underbite_core::view::format::Formatter;
@@ -45,6 +51,17 @@ pub(crate) struct Args {
     /// Compute the predictions on this device from the station's harmonic constants.
     #[arg(long)]
     pub(crate) offline: bool,
+    /// With `--offline`: read the constants from this saved CO-OPS `harcon.json` (metric)
+    /// instead of the network; the days are then UTC days.
+    #[arg(long, value_name = "FILE", requires_all = ["offline", "datums"])]
+    pub(crate) harcon: Option<PathBuf>,
+    /// The station's saved `datums.json` (a subordinate station's reference station's).
+    #[arg(long, value_name = "FILE", requires = "harcon")]
+    pub(crate) datums: Option<PathBuf>,
+    /// The saved `tidepredoffsets.json` of a subordinate station; `--harcon` and `--datums`
+    /// are then its reference station's.
+    #[arg(long, value_name = "FILE", requires = "harcon")]
+    pub(crate) offsets: Option<PathBuf>,
     /// Print the events (and the curve) as JSON.
     #[arg(long)]
     pub(crate) json: bool,
@@ -307,6 +324,92 @@ fn local_window(first: LocalDate, days: u16, tz: &TimeZone) -> anyhow::Result<Wi
     })
 }
 
+/// Reads a saved response; the path is named when it cannot be read.
+fn read(path: &Path) -> anyhow::Result<Vec<u8>> {
+    std::fs::read(path).with_context(|| format!("reading {}", path.display()))
+}
+
+/// The table from saved metadata files alone, with no network. Without the station's record
+/// its time zone is unknown, so the days are UTC days.
+fn from_files(
+    args: &Args,
+    ctx: &FetchContext,
+    harcon: &Path,
+    datums: &Path,
+    offsets: Option<&Path>,
+    now: UnixTime,
+) -> anyhow::Result<(StationRef, TimeZone, String, Window, TideSeries)> {
+    let offsets = match offsets {
+        Some(path) => Some(
+            mdapi::parse_tide_offsets(&read(path)?)
+                .map_err(|e| anyhow!("{}: {e}", path.display()))?
+                .with_context(|| {
+                    format!(
+                        "{} is a reference station's, with no offsets",
+                        path.display()
+                    )
+                })?,
+        ),
+        None => None,
+    };
+    let reference_id = offsets
+        .as_ref()
+        .map_or(args.station.as_str(), |o| o.reference_id.as_str())
+        .to_owned();
+    let table = mdapi::parse_datums(&reference_id, &read(datums)?)
+        .map_err(|e| anyhow!("{}: {e}", datums.display()))?;
+    let harmonics: TideHarmonics =
+        mdapi::parse_tide_harmonics(&reference_id, &read(harcon)?, &table, VerticalDatum::Mllw)
+            .map_err(|e| anyhow!("{}: {e}", harcon.display()))?;
+
+    let station = StationRef {
+        source: SourceId::COOPS,
+        id: args.station.clone(),
+        name: args.station.clone(),
+        kind: if offsets.is_some() {
+            StationKind::TideSubordinate
+        } else {
+            StationKind::TideHarmonic
+        },
+        latitude: 0.0,
+        longitude: 0.0,
+        bin: None,
+        reference_id: offsets.as_ref().map(|o| o.reference_id.clone()),
+    };
+    eprintln!("note: no network and no station record; the days and times are UTC");
+    let tz = TimeZone::UTC;
+    let first = match &args.from {
+        Some(text) => parse_date(text).map_err(|e| anyhow!("--from {text:?}: {e}"))?,
+        None => local_date(now, &tz).map_err(|e| anyhow!("today: {e}"))?,
+    };
+    let window = local_window(first, args.days, &tz)?;
+    let base = Provenance {
+        source: SourceId::COOPS_HARMONICS,
+        station: Some(station.clone()),
+        distance_m: None,
+        relation: Relation::Nearby,
+        observed_at: ctx.now,
+        kind: ValueKind::Computed,
+        quality: Quality::Approved,
+    };
+    let source = match &offsets {
+        Some(offsets) => TideStation::Subordinate {
+            reference: &harmonics,
+            offsets,
+        },
+        None => TideStation::Harmonic(&harmonics),
+    };
+    let tide = tide_table(
+        source,
+        base,
+        window.from,
+        window.to,
+        std::time::Duration::from_mins(6),
+    )
+    .map_err(|e| anyhow!("{e}"))?;
+    Ok((station, tz, "UTC".into(), window, tide))
+}
+
 /// Runs `underbite tides`.
 pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
     if args.days == 0 || args.days > MAX_DAYS {
@@ -318,31 +421,50 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
     let ctx = FetchContext::new(env.now, env.options.user_agent.clone())
         .with_coordinate_precision(config.sources.coordinate_precision);
 
-    let station = find_station(&host, &ctx, &args.station)?;
-    let place = Place::Station {
-        station: station.clone(),
-        distance_m: None,
-        relation: Relation::Nearby,
-    };
-    let (tz, zone_name) = station_zone(&host, &station.id);
-    let first = match &args.from {
-        Some(text) => parse_date(text).map_err(|e| anyhow!("--from {text:?}: {e}"))?,
-        None => local_date(env.now, &tz).map_err(|e| anyhow!("today at the station: {e}"))?,
-    };
-    let window = local_window(first, args.days, &tz)?;
-    let (tide, computed, credit) = if args.offline {
-        (
-            offline(&host, &ctx, place, window)?,
-            true,
-            CoopsHarmonics.attribution(),
-        )
-    } else {
-        (
-            online(&host, &ctx, place, window, args.json)?,
-            false,
-            Coops.attribution(),
-        )
-    };
+    let (station, tz, zone_name, window, tide, computed, credit) =
+        if let (Some(harcon), Some(datums)) = (&args.harcon, &args.datums) {
+            let (station, tz, zone_name, window, tide) =
+                from_files(args, &ctx, harcon, datums, args.offsets.as_deref(), env.now)?;
+            let credit = CoopsHarmonics.attribution().credit;
+            (station, tz, zone_name, window, tide, true, credit)
+        } else {
+            let station = find_station(&host, &ctx, &args.station)?;
+            let place = Place::Station {
+                station: station.clone(),
+                distance_m: None,
+                relation: Relation::Nearby,
+            };
+            let (tz, zone_name) = station_zone(&host, &station.id);
+            let first = match &args.from {
+                Some(text) => parse_date(text).map_err(|e| anyhow!("--from {text:?}: {e}"))?,
+                None => {
+                    local_date(env.now, &tz).map_err(|e| anyhow!("today at the station: {e}"))?
+                }
+            };
+            let window = local_window(first, args.days, &tz)?;
+            let (tide, computed, credit) = if args.offline {
+                (
+                    offline(&host, &ctx, place, window)?,
+                    true,
+                    CoopsHarmonics.attribution(),
+                )
+            } else {
+                (
+                    online(&host, &ctx, place, window, args.json)?,
+                    false,
+                    Coops.attribution(),
+                )
+            };
+            (
+                station,
+                tz,
+                zone_name,
+                window,
+                tide,
+                computed,
+                credit.credit,
+            )
+        };
 
     let f = Formatter::new(
         config.units.display_units(),
@@ -358,7 +480,7 @@ pub(crate) fn run(args: &Args, global: &Global) -> anyhow::Result<ExitCode> {
         tide,
         window,
         computed,
-        credit: credit.credit,
+        credit,
     };
     if args.json {
         println!("{}", serde_json::to_string_pretty(&shown.json())?);
@@ -522,5 +644,87 @@ mod tests {
         // UTC stations keep UTC days.
         let w = local_window(date("2026-11-14"), 2, &TimeZone::UTC).unwrap();
         assert_eq!(w.to.0 - w.from.0 + 1, 2 * 86_400);
+    }
+}
+
+#[cfg(test)]
+mod offline_file_tests {
+    use super::*;
+
+    fn raw(name: &str) -> PathBuf {
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/fixtures/raw/coops")
+            .join(name)
+    }
+
+    fn args(station: &str) -> Args {
+        Args {
+            station: station.into(),
+            from: Some("2026-11-08".into()),
+            days: 7,
+            offline: true,
+            harcon: None,
+            datums: None,
+            offsets: None,
+            json: false,
+        }
+    }
+
+    fn ctx() -> FetchContext {
+        FetchContext::new(UnixTime(1_794_000_000), "test")
+    }
+
+    #[test]
+    fn the_battery_week_comes_from_local_files_alone() {
+        let (station, _, zone, window, tide) = from_files(
+            &args("8518750"),
+            &ctx(),
+            &raw("coops-mdapi-8518750-harcon-metric.json"),
+            &raw("coops-mdapi-8518750-datums-metric.json"),
+            None,
+            UnixTime(1_794_000_000),
+        )
+        .unwrap();
+        assert_eq!(
+            (station.kind, zone.as_str()),
+            (StationKind::TideHarmonic, "UTC")
+        );
+        assert_eq!(tide.datum, VerticalDatum::Mllw);
+        let n = tide
+            .events
+            .iter()
+            .filter(|e| e.time >= window.from && e.time <= window.to)
+            .count();
+        assert_eq!(n, 27);
+    }
+
+    #[test]
+    fn a_subordinate_station_is_computed_from_its_reference_files() {
+        let (station, _, _, _, tide) = from_files(
+            &args("8518919"),
+            &ctx(),
+            &raw("coops-mdapi-8518750-harcon-metric.json"),
+            &raw("coops-mdapi-8518750-datums-metric.json"),
+            Some(&raw("coops-mdapi-8518919-tidepredoffsets.json")),
+            UnixTime(1_794_000_000),
+        )
+        .unwrap();
+        assert_eq!(station.kind, StationKind::TideSubordinate);
+        assert!(tide.curve.is_none());
+        assert!(tide.events.len() >= 25);
+    }
+
+    #[test]
+    fn a_missing_file_is_named() {
+        let missing = from_files(
+            &args("8518750"),
+            &ctx(),
+            &raw("no-such-file.json"),
+            &raw("coops-mdapi-8518750-datums-metric.json"),
+            None,
+            UnixTime(0),
+        );
+        let message = format!("{:#}", missing.unwrap_err());
+        assert!(message.contains("no-such-file.json"), "{message}");
     }
 }
