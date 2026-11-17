@@ -38,6 +38,7 @@ request URL and the recording date:
 - [inaturalist](raw/inaturalist/README.md)
 - [nas](raw/nas/README.md)
 - [stocking-ny](raw/stocking-ny/README.md)
+- [gridded-weather](raw/gridded-weather/README.md)
 
 ## Conventions
 
