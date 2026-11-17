@@ -56,15 +56,16 @@ nonisolated enum SearchArea {
 }
 
 /// The spots a running refresh still has to fetch, in order. A refresh asked for while another
-/// runs joins it: ids not already waiting are added.
+/// runs joins it: ids not already waiting, nor being fetched, are added.
 nonisolated struct RefreshQueue: Equatable {
     private(set) var waiting: [String] = []
 
     var isEmpty: Bool { waiting.isEmpty }
 
-    /// Adds `ids` that are not waiting yet.
-    mutating func add(_ ids: [String]) {
-        for id in ids where !waiting.contains(id) { waiting.append(id) }
+    /// Adds `ids` that are not waiting yet and not in `running` (being fetched now: the fetch
+    /// under way brings their data).
+    mutating func add(_ ids: [String], except running: Set<String> = []) {
+        for id in ids where !waiting.contains(id) && !running.contains(id) { waiting.append(id) }
     }
 
     /// The next spot to fetch.

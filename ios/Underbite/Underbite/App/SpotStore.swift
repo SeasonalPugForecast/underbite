@@ -298,10 +298,14 @@ final class SpotStore {
         saveState()
     }
 
+    /// Deletes the spot `id` with everything kept of it: its cache, and on the host its last
+    /// snapshot (which holds its exact position), its rankings and its station choices. A fetch
+    /// or lookup of it under way forgets them again when it ends.
     func remove(_ id: String) {
         spots.removeAll { $0.id == id }
         caches[id] = nil
         files.remove(files.cacheName(id))
+        forgetSpot(spotId: id, host: host)
         stationProblems[id] = nil
         rowsBuilt[id] = nil
         if activeID == id { activeID = arranged.first?.id }
@@ -466,12 +470,12 @@ final class SpotStore {
 
     /// Fetches `ids` (every spot when `nil`), one at a time: each fetch loads the call ledger
     /// and saves its own copy, so side-by-side fetches would under-count the metered calls.
-    /// A refresh asked for while one runs joins it and returns when it ends. Cancelling the
-    /// task drops the spots still waiting.
+    /// A refresh asked for while one runs joins it and returns when it ends; a spot being
+    /// fetched then is not fetched again. Cancelling the task drops the spots still waiting.
     func refresh(only ids: Set<String>? = nil) async {
         let wanted = arranged.map(\.id).filter { ids?.contains($0) ?? true }
         let first = wanted.filter { $0 == activeID } + wanted.filter { $0 != activeID }
-        queue.add(first)
+        queue.add(first, except: refreshing)
         pageDue = true
         if running {
             await withCheckedContinuation { waiters.append($0) }
@@ -521,12 +525,27 @@ final class SpotStore {
         let now = clock()
         let options = FetchOptions(
             allowMetered: true, inferWaterType: !spot.waterTypeChosen && held.suggestion == nil)
-        var ranked: String?
+        let result: Result<SpotFetchOutcome, any Error>
         do {
-            let outcome = try await fetcher(
-                spot.info, settingsJSON, keys(), options, now, host)
+            result = .success(try await fetcher(spot.info, settingsJSON, keys(), options, now, host))
+        } catch {
+            result = .failure(error)
+        }
+        // A spot deleted meanwhile keeps nothing: the fetch stored its snapshot on the host.
+        guard let current = self.spot(id) else {
+            forgetSpot(spotId: id, host: host)
+            return
+        }
+        var ranked: String?
+        switch result {
+        case .success(let outcome):
             if let hint = outcome.suggestion {
                 held.suggestion = WaterTypeHint(waterType: hint.waterType, reasons: hint.reasons)
+                // Until the user chooses one, the spot takes the type the core suggests, so
+                // the page and the next fetches plan for it.
+                if !current.waterTypeChosen, current.waterType != hint.waterType {
+                    change(id) { $0.waterType = hint.waterType }
+                }
             }
             // Every source unreachable: the phone is offline; the older snapshot stays.
             if !outcome.errors.isEmpty, outcome.errors.allSatisfy({ $0.kind == "transport" }) {
@@ -538,8 +557,8 @@ final class SpotStore {
                 // The stations the fetch ranked, so the list shows them before any lookup.
                 ranked = storedStations(spotId: id, host: host)
             }
-        } catch {
-            held.error = String(describing: error)
+        case .failure(let error):
+            held.error = Self.message(of: error)
         }
         // Else the stations a list kept while the fetch ran stay.
         if let ranked {
@@ -550,6 +569,15 @@ final class SpotStore {
         }
         caches[id] = held
         files.write(held, files.cacheName(id))
+    }
+
+    /// What an error of a fetch or lookup says: the core's own message for the FFI's errors.
+    private nonisolated static func message(of error: any Error) -> String {
+        switch error {
+        case FetchError.Settings(let message): message
+        case FetchError.Invalid(_, let message): message
+        default: error.localizedDescription
+        }
     }
 
     // MARK: - Stations
@@ -595,8 +623,11 @@ final class SpotStore {
         let settings = settingsJSON
         do {
             let found = try await discoverer(spot.info, settings, keys(), clock(), host)
-            // A spot deleted meanwhile keeps no stations.
-            guard self.spot(id) != nil else { return }
+            // A spot deleted meanwhile keeps no stations, here or on the host.
+            guard self.spot(id) != nil else {
+                forgetSpot(spotId: id, host: host)
+                return
+            }
             var held = cache(id)
             // Every list unreachable: the phone is offline; the older stations stay.
             let offline =
@@ -609,7 +640,8 @@ final class SpotStore {
             }
             stationProblems[id] = found.errors.first?.message
         } catch {
-            stationProblems[id] = String(describing: error)
+            guard self.spot(id) != nil else { return }
+            stationProblems[id] = Self.message(of: error)
         }
     }
 
@@ -632,6 +664,7 @@ final class SpotStore {
     /// own station store, which the next fetch reads, then looks the stations up again so the
     /// list shows it. The page follows with the spot's next fetch.
     func chooseStation(_ choice: StationChoice, key: String, for id: String) async throws {
+        guard spot(id) != nil else { return }
         let now = clock()
         switch choice {
         case .pin: try pinStation(spotId: id, key: key, now: now, host: host)
