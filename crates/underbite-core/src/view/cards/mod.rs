@@ -1,6 +1,7 @@
 //! The cards of the conditions dashboard, compact and full.
 
 pub mod alerts;
+pub mod bloom;
 pub mod clarity;
 pub mod current;
 pub mod flow;
@@ -9,6 +10,7 @@ pub mod now;
 pub mod pressure;
 pub mod solunar;
 pub mod sources;
+pub mod stocking;
 pub mod storm_ahead;
 pub mod sun_moon;
 pub mod tide;
