@@ -21,7 +21,7 @@ expression: build(&input).unwrap()
         "text": "Provisional data, subject to revision."
       }
     ],
-    "accessibility": "Sources: NOAA CO-OPS, USGS, NOAA NDBC, copernicus, cyan, NOAA NWPS, Open-Meteo Marine, National Weather Service, Open-Meteo, Open-Meteo model providers, USGS. USGS: rate limited, used NWPS stage coops: HTTP 503 Service Unavailable, used coops-harmonics"
+    "accessibility": "Sources: NOAA CO-OPS, USGS, NOAA NDBC, copernicus, EPA CyAN, NOAA NWPS, Open-Meteo Marine, National Weather Service, Open-Meteo, Open-Meteo model providers, USGS. USGS: rate limited, used NWPS stage coops: HTTP 503 Service Unavailable, used coops-harmonics"
   },
   "compact": {
     "headline": {
@@ -62,8 +62,8 @@ expression: build(&input).unwrap()
         "licence": null
       },
       {
-        "source": "cyan",
-        "text": "cyan",
+        "source": "EPA CyAN",
+        "text": "EPA CyAN",
         "link": null,
         "licence": null
       },
@@ -148,7 +148,7 @@ expression: build(&input).unwrap()
         "measurement": "Cyanobacteria",
         "station": "The Battery",
         "station_id": "8518750",
-        "source": "cyan",
+        "source": "EPA CyAN",
         "distance": "0.4 mi",
         "age": "just now",
         "relation": "Same water body",

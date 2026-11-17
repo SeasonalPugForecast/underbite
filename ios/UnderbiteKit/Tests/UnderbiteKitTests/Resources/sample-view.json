@@ -2886,7 +2886,7 @@
       {
         "card": "sources",
         "chrome": {
-          "accessibility": "Sources: NOAA CO-OPS, USGS, NOAA NDBC, copernicus, cyan, NOAA NWPS, Open-Meteo Marine, National Weather Service, Open-Meteo, Open-Meteo model providers, USGS. USGS: rate limited, used NWPS stage",
+          "accessibility": "Sources: NOAA CO-OPS, USGS, NOAA NDBC, copernicus, EPA CyAN, NOAA NWPS, Open-Meteo Marine, National Weather Service, Open-Meteo, Open-Meteo model providers, USGS. USGS: rate limited, used NWPS stage",
           "credits": [],
           "footnote": null,
           "id": "sources",
@@ -2946,8 +2946,8 @@
             {
               "licence": null,
               "link": null,
-              "source": "cyan",
-              "text": "cyan"
+              "source": "EPA CyAN",
+              "text": "EPA CyAN"
             },
             {
               "licence": "Public domain",
@@ -3040,7 +3040,7 @@
               "kind": "Satellite",
               "measurement": "Cyanobacteria",
               "relation": "Same water body",
-              "source": "cyan",
+              "source": "EPA CyAN",
               "state": {
                 "state": "fresh"
               },

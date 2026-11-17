@@ -1083,6 +1083,19 @@ safety_keys! {
     SourceOpenMeteoMarine => "Open-Meteo Marine",
     SourceNws => "National Weather Service",
     SourceUsgs3dhp => "USGS 3DHP",
+    SourceGlerl => "NOAA GLERL",
+    SourceCwms => "US Army Corps of Engineers",
+    SourceRise => "US Bureau of Reclamation",
+    SourceCyan => "EPA CyAN",
+    SourceNoaaHab => "NOAA NCCOS bloom forecast",
+    SourceNyDecStocking => "NYS DEC stocking",
+    SourceOverpass => "OpenStreetMap",
+    SourcePadus => "USGS PAD-US",
+    SourceGbif => "GBIF",
+    SourceInaturalist => "iNaturalist",
+    SourceUsgsNas => "USGS Nonindigenous Aquatic Species",
+    SourceDfoIwls => "Canadian Hydrographic Service",
+    SourceEcccHydrometric => "Environment and Climate Change Canada",
     /// The credit of a USGS value whose snapshot carries no attribution.
     CreditUsgs => "U.S. Geological Survey",
     SourceOpenMeteo => "Open-Meteo",
@@ -1400,6 +1413,19 @@ impl Strings {
             "open-meteo-marine" => SafetyKey::SourceOpenMeteoMarine,
             "nws" => SafetyKey::SourceNws,
             "usgs-3dhp" => SafetyKey::SourceUsgs3dhp,
+            "glerl" => SafetyKey::SourceGlerl,
+            "cwms" => SafetyKey::SourceCwms,
+            "rise" => SafetyKey::SourceRise,
+            "cyan" => SafetyKey::SourceCyan,
+            "noaa-hab" => SafetyKey::SourceNoaaHab,
+            "ny-dec-stocking" => SafetyKey::SourceNyDecStocking,
+            "overpass" => SafetyKey::SourceOverpass,
+            "padus" => SafetyKey::SourcePadus,
+            "gbif" => SafetyKey::SourceGbif,
+            "inaturalist" => SafetyKey::SourceInaturalist,
+            "usgs-nas" => SafetyKey::SourceUsgsNas,
+            "dfo-iwls" => SafetyKey::SourceDfoIwls,
+            "eccc-hydrometric" => SafetyKey::SourceEcccHydrometric,
             other => return other.to_owned(),
         };
         self.safety(key).to_owned()
@@ -2233,6 +2259,46 @@ pub fn source_name(id: &SourceId) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn every_known_source_has_a_name() {
+        use crate::provenance::SourceId;
+        let s = Strings::new(Voice::Plain);
+        for id in [
+            SourceId::USGS,
+            SourceId::COOPS,
+            SourceId::COOPS_HARMONICS,
+            SourceId::NDBC,
+            SourceId::NWPS,
+            SourceId::OPEN_METEO_MARINE,
+            SourceId::NWS,
+            SourceId::USGS_3DHP,
+            SourceId::GLERL,
+            SourceId::CWMS,
+            SourceId::RISE,
+            SourceId::CYAN,
+            SourceId::NOAA_HAB,
+            SourceId::NY_DEC_STOCKING,
+            SourceId::OVERPASS,
+            SourceId::PADUS,
+            SourceId::GBIF,
+            SourceId::INATURALIST,
+            SourceId::USGS_NAS,
+            SourceId::DFO_IWLS,
+            SourceId::ECCC_HYDROMETRIC,
+        ] {
+            assert_ne!(
+                s.source_name(&id),
+                id.as_str(),
+                "no name for {}",
+                id.as_str()
+            );
+        }
+        assert_eq!(
+            s.source_name(&SourceId::DFO_IWLS),
+            "Canadian Hydrographic Service"
+        );
+    }
 
     #[test]
     fn luna_variants_exist_only_for_playful_text() {
