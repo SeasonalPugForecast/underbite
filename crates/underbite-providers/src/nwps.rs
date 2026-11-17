@@ -12,7 +12,7 @@
 
 use std::collections::BTreeMap;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use underbite_core::datum::{Height, Heights, VerticalDatum};
 use underbite_core::model::{
     Coverage, FloodCategories, Measurement, Requirements, StationCandidate,
@@ -306,22 +306,85 @@ struct RawStatus {
     valid_time: String,
 }
 
-/// The gauges in a `/gauges?bbox…` body and what each offers: a flow forecast when it has a
-/// forecast product, and flood categories (the list does not say whether thresholds are
-/// defined; the gauge's own metadata does).
+/// A gauge's observed flood category, as a gauge list states it
+/// (`status.observed.floodCategory`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum FloodCategory {
+    /// Below every flood stage.
+    NoFlooding,
+    /// At or above the action stage.
+    Action,
+    /// Minor flooding.
+    Minor,
+    /// Moderate flooding.
+    Moderate,
+    /// Major flooding.
+    Major,
+    /// Below the gauge's low-water threshold.
+    LowThreshold,
+    /// The gauge has no flood stages.
+    NotDefined,
+    /// The latest observation is too old to classify.
+    ObsNotCurrent,
+    /// The forecast is too old to classify.
+    FcstNotCurrent,
+    /// The gauge is out of service.
+    OutOfService,
+    /// Missing, or a value not seen when the service was checked.
+    Unknown,
+}
+
+impl FloodCategory {
+    /// The category the service writes as `code` (`no_flooding`, `action`, `minor`, ...).
+    /// `minor`, `moderate` and `major` follow the names of the flood stages; they were not
+    /// observed when the service was checked.
+    pub fn from_code(code: &str) -> Self {
+        match code.trim() {
+            "no_flooding" => Self::NoFlooding,
+            "action" => Self::Action,
+            "minor" => Self::Minor,
+            "moderate" => Self::Moderate,
+            "major" => Self::Major,
+            "low_threshold" => Self::LowThreshold,
+            "not_defined" => Self::NotDefined,
+            "obs_not_current" => Self::ObsNotCurrent,
+            "fcst_not_current" => Self::FcstNotCurrent,
+            "out_of_service" => Self::OutOfService,
+            _ => Self::Unknown,
+        }
+    }
+}
+
+/// One gauge of a gauge list: the station and what it offers, and its observed state.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ListedGauge {
+    /// The gauge as a station candidate (see [`parse_gauges`]).
+    pub candidate: StationCandidate,
+    /// The observed flood category.
+    pub flood_category: FloodCategory,
+    /// When the category was observed; `None` for a gauge that never reported.
+    pub observed_at: Option<UnixTime>,
+}
+
+/// The gauges in a `/gauges?bbox…` body, each with what it offers (see [`parse_gauges`]) and
+/// its observed flood category.
 ///
 /// # Errors
 /// [`SourceError::Parse`] when the body is not a gauge list.
-pub fn parse_gauges(body: &[u8]) -> Result<Vec<StationCandidate>, SourceError> {
+pub fn parse_gauge_list(body: &[u8]) -> Result<Vec<ListedGauge>, SourceError> {
     let list: RawList =
         serde_json::from_slice(body).map_err(|e| parse_error(format!("not a gauge list: {e}")))?;
     Ok(list
         .gauges
         .into_iter()
         .map(|g| {
+            let observed = g.status.observed;
             // A gauge that never reported has the zero time `0001-01-01T00:00:00Z`.
-            let last_value_at = parse_rfc3339(&g.status.observed.valid_time)
-                .filter(|t| t.0 > 0 && g.status.observed.flood_category != "out_of_service");
+            let observed_at = parse_rfc3339(&observed.valid_time).filter(|t| t.0 > 0);
+            let flood_category = FloodCategory::from_code(&observed.flood_category);
+            let last_value_at =
+                observed_at.filter(|_| flood_category != FloodCategory::OutOfService);
             let coverage = Coverage {
                 last_value_at,
                 primary: true,
@@ -333,20 +396,38 @@ pub fn parse_gauges(body: &[u8]) -> Result<Vec<StationCandidate>, SourceError> {
             // The list does not carry thresholds, so any gauge may have flood stages; the
             // gauge's own metadata says.
             offers.insert(Measurement::FloodCategories, coverage);
-            StationCandidate {
-                station: StationRef {
-                    source: SourceId::NWPS,
-                    id: g.lid,
-                    name: g.name,
-                    kind: StationKind::NwpsGauge,
-                    latitude: g.latitude,
-                    longitude: g.longitude,
-                    bin: None,
-                    reference_id: None,
+            ListedGauge {
+                candidate: StationCandidate {
+                    station: StationRef {
+                        source: SourceId::NWPS,
+                        id: g.lid,
+                        name: g.name,
+                        kind: StationKind::NwpsGauge,
+                        latitude: g.latitude,
+                        longitude: g.longitude,
+                        bin: None,
+                        reference_id: None,
+                    },
+                    offers,
                 },
-                offers,
+                flood_category,
+                observed_at,
             }
         })
+        .collect())
+}
+
+/// The gauges in a `/gauges?bbox…` body and what each offers: a flow forecast when it has a
+/// forecast product, and flood categories (the list does not say whether thresholds are
+/// defined; the gauge's own metadata does). [`parse_gauge_list`] adds each gauge's observed
+/// flood category.
+///
+/// # Errors
+/// [`SourceError::Parse`] when the body is not a gauge list.
+pub fn parse_gauges(body: &[u8]) -> Result<Vec<StationCandidate>, SourceError> {
+    Ok(parse_gauge_list(body)?
+        .into_iter()
+        .map(|g| g.candidate)
         .collect())
 }
 
@@ -860,6 +941,57 @@ mod tests {
             .filter(|c| c.offers.contains_key(&Measurement::FlowForecast))
             .count();
         assert!(with_forecast > 0 && with_forecast < 32);
+    }
+
+    #[test]
+    fn lower_hudson_list_gives_flood_categories() {
+        let body = fixture_bytes("nwps", "nwps-gauges-bbox-lower-hudson.json");
+        let gauges = parse_gauge_list(&body).unwrap();
+        let count = |c: FloodCategory| gauges.iter().filter(|g| g.flood_category == c).count();
+        assert_eq!(count(FloodCategory::NoFlooding), 23);
+        assert_eq!(count(FloodCategory::NotDefined), 5);
+        assert_eq!(count(FloodCategory::OutOfService), 3);
+        assert_eq!(count(FloodCategory::ObsNotCurrent), 1);
+        let by_lid = |lid: &str| {
+            gauges
+                .iter()
+                .find(|g| g.candidate.station.id == lid)
+                .unwrap()
+        };
+        assert_eq!(
+            by_lid("HOHN4").observed_at,
+            parse_rfc3339("2026-11-08T13:30:00Z")
+        );
+        let pelham = by_lid("HAMN6");
+        assert_eq!(pelham.flood_category, FloodCategory::OutOfService);
+        assert_eq!(pelham.observed_at, None);
+        // The candidates are those of `parse_gauges`, in the same order.
+        let candidates: Vec<StationCandidate> = gauges.into_iter().map(|g| g.candidate).collect();
+        assert_eq!(candidates, parse_gauges(&body).unwrap());
+    }
+
+    #[test]
+    fn flood_categories_read_every_code() {
+        for (code, category) in [
+            ("no_flooding", FloodCategory::NoFlooding),
+            ("action", FloodCategory::Action),
+            ("minor", FloodCategory::Minor),
+            ("moderate", FloodCategory::Moderate),
+            ("major", FloodCategory::Major),
+            ("low_threshold", FloodCategory::LowThreshold),
+            ("not_defined", FloodCategory::NotDefined),
+            ("obs_not_current", FloodCategory::ObsNotCurrent),
+            ("fcst_not_current", FloodCategory::FcstNotCurrent),
+            ("out_of_service", FloodCategory::OutOfService),
+            ("", FloodCategory::Unknown),
+            ("record", FloodCategory::Unknown),
+        ] {
+            assert_eq!(FloodCategory::from_code(code), category, "{code}");
+        }
+        assert_eq!(
+            serde_json::to_string(&FloodCategory::NoFlooding).unwrap(),
+            "\"no_flooding\""
+        );
     }
 
     #[test]
