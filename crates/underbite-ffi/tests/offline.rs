@@ -13,6 +13,7 @@ use underbite_core::time::parse_rfc3339;
 use underbite_ffi::fetch::{
     CachedResponse, FetchHost, FetchOptions, HostError, HostRequest, HostResponse, Keys, fetch_spot,
 };
+use underbite_ffi::map::GridStore;
 use underbite_ffi::offline::{
     PackItemKind, current_table_view, pack_requests, plan_pack, tide_table_view,
 };
@@ -341,8 +342,14 @@ fn a_plan_reports_counts_sizes_and_words_and_pages_through_its_requests() {
         12,
         &serde_json::json!({ "last_days": 2 }),
     );
-    let info =
-        plan_pack(json, default_settings_json(), HashMap::default(), now()).expect("planned");
+    let info = plan_pack(
+        json,
+        default_settings_json(),
+        HashMap::default(),
+        HashMap::default(),
+        now(),
+    )
+    .expect("planned");
     assert!(info.tile_count > 0 && info.grid_count > 0 && info.dem_count > 0);
     assert_eq!(
         info.item_count,
@@ -411,11 +418,145 @@ fn a_plan_reports_counts_sizes_and_words_and_pages_through_its_requests() {
     assert!(big.len() <= 2_000);
 }
 
+fn fixture(path: &str) -> Vec<u8> {
+    let path = fixtures().join("raw").join(path);
+    std::fs::read(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()))
+}
+
+fn ok(content_type: &str, body: Vec<u8>) -> HostResponse {
+    HostResponse {
+        status: 200,
+        body,
+        content_type: Some(content_type.into()),
+        date: None,
+        expires: None,
+        last_modified: None,
+        etag: None,
+        retry_after: None,
+        rate_limit_remaining: None,
+    }
+}
+
+/// The numbers after the first `skip` parts of a slash-separated key.
+fn key_numbers(key: &str, skip: usize) -> Vec<f64> {
+    key.split('/')
+        .skip(skip)
+        .map(|n| n.parse().unwrap_or_else(|_| panic!("`{n}` in {key}")))
+        .collect()
+}
+
+#[test]
+fn pack_items_are_the_map_stores_keys_and_requests() {
+    let json = pack_json(&["sst", "depth-dem"], 12, 12, &serde_json::json!("latest"));
+    let info = plan_pack(
+        json,
+        default_settings_json(),
+        HashMap::default(),
+        HashMap::default(),
+        now(),
+    )
+    .expect("planned");
+    let page = pack_requests(Arc::clone(&info.plan), 0, 2_000).expect("page");
+    let grid = page
+        .iter()
+        .find(|r| r.kind == PackItemKind::Grid)
+        .expect("a grid item");
+    let dem = page
+        .iter()
+        .find(|r| r.kind == PackItemKind::Dem)
+        .expect("a DEM item");
+
+    // A view inside the block asks the map's store for the same key and request.
+    let store = GridStore::new();
+    let ask = |store: &GridStore, key: &str, time: Option<i64>| {
+        let [south, west, _stride] = key_numbers(key, 3)[..] else {
+            panic!("{key}");
+        };
+        store
+            .grid_requests(
+                "sst".into(),
+                None,
+                time,
+                west + 0.001,
+                south + 0.001,
+                west + 0.002,
+                south + 0.002,
+                12.0,
+                now(),
+            )
+            .expect("requests")
+    };
+    let asked = ask(&store, &grid.key, None);
+    assert_eq!(asked.len(), 1, "{asked:?}");
+    assert_eq!(asked[0].key, grid.key);
+    assert_eq!(asked[0].request.url, grid.request.url);
+    let mur = fixture("erddap/jplmursst41-sst-subset-2026-11-07.json");
+    store
+        .add_grid(grid.key.clone(), ok("application/json", mur.clone()), now())
+        .expect("the store takes the pack's key");
+    assert_eq!(ask(&store, &grid.key, None), [], "the map has the block");
+
+    // An older day is asked at the time the layer's axis lists, as the map's date control
+    // asks for it, and the newest as `(last)`.
+    let time = |t: &str| parse_rfc3339(t).expect("time").0;
+    let older = time("2026-11-06T09:00:00Z");
+    let axes = HashMap::from([("sst".to_owned(), vec![older, time("2026-11-07T09:00:00Z")])]);
+    let json = pack_json(&["sst"], 12, 12, &serde_json::json!({ "last_days": 2 }));
+    let info = plan_pack(
+        json,
+        default_settings_json(),
+        HashMap::default(),
+        axes,
+        now(),
+    )
+    .expect("planned");
+    let page = pack_requests(Arc::clone(&info.plan), 0, 2_000).expect("page");
+    let (dated, newest): (Vec<_>, Vec<_>) = page
+        .iter()
+        .partition(|r| r.key.starts_with(&format!("sst/jplMURSST41/{older}/")));
+    assert_eq!(dated.len(), newest.len());
+    assert!(newest.iter().all(|r| r.key.contains("/last/")));
+    let asked = ask(&store, &dated[0].key, Some(older));
+    assert_eq!(asked.len(), 1, "{asked:?}");
+    assert_eq!(asked[0].key, dated[0].key);
+    assert_eq!(asked[0].request.url, dated[0].request.url);
+    store
+        .add_grid(dated[0].key.clone(), ok("application/json", mur), now())
+        .expect("the store takes the pack's key");
+    assert_eq!(ask(&store, &dated[0].key, Some(older)), []);
+
+    // The elevation area is the map's area at the pack's deepest zoom.
+    let [w, s, e, n, _cell] = key_numbers(&dem.key, 2)[..] else {
+        panic!("{}", dem.key);
+    };
+    let edge = |micro: f64| micro / 1e6;
+    let area = |store: &GridStore| {
+        store
+            .dem_area_request(edge(w), edge(s), edge(e), edge(n), 12.0)
+            .expect("an area request")
+    };
+    let asked = area(&store).expect("not held yet");
+    assert_eq!(asked.key, dem.key);
+    assert_eq!(asked.request.url, dem.request.url);
+    let tiff = fixture("bathymetry/dem-global-mosaic-export-f32.tif");
+    store
+        .add_dem(dem.key.clone(), ok("image/tiff", tiff), now())
+        .expect("the store takes the pack's key");
+    assert_eq!(area(&store), None, "the map has the area");
+}
+
 #[test]
 fn a_plan_over_the_offline_limit_says_so_and_a_huge_one_is_refused() {
     let json = pack_json(&["noaa-chart"], 8, 14, &serde_json::json!("latest"));
     let tight = settings(|s| s["map"]["offline_max_mb"] = 1.into());
-    let info = plan_pack(json.clone(), tight, HashMap::default(), now()).expect("planned");
+    let info = plan_pack(
+        json.clone(),
+        tight,
+        HashMap::default(),
+        HashMap::default(),
+        now(),
+    )
+    .expect("planned");
     assert!(info.over_budget);
     let text = info.over_budget_text.expect("text");
     assert!(
@@ -425,15 +566,28 @@ fn a_plan_over_the_offline_limit_says_so_and_a_huge_one_is_refused() {
 
     // Measured sizes replace the seeds.
     let measured = [("noaa-chart".to_owned(), 1_000u64)].into_iter().collect();
-    let small = plan_pack(json, default_settings_json(), measured, now()).expect("planned");
+    let small = plan_pack(
+        json,
+        default_settings_json(),
+        measured,
+        HashMap::default(),
+        now(),
+    )
+    .expect("planned");
     assert_eq!(small.est_bytes, small.item_count * 1_000);
 
     let world = pack_json(&["noaa-chart"], 0, 20, &serde_json::json!("latest")).replace(
         "\"west\":-74.1,\"south\":40.6,\"east\":-73.95,\"north\":40.75",
         "\"west\":-120.0,\"south\":20.0,\"east\":-60.0,\"north\":60.0",
     );
-    let err = plan_pack(world, default_settings_json(), HashMap::default(), now())
-        .expect_err("too many items");
+    let err = plan_pack(
+        world,
+        default_settings_json(),
+        HashMap::default(),
+        HashMap::default(),
+        now(),
+    )
+    .expect_err("too many items");
     assert!(
         err.to_string().starts_with("This pack needs more than"),
         "{err}"
@@ -441,6 +595,7 @@ fn a_plan_over_the_offline_limit_says_so_and_a_huge_one_is_refused() {
     let bad = plan_pack(
         "{".into(),
         default_settings_json(),
+        HashMap::default(),
         HashMap::default(),
         now(),
     );

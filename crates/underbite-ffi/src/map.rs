@@ -772,18 +772,18 @@ fn erddap_body(response: HostResponse) -> Result<Vec<u8>, MapError> {
 
 /// What a stored block is: the layer, dataset and time asked for, and the block.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-struct BlockId {
-    layer: String,
-    dataset: String,
+pub(crate) struct BlockId {
+    pub(crate) layer: String,
+    pub(crate) dataset: String,
     /// Unix seconds, or none for the newest time.
-    time: Option<i64>,
-    block: Block,
+    pub(crate) time: Option<i64>,
+    pub(crate) block: Block,
 }
 
 impl BlockId {
     /// `sst/jplMURSST41/last/40/-74/1`: layer, dataset, time (Unix seconds or `last`), south,
     /// west, stride.
-    fn key(&self) -> String {
+    pub(crate) fn key(&self) -> String {
         let time = self
             .time
             .map_or_else(|| "last".to_owned(), |t| t.to_string());

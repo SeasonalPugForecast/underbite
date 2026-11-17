@@ -21,9 +21,19 @@
 //!   it serves: no tile is planned past a layer's deepest zoom. Planning is in zoom levels, never
 //!   in the NOAA cache's own levels.
 //! - Gridded layers (ERDDAP, GLERL) as the cache blocks [`blocks_for_view`] chooses, one set per
-//!   distinct stride the zoom range needs, for each of the pack's dates. The primary dataset is
-//!   planned; a fallback dataset is not.
+//!   distinct stride the zoom range needs, at the times the map asks for them: the newest as
+//!   `(last)`, older days at the times of the layer's time axis ([`TimeAxes`]). A dataset's time
+//!   of day varies, so a day alone names no time; without its axis a layer holds its newest time
+//!   only. The primary dataset is planned; a fallback dataset is not.
 //! - [`DEM_LAYER`] as elevation areas of the NCEI DEM, not tiles.
+//!
+//! # Keys
+//!
+//! An item's key is the one the map's stores use for the same download, so a pack's data is
+//! what the map reads: `{layer}/{date or latest}/{z}/{x}/{y}` for a tile,
+//! `{layer}/{dataset}/{time or last}/{south}/{west}/{stride}` for a grid block (Unix seconds),
+//! `dem/area/{west}/{south}/{east}/{north}/{cell}` for an elevation area (millionths of a
+//! degree).
 //! - Not packed: base maps Apple draws, station and spot markers, state feature layers, ENC
 //!   points, radar frames (minutes old) and layers with no source. They are listed in
 //!   [`PackPlan::skipped`] with the reason.
@@ -63,6 +73,13 @@ pub type SpotId = String;
 /// The measured average size in bytes of one item of a layer, by layer id (the store's averages);
 /// [`DEM_LAYER`] keys the elevation areas.
 pub type MeasuredSizes = BTreeMap<String, u64>;
+
+/// The times a gridded layer's primary dataset holds, by layer id, as the map's time axis lists
+/// them (any order).
+pub type TimeAxes = BTreeMap<String, Vec<UnixTime>>;
+
+/// The latest axis time taken, 9999-12-31T23:59:59Z; later or negative ones are ignored.
+const MAX_AXIS_TIME: i64 = 253_402_300_799;
 
 /// Seed size of a GIBS true-colour JPEG tile.
 pub const SEED_GIBS_JPEG: u64 = 12_700;
@@ -142,10 +159,11 @@ pub enum ItemKind {
         tile: TileKey,
         date: Option<LocalDate>,
     },
-    /// A grid cache block of the layer's primary dataset; no date asks for the newest time.
+    /// A grid cache block of the layer's primary dataset at one of its times; none asks for
+    /// the newest (`(last)`), as the map does.
     Grid {
         block: Block,
-        date: Option<LocalDate>,
+        time: Option<UnixTime>,
     },
     /// An elevation area at a cell size in degrees.
     Dem { area: Bbox, cell_deg: f64 },
@@ -242,7 +260,8 @@ impl PackPlan {
 }
 
 /// Plans `pack` against a catalogue lookup (usually [`find`](crate::map::catalogue::find)).
-/// `measured` replaces the seed size of a layer's items with the store's average.
+/// `measured` replaces the seed size of a layer's items with the store's average; `axes` are
+/// the gridded layers' time axes, from which older days are planned.
 ///
 /// # Errors
 /// [`PlanError`] for a pack that is invalid or over the item cap.
@@ -250,14 +269,16 @@ pub fn plan(
     pack: &Pack,
     catalogue: impl Fn(&str) -> Option<&'static Layer>,
     measured: &MeasuredSizes,
+    axes: &TimeAxes,
     now: UnixTime,
 ) -> Result<PackPlan, PlanError> {
-    plan_with_cap(pack, catalogue, measured, now, MAX_ITEMS)
+    plan_with_cap(pack, catalogue, measured, axes, now, MAX_ITEMS)
 }
 
 struct Builder<'a> {
     cap: usize,
     measured: &'a MeasuredSizes,
+    axes: &'a TimeAxes,
     items: Vec<PackItem>,
     tile_count: usize,
     grid_count: usize,
@@ -283,6 +304,7 @@ fn plan_with_cap(
     pack: &Pack,
     catalogue: impl Fn(&str) -> Option<&'static Layer>,
     measured: &MeasuredSizes,
+    axes: &TimeAxes,
     now: UnixTime,
     cap: usize,
 ) -> Result<PackPlan, PlanError> {
@@ -294,6 +316,7 @@ fn plan_with_cap(
     let mut b = Builder {
         cap,
         measured,
+        axes,
         items: Vec::new(),
         tile_count: 0,
         grid_count: 0,
@@ -342,18 +365,64 @@ fn plan_with_cap(
 }
 
 /// The days a pack asks for.
-struct PackDays {
-    /// For gridded layers and undated lookups: UTC days, or none for the newest time.
-    grid: Vec<Option<LocalDate>>,
+struct PackDays<'a> {
+    /// For dated tiles other than GIBS: UTC days, or none for the newest.
+    utc: Vec<Option<LocalDate>>,
     /// For GIBS tiles, where the newest day is the default (yesterday, UTC).
     gibs: Vec<LocalDate>,
+    /// For gridded layers, which take their times from the layer's axis.
+    policy: &'a DatePolicy,
 }
 
-fn pack_days(policy: &DatePolicy, now: UnixTime) -> Result<PackDays, PlanError> {
+/// The times a dated gridded layer is planned at: the newest as `(last)` when the policy holds
+/// its day, then the older times of `axis` on the policy's days, newest first. `LastDays` counts
+/// back from the newest time's UTC day, so a layer's latency never asks for a day it does not
+/// have yet. Without an axis only the newest time can be named.
+fn grid_times(policy: &DatePolicy, axis: Option<&Vec<UnixTime>>) -> Vec<Option<UnixTime>> {
+    let mut times: Vec<UnixTime> = axis
+        .into_iter()
+        .flatten()
+        .copied()
+        .filter(|t| (0..=MAX_AXIS_TIME).contains(&t.0))
+        .collect();
+    times.sort_unstable();
+    times.dedup();
+    let Some(&newest) = times.last() else {
+        return vec![None];
+    };
+    let day = |t: UnixTime| t.local_date(UtcOffset(0));
+    let keep: Box<dyn Fn(LocalDate) -> bool + '_> = match policy {
+        DatePolicy::Latest => return vec![None],
+        DatePolicy::LastDays(n) => {
+            let mut first = day(newest);
+            for _ in 1..*n {
+                first = previous_day(first);
+            }
+            Box::new(move |d| d >= first)
+        }
+        DatePolicy::Days(days) => Box::new(|d| days.contains(&d)),
+    };
+    let mut out = Vec::new();
+    if keep(day(newest)) {
+        out.push(None);
+    }
+    out.extend(
+        times
+            .iter()
+            .rev()
+            .skip(1)
+            .filter(|t| keep(day(**t)))
+            .map(|t| Some(*t)),
+    );
+    out
+}
+
+fn pack_days(policy: &DatePolicy, now: UnixTime) -> Result<PackDays<'_>, PlanError> {
     match policy {
         DatePolicy::Latest => Ok(PackDays {
-            grid: vec![None],
+            utc: vec![None],
             gibs: vec![gibs_default_date(now)],
+            policy,
         }),
         DatePolicy::LastDays(n) => {
             let n = usize::try_from(*n).unwrap_or(usize::MAX);
@@ -370,11 +439,12 @@ fn pack_days(policy: &DatePolicy, now: UnixTime) -> Result<PackDays, PlanError> 
                 out
             };
             Ok(PackDays {
-                grid: back(now.local_date(UtcOffset(0)))
+                utc: back(now.local_date(UtcOffset(0)))
                     .into_iter()
                     .map(Some)
                     .collect(),
                 gibs: back(gibs_default_date(now)),
+                policy,
             })
         }
         DatePolicy::Days(days) => {
@@ -383,8 +453,9 @@ fn pack_days(policy: &DatePolicy, now: UnixTime) -> Result<PackDays, PlanError> 
                 return Err(PlanError::InvalidDates);
             }
             Ok(PackDays {
-                grid: set.iter().copied().map(Some).collect(),
+                utc: set.iter().copied().map(Some).collect(),
                 gibs: set.into_iter().collect(),
+                policy,
             })
         }
     }
@@ -471,7 +542,7 @@ fn plan_layer(
     pack: &Pack,
     layer: &'static Layer,
     boxes: &[Bbox],
-    days: &PackDays,
+    days: &PackDays<'_>,
 ) -> Result<(), Stop> {
     if !matches!(layer.availability, Availability::Available) {
         return Err(Stop::Skip(SkipReason::Unavailable));
@@ -492,7 +563,7 @@ fn plan_tiles(
     layer: &'static Layer,
     source: TileSource,
     boxes: &[Bbox],
-    days: &PackDays,
+    days: &PackDays<'_>,
 ) -> Result<(), Stop> {
     let mut lo = pack.min_zoom.max(layer.min_zoom.unwrap_or(0));
     let mut hi = pack.max_zoom.min(layer.max_zoom.unwrap_or(MAX_ZOOM));
@@ -510,7 +581,7 @@ fn plan_tiles(
     let dates: Vec<Option<LocalDate>> = match (source, layer.date_mode) {
         (TileSource::Gibs(_), _) => days.gibs.iter().copied().map(Some).collect(),
         (_, DateMode::None) => vec![None],
-        _ => days.grid.clone(),
+        _ => days.utc.clone(),
     };
     let item_bytes = b.size(layer.id, tile_seed(layer, source));
     let host = host_of(source);
@@ -565,18 +636,19 @@ fn plan_grid(
     layer: &'static Layer,
     source: &GridSource,
     boxes: &[Bbox],
-    days: &PackDays,
+    days: &PackDays<'_>,
 ) -> Result<(), Stop> {
     let lo = pack.min_zoom.max(layer.min_zoom.unwrap_or(0));
     let hi = pack.max_zoom.min(layer.max_zoom.unwrap_or(MAX_ZOOM));
     if lo > hi {
         return Err(Stop::Skip(SkipReason::ZoomOutOfRange));
     }
-    let dates: &[Option<LocalDate>] = if layer.date_mode == DateMode::None {
-        &[None]
+    let times = if layer.date_mode == DateMode::None {
+        vec![None]
     } else {
-        &days.grid
+        grid_times(days.policy, b.axes.get(layer.id))
     };
+    let dates = times.as_slice();
     let variables = u64::try_from(source.variables.len().max(1)).unwrap_or(1);
     let row = SEED_GRID_CELL + SEED_GRID_EXTRA_VARIABLE * (variables - 1);
     let host = grid_host_name(source.node);
@@ -600,14 +672,14 @@ fn plan_grid(
             if blocks.len() > per_date_room {
                 return Err(Stop::Cap);
             }
-            for date in dates {
+            for time in dates {
                 for block in &blocks {
                     b.items.push(PackItem {
                         key: format!(
-                            "{}/{}/{}.{}.{}.{}",
+                            "{}/{}/{}/{}/{}/{}",
                             layer.id,
-                            fmt_date(*date),
                             source.dataset,
+                            time.map_or_else(|| "last".to_owned(), |t| t.0.to_string()),
                             block.south,
                             block.west,
                             block.stride
@@ -615,7 +687,7 @@ fn plan_grid(
                         layer: layer.layer_id(),
                         kind: ItemKind::Grid {
                             block: *block,
-                            date: *date,
+                            time: *time,
                         },
                         host: host.to_owned(),
                         est_bytes: item_bytes,
@@ -628,9 +700,16 @@ fn plan_grid(
     Ok(())
 }
 
+/// Degrees as an elevation key holds them: millionths.
+fn micro(deg: f64) -> i64 {
+    (deg * 1e6).round() as i64
+}
+
 fn plan_dem(b: &mut Builder<'_>, pack: &Pack, boxes: &[Bbox]) -> Result<(), PlanError> {
     let pixel = 360.0 / (256.0 * f64::from(pack.max_zoom).exp2());
-    let cell = pixel.max(DEM_MIN_CELL_DEG);
+    // Kept to millionths, as the key holds it, so the request is the key's.
+    let cell_micro = micro(pixel.max(DEM_MIN_CELL_DEG)).max(1);
+    let cell = cell_micro as f64 / 1e6;
     let side = cell * f64::from(DEM_AREA_PX);
     let item_bytes = b.size(DEM_LAYER, SEED_DEM_AREA);
     let cap = b.cap;
@@ -646,16 +725,18 @@ fn plan_dem(b: &mut Builder<'_>, pack: &Pack, boxes: &[Bbox]) -> Result<(), Plan
         }
         for iy in (iy0..=iy1).rev() {
             for ix in ix0..=ix1 {
-                let (west, south) = (ix as f64 * side, iy as f64 * side);
+                let (west, south) = (micro(ix as f64 * side), micro(iy as f64 * side));
+                let (east, north) = (micro((ix + 1) as f64 * side), micro((iy + 1) as f64 * side));
+                let deg = |m: i64| m as f64 / 1e6;
                 b.items.push(PackItem {
-                    key: format!("{DEM_LAYER}/{cell:.7}/{ix}/{iy}"),
+                    key: format!("dem/area/{west}/{south}/{east}/{north}/{cell_micro}"),
                     layer: LayerId::from_static(DEM_LAYER),
                     kind: ItemKind::Dem {
                         area: Bbox {
-                            west,
-                            south,
-                            east: west + side,
-                            north: south + side,
+                            west: deg(west),
+                            south: deg(south),
+                            east: deg(east),
+                            north: deg(north),
                         },
                         cell_deg: cell,
                     },
@@ -722,7 +803,13 @@ mod tests {
     }
 
     fn run(p: &Pack) -> Result<PackPlan, PlanError> {
-        plan(p, catalogue::find, &MeasuredSizes::new(), NOW)
+        plan(
+            p,
+            catalogue::find,
+            &MeasuredSizes::new(),
+            &TimeAxes::new(),
+            NOW,
+        )
     }
 
     fn covering(z: u8) -> usize {
@@ -785,7 +872,7 @@ mod tests {
         let p = pack(&["noaa-chart"], 12, 12, DatePolicy::Latest);
         let mut m = MeasuredSizes::new();
         m.insert("noaa-chart".into(), 1000);
-        let plan = super::plan(&p, catalogue::find, &m, NOW).unwrap();
+        let plan = super::plan(&p, catalogue::find, &m, &TimeAxes::new(), NOW).unwrap();
         assert_eq!(plan.est_bytes, plan.tile_count as u64 * 1000);
     }
 
@@ -801,7 +888,14 @@ mod tests {
         assert_eq!(run(&p), Err(PlanError::TooManyItems { cap: MAX_ITEMS }));
         let small = pack(&["noaa-chart"], 12, 12, DatePolicy::Latest);
         assert_eq!(
-            plan_with_cap(&small, catalogue::find, &MeasuredSizes::new(), NOW, 3),
+            plan_with_cap(
+                &small,
+                catalogue::find,
+                &MeasuredSizes::new(),
+                &TimeAxes::new(),
+                NOW,
+                3
+            ),
             Err(PlanError::TooManyItems { cap: 3 })
         );
     }
@@ -811,8 +905,8 @@ mod tests {
         let p = pack(&["chlorophyll-imagery"], 6, 6, DatePolicy::LastDays(3));
         let m = MeasuredSizes::new();
         let n = covering(6);
-        assert!(plan_with_cap(&p, catalogue::find, &m, NOW, 3 * n - 1).is_err());
-        assert!(plan_with_cap(&p, catalogue::find, &m, NOW, 3 * n).is_ok());
+        assert!(plan_with_cap(&p, catalogue::find, &m, &TimeAxes::new(), NOW, 3 * n - 1).is_err());
+        assert!(plan_with_cap(&p, catalogue::find, &m, &TimeAxes::new(), NOW, 3 * n).is_ok());
     }
 
     #[test]
@@ -838,7 +932,8 @@ mod tests {
     #[test]
     fn grids_plan_blocks_per_date_and_are_not_tiles() {
         let p = pack(&["sst"], 8, 10, DatePolicy::LastDays(2));
-        let plan = run(&p).unwrap();
+        let plan =
+            super::plan(&p, catalogue::find, &MeasuredSizes::new(), &mur_axis(), NOW).unwrap();
         assert_eq!(plan.tile_count, 0);
         assert!(plan.grid_count > 0);
         assert_eq!(plan.grid_count % 2, 0);
@@ -859,6 +954,103 @@ mod tests {
             panic!("not a DEM item");
         };
         assert!(area.east > area.west && area.north > area.south);
+        // The key is the elevation store's: the area and the cell in millionths of a degree.
+        for item in plan.items(0, usize::MAX) {
+            let ItemKind::Dem { area, cell_deg } = item.kind else {
+                panic!("not a DEM item");
+            };
+            let m = |deg: f64| (deg * 1e6).round() as i64;
+            assert_eq!(
+                item.key,
+                format!(
+                    "dem/area/{}/{}/{}/{}/{}",
+                    m(area.west),
+                    m(area.south),
+                    m(area.east),
+                    m(area.north),
+                    m(cell_deg)
+                )
+            );
+        }
+    }
+
+    fn at(time: &str) -> UnixTime {
+        crate::time::parse_rfc3339(time).unwrap()
+    }
+
+    /// MUR's time axis on [`NOW`] (2026-11-07T09:00Z): daily at 09:00Z, the newest a day old.
+    fn mur_axis() -> TimeAxes {
+        let times = [
+            "2026-11-04T09:00:00Z",
+            "2026-11-06T09:00:00Z",
+            "2026-11-05T09:00:00Z",
+            "2026-11-03T09:00:00Z",
+        ];
+        TimeAxes::from([("sst".to_owned(), times.map(at).to_vec())])
+    }
+
+    fn planned_times(plan: &PackPlan) -> BTreeSet<Option<UnixTime>> {
+        plan.items(0, usize::MAX)
+            .iter()
+            .filter_map(|i| match i.kind {
+                ItemKind::Grid { time, .. } => Some(time),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn grid_days_count_back_from_the_newest_time_on_the_axis() {
+        let m = MeasuredSizes::new();
+        let p = pack(&["sst"], 8, 8, DatePolicy::LastDays(3));
+        let plan = super::plan(&p, catalogue::find, &m, &mur_axis(), NOW).unwrap();
+        // The newest as `(last)`, then the axis's own times: never a time of a day the
+        // dataset does not have yet.
+        assert_eq!(
+            planned_times(&plan),
+            BTreeSet::from([
+                None,
+                Some(at("2026-11-05T09:00:00Z")),
+                Some(at("2026-11-04T09:00:00Z"))
+            ])
+        );
+        // Keys are the map store's.
+        for item in plan.items(0, usize::MAX) {
+            let ItemKind::Grid { block, time } = item.kind else {
+                panic!("not a grid item");
+            };
+            let time = time.map_or_else(|| "last".to_owned(), |t| t.0.to_string());
+            assert_eq!(
+                item.key,
+                format!(
+                    "sst/jplMURSST41/{time}/{}/{}/{}",
+                    block.south, block.west, block.stride
+                )
+            );
+        }
+        // Without the axis only the newest can be named.
+        assert_eq!(planned_times(&run(&p).unwrap()), BTreeSet::from([None]));
+        // Chosen days take the axis's times on them, the newest's day as `(last)`.
+        let day = |day| LocalDate {
+            year: 2026,
+            month: 11,
+            day,
+        };
+        let chosen = pack(
+            &["sst"],
+            8,
+            8,
+            DatePolicy::Days(vec![day(7), day(6), day(3)]),
+        );
+        let plan = super::plan(&chosen, catalogue::find, &m, &mur_axis(), NOW).unwrap();
+        assert_eq!(
+            planned_times(&plan),
+            BTreeSet::from([None, Some(at("2026-11-03T09:00:00Z"))])
+        );
+        // The latest is `(last)` whatever the axis says.
+        let latest = pack(&["sst"], 8, 8, DatePolicy::Latest);
+        let plan = super::plan(&latest, catalogue::find, &m, &mur_axis(), NOW).unwrap();
+        assert_eq!(planned_times(&plan), BTreeSet::from([None]));
     }
 
     #[test]

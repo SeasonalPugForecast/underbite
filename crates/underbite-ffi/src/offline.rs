@@ -2,7 +2,10 @@
 //!
 //! A pack is planned by the core ([`underbite_core::map::pack`]); the plan stays on the Rust side
 //! behind a [`PackPlanHandle`] and is read a page at a time, each item as a [`HostRequest`] the
-//! core built with the same builders the map layers use, so Swift never composes a URL. Tables
+//! core built with the same builders the map layers use, so Swift never composes a URL. Each
+//! item's key is the map's for the same download: a grid block's response goes to
+//! [`GridStore::add_grid`](crate::map::GridStore::add_grid) and an elevation area's to
+//! [`GridStore::add_dem`](crate::map::GridStore::add_dem) under it. Tables
 //! are computed from harmonic constants the app stored and formatted by the view in the
 //! settings' units, clock and voice.
 
@@ -14,7 +17,9 @@ use underbite_config::schema::Config;
 use underbite_core::astro::tide::TideHarmonics;
 use underbite_core::datum::{Height, VerticalDatum};
 use underbite_core::map::catalogue::{self, DateMode};
-use underbite_core::map::pack::{self, ItemKind, MeasuredSizes, Pack, PackItem, PackPlan};
+use underbite_core::map::pack::{
+    self, ItemKind, MeasuredSizes, Pack, PackItem, PackPlan, TimeAxes,
+};
 use underbite_core::map::{Bbox, GridHost};
 use underbite_core::model::{CurrentKind, TideSeries};
 use underbite_core::offline::tables::{CurrentStation, TideStation, current_table, tide_table};
@@ -27,7 +32,7 @@ use underbite_providers::erddap::{self, GridTime};
 use underbite_providers::ncei_dem;
 
 use crate::fetch::HostRequest;
-use crate::map::{MapError, formatter, get, invalid, layer, node_name, tile_request};
+use crate::map::{BlockId, MapError, formatter, get, invalid, layer, node_name, tile_request};
 use crate::settings::load;
 
 /// The most days a table covers.
@@ -38,10 +43,6 @@ pub const MAX_PAGE_ITEMS: u32 = 2_000;
 
 /// How long the app may reuse a pack download when the server says nothing, seconds.
 const PACK_RESPONSE_AGE_S: u64 = 3_600;
-
-/// Seconds from midnight UTC to the time a dated pack grid is asked for: noon, the nearest
-/// moment to every daily layer's own time.
-const GRID_TIME_OF_DAY_S: i64 = 12 * 3_600;
 
 // ---------------------------------------------------------------------------------------------
 // Pack plans
@@ -106,8 +107,11 @@ pub struct PackPlanInfo {
 /// Plans the pack `pack_json` (a stored [`Pack`]) against the catalogue, replacing each layer's
 /// seed size with `measured_sizes` (the store's average bytes per item, by layer id, `depth-dem`
 /// for elevation areas) when the app has one, and reports whether it is over the settings'
-/// `offline_max_mb`. A pack that cannot be planned, or needs more than the item cap, is an
-/// error in words.
+/// `offline_max_mb`. `time_axes` are the times of the pack's gridded layers, by layer id, as
+/// [`parse_time_axis`](crate::map::parse_time_axis) lists them for the primary dataset: a grid
+/// holds its newest time as the map asks for it (`(last)`) and older days at the axis's times,
+/// so a layer without one holds its newest time only. A pack that cannot be planned, or needs
+/// more than the item cap, is an error in words.
 #[uniffi::export]
 #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
 #[allow(clippy::implicit_hasher)] // UniFFI's map is the standard one
@@ -115,6 +119,7 @@ pub fn plan_pack(
     pack_json: String,
     settings_json: String,
     measured_sizes: HashMap<String, u64>,
+    time_axes: HashMap<String, Vec<i64>>,
     now: i64,
 ) -> Result<PackPlanInfo, MapError> {
     let (config, _) = load(&settings_json)?;
@@ -122,7 +127,11 @@ pub fn plan_pack(
     let pack: Pack = serde_json::from_str(&pack_json)
         .map_err(|e| invalid(format!("the pack could not be read: {e}")))?;
     let measured: MeasuredSizes = measured_sizes.into_iter().collect();
-    let plan = pack::plan(&pack, catalogue::find, &measured, UnixTime(now))
+    let axes: TimeAxes = time_axes
+        .into_iter()
+        .map(|(layer, times)| (layer, times.into_iter().map(UnixTime).collect()))
+        .collect();
+    let plan = pack::plan(&pack, catalogue::find, &measured, &axes, UnixTime(now))
         .map_err(|e| invalid(strings.pack_error(&e)))?;
     let size_text = strings.pack_size(plan.est_bytes);
     let time_text = strings.pack_duration(plan.est_seconds);
@@ -200,19 +209,11 @@ fn date_text(d: LocalDate) -> String {
     format!("{:04}-{:02}-{:02}", d.year, d.month, d.day)
 }
 
-/// The UTC time a dated grid block is asked for.
-fn grid_time(date: Option<LocalDate>) -> Result<GridTime, MapError> {
-    let Some(date) = date else {
-        return Ok(GridTime::Last);
-    };
-    let utc = zone("UTC").map_err(|e| invalid(e.to_string()))?;
-    let (start, _) = local_date_bounds(date, &utc).map_err(|e| invalid(e.to_string()))?;
-    Ok(GridTime::At(UnixTime(start.0 + GRID_TIME_OF_DAY_S)))
-}
-
-/// The request of one planned item, built with the builders the map layers use.
+/// The request of one planned item, built with the builders the map layers use, under the key
+/// the map's store files the response under.
 fn request_of(item: &PackItem) -> Result<PackRequest, MapError> {
     let layer_id = item.layer.as_str();
+    let mut key = item.key.clone();
     let (kind, host, request) = match &item.kind {
         ItemKind::Tile { tile, date } => {
             let fetch = tile_request(
@@ -225,14 +226,22 @@ fn request_of(item: &PackItem) -> Result<PackRequest, MapError> {
             .ok_or_else(|| invalid(format!("`{layer_id}` has no tile {}", item.key)))?;
             (PackItemKind::Tile, item.host.clone(), fetch.request)
         }
-        ItemKind::Grid { block, date } => {
+        ItemKind::Grid { block, time } => {
             let l = layer(layer_id)?;
             let grid = l
                 .grid()
                 .ok_or_else(|| invalid(format!("`{layer_id}` is not a gridded layer")))?;
             let source = grid.primary.source();
-            let built = erddap::block_request(&source, grid_time(*date)?, *block)
-                .map_err(|e| invalid(e.to_string()))?;
+            key = BlockId {
+                layer: l.id.to_owned(),
+                dataset: grid.primary.dataset.to_owned(),
+                time: time.map(|t| t.0),
+                block: *block,
+            }
+            .key();
+            let at = time.map_or(GridTime::Last, GridTime::At);
+            let built =
+                erddap::block_request(&source, at, *block).map_err(|e| invalid(e.to_string()))?;
             (
                 PackItemKind::Grid,
                 node_name(built.node),
@@ -258,7 +267,7 @@ fn request_of(item: &PackItem) -> Result<PackRequest, MapError> {
         }
     };
     Ok(PackRequest {
-        key: item.key.clone(),
+        key,
         kind,
         layer: layer_id.to_owned(),
         host,
@@ -551,4 +560,40 @@ pub fn current_table_view(
 /// The text of a time the offline note quotes: "Nov 8, 4:00 AM" in the spot's zone.
 pub(crate) fn note_time(f: &Formatter, t: UnixTime) -> String {
     map_time(f, t, DateMode::Hourly)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn harbour_pack(layers: &[&str], dates: &str) -> Pack {
+        serde_json::from_str(&format!(
+            r#"{{"id":"p","name":"Harbour","bbox":{{"west":-74.1,"south":40.6,"east":-73.95,"north":40.75}},
+            "min_zoom":11,"max_zoom":12,"layers":{},"dates":{dates},"spots":[],"created_at":1794148200}}"#,
+            serde_json::to_string(layers).unwrap()
+        ))
+        .unwrap()
+    }
+
+    #[test]
+    fn requests_keep_the_planned_keys() {
+        let axes = TimeAxes::from([(
+            "sst".to_owned(),
+            vec![UnixTime(1_794_042_000), UnixTime(1_794_128_400)],
+        )]);
+        let pack = harbour_pack(&["sst", "depth-dem", "noaa-chart"], r#"{"last_days":2}"#);
+        let plan = pack::plan(
+            &pack,
+            catalogue::find,
+            &MeasuredSizes::new(),
+            &axes,
+            UnixTime(1_794_148_200),
+        )
+        .unwrap();
+        let items = plan.items(0, usize::MAX);
+        assert!(items.iter().any(|i| i.key.contains("/1794042000/")));
+        for item in items {
+            assert_eq!(request_of(item).unwrap().key, item.key);
+        }
+    }
 }
