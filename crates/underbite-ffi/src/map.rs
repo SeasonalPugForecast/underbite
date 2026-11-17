@@ -14,6 +14,7 @@ use underbite_core::map::catalogue::{
     self, AppleBase, DateMode, GridDraw, GridLayer, GridSpec, Group, Layer, LayerKind, PRESETS,
     resolve_preset,
 };
+use underbite_core::map::dem::{self, DemSourceInfo, WaterBody};
 use underbite_core::map::grid::{self, Block, Grid};
 use underbite_core::map::render::{self, Ramp, RampRange};
 use underbite_core::map::tiles::{
@@ -24,12 +25,14 @@ use underbite_core::map::{Bbox, GeoPoint, GridHost, TileKey, tiles};
 use underbite_core::time::{LocalDate, UnixTime, UtcOffset, parse_date};
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{
-    Key, MapQuantity, SafetyKey, Strings, map_current, map_measure, map_time, map_value,
+    Key, MapQuantity, SafetyKey, Strings, depth_reading, map_current, map_measure, map_time,
+    map_value,
 };
 use underbite_providers::erddap::{self, ErddapError, ErddapPacer, FIRST_PAUSE_S, GridTime};
 use underbite_providers::request::Response;
 use whether_providers::radar;
 
+use crate::depth::DEPTH_LAYER;
 use crate::fetch::{HostMethod, HostRequest, HostResponse, fetched};
 use crate::settings::{SettingsError, load};
 
@@ -65,20 +68,20 @@ impl From<SettingsError> for MapError {
     }
 }
 
-fn invalid(message: impl Into<String>) -> MapError {
+pub(crate) fn invalid(message: impl Into<String>) -> MapError {
     MapError::Invalid {
         message: message.into(),
     }
 }
 
 /// The catalogue's layer or base map with this id.
-fn layer(id: &str) -> Result<&'static Layer, MapError> {
+pub(crate) fn layer(id: &str) -> Result<&'static Layer, MapError> {
     catalogue::find(id).ok_or_else(|| invalid(format!("`{id}` is not a map layer")))
 }
 
 /// A formatter for the settings' units, voice and clock, showing times in `time_zone` (an IANA
 /// name; an unknown one is UTC).
-fn formatter(config: &Config, time_zone: &str) -> Formatter {
+pub(crate) fn formatter(config: &Config, time_zone: &str) -> Formatter {
     Formatter::new(
         config.units.display_units(),
         config.presentation.voice,
@@ -93,7 +96,7 @@ fn neutral_formatter() -> Formatter {
 }
 
 /// A Web Mercator tile key, checked against its zoom level.
-fn tile_key(z: u8, x: u32, y: u32) -> Result<TileKey, MapError> {
+pub(crate) fn tile_key(z: u8, x: u32, y: u32) -> Result<TileKey, MapError> {
     let count = 1u64 << z.min(MAX_ZOOM);
     if z > MAX_ZOOM || u64::from(x) >= count || u64::from(y) >= count {
         return Err(invalid(format!("{z}/{x}/{y} is not a map tile")));
@@ -102,7 +105,7 @@ fn tile_key(z: u8, x: u32, y: u32) -> Result<TileKey, MapError> {
 }
 
 /// A plain GET the app may cache for `max_age_s` when the server says nothing.
-fn get(url: String, max_age_s: u64) -> HostRequest {
+pub(crate) fn get(url: String, max_age_s: u64) -> HostRequest {
     HostRequest {
         url,
         headers: Vec::new(),
@@ -720,7 +723,7 @@ pub struct LayerTime {
 }
 
 /// The node's name as requests and the pacer use it.
-fn node_name(node: GridHost) -> String {
+pub(crate) fn node_name(node: GridHost) -> String {
     serde_json::to_value(node)
         .ok()
         .and_then(|v| v.as_str().map(str::to_owned))
@@ -820,6 +823,25 @@ impl BlockId {
     }
 }
 
+/// What an elevation block is: a Web Mercator tile for shading, or an area in degrees for
+/// contours. Degrees are millionths.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum DemId {
+    Tile {
+        z: u8,
+        x: u32,
+        y: u32,
+        px: u32,
+    },
+    Area {
+        west: i64,
+        south: i64,
+        east: i64,
+        north: i64,
+        cell: i64,
+    },
+}
+
 /// A stored block: one grid per variable of its dataset.
 #[derive(Debug)]
 struct Stored {
@@ -831,7 +853,7 @@ struct Stored {
 }
 
 /// A grid's extent, reaching one cell spacing beyond its outermost centres.
-fn extent(grid: &Grid) -> Option<Bbox> {
+pub(crate) fn extent(grid: &Grid) -> Option<Bbox> {
     let pad = |axis: &[f64]| match axis {
         [_] => grid.source.native_step_deg.abs(),
         [first, .., last] => (last - first).abs() / (axis.len() - 1) as f64,
@@ -846,14 +868,24 @@ fn extent(grid: &Grid) -> Option<Bbox> {
     })
 }
 
-const fn overlaps(a: Bbox, b: Bbox) -> bool {
+pub(crate) const fn overlaps(a: Bbox, b: Bbox) -> bool {
     a.west <= b.east && b.west <= a.east && a.south <= b.north && b.south <= a.north
 }
 
+/// How many places' DEM sources the store remembers.
+const MAX_DEM_SOURCES: usize = 32;
+
+/// How far from a point the sources found for another point still count, degrees (about 2 km).
+const DEM_SOURCE_REACH_DEG: f64 = 0.02;
+
 /// The store's state, behind the mutex.
 #[derive(Debug, Default)]
-struct Blocks {
+pub(crate) struct Blocks {
     stored: BTreeMap<BlockId, Stored>,
+    /// Elevation blocks: one grid each, never stale (the mosaic changes with releases, not days).
+    dem: BTreeMap<DemId, Stored>,
+    /// The elevation models found at places the user looked at, newest last.
+    dem_sources: Vec<(GeoPoint, Vec<DemSourceInfo>)>,
     /// Per layer, the dataset and time the last view asked for: what is drawn and inspected.
     selection: BTreeMap<String, (String, Option<i64>)>,
     values: usize,
@@ -861,14 +893,14 @@ struct Blocks {
 }
 
 impl Blocks {
-    fn tick(&mut self) -> u64 {
+    pub(crate) fn tick(&mut self) -> u64 {
         self.clock += 1;
         self.clock
     }
 
     /// The selected blocks of `layer` whose extent overlaps `area` (any, without one), finest
     /// stride first, each as its grids; marks them used.
-    fn selected(&mut self, layer: &str, area: Option<Bbox>) -> Vec<Vec<Arc<Grid>>> {
+    pub(crate) fn selected(&mut self, layer: &str, area: Option<Bbox>) -> Vec<Vec<Arc<Grid>>> {
         let Some((dataset, time)) = self.selection.get(layer).cloned() else {
             return Vec::new();
         };
@@ -892,6 +924,34 @@ impl Blocks {
         found.into_iter().map(|(_, g)| g).collect()
     }
 
+    /// Drops the least recently used blocks, elevation blocks included, until `values` more
+    /// values and one more block fit.
+    fn make_room(&mut self, values: usize) {
+        while self.values + values > MAX_STORE_VALUES
+            || self.stored.len() + self.dem.len() >= MAX_STORE_BLOCKS
+        {
+            let grid = self
+                .stored
+                .iter()
+                .min_by_key(|(_, s)| s.used)
+                .map(|(k, s)| (s.used, k.clone()));
+            let elevation = self
+                .dem
+                .iter()
+                .min_by_key(|(_, s)| s.used)
+                .map(|(k, s)| (s.used, *k));
+            let gone = match (grid, elevation) {
+                (Some((g, key)), Some((e, _))) if g <= e => self.stored.remove(&key),
+                (_, Some((_, key))) => self.dem.remove(&key),
+                (Some((_, key)), None) => self.stored.remove(&key),
+                (None, None) => break,
+            };
+            if let Some(gone) = gone {
+                self.values -= gone.values;
+            }
+        }
+    }
+
     fn insert(&mut self, id: BlockId, grids: Vec<Grid>, fetched: UnixTime) -> Result<(), MapError> {
         let values: usize = grids
             .iter()
@@ -903,20 +963,7 @@ impl Blocks {
         if let Some(old) = self.stored.remove(&id) {
             self.values -= old.values;
         }
-        // Make room: the least recently used blocks go first.
-        while self.values + values > MAX_STORE_VALUES || self.stored.len() >= MAX_STORE_BLOCKS {
-            let Some(oldest) = self
-                .stored
-                .iter()
-                .min_by_key(|(_, s)| s.used)
-                .map(|(k, _)| k.clone())
-            else {
-                break;
-            };
-            if let Some(gone) = self.stored.remove(&oldest) {
-                self.values -= gone.values;
-            }
-        }
+        self.make_room(values);
         let used = self.tick();
         self.values += values;
         self.stored.insert(
@@ -930,6 +977,83 @@ impl Blocks {
         );
         Ok(())
     }
+
+    /// Whether an elevation block is held.
+    pub(crate) fn has_dem(&self, id: &DemId) -> bool {
+        self.dem.contains_key(id)
+    }
+
+    /// Stores an elevation block under the same bound as the other blocks.
+    pub(crate) fn insert_dem(
+        &mut self,
+        id: DemId,
+        grid: Grid,
+        fetched: UnixTime,
+    ) -> Result<(), MapError> {
+        let values = grid.values.len() + grid.lats.len() + grid.lons.len();
+        if values > MAX_STORE_VALUES {
+            return Err(invalid("the block is larger than the store"));
+        }
+        if let Some(old) = self.dem.remove(&id) {
+            self.values -= old.values;
+        }
+        self.make_room(values);
+        let used = self.tick();
+        self.values += values;
+        self.dem.insert(
+            id,
+            Stored {
+                grids: vec![Arc::new(grid)],
+                values,
+                fetched,
+                used,
+            },
+        );
+        Ok(())
+    }
+
+    /// The elevation blocks whose extent overlaps `area` (any, without one), as the block and its
+    /// grid, marked used.
+    pub(crate) fn dem_blocks(&mut self, area: Option<Bbox>) -> Vec<(DemId, Arc<Grid>)> {
+        let now = self.tick();
+        let mut found = Vec::new();
+        for (id, stored) in &mut self.dem {
+            let Some(grid) = stored.grids.first() else {
+                continue;
+            };
+            let hit = match (area, extent(grid)) {
+                (None, _) => true,
+                (Some(a), Some(e)) => overlaps(a, e),
+                (Some(_), None) => false,
+            };
+            if hit {
+                stored.used = now;
+                found.push((*id, Arc::clone(grid)));
+            }
+        }
+        found
+    }
+
+    /// Remembers the elevation models found at `at`, replacing what an earlier look at the same
+    /// place found.
+    pub(crate) fn set_dem_sources(&mut self, at: GeoPoint, sources: Vec<DemSourceInfo>) {
+        self.dem_sources.retain(|(p, _)| *p != at);
+        if self.dem_sources.len() >= MAX_DEM_SOURCES {
+            self.dem_sources.remove(0);
+        }
+        self.dem_sources.push((at, sources));
+    }
+
+    /// The models found at the nearest remembered place within [`DEM_SOURCE_REACH_DEG`] of `at`.
+    fn dem_sources_near(&self, at: GeoPoint) -> Vec<DemSourceInfo> {
+        let miss = |p: &GeoPoint| (p.lat - at.lat).abs().max((p.lon - at.lon).abs());
+        self.dem_sources
+            .iter()
+            .filter(|(p, _)| miss(p) <= DEM_SOURCE_REACH_DEG)
+            .min_by(|(a, _), (b, _)| miss(a).total_cmp(&miss(b)))
+            .map(|(_, s)| s.clone())
+            .unwrap_or_default()
+    }
 }
 
 /// Gridded layers held on the device: the blocks of ERDDAP and GLERL grids fetched for the views,
@@ -938,17 +1062,51 @@ impl Blocks {
 /// Shared across threads: one mutex guards the blocks, held only to look up, insert or copy out
 /// a few `Arc`s; parsing and rendering happen outside it. Bounded: at most
 /// [`MAX_STORE_VALUES`] values in at most [`MAX_STORE_BLOCKS`] blocks, the least recently used
-/// dropped first. Nothing is written to disk; a later dataset (the NCEI elevation model) is one
-/// more kind of block under the same bound.
+/// dropped first. Nothing is written to disk. The NCEI elevation model is one more kind of block
+/// under the same bound (tiles for shading, areas for contours; see the depth calls), and the
+/// depth inspector row reads them.
 #[derive(Debug, Default, uniffi::Object)]
 pub struct GridStore {
     blocks: Mutex<Blocks>,
 }
 
 impl GridStore {
-    fn lock(&self) -> MutexGuard<'_, Blocks> {
+    pub(crate) fn lock(&self) -> MutexGuard<'_, Blocks> {
         // A panic while the lock was held leaves whole entries; keep using them.
         self.blocks.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
+    /// The depth inspector row at `at`: the approximate depth the elevation blocks give there,
+    /// with the datum of the finest model found for the place. No row where no elevation block
+    /// covers the point (GEBCO is imagery and has no values); "No value here" over land and shore.
+    fn depth_row(&self, at: GeoPoint, f: &Formatter) -> Option<InspectorRow> {
+        let point = Bbox {
+            west: at.lon,
+            south: at.lat,
+            east: at.lon,
+            north: at.lat,
+        };
+        let (blocks, sources) = {
+            let mut store = self.lock();
+            (store.dem_blocks(Some(point)), store.dem_sources_near(at))
+        };
+        if blocks.is_empty() {
+            return None;
+        }
+        let value_text = blocks
+            .iter()
+            .find_map(|(_, grid)| dem::depth_at(grid, at, &sources, WaterBody::Sea))
+            .map_or_else(
+                || f.strings.get(Key::MapNoValue).to_owned(),
+                |reading| depth_reading(f, &reading),
+            );
+        Some(InspectorRow {
+            layer: DEPTH_LAYER.to_owned(),
+            label: f.strings.safety(SafetyKey::MapDepthRow).to_owned(),
+            value_text,
+            source: f.strings.safety(SafetyKey::MapCreditBathymetry).to_owned(),
+            time_text: String::new(),
+        })
     }
 }
 
@@ -1167,6 +1325,10 @@ impl GridStore {
         };
         let mut rows = Vec::new();
         for id in &layers {
+            if id == DEPTH_LAYER {
+                rows.extend(self.depth_row(at, &f));
+                continue;
+            }
             let Some(l) = catalogue::find(id).filter(|l| l.grid().is_some()) else {
                 continue;
             };
@@ -1211,7 +1373,8 @@ impl GridStore {
 
     /// How many blocks the store holds.
     pub fn block_count(&self) -> u32 {
-        u32::try_from(self.lock().stored.len()).unwrap_or(u32::MAX)
+        let blocks = self.lock();
+        u32::try_from(blocks.stored.len() + blocks.dem.len()).unwrap_or(u32::MAX)
     }
 
     /// How many values the store holds, axes included; at most [`MAX_STORE_VALUES`].
