@@ -1,0 +1,53 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-11-17T10:22:20Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 3244802899,
+  "lat": 41.2349902,
+  "lon": -73.9422332,
+  "tags": {
+    "access": "yes",
+    "canoe": "yes",
+    "leisure": "slipway",
+    "opening_hours": "Apr-Sep 08:00-dusk",
+    "operator": "Westchester County",
+    "parking": "yes",
+    "surface": "concrete",
+    "trailer": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 7096517544,
+  "lat": 41.2019346,
+  "lon": -73.8902985,
+  "tags": {
+    "leisure": "slipway"
+  }
+},
+{
+  "type": "node",
+  "id": 13850795487,
+  "lat": 41.2296016,
+  "lon": -73.9247844,
+  "tags": {
+    "access": "yes",
+    "canoe": "yes",
+    "leisure": "slipway",
+    "name": "Oscawana Island Canoe Launch",
+    "parking": "yes",
+    "surface": "ground",
+    "trailer": "no",
+    "website": "https://www.dec.ny.gov/outdoor/23856.html"
+  }
+}
+
+  ]
+}

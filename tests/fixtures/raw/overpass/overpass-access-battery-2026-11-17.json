@@ -1,0 +1,770 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-11-17T10:16:09Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 1907754150,
+  "lat": 40.7006563,
+  "lon": -73.9969645,
+  "tags": {
+    "access": "yes",
+    "canoe": "yes",
+    "fee": "no",
+    "leisure": "slipway",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "node",
+  "id": 3351014693,
+  "lat": 40.6950368,
+  "lon": -74.0028174,
+  "tags": {
+    "leisure": "fishing"
+  }
+},
+{
+  "type": "node",
+  "id": 3351014694,
+  "lat": 40.6954416,
+  "lon": -74.0025573,
+  "tags": {
+    "leisure": "fishing"
+  }
+},
+{
+  "type": "node",
+  "id": 3351031215,
+  "lat": 40.6987400,
+  "lon": -73.9975792,
+  "tags": {
+    "leisure": "slipway"
+  }
+},
+{
+  "type": "node",
+  "id": 11246012820,
+  "lat": 40.7392256,
+  "lon": -74.0111552,
+  "tags": {
+    "access": "yes",
+    "fee": "no",
+    "leisure": "slipway",
+    "name": "Kayak Access",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 37860420,
+  "center": {
+    "lat": 40.6931573,
+    "lon": -74.0152994
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 99260223,
+  "center": {
+    "lat": 40.6931266,
+    "lon": -74.0151120
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 130468198,
+  "center": {
+    "lat": 40.7035095,
+    "lon": -74.0061783
+  },
+  "tags": {
+    "area": "yes",
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 160901442,
+  "center": {
+    "lat": 40.7012417,
+    "lon": -74.0085897
+  },
+  "tags": {
+    "addr:city": "New York",
+    "addr:state": "NY",
+    "aerodrome:type": "public",
+    "aeroway": "heliport",
+    "alt_name": "Downtown Manhattan/Wall St. Heliport",
+    "area": "yes",
+    "ele": "1",
+    "faa": "JRB",
+    "iata": "JRB",
+    "icao": "KJRB",
+    "man_made": "pier",
+    "name": "Downtown Manhattan Heliport",
+    "operator": "New York City Economic Development Corporation",
+    "operator:type": "public",
+    "website": "https://www.downtownmanhattanheliport.com/",
+    "wikidata": "Q1575175",
+    "wikipedia": "en:Downtown Manhattan Heliport"
+  }
+},
+{
+  "type": "way",
+  "id": 232197001,
+  "center": {
+    "lat": 40.6910410,
+    "lon": -74.0120301
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "Pier 102"
+  }
+},
+{
+  "type": "way",
+  "id": 245320702,
+  "center": {
+    "lat": 40.7036083,
+    "lon": -73.9956019
+  },
+  "tags": {
+    "area": "yes",
+    "floating": "yes",
+    "lit": "yes",
+    "man_made": "pier",
+    "mooring": "ferry",
+    "name": "Fulton Ferry Landing",
+    "surface": "paved"
+  }
+},
+{
+  "type": "way",
+  "id": 277924002,
+  "center": {
+    "lat": 40.7044116,
+    "lon": -74.0179139
+  },
+  "tags": {
+    "addr:city": "New York",
+    "addr:housenumber": "22",
+    "addr:postcode": "10004",
+    "addr:state": "NY",
+    "addr:street": "Battery Place",
+    "building": "yes",
+    "building:levels": "3",
+    "man_made": "pier",
+    "name": "City Pier A",
+    "nycdoitt:bin": "1085492",
+    "wikidata": "Q5123366",
+    "wikipedia": "en:City Pier A"
+  }
+},
+{
+  "type": "way",
+  "id": 285548974,
+  "center": {
+    "lat": 40.7136900,
+    "lon": -74.0324438
+  },
+  "tags": {
+    "area": "yes",
+    "floating": "no",
+    "man_made": "pier",
+    "mooring": "private",
+    "name": "Paulus Hook Pier",
+    "network": "NY Waterway",
+    "network:wikidata": "Q6956135",
+    "network:wikipedia": "en:NY Waterway",
+    "operator": "NY Waterway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 328077794,
+  "center": {
+    "lat": 40.6865959,
+    "lon": -74.0161388
+  },
+  "tags": {
+    "access": "yes",
+    "description": "Formerly \"Y\" shaped pier was used as homeport for high endurance Coast Guard cutters. Today those ships dock in Charleston, SC.",
+    "ele": "-02",
+    "gnis:feature_id": "2575559",
+    "historic": "maritime",
+    "image": "https://www.hmdb.org/Photos5/515/Photo515977o.jpg",
+    "landuse": "commercial",
+    "man_made": "pier",
+    "name": "Yankee Pier",
+    "note": "ferry to Brooklyn",
+    "source_ref": "https://www.hmdb.org/m.asp?m=47202"
+  }
+},
+{
+  "type": "way",
+  "id": 328274835,
+  "center": {
+    "lat": 40.6998941,
+    "lon": -73.9979094
+  },
+  "tags": {
+    "area": "yes",
+    "floating": "yes",
+    "man_made": "pier",
+    "name": "Pier 2 Kayak Dock"
+  }
+},
+{
+  "type": "way",
+  "id": 328279528,
+  "center": {
+    "lat": 40.6950531,
+    "lon": -74.0028166
+  },
+  "tags": {
+    "leisure": "fishing"
+  }
+},
+{
+  "type": "way",
+  "id": 328279529,
+  "center": {
+    "lat": 40.6954493,
+    "lon": -74.0025610
+  },
+  "tags": {
+    "leisure": "fishing"
+  }
+},
+{
+  "type": "way",
+  "id": 354400078,
+  "center": {
+    "lat": 40.7113370,
+    "lon": -74.0435444
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 354402973,
+  "center": {
+    "lat": 40.7112451,
+    "lon": -74.0425362
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 361079701,
+  "center": {
+    "lat": 40.7259990,
+    "lon": -74.0293017
+  },
+  "tags": {
+    "floating": "no",
+    "man_made": "pier",
+    "mooring": "no"
+  }
+},
+{
+  "type": "way",
+  "id": 424972751,
+  "center": {
+    "lat": 40.6948855,
+    "lon": -74.0016484
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "Pier 5"
+  }
+},
+{
+  "type": "way",
+  "id": 424974230,
+  "center": {
+    "lat": 40.6994922,
+    "lon": -73.9987646
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "Pier 2"
+  }
+},
+{
+  "type": "way",
+  "id": 424974232,
+  "center": {
+    "lat": 40.6932329,
+    "lon": -74.0026431
+  },
+  "tags": {
+    "area": "yes",
+    "man_made": "pier",
+    "name": "Pier 6"
+  }
+},
+{
+  "type": "way",
+  "id": 424977974,
+  "center": {
+    "lat": 40.6979609,
+    "lon": -73.9996961
+  },
+  "tags": {
+    "alt_name": "Brooklyn Bridge Park Pier 3",
+    "landuse": "recreation_ground",
+    "man_made": "pier",
+    "name": "Pier 3",
+    "website": "https://www.brooklynbridgepark.org/park/pier-3"
+  }
+},
+{
+  "type": "way",
+  "id": 474674114,
+  "center": {
+    "lat": 40.7283439,
+    "lon": -74.0137666
+  },
+  "tags": {
+    "area": "yes",
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 474674116,
+  "center": {
+    "lat": 40.7282623,
+    "lon": -74.0121057
+  },
+  "tags": {
+    "area": "yes",
+    "floating": "yes",
+    "man_made": "pier",
+    "mooring": "private",
+    "surface": "paved"
+  }
+},
+{
+  "type": "way",
+  "id": 625793782,
+  "center": {
+    "lat": 40.6923300,
+    "lon": -74.0121229
+  },
+  "tags": {
+    "area": "yes",
+    "floating": "no",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 641349897,
+  "center": {
+    "lat": 40.7203111,
+    "lon": -74.0158859
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 641349899,
+  "center": {
+    "lat": 40.7204476,
+    "lon": -74.0139020
+  },
+  "tags": {
+    "man_made": "pier",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 658360950,
+  "center": {
+    "lat": 40.7126805,
+    "lon": -74.0427817
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360951,
+  "center": {
+    "lat": 40.7129442,
+    "lon": -74.0430873
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360952,
+  "center": {
+    "lat": 40.7134980,
+    "lon": -74.0424281
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360953,
+  "center": {
+    "lat": 40.7135334,
+    "lon": -74.0425936
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360954,
+  "center": {
+    "lat": 40.7121640,
+    "lon": -74.0423577
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360955,
+  "center": {
+    "lat": 40.7118300,
+    "lon": -74.0413849
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360956,
+  "center": {
+    "lat": 40.7118710,
+    "lon": -74.0413794
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360957,
+  "center": {
+    "lat": 40.7120102,
+    "lon": -74.0410490
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360958,
+  "center": {
+    "lat": 40.7105373,
+    "lon": -74.0415218
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360959,
+  "center": {
+    "lat": 40.7102335,
+    "lon": -74.0415795
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360960,
+  "center": {
+    "lat": 40.7101927,
+    "lon": -74.0415883
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360962,
+  "center": {
+    "lat": 40.7106910,
+    "lon": -74.0425245
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360963,
+  "center": {
+    "lat": 40.7101184,
+    "lon": -74.0405296
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360964,
+  "center": {
+    "lat": 40.7100459,
+    "lon": -74.0400356
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360965,
+  "center": {
+    "lat": 40.7107683,
+    "lon": -74.0432292
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360966,
+  "center": {
+    "lat": 40.7104165,
+    "lon": -74.0432670
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360969,
+  "center": {
+    "lat": 40.7115947,
+    "lon": -74.0454559
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360970,
+  "center": {
+    "lat": 40.7115570,
+    "lon": -74.0455682
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360971,
+  "center": {
+    "lat": 40.7115474,
+    "lon": -74.0454558
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360972,
+  "center": {
+    "lat": 40.7115362,
+    "lon": -74.0453370
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360973,
+  "center": {
+    "lat": 40.7114629,
+    "lon": -74.0446616
+  },
+  "tags": {
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360977,
+  "center": {
+    "lat": 40.7102923,
+    "lon": -74.0421593
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360978,
+  "center": {
+    "lat": 40.7098515,
+    "lon": -74.0416506
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360979,
+  "center": {
+    "lat": 40.7104530,
+    "lon": -74.0404755
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360980,
+  "center": {
+    "lat": 40.7101620,
+    "lon": -74.0410033
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360981,
+  "center": {
+    "lat": 40.7109471,
+    "lon": -74.0447502
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360982,
+  "center": {
+    "lat": 40.7110287,
+    "lon": -74.0455082
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360983,
+  "center": {
+    "lat": 40.7110948,
+    "lon": -74.0460833
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360984,
+  "center": {
+    "lat": 40.7111460,
+    "lon": -74.0465828
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360985,
+  "center": {
+    "lat": 40.7112075,
+    "lon": -74.0471035
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+},
+{
+  "type": "way",
+  "id": 658360986,
+  "center": {
+    "lat": 40.7112609,
+    "lon": -74.0475799
+  },
+  "tags": {
+    "floating": "yes",
+    "man_made": "pier"
+  }
+}
+
+  ]
+}

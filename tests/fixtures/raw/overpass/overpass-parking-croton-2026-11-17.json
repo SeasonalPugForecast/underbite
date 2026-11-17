@@ -1,0 +1,124 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-11-17T10:31:31Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "way",
+  "id": 318106579,
+  "center": {
+    "lat": 41.2368726,
+    "lon": -73.9382705
+  },
+  "tags": {
+    "amenity": "parking"
+  }
+},
+{
+  "type": "way",
+  "id": 1242000809,
+  "center": {
+    "lat": 41.2293126,
+    "lon": -73.9234438
+  },
+  "tags": {
+    "amenity": "parking",
+    "parking": "surface",
+    "surface": "unpaved"
+  }
+},
+{
+  "type": "way",
+  "id": 1377116820,
+  "center": {
+    "lat": 41.2401014,
+    "lon": -73.9289959
+  },
+  "tags": {
+    "amenity": "parking"
+  }
+},
+{
+  "type": "way",
+  "id": 1377116822,
+  "center": {
+    "lat": 41.2401644,
+    "lon": -73.9303450
+  },
+  "tags": {
+    "amenity": "parking"
+  }
+},
+{
+  "type": "way",
+  "id": 1377116829,
+  "center": {
+    "lat": 41.2387304,
+    "lon": -73.9264722
+  },
+  "tags": {
+    "amenity": "parking"
+  }
+},
+{
+  "type": "way",
+  "id": 1377116830,
+  "center": {
+    "lat": 41.2386915,
+    "lon": -73.9269161
+  },
+  "tags": {
+    "amenity": "parking"
+  }
+},
+{
+  "type": "way",
+  "id": 1377116831,
+  "center": {
+    "lat": 41.2398442,
+    "lon": -73.9275464
+  },
+  "tags": {
+    "amenity": "parking"
+  }
+},
+{
+  "type": "way",
+  "id": 1377116837,
+  "center": {
+    "lat": 41.2365844,
+    "lon": -73.9331389
+  },
+  "tags": {
+    "amenity": "parking"
+  }
+},
+{
+  "type": "way",
+  "id": 1377116838,
+  "center": {
+    "lat": 41.2384450,
+    "lon": -73.9335586
+  },
+  "tags": {
+    "amenity": "parking"
+  }
+},
+{
+  "type": "way",
+  "id": 1377116839,
+  "center": {
+    "lat": 41.2386366,
+    "lon": -73.9331415
+  },
+  "tags": {
+    "amenity": "parking"
+  }
+}
+
+  ]
+}

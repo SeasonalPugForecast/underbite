@@ -1,0 +1,452 @@
+[
+ {
+  "county": "Essex",
+  "waterbody": "Balfour Lake",
+  "normalised": "balfour lake",
+  "layer60": "exact",
+  "layer60_match": "Balfour Lake",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Broome",
+  "waterbody": "Patterson Pond (#1)",
+  "normalised": "patterson pond",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "core",
+  "layer50_match": "Patterson Creek"
+ },
+ {
+  "county": "Essex",
+  "waterbody": "Upper Saranac Lake",
+  "normalised": "upper saranac lake",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Essex",
+  "waterbody": "Moose Pond",
+  "normalised": "moose pond",
+  "layer60": "exact",
+  "layer60_match": "Moose Pond",
+  "layer50": "core",
+  "layer50_match": "Moose Creek"
+ },
+ {
+  "county": "Essex",
+  "waterbody": "Rock Pond",
+  "normalised": "rock pond",
+  "layer60": "exact",
+  "layer60_match": "Rock Pond",
+  "layer50": "core",
+  "layer50_match": "Rock Pond Brook"
+ },
+ {
+  "county": "Hamilton",
+  "waterbody": "Clear Pond (P594- Upper Hudson)",
+  "normalised": "clear pond",
+  "layer60": "exact",
+  "layer60_match": "Clear Pond",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Fulton",
+  "waterbody": "Bacon Brook",
+  "normalised": "bacon brook",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Bacon Brook"
+ },
+ {
+  "county": "Essex",
+  "waterbody": "Rogers Brook",
+  "normalised": "rogers brook",
+  "layer60": "core",
+  "layer60_match": "Rogers Pond",
+  "layer50": "exact",
+  "layer50_match": "Rogers Brook"
+ },
+ {
+  "county": "Hamilton",
+  "waterbody": "Crotched Pond",
+  "normalised": "crotched pond",
+  "layer60": "exact",
+  "layer60_match": "Crotched Pond",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Lewis",
+  "waterbody": "Fish Creek East Branch",
+  "normalised": "fish creek east branch",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "wordset",
+  "layer50_match": "East Branch Fish Creek"
+ },
+ {
+  "county": "Cayuga",
+  "waterbody": "Yawger Creek",
+  "normalised": "yawger creek",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Yawger Creek"
+ },
+ {
+  "county": "Allegany",
+  "waterbody": "Dodge Creek",
+  "normalised": "dodge creek",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Dodge Creek"
+ },
+ {
+  "county": "Warren",
+  "waterbody": "Palmer Pond 2 AS",
+  "normalised": "palmer pond",
+  "layer60": "exact",
+  "layer60_match": "Palmer Pond",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Hamilton",
+  "waterbody": "Handsome Pond",
+  "normalised": "handsome pond",
+  "layer60": "exact",
+  "layer60_match": "Handsome Pond",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Franklin",
+  "waterbody": "Sumner Brook",
+  "normalised": "sumner brook",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Sumner Brook"
+ },
+ {
+  "county": "Franklin",
+  "waterbody": "Panther Pond",
+  "normalised": "panther pond",
+  "layer60": "exact",
+  "layer60_match": "Panther Pond",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Livingston",
+  "waterbody": "Hemlock Lake",
+  "normalised": "hemlock lake",
+  "layer60": "exact",
+  "layer60_match": "Hemlock Lake",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Ulster",
+  "waterbody": "Sandburg Creek",
+  "normalised": "sandburg creek",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Sandburg Creek"
+ },
+ {
+  "county": "Delaware",
+  "waterbody": "Little Delaware River",
+  "normalised": "little delaware river",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Little Delaware River"
+ },
+ {
+  "county": "Niagara",
+  "waterbody": "Oppenheim Park Pond",
+  "normalised": "oppenheim park pond",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Warren",
+  "waterbody": "Little Jabe Pond",
+  "normalised": "little jabe pond",
+  "layer60": "exact",
+  "layer60_match": "Little Jabe Pond",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Hamilton",
+  "waterbody": "Sumner Stream",
+  "normalised": "sumner stream",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Sumner Stream"
+ },
+ {
+  "county": "Lewis",
+  "waterbody": "Mud Pond",
+  "normalised": "mud pond",
+  "layer60": "exact",
+  "layer60_match": "Mud Pond",
+  "layer50": "core",
+  "layer50_match": "Mud Brook"
+ },
+ {
+  "county": "Essex",
+  "waterbody": "Durgan Brook",
+  "normalised": "durgan brook",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Durgan Brook"
+ },
+ {
+  "county": "Dutchess",
+  "waterbody": "Webatuck Creek",
+  "normalised": "webatuck creek",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Webatuck Creek"
+ },
+ {
+  "county": "Fulton",
+  "waterbody": "Canada Lake",
+  "normalised": "canada lake",
+  "layer60": "exact",
+  "layer60_match": "Canada Lake",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Steuben",
+  "waterbody": "Canacadea Creek",
+  "normalised": "canacadea creek",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Canacadea Creek"
+ },
+ {
+  "county": "Suffolk",
+  "waterbody": "Connetquot River",
+  "normalised": "connetquot river",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Connetquot River"
+ },
+ {
+  "county": "Onondaga",
+  "waterbody": "Oneida Lake",
+  "normalised": "oneida lake",
+  "layer60": "exact",
+  "layer60_match": "Oneida Lake",
+  "layer50": "core",
+  "layer50_match": "Oneida River"
+ },
+ {
+  "county": "Putnam",
+  "waterbody": "East Branch Reservoir",
+  "normalised": "east branch reservoir",
+  "layer60": "exact",
+  "layer60_match": "East Branch Reservoir",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Onondaga",
+  "waterbody": "Pools Brook",
+  "normalised": "pools brook",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Pools Brook"
+ },
+ {
+  "county": "Erie",
+  "waterbody": "Little Buffalo Creek",
+  "normalised": "little buffalo creek",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Little Buffalo Creek"
+ },
+ {
+  "county": "Saratoga",
+  "waterbody": "Paul Creek",
+  "normalised": "paul creek",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Paul Creek"
+ },
+ {
+  "county": "Essex",
+  "waterbody": "Upper Wallface Pond",
+  "normalised": "upper wallface pond",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Orange",
+  "waterbody": "Ramapo River",
+  "normalised": "ramapo river",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Ramapo River"
+ },
+ {
+  "county": "Essex",
+  "waterbody": "County Fair",
+  "normalised": "county fair",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Putnam",
+  "waterbody": "Bog Brook Res",
+  "normalised": "bog brook reservoir",
+  "layer60": "exact",
+  "layer60_match": "Bog Brook Reservoir",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Seneca",
+  "waterbody": "Cayuga Lake",
+  "normalised": "cayuga lake",
+  "layer60": "exact",
+  "layer60_match": "Cayuga Lake",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Sullivan",
+  "waterbody": "Willowemoc Creek",
+  "normalised": "willowemoc creek",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Willowemoc Creek"
+ },
+ {
+  "county": "Ulster",
+  "waterbody": "Holliday Creek",
+  "normalised": "holliday creek",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Steuben",
+  "waterbody": "Canisteo River",
+  "normalised": "canisteo river",
+  "layer60": "core",
+  "layer60_match": "Canisteo Reservoir",
+  "layer50": "exact",
+  "layer50_match": "Canisteo River"
+ },
+ {
+  "county": "Essex",
+  "waterbody": "Long Pond",
+  "normalised": "long pond",
+  "layer60": "exact",
+  "layer60_match": "Long Pond",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Onondaga",
+  "waterbody": "Jamesville Reservoir",
+  "normalised": "jamesville reservoir",
+  "layer60": "exact",
+  "layer60_match": "Jamesville Reservoir",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Clinton",
+  "waterbody": "Peru Fish & Game Club Pond",
+  "normalised": "peru fish and game club pond",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Dutchess",
+  "waterbody": "Swamp River",
+  "normalised": "swamp river",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Swamp River"
+ },
+ {
+  "county": "Chautauqua",
+  "waterbody": "Lakewood Rod and Gun Channel",
+  "normalised": "lakewood rod and gun channel",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Schoharie",
+  "waterbody": "Mallet Pond",
+  "normalised": "mallet pond",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Chemung",
+  "waterbody": "Sing Sing Creek",
+  "normalised": "sing sing creek",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "exact",
+  "layer50_match": "Sing Sing Creek"
+ },
+ {
+  "county": "Clinton",
+  "waterbody": "Chazy Lake",
+  "normalised": "chazy lake",
+  "layer60": "exact",
+  "layer60_match": "Chazy Lake",
+  "layer50": "none",
+  "layer50_match": null
+ },
+ {
+  "county": "Erie",
+  "waterbody": "Como Park Lake",
+  "normalised": "como park lake",
+  "layer60": "none",
+  "layer60_match": null,
+  "layer50": "none",
+  "layer50_match": null
+ }
+]

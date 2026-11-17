@@ -32,6 +32,12 @@ request URL and the recording date:
 - [rise](raw/rise/README.md)
 - [cyan](raw/cyan/README.md)
 - [hab](raw/hab/README.md)
+- [overpass](raw/overpass/README.md)
+- [padus](raw/padus/README.md)
+- [gbif](raw/gbif/README.md)
+- [inaturalist](raw/inaturalist/README.md)
+- [nas](raw/nas/README.md)
+- [stocking-ny](raw/stocking-ny/README.md)
 
 ## Conventions
 

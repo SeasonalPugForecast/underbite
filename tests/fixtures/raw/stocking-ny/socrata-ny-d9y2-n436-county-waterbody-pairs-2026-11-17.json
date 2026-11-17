@@ -1,0 +1,508 @@
+[{"county":"Genesee","waterbody":"Dewitt Pond","n":"1"}
+,{"county":"Essex","waterbody":"Eagle Lake","n":"1"}
+,{"county":"Madison","waterbody":"Oneida Creek","n":"2"}
+,{"county":"Dutchess","waterbody":"Sprout Creek","n":"4"}
+,{"county":"Essex","waterbody":"Owen Pond","n":"1"}
+,{"county":"Ulster","waterbody":"Ashokan Reservoir (East Basin)","n":"1"}
+,{"county":"Monroe","waterbody":"Lake Ontario","n":"3"}
+,{"county":"Tompkins","waterbody":"Cayuga Inlet","n":"1"}
+,{"county":"Cortland","waterbody":"Tioughnioga River East Branch","n":"8"}
+,{"county":"Chemung","waterbody":"Cayuta Creek","n":"8"}
+,{"county":"Chemung","waterbody":"Park Station Pond","n":"2"}
+,{"county":"Oneida","waterbody":"Sconondoa Creek","n":"2"}
+,{"county":"Orange","waterbody":"Askoti Lake","n":"2"}
+,{"county":"Washington","waterbody":"Batten Kill","n":"16"}
+,{"county":"Hamilton","waterbody":"Sprague Pond","n":"1"}
+,{"county":"Orange","waterbody":"Moodna Creek","n":"2"}
+,{"county":"Sullivan","waterbody":"Loch Sheldrake","n":"1"}
+,{"county":"Cattaraugus","waterbody":"Red House Lake","n":"2"}
+,{"county":"Ulster","waterbody":"Rondout Creek","n":"3"}
+,{"county":"Wyoming","waterbody":"Letchworth Park Pond","n":"2"}
+,{"county":"Tioga","waterbody":"Catatonk Creek","n":"2"}
+,{"county":"Lewis","waterbody":"Bonaparte Lake","n":"1"}
+,{"county":"Essex","waterbody":"Rankin Pond","n":"1"}
+,{"county":"Tioga","waterbody":"Owego Creek","n":"2"}
+,{"county":"Lewis","waterbody":"Deer River West Branch","n":"1"}
+,{"county":"Jefferson","waterbody":"Remington Pond","n":"1"}
+,{"county":"Hamilton","waterbody":"Lake Pleasant","n":"1"}
+,{"county":"Rockland","waterbody":"Pascack Brook","n":"2"}
+,{"county":"Cattaraugus","waterbody":"County Pond B","n":"1"}
+,{"county":"Cattaraugus","waterbody":"Lake Flavia","n":"1"}
+,{"county":"Herkimer","waterbody":"Twitchell Lake","n":"1"}
+,{"county":"Putnam","waterbody":"West Branch Reservoir","n":"1"}
+,{"county":"Schuyler","waterbody":"Catharine Creek","n":"1"}
+,{"county":"St Lawrence","waterbody":"St. Regis River - West Branch","n":"2"}
+,{"county":"Essex","waterbody":"Lost Pond","n":"2"}
+,{"county":"Allegany","waterbody":"California Hollow Brook","n":"2"}
+,{"county":"Essex","waterbody":"Fifth Lake Essex Chain","n":"1"}
+,{"county":"St Lawrence","waterbody":"Bog River","n":"1"}
+,{"county":"Ulster","waterbody":"Sandburg Creek","n":"2"}
+,{"county":"Rockland","waterbody":"Stony Brook","n":"2"}
+,{"county":"Essex","waterbody":"Ausable River East Branch","n":"5"}
+,{"county":"Cattaraugus","waterbody":"Ischua Creek","n":"2"}
+,{"county":"Tompkins","waterbody":"Cayuga Lake","n":"1"}
+,{"county":"Broome","waterbody":"Nanticoke Creek East Branch","n":"2"}
+,{"county":"Broome","waterbody":"Finch Hollow Site 1 (Overbrook)","n":"1"}
+,{"county":"Franklin","waterbody":"Mountain Pond C-P57","n":"1"}
+,{"county":"Delaware","waterbody":"Mud Pond","n":"2"}
+,{"county":"Dutchess","waterbody":"Crum Elbow Creek","n":"2"}
+,{"county":"Fulton","waterbody":"Northville Pond","n":"2"}
+,{"county":"Herkimer","waterbody":"Sunday Creek","n":"1"}
+,{"county":"Delaware","waterbody":"Pepacton Reservoir","n":"1"}
+,{"county":"Oneida","waterbody":"Fish Creek East Branch","n":"2"}
+,{"county":"Greene","waterbody":"Batavia Kill","n":"2"}
+,{"county":"Steuben","waterbody":"Bennett Creek","n":"2"}
+,{"county":"Hamilton","waterbody":"Clear Pond","n":"1"}
+,{"county":"Delaware","waterbody":"Beaver Kill","n":"8"}
+,{"county":"Hamilton","waterbody":"Gilman Lake","n":"1"}
+,{"county":"Allegany","waterbody":"Genesee River","n":"16"}
+,{"county":"Warren","waterbody":"Glen Lake","n":"1"}
+,{"county":"Ulster","waterbody":"Vernooy Kill","n":"2"}
+,{"county":"Broome","waterbody":"Nanticoke Lake","n":"1"}
+,{"county":"Suffolk","waterbody":"Carlls River","n":"3"}
+,{"county":"Franklin","waterbody":"Saranac River North Branch","n":"1"}
+,{"county":"Jefferson","waterbody":"Jacobs Creek","n":"1"}
+,{"county":"Nassau","waterbody":"Massapequa Reservoir","n":"5"}
+,{"county":"Greene","waterbody":"Schoharie Creek","n":"2"}
+,{"county":"Niagara","waterbody":"Lake Ontario","n":"2"}
+,{"county":"Fulton","waterbody":"East Caroga Lake","n":"1"}
+,{"county":"Wyoming","waterbody":"Cattaraugus Creek","n":"8"}
+,{"county":"Delaware","waterbody":"Delaware River East Branch","n":"2"}
+,{"county":"Putnam","waterbody":"Lake Gleneida","n":"1"}
+,{"county":"Wyoming","waterbody":"Perry Park Pond","n":"1"}
+,{"county":"Essex","waterbody":"Westport Club Pond","n":"1"}
+,{"county":"Herkimer","waterbody":"Otsquago Creek","n":"2"}
+,{"county":"Broome","waterbody":"Patterson Pond (#1)","n":"1"}
+,{"county":"Orange","waterbody":"Ramapo River","n":"8"}
+,{"county":"Essex","waterbody":"Dimmick Pond","n":"1"}
+,{"county":"Chenango","waterbody":"Bowman Lake","n":"2"}
+,{"county":"Essex","waterbody":"Willsboro Club Pond 2","n":"2"}
+,{"county":"Westchester","waterbody":"Cross River Reservoir","n":"1"}
+,{"county":"Clinton","waterbody":"Great Chazy River North Branch","n":"16"}
+,{"county":"Otsego","waterbody":"Basswood Pond","n":"3"}
+,{"county":"Tompkins","waterbody":"Fall Creek","n":"2"}
+,{"county":"Broome","waterbody":"Nanticoke 7a","n":"1"}
+,{"county":"Herkimer","waterbody":"West Canada Creek","n":"11"}
+,{"county":"Jefferson","waterbody":"Sandy Creek","n":"2"}
+,{"county":"Essex","waterbody":"Schroon River","n":"2"}
+,{"county":"Franklin","waterbody":"Whey Pond","n":"2"}
+,{"county":"Erie","waterbody":"Sprague Brook Park -  Foote Road Pond","n":"2"}
+,{"county":"Schuyler","waterbody":"Potomac Pond","n":"1"}
+,{"county":"Tompkins","waterbody":"Enfield Creek, T4","n":"2"}
+,{"county":"Lewis","waterbody":"Moose River","n":"1"}
+,{"county":"Essex","waterbody":"Ausable River - West Branch","n":"25"}
+,{"county":"Broome","waterbody":"Nanticoke Creek","n":"4"}
+,{"county":"Fulton","waterbody":"East Canada Creek","n":"2"}
+,{"county":"Essex","waterbody":"Westport Reservoir 2","n":"1"}
+,{"county":"Sullivan","waterbody":"Callicoon Creek","n":"2"}
+,{"county":"Erie","waterbody":"Little Buffalo Creek","n":"4"}
+,{"county":"Erie","waterbody":"Ellicott Creek","n":"2"}
+,{"county":"St Lawrence","waterbody":"Sylvia Lake","n":"1"}
+,{"county":"Jefferson","waterbody":"Sandy Creek North Branch","n":"2"}
+,{"county":"Cattaraugus","waterbody":"County Pond A","n":"1"}
+,{"county":"St Lawrence","waterbody":"Ozonia Lake","n":"1"}
+,{"county":"Essex","waterbody":"Munson Pond","n":"1"}
+,{"county":"Madison","waterbody":"Sangerfield River","n":"2"}
+,{"county":"Rensselaer","waterbody":"Walloomsac River","n":"2"}
+,{"county":"Orange","waterbody":"Shawangunk Kill","n":"2"}
+,{"county":"Erie","waterbody":"Eighteenmile Creek","n":"3"}
+,{"county":"Steuben","waterbody":"Canisteo River","n":"2"}
+,{"county":"Westchester","waterbody":"Dogwood Pond","n":"2"}
+,{"county":"Essex","waterbody":"Gooseneck Pond","n":"1"}
+,{"county":"Wyoming","waterbody":"East Koy Creek","n":"8"}
+,{"county":"Hamilton","waterbody":"First Lake Essex Chain","n":"1"}
+,{"county":"Cattaraugus","waterbody":"Science Lake","n":"2"}
+,{"county":"Steuben","waterbody":"Cohocton River","n":"8"}
+,{"county":"Jefferson","waterbody":"Lake Ontario","n":"2"}
+,{"county":"Herkimer","waterbody":"Old Forge Pond","n":"1"}
+,{"county":"St Lawrence","waterbody":"Star Lake","n":"1"}
+,{"county":"Dutchess","waterbody":"Fishkill Creek","n":"6"}
+,{"county":"Lewis","waterbody":"Rock Pond","n":"1"}
+,{"county":"Westchester","waterbody":"Amawalk Reservoir","n":"1"}
+,{"county":"Franklin","waterbody":"Two Bridge Brook","n":"2"}
+,{"county":"Madison","waterbody":"Upper Lelands Pond","n":"1"}
+,{"county":"Jefferson","waterbody":"Black Creek","n":"2"}
+,{"county":"Broome","waterbody":"Dudley Creek","n":"2"}
+,{"county":"Sullivan","waterbody":"Beaver Kill","n":"8"}
+,{"county":"Sullivan","waterbody":"Halfway Brook","n":"2"}
+,{"county":"Cortland","waterbody":"Casterline Pond","n":"2"}
+,{"county":"Clinton","waterbody":"Mud Pond","n":"1"}
+,{"county":"Broome","waterbody":"Oquaga Creek","n":"2"}
+,{"county":"Hamilton","waterbody":"Seventh Lake","n":"1"}
+,{"county":"Wyoming","waterbody":"Little Tonawanda Creek","n":"2"}
+,{"county":"Lewis","waterbody":"Forestry Pond","n":"1"}
+,{"county":"Erie","waterbody":"Springville Field and Stream Club Pond","n":"1"}
+,{"county":"Oneida","waterbody":"Fish Creek West Branch","n":"6"}
+,{"county":"Orange","waterbody":"Island Pond","n":"1"}
+,{"county":"Cayuga","waterbody":"Owasco Outlet","n":"2"}
+,{"county":"Albany","waterbody":"Basic Creek","n":"2"}
+,{"county":"Westchester","waterbody":"Cross River Reservoir Outlet","n":"2"}
+,{"county":"Lewis","waterbody":"Otter Creek","n":"2"}
+,{"county":"Otsego","waterbody":"Wharton Creek","n":"4"}
+,{"county":"Jefferson","waterbody":"Millsite Lake","n":"1"}
+,{"county":"Hamilton","waterbody":"Unknown Pond","n":"1"}
+,{"county":"Erie","waterbody":"Cayuga Creek","n":"2"}
+,{"county":"Essex","waterbody":"Willsboro Club Pond 1","n":"1"}
+,{"county":"Columbia","waterbody":"Weed Mines Pond","n":"1"}
+,{"county":"Orange","waterbody":"Skanatati Lake","n":"1"}
+,{"county":"Essex","waterbody":"Vanderwacker Pond","n":"1"}
+,{"county":"Essex","waterbody":"Cheney Pond","n":"1"}
+,{"county":"Dutchess","waterbody":"Overlook Park Pond","n":"1"}
+,{"county":"Monroe","waterbody":"Oatka Creek","n":"2"}
+,{"county":"Chenango","waterbody":"Pharsalia Y Pond","n":"1"}
+,{"county":"Warren","waterbody":"Botheration Pond","n":"1"}
+,{"county":"Oneida","waterbody":"Point Rock Creek","n":"2"}
+,{"county":"Cayuga","waterbody":"Cayuga Lake","n":"1"}
+,{"county":"Essex","waterbody":"Westport Reservoir 1","n":"1"}
+,{"county":"Ulster","waterbody":"Ashokan Reservoir (West Basin)","n":"1"}
+,{"county":"Westchester","waterbody":"Waccabuc River","n":"2"}
+,{"county":"Essex","waterbody":"Spruce Mill Brook","n":"3"}
+,{"county":"Albany","waterbody":"Vly Creek","n":"2"}
+,{"county":"Allegany","waterbody":"Rushford Lake","n":"2"}
+,{"county":"Herkimer","waterbody":"Beardsley Lake","n":"1"}
+,{"county":"Hamilton","waterbody":"Upper Mitchell Pond","n":"1"}
+,{"county":"Erie","waterbody":"Main Park Pond - Village of Clarence","n":"1"}
+,{"county":"Albany","waterbody":"Thompsons Lake","n":"1"}
+,{"county":"Saratoga","waterbody":"Palmer Lake","n":"1"}
+,{"county":"Otsego","waterbody":"Schenevus Creek","n":"2"}
+,{"county":"Sullivan","waterbody":"Callicoon Creek East Branch","n":"2"}
+,{"county":"Rockland","waterbody":"Mahwah River","n":"2"}
+,{"county":"Herkimer","waterbody":"Nicks Lake","n":"1"}
+,{"county":"Greene","waterbody":"Colgate Lake","n":"2"}
+,{"county":"Wyoming","waterbody":"Tonawanda Creek","n":"4"}
+,{"county":"Westchester","waterbody":"Pocantico River","n":"2"}
+,{"county":"Tioga","waterbody":"Cayuta Creek","n":"2"}
+,{"county":"Dutchess","waterbody":"Sylvan Lake","n":"1"}
+,{"county":"Chemung","waterbody":"Eldridge Lake","n":"3"}
+,{"county":"Chenango","waterbody":"Guilford Lake","n":"2"}
+,{"county":"Niagara","waterbody":"Oppenheim Park Pond","n":"2"}
+,{"county":"St Lawrence","waterbody":"Parishville Reservoir","n":"1"}
+,{"county":"Suffolk","waterbody":"Kahler Pond","n":"1"}
+,{"county":"Allegany","waterbody":"Dyke Creek","n":"4"}
+,{"county":"Warren","waterbody":"Palmer Pond","n":"1"}
+,{"county":"Greene","waterbody":"Catskill Creek","n":"16"}
+,{"county":"Madison","waterbody":"Beaver Creek","n":"2"}
+,{"county":"Warren","waterbody":"Round Pond","n":"1"}
+,{"county":"Warren","waterbody":"Clear Pond","n":"1"}
+,{"county":"Chautauqua","waterbody":"Canadaway Creek","n":"2"}
+,{"county":"St Lawrence","waterbody":"St. Regis River","n":"4"}
+,{"county":"Essex","waterbody":"Moose Pond","n":"1"}
+,{"county":"Lewis","waterbody":"Quarry Pond","n":"1"}
+,{"county":"Ulster","waterbody":"Rondout Reservoir","n":"1"}
+,{"county":"Cattaraugus","waterbody":"New Albion Lake","n":"3"}
+,{"county":"Orange","waterbody":"Neversink River","n":"8"}
+,{"county":"Ulster","waterbody":"Sawkill Creek","n":"2"}
+,{"county":"Essex","waterbody":"Balfour Lake","n":"1"}
+,{"county":"Rensselaer","waterbody":"Kinderhook Creek","n":"16"}
+,{"county":"Broome","waterbody":"Little Choconut 2e","n":"1"}
+,{"county":"Warren","waterbody":"Glen Creek","n":"2"}
+,{"county":"Hamilton","waterbody":"Cedar River","n":"2"}
+,{"county":"Columbia","waterbody":"Queechy Lake","n":"2"}
+,{"county":"Clinton","waterbody":"Dry Mill Brook","n":"2"}
+,{"county":"Oswego","waterbody":"Reese's Pond","n":"1"}
+,{"county":"Oneida","waterbody":"Mohawk River","n":"10"}
+,{"county":"Essex","waterbody":"Glidden Marsh","n":"1"}
+,{"county":"Erie","waterbody":"Westwood Park Pond","n":"1"}
+,{"county":"Essex","waterbody":"South Meadow Brook","n":"1"}
+,{"county":"Westchester","waterbody":"Amawalk Inlet (Muscoot River)","n":"2"}
+,{"county":"Saratoga","waterbody":"Moreau Lake","n":"1"}
+,{"county":"Cattaraugus","waterbody":"Five Mile Creek","n":"2"}
+,{"county":"Sullivan","waterbody":"Callicoon Creek North Branch","n":"8"}
+,{"county":"Saratoga","waterbody":"Geyser Brook","n":"2"}
+,{"county":"Otsego","waterbody":"Otego Creek","n":"4"}
+,{"county":"Hamilton","waterbody":"Eighth Lake","n":"1"}
+,{"county":"Franklin","waterbody":"Lake Clear","n":"1"}
+,{"county":"Sullivan","waterbody":"Little Beaverkill","n":"2"}
+,{"county":"Saratoga","waterbody":"Glowegee Creek","n":"2"}
+,{"county":"Cortland","waterbody":"Little York Lake","n":"1"}
+,{"county":"Lewis","waterbody":"Long Pond","n":"1"}
+,{"county":"Rensselaer","waterbody":"Long Pond","n":"1"}
+,{"county":"Hamilton","waterbody":"Indian Lake","n":"1"}
+,{"county":"Madison","waterbody":"Chenango River","n":"4"}
+,{"county":"Orange","waterbody":"Rutgers Creek","n":"2"}
+,{"county":"Herkimer","waterbody":"Unadilla River","n":"2"}
+,{"county":"Westchester","waterbody":"Croton River","n":"2"}
+,{"county":"Sullivan","waterbody":"Mongaup Falls Reservoir","n":"1"}
+,{"county":"Dutchess","waterbody":"Roeliff Jansen Kill","n":"2"}
+,{"county":"Hamilton","waterbody":"West Canada Creek South Branch","n":"2"}
+,{"county":"Delaware","waterbody":"Delaware River West Branch","n":"32"}
+,{"county":"Cayuga","waterbody":"Lake Ontario","n":"1"}
+,{"county":"Jefferson","waterbody":"Black Creek West Branch","n":"1"}
+,{"county":"Jefferson","waterbody":"Felts Mills Creek","n":"2"}
+,{"county":"Steuben","waterbody":"Cold Brook","n":"1"}
+,{"county":"Putnam","waterbody":"Croton River West Branch","n":"10"}
+,{"county":"Saratoga","waterbody":"Great Sacandaga Lake","n":"1"}
+,{"county":"Rockland","waterbody":"Hessian Lake","n":"2"}
+,{"county":"Sullivan","waterbody":"Mongaup River","n":"2"}
+,{"county":"Suffolk","waterbody":"Laurel Lake","n":"2"}
+,{"county":"Lewis","waterbody":"Mud Pond","n":"1"}
+,{"county":"Rensselaer","waterbody":"Second Pond","n":"1"}
+,{"county":"Suffolk","waterbody":"Twin Pond","n":"2"}
+,{"county":"Franklin","waterbody":"St. Regis River","n":"2"}
+,{"county":"Franklin","waterbody":"Salmon River","n":"10"}
+,{"county":"Franklin","waterbody":"Rock Pond","n":"1"}
+,{"county":"Rensselaer","waterbody":"Town Park Pond","n":"1"}
+,{"county":"Putnam","waterbody":"Croton River East Branch","n":"8"}
+,{"county":"Delaware","waterbody":"Launt Pond","n":"1"}
+,{"county":"Clinton","waterbody":"Chazy Lake","n":"1"}
+,{"county":"Westchester","waterbody":"Muscoot Reservoir","n":"2"}
+,{"county":"Herkimer","waterbody":"Third Lake","n":"1"}
+,{"county":"Wayne","waterbody":"Lake Ontario","n":"2"}
+,{"county":"Herkimer","waterbody":"Quiver Pond","n":"1"}
+,{"county":"Suffolk","waterbody":"Southards Pond","n":"2"}
+,{"county":"Essex","waterbody":"Oliver Pond","n":"1"}
+,{"county":"St Lawrence","waterbody":"Trout Brook","n":"2"}
+,{"county":"Warren","waterbody":"Upper Siamese Lake","n":"1"}
+,{"county":"Suffolk","waterbody":"Belmont Lake","n":"6"}
+,{"county":"Sullivan","waterbody":"Neversink River","n":"8"}
+,{"county":"Hamilton","waterbody":"Jessup River","n":"3"}
+,{"county":"Greene","waterbody":"Basic Creek","n":"2"}
+,{"county":"Westchester","waterbody":"Titicus River","n":"2"}
+,{"county":"Essex","waterbody":"Coldspring Pond","n":"1"}
+,{"county":"Essex","waterbody":"Lake Placid","n":"1"}
+,{"county":"Chemung","waterbody":"Sing Sing Creek","n":"2"}
+,{"county":"Essex","waterbody":"Clear Pond","n":"3"}
+,{"county":"Seneca","waterbody":"Seneca Lake","n":"1"}
+,{"county":"Jefferson","waterbody":"South Sandy Creek","n":"1"}
+,{"county":"Clinton","waterbody":"Salmon River","n":"2"}
+,{"county":"Tioga","waterbody":"Tri-county Pond","n":"1"}
+,{"county":"Herkimer","waterbody":"Moss Lake","n":"1"}
+,{"county":"Chenango","waterbody":"Genegantslet Creek","n":"4"}
+,{"county":"Clinton","waterbody":"Military Pond","n":"1"}
+,{"county":"Erie","waterbody":"Cazenovia Creek East Branch","n":"4"}
+,{"county":"Schenectady","waterbody":"Lisha Kill","n":"2"}
+,{"county":"Delaware","waterbody":"Big Pond","n":"2"}
+,{"county":"Allegany","waterbody":"Canaseraga Creek","n":"2"}
+,{"county":"St Lawrence","waterbody":"Sucker Lake","n":"1"}
+,{"county":"Dutchess","waterbody":"Swamp River","n":"2"}
+,{"county":"Franklin","waterbody":"Drain Pond","n":"1"}
+,{"county":"Hamilton","waterbody":"Sixth Lake","n":"1"}
+,{"county":"Warren","waterbody":"New Lake","n":"1"}
+,{"county":"Essex","waterbody":"Boreas River","n":"2"}
+,{"county":"Hamilton","waterbody":"Raquette River","n":"2"}
+,{"county":"Hamilton","waterbody":"Stephens Pond","n":"1"}
+,{"county":"Cattaraugus","waterbody":"Franklinville Conservation Club Pond","n":"1"}
+,{"county":"Schoharie","waterbody":"Mallet Pond","n":"2"}
+,{"county":"Hamilton","waterbody":"Cedar River Flow","n":"1"}
+,{"county":"Chenango","waterbody":"Mill Brook Reservoir","n":"2"}
+,{"county":"St Lawrence","waterbody":"Little River","n":"3"}
+,{"county":"Westchester","waterbody":"Stone Hill River","n":"2"}
+,{"county":"Suffolk","waterbody":"Connetquot River","n":"2"}
+,{"county":"Delaware","waterbody":"Little Pond","n":"3"}
+,{"county":"Franklin","waterbody":"Saranac River","n":"2"}
+,{"county":"Suffolk","waterbody":"Upper Lake","n":"6"}
+,{"county":"Greene","waterbody":"East Kill","n":"2"}
+,{"county":"Orange","waterbody":"Highland Brook","n":"1"}
+,{"county":"Orange","waterbody":"Bull Pond","n":"2"}
+,{"county":"Oneida","waterbody":"Black River","n":"4"}
+,{"county":"Erie","waterbody":"Sprague Brook Park Veteran's Pond","n":"2"}
+,{"county":"Oneida","waterbody":"Oriskany Creek","n":"4"}
+,{"county":"Cattaraugus","waterbody":"Paisley Park Pond","n":"2"}
+,{"county":"Hamilton","waterbody":"Indian River","n":"2"}
+,{"county":"Allegany","waterbody":"Dodge Creek","n":"2"}
+,{"county":"Cattaraugus","waterbody":"Little Conewango Creek","n":"2"}
+,{"county":"Rensselaer","waterbody":"Poesten Kill","n":"2"}
+,{"county":"St Lawrence","waterbody":"Grass River","n":"2"}
+,{"county":"Chenango","waterbody":"Jeffrey Pond","n":"1"}
+,{"county":"Essex","waterbody":"Tom Peck Pond","n":"1"}
+,{"county":"Schuyler","waterbody":"Ballard Pond","n":"1"}
+,{"county":"Orange","waterbody":"Walton Lake","n":"2"}
+,{"county":"St Lawrence","waterbody":"Oswegatchie River","n":"3"}
+,{"county":"Steuben","waterbody":"Post Creek","n":"2"}
+,{"county":"Columbia","waterbody":"Ore Pit Pond","n":"1"}
+,{"county":"Essex","waterbody":"Paradox Lake","n":"1"}
+,{"county":"Chautauqua","waterbody":"Goose Creek","n":"12"}
+,{"county":"Lewis","waterbody":"Oswegatchie River West Branch","n":"2"}
+,{"county":"Essex","waterbody":"Saranac River","n":"2"}
+,{"county":"Hamilton","waterbody":"Sacandaga River - West Branch","n":"2"}
+,{"county":"Essex","waterbody":"Goose Pond","n":"1"}
+,{"county":"St Lawrence","waterbody":"Plumb Brook","n":"4"}
+,{"county":"Hamilton","waterbody":"Elbow Creek Reservoir","n":"1"}
+,{"county":"Orange","waterbody":"Round Pond","n":"2"}
+,{"county":"Genesee","waterbody":"Oatka Creek","n":"8"}
+,{"county":"Tioga","waterbody":"Owego Creek East Branch","n":"4"}
+,{"county":"Hamilton","waterbody":"Sacandaga Lake","n":"1"}
+,{"county":"Oswego","waterbody":"Salmon River","n":"2"}
+,{"county":"Franklin","waterbody":"Deer River","n":"2"}
+,{"county":"Madison","waterbody":"Eaton Reservoir","n":"1"}
+,{"county":"Delaware","waterbody":"Little Delaware River","n":"2"}
+,{"county":"Livingston","waterbody":"Springwater Creek","n":"1"}
+,{"county":"Putnam","waterbody":"Lake Gilead","n":"1"}
+,{"county":"Lewis","waterbody":"Point Rock Creek","n":"2"}
+,{"county":"Tompkins","waterbody":"Virgil Creek","n":"2"}
+,{"county":"Madison","waterbody":"Chittenango Greek","n":"2"}
+,{"county":"Warren","waterbody":"Schroon River","n":"8"}
+,{"county":"Chautauqua","waterbody":"Mill Creek","n":"2"}
+,{"county":"Westchester","waterbody":"Kensico Reservoir","n":"1"}
+,{"county":"Franklin","waterbody":"Malone Village Pond","n":"3"}
+,{"county":"Franklin","waterbody":"Little Long Pond (East)","n":"1"}
+,{"county":"Madison","waterbody":"Chittenango Creek","n":"20"}
+,{"county":"Lewis","waterbody":"Trout Lake","n":"1"}
+,{"county":"Allegany","waterbody":"Root Creek","n":"2"}
+,{"county":"Westchester","waterbody":"Titicus Reservoir","n":"2"}
+,{"county":"Cattaraugus","waterbody":"Crandall Pond","n":"1"}
+,{"county":"Essex","waterbody":"Third Lake Essex Chain","n":"1"}
+,{"county":"Niagara","waterbody":"Hyde Park Lake","n":"2"}
+,{"county":"Cayuga","waterbody":"Owasco Lake","n":"2"}
+,{"county":"Lewis","waterbody":"Alder Creek","n":"2"}
+,{"county":"Yates","waterbody":"Keuka Lake Outlet","n":"2"}
+,{"county":"Oneida","waterbody":"Oneida Creek","n":"2"}
+,{"county":"Hamilton","waterbody":"Sacandaga River","n":"2"}
+,{"county":"Cattaraugus","waterbody":"Harwood Lake","n":"2"}
+,{"county":"Ontario","waterbody":"Canandaigua Outlet","n":"4"}
+,{"county":"Montgomery","waterbody":"Canajoharie Creek","n":"2"}
+,{"county":"Putnam","waterbody":"Peekskill Hollow Brook","n":"2"}
+,{"county":"Cattaraugus","waterbody":"Quaker Run","n":"2"}
+,{"county":"Essex","waterbody":"Twentyninth Pond","n":"1"}
+,{"county":"Dutchess","waterbody":"Webatuck Creek","n":"4"}
+,{"county":"Jefferson","waterbody":"Black River","n":"2"}
+,{"county":"Fulton","waterbody":"Canada Lake","n":"1"}
+,{"county":"Oneida","waterbody":"Lansing Kill","n":"2"}
+,{"county":"Lewis","waterbody":"Indian River","n":"1"}
+,{"county":"Oneida","waterbody":"West Canada Creek","n":"16"}
+,{"county":"Hamilton","waterbody":"Wakely Pond","n":"1"}
+,{"county":"Oswego","waterbody":"Lighthouse Hill Reservoir","n":"1"}
+,{"county":"Madison","waterbody":"Lebanon Reservoir","n":"1"}
+,{"county":"Albany","waterbody":"Six Mile Waterworks","n":"1"}
+,{"county":"Jefferson","waterbody":"Townsend Creek","n":"1"}
+,{"county":"Putnam","waterbody":"Croton Falls Reservoir","n":"1"}
+,{"county":"Cattaraugus","waterbody":"Bone Run","n":"2"}
+,{"county":"Essex","waterbody":"Ward Pond","n":"1"}
+,{"county":"Cortland","waterbody":"Durkee Park Pond","n":"3"}
+,{"county":"Oneida","waterbody":"Ninemile Creek","n":"2"}
+,{"county":"Rockland","waterbody":"Minisceongo Creek North Branch","n":"2"}
+,{"county":"Washington","waterbody":"Dead Lake","n":"1"}
+,{"county":"Cattaraugus","waterbody":"Great Valley Creek","n":"4"}
+,{"county":"Cortland","waterbody":"Otselic River","n":"4"}
+,{"county":"Herkimer","waterbody":"Fourth Lake","n":"1"}
+,{"county":"Rockland","waterbody":"Minisceongo Creek","n":"2"}
+,{"county":"Franklin","waterbody":"Rat Pond","n":"1"}
+,{"county":"Columbia","waterbody":"Kinderhook Creek","n":"16"}
+,{"county":"Nassau","waterbody":"Upper Twin Pond","n":"4"}
+,{"county":"Essex","waterbody":"Crane Pond","n":"1"}
+,{"county":"Cattaraugus","waterbody":"Birch Run Pond #1","n":"1"}
+,{"county":"Franklin","waterbody":"Deer Pond","n":"1"}
+,{"county":"Oswego","waterbody":"Lake Ontario","n":"2"}
+,{"county":"Ulster","waterbody":"Black Creek","n":"2"}
+,{"county":"Steuben","waterbody":"Canacadea Creek","n":"2"}
+,{"county":"Delaware","waterbody":"Ouleout Creek","n":"4"}
+,{"county":"Saratoga","waterbody":"Snook Kill","n":"4"}
+,{"county":"Putnam","waterbody":"Bog Brook Reservoir","n":"1"}
+,{"county":"Washington","waterbody":"Indian River","n":"2"}
+,{"county":"Fulton","waterbody":"Wolford's Pond","n":"2"}
+,{"county":"Sullivan","waterbody":"Neversink Reservoir","n":"1"}
+,{"county":"Livingston","waterbody":"Sugar Creek","n":"1"}
+,{"county":"Allegany","waterbody":"Clarksville Town Pond","n":"1"}
+,{"county":"Broome","waterbody":"Arctic Lake","n":"1"}
+,{"county":"Allegany","waterbody":"Allen Lake","n":"3"}
+,{"county":"Tompkins","waterbody":"Enfield Creek","n":"3"}
+,{"county":"Orleans","waterbody":"Lake Ontario","n":"1"}
+,{"county":"Cayuga","waterbody":"Owasco Inlet","n":"1"}
+,{"county":"Lewis","waterbody":"Fish Creek East Branch","n":"4"}
+,{"county":"Saratoga","waterbody":"Kayaderosseras Creek","n":"16"}
+,{"county":"Cattaraugus","waterbody":"Mansfield Creek","n":"2"}
+,{"county":"Oswego","waterbody":"Redfield Sportsmen's Pond","n":"1"}
+,{"county":"Otsego","waterbody":"Gilbert Lake","n":"2"}
+,{"county":"Clinton","waterbody":"Peru Fish & Game Club Pond","n":"1"}
+,{"county":"Herkimer","waterbody":"Spruce Creek","n":"2"}
+,{"county":"Broome","waterbody":"Palmers Pond","n":"1"}
+,{"county":"Nassau","waterbody":"Oyster Bay Mill Pond","n":"2"}
+,{"county":"Fulton","waterbody":"Cayadutta Creek","n":"4"}
+,{"county":"Ontario","waterbody":"Canandaigua Lake","n":"1"}
+,{"county":"Suffolk","waterbody":"Nissequogue River","n":"4"}
+,{"county":"Cattaraugus","waterbody":"Forks Creek","n":"2"}
+,{"county":"Warren","waterbody":"Brant Lake","n":"2"}
+,{"county":"Saratoga","waterbody":"Upper Corinth Reservoir","n":"1"}
+,{"county":"Delaware","waterbody":"Charlotte Creek","n":"2"}
+,{"county":"Schoharie","waterbody":"Holding Pond","n":"3"}
+,{"county":"Schuyler","waterbody":"Foster Pond","n":"1"}
+,{"county":"Franklin","waterbody":"Trout River","n":"2"}
+,{"county":"Schoharie","waterbody":"West Kill","n":"2"}
+,{"county":"Madison","waterbody":"Payne Brook","n":"2"}
+,{"county":"Suffolk","waterbody":"Carmans River","n":"11"}
+,{"county":"Essex","waterbody":"Winch Pond","n":"1"}
+,{"county":"Chenango","waterbody":"Otselic River","n":"2"}
+,{"county":"St Lawrence","waterbody":"Hopkinton Brook","n":"2"}
+,{"county":"Oneida","waterbody":"Sauquoit Creek","n":"6"}
+,{"county":"Clinton","waterbody":"Saranac River","n":"12"}
+,{"county":"Oneida","waterbody":"Hinckley Reservoir","n":"1"}
+,{"county":"Fulton","waterbody":"Middle Sprite Creek","n":"2"}
+,{"county":"Suffolk","waterbody":"Canaan Lake","n":"1"}
+,{"county":"Allegany","waterbody":"Rushford Camp Pond","n":"1"}
+,{"county":"Oneida","waterbody":"Mad River","n":"2"}
+,{"county":"Essex","waterbody":"Connery Pond","n":"1"}
+,{"county":"Rensselaer","waterbody":"Shaver Pond","n":"1"}
+,{"county":"Onondaga","waterbody":"Skaneateles Lake","n":"1"}
+,{"county":"Erie","waterbody":"Sprague Brook Park A and B Pond","n":"2"}
+,{"county":"Steuben","waterbody":"Meads Creek","n":"2"}
+,{"county":"Cattaraugus","waterbody":"Quaker Lake","n":"3"}
+,{"county":"Otsego","waterbody":"Elk Brook","n":"2"}
+,{"county":"Rensselaer","waterbody":"Arnold Lake","n":"2"}
+,{"county":"Franklin","waterbody":"Chub Pond","n":"1"}
+,{"county":"Broome","waterbody":"Greenwood Lake","n":"1"}
+,{"county":"Warren","waterbody":"Lake Luzerne","n":"1"}
+,{"county":"Schuyler","waterbody":"Cayuta Creek","n":"8"}
+,{"county":"Hamilton","waterbody":"Woods Lake","n":"1"}
+,{"county":"Suffolk","waterbody":"Rattlesnake Creek","n":"1"}
+,{"county":"Allegany","waterbody":"Black Creek","n":"2"}
+,{"county":"Saratoga","waterbody":"Corinth Reservoir Ponds","n":"2"}
+,{"county":"Franklin","waterbody":"Lake Colby","n":"2"}
+,{"county":"Orange","waterbody":"Lusk Reservoir","n":"1"}
+,{"county":"Ontario","waterbody":"Canadice Lake","n":"1"}
+,{"county":"Chautauqua","waterbody":"Cassadaga Creek","n":"2"}
+,{"county":"Cattaraugus","waterbody":"Case Lake","n":"3"}
+,{"county":"Allegany","waterbody":"Canacadea Creek","n":"2"}
+,{"county":"Cayuga","waterbody":"Fall Creek","n":"1"}
+,{"county":"Cayuga","waterbody":"North Brook","n":"2"}
+,{"county":"Greene","waterbody":"West Kill","n":"2"}
+,{"county":"Chautauqua","waterbody":"Clay Pond","n":"2"}
+,{"county":"Suffolk","waterbody":"Argyle Lake","n":"2"}
+,{"county":"Essex","waterbody":"Courtney Pond","n":"1"}
+,{"county":"Greene","waterbody":"Greens Lake","n":"1"}
+,{"county":"Franklin","waterbody":"Little Salmon River","n":"2"}
+,{"county":"Putnam","waterbody":"Stillwater Pond","n":"3"}
+,{"county":"Delaware","waterbody":"Cannonsville Reservoir","n":"1"}
+,{"county":"Ulster","waterbody":"Beer Kill","n":"2"}
+,{"county":"Cortland","waterbody":"Tioughnioga River - West Branch","n":"2"}
+,{"county":"Broome","waterbody":"Chenango Lake","n":"3"}
+,{"county":"Allegany","waterbody":"Little Genesee Creek","n":"2"}
+,{"county":"Hamilton","waterbody":"Mill Creek","n":"2"}
+,{"county":"Warren","waterbody":"Mill Creek","n":"2"}
+,{"county":"Oswego","waterbody":"Fish Creek - West Branch","n":"2"}
+,{"county":"Erie","waterbody":"Cattaraugus Creek","n":"2"}
+,{"county":"Suffolk","waterbody":"Hards Lake","n":"6"}
+,{"county":"Clinton","waterbody":"Altona School Pond","n":"1"}
+,{"county":"Allegany","waterbody":"Cryder Creek","n":"2"}
+,{"county":"Putnam","waterbody":"Diverting Reservoir","n":"1"}
+,{"county":"Sullivan","waterbody":"Willowemoc Creek","n":"16"}
+,{"county":"Essex","waterbody":"Mirror Lake","n":"1"}
+,{"county":"Orange","waterbody":"Popolopen Brook","n":"1"}
+,{"county":"Lewis","waterbody":"Black River","n":"2"}
+,{"county":"Cattaraugus","waterbody":"Red House Brook","n":"2"}
+,{"county":"St Lawrence","waterbody":"Grass River South Branch","n":"2"}
+,{"county":"Tompkins","waterbody":"Salmon Creek","n":"1"}
+,{"county":"Suffolk","waterbody":"West Lake","n":"3"}
+,{"county":"Oswego","waterbody":"Salmon River North Branch","n":"2"}
+,{"county":"Clinton","waterbody":"Saranac River North Branch","n":"2"}
+,{"county":"Franklin","waterbody":"Chateaugay River","n":"10"}
+,{"county":"Putnam","waterbody":"Pelton Pond","n":"1"}
+,{"county":"Dutchess","waterbody":"Wappingers Creek","n":"16"}
+,{"county":"Niagara","waterbody":"Lower Niagara River","n":"1"}
+,{"county":"Columbia","waterbody":"Roeliff Jansen Kill","n":"5"}
+,{"county":"Essex","waterbody":"Boquet River","n":"3"}
+,{"county":"Essex","waterbody":"Hudson River","n":"2"}
+,{"county":"Dutchess","waterbody":"Ten Mile River","n":"4"}
+,{"county":"Seneca","waterbody":"Canoga Creek","n":"1"}
+,{"county":"Ulster","waterbody":"Plattekill Creek","n":"2"}
+,{"county":"Essex","waterbody":"Long Pond","n":"1"}
+,{"county":"Rockland","waterbody":"Ramapo River","n":"8"}
+,{"county":"Cattaraugus","waterbody":"Elton Creek","n":"2"}
+,{"county":"Cattaraugus","waterbody":"Cattaraugus Creek South Branch","n":"2"}
+,{"county":"Essex","waterbody":"Big Sherman Pond","n":"1"}
+,{"county":"Hamilton","waterbody":"Lake Eaton","n":"1"}
+,{"county":"Tioga","waterbody":"Owego Creek - West Branch","n":"2"}
+,{"county":"Herkimer","waterbody":"Prospect Reservoir","n":"1"}
+,{"county":"Warren","waterbody":"Hudson River","n":"8"}
+,{"county":"Franklin","waterbody":"Green Pond","n":"1"}
+,{"county":"Washington","waterbody":"Mettawee River","n":"8"}
+,{"county":"Suffolk","waterbody":"East Lake","n":"2"}]
