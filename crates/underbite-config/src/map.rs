@@ -275,6 +275,17 @@ impl MapConfig {
 mod tests {
     use super::*;
 
+    #[test]
+    fn known_ids_are_the_catalogues() {
+        use underbite_core::map::catalogue::{BASES, LAYERS, PRESETS, resolve_preset};
+        let layers: Vec<&str> = LAYERS.iter().map(|l| l.id).collect();
+        let bases: Vec<&str> = BASES.iter().map(|l| l.id).collect();
+        assert_eq!(layers, KNOWN_LAYERS);
+        assert_eq!(bases, KNOWN_BASES);
+        assert!(resolve_preset(&MapConfig::default().active_preset).is_ok());
+        assert!(PRESETS.iter().all(|p| KNOWN_BASES.contains(&p.base)));
+    }
+
     fn issues_of(text: &str) -> Vec<String> {
         let c: MapConfig = toml::from_str(text).unwrap();
         let mut issues = Issues::default();
