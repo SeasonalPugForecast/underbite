@@ -506,7 +506,6 @@ fn parse_typed(
 ) -> Result<(f64, Unit), SettingsError> {
     let mut unit = default;
     let mut number = text.trim();
-    let lower = number.to_lowercase();
     // The longest symbol first, so "m³/s" is not read as ending in "s".
     let mut candidates: Vec<(String, Unit)> = Unit::all(kind)
         .into_iter()
@@ -517,9 +516,17 @@ fn parse_typed(
         })
         .collect();
     candidates.sort_by_key(|(s, _)| std::cmp::Reverse(s.len()));
-    if let Some((symbol, found)) = candidates.iter().find(|(s, _)| lower.ends_with(s.as_str())) {
-        unit = *found;
-        number = number[..number.len() - symbol.len()].trim_end();
+    // The symbol is looked for on char boundaries of the original text: lowercasing can change
+    // a character's byte length (KELVIN SIGN becomes "k"), so lengths never carry over.
+    let found = candidates.iter().find_map(|(symbol, u)| {
+        number
+            .char_indices()
+            .find(|&(at, _)| number[at..].to_lowercase() == *symbol)
+            .map(|(at, _)| (at, *u))
+    });
+    if let Some((at, found)) = found {
+        unit = found;
+        number = number[..at].trim_end();
     }
     let value = parse_number(number, decimal_comma)
         .ok_or_else(|| invalid(format!("`{}` is not a number", text.trim())))?;

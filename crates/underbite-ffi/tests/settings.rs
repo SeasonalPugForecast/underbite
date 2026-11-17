@@ -553,3 +553,56 @@ fn the_old_value_entry_still_reads_thousands_commas() {
     let v = parse_user_value("discharge".into(), "1,200".into(), cfs()).unwrap();
     assert!((v - 33.98).abs() < 0.01, "{v}");
 }
+
+#[test]
+fn a_suffix_whose_lowercase_has_another_byte_length_does_not_panic() {
+    // KELVIN SIGN (3 bytes) lowercases to "k" (1 byte).
+    assert_eq!(
+        parse("limits[].max_wind_kn", "15 \u{212A}n", knots()),
+        parse("limits[].max_wind_kn", "15 kn", knots())
+    );
+    assert_eq!(
+        parse("sources.tide.max_distance_km", "10 \u{212A}m", cfs()),
+        parse("sources.tide.max_distance_km", "10 km", cfs())
+    );
+}
+
+#[test]
+fn odd_unicode_around_a_value_never_panics() {
+    let odd = [
+        "\u{212A}",
+        "\u{212A}n",
+        "15\u{212A}",
+        "15 \u{212A}\u{212A}n",
+        "\u{130}",
+        "15 \u{130}n",
+        "15 m\u{b3}/s",
+        "15 \u{2126}",
+        "\u{1F41F}",
+        "1\u{1F41F}5 kn",
+        "15 k\u{301}n",
+        "\u{1C5}",
+        "15 \u{DF}",
+        "\u{FB01}",
+        "  \u{3000}15\u{3000}kn",
+        "",
+    ];
+    let fields = [
+        "limits[].max_wind_kn",
+        "limits[].max_wave_m",
+        "sources.tide.max_distance_km",
+        "sources.tide.max_age_minutes",
+    ];
+    for json in [knots(), cfs(), metric()] {
+        for field in fields {
+            for text in odd {
+                let _ = parse_setting_value(field.into(), text.into(), json.clone());
+            }
+        }
+        for measurement in ["discharge", "water_level", "wind", "temperature"] {
+            for text in odd {
+                let _ = parse_user_value(measurement.into(), text.into(), json.clone());
+            }
+        }
+    }
+}
