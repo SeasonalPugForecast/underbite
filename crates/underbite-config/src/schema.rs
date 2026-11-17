@@ -166,12 +166,7 @@ impl Config {
         }
         self.validate_windows(&mut issues);
         self.validate_presentation(&mut issues);
-        if self.map.preset.trim().is_empty() {
-            issues.error("map.preset", "a preset name is needed");
-        }
-        if self.map.offline_max_mb == 0 {
-            issues.warning("map.offline_max_mb", "0 turns offline maps off");
-        }
+        self.map.validate(&mut issues);
         issues.0
     }
 
@@ -301,7 +296,7 @@ best_cfs = [400, 900]
 factors = { tide_stage = 1.0, low_light = 1.0, solunar = 0.5, pressure_falling = 0.7, water_temp = 1.0 }
 
 [map]
-preset = "Inshore flats"
+active_preset = "Inshore flats"
 offline_max_mb = 1500
 "#;
 

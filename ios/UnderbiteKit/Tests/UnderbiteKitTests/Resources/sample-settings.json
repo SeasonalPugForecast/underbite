@@ -46,8 +46,176 @@
     }
   ],
   "map": {
+    "active_preset": "Inshore flats",
+    "base": "apple-standard",
+    "battery_mode": "auto",
+    "breaks": {
+      "chlorophyll_log10_per_km": 0.0375,
+      "sst_c_per_km": 0.5
+    },
+    "depth": {
+      "band_m": null,
+      "contour_interval_m": 5.0,
+      "ramp": null
+    },
+    "layers": [
+      {
+        "id": "gebco-relief",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "sst",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "sst-imagery",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "chlorophyll",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "chlorophyll-imagery",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "clarity",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "true-color-viirs-n20",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "true-color-viirs-n21",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "true-color-modis-terra",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "true-color-modis-aqua",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "hf-radar-currents",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "great-lakes-sst",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "radar",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "wind",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "pressure",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "waves",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "tide-stations",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "current-stations",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "usgs-gauges",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "buoys",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "nwps-gauges",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      },
+      {
+        "id": "spots",
+        "opacity": 1.0,
+        "ramp": null,
+        "range": null,
+        "shown": false
+      }
+    ],
     "offline_max_mb": 1500,
-    "preset": "Inshore flats"
+    "presets": []
   },
   "presentation": {
     "clock": "12h",

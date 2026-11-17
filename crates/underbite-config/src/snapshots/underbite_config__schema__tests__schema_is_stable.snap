@@ -4,6 +4,45 @@ expression: json_schema()
 ---
 {
   "$defs": {
+    "BatteryMode": {
+      "description": "How much the map saves power: no animation and fewer layers.",
+      "oneOf": [
+        {
+          "const": "auto",
+          "description": "On while the phone is in Low Power Mode.",
+          "type": "string"
+        },
+        {
+          "const": "on",
+          "description": "Always on.",
+          "type": "string"
+        },
+        {
+          "const": "off",
+          "description": "Always off.",
+          "type": "string"
+        }
+      ]
+    },
+    "BreaksConfig": {
+      "additionalProperties": false,
+      "description": "How sharp a change must be to draw as a break. Both are set by the user.",
+      "properties": {
+        "chlorophyll_log10_per_km": {
+          "default": 0.03750000149011612,
+          "description": "Chlorophyll a change as a difference in log10 of the concentration, per kilometre. The\nusual way to say it is 0.15 over 4 km; stored per kilometre that is 0.0375, the default.",
+          "format": "float",
+          "type": "number"
+        },
+        "sst_c_per_km": {
+          "default": 0.5,
+          "description": "Sea surface temperature change, in °C per kilometre. The default is 0.5.",
+          "format": "float",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
     "CardsConfig": {
       "additionalProperties": false,
       "description": "`[cards]`; a `[cards.<water type>]` table overrides the base layout for that water type.",
@@ -139,6 +178,47 @@ expression: json_schema()
       },
       "type": "object"
     },
+    "DepthConfig": {
+      "additionalProperties": false,
+      "description": "Depth shading, the highlight band and contours.",
+      "properties": {
+        "band_m": {
+          "default": null,
+          "description": "The depths to highlight, shallow and deep, in metres below the surface; none means no\nhighlight.",
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "format": "float",
+              "type": "number"
+            },
+            {
+              "format": "float",
+              "type": "number"
+            }
+          ],
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "contour_interval_m": {
+          "default": 5.0,
+          "description": "The depth between contour lines, in metres.",
+          "format": "float",
+          "type": "number"
+        },
+        "ramp": {
+          "default": null,
+          "description": "The depth colour ramp by id; none means the layer's own.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
     "DischargeUnit": {
       "description": "Discharge display unit.",
       "oneOf": [
@@ -183,6 +263,62 @@ expression: json_schema()
           "type": "string"
         }
       ]
+    },
+    "LayerId": {
+      "description": "The stable id of a map layer, such as `sst` or `radar`.\n\nA string newtype rather than an enum, like [`SourceId`](crate::provenance::SourceId): a layer\nadded later needs no contract change, and an id this version does not know survives decoding so\nthat migration can drop it with a note.",
+      "type": "string"
+    },
+    "LayerState": {
+      "additionalProperties": false,
+      "description": "How one layer is shown.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/LayerId"
+        },
+        "opacity": {
+          "default": 1.0,
+          "description": "0 (clear) to 1 (solid).",
+          "format": "float",
+          "type": "number"
+        },
+        "ramp": {
+          "default": null,
+          "description": "The colour ramp by id; none means the layer's own.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "range": {
+          "default": null,
+          "description": "The value range the ramp spans, low and high, in canonical units; none means the layer's\nown.",
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "format": "float",
+              "type": "number"
+            },
+            {
+              "format": "float",
+              "type": "number"
+            }
+          ],
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "shown": {
+          "default": false,
+          "description": "Whether the layer is on the map.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
     },
     "LimitsProfile": {
       "additionalProperties": false,
@@ -255,6 +391,198 @@ expression: json_schema()
       "additionalProperties": false,
       "description": "`[map]`.",
       "properties": {
+        "active_preset": {
+          "default": "Inshore flats",
+          "description": "The preset applied when the map opens, by name (built-in or the user's own).",
+          "type": "string"
+        },
+        "base": {
+          "$ref": "#/$defs/LayerId",
+          "default": "apple-standard",
+          "description": "The base map: one of [`KNOWN_BASES`]."
+        },
+        "battery_mode": {
+          "$ref": "#/$defs/BatteryMode",
+          "default": "auto"
+        },
+        "breaks": {
+          "$ref": "#/$defs/BreaksConfig",
+          "default": {
+            "chlorophyll_log10_per_km": 0.03750000149011612,
+            "sst_c_per_km": 0.5
+          }
+        },
+        "depth": {
+          "$ref": "#/$defs/DepthConfig",
+          "default": {
+            "band_m": null,
+            "contour_interval_m": 5.0,
+            "ramp": null
+          }
+        },
+        "layers": {
+          "default": [
+            {
+              "id": "gebco-relief",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "sst",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "sst-imagery",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "chlorophyll",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "chlorophyll-imagery",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "clarity",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "true-color-viirs-n20",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "true-color-viirs-n21",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "true-color-modis-terra",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "true-color-modis-aqua",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "hf-radar-currents",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "great-lakes-sst",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "radar",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "wind",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "pressure",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "waves",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "tide-stations",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "current-stations",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "usgs-gauges",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "buoys",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "nwps-gauges",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            },
+            {
+              "id": "spots",
+              "opacity": 1.0,
+              "ramp": null,
+              "range": null,
+              "shown": false
+            }
+          ],
+          "description": "The overlay layers in drawing order, first at the bottom.",
+          "items": {
+            "$ref": "#/$defs/LayerState"
+          },
+          "type": "array"
+        },
         "offline_max_mb": {
           "default": 1500,
           "description": "Most storage offline packs may use, in megabytes.",
@@ -262,12 +590,35 @@ expression: json_schema()
           "minimum": 0,
           "type": "integer"
         },
-        "preset": {
-          "default": "Inshore flats",
-          "description": "The layer preset shown first, by name.",
+        "presets": {
+          "default": [],
+          "description": "The user's own presets. The built-in ones belong to the layer catalogue.",
+          "items": {
+            "$ref": "#/$defs/MapPreset"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "MapPreset": {
+      "additionalProperties": false,
+      "description": "A named set of layer states the user saved.",
+      "properties": {
+        "layers": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/LayerState"
+          },
+          "type": "array"
+        },
+        "name": {
           "type": "string"
         }
       },
+      "required": [
+        "name"
+      ],
       "type": "object"
     },
     "PresentationConfig": {
@@ -923,8 +1274,176 @@ expression: json_schema()
     "map": {
       "$ref": "#/$defs/MapConfig",
       "default": {
+        "active_preset": "Inshore flats",
+        "base": "apple-standard",
+        "battery_mode": "auto",
+        "breaks": {
+          "chlorophyll_log10_per_km": 0.03750000149011612,
+          "sst_c_per_km": 0.5
+        },
+        "depth": {
+          "band_m": null,
+          "contour_interval_m": 5.0,
+          "ramp": null
+        },
+        "layers": [
+          {
+            "id": "gebco-relief",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "sst",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "sst-imagery",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "chlorophyll",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "chlorophyll-imagery",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "clarity",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "true-color-viirs-n20",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "true-color-viirs-n21",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "true-color-modis-terra",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "true-color-modis-aqua",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "hf-radar-currents",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "great-lakes-sst",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "radar",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "wind",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "pressure",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "waves",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "tide-stations",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "current-stations",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "usgs-gauges",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "buoys",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "nwps-gauges",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          },
+          {
+            "id": "spots",
+            "opacity": 1.0,
+            "ramp": null,
+            "range": null,
+            "shown": false
+          }
+        ],
         "offline_max_mb": 1500,
-        "preset": "Inshore flats"
+        "presets": []
       }
     },
     "presentation": {

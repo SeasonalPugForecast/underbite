@@ -2,12 +2,14 @@
 //!
 //! Imported text is first decoded into a generic value. Everything that needs the document's
 //! shape (refusing anything key-like, upgrading older versions, naming unknown keys by their full
-//! path, clamping the coordinate precision, dropping unknown source ids) happens on that value,
+//! path, clamping the coordinate precision, dropping unknown source and map layer ids) happens
+//! on that value,
 //! before the typed decode, so a file from an older version always decodes and every change made
 //! on the way is reported.
 
 use serde_json::{Map, Value};
 
+use crate::map::{KNOWN_BASES, KNOWN_LAYERS};
 use crate::schema::{CURRENT_VERSION, Issue, Issues, json_schema};
 use crate::sources::{KNOWN_SOURCES, MAX_COORDINATE_PRECISION};
 
@@ -223,6 +225,77 @@ fn tidy_sources(doc: &mut Value, issues: &mut Issues) {
     }
 }
 
+/// The map section's `preset` key was renamed `active_preset`. Runs before the unknown-key check.
+fn rename_map_keys(doc: &mut Value) {
+    let Some(map) = doc.get_mut("map").and_then(Value::as_object_mut) else {
+        return;
+    };
+    if let Some(old) = map.remove("preset") {
+        map.entry("active_preset").or_insert(old);
+    }
+}
+
+/// Keeps the entries of a layer list whose id is known, once each. The map's own layer list
+/// (`complete`) then gets every known layer it lacks, appended hidden.
+fn tidy_layer_list(list: &mut Vec<Value>, path: &str, complete: bool, issues: &mut Issues) {
+    let id_of = |v: &Value| v.get("id").and_then(Value::as_str).map(str::to_owned);
+    let mut kept: Vec<Value> = Vec::with_capacity(list.len());
+    for (i, entry) in list.drain(..).enumerate() {
+        match id_of(&entry) {
+            Some(id) if !KNOWN_LAYERS.contains(&id.as_str()) => issues.warning(
+                format!("{path}[{i}]"),
+                format!("`{id}` is not a known map layer and was dropped"),
+            ),
+            Some(id)
+                if kept
+                    .iter()
+                    .any(|k| id_of(k).as_deref() == Some(id.as_str())) =>
+            {
+                issues.warning(
+                    format!("{path}[{i}]"),
+                    format!("`{id}` was listed twice; the first entry was kept"),
+                );
+            }
+            _ => kept.push(entry),
+        }
+    }
+    if complete {
+        for id in KNOWN_LAYERS {
+            if !kept.iter().any(|k| id_of(k).as_deref() == Some(id)) {
+                kept.push(serde_json::json!({ "id": id, "shown": false }));
+            }
+        }
+    }
+    *list = kept;
+}
+
+/// Drops an unknown base map, and layer ids this version does not know from the layer list and the
+/// presets, recording a warning for each; appends the layers the list lacks, hidden.
+fn tidy_map(doc: &mut Value, issues: &mut Issues) {
+    let Some(map) = doc.get_mut("map").and_then(Value::as_object_mut) else {
+        return;
+    };
+    if let Some(base) = map.get("base").and_then(Value::as_str)
+        && !KNOWN_BASES.contains(&base)
+    {
+        issues.warning(
+            "map.base",
+            format!("`{base}` is not a known base map; using the default"),
+        );
+        map.remove("base");
+    }
+    if let Some(layers) = map.get_mut("layers").and_then(Value::as_array_mut) {
+        tidy_layer_list(layers, "map.layers", true, issues);
+    }
+    if let Some(presets) = map.get_mut("presets").and_then(Value::as_array_mut) {
+        for (i, preset) in presets.iter_mut().enumerate() {
+            if let Some(layers) = preset.get_mut("layers").and_then(Value::as_array_mut) {
+                tidy_layer_list(layers, &format!("map.presets[{i}].layers"), false, issues);
+            }
+        }
+    }
+}
+
 /// Checks and upgrades a decoded document in place, ready for the typed decode. Returns the
 /// warnings for what was changed.
 pub fn prepare(doc: &mut Value) -> Result<Vec<Issue>, ImportError> {
@@ -237,11 +310,13 @@ pub fn prepare(doc: &mut Value) -> Result<Vec<Issue>, ImportError> {
     if let Some(map) = doc.as_object_mut() {
         migrate(map)?;
     }
+    rename_map_keys(doc);
     if let Some(path) = find_unknown_key(doc) {
         return Err(ImportError::UnknownKey { path });
     }
     let mut issues = Issues::default();
     tidy_sources(doc, &mut issues);
+    tidy_map(doc, &mut issues);
     Ok(issues.0)
 }
 
@@ -346,6 +421,74 @@ mod tests {
         assert_eq!(
             paths,
             ["sources.coordinate_precision", "sources.tide.chain[1]"]
+        );
+    }
+
+    #[test]
+    fn an_old_map_section_is_renamed_and_still_decodes() {
+        let mut d = json!({ "map": { "preset": "Offshore", "offline_max_mb": 800 } });
+        assert_eq!(prepare(&mut d), Ok(vec![]));
+        assert_eq!(d["map"]["active_preset"], "Offshore");
+        assert!(d["map"].get("preset").is_none());
+        let c: crate::schema::Config = serde_json::from_value(d).unwrap();
+        assert_eq!(c.map.active_preset, "Offshore");
+        assert_eq!(c.map.offline_max_mb, 800);
+        assert_eq!(c.map.layers.len(), KNOWN_LAYERS.len());
+    }
+
+    #[test]
+    fn a_document_without_a_map_section_gets_the_defaults() {
+        let mut d = json!({ "units": { "speed": "kn" } });
+        assert_eq!(prepare(&mut d), Ok(vec![]));
+        let c: crate::schema::Config = serde_json::from_value(d).unwrap();
+        assert_eq!(c.map, crate::map::MapConfig::default());
+    }
+
+    #[test]
+    fn unknown_layers_are_dropped_and_missing_ones_appended_hidden() {
+        let mut d = json!({ "map": {
+            "base": "mystery-map",
+            "layers": [
+                { "id": "radar", "shown": true, "opacity": 0.5 },
+                { "id": "sonar", "shown": true },
+                { "id": "radar" },
+                { "id": "sst", "shown": true }
+            ],
+            "presets": [{ "name": "Mine", "layers": [{ "id": "radar", "shown": true }, { "id": "sonar" }] }]
+        }});
+        let issues = prepare(&mut d).unwrap();
+        let paths: Vec<_> = issues.iter().map(|i| i.path.as_str()).collect();
+        assert_eq!(
+            paths,
+            [
+                "map.base",
+                "map.layers[1]",
+                "map.layers[2]",
+                "map.presets[0].layers[1]"
+            ]
+        );
+        let c: crate::schema::Config = serde_json::from_value(d).unwrap();
+        let ids: Vec<_> = c.map.layers.iter().map(|l| l.id.as_str()).collect();
+        assert_eq!(&ids[..2], ["radar", "sst"]);
+        assert_eq!(ids.len(), KNOWN_LAYERS.len());
+        assert_eq!(
+            (c.map.layers[0].shown, c.map.layers[0].opacity),
+            (true, 0.5)
+        );
+        assert!(c.map.layers[2..].iter().all(|l| !l.shown));
+        assert_eq!(c.map.base.as_str(), "apple-standard");
+        assert_eq!(c.map.presets[0].layers.len(), 1);
+        assert_eq!(c.validate(), []);
+    }
+
+    #[test]
+    fn an_unknown_key_in_a_layer_entry_is_named_by_path() {
+        let mut d = json!({ "map": { "layers": [{ "id": "sst", "glow": 1 }] } });
+        assert_eq!(
+            prepare(&mut d),
+            Err(ImportError::UnknownKey {
+                path: "map.layers[0].glow".into()
+            })
         );
     }
 
