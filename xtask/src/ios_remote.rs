@@ -84,8 +84,9 @@ steps:
   test     build, then `swift test` in ios/UnderbiteKit on the Mac
   app      build, then build the app (ios/Underbite) for the simulator
   shots    app, then run it in an iPhone and an iPad simulator, take a screenshot for each
-           ios/shots/*.args file (a light one, and a dark one when its second line is
-           `dark`) and copy them to target/ios-screens/<iphone|ipad>/
+           ios/shots/*.args file (a light one, and a dark one when it has a `dark` line;
+           a `wait <seconds>` line waits longer before the shot) and copy them to
+           target/ios-screens/<iphone|ipad>/
   ui       build, then run the UI tests (UnderbiteUITests: the accessibility audits) on the
            iPhone and then the iPad simulator, each with its accessibility switched on first
            (else the runner can time out waiting for it); --on iphone|ipad tests on one,
@@ -548,10 +549,24 @@ struct Shot {
     args: Vec<String>,
     /// Also take `<name>-dark.png` in the dark appearance.
     dark: bool,
+    /// Seconds to wait before the screenshot, when longer than the usual wait.
+    wait: Option<u32>,
 }
 
-/// A shot from `<name>.args`: line 1 the launch arguments (blank for none), an
-/// optional line 2 `dark`.
+/// The longest wait a shot may ask for, seconds.
+const MAX_SHOT_WAIT: u32 = 180;
+
+impl Shot {
+    /// Seconds to wait after the launch: the usual `base`, or what the shot asked for when
+    /// that is longer.
+    fn wait_after_launch(&self, base: u32) -> u32 {
+        self.wait.map_or(base, |w| w.max(base))
+    }
+}
+
+/// A shot from `<name>.args`: line 1 the launch arguments (blank for none), then optional
+/// lines in any order, each at most once: `dark` and `wait <seconds>` (up to
+/// [`MAX_SHOT_WAIT`]).
 fn parse_shot(name: &str, text: &str) -> Result<Shot, String> {
     let valid = !name.is_empty()
         && name
@@ -569,22 +584,34 @@ fn parse_shot(name: &str, text: &str) -> Result<Shot, String> {
         .split_whitespace()
         .map(str::to_owned)
         .collect();
-    let dark = match lines.next().map(str::trim) {
-        None | Some("") => false,
-        Some("dark") => true,
-        Some(other) => {
-            return Err(format!(
-                "{SHOTS_DIR}/{name}.args: line 2 must be `dark` or absent, not `{other}`"
-            ));
+    let mut dark = false;
+    let mut wait = None;
+    for line in lines.map(str::trim).filter(|l| !l.is_empty()) {
+        let mut words = line.split_whitespace();
+        match (words.next(), words.next(), words.next()) {
+            (Some("dark"), None, _) if !dark => dark = true,
+            (Some("wait"), Some(n), None) if wait.is_none() => match n.parse::<u32>() {
+                Ok(n) if (1..=MAX_SHOT_WAIT).contains(&n) => wait = Some(n),
+                _ => {
+                    return Err(format!(
+                        "{SHOTS_DIR}/{name}.args: `wait` takes whole seconds from 1 to \
+                         {MAX_SHOT_WAIT}, not `{n}`"
+                    ));
+                }
+            },
+            _ => {
+                return Err(format!(
+                    "{SHOTS_DIR}/{name}.args: after the arguments only `dark` and \
+                     `wait <seconds>` (once each) are allowed, not `{line}`"
+                ));
+            }
         }
-    };
-    if lines.any(|line| !line.trim().is_empty()) {
-        return Err(format!("{SHOTS_DIR}/{name}.args: at most two lines"));
     }
     Ok(Shot {
         name: name.to_owned(),
         args,
         dark,
+        wait,
     })
 }
 
@@ -792,7 +819,7 @@ fn shots(remote: &Remote, list: &[Shot]) -> String {
                 &dir,
                 &shot.name,
                 &shot.args,
-                if i == 0 { 12 } else { 8 },
+                shot.wait_after_launch(if i == 0 { 12 } else { 8 }),
             ));
             if shot.dark {
                 // The appearance is set while the app is not running, and read back
@@ -809,7 +836,7 @@ fn shots(remote: &Remote, list: &[Shot]) -> String {
                         &dir,
                         &format!("{}-dark", shot.name),
                         &shot.args,
-                        if i == 0 { 12 } else { 8 }
+                        shot.wait_after_launch(if i == 0 { 12 } else { 8 })
                     )
                 ));
             }
@@ -1445,6 +1472,7 @@ mod tests {
             name: name.into(),
             args: launch.split_whitespace().map(str::to_owned).collect(),
             dark,
+            wait: None,
         }
     }
 
@@ -1911,9 +1939,42 @@ mod tests {
         );
         assert!(parse_shot("x", "-a\nlight\n").is_err());
         assert!(parse_shot("x", "-a\ndark\n-b\n").is_err());
+        assert!(parse_shot("x", "-a\ndark\ndark\n").is_err());
         assert!(parse_shot("a b", "-a").is_err());
         assert!(parse_shot("a;b", "-a").is_err());
         assert!(parse_shot("", "-a").is_err());
+    }
+
+    #[test]
+    fn a_shot_file_may_ask_for_a_longer_wait() {
+        let one = parse_shot("m", "-a\nwait 60\n").unwrap();
+        assert_eq!(one.wait, Some(60));
+        assert!(!one.dark);
+        let both = parse_shot("m", "-a\nwait  45 \ndark\n").unwrap();
+        assert_eq!((both.wait, both.dark), (Some(45), true));
+        let swapped = parse_shot("m", "-a\ndark\nwait 180\n").unwrap();
+        assert_eq!((swapped.wait, swapped.dark), (Some(180), true));
+        assert_eq!(parse_shot("m", "-a\n").unwrap().wait, None);
+        for bad in [
+            "-a\nwait\n",
+            "-a\nwait 0\n",
+            "-a\nwait 181\n",
+            "-a\nwait -3\n",
+            "-a\nwait soon\n",
+            "-a\nwait 5 6\n",
+            "-a\nwait 5\nwait 6\n",
+        ] {
+            assert!(parse_shot("m", bad).is_err(), "{bad:?}");
+        }
+        // A request shorter than the usual wait changes nothing; a longer one wins.
+        assert_eq!(one.wait_after_launch(12), 60);
+        assert_eq!(
+            parse_shot("m", "-a\nwait 5\n")
+                .unwrap()
+                .wait_after_launch(12),
+            12
+        );
+        assert_eq!(shot("p", "-a", false).wait_after_launch(8), 8);
     }
 
     #[test]

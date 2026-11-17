@@ -11,11 +11,17 @@ One file per screenshot, `<name>.args`:
 ```text
 -seed -tab tides
 dark
+wait 60
 ```
 
-- **Line 1** is the launch arguments, split on whitespace (blank for none). They are passed to
+- **Line 1** is the launch arguments, split on whitespace (blank for none; `-seedLimits` adds a sample go/no-go limits profile). They are passed to
   `xcrun simctl launch` as they stand; the app reads them only in debug builds.
-- **Line 2** is optional: `dark` also takes a dark-appearance screenshot of the same launch (the appearance is set with the app stopped, read back, then the app is launched with the same wait as the light shot; light is restored afterwards).
+- **Line 2 onward** are optional, in any order, each at most once: `dark`, which also takes a dark-appearance screenshot of the same launch (the appearance is
+  set with the app stopped, read back, then the app is launched with the same wait as the light
+  shot; light is restored afterwards), and
+  `wait <seconds>`, a longer wait between the launch and the screenshot for a screen that loads
+  slowly (whole seconds, 1 to 180). The usual wait is 8 seconds (12 for the first shot of a run); a
+  shorter request changes nothing. The wait also applies to the dark launch.
 - Nothing else is allowed. A name may hold letters, digits, `-`, `_` and `.`; files are taken in
   sorted order, so a numeric prefix (`10-now.args`) fixes the order.
 
