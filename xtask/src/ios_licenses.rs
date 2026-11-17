@@ -32,7 +32,8 @@ pub(crate) struct Package {
 pub(crate) fn run() -> Result<(), String> {
     let root = workspace_root();
     let meta = metadata()?;
-    let packages = shipped(&meta)?;
+    let mut packages = shipped(&meta)?;
+    packages.extend(vendored());
     let text = render(&packages)?;
     let output = root.join(OUTPUT);
     if let Some(dir) = output.parent() {
@@ -121,6 +122,20 @@ pub(crate) fn shipped(meta: &Value) -> Result<Vec<Package>, String> {
         .collect();
     out.sort();
     Ok(out)
+}
+
+/// Third-party data compiled into the core that no crate brings: listed after
+/// the crates, with the standard text of its license.
+pub(crate) fn vendored() -> Vec<Package> {
+    vec![Package {
+        // The map's colour ramps (`underbite-core` `map::render`), sampled from
+        // doi:10.5281/zenodo.8409685.
+        name: "Scientific colour maps (batlow, lajolla)".to_owned(),
+        version: "8.0.1".to_owned(),
+        license: "MIT".to_owned(),
+        authors: "Fabio Crameri".to_owned(),
+        dir: PathBuf::new(),
+    }]
 }
 
 /// The crate's own license files (`LICENSE*`, `LICENCE*`, `COPYING*`,
@@ -265,6 +280,17 @@ mod tests {
         assert!(render(&[none]).is_err());
     }
 
+    #[test]
+    fn vendored_data_gets_the_standard_text_of_its_license() {
+        let json: Value = serde_json::from_str(&render(&vendored()).unwrap()).unwrap();
+        assert_eq!(json["crates"][0]["license"], "MIT");
+        let text = json["texts"][0].as_str().unwrap();
+        assert!(
+            text.starts_with("MIT License\n\nCopyright (c) Fabio Crameri"),
+            "{text}"
+        );
+    }
+
     /// Fails when `Cargo.lock` changed and `cargo xtask ios licenses` was not run.
     #[test]
     fn committed_acknowledgements_match_the_lock_file() {
@@ -274,8 +300,9 @@ mod tests {
             eprintln!("skipped: cargo metadata for {PLATFORM} is unavailable offline");
             return;
         };
-        let wanted: Vec<String> = shipped(&meta)
-            .unwrap()
+        let mut packages = shipped(&meta).unwrap();
+        packages.extend(vendored());
+        let wanted: Vec<String> = packages
             .iter()
             .map(|p| format!("{} {}", p.name, p.version))
             .collect();

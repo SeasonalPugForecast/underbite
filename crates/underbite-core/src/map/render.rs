@@ -4,9 +4,10 @@
 //! metres); this module turns them into colours and positions, never into text. Legends are
 //! numeric stops that the view labels.
 //!
-//! The ramps are sampled (33 of 256 entries each) from Fabio Crameri's Scientific colour maps,
-//! which are perceptually uniform and readable with colour-vision deficiency. Colour map data
-//! Copyright (c) 2020 Fabio Crameri, released under the MIT License.
+//! The ramps are sampled (33 of 256 entries each) from Fabio Crameri's Scientific colour maps
+//! (version 8.0.1, doi:10.5281/zenodo.8409685), which are perceptually uniform and readable with
+//! colour-vision deficiency. The colour map data are by Fabio Crameri under the MIT License; the
+//! app's Acknowledgements carry the notice.
 
 use std::f64::consts::PI;
 use std::fmt;
