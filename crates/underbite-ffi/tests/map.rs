@@ -8,10 +8,10 @@ use serde_json::{Value, json};
 use underbite_ffi::fetch::{HostMethod, HostResponse};
 use underbite_ffi::map::{
     GridPacer, GridStore, LayerDates, LayerDraw, MAX_REQUESTS_PER_VIEW, MAX_STORE_BLOCKS,
-    MAX_STORE_VALUES, MapError, MapPoint, TileOutcome, classify_tile, gibs_default_date,
-    map_catalogue, map_presets, map_tile_size, measure, parse_time_axis, previous_date,
-    radar_covers, radar_frame_request, radar_frames, radar_latest_valid, radar_meta_request,
-    tile_request, time_axis_request,
+    MAX_STORE_VALUES, MapError, MapPoint, TileOutcome, ValueRange, classify_tile,
+    gibs_default_date, map_catalogue, map_legend, map_presets, map_range, map_tile_size, measure,
+    parse_time_axis, previous_date, radar_covers, radar_frame_request, radar_frames,
+    radar_latest_valid, radar_meta_request, tile_request, time_axis_request,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -732,4 +732,49 @@ fn the_radar_loop_is_labelled_in_the_users_clock() {
     assert!(radar_frame_request(latest, 8, 300, 96).is_err());
     assert!(radar_covers(40.7, -74.0));
     assert!(!radar_covers(51.5, -0.12));
+}
+
+#[test]
+fn the_visible_range_fits_the_held_block_and_the_legend_follows_it() {
+    let store = store_with_mur();
+    let fitted = store
+        .visible_range("sst".into(), -74.2, 40.0, -73.0, 40.8, 8.0)
+        .unwrap()
+        .unwrap();
+    assert!(fitted.low < fitted.high && fitted.high - fitted.low >= 2.0);
+    // Nothing held far away, and a layer with no values is refused.
+    assert_eq!(
+        store
+            .visible_range("sst".into(), 10.0, 10.0, 11.0, 11.0, 8.0)
+            .unwrap(),
+        None
+    );
+    assert!(
+        store
+            .visible_range("radar".into(), 0.0, 0.0, 1.0, 1.0, 8.0)
+            .is_err()
+    );
+
+    // Nothing set: the fitted range is used, and the legend ends are its, in the user's unit.
+    let got = map_range(metric(), "sst".into(), Some(fitted)).unwrap();
+    assert_eq!(got, fitted);
+    let legend = map_legend(metric(), "sst".into(), Some(fitted)).unwrap();
+    assert!(legend.first().unwrap().label.ends_with("°C"));
+    assert_ne!(legend.first().unwrap().label, "0 °C");
+    // Nothing fitted: the layer's own range.
+    let own = map_range(metric(), "sst".into(), None).unwrap();
+    assert!(own.high - own.low > 20.0);
+    // A range the user set wins.
+    let set = settings(|v| {
+        v["map"]["layers"] = json!([{ "id": "sst", "shown": true, "range": [5.0, 25.0] }]);
+    });
+    let got = map_range(set.clone(), "sst".into(), Some(fitted)).unwrap();
+    assert_eq!(
+        got,
+        ValueRange {
+            low: 5.0,
+            high: 25.0
+        }
+    );
+    assert!(map_legend(set, "sst".into(), Some(fitted)).is_ok());
 }

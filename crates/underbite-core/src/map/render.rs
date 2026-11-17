@@ -1253,6 +1253,24 @@ mod tests {
     }
 
     #[test]
+    fn a_recorded_mur_block_fits_inside_its_own_extremes() {
+        let grid = mur();
+        let area = Bbox {
+            west: -74.2,
+            south: 40.0,
+            east: -73.0,
+            north: 40.8,
+        };
+        let (min, max) = grid.range_in(area).unwrap();
+        let (lo, hi) = crate::map::grid::fitted_range(&[&grid], area, 2.0).unwrap();
+        assert!(
+            lo >= f64::from(min) - 1.0 && hi <= f64::from(max) + 1.0,
+            "{lo} {hi}"
+        );
+        assert!(hi - lo >= 2.0);
+    }
+
+    #[test]
     fn the_first_grid_covering_a_pixel_decides() {
         let lats = steps(38.0, 0.25, 13);
         let lons = steps(-76.0, 0.25, 13);

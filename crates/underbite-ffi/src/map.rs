@@ -308,6 +308,77 @@ const fn draw(kind: &LayerKind) -> LayerDraw {
     }
 }
 
+/// A colour range in canonical units.
+#[derive(Clone, Copy, Debug, PartialEq, uniffi::Record)]
+pub struct ValueRange {
+    pub low: f64,
+    pub high: f64,
+}
+
+/// The lowest value a fitted range may start at and the least span it may have, per quantity
+/// (the logarithmic ramps need a positive low end).
+fn fit_limits(quantity: MapQuantity) -> (f64, f64) {
+    match quantity {
+        MapQuantity::Temperature => (f64::NEG_INFINITY, 2.0),
+        MapQuantity::Chlorophyll => (0.01, 0.5),
+        MapQuantity::Kd490 => (0.01, 0.05),
+        MapQuantity::CurrentSpeed => (0.0, 0.2),
+    }
+}
+
+/// The colour range a layer is drawn with: the range the user set in the settings if any, else
+/// `fitted` (from [`GridStore::visible_range`]) if it can be drawn, else the layer's own.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn map_range(
+    settings_json: String,
+    layer: String,
+    fitted: Option<ValueRange>,
+) -> Result<ValueRange, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let l = self::layer(&layer)?;
+    let state = config.map.layers.iter().find(|st| st.id.as_str() == l.id);
+    let ramp = state
+        .and_then(|st| st.ramp.as_deref())
+        .filter(|id| render::ramp(id).is_some());
+    let user = state
+        .and_then(|st| st.range)
+        .map(|(lo, hi)| (f64::from(lo), f64::from(hi)));
+    let fitted = fitted.map(|r| (r.low, r.high));
+    // The user's range, then the fitted one, each only when it can be drawn; then the layer's own.
+    let chosen = [user, fitted]
+        .into_iter()
+        .flatten()
+        .find_map(|(low, high)| ramp_and_range(l, ramp, Some(low), Some(high)).ok());
+    if let Some((_, range)) = chosen.or_else(|| ramp_and_range(l, ramp, None, None).ok()) {
+        return Ok(ValueRange {
+            low: range.low,
+            high: range.high,
+        });
+    }
+    Err(invalid(format!("`{layer}` does not colour values")))
+}
+
+/// The legend bar of a grid layer over `range` (canonical units; the same precedence as
+/// [`map_range`]: the settings' own range wins), labelled in the settings' units.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn map_legend(
+    settings_json: String,
+    layer: String,
+    range: Option<ValueRange>,
+) -> Result<Vec<LegendStop>, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let l = self::layer(&layer)?;
+    let f = formatter(&config, "UTC");
+    let state = config.map.layers.iter().find(|st| st.id.as_str() == l.id);
+    let ramp = state
+        .and_then(|st| st.ramp.as_deref())
+        .filter(|id| render::ramp(id).is_some());
+    let r = map_range(settings_json, layer, range)?;
+    Ok(legend_of(l, &f, ramp, Some((r.low as f32, r.high as f32))))
+}
+
 /// The legend of a grid layer in the settings' ramp and range; empty for other layers.
 fn legend_of(
     l: &Layer,
@@ -1208,6 +1279,50 @@ impl GridStore {
             vec![erddap::parse_grid(&source, &body).map_err(|e| erddap_error(&e))?]
         };
         self.lock().insert(id, grids, UnixTime(now))
+    }
+
+    /// The colour range that fits the layer's held blocks inside a view (`west`, `south`, `east`,
+    /// `north`; `zoom` is accepted for symmetry with [`GridStore::arrows`] and not used): about
+    /// the 2nd to the 98th percentile of the finite values, never narrower than a span that
+    /// suits the quantity. None when the layer has nothing there or too few values. Canonical
+    /// units; pass it to [`GridStore::render_tile`] and [`map_legend`].
+    #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+    pub fn visible_range(
+        &self,
+        layer: String,
+        west: f64,
+        south: f64,
+        east: f64,
+        north: f64,
+        zoom: f64,
+    ) -> Result<Option<ValueRange>, MapError> {
+        let _ = zoom;
+        let l = self::layer(&layer)?;
+        let (Some(g), Some(quantity)) = (l.grid(), MapQuantity::of_layer(l.id)) else {
+            return Err(invalid(format!("`{layer}` has no values to fit")));
+        };
+        if g.draw != GridDraw::Raster {
+            return Ok(None);
+        }
+        let view = Bbox {
+            west,
+            south,
+            east,
+            north,
+        };
+        let shared = self.lock().selected(l.id, Some(view));
+        let grids: Vec<&Grid> = shared
+            .iter()
+            .filter_map(|g| g.first().map(|g| &**g))
+            .collect();
+        let (floor, span) = fit_limits(quantity);
+        Ok(grid::fitted_range(&grids, view, span).map(|(low, high)| {
+            let low = low.max(floor);
+            ValueRange {
+                low,
+                high: high.max(low + span),
+            }
+        }))
     }
 
     /// A 256-pixel PNG tile of a raster grid layer at `z`/`x`/`y`, coloured with `ramp` (none:

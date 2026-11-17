@@ -245,6 +245,25 @@ impl Grid {
         range
     }
 
+    /// The finite values of the cells whose centres lie in `area` (edges included).
+    pub fn finite_values_in(&self, area: Bbox) -> Vec<f32> {
+        let (Some(rows), Some(cols)) = (
+            axis_span(&self.lats, area.south, area.north),
+            axis_span(&self.lons, area.west, area.east),
+        ) else {
+            return Vec::new();
+        };
+        let mut out = Vec::new();
+        for i in rows {
+            for j in cols.clone() {
+                if let Some(v) = self.value(i, j).filter(|v| v.is_finite()) {
+                    out.push(v);
+                }
+            }
+        }
+        out
+    }
+
     /// Joins blocks of one dataset and time into one grid over the union of their axes.
     ///
     /// Cells no block covers are missing. Where blocks overlap, a value wins over a missing one
@@ -619,6 +638,37 @@ pub fn blocks_for_view(source: &GridSource, view: Bbox, zoom: f64) -> Vec<Block>
     }
     blocks.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.cmp(&b.1)));
     blocks.into_iter().map(|(_, b)| b).collect()
+}
+
+/// Fewer finite values than this in view give no fitted range.
+pub const FIT_MIN_VALUES: usize = 8;
+
+/// A colour range that fits what the grids hold inside `area`: the 2nd to the 98th percentile of
+/// their finite values, widened around its middle to at least `min_span` so a nearly uniform
+/// area is not stretched to noise. `None` when the area holds fewer than [`FIT_MIN_VALUES`]
+/// finite values, or `min_span` is not a positive number.
+pub fn fitted_range(grids: &[&Grid], area: Bbox, min_span: f64) -> Option<(f64, f64)> {
+    if !(min_span.is_finite() && min_span > 0.0) {
+        return None;
+    }
+    let mut values: Vec<f32> = grids
+        .iter()
+        .flat_map(|g| g.finite_values_in(area))
+        .collect();
+    if values.len() < FIT_MIN_VALUES {
+        return None;
+    }
+    values.sort_by(f32::total_cmp);
+    let at = |q: f64| {
+        let rank = (q * (values.len() - 1) as f64).round() as usize;
+        f64::from(values[rank.min(values.len() - 1)])
+    };
+    let (mut low, mut high) = (at(0.02), at(0.98));
+    if high - low < min_span {
+        let mid = f64::midpoint(low, high);
+        (low, high) = (mid - min_span / 2.0, mid + min_span / 2.0);
+    }
+    Some((low, high))
 }
 
 /// Whether a cached block of `dataset` for `time`, fetched at `fetched`, may still be used at
@@ -1222,5 +1272,38 @@ mod tests {
             north: 41.0,
         });
         let _ = Grid::merge(&[g]);
+    }
+
+    #[test]
+    fn fitted_range_covers_most_values_and_keeps_a_minimum_span() {
+        let area = Bbox {
+            west: -80.0,
+            south: 30.0,
+            east: -70.0,
+            north: 45.0,
+        };
+        let lats: Vec<f64> = (0..5).map(|i| 40.0 + f64::from(i) * 0.1).collect();
+        let lons: Vec<f64> = (0..5).map(|i| -74.0 + f64::from(i) * 0.1).collect();
+        let g = |values: Vec<f32>| build(lats.clone(), lons.clone(), values).unwrap();
+        let ramp: Vec<f32> = (0..25).map(|i| 10.0 + i as f32 * 0.25).collect();
+        let grid = g(ramp);
+        let (lo, hi) = fitted_range(&[&grid], area, 2.0).unwrap();
+        assert!(lo >= 10.0 && hi <= 16.0 && hi - lo >= 5.0, "{lo} {hi}");
+        // A uniform area is widened around its value.
+        let flat = g(vec![12.0; 25]);
+        let (lo, hi) = fitted_range(&[&flat], area, 2.0).unwrap();
+        assert!((lo - 11.0).abs() < 1e-9 && (hi - 13.0).abs() < 1e-9);
+        // Nothing finite, too few values, or a box away from the grid: none.
+        let empty = g(vec![f32::NAN; 25]);
+        assert_eq!(fitted_range(&[&empty], area, 2.0), None);
+        let away = Bbox {
+            west: 0.0,
+            south: 0.0,
+            east: 1.0,
+            north: 1.0,
+        };
+        assert_eq!(fitted_range(&[&grid], away, 2.0), None);
+        assert_eq!(fitted_range(&[&grid], area, 0.0), None);
+        assert_eq!(fitted_range(&[], area, 2.0), None);
     }
 }
