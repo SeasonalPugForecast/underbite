@@ -1,8 +1,9 @@
 //! Gridded values (ERDDAP and GLERL grids): blocks with ascending axes.
 //!
-//! A map view asks for fixed 1° × 1° [`Block`]s at a stride chosen for its zoom
+//! A map view asks for fixed square [`Block`]s at a stride chosen for its zoom
 //! ([`blocks_for_view`]), so that the same block serves every view that overlaps it and caches
-//! under one [`BlockKey`]. The blocks of one dataset and time join with [`Grid::merge`]; a grid
+//! under one [`BlockKey`]. A block is 1° × 1° at fine strides and grows with the stride in wide
+//! views ([`block_side_deg`]), so a screen needs a handful of requests at any zoom. The blocks of one dataset and time join with [`Grid::merge`]; a grid
 //! answers point queries ([`Grid::sample_bilinear`], [`Grid::sample_nearest`]) and the value range
 //! of an area ([`Grid::range_in`]).
 
@@ -16,8 +17,22 @@ use crate::time::UnixTime;
 /// Seconds in a day.
 const DAY: i64 = 86_400;
 
-/// The side of a block, degrees.
+/// The side of a block at a fine stride, degrees; coarser strides use [`block_side_deg`].
 pub const BLOCK_DEG: f64 = 1.0;
+
+/// The block sides, degrees: the whole numbers that divide both 90 and 180, so that blocks tile
+/// the world exactly and none crosses a pole or the antimeridian.
+pub const BLOCK_SIDES_DEG: [u16; 12] = [1, 2, 3, 5, 6, 9, 10, 15, 18, 30, 45, 90];
+
+/// A 1° block with fewer cells than this along a side is too small to be worth a request, and the
+/// block grows ([`block_side_deg`]).
+pub const MIN_BLOCK_SIDE_CELLS: u32 = 20;
+
+/// Below this zoom a view is "wide": cells are [`WIDE_PIXELS_PER_CELL`] tile pixels, not one.
+pub const WIDE_ZOOM: f64 = 8.0;
+
+/// Tile pixels per cell in a wide view, so a screen of blocks stays a few requests.
+pub const WIDE_PIXELS_PER_CELL: f64 = 3.0;
 
 /// The most cells a block holds at the stride [`stride_for_zoom`] picks.
 pub const MAX_BLOCK_CELLS: u32 = 10_000;
@@ -411,8 +426,9 @@ fn positions(whole: &[f64], part: &[f64]) -> Vec<Option<usize>> {
         .collect()
 }
 
-/// The stride that makes a grid cell about one tile pixel at `zoom`, never finer than the native
-/// step and coarse enough that a [`Block`] holds at most [`MAX_BLOCK_CELLS`].
+/// The stride that makes a grid cell about one tile pixel at `zoom` (three below [`WIDE_ZOOM`]),
+/// never finer than the native step and coarse enough that a 1° block holds at most
+/// [`MAX_BLOCK_CELLS`].
 ///
 /// A pixel is measured along the equator (`360° / (256 · 2^zoom)`); in latitude it is smaller by
 /// the cosine of the latitude, which "about one pixel" allows for. A step that is not a positive
@@ -426,7 +442,12 @@ pub fn stride_for_zoom(native_step_deg: f64, zoom: f64) -> u32 {
     } else {
         0.0
     };
-    let pixel_deg = 360.0 / (TILE_PX * zoom.exp2());
+    let per_cell = if zoom < WIDE_ZOOM {
+        WIDE_PIXELS_PER_CELL
+    } else {
+        1.0
+    };
+    let pixel_deg = per_cell * 360.0 / (TILE_PX * zoom.exp2());
     let for_pixel = (pixel_deg / native_step_deg).round();
     // A block side of n cells at stride s holds ceil(cells per degree / s) cells, and n² must
     // stay within the limit.
@@ -435,17 +456,48 @@ pub fn stride_for_zoom(native_step_deg: f64, zoom: f64) -> u32 {
     for_pixel.max(for_size).clamp(1.0, f64::from(u32::MAX)) as u32
 }
 
-/// The number of cells along one side of a block at `stride`, at most.
-pub fn block_side_cells(native_step_deg: f64, stride: u32) -> u32 {
+/// The most cells along one side of a block: the square root of [`MAX_BLOCK_CELLS`].
+const MAX_SIDE_CELLS: u32 = 100;
+
+/// The cells along `side_deg` degrees at `stride`, at most.
+fn cells_along(side_deg: f64, native_step_deg: f64, stride: u32) -> u32 {
     if !(native_step_deg.is_finite() && native_step_deg > 0.0) {
         return 1;
     }
-    let per_side = BLOCK_DEG / (native_step_deg * f64::from(stride.max(1)));
+    let per_side = side_deg / (native_step_deg * f64::from(stride.max(1)));
     (per_side - 1e-9).ceil().clamp(1.0, f64::from(u32::MAX)) as u32
 }
 
-/// A 1° × 1° block of a grid, named by its south-west corner in whole degrees, at a stride
-/// counted in native grid steps.
+/// The side of a block, in degrees, for a dataset at `stride`.
+///
+/// 1° while a 1° block holds at least [`MIN_BLOCK_SIDE_CELLS`] cells along a side. Coarser strides
+/// (wide views) make that block too small to pay for a request, so it grows to the largest of
+/// [`BLOCK_SIDES_DEG`] that holds at most [`MAX_BLOCK_CELLS`] cells. Blocks are aligned to
+/// multiples of their side.
+pub fn block_side_deg(native_step_deg: f64, stride: u32) -> u16 {
+    if !(native_step_deg.is_finite() && native_step_deg > 0.0) {
+        return 1;
+    }
+    if cells_along(BLOCK_DEG, native_step_deg, stride) >= MIN_BLOCK_SIDE_CELLS {
+        return 1;
+    }
+    BLOCK_SIDES_DEG
+        .iter()
+        .rev()
+        .copied()
+        .find(|&side| cells_along(f64::from(side), native_step_deg, stride) <= MAX_SIDE_CELLS)
+        .unwrap_or(1)
+}
+
+/// The number of cells along one side of a block at `stride`, at most.
+pub fn block_side_cells(native_step_deg: f64, stride: u32) -> u32 {
+    let side = block_side_deg(native_step_deg, stride);
+    cells_along(f64::from(side), native_step_deg, stride)
+}
+
+/// A square block of a grid, named by its south-west corner in whole degrees, at a stride counted
+/// in native grid steps. Its side is [`block_side_deg`] of the dataset's native step and the
+/// stride, and its corner is a multiple of that side.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Block {
     /// The southern edge, degrees north (-90 to 89).
@@ -457,14 +509,15 @@ pub struct Block {
 }
 
 impl Block {
-    /// The block's area.
-    pub fn bounds(self) -> Bbox {
+    /// The block's area, for a dataset with this native step.
+    pub fn bounds(self, native_step_deg: f64) -> Bbox {
+        let side = f64::from(block_side_deg(native_step_deg, self.stride));
         let (south, west) = (f64::from(self.south), f64::from(self.west));
         Bbox {
             west,
             south,
-            east: west + BLOCK_DEG,
-            north: south + BLOCK_DEG,
+            east: west + side,
+            north: south + side,
         }
     }
 
@@ -472,12 +525,12 @@ impl Block {
     /// to the neighbouring blocks. ERDDAP matches each end to the nearest cell centre, so the
     /// far ends stop one native step short of the edge.
     pub fn request_bbox(self, native_step_deg: f64) -> Bbox {
+        let b = self.bounds(native_step_deg);
         let inset = if native_step_deg.is_finite() && native_step_deg > 0.0 {
-            native_step_deg.min(BLOCK_DEG)
+            native_step_deg.min(b.east - b.west)
         } else {
             0.0
         };
-        let b = self.bounds();
         Bbox {
             east: b.east - inset,
             north: b.north - inset,
@@ -520,40 +573,47 @@ impl fmt::Display for BlockKey {
 }
 
 /// The blocks that cover `view` at `zoom`, nearest to the view's centre first, all at the stride
-/// [`stride_for_zoom`] picks for `source`.
+/// [`stride_for_zoom`] picks for `source` and the side [`block_side_deg`] gives for it.
 ///
 /// The view is clipped to -90..90 and -180..180; a view with a non-finite edge, or with `west`
 /// east of `east` or `south` north of `north`, has no blocks. A view across the antimeridian is
-/// two views. Every 1° block is listed, so a whole-world view gives tens of thousands: the caller
-/// decides from which zoom a layer is drawn.
+/// two views. A whole-world view at a fine stride gives tens of thousands of blocks: the caller
+/// decides from which zoom a layer is drawn (the catalogue's `min_zoom`).
 pub fn blocks_for_view(source: &GridSource, view: Bbox, zoom: f64) -> Vec<Block> {
     let edges = [view.west, view.south, view.east, view.north];
     if edges.iter().any(|e| !e.is_finite()) || view.west > view.east || view.south > view.north {
         return Vec::new();
     }
     let stride = stride_for_zoom(source.native_step_deg, zoom);
+    let side = block_side_deg(source.native_step_deg, stride);
+    let side_deg = f64::from(side);
     let (south, north) = (view.south.max(-90.0), view.north.min(90.0));
     let (west, east) = (view.west.max(-180.0), view.east.min(180.0));
     if south > north || west > east {
         return Vec::new();
     }
-    let index = |lo: f64, hi: f64, min: i16, max: i16| {
-        let first = (lo.floor() as i16).clamp(min, max);
-        let last = ((hi.ceil() as i16) - 1).clamp(first, max);
+    // Block indices: block `k` spans `k * side` to `(k + 1) * side` degrees.
+    let index = |lo: f64, hi: f64, extent: i32| {
+        let step = i32::from(side);
+        let (min, max) = (-extent / step, extent / step - 1);
+        let first = ((lo / side_deg).floor() as i32).clamp(min, max);
+        let last = ((hi / side_deg).ceil() as i32 - 1).clamp(first, max);
         first..=last
     };
     let centre = (f64::midpoint(south, north), f64::midpoint(west, east));
     let shrink = centre.0.to_radians().cos().max(0.01);
     let mut blocks: Vec<(f64, Block)> = Vec::new();
-    for s in index(south, north, -90, 89) {
-        for w in index(west, east, -180, 179) {
+    for s in index(south, north, 90) {
+        for w in index(west, east, 180) {
+            let (s_deg, w_deg) = (s * i32::from(side), w * i32::from(side));
             let block = Block {
-                south: s,
-                west: w,
+                // The indices are clamped to -90..=89 and -180..=179 degrees.
+                south: i16::try_from(s_deg).unwrap_or(0),
+                west: i16::try_from(w_deg).unwrap_or(0),
                 stride,
             };
-            let d_lat = f64::from(s) + 0.5 - centre.0;
-            let d_lon = (f64::from(w) + 0.5 - centre.1) * shrink;
+            let d_lat = f64::from(s_deg) + side_deg / 2.0 - centre.0;
+            let d_lon = (f64::from(w_deg) + side_deg / 2.0 - centre.1) * shrink;
             blocks.push((d_lat * d_lat + d_lon * d_lon, block));
         }
     }
@@ -700,12 +760,18 @@ mod tests {
 
     #[test]
     fn stride_makes_a_cell_about_a_pixel() {
-        // At zoom 5 a pixel is 360 / 8192 = 0.0439 degrees: about 4 MUR cells.
-        assert_eq!(stride_for_zoom(MUR_STEP, 5.0), 4);
-        assert_eq!(stride_for_zoom(MUR_STEP, 0.0), 141);
-        assert_eq!(stride_for_zoom(GLSEA_STEP, 6.0), 2);
+        // From zoom 8 a cell is a pixel: at zoom 8 a pixel is 360 / 65536 = 0.0055 degrees.
+        assert_eq!(stride_for_zoom(MUR_STEP, 8.0), 1);
+        assert_eq!(stride_for_zoom(GLSEA_STEP, 8.0), 1);
+        // At 0.001 degrees a pixel is 5 cells, but a 1 degree block would hold 1,000,000.
+        assert_eq!(stride_for_zoom(0.001, 8.0), 10);
+        // Below zoom 8 a cell is three pixels: at zoom 5 a pixel is 360 / 8192 = 0.0439 degrees,
+        // so a cell is about 13 MUR cells.
+        assert_eq!(stride_for_zoom(MUR_STEP, 5.0), 13);
+        assert_eq!(stride_for_zoom(MUR_STEP, 0.0), 422);
+        assert_eq!(stride_for_zoom(GLSEA_STEP, 6.0), 5);
         // Fractional zooms are allowed.
-        assert_eq!(stride_for_zoom(MUR_STEP, 4.5), 6);
+        assert_eq!(stride_for_zoom(MUR_STEP, 4.5), 19);
     }
 
     #[test]
@@ -739,8 +805,8 @@ mod tests {
         assert_eq!(stride_for_zoom(0.0, 5.0), 1);
         assert_eq!(stride_for_zoom(-0.01, 5.0), 1);
         assert_eq!(stride_for_zoom(f64::NAN, 5.0), 1);
-        assert_eq!(stride_for_zoom(MUR_STEP, f64::NAN), 141);
-        assert_eq!(stride_for_zoom(MUR_STEP, -3.0), 141);
+        assert_eq!(stride_for_zoom(MUR_STEP, f64::NAN), 422);
+        assert_eq!(stride_for_zoom(MUR_STEP, -3.0), 422);
         assert_eq!(stride_for_zoom(MUR_STEP, 99.0), 1);
         assert_eq!(stride_for_zoom(1e-300, 0.0), u32::MAX);
         assert_eq!(block_side_cells(0.0, 3), 1);
@@ -780,7 +846,7 @@ mod tests {
             }
         );
         assert_eq!(
-            blocks[1].bounds(),
+            blocks[1].bounds(MUR_STEP),
             Bbox {
                 west: -75.0,
                 south: 40.0,
@@ -798,11 +864,11 @@ mod tests {
             east: -72.0,
             north: 41.0,
         };
-        let blocks = blocks_for_view(&mur(), square, 6.0);
+        let blocks = blocks_for_view(&mur(), square, 8.0);
         let mut corners: Vec<(i16, i16)> = blocks.iter().map(|b| (b.south, b.west)).collect();
         corners.sort_unstable();
         assert_eq!(corners, [(40, -74), (40, -73)]);
-        assert!(blocks.iter().all(|b| b.stride == 2));
+        assert!(blocks.iter().all(|b| b.stride == 1));
 
         let point = Bbox {
             west: -74.0,
@@ -828,7 +894,79 @@ mod tests {
             east: 180.0,
             north: 90.0,
         };
-        assert_eq!(blocks_for_view(&mur(), world, 0.0).len(), 360 * 180);
+        // At zoom 0 a block is 90 degrees: two rows of four.
+        assert_eq!(blocks_for_view(&mur(), world, 0.0).len(), 8);
+        // At a fine stride it is the whole world in 1 degree blocks.
+        assert_eq!(blocks_for_view(&mur(), world, 10.0).len(), 360 * 180);
+    }
+
+    #[test]
+    fn blocks_grow_with_the_stride_but_never_past_the_cell_limit() {
+        // MUR keeps 1 degree blocks while they hold 20 cells a side (stride 5); at stride 6 the
+        // block grows to 6 degrees (100 cells a side), at stride 9 to 9 degrees (100 a side).
+        assert_eq!(block_side_deg(MUR_STEP, 1), 1);
+        assert_eq!(block_side_deg(MUR_STEP, 5), 1);
+        assert_eq!(block_side_deg(MUR_STEP, 6), 6);
+        assert_eq!(block_side_deg(MUR_STEP, 7), 6);
+        assert_eq!(block_side_deg(MUR_STEP, 9), 9);
+        assert_eq!(block_side_deg(MUR_STEP, 422), 90);
+        assert_eq!(block_side_cells(MUR_STEP, 9), 100);
+        assert_eq!(block_side_deg(f64::NAN, 9), 1);
+        for step in [MUR_STEP, VIIRS_750M_STEP, GLSEA_STEP, 0.0375, 0.054] {
+            for z in 0..=14 {
+                let stride = stride_for_zoom(step, f64::from(z));
+                let side = block_side_deg(step, stride);
+                assert!(BLOCK_SIDES_DEG.contains(&side));
+                let cells = block_side_cells(step, stride);
+                assert!(cells * cells <= MAX_BLOCK_CELLS, "{step} z{z}: {cells}");
+            }
+        }
+        for side in BLOCK_SIDES_DEG {
+            assert_eq!(180 % side, 0);
+            assert_eq!(90 % side, 0);
+        }
+    }
+
+    #[test]
+    fn wide_blocks_are_aligned_and_tile_the_view() {
+        let view = Bbox {
+            west: -82.45,
+            south: 27.5,
+            east: -65.35,
+            north: 54.1,
+        };
+        let blocks = blocks_for_view(&mur(), view, 5.0);
+        assert!(blocks.iter().all(|b| b.stride == 13));
+        for b in &blocks {
+            assert_eq!(b.south % 10, 0);
+            assert_eq!(b.west % 10, 0);
+        }
+        let area = |b: &Block| b.bounds(MUR_STEP);
+        let covers = |lat: f64, lon: f64| {
+            blocks
+                .iter()
+                .filter(|b| {
+                    let a = area(b);
+                    (a.south..a.north).contains(&lat) && (a.west..a.east).contains(&lon)
+                })
+                .count()
+        };
+        // Every point of the view is in exactly one block.
+        let mut lat = view.south;
+        while lat <= view.north {
+            let mut lon = view.west;
+            while lon <= view.east {
+                assert_eq!(covers(lat, lon), 1, "{lat},{lon}");
+                lon += 0.7;
+            }
+            lat += 0.7;
+        }
+        // The first block is the one nearest the centre of the view.
+        let first = area(&blocks[0]);
+        assert!((first.south..first.north).contains(&40.8));
+        // A block's request stops one native step short of its far edges.
+        let r = blocks[0].request_bbox(MUR_STEP);
+        assert!((r.east - (first.east - MUR_STEP)).abs() < 1e-9);
     }
 
     #[test]
