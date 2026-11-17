@@ -37,6 +37,8 @@ impl SourceId {
     pub const NWS: SourceId = SourceId::from_static("nws");
     /// USGS 3D Hydrography Program network.
     pub const USGS_3DHP: SourceId = SourceId::from_static("usgs-3dhp");
+    /// NOAA Great Lakes Environmental Research Laboratory (GLSEA surface temperature).
+    pub const GLERL: SourceId = SourceId::from_static("glerl");
     /// US Army Corps of Engineers water management (CWMS Data API).
     pub const CWMS: SourceId = SourceId::from_static("cwms");
     /// US Bureau of Reclamation RISE.

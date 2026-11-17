@@ -494,8 +494,9 @@ fn scrub(text: &str, request: &Request) -> String {
 ///
 /// Status first: 2xx goes on, 404 and 410 are [`SourceError::NotFound`], 429 is
 /// [`SourceError::RateLimited`] with `Retry-After`, anything else is [`SourceError::Status`]
-/// with the body's message. Then the body, trimmed: empty is [`SourceError::NoData`]. For a
-/// JSON resource the body must be a JSON object or array, else it is the source's error text
+/// with the body's message. A binary resource's body comes back as it arrived, untrimmed, and
+/// only an empty one is [`SourceError::NoData`]. Any other body is trimmed: empty is
+/// [`SourceError::NoData`]. For a JSON resource the body must be a JSON object or array, else it is the source's error text
 /// ([`SourceError::Status`]; CO-OPS answers some errors in plain text under a JSON content
 /// type); an object with a truthy `error` is an error even under 200, [`SourceError::NoData`]
 /// when it says there is no data; malformed JSON is [`SourceError::Parse`].
@@ -526,10 +527,18 @@ pub fn check_response<'a>(
             });
         }
     }
+    let format = request.resource.format();
+    if format == BodyFormat::Binary {
+        // Bytes that look like whitespace at either end belong to the archive.
+        if response.body.is_empty() {
+            return Err(SourceError::NoData(Some("empty response".to_string())));
+        }
+        return Ok(response.body);
+    }
     if body.is_empty() {
         return Err(SourceError::NoData(Some("empty response".to_string())));
     }
-    if request.resource.format() == BodyFormat::Text {
+    if format == BodyFormat::Text {
         return Ok(body);
     }
     match body[0] {
@@ -1056,6 +1065,25 @@ mod tests {
         // `"error": false` and `null` are not errors.
         assert!(check(Resource::Fake, 200, br#"{"error":false,"data":[]}"#).is_ok());
         assert!(check(Resource::Fake, 200, br#"{"error":null}"#).is_ok());
+    }
+
+    #[test]
+    fn source_check_passes_a_binary_body_untrimmed() {
+        let zip = fixture_bytes("hab", "noaa-hab-gulf-rif-currentmodelrun-2026-11-17.zip");
+        assert_eq!(check(Resource::HabGulfZip, 200, &zip).unwrap(), zip);
+        // Bytes that look like whitespace or JSON are the archive's own.
+        let edges = b" PK\x03\x04 {\n";
+        assert_eq!(check(Resource::HabGulfZip, 200, edges).unwrap(), edges);
+        assert_eq!(
+            check(Resource::HabGulfZip, 200, b""),
+            Err(SourceError::NoData(Some("empty response".into())))
+        );
+        let missing =
+            br#"<?xml version="1.0" encoding="utf-8"?><Error><Code>BlobNotFound</Code></Error>"#;
+        assert_eq!(
+            check(Resource::HabGulfZip, 404, missing),
+            Err(SourceError::NotFound(None))
+        );
     }
 
     #[test]

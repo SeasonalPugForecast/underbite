@@ -47,13 +47,10 @@ const HALF_BOX_DEG: f64 = 0.05;
 /// The farthest a cell may be from the spot and still stand for it, metres (about two cells).
 pub const MAX_CELL_DISTANCE_M: f64 = 3_000.0;
 
-/// The source id.
-pub const SOURCE_ID: SourceId = SourceId::from_static("glerl");
-
 /// The credit every display of this data shows.
 pub fn attribution() -> Attribution {
     Attribution {
-        source: SOURCE_ID,
+        source: SourceId::GLERL,
         credit: "NOAA Great Lakes Environmental Research Laboratory (CoastWatch Great Lakes \
                  Node). Satellite analysis, not intended for legal use."
             .into(),
@@ -174,7 +171,7 @@ pub fn parse(point: RoundedPoint, response: &Response<'_>) -> Result<Series<f32>
         )));
     };
     let provenance = Provenance {
-        source: SOURCE_ID,
+        source: SourceId::GLERL,
         station: None,
         distance_m: Some(distance as f32),
         relation: Relation::Satellite,
@@ -251,7 +248,7 @@ mod tests {
             parse_rfc3339("2026-11-07T12:00:00Z").expect("time")
         );
         let p = s.provenance();
-        assert_eq!(p.source, SOURCE_ID);
+        assert_eq!(p.source, SourceId::GLERL);
         assert_eq!(p.relation, Relation::Satellite);
         assert_eq!(p.kind, ValueKind::Satellite);
         assert!(p.station.is_none());

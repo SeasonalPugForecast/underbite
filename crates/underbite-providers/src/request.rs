@@ -97,6 +97,32 @@ pub enum Resource {
     NwpsStageFlowForecast,
     /// NWPS `/gauges?bbox…`: gauges in a box.
     NwpsGauges,
+    /// GLERL ERDDAP `griddap/GLSEA_ACSPO_GCS.json`: the Great Lakes surface temperature analysis.
+    Glsea,
+    /// CWMS Data API `timeseries`: one series (pool, release or inflow) of a reservoir project.
+    CwmsTimeSeries,
+    /// USBR RISE `result`: the values of one catalogue item of a reservoir.
+    RiseResult,
+    /// EPA `CyAN` `location/data/{lat}/{lon}/all`: a lake's satellite cyanobacteria composites.
+    Cyan,
+    /// NOAA NCCOS Gulf respiratory irritation forecast: the current model run as a zip.
+    HabGulfZip,
+    /// DFO IWLS `stations/{id}/data?time-series-code=wlp-hilo`: high and low water predictions.
+    DfoTideHighLow,
+    /// DFO IWLS `stations/{id}/data?time-series-code=wlp`: predicted water level at an interval.
+    DfoTideCurve,
+    /// DFO IWLS `stations/{id}/data?time-series-code=wlo`: observed water level.
+    DfoWaterLevel,
+    /// DFO IWLS `stations`: the station list, or one station by code.
+    DfoStations,
+    /// DFO IWLS `stations/{id}/metadata`: a station's datums and water body.
+    DfoMetadata,
+    /// ECCC `GeoMet` `hydrometric-stations`: Water Survey stations in a box.
+    EcccStations,
+    /// ECCC `GeoMet` `hydrometric-realtime`: a station's newest level and discharge.
+    EcccRealtime,
+    /// ECCC `GeoMet` `hydrometric-daily-mean`: a station's HYDAT daily means.
+    EcccDailyMean,
     /// A test source's resource.
     #[cfg(test)]
     Fake,
@@ -109,6 +135,8 @@ pub enum BodyFormat {
     Json,
     /// Text the parser reads itself (NDBC's column files and XML).
     Text,
+    /// Bytes the parser reads itself (a zip), passed on untrimmed.
+    Binary,
 }
 
 impl Resource {
@@ -120,6 +148,7 @@ impl Resource {
             | Self::NdbcOcean
             | Self::NdbcAdcp
             | Self::NdbcActiveStations => BodyFormat::Text,
+            Self::HabGulfZip => BodyFormat::Binary,
             _ => BodyFormat::Json,
         }
     }
@@ -610,6 +639,9 @@ mod tests {
         assert_eq!(Resource::NdbcActiveStations.format(), BodyFormat::Text);
         assert_eq!(Resource::CoopsTideHighLow.format(), BodyFormat::Json);
         assert_eq!(Resource::NwsZoneForecast.format(), BodyFormat::Json);
+        assert_eq!(Resource::HabGulfZip.format(), BodyFormat::Binary);
+        assert_eq!(Resource::Glsea.format(), BodyFormat::Json);
+        assert_eq!(Resource::EcccRealtime.format(), BodyFormat::Json);
     }
 
     #[test]
