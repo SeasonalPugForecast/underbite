@@ -12,11 +12,14 @@ struct CardChartBlock: Identifiable {
 /// is used: the datum a tide height is measured from, the moon phase, the percentile
 /// thresholds with their basis.
 enum CardCharts {
-    static func blocks(for card: ViewModel.Card) -> [CardChartBlock] {
+    /// `settingsJSON` gives the core's words their voice; the shipped defaults when it is not at hand.
+    static func blocks(for card: ViewModel.Card, settingsJSON: String = defaultSettingsJson())
+        -> [CardChartBlock]
+    {
         switch card {
         case .tide(let c): tide(c.full)
         case .current(let c): single("current", c.full.chart)
-        case .flow(let c): flow(c.full)
+        case .flow(let c): flow(c.full, settingsJSON: settingsJSON)
         case .waterTemp(let c): single("water_temp", c.full.chart)
         case .clarity(let c): single("clarity", c.full.chart)
         case .waves(let c):
@@ -46,10 +49,12 @@ enum CardCharts {
 
     /// The percentile band for the date goes on the chart whose unit it is in (discharge, or the
     /// level of a lake); the flood categories are the rules the view put on the stage chart.
-    private static func flow(_ full: ViewModel.FlowFull) -> [CardChartBlock] {
+    private static func flow(_ full: ViewModel.FlowFull, settingsJSON: String) -> [CardChartBlock] {
         let percentile = full.percentile
         func block(_ id: String, _ chart: ViewModel.Chart) -> CardChartBlock {
-            guard let percentile, let band = band(percentile, in: chart) else {
+            guard let percentile,
+                let band = band(percentile, in: chart, settingsJSON: settingsJSON)
+            else {
                 return CardChartBlock(id: id, chart: chart)
             }
             return CardChartBlock(
@@ -61,14 +66,19 @@ enum CardCharts {
     }
 
     /// The widest span of thresholds the view gives, when it is in the chart's unit.
-    private static func band(_ percentile: ViewModel.Percentile, in chart: ViewModel.Chart)
-        -> ChartValueBand?
-    {
+    private static func band(
+        _ percentile: ViewModel.Percentile, in chart: ViewModel.Chart, settingsJSON: String
+    ) -> ChartValueBand? {
         guard let low = percentile.thresholds.first, let high = percentile.thresholds.last,
             let lowValue = low.value.value, let highValue = high.value.value,
             lowValue < highValue, low.value.unit == chart.unit, high.value.unit == chart.unit
         else { return nil }
-        return ChartValueBand(low: lowValue, high: highValue, label: percentile.text)
+        // The shaded span is the widest the view gives (5th to 95th percentile), not the
+        // "normal" class of the headline, so it carries the core's own label for it.
+        let label =
+            (try? percentileBandLabel(
+                low: low.label, high: high.label, settingsJson: settingsJSON)) ?? ""
+        return ChartValueBand(low: lowValue, high: highValue, label: label)
     }
 
     /// "5th percentile 0.6 cfs · 50th percentile 15.0 cfs · …", then where the numbers come from.

@@ -2,7 +2,8 @@ import Foundation
 import UIKit
 
 /// The optional photo on the About screen. It is personal: it lives in the app container only,
-/// is re-encoded without the picture's metadata, and is never shared, uploaded or logged.
+/// is re-encoded without the picture's metadata, is kept out of device backups, and is never
+/// shared, uploaded or logged.
 enum AboutPhotoStore {
     /// Where the photo is kept.
     static var url: URL {
@@ -14,6 +15,8 @@ enum AboutPhotoStore {
     /// The saved photo, if any.
     static func load() -> UIImage? {
         guard let data = try? Data(contentsOf: url) else { return nil }
+        // A photo saved before it was kept out of backups is brought in line.
+        try? excludeFromBackup()
         return UIImage(data: data)
     }
 
@@ -34,6 +37,16 @@ enum AboutPhotoStore {
         try FileManager.default.createDirectory(
             at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try jpeg.write(to: url, options: [.atomic, .completeFileProtection])
+        try excludeFromBackup()
+    }
+
+    /// Keeps the photo out of iCloud and computer backups: it is personal and stays on the
+    /// device. Writing replaces the file, so the flag is set again after each save.
+    static func excludeFromBackup() throws {
+        var file = url
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try file.setResourceValues(values)
     }
 
     /// Removes the saved photo.

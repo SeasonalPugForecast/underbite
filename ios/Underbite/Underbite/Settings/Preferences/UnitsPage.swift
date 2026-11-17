@@ -26,7 +26,6 @@ struct UnitsPage: View {
     }
 
     private func picker(_ group: UnitGroup, groups: [UnitGroup], access: SettingsAccess) -> some View {
-        let followed = group.follows.flatMap { id in groups.first { $0.id == id } }
         return Picker(
             group.label,
             selection: Binding<String>(
@@ -37,8 +36,8 @@ struct UnitsPage: View {
                     }
                 })
         ) {
-            if let followed {
-                Text("Same as \(followed.label.lowercased())").tag("")
+            if let sameAs = group.sameAsLabel {
+                Text(sameAs).tag("")
             }
             ForEach(group.options, id: \.id) { option in
                 Text(option.label).tag(option.id)

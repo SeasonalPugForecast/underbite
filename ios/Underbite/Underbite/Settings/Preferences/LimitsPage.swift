@@ -11,7 +11,7 @@ struct LimitsPage: View {
                     NavigationLink(value: LimitRoute(index: index)) {
                         VStack(alignment: .leading) {
                             Text(limit.name)
-                            Text(summary(limit)).font(.caption).foregroundStyle(.readableSecondary)
+                            Text(summary(limit, json: access.json)).font(.caption).foregroundStyle(.readableSecondary)
                         }
                     }
                 }
@@ -30,14 +30,12 @@ struct LimitsPage: View {
 
     private struct LimitRoute: Hashable { var index: Int }
 
-    /// The switches that are on, as words; the numbers are on the editor's page.
-    private func summary(_ limit: Settings.Limit) -> String {
-        var parts: [String] = []
+    /// The limits that are set and the switches that are on, as the core words them.
+    private func summary(_ limit: Settings.Limit, json: String) -> String {
         let set = Preferences.LimitField.allCases.filter { $0.value(of: limit) != nil }.count
-        if set > 0 { parts.append(set == 1 ? "1 limit" : "\(set) limits") }
-        if limit.noSmallCraftAdvisory { parts.append("no small craft advisory") }
-        if limit.noLightning { parts.append("no lightning") }
-        return parts.isEmpty ? "No limits set" : parts.joined(separator: ", ")
+        return (try? limitSummary(
+            setCount: UInt32(set), noSmallCraftAdvisory: limit.noSmallCraftAdvisory,
+            noLightning: limit.noLightning, settingsJson: json)) ?? ""
     }
 }
 
@@ -49,13 +47,11 @@ struct LimitEditorPage: View {
         PreferencePage(title: "Profile") { access in
             if let limit = access.settings?.limits[preferenceItem: index] {
                 Section("Name") {
-                    TextField(
-                        "Name",
-                        text: access.binding(
-                            { $0.limits[preferenceItem: index]?.name ?? "" }, fallback: limit.name
-                        ) { settings, name in
+                    ProfileNameField(name: limit.name) { name in
+                        access.edit { settings in
                             if settings.limits.indices.contains(index) { settings.limits[index].name = name }
-                        })
+                        }
+                    }
                 }
                 Section {
                     ForEach(Preferences.LimitField.allCases) { field in
@@ -100,6 +96,38 @@ struct LimitEditorPage: View {
                 Text("This profile is gone.")
             }
         }
+    }
+}
+
+/// The name of a profile. Typing changes a draft only; the name is written when it is
+/// submitted or the field loses focus, so clearing the field to type another name is not an
+/// edit. An empty draft goes back to the stored name.
+private struct ProfileNameField: View {
+    let name: String
+    let commit: (String) -> Void
+    @State private var draft: String
+    @FocusState private var focused: Bool
+
+    init(name: String, commit: @escaping (String) -> Void) {
+        self.name = name
+        self.commit = commit
+        _draft = State(initialValue: name)
+    }
+
+    var body: some View {
+        TextField("Name", text: $draft)
+            .focused($focused)
+            .submitLabel(.done)
+            .onSubmit(finish)
+            .onChange(of: focused) { _, isFocused in if !isFocused { finish() } }
+            .onChange(of: name) { _, stored in draft = stored }
+    }
+
+    private func finish() {
+        if let renamed = Preferences.renamed(draft: draft, current: name) {
+            commit(renamed)
+        }
+        draft = name
     }
 }
 

@@ -85,7 +85,7 @@ private struct ChainSection: View {
                 }
             }
         } header: {
-            Text(kind.title)
+            Text(kind.title(settingsJSON: (try? settings.json()) ?? ""))
         }
     }
 
@@ -101,19 +101,13 @@ private struct ChainSection: View {
             })
     }
 
-    /// "within 25 km, under 3 h old", with the core's words for each value.
+    /// "within 25 km, under 3 h old", as the core words it.
     private var limits: String {
         let group = kind.group(in: settings.sources)
-        let json = (try? settings.json()) ?? ""
-        let distance =
-            group.maxDistanceKm.map {
-                "within " + Preferences.Entry(Preferences.distance(of: kind), settingsJSON: json).label(of: $0)
-            } ?? "any distance"
-        let age =
-            group.maxAgeMinutes.map {
-                "under " + Preferences.duration(minutes: $0, settingsJSON: json) + " old"
-            } ?? "any age"
-        return "\(distance), \(age)"
+        return (try? sourceLimitsText(
+            group: kind.fieldGroup, maxDistanceKm: group.maxDistanceKm,
+            maxAgeMinutes: group.maxAgeMinutes.map(Int64.init),
+            settingsJson: (try? settings.json()) ?? "")) ?? ""
     }
 }
 

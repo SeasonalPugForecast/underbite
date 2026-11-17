@@ -260,4 +260,67 @@ final class PreferencesTests: XCTestCase {
         }
         assertValid(edited)
     }
+
+    // MARK: Words from the core
+
+    func testSourceGroupsAreNamedByTheCore() throws {
+        let base = try defaults()
+        let titles = try sourceGroupTitles(settingsJson: base)
+        XCTAssertEqual(titles.map(\.id), Preferences.SourceKind.allCases.map(\.fieldGroup))
+        for kind in Preferences.SourceKind.allCases {
+            let title = kind.title(settingsJSON: base)
+            XCTAssertFalse(title.isEmpty)
+            XCTAssertNotEqual(title, kind.fieldGroup)
+        }
+        XCTAssertEqual(Preferences.SourceKind.sst.title(settingsJSON: base), "Sea surface temperature")
+    }
+
+    func testTheTroutDefaultIsTheCoresOwn() throws {
+        XCTAssertEqual(
+            Preferences.defaultTroutStressC, try Settings.defaults().thresholds.troutStressC)
+    }
+
+    func testSourceLimitsAndProfileSummariesAreWordedByTheCore() throws {
+        let base = try defaults()
+        XCTAssertEqual(
+            try sourceLimitsText(
+                group: "tide", maxDistanceKm: nil, maxAgeMinutes: nil, settingsJson: base),
+            "any distance, any age")
+        XCTAssertTrue(
+            try sourceLimitsText(
+                group: "tide", maxDistanceKm: 25, maxAgeMinutes: 180, settingsJson: base
+            ).hasSuffix("under 3 h old"))
+        XCTAssertEqual(
+            try limitSummary(
+                setCount: 1, noSmallCraftAdvisory: false, noLightning: false, settingsJson: base),
+            "1 limit")
+        XCTAssertEqual(
+            try limitSummary(
+                setCount: 0, noSmallCraftAdvisory: false, noLightning: false, settingsJson: base),
+            "No limits set")
+    }
+
+    func testUnitGroupsThatFollowCarryTheCoresChoiceLabel() throws {
+        let groups = try unitOptions(settingsJson: try defaults())
+        for group in groups {
+            XCTAssertEqual(group.sameAsLabel != nil, group.follows != nil, group.id)
+        }
+        XCTAssertEqual(groups.first { $0.id == "wind" }?.sameAsLabel, "Same as speeds")
+    }
+
+    func testTheChartBandHasItsOwnLabel() throws {
+        let label = try percentileBandLabel(
+            low: "5th percentile", high: "95th percentile", settingsJson: try defaults())
+        XCTAssertEqual(label, "Shaded: 5th percentile to 95th percentile")
+        XCTAssertFalse(label.contains("normal"))
+    }
+
+    // MARK: Renaming a profile
+
+    func testARenameNeedsANonEmptyNewName() {
+        XCTAssertNil(Preferences.renamed(draft: "", current: "Kayak"))
+        XCTAssertNil(Preferences.renamed(draft: "   ", current: "Kayak"))
+        XCTAssertNil(Preferences.renamed(draft: "Kayak", current: "Kayak"))
+        XCTAssertEqual(Preferences.renamed(draft: " Skiff ", current: "Kayak"), "Skiff")
+    }
 }

@@ -131,6 +131,14 @@ nonisolated enum Preferences {
         var high: Double
     }
 
+    /// The name to give a profile after its name field was submitted: the trimmed draft, or
+    /// `nil` when there is nothing to change (empty, or the name it already has). An empty
+    /// draft is never a name, so the field goes back to the stored one.
+    static func renamed(draft: String, current: String) -> String? {
+        let name = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty || name == current ? nil : name
+    }
+
     /// A name for a new profile that no other profile has.
     static func newLimitName(existing: [Settings.Limit]) -> String {
         let taken = Set(existing.map(\.name))
@@ -191,7 +199,10 @@ nonisolated enum Preferences {
     }
 
     /// The default trout stress threshold of the core, in degrees Celsius.
-    static let defaultTroutStressC = 20.0
+    static let defaultTroutStressC: Double = {
+        // INVARIANT: the core's default settings always decode.
+        try! Settings.defaults().thresholds.troutStressC
+    }()
 
     // MARK: - Source limits
 
@@ -211,21 +222,10 @@ nonisolated enum Preferences {
             return name
         }
 
-        var title: String {
-            switch self {
-            case .waterTemperature: "Water temperature"
-            case .tide: "Tides"
-            case .currents: "Currents"
-            case .flow: "River flow"
-            case .lakeLevel: "Lake level"
-            case .waves: "Waves"
-            case .sst: "Sea surface temperature"
-            case .clarity: "Water clarity"
-            case .waterQuality: "Water quality"
-            case .marineForecast: "Marine forecast"
-            case .weather: "Weather"
-            case .storm: "Storms"
-            }
+        /// The group's name in the user's voice, from the core.
+        func title(settingsJSON: String) -> String {
+            let titles = (try? sourceGroupTitles(settingsJson: settingsJSON)) ?? []
+            return titles.first { $0.id == fieldGroup }?.title ?? fieldGroup
         }
 
         func group(in sources: Settings.Sources) -> Settings.SourceGroup {

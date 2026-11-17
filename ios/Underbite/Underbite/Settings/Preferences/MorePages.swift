@@ -42,7 +42,7 @@ struct FreshnessPage: View {
             if let settings = access.settings {
                 ForEach(Preferences.SourceKind.allCases) { kind in
                     let group = kind.group(in: settings.sources)
-                    Section(kind.title) {
+                    Section(kind.title(settingsJSON: access.json)) {
                         Picker(
                             "Oldest reading",
                             selection: Binding<Int>(
