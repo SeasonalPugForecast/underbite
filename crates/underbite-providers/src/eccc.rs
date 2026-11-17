@@ -3,41 +3,37 @@
 //! The service is the MSC `GeoMet` OGC API (`api.weather.gc.ca`, pygeoapi, `GeoJSON`). Three
 //! collections are used:
 //!
-//! - `hydrometric-realtime`: the last 30 days at 5-minute steps. [`Eccc::plan`] asks for the newest
-//!   rows of a station (`sortby=-DATETIME`), [`Eccc::parse`] turns them into a discharge series
+//! - `hydrometric-realtime`: the last 30 days at 5-minute steps. [`Eccc`]'s `plan` asks for the
+//!   newest rows of a station (`sortby=-DATETIME`), its `parse` turns them into a discharge series
 //!   (m³/s) and a gage height series ([`VerticalDatum::Gauge`], metres). `LEVEL` is metres above
 //!   the station's own datum, mostly an arbitrary local one, so it is a gauge reading to compare
 //!   with the same station's history only. Every real-time value is provisional.
 //! - `hydrometric-daily-mean`: the HYDAT archive, which ends at the last 31 December. "Compared
-//!   with normal" is computed from this station's own history ([`Eccc::percentile_request`]) with
-//!   [`from_daily`], while the current year comes from the real-time collection. USGS daily means
-//!   are a different product and are never mixed in.
+//!   with normal" is computed from this station's own history ([`Eccc::percentile_request`], which
+//!   carries the reading to the parse) with [`from_daily`], while the current year comes from the
+//!   real-time collection. USGS daily means are a different product and are never mixed in.
 //! - `hydrometric-stations`: discovery by box ([`stations_request`], [`parse_stations`]), active
 //!   real-time stations only.
 //!
 //! Times are read from `DATETIME` (UTC). `DATETIME_LST` is local standard time with its offset in
 //! the string; it is used only to learn the station's standard-time offset, which fixes the
 //! standard-time day of a reading (the HYDAT daily means are per standard-time day).
-//!
-//! The requests and parsers are plain functions and methods of [`Eccc`] over [`EcccRequest`], which
-//! mirrors [`crate::request::Request`] until the shared request type has resources for these
-//! collections.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use underbite_core::datum::{Heights, VerticalDatum};
 use underbite_core::derive::percentile::{DEFAULT_MIN_YEARS, from_daily};
 use underbite_core::map::Bbox;
-use underbite_core::model::{Coverage, Measurement, StationCandidate};
+use underbite_core::model::{Coverage, Measurement, Requirements, StationCandidate};
 use underbite_core::provenance::{
     Attribution, Provenance, Quality, SourceId, StationKind, StationRef, ValueKind,
 };
 use underbite_core::series::{Sample, Series};
 use underbite_core::time::{LocalDate, UnixTime, UtcOffset, parse_date, parse_rfc3339};
 
-use crate::request::{Place, QueryBuilder, Response, Target};
-use crate::source::{FetchContext, FragmentValue, Fragments, SourceError};
+use crate::request::{Place, QueryBuilder, Request, Resource, Response, Target};
+use crate::source::{FetchContext, FragmentValue, Fragments, Source, SourceError, check_response};
 
 /// The API root.
 pub const BASE: &str = "https://api.weather.gc.ca/collections";
@@ -61,11 +57,11 @@ pub const DEFAULT_HISTORY_YEARS: i32 = 20;
 /// Stations asked for per page of a discovery box.
 pub const STATIONS_PAGE: u32 = 100;
 
-/// Longest message kept from an error body, in characters.
-const MAX_MESSAGE: usize = 200;
-
 /// The seconds between two real-time rows.
 const STEP_S: i64 = 300;
+
+/// How long a daily-mean response may be reused, seconds: the archive changes once a year.
+const DAILY_MEAN_AGE_S: u32 = 86_400;
 
 /// The credit every display of ECCC values shows.
 pub fn attribution() -> Attribution {
@@ -86,17 +82,6 @@ fn provisional_notice() -> Attribution {
     }
 }
 
-/// Which collection a request is for.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum EcccResource {
-    /// `hydrometric-stations`.
-    Stations,
-    /// `hydrometric-realtime`.
-    Realtime,
-    /// `hydrometric-daily-mean`, for the day-of-year normals of one measurement.
-    DailyMean,
-}
-
 /// The reading a normal is computed for.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Reading {
@@ -110,19 +95,49 @@ pub struct Reading {
     pub day: LocalDate,
 }
 
-/// A GET the host sends, with what the parser needs to read the answer.
-#[derive(Clone, Debug, PartialEq)]
-pub struct EcccRequest {
-    /// The URL, query included.
-    pub url: String,
-    /// The collection, which selects the parser.
-    pub resource: EcccResource,
-    /// What the request is for.
-    pub target: Target,
-    /// Whether the link fails without this response.
-    pub required: bool,
-    /// For [`EcccResource::DailyMean`]: the reading the normals are for.
-    pub reading: Option<Reading>,
+/// A [`Reading`] as a daily-mean request carries it to the parse.
+#[derive(Serialize, Deserialize)]
+struct ReadingCarry {
+    measurement: Measurement,
+    value: f32,
+    observed_at: i64,
+    year: i32,
+    month: u8,
+    day: u8,
+}
+
+impl ReadingCarry {
+    fn text(reading: Reading) -> Result<String, SourceError> {
+        serde_json::to_string(&Self {
+            measurement: reading.measurement,
+            value: reading.value,
+            observed_at: reading.observed_at.0,
+            year: reading.day.year,
+            month: reading.day.month,
+            day: reading.day.day,
+        })
+        .map_err(|e| SourceError::Parse(format!("reading: {e}")))
+    }
+
+    fn read(request: &Request) -> Result<Reading, SourceError> {
+        let text = request.carry().ok_or_else(|| {
+            SourceError::Unsupported(
+                "daily means need the reading they are compared with".to_string(),
+            )
+        })?;
+        let c: Self = serde_json::from_str(text)
+            .map_err(|e| SourceError::Parse(format!("carried reading: {e}")))?;
+        Ok(Reading {
+            measurement: c.measurement,
+            value: c.value,
+            observed_at: UnixTime(c.observed_at),
+            day: LocalDate {
+                year: c.year,
+                month: c.month,
+                day: c.day,
+            },
+        })
+    }
 }
 
 /// The ECCC hydrometric source: settings only.
@@ -175,7 +190,7 @@ fn items(collection: &str) -> String {
 ///
 /// # Errors
 /// [`SourceError::Unsupported`] when the target is not a station with a Water Survey number.
-pub fn realtime_request(target: &Target, rows: i64) -> Result<EcccRequest, SourceError> {
+pub fn realtime_request(target: &Target, rows: i64) -> Result<Request, SourceError> {
     let id = station_number(target)?;
     let url = QueryBuilder::new(&items("hydrometric-realtime"))
         .param("f", "json")
@@ -188,13 +203,7 @@ pub fn realtime_request(target: &Target, rows: i64) -> Result<EcccRequest, Sourc
             "DATETIME,DATETIME_LST,LEVEL,DISCHARGE,LEVEL_SYMBOL_EN,DISCHARGE_SYMBOL_EN",
         )
         .finish();
-    Ok(EcccRequest {
-        url,
-        resource: EcccResource::Realtime,
-        target: target.clone(),
-        required: true,
-        reading: None,
-    })
+    Ok(Request::new(url, Resource::EcccRealtime, target.clone()))
 }
 
 /// The stations of a box, active and reporting in real time, `STATION_NUMBER` order, a page of
@@ -246,38 +255,10 @@ impl Eccc {
         self
     }
 
-    /// The credit every display of its values shows.
-    pub fn attribution(&self) -> Attribution {
-        attribution()
-    }
-
-    /// The measurements it supplies.
-    pub fn measurements(&self) -> &'static [Measurement] {
-        MEASUREMENTS
-    }
-
-    /// The requests for `target`: the newest real-time rows, enough for the target's window.
-    ///
-    /// # Errors
-    /// [`SourceError::Unsupported`] for a target that is not a station or wants only
-    /// measurements the source does not supply.
-    pub fn plan(
-        &self,
-        target: &Target,
-        ctx: &FetchContext,
-    ) -> Result<Vec<EcccRequest>, SourceError> {
-        if !target.measurements.iter().any(|m| MEASUREMENTS.contains(m)) {
-            return Err(SourceError::Unsupported(
-                "ECCC supplies discharge and gage height only".to_string(),
-            ));
-        }
-        let since = ctx.now.0.saturating_sub(target.window.from.0).max(0);
-        Ok(vec![realtime_request(target, since / STEP_S + 1)?])
-    }
-
     /// The request for the day-of-year normals of `reading`, from this station's own daily means
-    /// of the last [`Eccc::history_years`] years up to the day before the reading's day. It is
-    /// optional: a station with too short a record gives no normals, not a failed link.
+    /// of the last [`Eccc::history_years`] years up to the day before the reading's day, for
+    /// `reading`'s measurement only; the reading travels in the request's carry to the parse. It
+    /// is optional: a station with too short a record gives no normals, not a failed link.
     ///
     /// # Errors
     /// [`SourceError::Unsupported`] for a target that is not a station or a measurement the
@@ -286,7 +267,7 @@ impl Eccc {
         &self,
         target: &Target,
         reading: Reading,
-    ) -> Result<EcccRequest, SourceError> {
+    ) -> Result<Request, SourceError> {
         let id = station_number(target)?;
         let field = match reading.measurement {
             Measurement::Discharge => "DISCHARGE",
@@ -318,25 +299,28 @@ impl Eccc {
             .param("skipGeometry", "true")
             .param("properties", format!("DATE,{field}"))
             .finish();
-        Ok(EcccRequest {
-            url,
-            resource: EcccResource::DailyMean,
-            target: target.clone(),
-            required: false,
-            reading: Some(reading),
-        })
+        let target = Target {
+            measurements: BTreeSet::from([reading.measurement]),
+            ..target.clone()
+        };
+        Ok(Request::new(url, Resource::EcccDailyMean, target)
+            .optional()
+            .max_age_hint(DAILY_MEAN_AGE_S)
+            .with_carry(ReadingCarry::text(reading)?))
     }
 
-    /// Reads the newest real-time reading of `measurement`, for [`Eccc::percentile_request`].
+    /// Reads the newest real-time reading of `measurement` from the response to a real-time
+    /// `request`, for [`Eccc::percentile_request`].
     ///
     /// # Errors
-    /// As [`Eccc::parse`].
+    /// As the source's `parse`.
     pub fn latest_reading(
         &self,
+        request: &Request,
         response: &Response<'_>,
         measurement: Measurement,
     ) -> Result<Reading, SourceError> {
-        let body = check(response)?;
+        let body = check_response(request, response)?;
         let rows = realtime_rows(body)?;
         rows.iter()
             .find_map(|row| {
@@ -355,33 +339,9 @@ impl Eccc {
             .ok_or_else(|| SourceError::NoData(Some("no real-time value".to_string())))
     }
 
-    /// Parses a response to a request of this module into `out`: real-time rows into discharge and
-    /// gage height series, daily means into a percentile. A station list is read with
-    /// [`parse_stations`].
-    ///
-    /// # Errors
-    /// [`SourceError`] for an error status, a body of the wrong shape, no value, or a newest value
-    /// older than [`Eccc::max_age_s`].
-    pub fn parse(
-        &self,
-        request: &EcccRequest,
-        response: &Response<'_>,
-        ctx: &FetchContext,
-        out: &mut Fragments,
-    ) -> Result<(), SourceError> {
-        let body = check(response)?;
-        match request.resource {
-            EcccResource::Realtime => self.parse_realtime(request, body, ctx, out),
-            EcccResource::DailyMean => parse_normals(request, body, out),
-            EcccResource::Stations => Err(SourceError::Unsupported(
-                "a station list is parsed with parse_stations".to_string(),
-            )),
-        }
-    }
-
     fn parse_realtime(
         &self,
-        request: &EcccRequest,
+        request: &Request,
         body: &[u8],
         ctx: &FetchContext,
         out: &mut Fragments,
@@ -441,6 +401,69 @@ impl Eccc {
     }
 }
 
+impl Source for Eccc {
+    fn id(&self) -> SourceId {
+        SourceId::ECCC_HYDROMETRIC
+    }
+
+    fn attribution(&self) -> Attribution {
+        attribution()
+    }
+
+    fn measurements(&self) -> &[Measurement] {
+        MEASUREMENTS
+    }
+
+    /// The newest real-time rows, enough for the target's window, for the discharge and gage
+    /// height it wants.
+    fn plan(
+        &self,
+        target: &Target,
+        requirements: &Requirements,
+        ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        let served: BTreeSet<Measurement> = MEASUREMENTS
+            .iter()
+            .copied()
+            .filter(|m| {
+                target.measurements.contains(m)
+                    && (requirements.measurements.is_empty()
+                        || requirements.measurements.contains(m))
+            })
+            .collect();
+        if served.is_empty() {
+            return Err(SourceError::Unsupported(
+                "ECCC supplies discharge and gage height only".to_string(),
+            ));
+        }
+        let target = Target {
+            measurements: served,
+            ..target.clone()
+        };
+        let since = ctx.now.0.saturating_sub(target.window.from.0).max(0);
+        Ok(vec![realtime_request(&target, since / STEP_S + 1)?])
+    }
+
+    /// Real-time rows into discharge and gage height series, older than [`Eccc::max_age_s`] being
+    /// stale; daily means into a percentile. A station list is read with [`parse_stations`].
+    fn parse(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        ctx: &FetchContext,
+        out: &mut Fragments,
+    ) -> Result<(), SourceError> {
+        let body = check_response(request, response)?;
+        match request.resource {
+            Resource::EcccRealtime => self.parse_realtime(request, body, ctx, out),
+            Resource::EcccDailyMean => parse_normals(request, body, out),
+            other => Err(SourceError::Unsupported(format!(
+                "{other:?} is not an ECCC value; a station list is read with parse_stations"
+            ))),
+        }
+    }
+}
+
 /// The quality a Water Survey symbol (English text) stands for; real-time data without one is
 /// provisional.
 fn quality(symbol: Option<&str>) -> Quality {
@@ -488,52 +511,6 @@ fn provenance(
 fn round3(v: f64) -> Option<f32> {
     v.is_finite()
         .then(|| ((v * 1_000.0).round() / 1_000.0) as f32)
-}
-
-fn tidy(text: &str) -> Option<String> {
-    let text = text.trim();
-    let cut = text
-        .char_indices()
-        .nth(MAX_MESSAGE)
-        .map_or(text.len(), |(i, _)| i);
-    (cut > 0).then(|| text[..cut].to_string())
-}
-
-/// Checks a response and returns its trimmed body: 2xx goes on, 404 is not found, 429 is rate
-/// limited, anything else is a status error with the `description` of the OGC error body.
-fn check<'a>(response: &Response<'a>) -> Result<&'a [u8], SourceError> {
-    let body = response.body.trim_ascii();
-    let message = || {
-        #[derive(Deserialize)]
-        struct Problem {
-            description: Option<String>,
-        }
-        serde_json::from_slice::<Problem>(body)
-            .ok()
-            .and_then(|p| p.description)
-            .and_then(|d| tidy(&d))
-    };
-    match response.status {
-        200..=299 => {}
-        404 | 410 => return Err(SourceError::NotFound(message())),
-        429 => {
-            return Err(SourceError::RateLimited {
-                retry_after_s: response.retry_after,
-            });
-        }
-        status => {
-            return Err(SourceError::Status {
-                status,
-                message: message(),
-            });
-        }
-    }
-    match body.first() {
-        None => Err(SourceError::NoData(Some("empty response".to_string()))),
-        Some(b'{') => Ok(body),
-        Some(b'<') => Err(SourceError::Parse("HTML instead of JSON".to_string())),
-        Some(_) => Err(SourceError::Parse("not a JSON object".to_string())),
-    }
 }
 
 #[derive(Deserialize)]
@@ -697,9 +674,13 @@ struct DailyProps {
 /// Missing days are absent.
 ///
 /// # Errors
-/// [`SourceError`] as for [`Eccc::parse`], and [`SourceError::Parse`] for a malformed date.
-pub fn parse_daily_means(response: &Response<'_>) -> Result<Vec<DailyMean>, SourceError> {
-    let body = check(response)?;
+/// The failure [`check_response`] finds, and [`SourceError::Parse`] for another shape or a
+/// malformed date.
+pub fn parse_daily_means(
+    request: &Request,
+    response: &Response<'_>,
+) -> Result<Vec<DailyMean>, SourceError> {
+    let body = check_response(request, response)?;
     daily_means(body)
 }
 
@@ -722,14 +703,8 @@ fn daily_means(body: &[u8]) -> Result<Vec<DailyMean>, SourceError> {
     Ok(days)
 }
 
-fn parse_normals(
-    request: &EcccRequest,
-    body: &[u8],
-    out: &mut Fragments,
-) -> Result<(), SourceError> {
-    let reading = request.reading.ok_or_else(|| {
-        SourceError::Unsupported("daily means need the reading they are compared with".to_string())
-    })?;
+fn parse_normals(request: &Request, body: &[u8], out: &mut Fragments) -> Result<(), SourceError> {
+    let reading = ReadingCarry::read(request)?;
     let key = (reading.day.month, reading.day.day);
     let values: Vec<(LocalDate, f32)> = daily_means(body)?
         .into_iter()
@@ -867,12 +842,16 @@ fn round5(v: f64) -> f64 {
     (v * 100_000.0).round() / 100_000.0
 }
 
-/// Parses a response to [`stations_request`]. A station without a position is skipped.
+/// Parses a response to a request of [`stations_request`]'s URL ([`Resource::EcccStations`]). A
+/// station without a position is skipped.
 ///
 /// # Errors
-/// [`SourceError`] for an error status or a body of the wrong shape.
-pub fn parse_stations(response: &Response<'_>) -> Result<StationPage, SourceError> {
-    let body = check(response)?;
+/// The failure [`check_response`] finds, or [`SourceError::Parse`] for another shape.
+pub fn parse_stations(
+    request: &Request,
+    response: &Response<'_>,
+) -> Result<StationPage, SourceError> {
+    let body = check_response(request, response)?;
     let next_offset = next_offset(body)?;
     let page: Collection<StationProps> = collection(body)?;
     let matched = page.matched;
@@ -949,14 +928,26 @@ mod tests {
         FetchContext::new(NOW, "underbite/test")
     }
 
-    fn request(url: &str) -> EcccRequest {
-        EcccRequest {
-            url: url.to_string(),
-            resource: EcccResource::Realtime,
-            target: target(MEASUREMENTS),
-            required: true,
-            reading: None,
-        }
+    fn request(url: &str) -> Request {
+        Request::new(
+            url.to_string(),
+            Resource::EcccRealtime,
+            target(MEASUREMENTS),
+        )
+    }
+
+    fn stations_list() -> Request {
+        let url = stations_request(
+            Bbox {
+                west: -114.2,
+                south: 50.9,
+                east: -113.9,
+                north: 51.2,
+            },
+            0,
+        )
+        .unwrap();
+        Request::new(url, Resource::EcccStations, target(MEASUREMENTS))
     }
 
     fn realtime(file: &str, dir: &str, now: UnixTime) -> Result<Fragments, SourceError> {
@@ -982,7 +973,9 @@ mod tests {
     #[test]
     fn the_realtime_request_asks_for_the_newest_rows_of_one_station() {
         let t = target(MEASUREMENTS);
-        let plan = Eccc::default().plan(&t, &ctx()).unwrap();
+        let plan = Eccc::default()
+            .plan(&t, &Requirements::default(), &ctx())
+            .unwrap();
         assert_eq!(plan.len(), 1);
         assert_eq!(
             plan[0].url,
@@ -997,10 +990,18 @@ mod tests {
     fn the_row_count_follows_the_window_within_bounds() {
         let mut t = target(MEASUREMENTS);
         t.window.from = UnixTime(NOW.0 - 30 * 86_400);
-        let url = Eccc::default().plan(&t, &ctx()).unwrap().remove(0).url;
+        let url = Eccc::default()
+            .plan(&t, &Requirements::default(), &ctx())
+            .unwrap()
+            .remove(0)
+            .url;
         assert!(url.contains("limit=1000&"), "{url}");
         t.window.from = NOW;
-        let url = Eccc::default().plan(&t, &ctx()).unwrap().remove(0).url;
+        let url = Eccc::default()
+            .plan(&t, &Requirements::default(), &ctx())
+            .unwrap()
+            .remove(0)
+            .url;
         assert!(url.contains("limit=12&"), "{url}");
     }
 
@@ -1008,7 +1009,11 @@ mod tests {
     fn only_stations_and_known_measurements_are_planned() {
         let e = Eccc::default();
         assert!(matches!(
-            e.plan(&target(&[Measurement::Tide]), &ctx()),
+            e.plan(
+                &target(&[Measurement::Tide]),
+                &Requirements::default(),
+                &ctx()
+            ),
             Err(SourceError::Unsupported(_))
         ));
         let mut t = target(MEASUREMENTS);
@@ -1017,7 +1022,7 @@ mod tests {
             longitude: -114.05,
         }));
         assert!(matches!(
-            e.plan(&t, &ctx()),
+            e.plan(&t, &Requirements::default(), &ctx()),
             Err(SourceError::Unsupported(_))
         ));
         let mut t = target(MEASUREMENTS);
@@ -1025,7 +1030,7 @@ mod tests {
             station.id = "05BH004&limit=5".to_string();
         }
         assert!(matches!(
-            e.plan(&t, &ctx()),
+            e.plan(&t, &Requirements::default(), &ctx()),
             Err(SourceError::Unsupported(_))
         ));
     }
@@ -1203,7 +1208,10 @@ mod tests {
     #[test]
     fn errors_are_classified() {
         let body = fixture_bytes("eccc", "error-400-limit.json");
-        let check_status = |status, body: &[u8]| check(&Response::new(status, body)).map(|_| ());
+        let run = |response: &Response<'_>| {
+            Eccc::default().parse(&request("u"), response, &ctx(), &mut Fragments::new())
+        };
+        let check_status = |status, body: &[u8]| run(&Response::new(status, body));
         assert_eq!(
             check_status(400, &body),
             Err(SourceError::Status {
@@ -1218,7 +1226,7 @@ mod tests {
         let mut limited = Response::new(429, b"");
         limited.retry_after = Some(30);
         assert_eq!(
-            check(&limited).map(|_| ()),
+            run(&limited),
             Err(SourceError::RateLimited {
                 retry_after_s: Some(30)
             })
@@ -1253,7 +1261,8 @@ mod tests {
 
     #[test]
     fn daily_means_are_rounded_ascending_and_keep_their_symbols() {
-        let days = parse_daily_means(&Response::new(200, &daily_response())).unwrap();
+        let days =
+            parse_daily_means(&request("u"), &Response::new(200, &daily_response())).unwrap();
         assert_eq!(days.len(), 1_096);
         let first = &days[0];
         assert_eq!(
@@ -1308,7 +1317,18 @@ mod tests {
              &skipGeometry=true&properties=DATE,LEVEL"
         );
         assert!(!r.required);
-        assert_eq!(r.resource, EcccResource::DailyMean);
+        assert_eq!(r.resource, Resource::EcccDailyMean);
+        assert_eq!(
+            r.target.measurements,
+            BTreeSet::from([Measurement::GageHeight])
+        );
+        // The reading travels in the carry, never in the URL.
+        assert!(r.carry().is_some_and(|c| c.contains("0.865")));
+        assert_eq!(
+            ReadingCarry::read(&r).unwrap(),
+            reading(Measurement::GageHeight, 0.865)
+        );
+        assert!(!r.url.contains("0.865"));
         let r = e
             .percentile_request(&target(MEASUREMENTS), reading(Measurement::Discharge, 52.6))
             .unwrap();
@@ -1422,7 +1442,11 @@ mod tests {
     fn the_latest_reading_carries_the_standard_time_day() {
         let body = fixture_bytes("eccc", "realtime-05BH004-limit12.json");
         let got = Eccc::default()
-            .latest_reading(&Response::new(200, &body), Measurement::GageHeight)
+            .latest_reading(
+                &request("u"),
+                &Response::new(200, &body),
+                Measurement::GageHeight,
+            )
             .unwrap();
         assert_eq!(got.value, 0.865);
         assert_eq!(
@@ -1485,7 +1509,7 @@ mod tests {
     #[test]
     fn a_station_page_lists_stations_with_their_datum_and_the_next_offset() {
         let body = fixture_bytes("eccc", "stations-bbox-calgary-limit10.json");
-        let page = parse_stations(&Response::new(200, &body)).unwrap();
+        let page = parse_stations(&stations_list(), &Response::new(200, &body)).unwrap();
         assert_eq!(page.stations.len(), 10);
         assert_eq!(page.matched, Some(12));
         assert_eq!(page.next_offset, Some(10));
@@ -1503,7 +1527,7 @@ mod tests {
         assert!(!unknown.level_is_elevation() && !unknown.real_time);
         let last = fixture_bytes("eccc", "stations-bbox-calgary-limit3-offset3.json");
         assert_eq!(
-            parse_stations(&Response::new(200, &last))
+            parse_stations(&stations_list(), &Response::new(200, &last))
                 .unwrap()
                 .stations
                 .len(),
@@ -1511,7 +1535,7 @@ mod tests {
         );
         let one = fixture_bytes("eccc", "stations-05BH004.json");
         assert_eq!(
-            parse_stations(&Response::new(200, &one))
+            parse_stations(&stations_list(), &Response::new(200, &one))
                 .unwrap()
                 .next_offset,
             None
@@ -1521,7 +1545,7 @@ mod tests {
     #[test]
     fn a_station_is_a_discovery_candidate_for_discharge_and_level() {
         let body = fixture_bytes("eccc", "stations-05BH004.json");
-        let page = parse_stations(&Response::new(200, &body)).unwrap();
+        let page = parse_stations(&stations_list(), &Response::new(200, &body)).unwrap();
         let c = page.stations[0].candidate();
         assert_eq!(c.station.id, "05BH004");
         assert_eq!(c.station.source, SourceId::ECCC_HYDROMETRIC);
@@ -1555,5 +1579,92 @@ mod tests {
             a.url.as_deref(),
             Some("https://eccc-msc.github.io/open-data/licence/readme_en/")
         );
+        assert_eq!(e.id().as_str(), "eccc-hydrometric");
+    }
+
+    #[test]
+    fn source_plans_parses_and_ranks_the_reading_among_its_normals() {
+        let eccc = Eccc::default();
+        let source: &dyn Source = &eccc;
+        let wanted = target(&[
+            Measurement::Discharge,
+            Measurement::GageHeight,
+            Measurement::Tide,
+        ]);
+        let plan = source
+            .plan(&wanted, &Requirements::default(), &ctx())
+            .unwrap();
+        let [realtime] = plan.as_slice() else {
+            panic!("one request, got {plan:?}");
+        };
+        assert_eq!(realtime.resource, Resource::EcccRealtime);
+        assert!(realtime.required && !realtime.metered);
+        assert_eq!(
+            realtime.target.measurements,
+            BTreeSet::from([Measurement::Discharge, Measurement::GageHeight])
+        );
+
+        let body = fixture_bytes("eccc", "realtime-05BH004-limit12.json");
+        let response = Response::new(200, &body);
+        let mut out = Fragments::new();
+        source.parse(realtime, &response, &ctx(), &mut out).unwrap();
+        let measurements: Vec<Measurement> =
+            out.fragments().iter().map(|f| f.measurement).collect();
+        assert_eq!(
+            measurements,
+            [Measurement::Discharge, Measurement::GageHeight]
+        );
+        assert_eq!(out.attributions().len(), 1);
+
+        let reading = eccc
+            .latest_reading(realtime, &response, Measurement::Discharge)
+            .unwrap();
+        let normals = eccc.percentile_request(&wanted, reading).unwrap();
+        let mut out = Fragments::new();
+        source
+            .parse(
+                &normals,
+                &Response::new(200, &history_json(2006, 2025)),
+                &ctx(),
+                &mut out,
+            )
+            .unwrap();
+        let [fragment] = out.fragments() else {
+            panic!("one fragment, got {:?}", out.fragments());
+        };
+        assert_eq!(fragment.measurement, Measurement::Discharge);
+        assert!(matches!(fragment.value, FragmentValue::Percentile(_)));
+    }
+
+    #[test]
+    fn source_follows_the_requirements_and_leaves_station_lists_to_their_parser() {
+        let only = Requirements {
+            measurements: BTreeSet::from([Measurement::Discharge]),
+            ..Requirements::default()
+        };
+        let plan = Eccc::default()
+            .plan(&target(MEASUREMENTS), &only, &ctx())
+            .unwrap();
+        assert_eq!(
+            plan[0].target.measurements,
+            BTreeSet::from([Measurement::Discharge])
+        );
+        let body = fixture_bytes("eccc", "stations-05BH004.json");
+        let r = Eccc::default().parse(
+            &stations_list(),
+            &Response::new(200, &body),
+            &ctx(),
+            &mut Fragments::new(),
+        );
+        assert!(matches!(r, Err(SourceError::Unsupported(_))), "{r:?}");
+        let mut without_reading = request("u");
+        without_reading.resource = Resource::EcccDailyMean;
+        let r = Eccc::default().parse(
+            &without_reading,
+            &Response::new(200, &history_json(2006, 2025)),
+            &ctx(),
+            &mut Fragments::new(),
+        );
+        assert!(matches!(r, Err(SourceError::Unsupported(_))), "{r:?}");
     }
 }
