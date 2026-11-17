@@ -267,6 +267,7 @@
                     "Water temperature in range",
                     "River flow in range"
                   ],
+                  "no_data_text": "No data: falling pressure, water temperature, river flow",
                   "range": "5:00 to 5:30 PM",
                   "start_t": 1794002400
                 }

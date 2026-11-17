@@ -3835,6 +3835,13 @@ expression: schema
             "type": "string"
           }
         },
+        "no_data_text": {
+          "description": "\"No data: water temperature, river flow\"; none when every enabled factor had data.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "range": {
           "description": "\"6:10 to 8:00 AM\"",
           "type": "string"

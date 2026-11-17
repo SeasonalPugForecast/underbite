@@ -60,6 +60,8 @@ pub struct WindowVm {
     pub factors: Vec<WindowFactorVm>,
     /// Enabled factors that had no data in the window, by name.
     pub no_data: Vec<String>,
+    /// "No data: water temperature, river flow"; none when every enabled factor had data.
+    pub no_data_text: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -246,7 +248,25 @@ fn describe(f: &Formatter, evidence: &Evidence) -> (&'static str, String) {
     }
 }
 
+/// The factor's name without "in range", for the list of factors with no data.
+fn factor_name(f: &Formatter, factor: Factor) -> &'static str {
+    match factor {
+        Factor::WaterTemp => f.strings.get(Key::FactorWaterTempName),
+        Factor::FlowInRange => f.strings.get(Key::FactorFlowName),
+        other => factor_label(f, other),
+    }
+}
+
 fn window_vm(f: &Formatter, w: &FishingWindow) -> WindowVm {
+    let no_data_text = (!w.no_data.is_empty()).then(|| {
+        let names: Vec<String> = w
+            .no_data
+            .iter()
+            .map(|factor| factor_name(f, *factor).to_lowercase())
+            .collect();
+        f.strings
+            .fmt(Key::WindowNoData, &[("factors", &names.join(", "))])
+    });
     WindowVm {
         start_t: w.start.0,
         end_t: w.end.0,
@@ -268,6 +288,7 @@ fn window_vm(f: &Formatter, w: &FishingWindow) -> WindowVm {
             .iter()
             .map(|factor| factor_label(f, *factor).to_owned())
             .collect(),
+        no_data_text,
     }
 }
 
@@ -441,6 +462,28 @@ pub(in crate::view) mod tests {
             w.factors
                 .iter()
                 .all(|x| x.detail.chars().any(|c| c.is_ascii_digit()))
+        );
+    }
+
+    #[test]
+    fn factors_without_data_are_labelled_as_such() {
+        let card = build(&battery()).unwrap();
+        let windows: Vec<&WindowVm> = card
+            .full
+            .days
+            .iter()
+            .flat_map(|d| d.windows.iter())
+            .collect();
+        for w in &windows {
+            assert_eq!(w.no_data.is_empty(), w.no_data_text.is_none());
+            if let Some(text) = &w.no_data_text {
+                assert!(text.starts_with("No data: "), "{text}");
+                assert!(!text.contains("in range"), "{text}");
+            }
+        }
+        assert!(
+            windows.iter().any(|w| w.no_data_text.is_some()),
+            "the Battery has no water temperature or river flow"
         );
     }
 

@@ -75,7 +75,8 @@ expression: build(&input).unwrap()
               "Falling pressure",
               "Water temperature in range",
               "River flow in range"
-            ]
+            ],
+            "no_data_text": "No data: current strength, falling pressure, water temperature, river flow"
           }
         ]
       },
@@ -103,7 +104,8 @@ expression: build(&input).unwrap()
               "Falling pressure",
               "Water temperature in range",
               "River flow in range"
-            ]
+            ],
+            "no_data_text": "No data: current strength, falling pressure, water temperature, river flow"
           }
         ]
       }

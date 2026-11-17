@@ -265,7 +265,8 @@ expression: json
                   "Falling pressure",
                   "Water temperature in range",
                   "River flow in range"
-                ]
+                ],
+                "no_data_text": "No data: falling pressure, water temperature, river flow"
               },
               {
                 "start_t": 1794180600,
@@ -287,7 +288,8 @@ expression: json
                   "Falling pressure",
                   "Water temperature in range",
                   "River flow in range"
-                ]
+                ],
+                "no_data_text": "No data: falling pressure, water temperature, river flow"
               }
             ]
           },
@@ -324,7 +326,8 @@ expression: json
                   "Falling pressure",
                   "Water temperature in range",
                   "River flow in range"
-                ]
+                ],
+                "no_data_text": "No data: falling pressure, water temperature, river flow"
               },
               {
                 "start_t": 1794257100,
@@ -351,7 +354,8 @@ expression: json
                   "Falling pressure",
                   "Water temperature in range",
                   "River flow in range"
-                ]
+                ],
+                "no_data_text": "No data: falling pressure, water temperature, river flow"
               },
               {
                 "start_t": 1794270600,
@@ -373,7 +377,8 @@ expression: json
                   "Falling pressure",
                   "Water temperature in range",
                   "River flow in range"
-                ]
+                ],
+                "no_data_text": "No data: falling pressure, water temperature, river flow"
               }
             ]
           },
@@ -410,7 +415,8 @@ expression: json
                   "Falling pressure",
                   "Water temperature in range",
                   "River flow in range"
-                ]
+                ],
+                "no_data_text": "No data: falling pressure, water temperature, river flow"
               },
               {
                 "start_t": 1794343500,
@@ -437,7 +443,8 @@ expression: json
                   "Falling pressure",
                   "Water temperature in range",
                   "River flow in range"
-                ]
+                ],
+                "no_data_text": "No data: falling pressure, water temperature, river flow"
               },
               {
                 "start_t": 1794360600,
@@ -459,7 +466,8 @@ expression: json
                   "Falling pressure",
                   "Water temperature in range",
                   "River flow in range"
-                ]
+                ],
+                "no_data_text": "No data: falling pressure, water temperature, river flow"
               }
             ]
           }

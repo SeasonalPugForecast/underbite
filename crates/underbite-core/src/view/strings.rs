@@ -118,7 +118,7 @@ keys! {
         "Fishing window now, until {time}",
         "Snack time now, until {time}",
     ),
-    /// `{factors}`.
+    /// `{factors}`: the lower-case names of the factors with no data, joined with commas.
     WindowNoData => ("No data: {factors}", "No data: {factors}"),
     FactorTideStage => ("Tide stage", "Tide stage"),
     FactorTideIncoming => ("Incoming tide", "Incoming tide"),
@@ -128,6 +128,9 @@ keys! {
     FactorPressureFalling => ("Falling pressure", "Falling pressure"),
     FactorWaterTemp => ("Water temperature in range", "Water temperature in range"),
     FactorFlowInRange => ("River flow in range", "River flow in range"),
+    /// The two range factors as plain names, for the list of factors with no data.
+    FactorWaterTempName => ("Water temperature", "Water temperature"),
+    FactorFlowName => ("River flow", "River flow"),
     /// `{duration}`, `{kind}` (high or low), `{time}`.
     WindowTideNext => (
         "{duration} before the {kind} at {time}",
@@ -756,6 +759,8 @@ keys! {
     MapLegendClearToGreen => ("Clear to green water", "Clear to green water"),
     MapLegendClearToTurbid => ("Clear to turbid", "Clear to turbid"),
     MapLegendSlowToFast => ("Slow to fast", "Slow to fast"),
+    /// Under a legend whose range follows the values in view.
+    MapLegendFitted => ("Colours fitted to this view", "Colours fitted to this view"),
     /// The built-in presets, by id.
     MapPresetInshoreFlats => ("Inshore flats", "Inshore flats"),
     MapPresetOffshorePelagics => ("Offshore pelagics", "Offshore pelagics"),
@@ -1948,6 +1953,11 @@ impl Strings {
             "enc-structure-points" => Key::MapLayerEncStructurePoints,
             _ => return None,
         }))
+    }
+
+    /// The caption under a legend whose colour range follows the values in view.
+    pub fn legend_fitted(self) -> &'static str {
+        self.get(Key::MapLegendFitted)
     }
 
     /// The short caption under a layer's legend; `None` for a layer without one.
