@@ -50,7 +50,7 @@ final class TimelineLayoutTests: XCTestCase {
         let kinds = TimelineLayout.visibleLanes(
             timeline, shownCards: ["tide", "current", "wind", "pressure"]
         ).map(\.kind)
-        XCTAssertEqual(kinds, ["tide", "current", "light", "solunar"])
+        XCTAssertEqual(kinds, ["tide", "current", "light", "solunar", "windows"])
     }
 
     func testAHiddenCardHidesItsRow() throws {
@@ -58,8 +58,9 @@ final class TimelineLayoutTests: XCTestCase {
         let kinds = TimelineLayout.visibleLanes(timeline, shownCards: ["current"]).map(\.kind)
         XCTAssertFalse(kinds.contains("tide"))
         XCTAssertTrue(kinds.contains("current"))
-        // Light and solunar follow their own settings, not a card.
+        // Light, solunar and windows follow their own settings, not a card.
         XCTAssertTrue(kinds.contains("light"))
+        XCTAssertTrue(kinds.contains("windows"))
     }
 
     func testTheNowMarkerIsTheViewsNow() throws {

@@ -131,6 +131,8 @@ extension ViewModel {
     public typealias StormAheadCard = CardContent<StormAheadFull>
     public typealias AlertsCard = CardContent<AlertsFull>
     public typealias SourcesCard = CardContent<SourcesFull>
+    public typealias WindowsCard = CardContent<WindowsFull>
+    public typealias GoNoGoCard = CardContent<GoNoGoFull>
 
     /// One card, by its `card` tag. A kind this version does not know is `.unknown`: skip it or
     /// show its frame.
@@ -150,6 +152,8 @@ extension ViewModel {
         case stormAhead(StormAheadCard)
         case alerts(AlertsCard)
         case sources(SourcesCard)
+        case windows(WindowsCard)
+        case goNoGo(GoNoGoCard)
         /// A card of a later version; `chrome` is set when its frame still decodes.
         case unknown(kind: String, chrome: CardChrome?)
 
@@ -174,6 +178,8 @@ extension ViewModel {
             case "storm_ahead": self = .stormAhead(try StormAheadCard(from: decoder))
             case "alerts": self = .alerts(try AlertsCard(from: decoder))
             case "sources": self = .sources(try SourcesCard(from: decoder))
+            case "windows": self = .windows(try WindowsCard(from: decoder))
+            case "go_no_go": self = .goNoGo(try GoNoGoCard(from: decoder))
             default:
                 let chrome = try? keys.decodeIfPresent(CardChrome.self, forKey: .chrome)
                 self = .unknown(kind: kind, chrome: chrome)
@@ -198,6 +204,8 @@ extension ViewModel {
             case .stormAhead(let c): c.chrome
             case .alerts(let c): c.chrome
             case .sources(let c): c.chrome
+            case .windows(let c): c.chrome
+            case .goNoGo(let c): c.chrome
             case .unknown(_, let chrome): chrome
             }
         }
@@ -220,6 +228,8 @@ extension ViewModel {
             case .stormAhead(let c): c.compact
             case .alerts(let c): c.compact
             case .sources(let c): c.compact
+            case .windows(let c): c.compact
+            case .goNoGo(let c): c.compact
             case .unknown: nil
             }
         }
@@ -426,7 +436,7 @@ extension ViewModel {
         public var lanes: [TimelineLane]
     }
 
-    /// `kind` is `tide`, `current`, `wind`, `pressure`, `light` or `solunar`. The lane carries
+    /// `kind` is `tide`, `current`, `wind`, `pressure`, `light`, `solunar` or `windows`. The lane carries
     /// its own credits and notices: the timeline stands alone, away from the cards.
     public struct TimelineLane: Decodable, Sendable, Hashable {
         public var kind: String
@@ -440,6 +450,70 @@ extension ViewModel {
 // MARK: - Full forms
 
 extension ViewModel {
+    // Windows
+
+    public struct WindowsFull: Decodable, Sendable, Hashable {
+        public var days: [WindowDayVm]
+        public var sections: [Section]
+    }
+
+    /// `date` is the day's label ("Sun Nov 8").
+    public struct WindowDayVm: Decodable, Sendable, Hashable {
+        public var date: String
+        public var windows: [WindowVm]
+    }
+
+    /// One window: `range` is its words ("6:10 to 8:00 AM"); `startT` and `endT` are Unix seconds.
+    public struct WindowVm: Decodable, Sendable, Hashable {
+        public var startT: Int64
+        public var endT: Int64
+        public var range: String
+        public var factors: [WindowFactorVm]
+        /// Enabled factors that had no data in the window, by name.
+        public var noData: [String]
+    }
+
+    /// `factor` is `tide_stage`, `current_strength`, `low_light`, `solunar`, `pressure_falling`,
+    /// `water_temp` or `flow_in_range`.
+    public struct WindowFactorVm: Decodable, Sendable, Hashable {
+        public var factor: String
+        public var label: String
+        public var detail: String
+    }
+
+    // Go / no-go
+
+    public struct GoNoGoFull: Decodable, Sendable, Hashable {
+        /// The name of the limits profile the days are judged against.
+        public var profile: String
+        public var days: [GoNoGoDayVm]
+    }
+
+    /// `verdict` is `go`, `marginal`, `no_go` or `unknown`; `verdictLabel` is its word.
+    public struct GoNoGoDayVm: Decodable, Sendable, Hashable {
+        public var date: String
+        public var verdict: String
+        public var verdictLabel: String
+        public var summary: String
+        public var reasons: [GoNoGoReasonVm]
+        public var hours: [GoNoGoHourVm]
+    }
+
+    /// `check` names the limit; `kind` is how it came out. `link` is a hurricane's official page.
+    public struct GoNoGoReasonVm: Decodable, Sendable, Hashable {
+        public var check: String
+        public var kind: String
+        public var text: String
+        public var link: String?
+    }
+
+    public struct GoNoGoHourVm: Decodable, Sendable, Hashable {
+        public var startT: Int64
+        public var label: String
+        public var verdict: String
+        public var reason: String?
+    }
+
     // Now
 
     public struct NowFull: Decodable, Sendable, Hashable {

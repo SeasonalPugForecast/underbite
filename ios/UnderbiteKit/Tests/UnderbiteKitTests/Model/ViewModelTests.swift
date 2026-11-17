@@ -27,7 +27,7 @@ final class ViewModelTests: XCTestCase {
         XCTAssertEqual(
             view.cards.compactMap { $0.chrome?.id },
             [
-                "now", "alerts", "tide", "current", "wind", "water_temp", "waves",
+                "now", "alerts", "windows", "tide", "current", "wind", "water_temp", "waves",
                 "marine_forecast", "flow", "sun_moon", "sources",
             ])
         XCTAssertTrue(view.cards.allSatisfy(\.isKnown))
@@ -48,7 +48,22 @@ final class ViewModelTests: XCTestCase {
         XCTAssertTrue(now.chrome.notices.contains { $0.kind == "not_for_navigation" })
         XCTAssertFalse(now.chrome.credits.isEmpty)
 
-        guard case .tide(let tide) = cards[2] else { return XCTFail("the third card is Tide") }
+        guard case .windows(let windows) = cards[2] else {
+            return XCTFail("the third card is Snack times")
+        }
+        XCTAssertEqual(windows.chrome.title, "Snack times")
+        XCTAssertEqual(windows.compact.headline.text, "5:00 PM")
+        let day = try XCTUnwrap(windows.full.days.first)
+        XCTAssertEqual(day.date, "Fri Nov 6")
+        let window = try XCTUnwrap(day.windows.first)
+        XCTAssertEqual(window.range, "5:00 to 5:30 PM")
+        XCTAssertEqual(window.startT, 1_794_002_400)
+        XCTAssertEqual(window.endT, 1_794_004_200)
+        XCTAssertEqual(window.factors.map(\.factor), ["current_strength", "low_light"])
+        XCTAssertEqual(window.factors[1].detail, "12 min after sunset at 4:47 PM")
+        XCTAssertEqual(window.noData.count, 3)
+
+        guard case .tide(let tide) = cards[3] else { return XCTFail("the fourth card is Tide") }
         XCTAssertFalse(tide.full.next.isEmpty)
         XCTAssertEqual(tide.full.next[0].kind, "high")
         XCTAssertFalse(tide.full.next[0].time.isEmpty)
@@ -133,7 +148,7 @@ final class ViewModelTests: XCTestCase {
         XCTAssertEqual(try state(#"{"state":"later"}"#), .unknown("later"))
     }
 
-    // The sample has no pressure, solunar, clarity or storm card: decode these from a
+    // The sample has no pressure, solunar, clarity, go/no-go or storm card: decode these from a
     // hand-made page.
     func testTheCardsTheSampleLacksDecode() throws {
         func chrome(_ id: String) -> String {
@@ -160,6 +175,14 @@ final class ViewModelTests: XCTestCase {
               {\(chrome("clarity")), "full": {"turbidity": \(quantity), "chlorophyll": null,
                 "kd490": {"available": false, "value": null, "note": "n"}, "chart": null,
                 "sections": []}},
+              {\(chrome("go_no_go")), "full": {"profile": "Default", "days": [
+                {"date": "Sun Nov 8", "verdict": "no_go", "verdict_label": "No-go",
+                 "summary": "No-go: hurricane", "reasons": [
+                  {"check": "hurricane", "kind": "fails", "text": "Hurricane N reaches here Sun",
+                   "link": "https://www.nhc.noaa.gov"},
+                  {"check": "gust", "kind": "marginal", "text": "gusts 17 kn", "link": null}],
+                 "hours": [{"start_t": 3600, "label": "6 AM", "verdict": "go", "reason": null},
+                  {"start_t": 7200, "label": "7 AM", "verdict": "no_go", "reason": "hurricane"}]}]}},
               {\(chrome("storm_ahead")), "full": {"event": {"title": "Nor'easter",
                 "window": "Fri to Sat", "start": 1, "end": 2, "severity": "strong",
                 "headline": {"kind": "snow", "text": "Snow", "amount": \(quantity)},
@@ -175,12 +198,21 @@ final class ViewModelTests: XCTestCase {
             """
         let view = try XCTUnwrap(ViewModel.decode(json).view)
         XCTAssertEqual(view.notices.map(\.text), ["no data"])
-        XCTAssertEqual(view.cards.count, 4)
+        XCTAssertEqual(view.cards.count, 5)
         guard case .pressure(let pressure) = view.cards[0],
             case .solunar(let solunar) = view.cards[1],
             case .clarity(let clarity) = view.cards[2],
-            case .stormAhead(let storm) = view.cards[3]
-        else { return XCTFail("the four cards decode as their kinds") }
+            case .goNoGo(let goNoGo) = view.cards[3],
+            case .stormAhead(let storm) = view.cards[4]
+        else { return XCTFail("the five cards decode as their kinds") }
+        XCTAssertEqual(goNoGo.full.profile, "Default")
+        let verdictDay = goNoGo.full.days[0]
+        XCTAssertEqual(verdictDay.verdict, "no_go")
+        XCTAssertEqual(verdictDay.verdictLabel, "No-go")
+        XCTAssertEqual(verdictDay.reasons[0].link, "https://www.nhc.noaa.gov")
+        XCTAssertNil(verdictDay.reasons[1].link)
+        XCTAssertEqual(verdictDay.hours[1].reason, "hurricane")
+        XCTAssertNil(verdictDay.hours[0].reason)
         XCTAssertEqual(pressure.compact.spark, [1.5, 2.5])
         XCTAssertEqual(pressure.full.trend?.direction, "falling")
         XCTAssertEqual(pressure.full.sections[0].rows[0].detail, nil)

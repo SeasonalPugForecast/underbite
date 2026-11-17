@@ -69,6 +69,10 @@ struct CardDetailView: View {
         case .stormAhead(let c): stormRows(c.full)
         case .alerts(let c): alertRows(c.full)
         case .sources(let c): sourcesRows(c.full)
+        case .windows(let c):
+            WindowsDetail(full: c.full)
+            sections(c.full.sections)
+        case .goNoGo(let c): GoNoGoDetail(full: c.full)
         case .unknown: EmptyView()
         }
     }

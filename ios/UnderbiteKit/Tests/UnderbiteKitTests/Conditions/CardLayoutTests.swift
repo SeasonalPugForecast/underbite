@@ -29,9 +29,11 @@ final class CardLayoutTests: XCTestCase {
         let choices = try CardLayoutEditing.choices(settings: settings, waterType: tidal)
         XCTAssertEqual(choices.all.filter(\.shown).map(\.id), try shownIDs(settings, tidal))
         XCTAssertEqual(choices.all.first?.id, "now")
-        let windows = try XCTUnwrap(choices.all.first { $0.id == "windows" })
-        XCTAssertFalse(windows.available)
-        XCTAssertFalse(choices.editable.contains { $0.id == "windows" })
+        for id in ["windows", "go_no_go"] {
+            let choice = try XCTUnwrap(choices.all.first { $0.id == id })
+            XCTAssertTrue(choice.available, id)
+            XCTAssertTrue(choices.editable.contains { $0.id == id }, id)
+        }
     }
 
     func testTheBaseChoicesFollowTheBaseOrderAndHiddenList() throws {
