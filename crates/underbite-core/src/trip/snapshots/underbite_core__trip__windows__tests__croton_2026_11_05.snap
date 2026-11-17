@@ -1,0 +1,12 @@
+---
+source: crates/underbite-core/src/trip/windows.rs
+expression: "render(&windows, NY)"
+---
+11-05 06:15 to 11-05 07:45 (day 2026-11-05) weight_sum 2.0
+  LowLight 1.0 {"low_light":{"band":"morning","sun_event_at":1793878274,"minutes_from_event":-17}}
+  FlowInRange 1.0 {"flow_in_range":{"m3s":0.3398021459579468,"min_m3s":0.283168466,"max_m3s":0.424752699}}
+  no data: [TideStage, CurrentStrength, PressureFalling, WaterTemp]
+11-05 16:00 to 11-05 17:30 (day 2026-11-05) weight_sum 2.0
+  LowLight 1.0 {"low_light":{"band":"evening","sun_event_at":1793915209,"minutes_from_event":-47}}
+  FlowInRange 1.0 {"flow_in_range":{"m3s":0.3398021459579468,"min_m3s":0.283168466,"max_m3s":0.424752699}}
+  no data: [TideStage, CurrentStrength, PressureFalling, WaterTemp]

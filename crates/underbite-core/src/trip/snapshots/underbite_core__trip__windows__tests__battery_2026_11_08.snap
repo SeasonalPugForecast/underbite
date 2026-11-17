@@ -1,0 +1,16 @@
+---
+source: crates/underbite-core/src/trip/windows.rs
+expression: "render(&windows, NY)"
+---
+11-08 05:15 to 11-08 07:45 (day 2026-11-08) weight_sum 3.5
+  TideStage 1.0 {"tide_stage":{"flow":"incoming","next_kind":"high","next_at":1794139620,"seconds_to_next":6720}}
+  LowLight 1.0 {"low_light":{"band":"morning","sun_event_at":1794137668,"minutes_from_event":-20}}
+  Solunar 0.5 {"solunar":{"kind":"minor","cause":"rise","centre":1794135695}}
+  WaterTemp 1.0 {"water_temp":{"celsius":15.899999618530273,"min_c":10.0,"max_c":20.0}}
+  no data: [CurrentStrength, PressureFalling, FlowInRange]
+11-08 16:00 to 11-08 19:00 (day 2026-11-08) weight_sum 2.5
+  TideStage 1.0 {"tide_stage":{"flow":"incoming","next_kind":"high","next_at":1794184020,"seconds_to_next":7020}}
+  LowLight 1.0 {"low_light":{"band":"evening","sun_event_at":1794174313,"minutes_from_event":-46}}
+  Solunar 0.5 {"solunar":{"kind":"minor","cause":"set","centre":1794171671}}
+  WaterTemp 1.0 {"water_temp":{"celsius":15.899999618530273,"min_c":10.0,"max_c":20.0}}
+  no data: [CurrentStrength, PressureFalling, FlowInRange]
