@@ -1,0 +1,14 @@
+---
+source: crates/underbite-core/src/map/contours.rs
+expression: table
+---
+level lines closed vertices simplified_25m labels_2km
+-80 2 0 101 15 2
+-70 2 0 283 27 2
+-60 1 0 424 54 1
+-50 2 0 419 75 2
+-40 1 0 520 96 1
+-30 2 1 493 97 2
+-20 2 0 305 52 2
+-10 2 0 138 30 2
+0 1 0 59 12 1
