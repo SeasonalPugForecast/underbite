@@ -254,6 +254,7 @@
 				CODE_SIGN_ENTITLEMENTS = Underbite.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_SOURCE_FILE_NAMES = SamplePage.json;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Underbite-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Underbite;
