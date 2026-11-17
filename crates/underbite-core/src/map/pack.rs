@@ -660,10 +660,11 @@ fn plan_grid(
             continue;
         }
         let side = f64::from(block_side_deg(source.native_step_deg, stride));
-        let per_date_room = b.room() / dates.len().max(1);
         let side_cells = u64::from(block_side_cells(source.native_step_deg, stride));
         let item_bytes = b.size(layer.id, side_cells.saturating_mul(side_cells) * row);
         for bx in boxes {
+            // The room left, after the other half of a box across the antimeridian.
+            let per_date_room = b.room() / dates.len().max(1);
             // The bound is loose by a row and a column of blocks; far over the room is certain.
             if block_bound(*bx, side) / 2 > per_date_room.saturating_add(2) {
                 return Err(Stop::Cap);
@@ -714,6 +715,11 @@ fn plan_dem(b: &mut Builder<'_>, pack: &Pack, boxes: &[Bbox]) -> Result<(), Plan
     let item_bytes = b.size(DEM_LAYER, SEED_DEM_AREA);
     let cap = b.cap;
     for bx in boxes {
+        // A box of no width or height (the far half of one that starts on the antimeridian)
+        // has no area to hold.
+        if bx.east <= bx.west || bx.north <= bx.south {
+            continue;
+        }
         // Areas are aligned to multiples of their side so packs share them.
         let first = |lo: f64| (lo / side).floor() as i64;
         let last = |lo: f64, hi: f64| ((hi / side).ceil() as i64 - 1).max(first(lo));
@@ -1095,6 +1101,57 @@ mod tests {
             .collect();
         assert!(xs.contains(&0) && xs.contains(&63));
         assert_eq!(xs.len(), 2);
+    }
+
+    #[test]
+    fn the_grid_cap_counts_both_halves_of_a_box_across_the_antimeridian() {
+        let mut p = pack(&["sst"], 8, 8, DatePolicy::Latest);
+        p.bbox = Bbox {
+            west: 178.5,
+            south: -1.0,
+            east: -178.5,
+            north: 1.0,
+        };
+        let m = MeasuredSizes::new();
+        let axes = TimeAxes::new();
+        let all = run(&p).unwrap().len();
+        assert!(all >= 2);
+        assert_eq!(
+            plan_with_cap(&p, catalogue::find, &m, &axes, NOW, all - 1),
+            Err(PlanError::TooManyItems { cap: all - 1 })
+        );
+        assert_eq!(
+            plan_with_cap(&p, catalogue::find, &m, &axes, NOW, all).map(|plan| plan.len()),
+            Ok(all)
+        );
+    }
+
+    #[test]
+    fn boxes_without_area_hold_no_elevation_areas() {
+        let mut p = pack(&[DEM_LAYER], 10, 10, DatePolicy::Latest);
+        // The east half of the split box is a line on the antimeridian.
+        p.bbox = Bbox {
+            west: 180.0,
+            south: 10.0,
+            east: -179.9,
+            north: 10.1,
+        };
+        let plan = run(&p).unwrap();
+        assert!(plan.dem_count > 0);
+        for item in plan.items(0, usize::MAX) {
+            let ItemKind::Dem { area, .. } = item.kind else {
+                panic!("not a DEM item");
+            };
+            assert!(area.west < -179.9 && area.east > -180.0, "{area:?}");
+        }
+        // A box of no width or height holds no area.
+        p.bbox = Bbox {
+            west: -74.0,
+            south: 90.0,
+            east: -73.0,
+            north: 90.0,
+        };
+        assert_eq!(run(&p).unwrap().dem_count, 0);
     }
 
     #[test]
