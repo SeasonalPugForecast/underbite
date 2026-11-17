@@ -10,18 +10,30 @@
 //! an inland lake inside the coverage box but outside the Great Lakes finds only `null` cells (or
 //! a Great Lakes cell farther than [`MAX_CELL_DISTANCE_M`]) and gets no value, never the nearest
 //! lake's. Datasets are keyed by id, never by title.
+//!
+//! [`Glsea`] is the source: it plans the one request for a [`Place::Point`] and parses it into the
+//! spot's water temperature.
+
+use std::collections::BTreeSet;
 
 use underbite_core::map::grid::Grid;
 use underbite_core::map::tiles::haversine_m;
 use underbite_core::map::{Bbox, GeoPoint, GridHost, GridSource};
+use underbite_core::model::{Measurement, Requirements};
 use underbite_core::provenance::{Attribution, Provenance, Quality, Relation, SourceId, ValueKind};
 use underbite_core::series::{Sample, Series};
 
 use crate::erddap::{
     ErddapError, ErddapRequest, GridTime, check_response as check_erddap, grid_request, parse_grid,
 };
-use crate::request::{Response, RoundedPoint};
-use crate::source::SourceError;
+use crate::request::{Place, Request, Resource, Response, RoundedPoint, Target};
+use crate::source::{FetchContext, FragmentValue, Fragments, Source, SourceError};
+
+/// The measurements the source supplies.
+pub const MEASUREMENTS: [Measurement; 1] = [Measurement::WaterTemperature];
+
+/// How long a response may be reused, seconds: the analysis is daily.
+const MAX_AGE_S: u32 = 6 * 3_600;
 
 /// The ERDDAP dataset id.
 pub const DATASET: &str = "GLSEA_ACSPO_GCS";
@@ -182,12 +194,76 @@ pub fn parse(point: RoundedPoint, response: &Response<'_>) -> Result<Series<f32>
     Ok(Series::new(provenance, vec![Sample::new(grid.time, value)]))
 }
 
+/// GLSEA as a source of the spot's water temperature. It holds no settings.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Glsea;
+
+fn point_of(target: &Target) -> Result<RoundedPoint, SourceError> {
+    match target.place {
+        Place::Point(p) => Ok(p),
+        Place::Station { .. } | Place::Zone(_) => Err(SourceError::Unsupported(
+            "GLSEA is a grid and needs a point".into(),
+        )),
+    }
+}
+
+impl Source for Glsea {
+    fn id(&self) -> SourceId {
+        SourceId::GLERL
+    }
+
+    fn attribution(&self) -> Attribution {
+        attribution()
+    }
+
+    fn measurements(&self) -> &[Measurement] {
+        &MEASUREMENTS
+    }
+
+    fn plan(
+        &self,
+        target: &Target,
+        requirements: &Requirements,
+        _ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        let m = Measurement::WaterTemperature;
+        let wanted = target.measurements.contains(&m)
+            && (requirements.measurements.is_empty() || requirements.measurements.contains(&m));
+        if !wanted {
+            return Err(SourceError::Unsupported(format!(
+                "GLSEA offers only water temperature, not {:?}",
+                target.measurements
+            )));
+        }
+        let erddap = request(point_of(target)?)?;
+        let target = Target {
+            measurements: BTreeSet::from([m]),
+            ..target.clone()
+        };
+        Ok(vec![
+            Request::new(erddap.url, Resource::Glsea, target).max_age_hint(MAX_AGE_S),
+        ])
+    }
+
+    fn parse(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        _ctx: &FetchContext,
+        out: &mut Fragments,
+    ) -> Result<(), SourceError> {
+        let series = parse(point_of(&request.target)?, response)?;
+        out.push(Measurement::WaterTemperature, FragmentValue::Series(series))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::request::Coordinates;
+    use crate::request::{Coordinates, Window};
     use crate::testutil::fixture_bytes;
-    use underbite_core::time::parse_rfc3339;
+    use underbite_core::provenance::{StationKind, StationRef};
+    use underbite_core::time::{UnixTime, parse_rfc3339};
 
     const FIXTURE: &str = "glerl-glsea-acspo-sst-erie-2026-11-07.json";
 
@@ -314,5 +390,96 @@ mod tests {
         let a = attribution();
         assert!(a.credit.contains("CoastWatch Great Lakes Node"));
         assert!(a.credit.contains("not intended for legal use"));
+    }
+
+    const NOW: UnixTime = UnixTime(1_794_398_400); // 2026-11-11T12:00:00Z
+
+    fn target(place: Place, measurements: &[Measurement]) -> Target {
+        Target {
+            place,
+            measurements: measurements.iter().copied().collect(),
+            window: Window {
+                from: UnixTime(NOW.0 - 86_400),
+                to: NOW,
+            },
+            datum: None,
+        }
+    }
+
+    #[test]
+    fn source_plans_one_request_and_parses_the_spot_temperature() {
+        let ctx = FetchContext::new(NOW, "underbite/test");
+        let wanted = target(
+            Place::Point(point(42.86, -78.92)),
+            &[Measurement::WaterTemperature, Measurement::Waves],
+        );
+        let source: &dyn Source = &Glsea;
+        assert_eq!(source.id().as_str(), "glerl");
+        assert_eq!(source.attribution(), attribution());
+        let plan = source
+            .plan(&wanted, &Requirements::default(), &ctx)
+            .expect("a plan");
+        let [request] = plan.as_slice() else {
+            panic!("one request, got {plan:?}");
+        };
+        assert_eq!(request.resource, Resource::Glsea);
+        assert_eq!(
+            request.url,
+            super::request(point(42.86, -78.92)).unwrap().url
+        );
+        assert!(request.required && !request.metered);
+        assert_eq!(request.cache.max_age, Some(MAX_AGE_S));
+        assert_eq!(
+            request.target.measurements,
+            BTreeSet::from([Measurement::WaterTemperature])
+        );
+
+        let body = fixture_bytes("tier2", FIXTURE);
+        let mut out = Fragments::new();
+        source
+            .parse(request, &Response::new(200, &body), &ctx, &mut out)
+            .expect("parses");
+        let [fragment] = out.fragments() else {
+            panic!("one fragment, got {:?}", out.fragments());
+        };
+        assert_eq!(fragment.measurement, Measurement::WaterTemperature);
+        let FragmentValue::Series(series) = &fragment.value else {
+            panic!("a series");
+        };
+        let latest = series.latest().expect("a sample");
+        assert!((latest.value - 14.88).abs() < 1e-4, "{}", latest.value);
+        assert_eq!(series.provenance().source, SourceId::GLERL);
+    }
+
+    #[test]
+    fn source_needs_a_point_and_water_temperature() {
+        let ctx = FetchContext::new(NOW, "underbite/test");
+        let station = Place::Station {
+            station: StationRef {
+                source: SourceId::GLERL,
+                id: "x".into(),
+                name: "x".into(),
+                kind: StationKind::WaterLevel,
+                latitude: 42.86,
+                longitude: -78.92,
+                bin: None,
+                reference_id: None,
+            },
+            distance_m: None,
+            relation: Relation::Nearby,
+        };
+        for t in [
+            target(station, &[Measurement::WaterTemperature]),
+            target(Place::Point(point(42.86, -78.92)), &[Measurement::Tide]),
+            target(
+                Place::Point(point(40.70, -74.02)),
+                &[Measurement::WaterTemperature],
+            ),
+        ] {
+            assert!(matches!(
+                Glsea.plan(&t, &Requirements::default(), &ctx),
+                Err(SourceError::Unsupported(_))
+            ));
+        }
     }
 }
