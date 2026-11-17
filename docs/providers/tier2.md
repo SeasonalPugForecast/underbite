@@ -514,7 +514,7 @@ Verdict: **usable** (2026-11-08).
   (**unverified**). A credit line "Canadian Hydrographic Service, Fisheries and Oceans Canada" is advisable.
 - No New York coverage; the examples use Vancouver (station 07735).
 
-Requests (fixtures `dfo-iwls-stations-07735.json`, `dfo-iwls-07735-wlp-hilo-2026-11-08.json`):
+Requests (the matching test fixtures are synthetic, see `tests/fixtures/raw/dfo-iwls/README.md`):
 
 ```text
 GET /api/v1/stations?code=07735

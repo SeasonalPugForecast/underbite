@@ -272,10 +272,10 @@ mod tests {
         }
     }
 
-    /// The recorded IWLS list as the planner sees it: an operating station that predicts tides
+    /// The synthetic IWLS list as the planner sees it: an operating station that predicts tides
     /// or observes water level offers the tide.
     fn dfo_candidates() -> Vec<StationCandidate> {
-        fixture("dfo-iwls/stations-all-2026-11-17.json")
+        fixture("dfo-iwls/stations-all.synthetic.json")
             .as_array()
             .unwrap()
             .iter()
@@ -437,15 +437,15 @@ mod tests {
     }
 
     #[test]
-    fn a_vancouver_spot_ranks_the_vancouver_gauge() {
+    fn a_west_coast_spot_ranks_the_nearest_tide_gauge() {
         let plan = plan(
-            49.2863,
-            -123.1,
+            49.3,
+            -123.2,
             dfo_candidates(),
             &[(M::Tide, &["dfo-iwls", "open-meteo-marine"])],
         );
         let links = station_links(&plan, M::Tide);
-        assert_eq!(links[0], ("dfo-iwls", "Vancouver (07735)"));
+        assert_eq!(links[0], ("dfo-iwls", "Pinegate Harbour (90101)"));
         assert!(links.iter().all(|(s, _)| *s == "dfo-iwls"));
         // The gridded fallback follows as a point link.
         let last = plan.chains[&M::Tide].links.last().unwrap();

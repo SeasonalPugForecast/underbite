@@ -294,7 +294,7 @@ pub struct StationSeries {
 pub struct Station {
     /// The id data requests use: 24 hex characters.
     pub id: String,
-    /// The five-digit code, `"07735"`.
+    /// The five-digit code, `"90101"`.
     pub code: String,
     /// The official name.
     #[serde(rename = "officialName")]
@@ -881,7 +881,7 @@ mod tests {
     use super::*;
     use crate::testutil::fixture_bytes;
 
-    const ID: &str = "5cebf1de3d0f4a073c4bb943";
+    const ID: &str = "5865a794e8e13973715cf951";
     const DAY0: i64 = 1_794_096_000; // 2026-11-08 00:00 UTC
     const NOW: UnixTime = UnixTime(DAY0 + 10 * DAY);
 
@@ -893,10 +893,10 @@ mod tests {
         StationRef {
             source: SOURCE_ID,
             id: ID.into(),
-            name: "Vancouver".into(),
+            name: "Pinegate Harbour".into(),
             kind: StationKind::TideHarmonic,
-            latitude: 49.2863,
-            longitude: -123.0997,
+            latitude: 49.3,
+            longitude: -123.2,
             bin: None,
             reference_id: None,
         }
@@ -987,8 +987,8 @@ mod tests {
             format!("{BASE}/stations?chs-region-code=PAC")
         );
         assert_eq!(
-            station_by_code_url("07735"),
-            format!("{BASE}/stations?code=07735")
+            station_by_code_url("90101"),
+            format!("{BASE}/stations?code=90101")
         );
         assert_eq!(metadata_url(ID), format!("{BASE}/stations/{ID}/metadata"));
         assert_eq!(format_time(UnixTime(DAY0 + 3_661)), "2026-11-08T01:01:01Z");
@@ -1073,8 +1073,8 @@ mod tests {
         let err = plan_with(&t, &Requirements::default(), &ctx(), None, map).unwrap_err();
         assert!(matches!(err, SourceError::Unsupported(_)));
         let requests =
-            plan_with(&t, &Requirements::default(), &ctx(), Some(74.2), map).expect("plan");
-        assert!(requests.iter().all(|r| r.carry() == Some("74.2")));
+            plan_with(&t, &Requirements::default(), &ctx(), Some(74.1), map).expect("plan");
+        assert!(requests.iter().all(|r| r.carry() == Some("74.1")));
         assert!(
             requests
                 .iter()
@@ -1098,8 +1098,8 @@ mod tests {
     fn hilo_fixture_is_classified_and_provisional() {
         let out = parse(
             DfoResource::TideHighLow,
-            "tier2",
-            "dfo-iwls-07735-wlp-hilo-2026-11-08.json",
+            "dfo-iwls",
+            "wlp-hilo-90101-2026-11-08.synthetic.json",
             None,
         )
         .expect("parse");
@@ -1110,9 +1110,9 @@ mod tests {
         assert_eq!(t.provenance.source, SourceId::DFO_IWLS);
         assert_eq!(t.provenance.observed_at, NOW);
         assert!(t.events.len() > 4);
-        assert_eq!(t.events[0].time, UnixTime(DAY0 + 6 * 3_600 + 41 * 60));
+        assert_eq!(t.events[0].time, UnixTime(DAY0 + 6 * 3_600 + 30 * 60));
         assert_eq!(t.events[0].kind, TideKind::Low);
-        assert_eq!(t.events[0].height_m, Some(0.915));
+        assert_eq!(t.events[0].height_m, Some(1.02));
         assert_eq!(t.events[1].kind, TideKind::High);
         for pair in t.events.windows(2) {
             assert_ne!(pair[0].kind, pair[1].kind);
@@ -1126,7 +1126,7 @@ mod tests {
         let out = parse(
             DfoResource::TideHighLow,
             "dfo-iwls",
-            "wlp-hilo-07735-2026-11-18-to-20.json",
+            "wlp-hilo-90101-2026-11-18-to-20.synthetic.json",
             None,
         )
         .expect("parse");
@@ -1136,7 +1136,7 @@ mod tests {
             kinds,
             [TideKind::Low, TideKind::High, TideKind::Low, TideKind::High]
         );
-        assert_eq!(t.events[0].height_m, Some(2.785));
+        assert_eq!(t.events[0].height_m, Some(1.25));
     }
 
     #[test]
@@ -1144,14 +1144,14 @@ mod tests {
         let out = parse(
             DfoResource::TideCurve,
             "dfo-iwls",
-            "wlp-07735-15min-2026-11-18.json",
+            "wlp-90101-15min.synthetic.json",
             None,
         )
         .expect("parse");
         let t = tide(&out);
         let curve = t.curve.as_ref().expect("curve");
         assert_eq!(curve.samples().len(), 97);
-        assert_eq!(curve.samples()[0].value, 3.439);
+        assert_eq!(curve.samples()[0].value, 3.912);
         assert_eq!(curve.samples()[0].quality, Some(Quality::Provisional));
         assert_eq!(t.events.len(), 0);
         assert_eq!(t.datum, VerticalDatum::ChsChartDatum);
@@ -1162,7 +1162,7 @@ mod tests {
         let out = parse(
             DfoResource::WaterLevel,
             "dfo-iwls",
-            "wlo-07735-15min-2026-11-17-0800-0900.json",
+            "wlo-90101-15min.synthetic.json",
             None,
         )
         .expect("parse");
@@ -1178,12 +1178,12 @@ mod tests {
 
     #[test]
     fn a_great_lakes_station_adds_its_igld85_offset() {
-        let name = "wlo-13320-toronto-60min-2026-11-17-0800-0900.json";
-        let out = parse(DfoResource::WaterLevel, "dfo-iwls", name, Some("74.2")).expect("parse");
+        let name = "wlo-90201-60min.synthetic.json";
+        let out = parse(DfoResource::WaterLevel, "dfo-iwls", name, Some("74.1")).expect("parse");
         let t = tide(&out);
         assert_eq!(t.datum, VerticalDatum::Igld85);
         let first = t.observed.as_ref().expect("observed").samples()[0].value;
-        assert!((first - (0.445 + 74.2)).abs() < 1e-3, "{first}");
+        assert!((first - (0.31 + 74.1)).abs() < 1e-3, "{first}");
         let plain = parse(DfoResource::WaterLevel, "dfo-iwls", name, None).expect("parse");
         assert_eq!(tide(&plain).datum, VerticalDatum::ChsChartDatum);
     }
@@ -1230,7 +1230,7 @@ mod tests {
         let mut run = |response: &Response<'_>| {
             parse_with(&request, DfoResource::TideCurve, response, &ctx(), &mut out).unwrap_err()
         };
-        let body = fixture_bytes("dfo-iwls", "error-400-range-7-days.json");
+        let body = fixture_bytes("dfo-iwls", "error-400-range-7-days.synthetic.json");
         let err = run(&Response::new(400, &body));
         assert!(
             matches!(err, SourceError::Status { status: 400, .. }),
@@ -1267,13 +1267,13 @@ mod tests {
 
     #[test]
     fn station_record_keeps_both_languages_and_the_hex_id() {
-        let body = fixture_bytes("tier2", "dfo-iwls-stations-07735.json");
+        let body = fixture_bytes("dfo-iwls", "stations-single.synthetic.json");
         let stations =
             parse_stations(&request_for(None), &Response::new(200, &body)).expect("stations");
         assert_eq!(stations.len(), 1);
         let s = &stations[0];
         assert_eq!(s.id, ID);
-        assert_eq!(s.code, "07735");
+        assert_eq!(s.code, "90101");
         assert_eq!(s.region.as_deref(), Some("PAC"));
         assert!(s.offers_water_level() && s.predicts_tides());
         let wlp = s.series("wlp").expect("wlp");
@@ -1285,31 +1285,31 @@ mod tests {
 
     #[test]
     fn the_whole_list_parses_and_the_offer_filter_drops_discontinued_stations() {
-        let body = fixture_bytes("dfo-iwls", "stations-all-2026-11-17.json");
+        let body = fixture_bytes("dfo-iwls", "stations-all.synthetic.json");
         let stations =
             parse_stations(&request_for(None), &Response::new(200, &body)).expect("stations");
-        assert_eq!(stations.len(), 1_576);
+        assert_eq!(stations.len(), 8);
         let offered = stations.iter().filter(|s| s.offers_water_level()).count();
-        assert!((50..=140).contains(&offered), "{offered}");
-        let leaf = stations.iter().find(|s| s.code == "04315").expect("04315");
-        assert_eq!(leaf.names(), ["Tasiujaq", "Leaf Basin", "Lac Aux Feuilles"]);
+        assert_eq!(offered, 3);
+        let leaf = stations.iter().find(|s| s.code == "90401").expect("90401");
+        assert_eq!(leaf.names(), ["Sealcove", "Cove Basin", "Anse du Bassin"]);
         assert!(!leaf.offers_water_level());
     }
 
     #[test]
     fn metadata_gives_the_igld85_offset_only_on_the_great_lakes() {
-        let toronto = fixture_bytes("dfo-iwls", "metadata-13320-toronto.json");
+        let toronto = fixture_bytes("dfo-iwls", "metadata-90201-lake.synthetic.json");
         let m =
             parse_metadata(&request_for(None), &Response::new(200, &toronto)).expect("metadata");
-        assert_eq!(m.igld85_offset_m(), Some(74.2));
+        assert_eq!(m.igld85_offset_m(), Some(74.1));
         assert_eq!(m.tidal, Some(false));
         assert_eq!(m.water_body.as_deref(), Some("LAKE"));
         assert_eq!(m.time_zone.as_deref(), Some("Canada/Eastern"));
-        let vancouver = fixture_bytes("dfo-iwls", "metadata-07735.json");
+        let vancouver = fixture_bytes("dfo-iwls", "metadata-90101.synthetic.json");
         let m =
             parse_metadata(&request_for(None), &Response::new(200, &vancouver)).expect("metadata");
         assert_eq!(m.igld85_offset_m(), None);
-        assert_eq!(m.datums.get("CGVD28"), Some(&-3.0));
+        assert_eq!(m.datums.get("CGVD28"), Some(&-2.9));
     }
 
     #[test]
@@ -1351,9 +1351,9 @@ mod tests {
         );
 
         let fixtures = [
-            ("tier2", "dfo-iwls-07735-wlp-hilo-2026-11-08.json"),
-            ("dfo-iwls", "wlp-07735-15min-2026-11-18.json"),
-            ("dfo-iwls", "wlo-07735-15min-2026-11-17-0800-0900.json"),
+            ("dfo-iwls", "wlp-hilo-90101-2026-11-08.synthetic.json"),
+            ("dfo-iwls", "wlp-90101-15min.synthetic.json"),
+            ("dfo-iwls", "wlo-90101-15min.synthetic.json"),
         ];
         let mut out = Fragments::new();
         for (request, (dir, name)) in plan.iter().zip(fixtures) {
@@ -1413,7 +1413,7 @@ mod tests {
                 assert_eq!(resource(d), r);
             }
         }
-        let body = fixture_bytes("dfo-iwls", "metadata-07735.json");
+        let body = fixture_bytes("dfo-iwls", "metadata-90101.synthetic.json");
         let mut request = request_for(None);
         request.resource = Resource::DfoMetadata;
         let mut out = Fragments::new();

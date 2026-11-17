@@ -1,0 +1,1 @@
+{"errors":["from is improperly formatted"],"message":"Wrong parameter format","path":"/api/v1/stations/5865a794e8e13973715cf951/data","status":"400 BAD_REQUEST","timestamp":"2026-11-17T10:00:00.000000000Z"}

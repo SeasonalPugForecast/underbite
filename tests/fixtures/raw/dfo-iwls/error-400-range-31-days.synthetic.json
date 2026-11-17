@@ -1,0 +1,1 @@
+{"errors":["2026-11-18T00:00:00Z / 2026-12-20T00:00:00Z: date interval should not be bigger than 31 days"],"message":"Constraints not respected","path":"/api/v1/stations/5865a794e8e13973715cf951/data","status":"400 BAD_REQUEST","timestamp":"2026-11-17T10:00:00.000000000Z"}

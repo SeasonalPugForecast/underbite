@@ -1,29 +1,27 @@
-# Raw fixtures: DFO IWLS
+# Raw fixtures: DFO IWLS (synthetic)
 
-One line per file: file name, exact request URL (no keys; the service needs none), recording date.
-Base is `https://api-iwls.dfo-mpo.gc.ca`. Every file was recorded 2026-11-17 and keeps the response
-bytes. Station ids: Vancouver 07735 = `5cebf1de3d0f4a073c4bb943`, Toronto 13320 =
-`5cebf1e43d0f4a073c4bc3e5`, Second Narrows 07745 = `5dd30650e0fdc4b9b4be6c2d`.
+Every file here is hand-made (`*.synthetic.json`) and is not a recording. The service's licence does
+not allow its data to be given to third parties, so these files only copy the JSON shape and field
+names described in `docs/providers/dfo-iwls.md`. Station codes, ids, names, coordinates, heights and
+times are invented; the ids are arbitrary 24-character hex strings. Request URLs in the lines below
+show the shape of the call the file stands for, with the invented station.
 
-- `stations-all-2026-11-17.json`: `/api/v1/stations` (all 1,576 stations, 918,660 bytes), 2026-11-17.
-- `metadata-07735.json`: `/api/v1/stations/5cebf1de3d0f4a073c4bb943/metadata`, 2026-11-17.
-- `metadata-13320-toronto.json`: `/api/v1/stations/5cebf1e43d0f4a073c4bc3e5/metadata`, 2026-11-17.
-- `metadata-07745-second-narrows.json`: `/api/v1/stations/5dd30650e0fdc4b9b4be6c2d/metadata`, 2026-11-17.
-- `wlp-07735-15min-2026-11-18.json`: `/api/v1/stations/5cebf1de3d0f4a073c4bb943/data?time-series-code=wlp&from=2026-11-18T00:00:00Z&to=2026-11-19T00:00:00Z&resolution=FIFTEEN_MINUTES`, 2026-11-17.
-- `wlp-07735-1min-2026-11-18-0000-0100.json`: same path, `time-series-code=wlp&from=2026-11-18T00:00:00Z&to=2026-11-18T01:00:00Z` (no `resolution`, so the default `ONE_MINUTE`), 2026-11-17.
-- `wlo-07735-15min-2026-11-17-0800-0900.json`: same path, `time-series-code=wlo&from=2026-11-17T08:00:00Z&to=2026-11-17T09:00:00Z&resolution=FIFTEEN_MINUTES`, 2026-11-17.
-- `wlo-07735-all-2026-11-17-0800-0810.json`: same path, `time-series-code=wlo&from=2026-11-17T08:00:00Z&to=2026-11-17T08:10:00Z&resolution=ALL`, 2026-11-17.
-- `wlp-hilo-07735-2026-11-18-to-20.json`: same path, `time-series-code=wlp-hilo&from=2026-11-18T00:00:00Z&to=2026-11-20T00:00:00Z`, 2026-11-17.
-- `wlo-13320-toronto-60min-2026-11-17-0800-0900.json`: `/api/v1/stations/5cebf1e43d0f4a073c4bc3e5/data?time-series-code=wlo&from=2026-11-17T08:00:00Z&to=2026-11-17T09:00:00Z&resolution=SIXTY_MINUTES`, 2026-11-17.
-- `wcsp1-07745-15min-2026-11-18-0000-0100.json`: `/api/v1/stations/5dd30650e0fdc4b9b4be6c2d/data?time-series-code=wcsp1&from=2026-11-18T00:00:00Z&to=2026-11-18T01:00:00Z&resolution=FIFTEEN_MINUTES`, 2026-11-17.
-- `wcp1-events-07745-2026-11-18.json`: same path, `time-series-code=wcp1-events&from=2026-11-18T00:00:00Z&to=2026-11-19T00:00:00Z`, 2026-11-17.
-- `wcs1-07745-15min-2026-11-17-0800-0900.json`: same path, `time-series-code=wcs1&from=2026-11-17T08:00:00Z&to=2026-11-17T09:00:00Z&resolution=FIFTEEN_MINUTES`, 2026-11-17.
-- `time-series-definitions.json`: `/api/v1/time-series-definitions`, 2026-11-17.
-- `phenomena.json`: `/api/v1/phenomena`, 2026-11-17.
-- `height-types.json`: `/api/v1/height-types`, 2026-11-17.
-- `openapi-v3-api-docs.json`: `https://api-iwls.dfo-mpo.gc.ca/v3/api-docs` (OpenAPI 3.1, API version 1.3.1), 2026-11-17.
-- `error-400-range-7-days.json`: HTTP 400 body for `.../data?time-series-code=wlp&from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z&resolution=ONE_MINUTE` on station 07735, 2026-11-17.
-- `error-400-range-31-days.json`: HTTP 400 body for `.../data?time-series-code=wlp&from=2026-11-18T00:00:00Z&to=2026-12-20T00:00:00Z&resolution=SIXTY_MINUTES` on station 07735, 2026-11-17.
-- `error-400-bad-date.json`: HTTP 400 body for `.../data?time-series-code=wlp&from=garbage&to=2026-12-20T00:00:00Z` on station 07735, 2026-11-17.
+Invented stations: Pinegate Harbour 90101 = `5865a794e8e13973715cf951` (tidal, Pacific),
+Narrows Point 90102 (tidal currents), Lakeshore Gauge 90201 = `a66cb57182b4d901acc06645` (lake,
+`IGLD85` offset), Gull Bay 90301, and four non-operating stations.
 
-The 429 body was not recorded (see `docs/providers/dfo-iwls.md`).
+- `stations-all.synthetic.json`: shape of `/api/v1/stations` (eight stations: four operating, four not).
+- `stations-single.synthetic.json`: shape of `/api/v1/stations?code=90101` (one station, three series).
+- `metadata-90101.synthetic.json`, `metadata-90201-lake.synthetic.json`, `metadata-90102-narrows.synthetic.json`: shape of `/api/v1/stations/{id}/metadata` (a tidal port with `CGVD` datums, a lake gauge with an `IGLD85` offset, a current station with `ebbDirection` and `floodDirection`).
+- `wlp-90101-15min.synthetic.json`: `time-series-code=wlp&resolution=FIFTEEN_MINUTES`, one UTC day (97 rows, quality `"2"`).
+- `wlp-90101-1min.synthetic.json`: `time-series-code=wlp`, one hour at the default one-minute resolution (61 rows).
+- `wlo-90101-15min.synthetic.json`: `time-series-code=wlo&resolution=FIFTEEN_MINUTES`, one hour (5 rows, quality `"1"`).
+- `wlo-90101-all.synthetic.json`: `time-series-code=wlo&resolution=ALL`, ten minutes of one-minute rows.
+- `wlo-90201-60min.synthetic.json`: `wlo` at `SIXTY_MINUTES` for the lake gauge (2 rows).
+- `wlp-hilo-90101-2026-11-08.synthetic.json`: `time-series-code=wlp-hilo`, five extrema from a low at 06:30 UTC on 2026-11-08.
+- `wlp-hilo-90101-2026-11-18-to-20.synthetic.json`: `wlp-hilo`, six extrema over 2026-11-18 to 20.
+- `wcsp1-90102-15min.synthetic.json`, `wcs1-90102-15min.synthetic.json`, `wcp1-events-90102-2026-11-18.synthetic.json`: predicted speed, observed speed and slack/extrema events (`qualifier`) for the current station.
+- `time-series-definitions.synthetic.json`, `phenomena.synthetic.json`, `height-types.synthetic.json`: the lookup lists, reduced to a few entries.
+- `error-400-range-7-days.synthetic.json`, `error-400-range-31-days.synthetic.json`, `error-400-bad-date.synthetic.json`: the 400 body shape (`timestamp`, `status`, `message`, `path`, `errors`).
+
+The 429 body is not covered (see `docs/providers/dfo-iwls.md`).

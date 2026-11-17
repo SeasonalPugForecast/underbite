@@ -1,6 +1,6 @@
 # DFO IWLS (Canadian Hydrographic Service water levels and currents)
 
-Verified on 2026-11-17 (UTC) with `curl` against `https://api-iwls.dfo-mpo.gc.ca/api/v1`, the service's own OpenAPI document and the Canadian Hydrographic Service (CHS) pages on `tides.gc.ca`. An earlier summary is in `docs/providers/tier2.md`. Fixtures: `tests/fixtures/raw/dfo-iwls/` (index in its `README.md`). Verdict: **usable**, with licence conditions (see "Licence and attribution").
+Verified on 2026-11-17 (UTC) with `curl` against `https://api-iwls.dfo-mpo.gc.ca/api/v1`, the service's own OpenAPI document and the Canadian Hydrographic Service (CHS) pages on `tides.gc.ca`. An earlier summary is in `docs/providers/tier2.md`. The fixtures in `tests/fixtures/raw/dfo-iwls/` (index in its `README.md`) are synthetic: they copy the shapes below with invented stations and values, because the licence does not allow giving the data to third parties. Verdict: **usable**, with licence conditions (see "Licence and attribution").
 
 ## Service
 
@@ -21,8 +21,8 @@ Rate limits and ranges come from the CHS web-services page (`https://www.tides.g
 Water-level values (`wlo`, `wlp`, `wlp-hilo`, `wlf`) are **metres above chart datum (CD)** at the station. Evidence, all from CHS material:
 
 - The CHS glossary (`https://www.tides.gc.ca/en/definitions-content-tides-and-currents`) defines chart datum as the plane to which charted depths are related and, in non-tidal waters, "also the vertical datum for elevations and clearances". The SPINE forecast service description on the web-services page says its water level is "expressed relative to chart datum".
-- `/stations/{id}/metadata` for Vancouver 07735 lists reference heights in the same frame: `LAT` (Lowest Astronomical Tide) -0.10, `LLWLT` 0.06, `MLLW` 1.17, `MWL` 3.06, `MHHW` 4.47, `HHWLT` 5.01, `HAT` 5.08 (all metres, `valuePrecision` 2). A chart datum close to LAT is what these numbers show. The observed `wlo` and predicted `wlp` values for the same station (2.0 to 3.4 m on 2026-11-17/18) sit inside that range.
-- The same `metadata` object carries `datums[]`, the offset of other vertical datums relative to CD: 07735 has `CGVD2013` -2.88 and `CGVD28` -3.0 (metres, `offsetPrecision` 2). Toronto 13320 (Lake Ontario, `waterBody: LAKE`, `isTidal: false`) has `IGLD85` 74.2: chart datum at Toronto is 74.20 m on IGLD 1985, and its `wlo` values (0.445 and 0.456 m at 08:00 and 09:00 UTC on 2026-11-17) are heights above that chart datum, **not** IGLD 85 elevations. To get an IGLD 85 elevation add `datums[IGLD85].offset` to the value. The sign convention of the `CGVD*` offsets (CD elevation in that datum, or the reverse) is **unverified**: the metadata does not say, and the CHS pages read do not define it. Use only the `IGLD85` rule above, which is consistent with the Great Lakes chart datum for Toronto.
+- `/stations/{id}/metadata` for a tidal port lists reference heights in the same frame (`LAT`, `LLWLT`, `MLLW`, `MWL`, `MHHW`, `HHWLT`, `HAT`; metres, `valuePrecision` 2). A chart datum close to LAT is what the lowest of them show, and the observed `wlo` and predicted `wlp` values of the station sit inside that range.
+- The same `metadata` object carries `datums[]`, the offset of other vertical datums relative to CD (`CGVD2013` and `CGVD28` at Vancouver 07735; metres, `offsetPrecision` 2). Toronto 13320 (Lake Ontario, `waterBody: LAKE`, `isTidal: false`) has an `IGLD85` entry: its offset is the elevation of chart datum on IGLD 1985, and its `wlo` values are heights above that chart datum, **not** IGLD 85 elevations. To get an IGLD 85 elevation add `datums[IGLD85].offset` to the value. The sign convention of the `CGVD*` offsets (CD elevation in that datum, or the reverse) is **unverified**: the metadata does not say, and the CHS pages read do not define it. Use only the `IGLD85` rule above, which is consistent with the Great Lakes chart datum for Toronto.
 - Great Lakes stations (codes 10000 to 16010) also have `calculate-daily-means-igld85`, which the CHS glossary defines as the mean of the 24 hourly heights "referenced to IGLD (1985)", for the Great Lakes, the St Lawrence River down to Lac Saint-Pierre, and the Ottawa and Richelieu rivers.
 - Stations with `datums: []` (Second Narrows 07745) have no conversion; the value is above that station's chart datum all the same.
 
@@ -30,15 +30,15 @@ Not verified: whether every river station (non-tidal, non-lake) uses a chart dat
 
 ## Station list
 
-`GET /stations` with no filter returns every station, 1,576 records, 918,660 bytes, no paging (fixture `stations-all-2026-11-17.json`).
+`GET /stations` with no filter returns every station, about 1,600 records (about 0.9 MB), no paging.
 
 Filters (OpenAPI): `code` (unique; overrides every other parameter), `chs-region-code` (`ATL`, `QUE`, `PAC`, `CNA`), `time-series-code`, `dateStart`, `dateEnd` (stations having data in that interval). There is **no bounding-box or radius filter**: select by region or fetch the whole list and filter locally. `chs-region-code=PAC` is about 245 KB.
 
 Record fields: `id` (24 hex characters, used in every other path), `code` (5-digit string, `"07735"`), `officialName`, `alternativeName` (optional), `latitude`, `longitude`, `chsRegionCode`, `provinceCode`, `type`, `operating`, `timeSeries[]`.
 
-Counts on 2026-11-17: regions ATL 649, PAC 370, CNA 287, QUE 270; `type` TEMPORARY 779, DISCONTINUED 623, PERMANENT 122, UNKNOWN 41, SEASONAL 6, VIRTUAL 5; `operating: true` 140, `false` 1,436. Time-series codes present: `wlp` 1,089, `wlp-hilo` 1,081, `wlo` 471, `wlf` 65, `wcsp1` 30, `wcdp1` 30, `wcp1-events` 30, `wlf-spine` 26, `wcs1` 9, `wcd1` 9, `wt1` 9, `wlp-bores` 6, others fewer. Offer only `operating: true` stations with a `wlo`, `wlp` or `wlp-hilo` series; many listed predictions are for discontinued or temporary stations.
+Most records are temporary or discontinued, and only about one in ten has `operating: true`. Time-series codes present include `wlp`, `wlp-hilo`, `wlo`, `wlf`, `wcsp1`, `wcdp1`, `wcp1-events`, `wlf-spine`, `wcs1`, `wcd1`, `wt1` and `wlp-bores`. Offer only `operating: true` stations with a `wlo`, `wlp` or `wlp-hilo` series; many listed predictions are for discontinued or temporary stations.
 
-`GET /stations/{id}` returns the same record as the list entry. `GET /stations/{id}/metadata` adds `classCode`, `datums[]`, `heights[]` (reference heights; each has `heightTypeId`, `value`, `valuePrecision`, optionally `date`; resolve ids with `/height-types`), `isTidal`, `isTideTableReferencePort`, `tideTableId`, `timeZoneCode` (IANA name such as `Canada/Pacific`), `waterBody`, `status`, `owner`, `stationOwner`, and for current stations `ebbDirection` and `floodDirection` (degrees). `GET /stations/data/latest` returns the last 20 minutes of `wlo` for every station (239 KB): not needed by the app.
+`GET /stations/{id}` returns the same record as the list entry. `GET /stations/{id}/metadata` adds `classCode`, `datums[]`, `heights[]` (reference heights; each has `heightTypeId`, `value`, `valuePrecision`, optionally `date`; resolve ids with `/height-types`), `isTidal`, `isTideTableReferencePort`, `tideTableId`, `timeZoneCode` (IANA name such as `Canada/Pacific`), `waterBody`, `status`, `owner`, `stationOwner`, and for current stations `ebbDirection` and `floodDirection` (degrees). `GET /stations/data/latest` returns the last 20 minutes of `wlo` for every station (a few hundred KB): not needed by the app.
 
 ## Data requests
 
@@ -57,11 +57,11 @@ Response: a JSON array, oldest first, no envelope.
 | `eventDate` | string | ISO 8601 UTC, `Z`, to the second (`2026-11-18T00:15:00Z`) |
 | `value` | number | metres above chart datum (levels), knots (current speed, see below), degrees (direction) |
 | `qcFlagCode` | string | `"1"` good, `"2"` not evaluated, unavailable or unknown, `"3"` questionable or suspect (UNESCO ocean data standard flags, from the CHS page). Predictions come as `"2"` for `wlp` and `"1"` for `wlp-hilo`; observations as `"1"` after automated tests. |
-| `reviewed` | boolean | `false` for all recorded points |
+| `reviewed` | boolean | `false` for all points seen |
 | `timeSeriesId` | string | joins to the station's `timeSeries[].id` |
 | `qualifier` | string | only on `wcp1-events`: `SLACK`, `EXTREMA_FLOOD`, `EXTREMA_EBB` |
 
-No missing-value marker was seen; gaps are absent rows. Recorded: Vancouver `wlp` at 15 minutes gives 97 points per UTC day and 769 for 8 days; `wlp` at 1 minute gives 60 per hour; `wlo` with `resolution=ALL` returns 1-minute points here.
+No missing-value marker was seen; gaps are absent rows. Observed: `wlp` at 15 minutes gives 97 points per UTC day; `wlp` at 1 minute gives 60 per hour; `wlo` with `resolution=ALL` returns 1-minute points.
 
 ### Resolutions and ranges (verified 2026-11-17)
 
@@ -69,16 +69,16 @@ The time-series definitions (`/time-series-definitions`) give `allowedPeriodInDa
 
 ### Predictions
 
-- `wlp`: predicted water level; the 1 minute and 15 minute resolutions were recorded, the others are listed by the OpenAPI document only (**unverified**). 1,089 stations.
-- `wlp-hilo`: high and low water, each row an extremum with its time; the row does not say high or low, so derive it from neighbouring values. Vancouver on 2026-11-18: 03:22 2.785 m, 06:51 3.026 m, 13:04 2.028 m, 20:36 4.413 m (four extrema a day).
+- `wlp`: predicted water level; the 1 minute and 15 minute resolutions were checked, the others are listed by the OpenAPI document only (**unverified**). 1,089 stations.
+- `wlp-hilo`: high and low water, each row an extremum with its time; the row does not say high or low, so derive it from neighbouring values. A station has about four extrema a day.
 - Only the `wlf` family (forecasts including weather effects) is observation-adjusted; `wlp` is astronomical. The CHS page warns that predictions "are based upon the latest information available as of the date of your request" and that the printed Canadian Tide and Current Tables prevail in case of disparity.
 - `GET /tide-tables` and `/tide-tables/{id}` list the printed table areas (`AREA`, `SUB_AREA`); `tideTableId` in the metadata ties a station to one. Not needed.
 
 ### Currents
 
-Currents exist for 30 stations (mostly British Columbia narrows and Nova Scotia channels), in the series `wcsp1` (predicted speed), `wcdp1` (predicted direction), `wcp1-events` (predicted slack and extrema, 366 days per request), `wcs1`/`wcd1` (observed speed and direction), and `wcs2`/`wcd2`. Speed is in **knots**: the phenomena list (`/phenomena`) gives `wcs` unit `kn`, `wcd` unit `deg`, `wl` unit `m`, `wt` unit `c`, `ap` unit `hpa`, `ws` unit `psu`, `aws` unit `kn`. Examples at Second Narrows 07745 (fixtures): `wcsp1` 2.16 kn at 2026-11-18T00:00Z; `wcp1-events` rows `SLACK` 0.0 at 03:39Z, `EXTREMA_FLOOD` 0.655 at 05:15Z, `SLACK` at 06:42Z, `EXTREMA_EBB` 1.724 at 10:20Z. Flood and ebb directions are in the station metadata (flood 90, ebb 270). `wlp-bores` covers 6 stations (Moncton, Truro, Maccan and others) and `wcp-reversing-falls` one.
+Currents exist for 30 stations (mostly British Columbia narrows and Nova Scotia channels), in the series `wcsp1` (predicted speed), `wcdp1` (predicted direction), `wcp1-events` (predicted slack and extrema, 366 days per request), `wcs1`/`wcd1` (observed speed and direction), and `wcs2`/`wcd2`. Speed is in **knots**: the phenomena list (`/phenomena`) gives `wcs` unit `kn`, `wcd` unit `deg`, `wl` unit `m`, `wt` unit `c`, `ap` unit `hpa`, `ws` unit `psu`, `aws` unit `kn`. At Second Narrows 07745 the `wcp1-events` rows alternate `SLACK` (value 0.0) with `EXTREMA_FLOOD` and `EXTREMA_EBB` rows carrying the peak speed. Flood and ebb directions are in the station metadata (`floodDirection`, `ebbDirection`, degrees). `wlp-bores` covers 6 stations (Moncton, Truro, Maccan and others) and `wcp-reversing-falls` one.
 
-Speed values are signed? **Unverified**: all recorded `wcsp1` values are positive; use `wcp1-events` qualifiers for the flood/ebb phase and the metadata directions.
+Speed values are signed? **Unverified**: all `wcsp1` values seen are positive; use `wcp1-events` qualifiers for the flood/ebb phase and the metadata directions.
 
 ### Harmonic constituents
 
@@ -111,7 +111,7 @@ Sources: the OpenAPI `info.description` links "Terms of service" (`https://www.d
 - Metadata that further defines the data must be taken into account; the data reflect conditions at the time of collection; no warranty or liability.
 - The agreement takes effect on use and ends when CHS posts a public notice; copies must then be destroyed within 15 days. Governing law is Ontario, forum the Federal Court of Canada.
 
-Consequences: do not bundle IWLS data (station lists or predictions) in the app or in the repository beyond test fixtures; fetch at run time. The fixtures here are recordings for tests and carry the same copyright. Show the full notice above (or a link to it) wherever IWLS values appear, plus "Canadian Hydrographic Service, Fisheries and Oceans Canada" as the source and "not for navigation". Whether sharing cached snapshots between users (the `.underbite` file) counts as "given to a third party" is **unverified**; avoid including IWLS series in shared files until clarified with CHS.
+Consequences: do not bundle IWLS data (station lists or predictions) in the app or in the repository; fetch at run time. The test fixtures are synthetic and contain no CHS data. Show the full notice above (or a link to it) wherever IWLS values appear, plus "Canadian Hydrographic Service, Fisheries and Oceans Canada" as the source and "not for navigation". Whether sharing cached snapshots between users (the `.underbite` file) counts as "given to a third party" is **unverified**; avoid including IWLS series in shared files until clarified with CHS.
 
 ## Known issues and changes
 
