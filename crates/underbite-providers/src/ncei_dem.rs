@@ -20,6 +20,7 @@ use serde::Deserialize;
 use tiff::ColorType;
 use tiff::decoder::{Decoder, DecodingResult};
 use tiff::tags::Tag;
+use underbite_core::map::dem::DemSourceInfo;
 use underbite_core::map::grid::{Grid, GridError};
 use underbite_core::map::tiles::{MAX_ZOOM, ORIGIN_M, WORLD_M, tile_bounds_3857};
 use underbite_core::map::{Bbox, GridHost, GridSource, TileKey};
@@ -706,6 +707,17 @@ pub struct DemSource {
     pub completed: Option<LocalDate>,
 }
 
+/// The fields `underbite_core::map::dem::depth_at` needs: the name, datum and cell size.
+impl From<&DemSource> for DemSourceInfo {
+    fn from(source: &DemSource) -> Self {
+        Self {
+            name: source.name.clone(),
+            vertical_datum: source.vertical_datum.clone(),
+            cell_arcsec: source.cell_arcsec,
+        }
+    }
+}
+
 #[derive(Deserialize)]
 struct QueryBody {
     features: Vec<Feature>,
@@ -787,6 +799,9 @@ mod tests {
     use crate::request::Coordinates;
     use crate::testutil::{fixture_bytes, fixture_str};
     use underbite_core::map::GeoPoint;
+    use underbite_core::map::dem::{
+        WaterBody, depth_at, gebco_credit, render_depth_rgba, render_depth_tile,
+    };
 
     const EXPORT: &str = "dem-global-mosaic-export-f32.tif";
     const QUERY: &str = "dem-global-mosaic-query-battery.json";
@@ -1046,6 +1061,106 @@ mod tests {
         assert!(query.url.contains(
             "outFields=Name,ProductName,CellsizeArcseconds,VerticalDatum,DateCompleted,"
         ));
+    }
+
+    fn pixel_at(rgba: &[u8], tile: TileKey, size: u32, point: GeoPoint) -> [u8; 4] {
+        let count = f64::from(1u32 << tile.z);
+        let x = (point.lon + 180.0) / 360.0 * count;
+        let phi = point.lat.to_radians();
+        let y = (1.0 - phi.tan().asinh() / std::f64::consts::PI) / 2.0 * count;
+        let px = ((x - f64::from(tile.x)) * f64::from(size)) as usize;
+        let py = ((y - f64::from(tile.y)) * f64::from(size)) as usize;
+        let at = (py * size as usize + px) * 4;
+        [rgba[at], rgba[at + 1], rgba[at + 2], rgba[at + 3]]
+    }
+
+    const BATTERY: GeoPoint = GeoPoint {
+        lat: 40.7006,
+        lon: -74.0142,
+    };
+    const SANDY_HOOK_BAY: GeoPoint = GeoPoint {
+        lat: 40.4575,
+        lon: -74.0075,
+    };
+    const AMBROSE: GeoPoint = GeoPoint {
+        lat: 40.4525,
+        lon: -73.8075,
+    };
+    /// z10 tiles over Manhattan, Sandy Hook Bay and the Ambrose approach.
+    const MANHATTAN_TILE: TileKey = TileKey {
+        z: 10,
+        x: 301,
+        y: 385,
+    };
+    const BAY_TILE: TileKey = TileKey {
+        z: 10,
+        x: 301,
+        y: 386,
+    };
+    const APPROACH_TILE: TileKey = TileKey {
+        z: 10,
+        x: 302,
+        y: 386,
+    };
+
+    #[test]
+    fn ncei_dem_fixture_tile_has_transparent_land_and_coloured_water() {
+        let grid = export().into_grid(UnixTime(0)).unwrap();
+        let tile = |key| render_depth_rgba(&grid, WaterBody::Sea, None, None, key, 128).unwrap();
+        let land = tile(MANHATTAN_TILE);
+        assert_eq!(pixel_at(&land, MANHATTAN_TILE, 128, BATTERY)[3], 0);
+        let water = tile(BAY_TILE);
+        assert_eq!(pixel_at(&water, BAY_TILE, 128, SANDY_HOOK_BAY)[3], 255);
+        let deep = tile(APPROACH_TILE);
+        assert_eq!(pixel_at(&deep, APPROACH_TILE, 128, AMBROSE)[3], 255);
+    }
+
+    #[test]
+    fn ncei_dem_band_of_25_to_35_m_marks_the_approach_and_not_the_bay() {
+        let grid = export().into_grid(UnixTime(0)).unwrap();
+        let band = Some((25.0, 35.0));
+        let render = |key| render_depth_rgba(&grid, WaterBody::Sea, band, None, key, 128).unwrap();
+        let approach = render(APPROACH_TILE);
+        let bay = render(BAY_TILE);
+        assert_eq!(
+            pixel_at(&approach, APPROACH_TILE, 128, AMBROSE),
+            [255, 140, 0, 255]
+        );
+        let bay_pixel = pixel_at(&bay, BAY_TILE, 128, SANDY_HOOK_BAY);
+        assert_eq!(bay_pixel[3], 255);
+        assert_ne!(bay_pixel, [255, 140, 0, 255]);
+        // The tile is a PNG.
+        let png = render_depth_tile(&grid, WaterBody::Sea, band, None, APPROACH_TILE, 128).unwrap();
+        assert_eq!(&png[..4], b"\x89PNG");
+    }
+
+    #[test]
+    fn ncei_dem_depth_at_the_approach_names_its_datum() {
+        let grid = export().into_grid(UnixTime(0)).unwrap();
+        let sources: Vec<DemSourceInfo> = parse_query(&fixture_bytes("bathymetry", QUERY))
+            .unwrap()
+            .iter()
+            .map(DemSourceInfo::from)
+            .collect();
+        let approach = depth_at(&grid, AMBROSE, &sources, WaterBody::Sea).unwrap();
+        assert!((approach.depth_m().unwrap() - 29.6).abs() < 0.5);
+        assert_eq!(approach.vertical_datum.as_deref(), Some("NAVD 88"));
+        assert_eq!(approach.label(), "approximate depth (NAVD 88)");
+        let bay = depth_at(&grid, SANDY_HOOK_BAY, &sources, WaterBody::Sea).unwrap();
+        assert!((bay.depth_m().unwrap() - 3.1).abs() < 0.5);
+        assert_eq!(depth_at(&grid, BATTERY, &sources, WaterBody::Sea), None);
+    }
+
+    #[test]
+    fn ncei_dem_gebco_credit_names_the_grid_year_and_doi() {
+        let xml = fixture_str("bathymetry", "gebco-wms-capabilities-1.3.0.xml");
+        let credit = gebco_credit(&xml).unwrap();
+        assert!(credit.contains("GEBCO_2026 Grid"), "{credit}");
+        assert!(
+            credit.contains("doi:10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa"),
+            "{credit}"
+        );
+        assert!(credit.ends_with("Not for navigation."), "{credit}");
     }
 
     #[test]
