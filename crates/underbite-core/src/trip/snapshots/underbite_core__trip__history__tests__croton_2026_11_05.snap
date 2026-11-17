@@ -1,0 +1,51 @@
+---
+source: crates/underbite-core/src/trip/history.rs
+expression: h
+---
+{
+  "days": {
+    "2026-11-05": {
+      "flow": {
+        "p10": 0.976,
+        "median": 12.0,
+        "p90": 692.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years_sampled": 93,
+          "percentiles": "statistics_api"
+        }
+      }
+    },
+    "2026-11-06": {
+      "flow": {
+        "p10": 0.816,
+        "median": 11.1,
+        "p90": 661.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years_sampled": 93,
+          "percentiles": "statistics_api"
+        }
+      }
+    },
+    "2026-11-07": {
+      "flow": {
+        "p10": 0.89,
+        "median": 13.0,
+        "p90": 662.2,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years_sampled": 93,
+          "percentiles": "statistics_api"
+        }
+      }
+    }
+  },
+  "flow": "available",
+  "water_temp": "empty",
+  "sst": "not_requested",
+  "waves": "not_requested"
+}
