@@ -20,6 +20,13 @@ final class GridLoader {
     }
 
     /// What a block's fetch came to.
+    /// What a fetch child hands back: the job's place in its batch and how it went. One plain
+    /// value, never a tuple holding strings (that crashed optimized builds in `TaskGroup.offer`).
+    nonisolated struct Finished: Sendable {
+        let index: Int
+        let outcome: Outcome
+    }
+
     nonisolated enum Outcome: Sendable {
         case added
         case noData
@@ -114,17 +121,22 @@ final class GridLoader {
             }
             if batch.isEmpty { break }
             let (host, store, pacer, clock) = (host, store, pacer, clock)
-            let outcomes = await withTaskGroup(of: (Job, Outcome).self) { group in
-                for job in batch {
+            let finished = await withTaskGroup(of: Finished.self) { group in
+                for (index, job) in batch.enumerated() {
                     group.addTask {
-                        (job, await Self.fetch(job, host: host, store: store, pacer: pacer, clock: clock))
+                        Finished(
+                            index: index,
+                            outcome: await Self.fetch(
+                                job, host: host, store: store, pacer: pacer, clock: clock))
                     }
                 }
-                var all: [(Job, Outcome)] = []
-                for await outcome in group { all.append(outcome) }
+                var all: [Finished] = []
+                for await one in group { all.append(one) }
                 return all
             }
-            for (job, outcome) in outcomes {
+            for done in finished {
+                let job = batch[done.index]
+                let outcome = done.outcome
                 inFlight.remove(job.request.key)
                 asked[job.layer, default: 0] += 1
                 switch outcome {
