@@ -19,5 +19,6 @@ pub mod open_meteo_marine;
 pub mod request;
 pub mod session;
 pub mod source;
+pub mod statemaps;
 pub mod storms;
 pub mod usgs;
