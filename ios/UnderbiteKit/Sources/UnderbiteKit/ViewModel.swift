@@ -471,6 +471,9 @@ extension ViewModel {
         public var factors: [WindowFactorVm]
         /// Enabled factors that had no data in the window, by name.
         public var noData: [String]
+        /// The same, worded for display ("No data: water temperature, river flow"); none when
+        /// every enabled factor had data.
+        public var noDataText: String?
     }
 
     /// `factor` is `tide_stage`, `current_strength`, `low_light`, `solunar`, `pressure_falling`,

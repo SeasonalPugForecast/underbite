@@ -62,6 +62,8 @@ final class ViewModelTests: XCTestCase {
         XCTAssertEqual(window.factors.map(\.factor), ["current_strength", "low_light"])
         XCTAssertEqual(window.factors[1].detail, "12 min after sunset at 4:47 PM")
         XCTAssertEqual(window.noData.count, 3)
+        XCTAssertEqual(
+            window.noDataText, "No data: falling pressure, water temperature, river flow")
 
         guard case .tide(let tide) = cards[3] else { return XCTFail("the fourth card is Tide") }
         XCTAssertFalse(tide.full.next.isEmpty)

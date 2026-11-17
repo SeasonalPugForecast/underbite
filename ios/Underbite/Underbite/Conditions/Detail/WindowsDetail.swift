@@ -29,8 +29,8 @@ private struct WindowRow: View {
                     Text(factor.detail).font(.subheadline).foregroundStyle(.readableSecondary)
                 }
             }
-            if !window.noData.isEmpty {
-                Text(window.noData.joined(separator: ", "))
+            if let text = window.noDataText {
+                Text(text)
                     .font(.caption)
                     .foregroundStyle(.readableSecondary)
             }
