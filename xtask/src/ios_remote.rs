@@ -72,6 +72,7 @@ const MIN_FREE_GIB: u64 = 15;
 const USAGE: &str = "\
 usage: cargo xtask ios remote <step> [--host user@mac] [--dir path] [--debug] [--dry-run]
                                [--iphone name] [--release] [--local] [--simulator name]
+       cargo xtask ios remote ui [--on iphone|ipad] [--only Class/test] [--host user@mac] [--dry-run]
        cargo xtask ios remote exec [--fetch path]… [--host user@mac] [--dir path] [--dry-run] -- command…
        cargo xtask ios remote clean (--lane <name> | --all-lanes) [--host user@mac] [--dry-run]
 
@@ -85,6 +86,10 @@ steps:
   shots    app, then run it in an iPhone and an iPad simulator, take a screenshot for each
            ios/shots/*.args file (a light one, and a dark one when its second line is
            `dark`) and copy them to target/ios-screens/<iphone|ipad>/
+  ui       build, then run the UI tests (UnderbiteUITests: the accessibility audits) on the
+           iPhone and then the iPad simulator, each with its accessibility switched on first
+           (else the runner can time out waiting for it); --on iphone|ipad tests on one,
+           --only runs one class or test (AccessibilityAuditTests/testConditions)
   exec     sync, then run a command in the lane's directory on the Mac (Xcode selected
            through DEVELOPER_DIR); --fetch copies a path (relative to the repository) back
   device   build, sign and install the app on the iPhone named `iphone` in
@@ -118,6 +123,7 @@ enum Step {
     Test,
     App,
     Shots,
+    Ui,
     Exec,
     Device,
     Clean,
@@ -128,7 +134,7 @@ impl Step {
     fn packages(self) -> bool {
         matches!(
             self,
-            Self::Build | Self::Test | Self::App | Self::Shots | Self::Device
+            Self::Build | Self::Test | Self::App | Self::Shots | Self::Ui | Self::Device
         )
     }
 }
@@ -154,6 +160,10 @@ struct Args {
     all_lanes: bool,
     /// The iPhone simulator to use instead of the configured one.
     simulator: Option<String>,
+    /// `ui`: the one simulator to test on (`iphone` or `ipad`), else both.
+    on: Option<String>,
+    /// `ui`: the one test class or test to run (`AccessibilityAuditTests/testConditions`).
+    only: Option<String>,
     /// `exec`: paths to copy back afterwards.
     fetch: Vec<String>,
     /// `exec`: the command to run on the Mac.
@@ -169,6 +179,7 @@ fn parse(args: &[&str]) -> Result<Args, String> {
         Some(&"test") => Step::Test,
         Some(&"app") => Step::App,
         Some(&"shots") => Step::Shots,
+        Some(&"ui") => Step::Ui,
         Some(&"exec") => Step::Exec,
         Some(&"device") => Step::Device,
         Some(&"clean") => Step::Clean,
@@ -186,6 +197,8 @@ fn parse(args: &[&str]) -> Result<Args, String> {
         lane: None,
         all_lanes: false,
         simulator: None,
+        on: None,
+        only: None,
         fetch: Vec::new(),
         command: Vec::new(),
     };
@@ -210,6 +223,21 @@ fn parse(args: &[&str]) -> Result<Args, String> {
                 Some(name) if !name.is_empty() => out.iphone = Some((*name).to_owned()),
                 _ => return Err(format!("--iphone needs a phone name\n\n{USAGE}")),
             },
+            "--on" => match iter.next() {
+                Some(&device) if device == "iphone" || device == "ipad" => {
+                    out.on = Some(device.to_owned());
+                }
+                _ => return Err(format!("--on needs `iphone` or `ipad`\n\n{USAGE}")),
+            },
+            "--only" => match iter.next() {
+                Some(test) if is_test_name(test) => out.only = Some((*test).to_owned()),
+                _ => {
+                    return Err(format!(
+                        "--only needs a test class or test, like \
+                         AccessibilityAuditTests/testConditions\n\n{USAGE}"
+                    ));
+                }
+            },
             "--fetch" => match iter.next() {
                 Some(path) => out.fetch.push(fetchable(path)?),
                 None => return Err(format!("--fetch needs a path\n\n{USAGE}")),
@@ -227,10 +255,23 @@ fn parse(args: &[&str]) -> Result<Args, String> {
     if step != Step::Exec && !(out.fetch.is_empty() && out.command.is_empty()) {
         return Err(format!("--fetch and a command belong to exec\n\n{USAGE}"));
     }
+    if step != Step::Ui && (out.on.is_some() || out.only.is_some()) {
+        return Err(format!("--on and --only belong to ui\n\n{USAGE}"));
+    }
     if step == Step::Exec && out.command.is_empty() {
         return Err(format!("exec needs a command after `--`\n\n{USAGE}"));
     }
     Ok(out)
+}
+
+/// A test class or test of the UI test target: letters, digits and `_`, with at most one `/`
+/// between a class and a test.
+fn is_test_name(text: &str) -> bool {
+    let parts: Vec<&str> = text.split('/').collect();
+    parts.len() <= 2
+        && parts.iter().all(|part| {
+            !part.is_empty() && part.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+        })
 }
 
 /// `path` when it stays inside the repository, without a trailing slash.
@@ -782,6 +823,61 @@ fn exec(remote: &Remote, command: &[String]) -> String {
     in_dir(remote, &words.join(" "))
 }
 
+/// The UI test target the `ui` step runs.
+const UI_TESTS: &str = "UnderbiteUITests";
+
+/// The simulator's accessibility switches the test runner waits for: without them a run can
+/// stop with "Timed out waiting for AX loaded notification" before its first test.
+const ACCESSIBILITY_DEFAULTS: [&str; 3] = [
+    "AccessibilityEnabled",
+    "ApplicationAccessibilityEnabled",
+    "AutomationEnabled",
+];
+
+/// On the Mac: for each of `devices` (a label and a simulator), boots it in the light
+/// appearance, switches its accessibility on and runs the UI tests (`only`: one class or test
+/// of them), then shuts it down so the next one runs alone. Every device is tested even when
+/// one fails; the line fails if any did, and says which.
+fn ui_tests(remote: &Remote, devices: &[(&str, &str)], only: Option<&str>) -> String {
+    let target = only.map_or_else(|| UI_TESTS.to_string(), |t| format!("{UI_TESTS}/{t}"));
+    let mut steps = vec!["failed=".to_string()];
+    for (label, name) in devices {
+        let sim = quote(name);
+        let destination = quote(&format!("platform=iOS Simulator,name={name}"));
+        let defaults = ACCESSIBILITY_DEFAULTS
+            .iter()
+            .map(|key| {
+                format!(
+                    "xcrun simctl spawn {sim} defaults write com.apple.Accessibility {key} -bool true"
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("; ");
+        steps.push(format!(
+            "xcrun simctl boot {sim} 2>/dev/null || true; xcrun simctl bootstatus {sim} -b >/dev/null; \
+             xcrun simctl ui {sim} appearance light; {defaults}; echo \"UI tests on {label}\"; \
+             xcodebuild test -project {PROJECT} -scheme {SCHEME} {} -destination {destination} \
+             -derivedDataPath {DERIVED} || failed=\"$failed {label}\"; \
+             xcrun simctl shutdown {sim} 2>/dev/null || true",
+            quote(&format!("-only-testing:{target}"))
+        ));
+    }
+    steps.push(
+        "if [ -n \"$failed\" ]; then echo \"UI tests failed on:$failed\" >&2; exit 1; fi; \
+         echo 'UI tests passed'"
+            .to_string(),
+    );
+    in_dir(remote, &steps.join("; "))
+}
+
+/// The simulators `ui` tests on: both, or the one `--on` names.
+fn ui_devices<'a>(remote: &'a Remote, on: Option<&str>) -> Vec<(&'static str, &'a str)> {
+    shot_devices(remote)
+        .into_iter()
+        .filter(|(label, _)| on.is_none_or(|on| on == *label))
+        .collect()
+}
+
 /// The signed app for the iPhone, installed and started. Signing
 /// uses the Apple ID signed in to Xcode (`-allowProvisioningUpdates`).
 /// Signing needs the login keychain, which an SSH session finds locked:
@@ -1059,6 +1155,14 @@ fn plan(args: &Args, remote: &Remote, stage: &str, list: &[Shot]) -> Plan {
         steps.push(ssh(ensure_simulators(remote)));
         steps.push(ssh(app(remote)));
     }
+    if args.step == Step::Ui {
+        steps.push(ssh(ensure_simulators(remote)));
+        steps.push(ssh(ui_tests(
+            remote,
+            &ui_devices(remote, args.on.as_deref()),
+            args.only.as_deref(),
+        )));
+    }
     if args.step == Step::Device {
         match args.iphone.as_ref().or(remote.iphone.as_ref()) {
             // A terminal, so the keychain can ask for the password, unless
@@ -1194,7 +1298,7 @@ pub(crate) fn run(args: &[&str]) -> Result<(), String> {
             Some(lane) => println!("lane: {lane} (directory {})", remote.dir),
             None => println!("lane: none (the main checkout; directory {})", remote.dir),
         }
-        if matches!(args.step, Step::App | Step::Shots) {
+        if matches!(args.step, Step::App | Step::Shots | Step::Ui) {
             println!("project: {PROJECT}, scheme {SCHEME}, app {APP}, bundle {BUNDLE_ID}");
             for (label, name) in shot_devices(&remote) {
                 println!("simulator ({label}): {name}");
@@ -1324,6 +1428,8 @@ mod tests {
             lane: None,
             all_lanes: false,
             simulator: None,
+            on: None,
+            only: None,
             fetch: Vec::new(),
             command: Vec::new(),
         }
@@ -1680,6 +1786,95 @@ mod tests {
         let app = plan(&args(Step::App), &laned, "s", &[]);
         assert_eq!(app.1.len(), 0);
         assert!(!last_line(&app).contains("screenshot"));
+    }
+
+    #[test]
+    fn ui_takes_a_device_and_a_test() {
+        let a = parse(&[
+            "ui",
+            "--on",
+            "ipad",
+            "--only",
+            "AccessibilityAuditTests/testConditions",
+        ])
+        .unwrap();
+        assert_eq!(a.step, Step::Ui);
+        assert_eq!(a.on.as_deref(), Some("ipad"));
+        assert_eq!(
+            a.only.as_deref(),
+            Some("AccessibilityAuditTests/testConditions")
+        );
+        assert!(parse(&["ui", "--on", "watch"]).is_err());
+        assert!(parse(&["ui", "--only", "A/b/c"]).is_err());
+        assert!(parse(&["ui", "--only", "x; rm -rf /"]).is_err());
+        assert!(parse(&["app", "--on", "ipad"]).is_err(), "only ui takes it");
+    }
+
+    #[test]
+    fn ui_switches_accessibility_on_before_testing_on_both_simulators() {
+        let laned = lane_remote(Some("underbite-lane-a"));
+        let ui = plan(&args(Step::Ui), &laned, "s", &[]);
+        // The core is packaged and the lane's simulators made before the tests.
+        assert!(
+            ui.0.iter()
+                .any(|(_, a)| a.last().is_some_and(|l| l.contains("echo wrote")))
+        );
+        assert!(ui.0[ui.0.len() - 2].1[1].contains("simctl clone"));
+        let line = last_line(&ui);
+        let mut from = 0;
+        for sim in [
+            "'iPhone 17 (underbite-lane-a)'",
+            "'iPad Air 11-inch (M4) (underbite-lane-a)'",
+        ] {
+            let boot = line[from..]
+                .find(&format!("xcrun simctl boot {sim}"))
+                .unwrap()
+                + from;
+            let test = line[boot..].find("xcodebuild test").unwrap() + boot;
+            for key in [
+                "AccessibilityEnabled",
+                "ApplicationAccessibilityEnabled",
+                "AutomationEnabled",
+            ] {
+                let write = format!(
+                    "xcrun simctl spawn {sim} defaults write com.apple.Accessibility {key} -bool true"
+                );
+                let at = line[boot..test].find(&write).map(|i| i + boot);
+                assert!(at.is_some(), "{key} set before the tests: {line}");
+            }
+            assert!(
+                line[test..].starts_with(&format!(
+                    "xcodebuild test -project {PROJECT} -scheme {SCHEME} \
+                     '-only-testing:UnderbiteUITests' \
+                     -destination 'platform=iOS Simulator,name={}' -derivedDataPath {DERIVED}",
+                    sim.trim_matches('\'')
+                )),
+                "{line}"
+            );
+            // Shut down after its tests, so the next simulator runs alone.
+            assert!(
+                line[test..].contains(&format!("xcrun simctl shutdown {sim}")),
+                "{line}"
+            );
+            from = test;
+        }
+        // Both run even when the first fails, and the run fails if either did.
+        assert!(line.contains("|| failed=\"$failed iphone\""), "{line}");
+        assert!(line.contains("|| failed=\"$failed ipad\""), "{line}");
+        assert!(line.contains("exit 1; fi"), "{line}");
+        assert_eq!(ui.1.len(), 0);
+
+        let one = Args {
+            on: Some("ipad".into()),
+            only: Some("AccessibilityAuditTests/testWelcome".into()),
+            ..args(Step::Ui)
+        };
+        let line = last_line(&plan(&one, &laned, "s", &[])).to_owned();
+        assert!(!line.contains("iPhone 17"), "{line}");
+        assert!(
+            line.contains("'-only-testing:UnderbiteUITests/AccessibilityAuditTests/testWelcome'"),
+            "{line}"
+        );
     }
 
     #[test]

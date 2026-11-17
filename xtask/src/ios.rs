@@ -35,7 +35,7 @@ pub(crate) fn run(args: &[&str]) -> Result<(), String> {
         ["remote", rest @ ..] => crate::ios_remote::run(rest),
         ["licenses"] => crate::ios_licenses::run(),
         _ => Err(
-            "usage: cargo xtask ios build [--debug]\n       cargo xtask ios licenses\n       cargo xtask ios remote doctor|sync|build|test|app|shots|exec|device|clean …"
+            "usage: cargo xtask ios build [--debug]\n       cargo xtask ios licenses\n       cargo xtask ios remote doctor|sync|build|test|app|shots|ui|exec|device|clean …"
                 .into(),
         ),
     }
