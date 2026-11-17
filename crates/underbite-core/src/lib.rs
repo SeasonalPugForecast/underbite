@@ -15,6 +15,7 @@ pub mod map;
 pub mod model;
 pub mod offline;
 pub mod provenance;
+pub mod regulations;
 pub mod series;
 pub mod share;
 pub mod time;
