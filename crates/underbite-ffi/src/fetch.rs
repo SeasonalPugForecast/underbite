@@ -194,7 +194,8 @@ pub trait FetchHost: Send + Sync {
     fn load(&self, namespace: String, key: String) -> Option<String>;
 
     /// Stores `value` under `namespace` and `key`. A value that cannot be stored is only
-    /// fetched again next time.
+    /// fetched again next time. An empty value is a forgotten one (see [`forget_spot`]): the
+    /// host may delete what it holds under the key instead.
     fn store(&self, namespace: String, key: String, value: String);
 
     /// Stores the call ledger (JSON) durably, to be returned by [`FetchHost::load`] for
@@ -648,6 +649,19 @@ pub fn clear_station(
     host: Arc<dyn FetchHost>,
 ) -> Result<(), FetchError> {
     choose(&spot_id, &key, Choice::Clear, now, host.as_ref())
+}
+
+/// Forgets everything fetches and lookups of the spot `spot_id` kept through `host`: its last
+/// snapshot (which holds its exact position), its station rankings and its pins and
+/// exclusions. Each is stored empty, which the next fetch reads as nothing stored. The station
+/// lists of the area, the observed coverage and the call ledger stay. Call it when the spot
+/// is deleted, and again when a fetch or lookup of it that was running then ends.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn forget_spot(spot_id: String, host: Arc<dyn FetchHost>) {
+    for (namespace, key) in store::spot_entries(&spot_id) {
+        host.store(namespace.to_owned(), key, store::FORGOTTEN.to_owned());
+    }
 }
 
 /// Applies `choice` to the station `key` in the spot's stored choices.

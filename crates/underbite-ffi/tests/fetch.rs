@@ -10,7 +10,7 @@ use underbite_core::model::{SpotSnapshot, WaterType};
 use underbite_core::time::parse_rfc3339;
 use underbite_ffi::fetch::{
     FetchError, FetchHost, FetchOptions, HostError, HostRequest, HostResponse, Keys, clear_station,
-    discover_stations, exclude_station, fetch_spot, pin_station, stored_stations,
+    discover_stations, exclude_station, fetch_spot, forget_spot, pin_station, stored_stations,
 };
 use underbite_ffi::settings::default_settings_json;
 use underbite_ffi::view::{SpotInfo, station_rows};
@@ -694,4 +694,61 @@ fn unreadable_stations_fail_the_rows() {
         station_rows("{}".into(), default_settings_json(), now()).expect("rows"),
         []
     );
+}
+
+#[test]
+fn a_forgotten_spot_leaves_no_snapshot_rankings_or_choices_on_the_host() {
+    let host = Replay::new("battery");
+    fetched(
+        battery(),
+        default_settings_json(),
+        Keys::default(),
+        METERED,
+        &host,
+    );
+    exclude_station("battery".into(), "coops:8518750".into(), now(), host.host())
+        .expect("excluded");
+    // The spot's exact longitude (a station nearby shares its latitude).
+    let exact = |values: &[String]| {
+        values
+            .iter()
+            .any(|v| v.contains("-74.017,") || v.contains("-74.017}"))
+    };
+    assert!(
+        exact(&host.values()),
+        "the snapshot holds the spot's position"
+    );
+    assert!(stored_stations("battery".into(), host.host()).is_some());
+    let lists = host
+        .values
+        .lock()
+        .unwrap()
+        .keys()
+        .filter(|(namespace, _)| namespace == "stations")
+        .count();
+
+    forget_spot("battery".into(), host.host());
+    assert!(!exact(&host.values()), "no value holds the position");
+    let key = underbite_fetch::store::spot_key("battery");
+    for namespace in ["spot", "discovery", "choices"] {
+        assert_eq!(
+            host.value(namespace, &key).as_deref(),
+            Some(""),
+            "{namespace}"
+        );
+    }
+    assert_eq!(stored_stations("battery".into(), host.host()), None);
+    // The area's station lists and the ledger stay.
+    let kept = host
+        .values
+        .lock()
+        .unwrap()
+        .keys()
+        .filter(|(namespace, _)| namespace == "stations")
+        .count();
+    assert_eq!(kept, lists);
+    assert!(host.value("usage", "ledger").is_some_and(|l| !l.is_empty()));
+
+    // The exclusion went with it: a fetch of the same id takes the nearest station again.
+    assert_eq!(tide_station(&host), "8518750");
 }
