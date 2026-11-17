@@ -56,6 +56,34 @@ Caveats. The sample is 50 pairs spread over 27 counties, so the 80 % figure has 
 
 Rules for the implementation, from what matched: match by normalised name in the county; try layer 60 for lake, pond and reservoir and layer 50 for creek, brook, river, stream and kill; never accept a core-only match; treat everything that fails as "stocked waterbody, location unknown", still listed by county. A reference table of pairs to 3DHP ids built offline would avoid per-spot queries.
 
+## Recordings with geometry for the catalogue
+
+Recorded on 2026-11-17 so that each matchable `(county, waterbody)` pair can be given a point and checked against its county. Index: `tests/fixtures/raw/stocking-ny/README.md`.
+
+Service facts checked (2026-11-17). Layers 60 and 50 of `3DHP_all/MapServer` have `maxRecordCount` 2500, expose no state or county field (the name is `gnisidlabel`, the id `id3dhp`) and ignore `returnCentroid`. With `returnGeometry=true`, `outSR=4326`, `maxAllowableOffset` and `geometryPrecision` are honoured (Kensico Reservoir at offset 0.003 is 434 bytes). Request time depends on the filter: `gnisidlabel IN ('Moose Pond', ...)` is fast (3 s nationwide, a few seconds per county); `UPPER(gnisidlabel) IN (...)` is about five times slower and drew HTTP 504 for Essex County waterbodies; an envelope over all of New York with `UPPER()` took more than 45 s. A name-only query over a county envelope (`gnisidlabel IS NOT NULL`, `returnDistinctValues=true`, `returnGeometry=false`) is cheap (about 46 KB and 2 s for 729 names).
+
+Request design.
+
+1. Counties: TIGERweb `State_County/MapServer/1/query?where=STATE='36'&outFields=BASENAME,NAME,GEOID&outSR=4326&maxAllowableOffset=0.001&geometryPrecision=4&f=json`, one request, 62 polygons, 115,581 bytes (U.S. Census Bureau). Fixture `tigerweb-ny-counties-generalised-2026-11-17.json`.
+2. Names, per county and layer: each pair's name normalised as in the rules above and title-cased word by word, in batches of 20 (the first 29 files, alphabetically up to Essex, were sent in batches of 40 with `UPPER()` on both sides), `where=gnisidlabel IN ('Name', ...)`, `geometry=<county bounding box + 0.01 degree>`, `geometryType=esriGeometryEnvelope`, `inSR=4326`, `outSR=4326`, `outFields=id3dhp,gnisidlabel,featuretypelabel`, `returnGeometry=true`, `maxAllowableOffset=0.003`, `geometryPrecision=4`. A name with a type word goes to its layer only (lake, pond, reservoir to 60; creek, brook, river, stream, kill to 50); any other name goes to both. One file per county and layer (`3dhp-layer<60|50>-county-<county>-names-2026-11-17.json`, 112 files), requests paced at least 1 s apart, no 429, no key.
+3. Spelling variants: for the pairs still without a feature, the distinct `gnisidlabel` values in the county envelope were listed per layer (124 small requests, not recorded) and compared with the state name under the catalogue's `name_matches` rule (case, `.`, word order). The exact spellings that match (`McKenzie Pond`, `DeBraine Lake`, `Lake of the Woods`, `East Branch Fish Creek`, `West Branch Croton River`) were fetched with the request of step 2 into 21 files `3dhp-layer<60|50>-county-<county>-spelling-variants-2026-11-17.json`.
+
+The files hold polylines (layer 50) and polygons (layer 60) in the service's JSON: `paths` or `rings` of `[longitude, latitude]` at 4 decimals, generalised by 0.003 degree (about 300 m). A river has many flowline features per name (Mohawk River 479, Catskill Creek 131 in the whole service), so its point is a vertex of one of them, for example the middle vertex of the longest path; a lake or pond point should be a point inside the generalised ring. A feature belongs to the pair's county when that point lies inside the TIGERweb polygon: the envelope query also returns same-named features in neighbouring counties and states, so the check is required.
+
+Sizes (bytes): layer 60 files 594,170; layer 50 files 3,895,048; counties 115,581. With the earlier fixtures the directory is 4.84 MB in 139 files. Layer 50 is 87 % of the volume because of flowline segments.
+
+Coverage of the 1,586 pairs: a normalised name equal to a 3DHP `gnisidlabel` (case-insensitive, any word order) in the county's envelope, then a vertex of one such feature inside the county polygon; counted by script on 2026-11-17.
+
+| | pairs with a same-name feature in the county envelope | with a vertex inside the county polygon |
+|---|---|---|
+| layer 60 (waterbody) | 580 | 572 |
+| layer 50 (flowline) | 536 | 535 |
+| either layer | 1,116 | 1,107 |
+
+The layers add up to more than the union because a name without a type word was sent to both. 470 pairs have no same-name feature in either layer. Examples: `Six Mile Waterworks`, `Allen Lake`, `Harwood Lake`, `Lake Erie`, `Lake Ontario`, `Cayuga`, `Genesse River` (a misspelling of Genesee), `Chautauqua Lake` listed under Allegany, and many private, club, hatchery or numbered waters (`County Pond A`, `Springville Field and Stream C`, `Dodge Creek T17`). Why a clearly named lake is absent (`Allen Lake`, `Case Lake`, `Quaker Lake`) was not investigated (**unverified**): it may carry no GNIS name in the service, or be a feature of another type; layers other than 60 and 50 were not searched.
+
+Limits of the check. A vertex test does not prove an interior point lies in the county for a feature that straddles a boundary; pick a point inside both the feature and the county, or reject the feature. The Census generalisation of 0.001 degree (about 100 m) can put a shoreline lake just outside its county. Several same-name features in a county (a river's segments, several `Mud Pond`s) cannot be told apart by the stocking data.
+
 ## Request examples
 
 3DHP waterbody by name in an envelope (fixture `3dhp-waterbody-layer60-name-query-kensico-2026-11-17.json`, Kensico Reservoir, Westchester County, `featuretypelabel` "Lake", 5.41 km2):
