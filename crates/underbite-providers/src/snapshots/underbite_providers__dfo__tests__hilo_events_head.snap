@@ -1,0 +1,26 @@
+---
+source: crates/underbite-providers/src/dfo.rs
+expression: "&t.events[..4]"
+---
+[
+  {
+    "time": 1794120060,
+    "kind": "low",
+    "height_m": 0.915
+  },
+  {
+    "time": 1794145320,
+    "kind": "high",
+    "height_m": 4.359
+  },
+  {
+    "time": 1794164160,
+    "kind": "low",
+    "height_m": 3.083
+  },
+  {
+    "time": 1794182400,
+    "kind": "high",
+    "height_m": 4.23
+  }
+]
