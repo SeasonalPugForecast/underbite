@@ -61,6 +61,21 @@ struct Row {
     // `coastal` and `great_lakes` columns are informational and ignored.
 }
 
+/// The Canadian file: `dfo_regions` lists the DFO regional pages (`;`-separated codes) that cover
+/// the tidal waters of a province or territory; `language` is `en` or `fr`.
+#[derive(Debug, Deserialize)]
+struct CaRow {
+    region: String,
+    name: String,
+    agency: String,
+    dfo_regions: String,
+    kind: String,
+    language: String,
+    url: String,
+    verified: String,
+    checked: String,
+}
+
 /// Reasons a catalogue file is rejected (a test failure; the shipped file never hits them).
 #[derive(Debug, thiserror::Error)]
 pub enum CatalogueError {
@@ -76,8 +91,62 @@ pub enum CatalogueError {
 struct Entry {
     region: String,
     noaa_region: String,
+    /// DFO regions (`DFO-PAC`, ...) whose tidal pages cover this jurisdiction.
+    dfo_regions: Vec<String>,
+    /// `en` or `fr`.
+    language: String,
     kind: RegKind,
     link: RegLink,
+}
+
+fn parse_kind(region: &str, kind: &str) -> Result<RegKind, CatalogueError> {
+    match kind {
+        "freshwater" => Ok(RegKind::Freshwater),
+        "saltwater" => Ok(RegKind::Saltwater),
+        "licence" => Ok(RegKind::Licence),
+        "federal" => Ok(RegKind::Federal),
+        _ => Err(CatalogueError::Kind {
+            region: region.to_owned(),
+            kind: kind.to_owned(),
+        }),
+    }
+}
+
+fn parse_ca(text: &str) -> Result<Vec<Entry>, CatalogueError> {
+    let mut rdr = csv::ReaderBuilder::new().from_reader(text.as_bytes());
+    let mut out = Vec::new();
+    for row in rdr.deserialize::<CaRow>() {
+        let r = row?;
+        let kind = parse_kind(&r.region, &r.kind)?;
+        if !r.url.starts_with("https://") {
+            return Err(CatalogueError::Url { region: r.region });
+        }
+        let label = if r.region.starts_with("DFO-") {
+            format!("{} ({})", r.agency, r.name)
+        } else {
+            r.agency
+        };
+        out.push(Entry {
+            region: r.region,
+            noaa_region: String::new(),
+            dfo_regions: r
+                .dfo_regions
+                .split(';')
+                .filter(|c| !c.is_empty())
+                .map(str::to_owned)
+                .collect(),
+            language: r.language,
+            kind,
+            link: RegLink {
+                kind,
+                label,
+                url: r.url,
+                checked: r.checked,
+                verified: r.verified == "Y",
+            },
+        });
+    }
+    Ok(out)
 }
 
 fn parse(text: &str) -> Result<Vec<Entry>, CatalogueError> {
@@ -85,18 +154,7 @@ fn parse(text: &str) -> Result<Vec<Entry>, CatalogueError> {
     let mut out = Vec::new();
     for row in rdr.deserialize::<Row>() {
         let r = row?;
-        let kind = match r.kind.as_str() {
-            "freshwater" => RegKind::Freshwater,
-            "saltwater" => RegKind::Saltwater,
-            "licence" => RegKind::Licence,
-            "federal" => RegKind::Federal,
-            _ => {
-                return Err(CatalogueError::Kind {
-                    region: r.region,
-                    kind: r.kind,
-                });
-            }
-        };
+        let kind = parse_kind(&r.region, &r.kind)?;
         if !r.url.starts_with("https://") {
             return Err(CatalogueError::Url { region: r.region });
         }
@@ -108,6 +166,8 @@ fn parse(text: &str) -> Result<Vec<Entry>, CatalogueError> {
         out.push(Entry {
             region: r.region,
             noaa_region: r.noaa_region,
+            dfo_regions: Vec::new(),
+            language: "en".to_owned(),
             kind,
             link: RegLink {
                 kind,
@@ -125,7 +185,9 @@ fn catalogue() -> &'static [Entry] {
     static CATALOGUE: OnceLock<Vec<Entry>> = OnceLock::new();
     CATALOGUE.get_or_init(|| {
         // A malformed shipped file is caught by the tests; at run time it yields no links.
-        parse(include_str!("../data/regulations/us.csv")).unwrap_or_default()
+        let mut all = parse(include_str!("../data/regulations/us.csv")).unwrap_or_default();
+        all.extend(parse_ca(include_str!("../data/regulations/ca.csv")).unwrap_or_default());
+        all
     })
 }
 
@@ -135,19 +197,36 @@ fn push_unique(out: &mut Vec<RegLink>, link: &RegLink) {
     }
 }
 
-fn jurisdiction_links(region: &str, wanted: &[RegKind], federal: bool) -> Vec<RegLink> {
+/// The rows of `region` and `kind` in `lang`, or in English when the agency has no such page.
+fn in_language<'a>(cat: &'a [Entry], region: &str, kind: RegKind, lang: &str) -> Vec<&'a Entry> {
+    let rows: Vec<&Entry> = cat
+        .iter()
+        .filter(|e| e.region == region && e.kind == kind)
+        .collect();
+    let wanted: Vec<&Entry> = rows
+        .iter()
+        .copied()
+        .filter(|e| e.language == lang)
+        .collect();
+    if wanted.is_empty() {
+        rows.into_iter().filter(|e| e.language == "en").collect()
+    } else {
+        wanted
+    }
+}
+
+fn jurisdiction_links(region: &str, wanted: &[RegKind], federal: bool, lang: &str) -> Vec<RegLink> {
     let region = region.trim().to_ascii_uppercase();
+    let lang = lang.trim().to_ascii_lowercase();
     let cat = catalogue();
     let mut out = Vec::new();
     for kind in wanted {
-        for e in cat.iter().filter(|e| e.region == region && e.kind == *kind) {
+        for e in in_language(cat, &region, *kind, &lang) {
             push_unique(&mut out, &e.link);
         }
     }
-    let noaa = cat
-        .iter()
-        .find(|e| e.region == region)
-        .map_or("", |e| e.noaa_region.as_str());
+    let first = cat.iter().find(|e| e.region == region);
+    let noaa = first.map_or("", |e| e.noaa_region.as_str());
     if federal && !noaa.is_empty() {
         for e in cat
             .iter()
@@ -164,34 +243,82 @@ fn jurisdiction_links(region: &str, wanted: &[RegKind], federal: bool) -> Vec<Re
             }
         }
     }
+    // Canadian tidal waters are federal: the DFO regional pages of the province or territory.
+    if federal && let Some(first) = first {
+        for code in &first.dfo_regions {
+            for e in in_language(cat, code, RegKind::Saltwater, &lang) {
+                push_unique(&mut out, &e.link);
+            }
+        }
+    }
     out
 }
 
-/// The links for fishing `water` in `region`: the jurisdiction's regulations page for that water,
-/// its licence page and, for salt water, the federal-waters pages of its NOAA Fisheries region.
-/// An inland jurisdiction has no saltwater page: for `Water::Salt` it yields only the licence link.
-/// An unknown region yields nothing.
-pub fn links(region: &str, water: Water) -> Vec<RegLink> {
+/// Like [`links`], with the pages in `lang` (`"en"` or `"fr"`) where the agency has them and in
+/// English where it does not. For salt water in Canada the links are DFO's regional pages only:
+/// provincial licences do not cover tidal waters.
+pub fn links_in(region: &str, water: Water, lang: &str) -> Vec<RegLink> {
+    let canadian = region.trim().to_ascii_uppercase().starts_with("CA-");
     match water {
-        Water::Fresh => jurisdiction_links(region, &[RegKind::Freshwater, RegKind::Licence], false),
-        Water::Salt => jurisdiction_links(region, &[RegKind::Saltwater, RegKind::Licence], true),
+        Water::Fresh => jurisdiction_links(
+            region,
+            &[RegKind::Freshwater, RegKind::Licence],
+            false,
+            lang,
+        ),
+        Water::Salt if canadian => jurisdiction_links(region, &[RegKind::Saltwater], true, lang),
+        Water::Salt => {
+            jurisdiction_links(region, &[RegKind::Saltwater, RegKind::Licence], true, lang)
+        }
     }
 }
 
-/// Every link of `region`: freshwater, saltwater, licence and federal.
-pub fn all_links(region: &str) -> Vec<RegLink> {
+/// The links for fishing `water` in `region`: the jurisdiction's regulations page for that water,
+/// its licence page and, for salt water, the federal-waters pages of its NOAA Fisheries region
+/// (in Canada, DFO's regional pages). English pages; see [`links_in`].
+/// An inland jurisdiction has no saltwater page: for `Water::Salt` it yields only the licence link.
+/// An unknown region yields nothing.
+pub fn links(region: &str, water: Water) -> Vec<RegLink> {
+    links_in(region, water, "en")
+}
+
+/// Like [`all_links`], in `lang` with an English fallback.
+pub fn all_links_in(region: &str, lang: &str) -> Vec<RegLink> {
     jurisdiction_links(
         region,
         &[RegKind::Freshwater, RegKind::Saltwater, RegKind::Licence],
         true,
+        lang,
     )
+}
+
+/// Every link of `region`: freshwater, saltwater, licence and federal.
+pub fn all_links(region: &str) -> Vec<RegLink> {
+    all_links_in(region, "en")
+}
+
+/// The licence link of `region` in `lang`, English when the agency has no such page.
+pub fn licence_link_in(region: &str, lang: &str) -> Option<RegLink> {
+    jurisdiction_links(region, &[RegKind::Licence], false, lang)
+        .into_iter()
+        .next()
 }
 
 /// The licence link of `region`.
 pub fn licence_link(region: &str) -> Option<RegLink> {
-    jurisdiction_links(region, &[RegKind::Licence], false)
-        .into_iter()
-        .next()
+    licence_link_in(region, "en")
+}
+
+/// The links for several regions at once, without duplicates: border waters (Lake Erie, the
+/// St. Lawrence) pass both the US state and the Canadian province.
+pub fn links_for_regions(regions: &[&str], water: Water, lang: &str) -> Vec<RegLink> {
+    let mut out = Vec::new();
+    for r in regions {
+        for l in links_in(r, water, lang) {
+            push_unique(&mut out, &l);
+        }
+    }
+    out
 }
 
 #[cfg(test)]
@@ -305,5 +432,95 @@ mod tests {
         let wa = links("US-WA", Water::Salt);
         assert!(wa.iter().any(|l| l.url.contains("west-coast")));
         assert!(!wa.iter().any(|l| l.url.contains("highly-migratory")));
+    }
+
+    const CA: &str = include_str!("../data/regulations/ca.csv");
+
+    #[test]
+    fn canadian_file_parses_and_covers_every_jurisdiction() {
+        let rows = parse_ca(CA).unwrap();
+        assert_eq!(rows.len(), 51);
+        assert!(rows.iter().all(|e| e.link.url.starts_with("https://")));
+        assert!(rows.iter().all(|e| e.link.checked.len() == 10));
+        let provinces: std::collections::BTreeSet<_> = rows
+            .iter()
+            .filter(|e| e.region.starts_with("CA-"))
+            .map(|e| e.region.clone())
+            .collect();
+        assert_eq!(provinces.len(), 13);
+        for p in provinces {
+            assert!(licence_link(&p).is_some(), "{p}");
+            assert!(!links(&p, Water::Fresh).is_empty(), "{p}");
+        }
+        let bad = "region,name,agency,dfo_regions,kind,language,url,verified,checked\nCA-XX,X,X,,tidal,en,https://x.example,Y,2026-01-01\n";
+        assert!(parse_ca(bad).is_err());
+    }
+
+    #[test]
+    fn british_columbia_has_provincial_and_pacific_links() {
+        let fresh = links("CA-BC", Water::Fresh);
+        assert!(fresh.iter().any(|l| l.kind == RegKind::Freshwater));
+        assert!(fresh.iter().any(|l| l.kind == RegKind::Licence));
+        let salt = links("ca-bc", Water::Salt);
+        assert_eq!(salt.len(), 1);
+        assert!(salt[0].url.contains("pac.dfo-mpo.gc.ca"));
+        let all = all_links("CA-BC");
+        assert!(all.iter().any(|l| l.url.contains("gov.bc.ca")));
+        assert!(all.iter().any(|l| l.url.contains("pac.dfo-mpo.gc.ca")));
+    }
+
+    #[test]
+    fn french_pages_are_chosen_with_an_english_fallback() {
+        let on = links_in("CA-ON", Water::Fresh, "fr");
+        assert!(on.iter().all(|l| l.url.contains("/fr/")));
+        assert_eq!(
+            links_in("CA-BC", Water::Fresh, "fr"),
+            links("CA-BC", Water::Fresh)
+        );
+        assert!(
+            links_in("CA-BC", Water::Salt, "FR")[0]
+                .url
+                .ends_with("index-fra.html")
+        );
+        assert!(
+            licence_link_in("CA-QC", "fr")
+                .unwrap()
+                .url
+                .contains("peche-sportive")
+        );
+        assert_eq!(
+            links_in("CA-ON", Water::Fresh, "de"),
+            links("CA-ON", Water::Fresh)
+        );
+    }
+
+    #[test]
+    fn tidal_waters_map_to_dfo_regions() {
+        let has =
+            |r: &str, needle: &str| links(r, Water::Salt).iter().any(|l| l.url.contains(needle));
+        assert!(has("CA-NS", "/maritimes/"));
+        assert!(has("CA-NS", "/gulf/"));
+        assert!(has("CA-PE", "/gulf/"));
+        assert!(has("CA-NL", "/newfoundland-labrador/"));
+        assert!(has("CA-QC", "/quebec/"));
+        assert!(has("CA-NU", "/arctic-arctique/"));
+        assert_eq!(links("CA-AB", Water::Salt).len(), 0);
+        assert_eq!(links("DFO-PAC", Water::Salt).len(), 1);
+    }
+
+    #[test]
+    fn northern_pages_are_unverified() {
+        for r in ["CA-YT", "CA-NU"] {
+            let fresh = links(r, Water::Fresh);
+            assert!(fresh.iter().all(|l| !l.verified), "{r}");
+        }
+        assert!(links("CA-ON", Water::Fresh).iter().all(|l| l.verified));
+    }
+
+    #[test]
+    fn border_waters_return_both_countries() {
+        let both = links_for_regions(&["US-NY", "CA-ON"], Water::Fresh, "en");
+        assert!(both.iter().any(|l| l.url.contains("dec.ny.gov")));
+        assert!(both.iter().any(|l| l.url.contains("ontario.ca")));
     }
 }
