@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="synthetic" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>Croton River walk</name>
+    <trkseg>
+      <trkpt lat="41.2108" lon="-73.8625"><ele>31</ele><time>2025-05-10T13:00:00Z</time></trkpt>
+      <trkpt lat="41.2112" lon="-73.8631"><ele>30.5</ele><time>2025-05-10T13:05:00Z</time></trkpt>
+      <trkpt lat="41.2119" lon="-73.8640"><ele>30</ele><time>2025-05-10T13:10:00Z</time></trkpt>
+    </trkseg>
+    <trkseg>
+      <trkpt lat="41.2131" lon="-73.8652"><ele>29</ele></trkpt>
+      <trkpt lat="41.2140" lon="-73.8660"><ele>28</ele></trkpt>
+    </trkseg>
+  </trk>
+  <rte>
+    <name>Route to the dam</name>
+    <rtept lat="41.2150" lon="-73.8670"><name>Parking</name></rtept>
+    <rtept lat="41.2160" lon="-73.8681"/>
+  </rte>
+</gpx>

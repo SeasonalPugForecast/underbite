@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="synthetic" xmlns="http://www.topografix.com/GPX/1/1"
+     xmlns:ext="urn:synthetic:extension">
+  <metadata><name>Harbor spots</name></metadata>
+  <wpt lat="40.7033" lon="-74.0170">
+    <ele>2.5</ele>
+    <time>2025-06-01T12:00:00Z</time>
+    <name>The Battery &amp; pier</name>
+    <cmt>Bring a net</cmt>
+    <desc>Stripers on the push</desc>
+    <extensions><ext:name>ignored</ext:name><ext:ele>junk</ext:ele></extensions>
+  </wpt>
+  <wpt lat="40.7050" lon="-74.0140">
+    <time>2025-06-01T12:00:00</time>
+    <name><![CDATA[Slip <2>]]></name>
+  </wpt>
+</gpx>
