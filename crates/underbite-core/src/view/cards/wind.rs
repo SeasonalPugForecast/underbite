@@ -521,7 +521,7 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(in crate::view) mod tests {
     use super::*;
     use crate::provenance::{Quality, Relation, SourceId, ValueKind};
     use crate::view::tests::sample_input;
@@ -529,7 +529,7 @@ mod tests {
 
     /// New York Harbor with whether's sample forecast and no station wind (buoy 44025 reports
     /// waves and pressure but not wind).
-    fn forecast_only() -> ViewInput {
+    pub(in crate::view) fn forecast_only() -> ViewInput {
         let mut input = sample_input();
         input.now = SAMPLE_NOW;
         input.snapshot.marine = crate::model::MarineConditions::default();

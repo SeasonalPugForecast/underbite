@@ -805,7 +805,7 @@ pub fn build(input: &ViewInput) -> Option<TimelineVm> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(in crate::view) mod tests {
     use super::*;
     use crate::astro::solunar::{DayBounds, SolunarSettings, sky_conditions};
     use crate::datum::VerticalDatum;
@@ -840,7 +840,7 @@ mod tests {
     }
 
     /// The Battery on 2026-11-08 with the recorded predictions and the computed sky.
-    fn input() -> ViewInput {
+    pub(in crate::view) fn input() -> ViewInput {
         let mut input = battery_input();
         input.snapshot.weather = None;
         input.snapshot.marine = crate::model::MarineConditions::default();

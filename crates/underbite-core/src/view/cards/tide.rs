@@ -576,7 +576,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
 }
 
 #[cfg(test)]
-pub(super) mod testing {
+pub(in crate::view) mod testing {
     //! Fixture-built inputs for the tide and current cards.
 
     use crate::datum::VerticalDatum;

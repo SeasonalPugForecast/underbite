@@ -393,7 +393,7 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(in crate::view) mod tests {
     use super::*;
     use crate::model::CurrentSeries;
     use crate::provenance::{Provenance, StationKind, StationRef, ValueKind};
@@ -405,7 +405,7 @@ mod tests {
     use whether_core::presentation::TimeFormat;
 
     /// The harmonic current station NYH1927 at bin 13, from the recorded week.
-    fn nyh1927() -> ViewInput {
+    pub(in crate::view) fn nyh1927() -> ViewInput {
         let mut input = input();
         let base = input.snapshot.marine.tide.take().unwrap().provenance;
         let prov = Provenance {

@@ -11,6 +11,8 @@ pub mod format;
 pub mod locale;
 #[cfg(any(test, debug_assertions))]
 pub mod packs;
+#[cfg(test)]
+mod pseudo_tests;
 pub mod stations;
 pub mod strings;
 pub mod timeline;

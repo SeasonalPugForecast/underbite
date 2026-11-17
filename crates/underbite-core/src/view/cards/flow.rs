@@ -1041,7 +1041,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
 
 /// Builders for the tests of the three water cards.
 #[cfg(test)]
-pub(super) mod fixtures {
+pub(in crate::view) mod fixtures {
     use super::*;
     use crate::model::{WaterConditions, WaterType};
     use crate::provenance::{StationKind, UsgsSiteType, ValueKind};
@@ -1207,7 +1207,7 @@ pub(super) mod fixtures {
 }
 
 #[cfg(test)]
-mod tests {
+pub(in crate::view) mod tests {
     use super::fixtures::*;
     use super::*;
     use crate::datum::Heights;
@@ -1350,7 +1350,7 @@ mod tests {
     }
 
     /// COHN6 forecast stage, flood categories at 17, 20, 21 and 22 ft above the gauge datum.
-    fn cohn6_input(units: crate::view::DisplayUnits) -> ViewInput {
+    pub(in crate::view) fn cohn6_input(units: crate::view::DisplayUnits) -> ViewInput {
         let mut input = croton_input(units, Voice::Plain);
         let nwps = prov(
             SourceId::NWPS,

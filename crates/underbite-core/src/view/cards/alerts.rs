@@ -300,7 +300,7 @@ pub fn build(input: &ViewInput) -> Option<AlertsCard> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(in crate::view) mod tests {
     use super::*;
     use crate::time::parse_rfc3339;
     use crate::view::Voice;
@@ -362,7 +362,7 @@ mod tests {
     }
 
     /// Harbor input on the recording day with the marine alert.
-    fn marine_input(voice: Voice) -> ViewInput {
+    pub(in crate::view) fn marine_input(voice: Voice) -> ViewInput {
         let mut input = sample_input();
         input.now = at("2026-11-08T14:30:00Z");
         input.voice = voice;

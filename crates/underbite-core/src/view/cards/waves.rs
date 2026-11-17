@@ -402,7 +402,7 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(in crate::view) mod tests {
     use super::*;
     use crate::provenance::{Provenance, Quality, Relation, SourceId, ValueKind};
     use crate::series::Series;
@@ -436,7 +436,7 @@ mod tests {
 
     /// Buoy 44025-like waves: wind waves and one swell with compass text directions, one swell
     /// without a period, no mean period; no wind, no model.
-    fn buoy_input() -> ViewInput {
+    pub(in crate::view) fn buoy_input() -> ViewInput {
         let mut input = sample_input();
         let now = input.now.0;
         input.snapshot.marine = crate::model::MarineConditions::default();

@@ -293,13 +293,18 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(in crate::view) mod tests {
     use super::*;
     use crate::provenance::{SourceId, StationKind, ValueKind};
     use crate::view::cards::flow::fixtures::{NOW, croton, input, metric, prov, ramp, run, us};
     use crate::view::{CardState, Voice};
 
-    fn river(units: crate::view::DisplayUnits, voice: Voice, from_c: f32, to_c: f32) -> ViewInput {
+    pub(in crate::view) fn river(
+        units: crate::view::DisplayUnits,
+        voice: Voice,
+        from_c: f32,
+        to_c: f32,
+    ) -> ViewInput {
         let mut input = input(units, voice);
         input.snapshot.water.temperature_c = Some(run(
             croton(Quality::Approved),

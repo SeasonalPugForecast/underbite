@@ -238,7 +238,7 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(in crate::view) mod tests {
     use super::*;
     use crate::model::Turbidity;
     use crate::provenance::{SourceId, StationKind, UsgsSiteType, ValueKind};
@@ -261,7 +261,7 @@ mod tests {
         Series::new(p, samples)
     }
 
-    fn bronx(units: crate::view::DisplayUnits, voice: Voice) -> ViewInput {
+    pub(in crate::view) fn bronx(units: crate::view::DisplayUnits, voice: Voice) -> ViewInput {
         let mut input = input(units, voice);
         input.snapshot.spot.name = "Bronx River".into();
         let p = prov(

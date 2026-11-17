@@ -329,7 +329,7 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(in crate::view) mod tests {
     use super::*;
     use crate::provenance::{Provenance, Quality, Relation, SourceId, ValueKind};
     use crate::series::{Sample, Series};
@@ -338,7 +338,7 @@ mod tests {
     use whether_core::testdata::SAMPLE_NOW;
 
     /// Whether's sample forecast and nothing from stations.
-    fn forecast_only() -> ViewInput {
+    pub(in crate::view) fn forecast_only() -> ViewInput {
         let mut input = sample_input();
         input.now = SAMPLE_NOW;
         input.snapshot.marine = crate::model::MarineConditions::default();

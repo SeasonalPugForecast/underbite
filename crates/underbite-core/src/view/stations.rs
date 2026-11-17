@@ -443,6 +443,78 @@ mod tests {
     }
 
     #[test]
+    fn rows_and_reasons_are_translated_in_the_pseudo_locale() {
+        use crate::view::locale::Locale;
+        let rankings = sample();
+        // The data: station names and ids, source ids, measurement names.
+        let mut data: Vec<String> = Vec::new();
+        for (m, r) in &rankings {
+            data.push(
+                serde_json::to_value(m)
+                    .unwrap()
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+            );
+            data.extend(r.chain.sources.iter().map(|s| s.as_str().to_owned()));
+            for s in r
+                .stations
+                .iter()
+                .map(|s| &s.station)
+                .chain(r.dropped.iter().map(|d| &d.station))
+            {
+                data.extend([s.name.clone(), s.id.clone(), s.source.as_str().to_owned()]);
+            }
+        }
+        data.push("USGS-01375000".to_owned());
+        data.sort_by_key(|t| std::cmp::Reverse(t.len()));
+        for voice in [Voice::Plain, Voice::Luna] {
+            let f = formatter(DistanceUnit::Mi, voice).with_locale(Locale::PSEUDO);
+            let groups = station_rows(&rankings, &f, NOW);
+            let site = StationKey::new(SourceId::USGS, "USGS-01375000");
+            let reasons: Vec<String> = [
+                Reason::Pinned,
+                Reason::Excluded,
+                Reason::TooFar {
+                    distance_m: 9_000.0,
+                    limit_m: 5_000.0,
+                },
+                Reason::Stale {
+                    age_s: 7_300,
+                    limit_s: 3_600,
+                },
+                Reason::WeakAndVariable,
+                Reason::OtherBin { kept: 13 },
+                Reason::Reported {
+                    at: UnixTime(NOW.0 - 360),
+                },
+                Reason::Listed,
+                Reason::NotReported {
+                    checked_at: UnixTime(NOW.0 - 7_200),
+                },
+                Reason::Relation {
+                    relation: Relation::Upstream,
+                },
+                Reason::OtherWaterBody {
+                    relation: Relation::Nearby,
+                },
+                Reason::NotPlaced,
+                Reason::ForecastGaugeFor { site },
+                Reason::Secondary,
+                Reason::Distance {
+                    distance_m: 1_609.344,
+                },
+            ]
+            .iter()
+            .map(|r| reason_text(&f, r, NOW))
+            .collect();
+            let json = serde_json::json!({ "groups": groups, "reasons": reasons });
+            let english = crate::view::pseudo_tests::english_in(&json, &data);
+            assert!(english.is_empty(), "{}", english.join("\n"));
+        }
+    }
+
+    #[test]
     fn every_reason_reads_as_words() {
         let f = formatter(DistanceUnit::Mi, Voice::Plain);
         let site = StationKey::new(SourceId::USGS, "USGS-01375000");

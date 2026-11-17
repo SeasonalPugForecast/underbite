@@ -196,7 +196,7 @@ pub(crate) mod tests {
         }
     }
 
-    fn input(hours_after_issue: i64, voice: Voice) -> ViewInput {
+    pub(in crate::view) fn input(hours_after_issue: i64, voice: Voice) -> ViewInput {
         let mut input = sample_input();
         let forecast = anz338();
         input.now = UnixTime(forecast.issued.0 + hours_after_issue * 3_600);

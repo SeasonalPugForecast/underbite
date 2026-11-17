@@ -802,7 +802,7 @@ pub fn build(input: &ViewInput) -> Option<StormAheadCard> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(in crate::view) mod tests {
     use super::*;
     use crate::model::StormWatch;
     use crate::units::{DistanceUnit, PressureUnit, TempUnit};
@@ -833,11 +833,11 @@ mod tests {
         input
     }
 
-    fn noreaster() -> ViewInput {
+    pub(in crate::view) fn noreaster() -> ViewInput {
         input_with(testdata::noreaster(), Vec::new())
     }
 
-    fn hurricane() -> ViewInput {
+    pub(in crate::view) fn hurricane() -> ViewInput {
         input_with(testdata::dry_week(), vec![testdata::hurricane()])
     }
 
