@@ -308,7 +308,7 @@ fn water_types_come_with_the_cores_names_in_picker_order() {
 #[test]
 fn measurement_titles_cover_every_measurement_by_id() {
     let titles = measurement_titles(cfs()).unwrap();
-    assert_eq!(titles.len(), 25);
+    assert_eq!(titles.len(), 27);
     assert_eq!(titles[0].id, "tide");
     let title = |id: &str| titles.iter().find(|t| t.id == id).map(|t| t.title.as_str());
     assert_eq!(title("discharge"), Some("River flow"));

@@ -26,6 +26,8 @@ pub enum Measurement {
     Discharge,
     GageHeight,
     LakeLevel,
+    // A reservoir project's release and inflow; its pool is the `LakeLevel`.
+    Reservoir,
     Turbidity,
     DissolvedOxygen,
     Conductivity,
@@ -34,6 +36,8 @@ pub enum Measurement {
     Chlorophyll,
     Clarity,
     Cyanobacteria,
+    // Bloom data beyond the cyanobacteria mean: `CyAN` maxima and NOAA forecasts.
+    Bloom,
     Tide,
     TidalCurrent,
     OceanCurrent,
@@ -679,6 +683,27 @@ mod tests {
         let again = serde_json::to_string(&snap).unwrap();
         assert!(!again.contains("stocking") && !again.contains("reservoir"));
         assert!(!again.contains("bloom"));
+    }
+
+    #[test]
+    fn reservoir_and_bloom_are_named_in_snake_case_and_sort_beside_their_kin() {
+        let names = serde_json::to_string(&[Measurement::Reservoir, Measurement::Bloom]).unwrap();
+        assert_eq!(names, r#"["reservoir","bloom"]"#);
+        let r: Requirements =
+            serde_json::from_str(r#"{"measurements":["bloom","lake_level","reservoir"]}"#).unwrap();
+        let order: Vec<Measurement> = r.measurements.into_iter().collect();
+        assert_eq!(
+            order,
+            [
+                Measurement::LakeLevel,
+                Measurement::Reservoir,
+                Measurement::Bloom
+            ]
+        );
+        // Lists written before the two existed still decode.
+        let old: Requirements =
+            serde_json::from_str(r#"{"measurements":["lake_level","cyanobacteria"]}"#).unwrap();
+        assert_eq!(old.measurements.len(), 2);
     }
 
     #[test]

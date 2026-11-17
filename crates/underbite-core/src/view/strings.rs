@@ -477,6 +477,7 @@ keys! {
     MeasDischarge => ("River flow", "River flow"),
     MeasGageHeight => ("Gage height", "Gage height"),
     MeasLakeLevel => ("Lake level", "Lake level"),
+    MeasReservoir => ("Reservoir release", "Reservoir release"),
     MeasTurbidity => ("Turbidity", "Turbidity"),
     MeasDissolvedOxygen => ("Dissolved oxygen", "Dissolved oxygen"),
     MeasConductivity => ("Conductivity", "Conductivity"),
@@ -485,6 +486,7 @@ keys! {
     MeasChlorophyll => ("Chlorophyll", "Chlorophyll"),
     MeasClarity => ("Water clarity", "Water clarity"),
     MeasCyanobacteria => ("Cyanobacteria", "Cyanobacteria"),
+    MeasBloom => ("Algal bloom", "Algal bloom"),
     MeasTide => ("Tide", "Tide"),
     MeasTidalCurrent => ("Tidal current", "Tidal current"),
     MeasOceanCurrent => ("Ocean current", "Ocean current"),
@@ -1606,6 +1608,7 @@ impl Strings {
             Measurement::Discharge => Key::MeasDischarge,
             Measurement::GageHeight => Key::MeasGageHeight,
             Measurement::LakeLevel => Key::MeasLakeLevel,
+            Measurement::Reservoir => Key::MeasReservoir,
             Measurement::Turbidity => Key::MeasTurbidity,
             Measurement::DissolvedOxygen => Key::MeasDissolvedOxygen,
             Measurement::Conductivity => Key::MeasConductivity,
@@ -1614,6 +1617,7 @@ impl Strings {
             Measurement::Chlorophyll => Key::MeasChlorophyll,
             Measurement::Clarity => Key::MeasClarity,
             Measurement::Cyanobacteria => Key::MeasCyanobacteria,
+            Measurement::Bloom => Key::MeasBloom,
             Measurement::Tide => Key::MeasTide,
             Measurement::TidalCurrent => Key::MeasTidalCurrent,
             Measurement::OceanCurrent => Key::MeasOceanCurrent,
@@ -2212,13 +2216,14 @@ pub const WATER_TYPES: [WaterType; 10] = [
 
 /// Every measurement, in the order lists of them read: the water's level and movement first,
 /// then its temperature and flow, its quality, the sea, then the forecasts and the air.
-pub const MEASUREMENTS: [Measurement; 25] = [
+pub const MEASUREMENTS: [Measurement; 27] = [
     Measurement::Tide,
     Measurement::TidalCurrent,
     Measurement::WaterTemperature,
     Measurement::Discharge,
     Measurement::GageHeight,
     Measurement::LakeLevel,
+    Measurement::Reservoir,
     Measurement::Turbidity,
     Measurement::Clarity,
     Measurement::DissolvedOxygen,
@@ -2227,6 +2232,7 @@ pub const MEASUREMENTS: [Measurement; 25] = [
     Measurement::Ph,
     Measurement::Chlorophyll,
     Measurement::Cyanobacteria,
+    Measurement::Bloom,
     Measurement::OceanCurrent,
     Measurement::Waves,
     Measurement::WavesForecast,
@@ -2565,6 +2571,7 @@ mod tests {
             | Measurement::Discharge
             | Measurement::GageHeight
             | Measurement::LakeLevel
+            | Measurement::Reservoir
             | Measurement::Turbidity
             | Measurement::DissolvedOxygen
             | Measurement::Conductivity
@@ -2573,6 +2580,7 @@ mod tests {
             | Measurement::Chlorophyll
             | Measurement::Clarity
             | Measurement::Cyanobacteria
+            | Measurement::Bloom
             | Measurement::Tide
             | Measurement::TidalCurrent
             | Measurement::OceanCurrent
@@ -2604,6 +2612,20 @@ mod tests {
         assert_eq!(
             Strings::new(Voice::Plain).measurement(Measurement::Discharge),
             "River flow"
+        );
+        for voice in [Voice::Plain, Voice::Luna] {
+            let s = Strings::new(voice);
+            assert_eq!(s.measurement(Measurement::Reservoir), "Reservoir release");
+            assert_eq!(s.measurement(Measurement::Bloom), "Algal bloom");
+        }
+        let at = |m| MEASUREMENTS.iter().position(|x| *x == m);
+        assert_eq!(
+            at(Measurement::Reservoir),
+            at(Measurement::LakeLevel).map(|i| i + 1)
+        );
+        assert_eq!(
+            at(Measurement::Bloom),
+            at(Measurement::Cyanobacteria).map(|i| i + 1)
         );
     }
 

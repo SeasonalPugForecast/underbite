@@ -25,7 +25,7 @@ pub fn group_name(measurement: Measurement) -> Option<&'static str> {
         M::Tide => "tide",
         M::TidalCurrent | M::OceanCurrent => "currents",
         M::Discharge | M::GageHeight | M::FlowForecast | M::FloodCategories => "flow",
-        M::LakeLevel => "lake_level",
+        M::LakeLevel | M::Reservoir => "lake_level",
         M::Waves | M::WavesForecast => "waves",
         M::SeaSurfaceTemp | M::SeaSurfaceTempForecast => "sst",
         M::Clarity | M::Turbidity => "clarity",
@@ -34,7 +34,8 @@ pub fn group_name(measurement: Measurement) -> Option<&'static str> {
         | M::Salinity
         | M::Ph
         | M::Chlorophyll
-        | M::Cyanobacteria => "water_quality",
+        | M::Cyanobacteria
+        | M::Bloom => "water_quality",
         M::MarineForecast | M::MarineAlerts => "marine_forecast",
         M::ObservedWind | M::ObservedPressure => return None,
     })
@@ -164,6 +165,21 @@ mod tests {
         );
         assert!(gauge_ranges(&both, "USGS-01372058").is_none());
         assert!(gauge_ranges(&[], "USGS-01375000").is_none());
+    }
+
+    #[test]
+    fn reservoirs_and_blooms_follow_the_level_and_quality_groups() {
+        assert_eq!(group_name(Measurement::Reservoir), Some("lake_level"));
+        assert_eq!(group_name(Measurement::Bloom), Some("water_quality"));
+        let sources = &Config::default().sources;
+        assert_eq!(
+            group_of(sources, Measurement::Reservoir),
+            group_of(sources, Measurement::LakeLevel)
+        );
+        assert_eq!(
+            group_of(sources, Measurement::Bloom),
+            group_of(sources, Measurement::Cyanobacteria)
+        );
     }
 
     #[test]

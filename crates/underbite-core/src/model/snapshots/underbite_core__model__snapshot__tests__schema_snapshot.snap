@@ -12,6 +12,7 @@ expression: schemas
           "discharge",
           "gage_height",
           "lake_level",
+          "reservoir",
           "turbidity",
           "dissolved_oxygen",
           "conductivity",
@@ -20,6 +21,7 @@ expression: schemas
           "chlorophyll",
           "clarity",
           "cyanobacteria",
+          "bloom",
           "tide",
           "tidal_current",
           "ocean_current",
@@ -1709,6 +1711,7 @@ expression: schemas
           "discharge",
           "gage_height",
           "lake_level",
+          "reservoir",
           "turbidity",
           "dissolved_oxygen",
           "conductivity",
@@ -1717,6 +1720,7 @@ expression: schemas
           "chlorophyll",
           "clarity",
           "cyanobacteria",
+          "bloom",
           "tide",
           "tidal_current",
           "ocean_current",
@@ -4595,6 +4599,9 @@ expression: schemas
       "offers": {
         "additionalProperties": false,
         "properties": {
+          "bloom": {
+            "$ref": "#/$defs/Coverage"
+          },
           "chlorophyll": {
             "$ref": "#/$defs/Coverage"
           },
@@ -4641,6 +4648,9 @@ expression: schemas
             "$ref": "#/$defs/Coverage"
           },
           "ph": {
+            "$ref": "#/$defs/Coverage"
+          },
+          "reservoir": {
             "$ref": "#/$defs/Coverage"
           },
           "salinity": {

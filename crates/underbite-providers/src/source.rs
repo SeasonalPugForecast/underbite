@@ -255,6 +255,8 @@ impl FragmentValue {
             M::FloodCategories => matches!(self, V::FloodCategories(_)),
             M::FlowForecast => matches!(self, V::Series(_) | V::Heights(_)),
             M::ObservedWind => matches!(self, V::Wind(_)),
+            // No value shape carries these yet.
+            M::Reservoir | M::Bloom => false,
         }
     }
 
