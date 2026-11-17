@@ -1,0 +1,352 @@
+---
+source: crates/underbite-providers/src/access/overpass.rs
+expression: page.features
+---
+[
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.7484532,
+        "lon": -74.0236637
+      }
+    },
+    "access": "open"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.6974902,
+        "lon": -74.0652665
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.7006563,
+        "lon": -73.9969645
+      }
+    },
+    "access": "open"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.69874,
+        "lon": -73.9975792
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.7293483,
+        "lon": -74.1009298
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.7484831,
+        "lon": -74.0224621
+      }
+    },
+    "access": "open"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.697584,
+        "lon": -74.0652909
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.7411415,
+        "lon": -74.0260766
+      }
+    },
+    "access": "open"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.6768361,
+        "lon": -73.9898693
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.6561807,
+        "lon": -73.9644851
+      }
+    },
+    "access": "closed"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.7383186,
+        "lon": -73.9602375
+      }
+    },
+    "access": "open"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "name": "Kayak Access",
+    "geometry": {
+      "point": {
+        "lat": 40.7392256,
+        "lon": -74.0111552
+      }
+    },
+    "access": "open"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.7251691,
+        "lon": -73.9581559
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Downtown Manhattan Heliport",
+    "geometry": {
+      "point": {
+        "lat": 40.7012417,
+        "lon": -74.0085897
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.697507,
+        "lon": -74.0651365
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Pier 102",
+    "geometry": {
+      "point": {
+        "lat": 40.691041,
+        "lon": -74.0120301
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Fulton Ferry Landing",
+    "geometry": {
+      "point": {
+        "lat": 40.7036083,
+        "lon": -73.9956019
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "City Pier A",
+    "geometry": {
+      "point": {
+        "lat": 40.7044116,
+        "lon": -74.0179139
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Pier 2 Kayak Dock",
+    "geometry": {
+      "point": {
+        "lat": 40.6998941,
+        "lon": -73.9979094
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "ramp",
+    "geometry": {
+      "point": {
+        "lat": 40.7293789,
+        "lon": -74.1010422
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Pier 5",
+    "geometry": {
+      "point": {
+        "lat": 40.6948855,
+        "lon": -74.0016484
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Pier 2",
+    "geometry": {
+      "point": {
+        "lat": 40.6994922,
+        "lon": -73.9987646
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Pier 6",
+    "geometry": {
+      "point": {
+        "lat": 40.6932329,
+        "lon": -74.0026431
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Pier 3",
+    "geometry": {
+      "point": {
+        "lat": 40.6979609,
+        "lon": -73.9996961
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Fulton Ferry Landing",
+    "geometry": {
+      "point": {
+        "lat": 40.7033471,
+        "lon": -73.9950894
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Governors Island Ferry",
+    "geometry": {
+      "point": {
+        "lat": 40.6923212,
+        "lon": -74.0019858
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "South Pier",
+    "geometry": {
+      "point": {
+        "lat": 40.7171259,
+        "lon": -74.0314247
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Battery Park City Ferry Terminal",
+    "geometry": {
+      "point": {
+        "lat": 40.7150035,
+        "lon": -74.0177418
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Pier 8",
+    "geometry": {
+      "point": {
+        "lat": 40.6903331,
+        "lon": -74.0043317
+      }
+    },
+    "access": "unknown"
+  },
+  {
+    "source": "overpass",
+    "kind": "pier",
+    "name": "Pier 7",
+    "geometry": {
+      "point": {
+        "lat": 40.691569,
+        "lon": -74.0025581
+      }
+    },
+    "access": "unknown"
+  }
+]
