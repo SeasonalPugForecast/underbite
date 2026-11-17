@@ -12,6 +12,7 @@ use crate::map::breaks::BreakKind;
 use crate::map::catalogue::{DateMode, Group, UnavailableReason};
 use crate::map::dem::{ApproxDepth, DepthReading};
 use crate::map::enc::{SourceDate, StructureKind};
+use crate::map::pack::{PlanError, SkipReason};
 use crate::model::{
     AlertSeverity, Measurement, MoonPhase, PrincipalPhase, TideKind, WaterType, ZoneKind,
 };
@@ -709,6 +710,55 @@ keys! {
     PinNoRecentValue => ("No recent value", "Nothing lately"),
     /// A forecast gauge with no flood stages set.
     PinNoFloodStages => ("No flood stages", "No flood stages"),
+    // Offline
+    /// A pack's size: `{n}` ("512", "48.3", "1.5").
+    PackSizeKb => ("{n} KB", "{n} KB"),
+    PackSizeMb => ("{n} MB", "{n} MB"),
+    PackSizeGb => ("{n} GB", "{n} GB"),
+    /// A pack's download time.
+    PackTimeUnderMinute => ("under a minute", "under a minute"),
+    /// `{n}` minutes.
+    PackTimeMinutes => ("{n} min", "{n} min"),
+    /// `{h}` whole hours.
+    PackTimeHours => ("{h} h", "{h} h"),
+    /// `{h}` hours and `{m}` minutes.
+    PackTimeHoursMinutes => ("{h} h {m} min", "{h} h {m} min"),
+    /// A pack's size and time: `{size}`, `{time}`.
+    PackSummary => ("{size}, about {time}", "{size}, about {time}"),
+    /// A pack larger than the offline limit: `{size}`, `{limit}`.
+    PackOverBudget => (
+        "About {size}: more than your {limit} offline limit.",
+        "About {size}: more than your {limit} offline limit.",
+    ),
+    /// Why a layer is not in a pack.
+    PackSkipUnknown => ("Not a map layer", "Not a map layer"),
+    PackSkipUnavailable => ("Not available", "Not available"),
+    PackSkipNotPackable => ("Not kept offline", "Not kept offline"),
+    PackSkipZoom => ("Not drawn at these zoom levels", "Not drawn at these zoom levels"),
+    /// Why a pack cannot be planned.
+    PackErrorBox => ("The area is not valid.", "The area is not valid."),
+    PackErrorZooms => ("The zoom range is not valid.", "The zoom range is not valid."),
+    PackErrorDates => ("The days are not valid.", "The days are not valid."),
+    /// `{cap}` downloads.
+    PackErrorTooMany => (
+        "This pack needs more than {cap} downloads: choose a smaller area or fewer zoom levels.",
+        "This pack needs more than {cap} downloads: choose a smaller area or fewer zoom levels.",
+    ),
+    /// A table that cannot be computed.
+    TableNoConstants => (
+        "No tide or current table could be computed from the stored constants.",
+        "No tide or current table could be computed from the stored constants.",
+    ),
+    /// A fetch that found no signal: `{time}` is when the other values were fetched.
+    OfflineComputedLast => (
+        "offline: computed from harmonic constants, other values from {time}",
+        "offline: computed from harmonic constants, other values from {time}",
+    ),
+    OfflineComputedOnly => (
+        "offline: computed from harmonic constants",
+        "offline: computed from harmonic constants",
+    ),
+    OfflineLastOnly => ("offline: values from {time}", "offline: values from {time}"),
 }
 
 /// Declares [`SafetyKey`], its list and its table in one place.
@@ -1719,6 +1769,64 @@ fn fill(template: &str, args: &[(&str, &str)]) -> String {
     out
 }
 
+/// Offline packs and tables.
+impl Strings {
+    /// A download size in decimal units: "512 KB", "48.3 MB", "1.5 GB".
+    pub fn pack_size(self, bytes: u64) -> String {
+        let (key, value, decimals) = if bytes < 1_000_000 {
+            (Key::PackSizeKb, bytes.div_ceil(1_000) as f32, 0)
+        } else if bytes < 1_000_000_000 {
+            let mb = bytes as f32 / 1e6;
+            (Key::PackSizeMb, mb, u8::from(mb < 100.0))
+        } else {
+            (Key::PackSizeGb, bytes as f32 / 1e9, 1)
+        };
+        self.fmt(key, &[("n", &Formatter::number(value, decimals))])
+    }
+
+    /// A download time: "under a minute", "12 min", "2 h", "1 h 20 min".
+    pub fn pack_duration(self, seconds: u64) -> String {
+        let minutes = seconds.div_ceil(60);
+        if seconds < 60 {
+            return self.get(Key::PackTimeUnderMinute).to_owned();
+        }
+        if minutes < 60 {
+            return self.fmt(Key::PackTimeMinutes, &[("n", &minutes.to_string())]);
+        }
+        let (h, m) = (minutes / 60, minutes % 60);
+        if m == 0 {
+            self.fmt(Key::PackTimeHours, &[("h", &h.to_string())])
+        } else {
+            self.fmt(
+                Key::PackTimeHoursMinutes,
+                &[("h", &h.to_string()), ("m", &m.to_string())],
+            )
+        }
+    }
+
+    /// Why a layer of a pack is left out.
+    pub const fn pack_skip(self, reason: SkipReason) -> &'static str {
+        self.get(match reason {
+            SkipReason::Unknown => Key::PackSkipUnknown,
+            SkipReason::Unavailable => Key::PackSkipUnavailable,
+            SkipReason::NotPackable => Key::PackSkipNotPackable,
+            SkipReason::ZoomOutOfRange => Key::PackSkipZoom,
+        })
+    }
+
+    /// Why a pack cannot be planned.
+    pub fn pack_error(self, error: &PlanError) -> String {
+        match error {
+            PlanError::InvalidBox => self.get(Key::PackErrorBox).to_owned(),
+            PlanError::InvalidZooms => self.get(Key::PackErrorZooms).to_owned(),
+            PlanError::InvalidDates => self.get(Key::PackErrorDates).to_owned(),
+            PlanError::TooManyItems { cap } => {
+                self.fmt(Key::PackErrorTooMany, &[("cap", &cap.to_string())])
+            }
+        }
+    }
+}
+
 /// A source's name as displayed.
 pub fn source_name(id: &SourceId) -> String {
     match id.as_str() {
@@ -1879,6 +1987,24 @@ mod tests {
             };
             assert_eq!(names(plain), names(luna), "{key:?}");
         }
+    }
+
+    #[test]
+    fn pack_sizes_and_times_read_plainly() {
+        let s = Strings::new(Voice::Plain);
+        assert_eq!(s.pack_size(0), "0 KB");
+        assert_eq!(s.pack_size(12_700), "13 KB");
+        assert_eq!(s.pack_size(48_260_000), "48.3 MB");
+        assert_eq!(s.pack_size(412_000_000), "412 MB");
+        assert_eq!(s.pack_size(1_540_000_000), "1.5 GB");
+        assert_eq!(s.pack_duration(20), "under a minute");
+        assert_eq!(s.pack_duration(61), "2 min");
+        assert_eq!(s.pack_duration(7_200), "2 h");
+        assert_eq!(s.pack_duration(4_800), "1 h 20 min");
+        assert_eq!(
+            s.pack_error(&PlanError::TooManyItems { cap: 50_000 }),
+            "This pack needs more than 50000 downloads: choose a smaller area or fewer zoom levels."
+        );
     }
 
     #[test]
