@@ -29,8 +29,8 @@ use std::sync::Arc;
 use underbite_core::datum::Heights;
 use underbite_core::model::SourceError as ModelSourceError;
 use underbite_core::model::{
-    CurrentSeries, FloodCategories, MarineConditions, Measurement, Requirements, TideSeries,
-    WaterConditions, WaveSample,
+    BloomInfo, CurrentSeries, ExternalLink, FloodCategories, MarineConditions, Measurement,
+    Requirements, ReservoirInfo, TideSeries, WaterConditions, WaveSample,
 };
 use underbite_core::provenance::{Attribution, Quality, SourceId, StationRef, ValueKind};
 use underbite_core::series::Series;
@@ -769,6 +769,8 @@ fn merge(old: FragmentValue, new: FragmentValue) -> FragmentValue {
             }
             V::Alerts(a)
         }
+        (V::Reservoir(a), V::Reservoir(b)) => V::Reservoir(merge_reservoir(a, b)),
+        (V::Bloom(a), V::Bloom(b)) => V::Bloom(merge_bloom(a, b)),
         (old @ (V::Heights(_) | V::TideSeries(_)), _) => old,
         (_, new) => new,
     }
@@ -825,6 +827,52 @@ fn merge_waves(old: &WaveSample, new: &WaveSample) -> WaveSample {
     }
 }
 
+/// One project from its release and inflow answers: each series by time, the project's name
+/// from the first that has one, the links of both.
+fn merge_reservoir(a: ReservoirInfo, b: ReservoirInfo) -> ReservoirInfo {
+    ReservoirInfo {
+        project: if a.project.is_empty() {
+            b.project
+        } else {
+            a.project
+        },
+        outflow_m3s: merge_option(a.outflow_m3s, b.outflow_m3s),
+        inflow_m3s: merge_option(a.inflow_m3s, b.inflow_m3s),
+        links: merge_links(a.links, b.links),
+    }
+}
+
+/// One bloom block from two: the maxima by time, the cell count and date of the newer composite,
+/// the forecast of the newer run, the links of both.
+fn merge_bloom(a: BloomInfo, b: BloomInfo) -> BloomInfo {
+    let (cyan_valid_cells, cyan_image_date) = if b.cyan_image_date >= a.cyan_image_date {
+        (b.cyan_valid_cells, b.cyan_image_date)
+    } else {
+        (a.cyan_valid_cells, a.cyan_image_date)
+    };
+    let hab = match (a.hab, b.hab) {
+        (Some(a), Some(b)) if a.provenance.observed_at > b.provenance.observed_at => Some(a),
+        (a, b) => b.or(a),
+    };
+    BloomInfo {
+        cyan_max_cells_ml: merge_option(a.cyan_max_cells_ml, b.cyan_max_cells_ml),
+        cyan_valid_cells,
+        cyan_image_date,
+        hab,
+        links: merge_links(a.links, b.links),
+    }
+}
+
+/// `a`'s links, then those of `b` it lacks.
+fn merge_links(mut a: Vec<ExternalLink>, b: Vec<ExternalLink>) -> Vec<ExternalLink> {
+    for link in b {
+        if !a.contains(&link) {
+            a.push(link);
+        }
+    }
+    a
+}
+
 fn merge_option<T: Clone>(a: Option<Series<T>>, b: Option<Series<T>>) -> Option<Series<T>> {
     match (a, b) {
         (Some(a), Some(b)) => Some(concat(a, b)),
@@ -879,6 +927,15 @@ fn latest(value: &FragmentValue) -> Option<UnixTime> {
             .max(),
         V::ZoneForecast(z) => Some(z.issued),
         V::Percentile(p) => p.provenance.as_ref().map(|p| p.observed_at),
+        V::Reservoir(r) => (r.outflow_m3s.as_ref().and_then(last))
+            .into_iter()
+            .chain(r.inflow_m3s.as_ref().and_then(last))
+            .max(),
+        // A forecast is as old as its run.
+        V::Bloom(b) => (b.cyan_max_cells_ml.as_ref().and_then(last))
+            .into_iter()
+            .chain(b.hab.as_ref().map(|h| h.provenance.observed_at))
+            .max(),
         V::Alerts(_) | V::FloodCategories(_) | V::Coverage { .. } => None,
     }
 }
@@ -915,6 +972,18 @@ fn is_empty(value: &FragmentValue) -> bool {
             } = f;
             [action, minor, moderate, major].iter().all(|h| h.is_none())
         }
+        // A project with neither release nor inflow says nothing beyond its pool.
+        V::Reservoir(r) => {
+            r.outflow_m3s.as_ref().is_none_or(Series::is_empty)
+                && r.inflow_m3s.as_ref().is_none_or(Series::is_empty)
+        }
+        // Links alone are not bloom data: a block without a composite or a forecast would read
+        // as "no bloom" where nothing is known.
+        V::Bloom(b) => {
+            b.cyan_max_cells_ml.as_ref().is_none_or(Series::is_empty)
+                && b.cyan_image_date.is_none()
+                && b.hab.is_none()
+        }
         V::Alerts(_) | V::Percentile(_) | V::Coverage { .. } => false,
     }
 }
@@ -938,6 +1007,8 @@ fn place(m: Measurement, value: FragmentValue, w: &mut WaterConditions, s: &mut 
         (M::Chlorophyll, V::Series(v)) => w.chlorophyll_ug_l = Some(v),
         (M::Clarity, V::Series(v)) => w.clarity_kd490_per_m = Some(v),
         (M::Cyanobacteria, V::Series(v)) => w.cyanobacteria_cells_ml = Some(v),
+        (M::Bloom, V::Bloom(v)) => w.bloom = Some(v),
+        (M::Reservoir, V::Reservoir(v)) => w.reservoir = Some(v),
         (M::FlowForecast, V::Series(v)) => w.discharge_forecast_m3s = Some(v),
         (M::FlowForecast, V::Heights(v)) => w.stage_forecast = Some(v),
         (M::FloodCategories, V::FloodCategories(v)) => w.flood_categories = Some(v),
@@ -1779,6 +1850,149 @@ mod tests {
         assert!(tide.events.is_empty() && tide.curve.is_none());
         let observed = tide.observed.unwrap();
         assert_eq!(observed.latest().unwrap().time, UnixTime(now.0 - 360));
+    }
+
+    #[test]
+    fn session_merges_a_projects_release_and_inflow_and_places_them() {
+        let link = ExternalLink {
+            label: "USACE Baltimore District: Raystown Lake".into(),
+            url: "https://www.nab.usace.army.mil/".into(),
+        };
+        let reservoir = |outflow: Option<&[i64]>, inflow: Option<&[i64]>| Fragment {
+            measurement: Measurement::Reservoir,
+            value: FragmentValue::Reservoir(ReservoirInfo {
+                project: "Raystown Lake".into(),
+                outflow_m3s: outflow.map(|m| series(m, ValueKind::Observed, Quality::Provisional)),
+                inflow_m3s: inflow.map(|m| series(m, ValueKind::Observed, Quality::Provisional)),
+                links: vec![link.clone()],
+            }),
+        };
+        let fragments = [
+            reservoir(Some(&[-60, -30]), None),
+            reservoir(None, Some(&[-45, -15])),
+            reservoir(Some(&[-90, -75]), None),
+        ];
+        let mut values = accept(Measurement::Reservoir, &fragments, NOW, Some(3_600)).unwrap();
+        assert_eq!(values.len(), 1);
+        let Some(FragmentValue::Reservoir(merged)) = values.remove(&Slot::Main) else {
+            panic!("one reservoir expected");
+        };
+        assert_eq!(merged.project, "Raystown Lake");
+        assert_eq!(
+            minutes(merged.outflow_m3s.as_ref().unwrap()),
+            [-90, -75, -60, -30]
+        );
+        assert_eq!(minutes(merged.inflow_m3s.as_ref().unwrap()), [-45, -15]);
+        assert_eq!(merged.links, std::slice::from_ref(&link));
+
+        let mut water = WaterConditions::default();
+        let mut marine = MarineConditions::default();
+        place(
+            Measurement::Reservoir,
+            FragmentValue::Reservoir(merged.clone()),
+            &mut water,
+            &mut marine,
+        );
+        assert_eq!(water.reservoir, Some(merged));
+        assert!(water.level.is_none(), "the pool is the lake level's");
+
+        // A project that published neither is no value, and old values are stale.
+        let nothing = [reservoir(None, Some(&[]))];
+        assert_eq!(
+            accept(Measurement::Reservoir, &nothing, NOW, Some(3_600)),
+            Err(SourceError::NoData(None))
+        );
+        let old = [reservoir(Some(&[-180]), None)];
+        assert_eq!(
+            accept(Measurement::Reservoir, &old, NOW, Some(3_600)),
+            Err(SourceError::Stale {
+                latest: UnixTime(NOW.0 - 180 * 60)
+            })
+        );
+    }
+
+    #[test]
+    fn session_places_a_bloom_and_never_takes_links_alone_for_one() {
+        use underbite_core::model::{HabForecast, HabLevel};
+        use underbite_core::time::LocalDate;
+
+        let link = ExternalLink {
+            label: "EPA CyAN".into(),
+            url: "https://www.epa.gov/".into(),
+        };
+        let date = |day| LocalDate {
+            year: 2026,
+            month: 11,
+            day,
+        };
+        let cyan = |m: &[i64], day, cells| Fragment {
+            measurement: Measurement::Bloom,
+            value: FragmentValue::Bloom(BloomInfo {
+                cyan_max_cells_ml: Some(series(m, ValueKind::Satellite, Quality::Provisional)),
+                cyan_valid_cells: Some(cells),
+                cyan_image_date: Some(date(day)),
+                hab: None,
+                links: vec![link.clone()],
+            }),
+        };
+        let forecast = HabForecast {
+            location: "Longboat Pass Boat Ramp".into(),
+            level: HabLevel::Low,
+            confidence: Some(0.9),
+            valid_at: UnixTime(NOW.0 + 3_600),
+            distance_m: 800.0,
+            provenance: provenance(ValueKind::Modelled, Quality::Provisional),
+        };
+        let hab = Fragment {
+            measurement: Measurement::Bloom,
+            value: FragmentValue::Bloom(BloomInfo {
+                hab: Some(forecast.clone()),
+                ..BloomInfo::default()
+            }),
+        };
+        let fragments = [cyan(&[-50], 15, 9), hab, cyan(&[-40], 14, 4)];
+        let mut values = accept(Measurement::Bloom, &fragments, NOW, Some(3_600)).unwrap();
+        let Some(FragmentValue::Bloom(merged)) = values.remove(&Slot::Main) else {
+            panic!("one bloom block expected");
+        };
+        assert_eq!(
+            merged.cyan_image_date,
+            Some(date(15)),
+            "the newer composite"
+        );
+        assert_eq!(merged.cyan_valid_cells, Some(9));
+        assert_eq!(
+            minutes(merged.cyan_max_cells_ml.as_ref().unwrap()),
+            [-50, -40]
+        );
+        assert_eq!(merged.hab, Some(forecast));
+        assert_eq!(merged.links, std::slice::from_ref(&link));
+
+        let mut water = WaterConditions::default();
+        let mut marine = MarineConditions::default();
+        place(
+            Measurement::Bloom,
+            FragmentValue::Bloom(merged.clone()),
+            &mut water,
+            &mut marine,
+        );
+        assert_eq!(water.bloom, Some(merged));
+        assert!(
+            water.cyanobacteria_cells_ml.is_none(),
+            "the mean is its own"
+        );
+
+        let links_only = [Fragment {
+            measurement: Measurement::Bloom,
+            value: FragmentValue::Bloom(BloomInfo {
+                links: vec![link],
+                ..BloomInfo::default()
+            }),
+        }];
+        assert_eq!(
+            accept(Measurement::Bloom, &links_only, NOW, Some(3_600)),
+            Err(SourceError::NoData(None))
+        );
     }
 
     #[test]

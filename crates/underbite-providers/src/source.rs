@@ -10,8 +10,9 @@ use serde::Deserialize;
 use underbite_core::datum::Heights;
 use underbite_core::model::SourceError as ModelSourceError;
 use underbite_core::model::{
-    Coverage, CurrentSeries, FloodCategories, MarineAlert, Measurement, Percentile, Requirements,
-    SourceErrorKind, TideSeries, Turbidity, WaveSeries, Wind, ZoneForecast,
+    BloomInfo, Coverage, CurrentSeries, FloodCategories, MarineAlert, Measurement, Percentile,
+    Requirements, ReservoirInfo, SourceErrorKind, TideSeries, Turbidity, WaveSeries, Wind,
+    ZoneForecast,
 };
 use underbite_core::provenance::{Attribution, SourceId};
 use underbite_core::series::{Series, Vector};
@@ -213,6 +214,10 @@ pub enum FragmentValue {
     FloodCategories(FloodCategories),
     /// A value among the normals for its day of year.
     Percentile(Percentile),
+    /// A reservoir project's release and inflow (its pool is a lake level's [`Heights`]).
+    Reservoir(ReservoirInfo),
+    /// Bloom data: satellite maxima and a beach forecast, with the pages to read more.
+    Bloom(BloomInfo),
     /// What a station currently reports for a measurement, for discovery.
     Coverage {
         /// The station id as the source writes it.
@@ -255,8 +260,8 @@ impl FragmentValue {
             M::FloodCategories => matches!(self, V::FloodCategories(_)),
             M::FlowForecast => matches!(self, V::Series(_) | V::Heights(_)),
             M::ObservedWind => matches!(self, V::Wind(_)),
-            // No value shape carries these yet.
-            M::Reservoir | M::Bloom => false,
+            M::Reservoir => matches!(self, V::Reservoir(_)),
+            M::Bloom => matches!(self, V::Bloom(_)),
         }
     }
 
@@ -274,6 +279,8 @@ impl FragmentValue {
             Self::Alerts(_) => "alerts",
             Self::FloodCategories(_) => "flood categories",
             Self::Percentile(_) => "percentile",
+            Self::Reservoir(_) => "reservoir",
+            Self::Bloom(_) => "bloom",
             Self::Coverage { .. } => "coverage",
         }
     }
@@ -1345,19 +1352,31 @@ mod tests {
                 periods: Vec::new(),
             }),
             FragmentValue::FloodCategories(FloodCategories::default()),
+            FragmentValue::Reservoir(ReservoirInfo::default()),
+            FragmentValue::Bloom(BloomInfo::default()),
         ];
         let all: BTreeSet<Measurement> = serde_json::from_str(
-            r#"["water_temperature","discharge","gage_height","lake_level","turbidity",
-                "dissolved_oxygen","conductivity","salinity","ph","chlorophyll","clarity",
-                "cyanobacteria","tide","tidal_current","ocean_current","waves","waves_forecast",
-                "sea_surface_temp","sea_surface_temp_forecast","marine_forecast","marine_alerts",
-                "flood_categories","flow_forecast","observed_wind","observed_pressure"]"#,
+            r#"["water_temperature","discharge","gage_height","lake_level","reservoir",
+                "turbidity","dissolved_oxygen","conductivity","salinity","ph","chlorophyll",
+                "clarity","cyanobacteria","bloom","tide","tidal_current","ocean_current","waves",
+                "waves_forecast","sea_surface_temp","sea_surface_temp_forecast","marine_forecast",
+                "marine_alerts","flood_categories","flow_forecast","observed_wind",
+                "observed_pressure"]"#,
         )
         .unwrap();
-        assert_eq!(all.len(), 25);
+        assert_eq!(all.len(), 27);
         for m in all {
             assert!(shapes.iter().any(|s| s.fits(m)), "{m:?}");
         }
+        let bloom = FragmentValue::Bloom(BloomInfo::default());
+        assert!(bloom.fits(Measurement::Bloom) && !bloom.fits(Measurement::Cyanobacteria));
+        let reservoir = FragmentValue::Reservoir(ReservoirInfo::default());
+        assert!(reservoir.fits(Measurement::Reservoir) && !reservoir.fits(Measurement::LakeLevel));
+        let mut out = Fragments::new();
+        assert_eq!(
+            out.push(Measurement::Bloom, shapes[0].clone()),
+            Err(SourceError::Unsupported("series for Bloom".into()))
+        );
     }
 
     #[test]
