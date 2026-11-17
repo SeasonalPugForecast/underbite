@@ -593,12 +593,12 @@ mod tests {
     use std::fmt::Write as _;
 
     use super::*;
-    use crate::map::{ErddapNode, GridSource};
+    use crate::map::{GridHost, GridSource};
     use crate::time::UnixTime;
 
     fn source() -> GridSource {
         GridSource {
-            node: ErddapNode::Pfeg,
+            node: GridHost::Pfeg,
             dataset: "DEM_global_mosaic".to_owned(),
             variables: vec!["elevation".to_owned()],
             altitude_axis: false,

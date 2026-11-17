@@ -454,7 +454,7 @@ mod tests {
     use std::fmt::Write as _;
 
     use super::*;
-    use crate::map::{ErddapNode, GridSource};
+    use crate::map::{GridHost, GridSource};
     use crate::time::UnixTime;
 
     /// The ADR defaults: 0.5 °C per km, and 0.15 log10 per 4 km.
@@ -472,7 +472,7 @@ mod tests {
 
     fn source(step: f64) -> GridSource {
         GridSource {
-            node: ErddapNode::Pfeg,
+            node: GridHost::Pfeg,
             dataset: "synthetic".to_owned(),
             variables: vec!["v".to_owned()],
             altitude_axis: false,

@@ -116,10 +116,6 @@ pub enum GridHost {
     NceiDem,
 }
 
-/// The former name of [`GridHost`], from when every grid came from an ERDDAP server.
-#[deprecated(note = "use GridHost")]
-pub type ErddapNode = GridHost;
-
 impl GridHost {
     /// The ERDDAP server's base URL, without a trailing slash (`/griddap/{dataset}.json`
     /// follows); `None` for a host that is not an ERDDAP server.
