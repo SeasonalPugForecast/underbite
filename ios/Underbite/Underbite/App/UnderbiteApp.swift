@@ -31,13 +31,14 @@ struct UnderbiteApp: App {
         VoiceStyle(setting: (try? Settings(json: store.settingsJSON).presentation.voice) ?? "luna")
     }
 
-    /// The one store of the process; `-seed` adds the test places and `-sample` swaps in the
+    /// The one store of the process; `-seed` adds the test places, `-seedLimits` a sample limits profile and `-sample` swaps in the
     /// offline sample (debug builds).
     private static func makeStore() -> SpotStore {
         #if DEBUG
             if SampleMode.isOn { return SpotStore.sample() }
             let store = SpotStore.shared
             if ProcessInfo.processInfo.arguments.contains("-seed") { store.addSeedSpots() }
+            if ProcessInfo.processInfo.arguments.contains("-seedLimits") { store.addSeedLimits() }
             return store
         #else
             return SpotStore.shared

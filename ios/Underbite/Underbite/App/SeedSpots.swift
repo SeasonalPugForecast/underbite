@@ -20,6 +20,14 @@
             id: "seed-ndbc-44025", name: "Buoy 44025", latitude: 40.258, longitude: -73.175,
             waterType: "offshore", timeZone: "America/New_York", order: 2)
 
+        /// The sample limits profile: a kayak.
+        static var limits: [String: Any] {
+            [
+            "name": "Kayak", "max_wind_kn": 12.0, "max_gust_kn": 18.0, "max_wave_m": 0.6,
+            "no_small_craft_advisory": true, "no_lightning": true,
+            ]
+        }
+
         static var all: [Spot] { [battery, croton, buoy] }
     }
 
@@ -28,6 +36,22 @@
         func addSeedSpots() {
             for spot in SeedSpots.all where self.spot(spot.id) == nil { add(spot) }
             if let first = self.spot(SeedSpots.battery.id) { setActive(first.id) }
+        }
+
+        /// Puts a sample `[[limits]]` profile into the settings (`-seedLimits`), so the
+        /// go/no-go card shows; plain test values, saved like any settings change.
+        func addSeedLimits() {
+            guard
+                let data = settingsJSON.data(using: .utf8),
+                var settings = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+            else { return }
+            settings["limits"] = [SeedSpots.limits]
+            guard
+                let out = try? JSONSerialization.data(
+                    withJSONObject: settings, options: [.sortedKeys]),
+                let json = String(data: out, encoding: .utf8)
+            else { return }
+            try? updateSettings(json)
         }
     }
 #endif
