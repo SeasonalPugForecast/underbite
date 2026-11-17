@@ -127,6 +127,20 @@ keys! {
     Water => ("Water", "Water"),
     Station => ("Station", "Station"),
     Heights => ("Heights", "Heights"),
+    /// The unit pickers' group labels (see `Strings::unit_group`).
+    UnitGroupDischarge => ("River flow", "River flow"),
+    UnitGroupHeight => ("Heights", "Heights"),
+    UnitGroupStage => ("River stage", "River stage"),
+    UnitGroupLakeLevel => ("Lake level", "Lake level"),
+    UnitGroupTide => ("Tide height", "Tide height"),
+    UnitGroupWaves => ("Wave height", "Wave height"),
+    UnitGroupSpeed => ("Speeds", "Speeds"),
+    UnitGroupCurrent => ("Current speed", "Current speed"),
+    UnitGroupWind => ("Wind speed", "Wind speed"),
+    UnitGroupWaterTemp => ("Water temperature", "Water temperature"),
+    UnitGroupAirTemp => ("Air temperature", "Air temperature"),
+    UnitGroupPressure => ("Air pressure", "Air pressure"),
+    UnitGroupDistance => ("Distances", "Distances"),
     Depth => ("Depth", "Depth"),
     Night => ("Night", "Night"),
     Sunrise => ("Sunrise", "Sunrise"),
@@ -699,6 +713,27 @@ impl Strings {
         fill(key.text(), args)
     }
 
+    /// What a unit picker's group is called ("discharge" is "River flow"); `None` for an id
+    /// that names no group.
+    pub fn unit_group(self, id: &str) -> Option<&'static str> {
+        Some(self.get(match id {
+            "discharge" => Key::UnitGroupDischarge,
+            "height" => Key::UnitGroupHeight,
+            "stage" => Key::UnitGroupStage,
+            "lake_level" => Key::UnitGroupLakeLevel,
+            "tide" => Key::UnitGroupTide,
+            "waves" => Key::UnitGroupWaves,
+            "speed" => Key::UnitGroupSpeed,
+            "current" => Key::UnitGroupCurrent,
+            "wind" => Key::UnitGroupWind,
+            "water_temp" => Key::UnitGroupWaterTemp,
+            "air_temp" => Key::UnitGroupAirTemp,
+            "pressure" => Key::UnitGroupPressure,
+            "distance" => Key::UnitGroupDistance,
+            _ => return None,
+        }))
+    }
+
     /// What a measurement is called: "River flow", "Water temperature", ...
     pub const fn measurement(self, m: Measurement) -> &'static str {
         self.get(match m {
@@ -996,6 +1031,18 @@ mod tests {
         for key in SafetyKey::ALL.iter().copied() {
             assert_eq!(luna.safety(key), plain.safety(key));
             assert!(!key.text().contains("Luna"));
+        }
+    }
+
+    #[test]
+    fn unit_groups_are_named_in_both_voices() {
+        for voice in [Voice::Plain, Voice::Luna] {
+            let s = Strings::new(voice);
+            assert_eq!(s.unit_group("discharge"), Some("River flow"));
+            assert_eq!(s.unit_group("height"), Some("Heights"));
+            assert_eq!(s.unit_group("wind"), Some("Wind speed"));
+            assert_eq!(s.unit_group("distance"), Some("Distances"));
+            assert_eq!(s.unit_group("nonsense"), None);
         }
     }
 

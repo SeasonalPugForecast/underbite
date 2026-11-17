@@ -47,6 +47,27 @@ impl Quantity {
     }
 }
 
+/// Metres per kilometre.
+const M_PER_KM: f64 = 1_000.0;
+/// Metres per statute mile.
+const M_PER_MI: f64 = 1_609.344;
+
+/// A distance in `unit` as metres.
+pub fn distance_to_metres(unit: DistanceUnit, v: f64) -> f64 {
+    match unit {
+        DistanceUnit::Km => v * M_PER_KM,
+        DistanceUnit::Mi => v * M_PER_MI,
+    }
+}
+
+/// A distance in metres in `unit`.
+pub fn distance_from_metres(unit: DistanceUnit, m: f64) -> f64 {
+    match unit {
+        DistanceUnit::Km => m / M_PER_KM,
+        DistanceUnit::Mi => m / M_PER_MI,
+    }
+}
+
 /// Formats values for one spot, in the user's units, voice and clock.
 #[derive(Clone, Debug)]
 pub struct Formatter {
@@ -227,10 +248,7 @@ impl Formatter {
         let Some(m) = metres else {
             return self.missing(unit.symbol());
         };
-        let v = match unit {
-            DistanceUnit::Km => m / 1_000.0,
-            DistanceUnit::Mi => m / 1_609.344,
-        };
+        let v = distance_from_metres(unit, f64::from(m)) as f32;
         Self::quantity(v, u8::from(v < 10.0), unit.symbol())
     }
 
@@ -688,6 +706,14 @@ mod tests {
             kind: ValueKind::Observed,
             quality: Quality::Approved,
         }
+    }
+
+    #[test]
+    fn distances_convert_both_ways() {
+        assert_eq!(distance_to_metres(DistanceUnit::Km, 2.5), 2_500.0);
+        assert_eq!(distance_to_metres(DistanceUnit::Mi, 1.0), 1_609.344);
+        assert_eq!(distance_from_metres(DistanceUnit::Km, 2_500.0), 2.5);
+        assert_eq!(distance_from_metres(DistanceUnit::Mi, 1_609.344), 1.0);
     }
 
     #[test]
