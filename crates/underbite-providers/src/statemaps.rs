@@ -453,8 +453,8 @@ mod tests {
     use super::*;
     use crate::testutil::fixture_bytes;
 
-    const IN_FIXTURE: &str = "in-lake-bathymetry-crooked-creek-lake-2026-11-17.geojson";
-    const MN_FIXTURE: &str = "mn-lake-bathymetry-pine-01000100-2026-11-17.geojson";
+    const IN_FIXTURE: &str = "in-lake-bathymetry-mill-pond-lake.synthetic.geojson";
+    const MN_FIXTURE: &str = "mn-lake-bathymetry-alder-99000100.synthetic.geojson";
     const NY_FIXTURE: &str = "ny-artificial-reefs-socrata-2026-11-17.json";
 
     fn ok(body: &[u8]) -> Response<'_> {
@@ -545,13 +545,13 @@ mod tests {
         assert_eq!(feet, [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22]);
         let first = &c.lines[0];
         assert!((first.line.value + 20.0 * M_PER_FT).abs() < 1e-9);
-        assert_eq!(first.lake.as_deref(), Some("Crooked Creek Lake"));
+        assert_eq!(first.lake.as_deref(), Some("Mill Pond Lake"));
         assert_eq!(first.index, Some(true));
-        assert_eq!(first.survey, Some(UnixTime(1_466_035_200)));
+        assert_eq!(first.survey, Some(UnixTime(1_467_417_600)));
         assert!(!first.gauge_adjusted);
         assert!(first.line.points.len() >= 2);
-        assert!((first.line.points[0].lon - -86.29759).abs() < 1e-9);
-        assert!((first.line.points[0].lat - 39.124_361).abs() < 1e-9);
+        assert!((first.line.points[0].lon - -86.499_155).abs() < 1e-9);
+        assert!((first.line.points[0].lat - 39.5).abs() < 1e-9);
     }
 
     #[test]
@@ -569,8 +569,8 @@ mod tests {
         feet.dedup();
         assert_eq!(feet, [0, 5, 10, 15, 20, 25]);
         assert!(c.lines.iter().all(|l| l.line.value <= 0.0));
-        assert_eq!(c.lines[0].lake_id.as_deref(), Some("01000100"));
-        assert_eq!(c.lines[0].lake.as_deref(), Some("Pine"));
+        assert_eq!(c.lines[0].lake_id.as_deref(), Some("99000100"));
+        assert_eq!(c.lines[0].lake.as_deref(), Some("Alder"));
         assert_eq!(c.lines[0].survey, None);
         assert_eq!(c.lines[0].index, None);
     }

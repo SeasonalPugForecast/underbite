@@ -768,7 +768,7 @@ fn structure_points_are_worded_and_never_show_a_depth() {
 
 #[test]
 fn state_contours_are_requested_inside_their_coverage_and_labelled_below_the_surface() {
-    // Crooked Creek Lake, Indiana.
+    // A box in Indiana.
     let request = state_contour_request(
         "lake-contours-in".into(),
         -86.31,
@@ -808,7 +808,7 @@ fn state_contours_are_requested_inside_their_coverage_and_labelled_below_the_sur
     assert!(state_contour_request("sst".into(), -86.31, 39.11, -86.28, 39.14, 14, 0).is_err());
     assert!(state_contour_request("nope".into(), -86.31, 39.11, -86.28, 39.14, 14, 0).is_err());
 
-    let body = fixture("state-maps/in-lake-bathymetry-crooked-creek-lake-2026-11-17.geojson");
+    let body = fixture("state-maps/in-lake-bathymetry-mill-pond-lake.synthetic.geojson");
     let page = parse_state_contours(
         "lake-contours-in".into(),
         json_response(&body),
@@ -825,7 +825,7 @@ fn state_contours_are_requested_inside_their_coverage_and_labelled_below_the_sur
     );
     assert!(page.lines.iter().any(|l| l.major));
     assert!(page.lines.iter().any(|l| l.label_at.is_some()));
-    assert_eq!(page.lines[0].lake.as_deref(), Some("Crooked Creek Lake"));
+    assert_eq!(page.lines[0].lake.as_deref(), Some("Mill Pond Lake"));
     let metres = parse_state_contours(
         "lake-contours-in".into(),
         json_response(&body),
@@ -835,7 +835,7 @@ fn state_contours_are_requested_inside_their_coverage_and_labelled_below_the_sur
     .unwrap();
     assert!(metres.lines.iter().any(|l| l.label == "6.1 m"));
 
-    let mn = fixture("state-maps/mn-lake-bathymetry-pine-01000100-2026-11-17.geojson");
+    let mn = fixture("state-maps/mn-lake-bathymetry-alder-99000100.synthetic.geojson");
     let page = parse_state_contours(
         "lake-contours-mn".into(),
         json_response(&mn),

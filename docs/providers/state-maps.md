@@ -36,7 +36,7 @@ Neither has ocean coast; Indiana (Lake Michigan) and Minnesota (Lake Superior) p
 - Coverage: "certain Indiana lakes" (not all); extent roughly -87.53,37.99 to -84.80,41.77.
 - Service date: the layer's ETag `1776625121074` corresponds to 2026-04-19 UTC; the description text says 4/16/19.
 - Licence and credit: the service carries no `licenseInfo` and no terms were found; `copyrightText` is "Indiana Department of Natural Resources, Division of Fish and Wildlife". The agency's printed lake depth maps are described as copyrighted with permission to reprint and use with credit to Indiana DNR (found by search, not re-read). Credit "Indiana DNR, Division of Fish and Wildlife"; **terms for the GIS layer are unverified**.
-- Fixture: `in-lake-bathymetry-crooked-creek-lake-2026-11-17.geojson`.
+- Fixture: `in-lake-bathymetry-mill-pond-lake.synthetic.geojson` (invented lake, same properties and geometry types; the agency's data is not redistributed).
 
 ## Minnesota: Lake Bathymetry (MN DNR)
 
@@ -48,7 +48,7 @@ Neither has ocean coast; Indiana (Lake Michigan) and Minnesota (Lake Superior) p
 - Unit: **the service does not state it.** DNR metadata for the lake DEM, found by search, reads "DEPTH ... represents lake depth in (negative) feet", and the companion shaded-relief image is "classified at 5-foot depth intervals"; the Pine Lake values 0, -5 ... -25 fit. Treat feet as documented elsewhere and mark it as such; the contour dataset's own metadata record could not be opened (the Geospatial Commons pages render with JavaScript and the old metadata URL answers 404).
 - Reference: the depth is below the lake surface at the time of the original map; per the Commons record, contours "are derived from existing lake contour maps of variable dates" (digitised from DNR Lake Mapping Unit maps; outlines from 1991-92 aerial photography). Field work dates per lake are in layer 2 (`fldw_end`). Coverage: "statewide, however GIS products have only been completed for selected lakes" (the shaded-relief metadata, last updated 2016-07-26).
 - Licence: DNR "General Geographic Data License Agreement" (`https://dnr.state.mn.us/wmas/kml/license.html`, the general agreement that applies to DNR data unless a dataset has its own): non-exclusive, non-sublicensable licence; data "as is"; "MNDNR must be acknowledged as having contributed data to the development of the product"; use "is not restricted" but data "may not be sold commercially or privately, without the written permission of MNDNR". The shaded-relief record says "Internal DNR use is unrestricted. External use is constrained by the standard, general DNR GIS Data License Agreement"; the contour dataset's own record could not be read, so a dataset-specific licence is **unverified**. The service has no `copyrightText` or `licenseInfo`. Credit: "Minnesota Department of Natural Resources" (Division of Fish and Wildlife, Section of Fisheries, as originator). A free app that does not sell the data is within the stated terms; bundling the data into a paid or sold product is not.
-- Fixture: `mn-lake-bathymetry-pine-01000100-2026-11-17.geojson`.
+- Fixture: `mn-lake-bathymetry-alder-99000100.synthetic.geojson` (invented lake, same properties and geometry types).
 
 ## New York: lake contours
 
