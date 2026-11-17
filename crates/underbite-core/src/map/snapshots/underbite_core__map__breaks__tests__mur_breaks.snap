@@ -1,0 +1,16 @@
+---
+source: crates/underbite-core/src/map/breaks.rs
+expression: out
+---
+threshold 0.5 °C/km, spacing 0.5 °C: 0 pieces
+threshold 0.05 °C/km, spacing 0.25 °C: 2 pieces
+    6 points  10.0 km 0.055/km line  40.6129,-73.7901 -> 40.6175,-73.8855
+    4 points   8.4 km 0.053/km line  40.5696,-73.8424 -> 40.5938,-73.9359
+threshold 0.02 °C/km, spacing 0.25 °C: 7 pieces
+    4 points  11.2 km 0.033/km line  40.6652,-73.0500 -> 40.6891,-73.1784
+   10 points  29.2 km 0.042/km line  40.7048,-73.7006 -> 40.6500,-73.9464
+    8 points  20.3 km 0.023/km line  40.2437,-73.4173 -> 40.3589,-73.4886
+   25 points  88.4 km 0.033/km line  40.6148,-73.0500 -> 40.5978,-74.0000
+    5 points  13.0 km 0.029/km line  40.0500,-73.2481 -> 40.0946,-73.3876
+    3 points   6.5 km 0.023/km line  40.2034,-73.6678 -> 40.1631,-73.6852
+    5 points  13.5 km 0.030/km line  40.5026,-73.8765 -> 40.5500,-73.9867
