@@ -177,6 +177,8 @@ extension Settings {
 
     public struct Windows: Codable, Sendable, Hashable {
         public var factors: WindowFactors
+        /// The tidal current speed range, knots `[min, max]`, the current-strength factor looks for.
+        public var currentRangeKn: [Double]
         public var showSolunar: Bool
         public var solunarMajorMinutes: Int
         public var solunarMinorMinutes: Int
@@ -189,6 +191,8 @@ extension Settings {
         public var solunar: Double
         public var pressureFalling: Double
         public var waterTemp: Double
+        public var currentStrength: Double
+        public var flowInRange: Double
     }
 
     /// `voice` is `luna` or `plain`; `clock` is `12h` or `24h`.
