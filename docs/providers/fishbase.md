@@ -42,7 +42,7 @@ whether the team supplies dumps to others directly is **unverified**.
 | Disclaimer | "we can not exclude errors, and neither we nor our partners can be held responsible for any damage" | citation page |
 | Licence version | 4.0 only. The licence-link target (`creativecommons.org/licenses/by-nc/4.0/`) was not fetched; the page names "Attribution-NonCommercial 4.0 International" and the card says `cc-by-nc-4.0`. |
 
-Consequences for the app (the first three restate ADR-006):
+Consequences for the app (the first three restate the project's decision to bundle FishBase-derived traits only while the app is free):
 
 - Bundled FishBase values need the CC BY-NC 4.0 notice, the FishBase citation above and, per value, the
   reference (author and year) behind it. The "backward link to the respective source page" implies a
@@ -228,7 +228,7 @@ species; "text" is a narrative sentence, not a number. For FishBase the table ab
   copy their text unless the specific terms allow it (see `docs/providers/regulations.md` for the link
   catalogue).
 
-Conclusion on ADR-006's wording "agency values win": the agency pages offer prose, not numbers, so there
+Conclusion on the rule that agency values win over FishBase's: the agency pages offer prose, not numbers, so there
 is almost nothing for an agency value to override. A bundled agency layer would be hand-curated from
 cited agency or published literature values per species, with the reference attached, rather than parsed
 from a feed. Each such value carries `PublicDomain` only if its source page says so; journal values keep

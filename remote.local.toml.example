@@ -1,8 +1,8 @@
 # Copy to remote.local.toml (ignored by version control). `cargo xtask remote ...` builds on the
 # first of these machines that answers over SSH; the others are skipped.
 #
-# Never list robot.local: it is not a build host.
-hosts = ["nas-build", "nv"]
+# List only machines meant for building, never the machine you edit on.
+hosts = ["build-host", "spare-build-host"]
 
 # A single host instead of a list:
 # host = "user@build-host"

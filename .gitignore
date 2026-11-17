@@ -2,8 +2,6 @@
 /remote.local.toml
 .env
 .DS_Store
-/CLAUDE.md
-/.claude/
 
 # iOS build products and local settings.
 /ios/UnderbiteKit/UnderbiteFFI.xcframework
