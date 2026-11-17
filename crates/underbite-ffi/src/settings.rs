@@ -16,7 +16,7 @@ use underbite_core::units::{
     DischargeUnit, DistanceUnit, HeightUnit, PressureUnit, SpeedUnit, TempUnit, pressure_from_hpa,
     pressure_to_hpa,
 };
-use underbite_core::view::format::Formatter;
+use underbite_core::view::format::{Formatter, distance_from_metres, distance_to_metres};
 use underbite_core::view::strings::{MEASUREMENTS, Strings, WATER_TYPES, source_name};
 use underbite_core::view::{CardId, DisplayUnits, Voice};
 use underbite_providers::coops::{Coops, CoopsHarmonics};
@@ -220,14 +220,14 @@ pub fn unit_options(settings_json: String) -> Result<Vec<UnitGroup>, SettingsErr
     let heights = || options(&HeightUnit::ALL, HeightUnit::symbol);
     let speeds = || options(&SpeedUnit::ALL, SpeedUnit::symbol);
     let temps = || options(&TempUnit::ALL, TempUnit::symbol);
+    let strings = Strings::new(config.presentation.voice);
     let group = |id: &str,
-                 label: &str,
                  options: Vec<UnitOption>,
                  selected: String,
                  follows: Option<&str>,
                  overridden: bool| UnitGroup {
         id: id.to_owned(),
-        label: label.to_owned(),
+        label: strings.unit_group(id).unwrap_or(id).to_owned(),
         options,
         selected,
         follows: follows.map(str::to_owned),
@@ -236,23 +236,14 @@ pub fn unit_options(settings_json: String) -> Result<Vec<UnitGroup>, SettingsErr
     Ok(vec![
         group(
             "discharge",
-            "River flow",
             options(&DischargeUnit::ALL, DischargeUnit::symbol),
             unit_id(u.discharge),
             None,
             false,
         ),
-        group(
-            "height",
-            "Heights",
-            heights(),
-            unit_id(u.height),
-            None,
-            false,
-        ),
+        group("height", heights(), unit_id(u.height), None, false),
         group(
             "stage",
-            "River stage",
             heights(),
             unit_id(u.stage()),
             Some("height"),
@@ -260,7 +251,6 @@ pub fn unit_options(settings_json: String) -> Result<Vec<UnitGroup>, SettingsErr
         ),
         group(
             "lake_level",
-            "Lake level",
             heights(),
             unit_id(u.lake_level()),
             Some("height"),
@@ -268,7 +258,6 @@ pub fn unit_options(settings_json: String) -> Result<Vec<UnitGroup>, SettingsErr
         ),
         group(
             "tide",
-            "Tide height",
             heights(),
             unit_id(u.tide()),
             Some("height"),
@@ -276,16 +265,14 @@ pub fn unit_options(settings_json: String) -> Result<Vec<UnitGroup>, SettingsErr
         ),
         group(
             "waves",
-            "Wave height",
             heights(),
             unit_id(u.waves()),
             Some("height"),
             u.waves.is_some(),
         ),
-        group("speed", "Speeds", speeds(), unit_id(u.speed), None, false),
+        group("speed", speeds(), unit_id(u.speed), None, false),
         group(
             "current",
-            "Current speed",
             speeds(),
             unit_id(u.current()),
             Some("speed"),
@@ -293,23 +280,14 @@ pub fn unit_options(settings_json: String) -> Result<Vec<UnitGroup>, SettingsErr
         ),
         group(
             "wind",
-            "Wind speed",
             speeds(),
             unit_id(u.wind()),
             Some("speed"),
             u.wind.is_some(),
         ),
-        group(
-            "water_temp",
-            "Water temperature",
-            temps(),
-            unit_id(u.water_temp),
-            None,
-            false,
-        ),
+        group("water_temp", temps(), unit_id(u.water_temp), None, false),
         group(
             "air_temp",
-            "Air temperature",
             temps(),
             unit_id(u.air_temp()),
             Some("water_temp"),
@@ -317,7 +295,6 @@ pub fn unit_options(settings_json: String) -> Result<Vec<UnitGroup>, SettingsErr
         ),
         group(
             "pressure",
-            "Air pressure",
             options(&PressureUnit::ALL, PressureUnit::symbol),
             unit_id(u.pressure),
             None,
@@ -325,7 +302,6 @@ pub fn unit_options(settings_json: String) -> Result<Vec<UnitGroup>, SettingsErr
         ),
         group(
             "distance",
-            "Distances",
             options(&DistanceUnit::ALL, DistanceUnit::symbol),
             unit_id(u.distance),
             None,
@@ -385,10 +361,6 @@ enum Unit {
     Distance(DistanceUnit),
 }
 
-/// Metres per kilometre and per statute mile, as the formatter's distances use.
-const M_PER_KM: f64 = 1_000.0;
-const M_PER_MI: f64 = 1_609.344;
-
 impl Unit {
     /// Every unit of a kind, in picker order.
     fn all(kind: Kind) -> Vec<Self> {
@@ -441,12 +413,7 @@ impl Unit {
             Self::Speed(u) => u.to_canonical(v32),
             Self::Temp(u) => u.to_canonical(v32),
             Self::Pressure(u) => pressure_to_hpa(u, v32),
-            Self::Distance(u) => {
-                return match u {
-                    DistanceUnit::Km => v * M_PER_KM,
-                    DistanceUnit::Mi => v * M_PER_MI,
-                };
-            }
+            Self::Distance(u) => return distance_to_metres(u, v),
         })
     }
 
@@ -459,12 +426,7 @@ impl Unit {
             Self::Speed(u) => u.from_canonical(c32),
             Self::Temp(u) => u.from_canonical(c32),
             Self::Pressure(u) => pressure_from_hpa(u, c32),
-            Self::Distance(u) => {
-                return match u {
-                    DistanceUnit::Km => c / M_PER_KM,
-                    DistanceUnit::Mi => c / M_PER_MI,
-                };
-            }
+            Self::Distance(u) => return distance_from_metres(u, c),
         })
     }
 }
