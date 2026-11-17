@@ -12,6 +12,8 @@ pub mod discover;
 pub mod model;
 pub mod provenance;
 pub mod series;
+pub mod share;
 pub mod time;
+pub mod trip;
 pub mod units;
 pub mod view;
