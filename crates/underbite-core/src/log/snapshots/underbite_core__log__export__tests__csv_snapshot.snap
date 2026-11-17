@@ -1,0 +1,8 @@
+---
+source: crates/underbite-core/src/log/export.rs
+expression: export_csv(&book())
+---
+id,caught_at_utc,caught_at_local,time_zone,latitude,longitude,spot,area,species_id,species,length_m,weight_kg,fate,lure,method,notes,light,tide_direction,tide_hours_since_previous,tide_hours_to_next,tide_height_m,tide_height_datum,current_speed_ms,current_set,flow_m3s,gage_height_m,water_temperature_c,air_temperature_c,turbidity,turbidity_unit,pressure_hpa,pressure_trend,wind_speed_ms,wind_gust_ms,wind_from_deg,moon_phase,moon_illuminated_fraction,solunar_kind,solunar_start_utc
+0001,2026-11-06T21:20:00Z,2026-11-06T16:20:00-05:00,America/New_York,40.7003,-74.0142,battery,,morone-saxatilis,"Striped bass, schoolie",0.71,3.9,kept_for_sashimi,"white ""bucktail""",jigging,"Rips & eddies <fast>,
+line two 🐟",dawn,,,,,,,,,,16,,,,,,,,,,,,
+0002,2026-11-08T01:06:40Z,2026-11-07T20:06:40-05:00,America/New_York,41.2108,-73.8625,,,,'-2 cm,,,released,,,"'=HYPERLINK(""http://x"")",,,,,,,,,,,,,,,,,,,,,,,

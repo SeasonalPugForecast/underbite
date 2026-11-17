@@ -1,0 +1,20 @@
+---
+source: crates/underbite-core/src/log/export.rs
+expression: export_gpx(&book())
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Underbite" xmlns="http://www.topografix.com/GPX/1/1">
+  <wpt lat="40.7003" lon="-74.0142">
+    <time>2026-11-06T21:20:00Z</time>
+    <name>Striped bass, schoolie</name>
+    <desc>length 0.71 m; weight 3.9 kg; fate kept_for_sashimi; lure white &quot;bucktail&quot;; method jigging
+Rips &amp; eddies &lt;fast&gt;,
+line two 🐟</desc>
+  </wpt>
+  <wpt lat="41.2108" lon="-73.8625">
+    <time>2026-11-08T01:06:40Z</time>
+    <name>-2 cm</name>
+    <desc>fate released
+=HYPERLINK(&quot;http://x&quot;)</desc>
+  </wpt>
+</gpx>
