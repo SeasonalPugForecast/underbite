@@ -193,6 +193,281 @@ expression: json
       }
     },
     {
+      "card": "windows",
+      "chrome": {
+        "id": "windows",
+        "title": "Snack times",
+        "footnote": null,
+        "credits": [
+          {
+            "source": "Computed on device",
+            "text": "Sun and moon positions from astronomical algorithms",
+            "link": null,
+            "licence": null
+          },
+          {
+            "source": "NOAA CO-OPS",
+            "text": "Tide, water-level and current data: NOAA/NOS CO-OPS",
+            "link": "https://tidesandcurrents.noaa.gov/",
+            "licence": null
+          }
+        ],
+        "state": {
+          "state": "fresh"
+        },
+        "notices": [
+          {
+            "kind": "traditional_cue",
+            "text": "A traditional cue, not a promise."
+          }
+        ],
+        "accessibility": "Snack times: Next snack time 4:00 to 5:15 PM. Current strength, Low light, Solunar. A traditional cue, not a promise."
+      },
+      "compact": {
+        "headline": {
+          "value": null,
+          "text": "4:00 PM",
+          "unit": ""
+        },
+        "lines": [
+          "Next snack time 4:00 to 5:15 PM",
+          "Current strength, Low light, Solunar"
+        ],
+        "spark": []
+      },
+      "full": {
+        "days": [
+          {
+            "date": "Sun Nov 8",
+            "windows": [
+              {
+                "start_t": 1794171600,
+                "end_t": 1794176100,
+                "range": "4:00 to 5:15 PM",
+                "factors": [
+                  {
+                    "factor": "current_strength",
+                    "label": "Current strength",
+                    "detail": "1.7 kn, ebbing"
+                  },
+                  {
+                    "factor": "low_light",
+                    "label": "Low light",
+                    "detail": "46 min before sunset at 4:45 PM"
+                  },
+                  {
+                    "factor": "solunar",
+                    "label": "Solunar",
+                    "detail": "small nibble around 4:01 PM"
+                  }
+                ],
+                "no_data": [
+                  "Falling pressure",
+                  "Water temperature in range",
+                  "River flow in range"
+                ]
+              },
+              {
+                "start_t": 1794180600,
+                "end_t": 1794184200,
+                "range": "6:30 to 7:30 PM",
+                "factors": [
+                  {
+                    "factor": "tide_stage",
+                    "label": "Incoming tide",
+                    "detail": "57 min before the high at 7:27 PM"
+                  },
+                  {
+                    "factor": "current_strength",
+                    "label": "Current strength",
+                    "detail": "0.6 kn, flooding"
+                  }
+                ],
+                "no_data": [
+                  "Falling pressure",
+                  "Water temperature in range",
+                  "River flow in range"
+                ]
+              }
+            ]
+          },
+          {
+            "date": "Mon Nov 9",
+            "windows": [
+              {
+                "start_t": 1794221100,
+                "end_t": 1794228300,
+                "range": "5:45 to 7:45 AM",
+                "factors": [
+                  {
+                    "factor": "tide_stage",
+                    "label": "Incoming tide",
+                    "detail": "119 min before the high at 7:44 AM"
+                  },
+                  {
+                    "factor": "current_strength",
+                    "label": "Current strength",
+                    "detail": "0.5 kn, flooding"
+                  },
+                  {
+                    "factor": "low_light",
+                    "label": "Low light",
+                    "detail": "21 min before sunrise at 6:35 AM"
+                  },
+                  {
+                    "factor": "solunar",
+                    "label": "Solunar",
+                    "detail": "small nibble around 7:07 AM"
+                  }
+                ],
+                "no_data": [
+                  "Falling pressure",
+                  "Water temperature in range",
+                  "River flow in range"
+                ]
+              },
+              {
+                "start_t": 1794257100,
+                "end_t": 1794262500,
+                "range": "3:45 to 5:15 PM",
+                "factors": [
+                  {
+                    "factor": "current_strength",
+                    "label": "Current strength",
+                    "detail": "2.3 kn, ebbing"
+                  },
+                  {
+                    "factor": "low_light",
+                    "label": "Low light",
+                    "detail": "1 h before sunset at 4:44 PM"
+                  },
+                  {
+                    "factor": "solunar",
+                    "label": "Solunar",
+                    "detail": "small nibble around 4:33 PM"
+                  }
+                ],
+                "no_data": [
+                  "Falling pressure",
+                  "Water temperature in range",
+                  "River flow in range"
+                ]
+              },
+              {
+                "start_t": 1794270600,
+                "end_t": 1794273300,
+                "range": "7:30 to 8:15 PM",
+                "factors": [
+                  {
+                    "factor": "tide_stage",
+                    "label": "Incoming tide",
+                    "detail": "37 min before the high at 8:07 PM"
+                  },
+                  {
+                    "factor": "current_strength",
+                    "label": "Current strength",
+                    "detail": "0.6 kn, flooding"
+                  }
+                ],
+                "no_data": [
+                  "Falling pressure",
+                  "Water temperature in range",
+                  "River flow in range"
+                ]
+              }
+            ]
+          },
+          {
+            "date": "Tue Nov 10",
+            "windows": [
+              {
+                "start_t": 1794310200,
+                "end_t": 1794317400,
+                "range": "6:30 to 8:30 AM",
+                "factors": [
+                  {
+                    "factor": "tide_stage",
+                    "label": "Incoming tide",
+                    "detail": "111 min before the high at 8:21 AM"
+                  },
+                  {
+                    "factor": "current_strength",
+                    "label": "Current strength",
+                    "detail": "0.7 kn, flooding"
+                  },
+                  {
+                    "factor": "low_light",
+                    "label": "Low light",
+                    "detail": "7 min before sunrise at 6:36 AM"
+                  },
+                  {
+                    "factor": "solunar",
+                    "label": "Solunar",
+                    "detail": "small nibble around 8:11 AM"
+                  }
+                ],
+                "no_data": [
+                  "Falling pressure",
+                  "Water temperature in range",
+                  "River flow in range"
+                ]
+              },
+              {
+                "start_t": 1794343500,
+                "end_t": 1794348900,
+                "range": "3:45 to 5:15 PM",
+                "factors": [
+                  {
+                    "factor": "current_strength",
+                    "label": "Current strength",
+                    "detail": "2.4 kn, ebbing"
+                  },
+                  {
+                    "factor": "low_light",
+                    "label": "Low light",
+                    "detail": "59 min before sunset at 4:43 PM"
+                  },
+                  {
+                    "factor": "solunar",
+                    "label": "Solunar",
+                    "detail": "small nibble around 5:11 PM"
+                  }
+                ],
+                "no_data": [
+                  "Falling pressure",
+                  "Water temperature in range",
+                  "River flow in range"
+                ]
+              },
+              {
+                "start_t": 1794360600,
+                "end_t": 1794362400,
+                "range": "8:30 to 9:00 PM",
+                "factors": [
+                  {
+                    "factor": "tide_stage",
+                    "label": "Incoming tide",
+                    "detail": "17 min before the high at 8:47 PM"
+                  },
+                  {
+                    "factor": "current_strength",
+                    "label": "Current strength",
+                    "detail": "0.5 kn, flooding"
+                  }
+                ],
+                "no_data": [
+                  "Falling pressure",
+                  "Water temperature in range",
+                  "River flow in range"
+                ]
+              }
+            ]
+          }
+        ],
+        "sections": []
+      }
+    },
+    {
       "card": "tide",
       "chrome": {
         "id": "tide",
@@ -11074,6 +11349,319 @@ expression: json
           }
         ],
         "notices": []
+      },
+      {
+        "kind": "windows",
+        "label": "Snack times",
+        "chart": {
+          "title": "Snack times · computed on device",
+          "unit": "",
+          "x_ticks": [
+            {
+              "t": 1794114000,
+              "label": "12 AM",
+              "major": true
+            },
+            {
+              "t": 1794117600,
+              "label": "1 AM",
+              "major": false
+            },
+            {
+              "t": 1794121200,
+              "label": "2 AM",
+              "major": false
+            },
+            {
+              "t": 1794124800,
+              "label": "3 AM",
+              "major": true
+            },
+            {
+              "t": 1794128400,
+              "label": "4 AM",
+              "major": false
+            },
+            {
+              "t": 1794132000,
+              "label": "5 AM",
+              "major": false
+            },
+            {
+              "t": 1794135600,
+              "label": "6 AM",
+              "major": true
+            },
+            {
+              "t": 1794139200,
+              "label": "7 AM",
+              "major": false
+            },
+            {
+              "t": 1794142800,
+              "label": "8 AM",
+              "major": false
+            },
+            {
+              "t": 1794146400,
+              "label": "9 AM",
+              "major": true
+            },
+            {
+              "t": 1794150000,
+              "label": "10 AM",
+              "major": false
+            },
+            {
+              "t": 1794153600,
+              "label": "11 AM",
+              "major": false
+            },
+            {
+              "t": 1794157200,
+              "label": "12 PM",
+              "major": true
+            },
+            {
+              "t": 1794160800,
+              "label": "1 PM",
+              "major": false
+            },
+            {
+              "t": 1794164400,
+              "label": "2 PM",
+              "major": false
+            },
+            {
+              "t": 1794168000,
+              "label": "3 PM",
+              "major": true
+            },
+            {
+              "t": 1794171600,
+              "label": "4 PM",
+              "major": false
+            },
+            {
+              "t": 1794175200,
+              "label": "5 PM",
+              "major": false
+            },
+            {
+              "t": 1794178800,
+              "label": "6 PM",
+              "major": true
+            },
+            {
+              "t": 1794182400,
+              "label": "7 PM",
+              "major": false
+            },
+            {
+              "t": 1794186000,
+              "label": "8 PM",
+              "major": false
+            },
+            {
+              "t": 1794189600,
+              "label": "9 PM",
+              "major": true
+            },
+            {
+              "t": 1794193200,
+              "label": "10 PM",
+              "major": false
+            },
+            {
+              "t": 1794196800,
+              "label": "11 PM",
+              "major": false
+            },
+            {
+              "t": 1794200400,
+              "label": "12 AM",
+              "major": true
+            },
+            {
+              "t": 1794204000,
+              "label": "1 AM",
+              "major": false
+            },
+            {
+              "t": 1794207600,
+              "label": "2 AM",
+              "major": false
+            },
+            {
+              "t": 1794211200,
+              "label": "3 AM",
+              "major": true
+            },
+            {
+              "t": 1794214800,
+              "label": "4 AM",
+              "major": false
+            },
+            {
+              "t": 1794218400,
+              "label": "5 AM",
+              "major": false
+            },
+            {
+              "t": 1794222000,
+              "label": "6 AM",
+              "major": true
+            },
+            {
+              "t": 1794225600,
+              "label": "7 AM",
+              "major": false
+            },
+            {
+              "t": 1794229200,
+              "label": "8 AM",
+              "major": false
+            },
+            {
+              "t": 1794232800,
+              "label": "9 AM",
+              "major": true
+            },
+            {
+              "t": 1794236400,
+              "label": "10 AM",
+              "major": false
+            },
+            {
+              "t": 1794240000,
+              "label": "11 AM",
+              "major": false
+            },
+            {
+              "t": 1794243600,
+              "label": "12 PM",
+              "major": true
+            },
+            {
+              "t": 1794247200,
+              "label": "1 PM",
+              "major": false
+            },
+            {
+              "t": 1794250800,
+              "label": "2 PM",
+              "major": false
+            },
+            {
+              "t": 1794254400,
+              "label": "3 PM",
+              "major": true
+            },
+            {
+              "t": 1794258000,
+              "label": "4 PM",
+              "major": false
+            },
+            {
+              "t": 1794261600,
+              "label": "5 PM",
+              "major": false
+            },
+            {
+              "t": 1794265200,
+              "label": "6 PM",
+              "major": true
+            },
+            {
+              "t": 1794268800,
+              "label": "7 PM",
+              "major": false
+            },
+            {
+              "t": 1794272400,
+              "label": "8 PM",
+              "major": false
+            },
+            {
+              "t": 1794276000,
+              "label": "9 PM",
+              "major": true
+            },
+            {
+              "t": 1794279600,
+              "label": "10 PM",
+              "major": false
+            },
+            {
+              "t": 1794283200,
+              "label": "11 PM",
+              "major": false
+            }
+          ],
+          "series": [],
+          "bands": [
+            {
+              "kind": "highlight",
+              "start_t": 1794132900,
+              "end_t": 1794141900,
+              "label": "5:15 to 7:45 AM"
+            },
+            {
+              "kind": "highlight",
+              "start_t": 1794171600,
+              "end_t": 1794176100,
+              "label": "4:00 to 5:15 PM"
+            },
+            {
+              "kind": "highlight",
+              "start_t": 1794180600,
+              "end_t": 1794184200,
+              "label": "6:30 to 7:30 PM"
+            },
+            {
+              "kind": "highlight",
+              "start_t": 1794221100,
+              "end_t": 1794228300,
+              "label": "5:45 to 7:45 AM"
+            },
+            {
+              "kind": "highlight",
+              "start_t": 1794257100,
+              "end_t": 1794262500,
+              "label": "3:45 to 5:15 PM"
+            },
+            {
+              "kind": "highlight",
+              "start_t": 1794270600,
+              "end_t": 1794273300,
+              "label": "7:30 to 8:15 PM"
+            }
+          ],
+          "rules": [],
+          "markers": [],
+          "now_t": 1794148200,
+          "accessibility": "Snack times: 5:15 to 7:45 AM, 4:00 to 5:15 PM, 6:30 to 7:30 PM, 5:45 to 7:45 AM, 3:45 to 5:15 PM, 7:30 to 8:15 PM. A traditional cue, not a promise."
+        },
+        "credits": [
+          {
+            "source": "Computed on device",
+            "text": "Sun and moon positions from astronomical algorithms",
+            "link": null,
+            "licence": null
+          },
+          {
+            "source": "NOAA CO-OPS",
+            "text": "Tide, water-level and current data: NOAA/NOS CO-OPS",
+            "link": "https://tidesandcurrents.noaa.gov/",
+            "licence": null
+          }
+        ],
+        "notices": [
+          {
+            "kind": "traditional_cue",
+            "text": "A traditional cue, not a promise."
+          }
+        ]
       }
     ]
   },

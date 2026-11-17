@@ -1,0 +1,113 @@
+---
+source: crates/underbite-core/src/view/cards/windows.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "windows",
+    "title": "Fishing windows",
+    "footnote": null,
+    "credits": [
+      {
+        "source": "Computed on device",
+        "text": "Sun and moon positions from astronomical algorithms",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "NOAA CO-OPS",
+        "text": "NOAA CO-OPS",
+        "link": "https://tidesandcurrents.noaa.gov",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "traditional_cue",
+        "text": "A traditional cue, not a promise."
+      }
+    ],
+    "accessibility": "Fishing windows: Next fishing window 06:15 to 07:45. Incoming tide, Low light, Solunar. A traditional cue, not a promise."
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "06:15",
+      "unit": ""
+    },
+    "lines": [
+      "Next fishing window 06:15 to 07:45",
+      "Incoming tide, Low light, Solunar"
+    ],
+    "spark": []
+  },
+  "full": {
+    "days": [
+      {
+        "date": "Mon Nov 9",
+        "windows": [
+          {
+            "start_t": 1794222900,
+            "end_t": 1794228300,
+            "range": "06:15 to 07:45",
+            "factors": [
+              {
+                "factor": "tide_stage",
+                "label": "Incoming tide",
+                "detail": "89 min before the high at 07:44"
+              },
+              {
+                "factor": "low_light",
+                "label": "Low light",
+                "detail": "21 min before sunrise at 06:35"
+              },
+              {
+                "factor": "solunar",
+                "label": "Solunar",
+                "detail": "minor around 07:07"
+              }
+            ],
+            "no_data": [
+              "Current strength",
+              "Falling pressure",
+              "Water temperature in range",
+              "River flow in range"
+            ]
+          }
+        ]
+      },
+      {
+        "date": "Tue Nov 10",
+        "windows": [
+          {
+            "start_t": 1794310200,
+            "end_t": 1794314700,
+            "range": "06:30 to 07:45",
+            "factors": [
+              {
+                "factor": "tide_stage",
+                "label": "Incoming tide",
+                "detail": "111 min before the high at 08:21"
+              },
+              {
+                "factor": "low_light",
+                "label": "Low light",
+                "detail": "7 min before sunrise at 06:36"
+              }
+            ],
+            "no_data": [
+              "Current strength",
+              "Falling pressure",
+              "Water temperature in range",
+              "River flow in range"
+            ]
+          }
+        ]
+      }
+    ],
+    "sections": []
+  }
+}

@@ -1,4 +1,4 @@
-//! The day timeline: tide, current, wind, pressure, light and solunar lanes.
+//! The day timeline: tide, current, wind, pressure, light, solunar and fishing-window lanes.
 //!
 //! Every lane shares one time axis: the spot's local day (or days) from midnight, sampled at the
 //! requested step. Steps are walked as instants, so a daylight-saving day has 23 or 25 hourly
@@ -11,11 +11,15 @@ use crate::model::{
     CurrentEvent, CurrentKind, Polar, SkyDay, SolunarKind, TideKind, TideSourceKind,
 };
 use crate::time::{UnixTime, local_date, local_date_bounds, zone};
+use crate::trip::windows::FishingWindow;
 use crate::view::cards::current::notices as current_notices;
 use crate::view::cards::flow::credits as station_credits;
 use crate::view::cards::solunar::{kind_label, range_text};
 use crate::view::cards::sun_moon::computed_credit;
 use crate::view::cards::tide::{credits as tide_credits, notices as tide_notices};
+use crate::view::cards::windows::{
+    credits as window_credits, notices as window_notices, windows_between,
+};
 use crate::view::chart::{self, Zoned, level_at, speed_at};
 use crate::view::format::{Formatter, Phase};
 use crate::view::strings::{Key, SafetyKey};
@@ -39,6 +43,8 @@ struct Ctx<'a> {
     /// Instants, one per step, from `start` while before `end`.
     steps: Vec<i64>,
     ticks: Vec<ChartTick>,
+    /// The fishing windows of the span, including those already over.
+    windows: Vec<FishingWindow>,
 }
 
 /// The span: midnight of the spot's local today to `hours` later, on local midnights when the span
@@ -648,6 +654,46 @@ fn solunar_lane(ctx: &Ctx) -> ChartVm {
     )
 }
 
+/// The fishing windows as shaded spans, each labelled with its time range.
+fn windows_lane(ctx: &Ctx) -> ChartVm {
+    let f = &ctx.f;
+    let name = f.strings.card_title(CardId::Windows);
+    let bands: Vec<ChartBand> = ctx
+        .windows
+        .iter()
+        .filter_map(|w| {
+            band(
+                ctx,
+                BandKind::Highlight,
+                w.start.0,
+                w.end.0,
+                &f.clock_range(w.start, w.end),
+            )
+        })
+        .collect();
+    if bands.is_empty() {
+        return ctx.empty(name);
+    }
+    let mut summary = bands
+        .iter()
+        .map(|b| b.label.clone())
+        .collect::<Vec<_>>()
+        .join(", ");
+    for n in window_notices(f, &ctx.windows) {
+        summary.push_str(". ");
+        summary.push_str(&n.text);
+    }
+    ctx.chart(
+        name,
+        f.strings.get(Key::ComputedOnDeviceInline),
+        "",
+        Vec::new(),
+        bands,
+        Vec::new(),
+        &summary,
+    )
+}
+
 // ---------------------------------------------------------------------------------------------
 // Credits and notices
 // ---------------------------------------------------------------------------------------------
@@ -718,6 +764,10 @@ fn lane_extras(ctx: &Ctx, kind: LaneKind) -> (Vec<CreditVm>, Vec<Notice>) {
             (credit.into_iter().collect(), Vec::new())
         }
         LaneKind::Light | LaneKind::Solunar => (vec![computed_credit(ctx.f.strings)], Vec::new()),
+        LaneKind::Windows => (
+            window_credits(ctx.input, &ctx.windows),
+            window_notices(&ctx.f, &ctx.windows),
+        ),
     }
 }
 
@@ -726,7 +776,8 @@ fn lane_extras(ctx: &Ctx, kind: LaneKind) -> (Vec<CreditVm>, Vec<Notice>) {
 // ---------------------------------------------------------------------------------------------
 
 /// Builds the timeline for the spot's local day (or days) from midnight. A lane with no data is
-/// present and empty; the solunar lane is left out when the user hides solunar. `None` when the
+/// present and empty; the solunar lane is left out when the user hides solunar. The last lane
+/// shades the fishing windows. `None` when the
 /// span is empty or no lane has anything to show.
 pub fn build(input: &ViewInput) -> Option<TimelineVm> {
     let tz = zone(&input.snapshot.spot.time_zone).unwrap_or(TimeZone::UTC);
@@ -738,6 +789,13 @@ pub fn build(input: &ViewInput) -> Option<TimelineVm> {
     let f = Formatter::for_input(input);
     let local = Zoned::from_zone(tz.clone());
     let ticks = chart::ticks(&local, &f, start, end - 1);
+    let windows = match (
+        local_date(UnixTime(start), &tz),
+        local_date(UnixTime(end - 1), &tz),
+    ) {
+        (Ok(first), Ok(last)) => windows_between(input, first, last, UnixTime(start)),
+        _ => Vec::new(),
+    };
     let ctx = Ctx {
         input,
         f,
@@ -746,6 +804,7 @@ pub fn build(input: &ViewInput) -> Option<TimelineVm> {
         end,
         steps,
         ticks,
+        windows,
     };
     let s = ctx.f.strings;
     let mut lanes = vec![
@@ -774,6 +833,11 @@ pub fn build(input: &ViewInput) -> Option<TimelineVm> {
             solunar_lane(&ctx),
         ));
     }
+    lanes.push((
+        LaneKind::Windows,
+        s.card_title(CardId::Windows),
+        windows_lane(&ctx),
+    ));
     let any = lanes
         .iter()
         .any(|(_, _, c)| !(c.series.is_empty() && c.bands.is_empty() && c.markers.is_empty()));
@@ -1045,7 +1109,8 @@ pub(in crate::view) mod tests {
                 LaneKind::Wind,
                 LaneKind::Pressure,
                 LaneKind::Light,
-                LaneKind::Solunar
+                LaneKind::Solunar,
+                LaneKind::Windows
             ]
         );
         let current = lane(&vm, LaneKind::Current);
@@ -1167,6 +1232,35 @@ pub(in crate::view) mod tests {
         input.snapshot.weather = None;
         input.snapshot.marine = crate::model::MarineConditions::default();
         assert!(build(&input).is_none());
+    }
+
+    #[test]
+    fn the_windows_lane_shades_each_window_with_its_range_and_credits_the_computation() {
+        let vm = build(&input()).unwrap();
+        let owner = lane_of(&vm, LaneKind::Windows);
+        let chart = &owner.chart;
+        assert_ne!(chart.bands.len(), 0);
+        for b in &chart.bands {
+            assert_eq!(b.kind, BandKind::Highlight);
+            assert!(b.start_t < b.end_t);
+            assert!(b.label.contains(" to "), "{}", b.label);
+        }
+        assert_eq!(owner.label, "Snack times");
+        assert!(chart.accessibility.starts_with("Snack times: "));
+        assert_ne!(owner.credits.len(), 0);
+        // With every factor off there is nothing to shade, and the lane stays.
+        let mut off = input();
+        off.windows.weights = crate::trip::windows::FactorWeights {
+            tide_stage: 0.0,
+            current_strength: 0.0,
+            low_light: 0.0,
+            solunar: 0.0,
+            pressure_falling: 0.0,
+            water_temp: 0.0,
+            flow_in_range: 0.0,
+        };
+        let vm = build(&off).unwrap();
+        assert_eq!(lane_of(&vm, LaneKind::Windows).chart.bands.len(), 0);
     }
 
     #[test]

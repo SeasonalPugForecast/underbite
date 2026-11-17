@@ -267,7 +267,8 @@ fn the_card_catalogue_follows_the_users_order_and_voice() {
     assert!(cards.iter().take_while(|c| c.shown).count() >= 5);
     let windows = cards.iter().find(|c| c.id == "windows").unwrap();
     assert_eq!(windows.title, "Snack times");
-    assert!(!windows.available);
+    assert!(windows.available);
+    assert!(cards.iter().find(|c| c.id == "go_no_go").unwrap().available);
     let plain = settings(|v| v["presentation"]["voice"] = json!("plain"));
     let cards = card_catalogue("river_stream".into(), plain).unwrap();
     assert_eq!(

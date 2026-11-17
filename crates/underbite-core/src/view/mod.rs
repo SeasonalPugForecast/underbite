@@ -23,15 +23,17 @@ use whether_core::presentation::TimeFormat;
 
 use crate::model::{Measurement, SpotSnapshot, WaterType};
 use crate::time::UnixTime;
+use crate::trip::TripLimits;
+use crate::trip::windows::WindowParams;
 use crate::units::{DischargeUnit, DistanceUnit, HeightUnit, PressureUnit, SpeedUnit, TempUnit};
 use locale::Locale;
 
 use cards::{
     alerts::AlertsCard, bloom::BloomCard, clarity::ClarityCard, current::CurrentCard,
-    flow::FlowCard, marine_forecast::MarineForecastCard, now::NowCard, pressure::PressureCard,
-    solunar::SolunarCard, sources::SourcesCard, stocking::StockingCard,
+    flow::FlowCard, go_no_go::GoNoGoCard, marine_forecast::MarineForecastCard, now::NowCard,
+    pressure::PressureCard, solunar::SolunarCard, sources::SourcesCard, stocking::StockingCard,
     storm_ahead::StormAheadCard, sun_moon::SunMoonCard, tide::TideCard, water_temp::WaterTempCard,
-    waves::WavesCard, wind::WindCard,
+    waves::WavesCard, wind::WindCard, windows::WindowsCard,
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -124,6 +126,11 @@ pub struct ViewInput {
     /// Water temperature above which trout fishing is discouraged, °C.
     pub trout_stress_c: Option<f32>,
     pub solunar: SolunarSettings,
+    /// What fishing windows are computed with (the configuration's `[windows]`).
+    pub windows: WindowParams,
+    /// The limits the go/no-go card judges against (the configuration's first `[[limits]]`
+    /// profile); the card is not built without them.
+    pub trip_limits: Option<TripLimits>,
 }
 
 impl ViewInput {
@@ -248,6 +255,8 @@ pub enum Card {
     Pressure(PressureCard),
     SunMoon(SunMoonCard),
     Solunar(SolunarCard),
+    Windows(WindowsCard),
+    GoNoGo(GoNoGoCard),
     MarineForecast(MarineForecastCard),
     Stocking(StockingCard),
     StormAhead(StormAheadCard),
@@ -271,6 +280,8 @@ impl Card {
             Self::Pressure(c) => &c.chrome,
             Self::SunMoon(c) => &c.chrome,
             Self::Solunar(c) => &c.chrome,
+            Self::Windows(c) => &c.chrome,
+            Self::GoNoGo(c) => &c.chrome,
             Self::MarineForecast(c) => &c.chrome,
             Self::Stocking(c) => &c.chrome,
             Self::StormAhead(c) => &c.chrome,
@@ -538,6 +549,7 @@ pub enum LaneKind {
     Pressure,
     Light,
     Solunar,
+    Windows,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -567,7 +579,7 @@ pub struct TimelineVm {
 // ---------------------------------------------------------------------------------------------
 
 /// Builds the page: each card in the user's order, skipping cards with nothing to show and the
-/// cards a later phase adds.
+/// species card, which a later phase adds.
 pub fn build_view(input: &ViewInput) -> SpotView {
     let snapshot = &input.snapshot;
     let cards = input
@@ -593,7 +605,9 @@ pub fn build_view(input: &ViewInput) -> SpotView {
             CardId::Alerts => cards::alerts::build(input).map(Card::Alerts),
             CardId::Sources => cards::sources::build(input).map(Card::Sources),
             CardId::Stocking => cards::stocking::build(input).map(Card::Stocking),
-            CardId::Windows | CardId::GoNoGo | CardId::Species => None,
+            CardId::Windows => cards::windows::build(input).map(Card::Windows),
+            CardId::GoNoGo => cards::go_no_go::build(input).map(Card::GoNoGo),
+            CardId::Species => None,
         })
         .collect();
     let f = format::Formatter::for_input(input);
@@ -650,6 +664,17 @@ mod tests {
             river_ranges: None,
             trout_stress_c: Some(20.0),
             solunar: SolunarSettings { show: true },
+            windows: WindowParams::default(),
+            trip_limits: Some(TripLimits {
+                name: "Kayak".into(),
+                max_wind_kn: Some(12.0),
+                max_gust_kn: Some(18.0),
+                max_wave_m: Some(0.6),
+                max_current_kn: Some(2.0),
+                no_small_craft_advisory: true,
+                no_lightning: true,
+                ..TripLimits::default()
+            }),
         }
     }
 

@@ -1,0 +1,113 @@
+---
+source: crates/underbite-core/src/view/cards/windows.rs
+expression: build(&input).unwrap()
+---
+{
+  "chrome": {
+    "id": "windows",
+    "title": "Snack times",
+    "footnote": null,
+    "credits": [
+      {
+        "source": "Computed on device",
+        "text": "Sun and moon positions from astronomical algorithms",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "NOAA CO-OPS",
+        "text": "NOAA CO-OPS",
+        "link": "https://tidesandcurrents.noaa.gov",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "traditional_cue",
+        "text": "A traditional cue, not a promise."
+      }
+    ],
+    "accessibility": "Snack times: Next snack time 6:15 to 7:45 AM. Incoming tide, Low light, Solunar. A traditional cue, not a promise."
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "6:15 AM",
+      "unit": ""
+    },
+    "lines": [
+      "Next snack time 6:15 to 7:45 AM",
+      "Incoming tide, Low light, Solunar"
+    ],
+    "spark": []
+  },
+  "full": {
+    "days": [
+      {
+        "date": "Mon Nov 9",
+        "windows": [
+          {
+            "start_t": 1794222900,
+            "end_t": 1794228300,
+            "range": "6:15 to 7:45 AM",
+            "factors": [
+              {
+                "factor": "tide_stage",
+                "label": "Incoming tide",
+                "detail": "89 min before the high at 7:44 AM"
+              },
+              {
+                "factor": "low_light",
+                "label": "Low light",
+                "detail": "21 min before sunrise at 6:35 AM"
+              },
+              {
+                "factor": "solunar",
+                "label": "Solunar",
+                "detail": "small nibble around 7:07 AM"
+              }
+            ],
+            "no_data": [
+              "Current strength",
+              "Falling pressure",
+              "Water temperature in range",
+              "River flow in range"
+            ]
+          }
+        ]
+      },
+      {
+        "date": "Tue Nov 10",
+        "windows": [
+          {
+            "start_t": 1794310200,
+            "end_t": 1794314700,
+            "range": "6:30 to 7:45 AM",
+            "factors": [
+              {
+                "factor": "tide_stage",
+                "label": "Incoming tide",
+                "detail": "111 min before the high at 8:21 AM"
+              },
+              {
+                "factor": "low_light",
+                "label": "Low light",
+                "detail": "7 min before sunrise at 6:36 AM"
+              }
+            ],
+            "no_data": [
+              "Current strength",
+              "Falling pressure",
+              "Water temperature in range",
+              "River flow in range"
+            ]
+          }
+        ]
+      }
+    ],
+    "sections": []
+  }
+}

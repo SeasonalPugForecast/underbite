@@ -68,11 +68,95 @@ keys! {
                 "Luna's watching {station}, {distance}",
             ),
     /// `{reason}`.
-    GoNoGoBad => (
-                "Not recommended: {reason}",
-                "Luna's not impressed: {reason}",
-            ),
+    GoNoGoBad => ("No-go: {reason}", "Luna's not impressed: {reason}"),
+    /// `{reason}`.
+    GoNoGoMarginal => ("Marginal: {reason}", "Luna's wary: {reason}"),
     GoNoGoGood => ("Good conditions.", "Luna approves."),
+    GoNoGoUnknown => ("Not enough data to judge", "Not enough data to judge"),
+    /// `{checks}`: the checks that had no data.
+    GoNoGoMissing => ("Missing: {checks}", "Missing: {checks}"),
+    /// A value over a greatest limit: `{what}`, `{measured}`, `{limit}`.
+    GoNoGoOver => (
+        "{what} {measured} over your {limit} limit",
+        "{what} to {measured}, your limit is {limit}",
+    ),
+    /// A value under a least limit.
+    GoNoGoUnder => (
+        "{what} {measured} under your {limit} minimum",
+        "{what} down to {measured}, your minimum is {limit}",
+    ),
+    /// A value within 10 % of a greatest limit.
+    GoNoGoNearOver => (
+        "{what} {measured} is within 10 % of your {limit} limit",
+        "{what} {measured}, close to your limit of {limit}",
+    ),
+    /// A value within 10 % of a least limit.
+    GoNoGoNearUnder => (
+        "{what} {measured} is within 10 % of your {limit} minimum",
+        "{what} {measured}, close to your minimum of {limit}",
+    ),
+    GoNoGoBeyondForecast => (
+        "Past the end of the forecast",
+        "Past the end of the forecast",
+    ),
+    GoNoGoDayOver => ("This day is over", "This day is over"),
+    /// `{day}`, `{summary}`.
+    GoNoGoDayLine => ("{day}: {summary}", "{day}: {summary}"),
+    VerdictGo => ("Go", "Go"),
+    VerdictMarginal => ("Marginal", "Marginal"),
+    VerdictUnknown => ("Unknown", "Unknown"),
+    CheckForecast => ("forecast", "forecast"),
+    CheckWind => ("wind", "wind"),
+    CheckGust => ("gusts", "gusts"),
+    CheckWaves => ("waves", "waves"),
+    CheckCurrent => ("current", "current"),
+    CheckAirTemperature => ("air temperature", "air temperature"),
+    CheckVisibility => ("visibility", "visibility"),
+    CheckFlow => ("river flow", "river flow"),
+    /// `{time}`.
+    WindowNow => (
+        "Fishing window now, until {time}",
+        "Snack time now, until {time}",
+    ),
+    /// `{factors}`.
+    WindowNoData => ("No data: {factors}", "No data: {factors}"),
+    FactorTideStage => ("Tide stage", "Tide stage"),
+    FactorTideIncoming => ("Incoming tide", "Incoming tide"),
+    FactorTideOutgoing => ("Outgoing tide", "Outgoing tide"),
+    FactorCurrentStrength => ("Current strength", "Current strength"),
+    FactorLowLight => ("Low light", "Low light"),
+    FactorPressureFalling => ("Falling pressure", "Falling pressure"),
+    FactorWaterTemp => ("Water temperature in range", "Water temperature in range"),
+    FactorFlowInRange => ("River flow in range", "River flow in range"),
+    /// `{duration}`, `{kind}` (high or low), `{time}`.
+    WindowTideNext => (
+        "{duration} before the {kind} at {time}",
+        "{duration} before the {kind} at {time}",
+    ),
+    /// `{speed}`.
+    WindowCurrentFlood => ("{speed}, flooding", "{speed}, flooding"),
+    WindowCurrentEbb => ("{speed}, ebbing", "{speed}, ebbing"),
+    /// `{duration}`, `{event}` (sunrise or sunset), `{time}`.
+    WindowLightBefore => (
+        "{duration} before {event} at {time}",
+        "{duration} before {event} at {time}",
+    ),
+    WindowLightAfter => (
+        "{duration} after {event} at {time}",
+        "{duration} after {event} at {time}",
+    ),
+    /// `{label}` (the period's name), `{time}`.
+    WindowSolunar => ("{label} around {time}", "{label} around {time}"),
+    /// `{amount}`, `{hours}`.
+    WindowPressure => (
+        "down {amount} in {hours} h",
+        "down {amount} in {hours} h",
+    ),
+    /// `{value}`, `{min}`, `{max}`.
+    WindowInRange => (
+        "{value}, inside {min} to {max}",
+        "{value}, inside {min} to {max}",
+    ),
     /// `{range}`.
     NextWindow => ("Next fishing window {range}", "Next snack time {range}"),
     NoWindows => (
@@ -959,6 +1043,26 @@ safety_keys! {
     AlertFrom => "From {start}",
     /// `{end}`.
     AlertUntil => "Until {end}",
+    VerdictNoGo => "No-go",
+    /// Hard no-gos on the go/no-go card. `{alert}`: the alert's event name as issued.
+    NoGoAlert => "No-go: {alert} in effect",
+    /// `{alert}`, `{span}`.
+    NoGoAlertSpan => "No-go: {alert}, {span}",
+    /// The alert's name when the source gave none.
+    AlertNameSmallCraft => "Small craft advisory",
+    AlertNameMarine => "Marine warning",
+    NoGoLightning => "No-go: thunderstorms in the forecast, a lightning risk on the water",
+    NoGoStorm => "No-go: a significant storm is forecast",
+    /// `{span}`.
+    NoGoStormSpan => "No-go: a significant storm is forecast, {span}",
+    /// `{name}`, `{span}`.
+    NoGoHurricane => "No-go: the forecast cone of {name} covers this spot, {span}. See the National Hurricane Center for the official forecast.",
+    /// The checks that safety limits ask for, in "Missing: ...".
+    CheckSmallCraft => "small craft advisories",
+    CheckMarineWarning => "marine warnings",
+    CheckLightning => "lightning",
+    CheckStormAhead => "storm outlook",
+    CheckHurricane => "hurricane outlook",
     /// An app file that could not be read, moved aside. `{name}`: the name it was kept as.
     FileKeptSpots => "Your spots could not be read. The file was kept as {name} and the list starts empty; nothing is saved over the kept file.",
     /// `{name}`.

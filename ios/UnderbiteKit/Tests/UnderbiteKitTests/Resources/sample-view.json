@@ -206,6 +206,77 @@
         }
       },
       {
+        "card": "windows",
+        "chrome": {
+          "accessibility": "Snack times: Next snack time 5:00 to 5:30 PM. Current strength, Low light",
+          "credits": [
+            {
+              "licence": null,
+              "link": null,
+              "source": "Computed on device",
+              "text": "Sun and moon positions from astronomical algorithms"
+            },
+            {
+              "licence": null,
+              "link": "https://tidesandcurrents.noaa.gov",
+              "source": "NOAA CO-OPS",
+              "text": "NOAA CO-OPS"
+            }
+          ],
+          "footnote": null,
+          "id": "windows",
+          "notices": [],
+          "state": {
+            "state": "fresh"
+          },
+          "title": "Snack times"
+        },
+        "compact": {
+          "headline": {
+            "text": "5:00 PM",
+            "unit": "",
+            "value": null
+          },
+          "lines": [
+            "Next snack time 5:00 to 5:30 PM",
+            "Current strength, Low light"
+          ],
+          "spark": []
+        },
+        "full": {
+          "days": [
+            {
+              "date": "Fri Nov 6",
+              "windows": [
+                {
+                  "end_t": 1794004200,
+                  "factors": [
+                    {
+                      "detail": "1.5 kn, ebbing",
+                      "factor": "current_strength",
+                      "label": "Current strength"
+                    },
+                    {
+                      "detail": "12 min after sunset at 4:47 PM",
+                      "factor": "low_light",
+                      "label": "Low light"
+                    }
+                  ],
+                  "no_data": [
+                    "Falling pressure",
+                    "Water temperature in range",
+                    "River flow in range"
+                  ],
+                  "range": "5:00 to 5:30 PM",
+                  "start_t": 1794002400
+                }
+              ]
+            }
+          ],
+          "sections": []
+        }
+      },
+      {
         "card": "tide",
         "chrome": {
           "accessibility": "—. Next high 4:30 PM, 5.6 ft above MLLW.",
@@ -4885,6 +4956,284 @@
           ],
           "kind": "solunar",
           "label": "Solunar",
+          "notices": []
+        },
+        {
+          "chart": {
+            "accessibility": "Snack times: 5:00 to 5:30 PM",
+            "bands": [
+              {
+                "end_t": 1794004200,
+                "kind": "highlight",
+                "label": "5:00 to 5:30 PM",
+                "start_t": 1794002400
+              }
+            ],
+            "markers": [],
+            "now_t": 1794000360,
+            "rules": [],
+            "series": [],
+            "title": "Snack times · computed on device",
+            "unit": "",
+            "x_ticks": [
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1793941200
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1793944800
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1793948400
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1793952000
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1793955600
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1793959200
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1793962800
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1793966400
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1793970000
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1793973600
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1793977200
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1793980800
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1793984400
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1793988000
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1793991600
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1793995200
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1793998800
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794002400
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794006000
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794009600
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794013200
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794016800
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794020400
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794024000
+              },
+              {
+                "label": "12 AM",
+                "major": true,
+                "t": 1794027600
+              },
+              {
+                "label": "1 AM",
+                "major": false,
+                "t": 1794031200
+              },
+              {
+                "label": "2 AM",
+                "major": false,
+                "t": 1794034800
+              },
+              {
+                "label": "3 AM",
+                "major": true,
+                "t": 1794038400
+              },
+              {
+                "label": "4 AM",
+                "major": false,
+                "t": 1794042000
+              },
+              {
+                "label": "5 AM",
+                "major": false,
+                "t": 1794045600
+              },
+              {
+                "label": "6 AM",
+                "major": true,
+                "t": 1794049200
+              },
+              {
+                "label": "7 AM",
+                "major": false,
+                "t": 1794052800
+              },
+              {
+                "label": "8 AM",
+                "major": false,
+                "t": 1794056400
+              },
+              {
+                "label": "9 AM",
+                "major": true,
+                "t": 1794060000
+              },
+              {
+                "label": "10 AM",
+                "major": false,
+                "t": 1794063600
+              },
+              {
+                "label": "11 AM",
+                "major": false,
+                "t": 1794067200
+              },
+              {
+                "label": "12 PM",
+                "major": true,
+                "t": 1794070800
+              },
+              {
+                "label": "1 PM",
+                "major": false,
+                "t": 1794074400
+              },
+              {
+                "label": "2 PM",
+                "major": false,
+                "t": 1794078000
+              },
+              {
+                "label": "3 PM",
+                "major": true,
+                "t": 1794081600
+              },
+              {
+                "label": "4 PM",
+                "major": false,
+                "t": 1794085200
+              },
+              {
+                "label": "5 PM",
+                "major": false,
+                "t": 1794088800
+              },
+              {
+                "label": "6 PM",
+                "major": true,
+                "t": 1794092400
+              },
+              {
+                "label": "7 PM",
+                "major": false,
+                "t": 1794096000
+              },
+              {
+                "label": "8 PM",
+                "major": false,
+                "t": 1794099600
+              },
+              {
+                "label": "9 PM",
+                "major": true,
+                "t": 1794103200
+              },
+              {
+                "label": "10 PM",
+                "major": false,
+                "t": 1794106800
+              },
+              {
+                "label": "11 PM",
+                "major": false,
+                "t": 1794110400
+              }
+            ]
+          },
+          "credits": [
+            {
+              "licence": null,
+              "link": null,
+              "source": "Computed on device",
+              "text": "Sun and moon positions from astronomical algorithms"
+            },
+            {
+              "licence": null,
+              "link": "https://tidesandcurrents.noaa.gov",
+              "source": "NOAA CO-OPS",
+              "text": "NOAA CO-OPS"
+            }
+          ],
+          "kind": "windows",
+          "label": "Snack times",
           "notices": []
         }
       ],

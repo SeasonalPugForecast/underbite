@@ -7822,6 +7822,42 @@ expression: json
       }
     },
     {
+      "card": "windows",
+      "chrome": {
+        "id": "windows",
+        "title": "Snack times",
+        "footnote": null,
+        "credits": [
+          {
+            "source": "Computed on device",
+            "text": "Sun and moon positions from astronomical algorithms",
+            "link": null,
+            "licence": null
+          }
+        ],
+        "state": {
+          "state": "fresh"
+        },
+        "notices": [],
+        "accessibility": "Snack times: No snack times in this period."
+      },
+      "compact": {
+        "headline": {
+          "value": null,
+          "text": "",
+          "unit": ""
+        },
+        "lines": [
+          "No snack times in this period."
+        ],
+        "spark": []
+      },
+      "full": {
+        "days": [],
+        "sections": []
+      }
+    },
+    {
       "card": "sun_moon",
       "chrome": {
         "id": "sun_moon",
@@ -10610,6 +10646,264 @@ expression: json
             "licence": null
           }
         ],
+        "notices": []
+      },
+      {
+        "kind": "windows",
+        "label": "Snack times",
+        "chart": {
+          "title": "Snack times",
+          "unit": "",
+          "x_ticks": [
+            {
+              "t": 1794114000,
+              "label": "12 AM",
+              "major": true
+            },
+            {
+              "t": 1794117600,
+              "label": "1 AM",
+              "major": false
+            },
+            {
+              "t": 1794121200,
+              "label": "2 AM",
+              "major": false
+            },
+            {
+              "t": 1794124800,
+              "label": "3 AM",
+              "major": true
+            },
+            {
+              "t": 1794128400,
+              "label": "4 AM",
+              "major": false
+            },
+            {
+              "t": 1794132000,
+              "label": "5 AM",
+              "major": false
+            },
+            {
+              "t": 1794135600,
+              "label": "6 AM",
+              "major": true
+            },
+            {
+              "t": 1794139200,
+              "label": "7 AM",
+              "major": false
+            },
+            {
+              "t": 1794142800,
+              "label": "8 AM",
+              "major": false
+            },
+            {
+              "t": 1794146400,
+              "label": "9 AM",
+              "major": true
+            },
+            {
+              "t": 1794150000,
+              "label": "10 AM",
+              "major": false
+            },
+            {
+              "t": 1794153600,
+              "label": "11 AM",
+              "major": false
+            },
+            {
+              "t": 1794157200,
+              "label": "12 PM",
+              "major": true
+            },
+            {
+              "t": 1794160800,
+              "label": "1 PM",
+              "major": false
+            },
+            {
+              "t": 1794164400,
+              "label": "2 PM",
+              "major": false
+            },
+            {
+              "t": 1794168000,
+              "label": "3 PM",
+              "major": true
+            },
+            {
+              "t": 1794171600,
+              "label": "4 PM",
+              "major": false
+            },
+            {
+              "t": 1794175200,
+              "label": "5 PM",
+              "major": false
+            },
+            {
+              "t": 1794178800,
+              "label": "6 PM",
+              "major": true
+            },
+            {
+              "t": 1794182400,
+              "label": "7 PM",
+              "major": false
+            },
+            {
+              "t": 1794186000,
+              "label": "8 PM",
+              "major": false
+            },
+            {
+              "t": 1794189600,
+              "label": "9 PM",
+              "major": true
+            },
+            {
+              "t": 1794193200,
+              "label": "10 PM",
+              "major": false
+            },
+            {
+              "t": 1794196800,
+              "label": "11 PM",
+              "major": false
+            },
+            {
+              "t": 1794200400,
+              "label": "12 AM",
+              "major": true
+            },
+            {
+              "t": 1794204000,
+              "label": "1 AM",
+              "major": false
+            },
+            {
+              "t": 1794207600,
+              "label": "2 AM",
+              "major": false
+            },
+            {
+              "t": 1794211200,
+              "label": "3 AM",
+              "major": true
+            },
+            {
+              "t": 1794214800,
+              "label": "4 AM",
+              "major": false
+            },
+            {
+              "t": 1794218400,
+              "label": "5 AM",
+              "major": false
+            },
+            {
+              "t": 1794222000,
+              "label": "6 AM",
+              "major": true
+            },
+            {
+              "t": 1794225600,
+              "label": "7 AM",
+              "major": false
+            },
+            {
+              "t": 1794229200,
+              "label": "8 AM",
+              "major": false
+            },
+            {
+              "t": 1794232800,
+              "label": "9 AM",
+              "major": true
+            },
+            {
+              "t": 1794236400,
+              "label": "10 AM",
+              "major": false
+            },
+            {
+              "t": 1794240000,
+              "label": "11 AM",
+              "major": false
+            },
+            {
+              "t": 1794243600,
+              "label": "12 PM",
+              "major": true
+            },
+            {
+              "t": 1794247200,
+              "label": "1 PM",
+              "major": false
+            },
+            {
+              "t": 1794250800,
+              "label": "2 PM",
+              "major": false
+            },
+            {
+              "t": 1794254400,
+              "label": "3 PM",
+              "major": true
+            },
+            {
+              "t": 1794258000,
+              "label": "4 PM",
+              "major": false
+            },
+            {
+              "t": 1794261600,
+              "label": "5 PM",
+              "major": false
+            },
+            {
+              "t": 1794265200,
+              "label": "6 PM",
+              "major": true
+            },
+            {
+              "t": 1794268800,
+              "label": "7 PM",
+              "major": false
+            },
+            {
+              "t": 1794272400,
+              "label": "8 PM",
+              "major": false
+            },
+            {
+              "t": 1794276000,
+              "label": "9 PM",
+              "major": true
+            },
+            {
+              "t": 1794279600,
+              "label": "10 PM",
+              "major": false
+            },
+            {
+              "t": 1794283200,
+              "label": "11 PM",
+              "major": false
+            }
+          ],
+          "series": [],
+          "bands": [],
+          "rules": [],
+          "markers": [],
+          "now_t": 1794148200,
+          "accessibility": "Snack times: Luna found nothing here yet."
+        },
+        "credits": [],
         "notices": []
       }
     ]

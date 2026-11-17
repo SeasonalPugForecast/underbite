@@ -1234,6 +1234,169 @@ expression: build(&input).unwrap()
         }
       ],
       "notices": []
+    },
+    {
+      "kind": "windows",
+      "label": "Snack times",
+      "chart": {
+        "title": "Snack times · computed on device",
+        "unit": "",
+        "x_ticks": [
+          {
+            "t": 1794114000,
+            "label": "12 AM",
+            "major": true
+          },
+          {
+            "t": 1794117600,
+            "label": "1 AM",
+            "major": false
+          },
+          {
+            "t": 1794121200,
+            "label": "2 AM",
+            "major": false
+          },
+          {
+            "t": 1794124800,
+            "label": "3 AM",
+            "major": true
+          },
+          {
+            "t": 1794128400,
+            "label": "4 AM",
+            "major": false
+          },
+          {
+            "t": 1794132000,
+            "label": "5 AM",
+            "major": false
+          },
+          {
+            "t": 1794135600,
+            "label": "6 AM",
+            "major": true
+          },
+          {
+            "t": 1794139200,
+            "label": "7 AM",
+            "major": false
+          },
+          {
+            "t": 1794142800,
+            "label": "8 AM",
+            "major": false
+          },
+          {
+            "t": 1794146400,
+            "label": "9 AM",
+            "major": true
+          },
+          {
+            "t": 1794150000,
+            "label": "10 AM",
+            "major": false
+          },
+          {
+            "t": 1794153600,
+            "label": "11 AM",
+            "major": false
+          },
+          {
+            "t": 1794157200,
+            "label": "12 PM",
+            "major": true
+          },
+          {
+            "t": 1794160800,
+            "label": "1 PM",
+            "major": false
+          },
+          {
+            "t": 1794164400,
+            "label": "2 PM",
+            "major": false
+          },
+          {
+            "t": 1794168000,
+            "label": "3 PM",
+            "major": true
+          },
+          {
+            "t": 1794171600,
+            "label": "4 PM",
+            "major": false
+          },
+          {
+            "t": 1794175200,
+            "label": "5 PM",
+            "major": false
+          },
+          {
+            "t": 1794178800,
+            "label": "6 PM",
+            "major": true
+          },
+          {
+            "t": 1794182400,
+            "label": "7 PM",
+            "major": false
+          },
+          {
+            "t": 1794186000,
+            "label": "8 PM",
+            "major": false
+          },
+          {
+            "t": 1794189600,
+            "label": "9 PM",
+            "major": true
+          },
+          {
+            "t": 1794193200,
+            "label": "10 PM",
+            "major": false
+          },
+          {
+            "t": 1794196800,
+            "label": "11 PM",
+            "major": false
+          }
+        ],
+        "series": [],
+        "bands": [
+          {
+            "kind": "highlight",
+            "start_t": 1794136500,
+            "end_t": 1794140100,
+            "label": "6:15 to 7:15 AM"
+          }
+        ],
+        "rules": [],
+        "markers": [],
+        "now_t": 1794142800,
+        "accessibility": "Snack times: 6:15 to 7:15 AM. A traditional cue, not a promise."
+      },
+      "credits": [
+        {
+          "source": "Computed on device",
+          "text": "Sun and moon positions from astronomical algorithms",
+          "link": null,
+          "licence": null
+        },
+        {
+          "source": "NOAA CO-OPS",
+          "text": "NOAA CO-OPS",
+          "link": "https://tidesandcurrents.noaa.gov",
+          "licence": null
+        }
+      ],
+      "notices": [
+        {
+          "kind": "traditional_cue",
+          "text": "A traditional cue, not a promise."
+        }
+      ]
     }
   ]
 }

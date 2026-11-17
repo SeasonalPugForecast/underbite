@@ -1,0 +1,587 @@
+---
+source: crates/underbite-core/src/view/cards/go_no_go.rs
+expression: build(&input).unwrap()
+---
+{
+  "chrome": {
+    "id": "go_no_go",
+    "title": "Go or no go",
+    "footnote": null,
+    "credits": [
+      {
+        "source": "Open-Meteo",
+        "text": "Weather data by Open-Meteo.com",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "NOAA NDBC",
+        "text": "NOAA NDBC",
+        "link": null,
+        "licence": null
+      },
+      {
+        "source": "National Weather Service",
+        "text": "National Weather Service",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Go or no go: No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "No-go",
+      "unit": ""
+    },
+    "lines": [
+      "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20",
+      "Sat Nov 7: No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+    ],
+    "spark": []
+  },
+  "full": {
+    "profile": "Kayak",
+    "days": [
+      {
+        "date": "Fri Nov 6",
+        "verdict": "no_go",
+        "verdict_label": "No-go",
+        "summary": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20",
+        "reasons": [
+          {
+            "check": "waves",
+            "kind": "fails",
+            "text": "No-go: waves 0.9 m over your 0.6 m limit",
+            "link": null
+          },
+          {
+            "check": "small_craft_advisory",
+            "kind": "fails",
+            "text": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20",
+            "link": null
+          },
+          {
+            "check": "waves",
+            "kind": "no_data",
+            "text": "Missing: waves",
+            "link": null
+          },
+          {
+            "check": "current",
+            "kind": "no_data",
+            "text": "Missing: current",
+            "link": null
+          },
+          {
+            "check": "forecast",
+            "kind": "outside_forecast",
+            "text": "Past the end of the forecast",
+            "link": null
+          }
+        ],
+        "hours": [
+          {
+            "start_t": 1793941200,
+            "label": "00:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793944800,
+            "label": "01:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793948400,
+            "label": "02:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793952000,
+            "label": "03:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793955600,
+            "label": "04:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793959200,
+            "label": "05:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793962800,
+            "label": "06:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793966400,
+            "label": "07:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793970000,
+            "label": "08:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793973600,
+            "label": "09:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793977200,
+            "label": "10:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793980800,
+            "label": "11:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793984400,
+            "label": "12:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793988000,
+            "label": "13:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793991600,
+            "label": "14:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793995200,
+            "label": "15:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1793998800,
+            "label": "16:00",
+            "verdict": "no_go",
+            "reason": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+          },
+          {
+            "start_t": 1794002400,
+            "label": "17:00",
+            "verdict": "no_go",
+            "reason": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+          },
+          {
+            "start_t": 1794006000,
+            "label": "18:00",
+            "verdict": "no_go",
+            "reason": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+          },
+          {
+            "start_t": 1794009600,
+            "label": "19:00",
+            "verdict": "no_go",
+            "reason": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+          },
+          {
+            "start_t": 1794013200,
+            "label": "20:00",
+            "verdict": "no_go",
+            "reason": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+          },
+          {
+            "start_t": 1794016800,
+            "label": "21:00",
+            "verdict": "no_go",
+            "reason": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+          },
+          {
+            "start_t": 1794020400,
+            "label": "22:00",
+            "verdict": "no_go",
+            "reason": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+          },
+          {
+            "start_t": 1794024000,
+            "label": "23:00",
+            "verdict": "no_go",
+            "reason": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+          }
+        ]
+      },
+      {
+        "date": "Sat Nov 7",
+        "verdict": "no_go",
+        "verdict_label": "No-go",
+        "summary": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20",
+        "reasons": [
+          {
+            "check": "small_craft_advisory",
+            "kind": "fails",
+            "text": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20",
+            "link": null
+          },
+          {
+            "check": "waves",
+            "kind": "no_data",
+            "text": "Missing: waves",
+            "link": null
+          },
+          {
+            "check": "current",
+            "kind": "no_data",
+            "text": "Missing: current",
+            "link": null
+          },
+          {
+            "check": "forecast",
+            "kind": "outside_forecast",
+            "text": "Past the end of the forecast",
+            "link": null
+          }
+        ],
+        "hours": [
+          {
+            "start_t": 1794027600,
+            "label": "00:00",
+            "verdict": "no_go",
+            "reason": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+          },
+          {
+            "start_t": 1794031200,
+            "label": "01:00",
+            "verdict": "no_go",
+            "reason": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+          },
+          {
+            "start_t": 1794034800,
+            "label": "02:00",
+            "verdict": "no_go",
+            "reason": "No-go: Small Craft Advisory, Nov 6, 16:20 – Nov 7, 02:20"
+          },
+          {
+            "start_t": 1794038400,
+            "label": "03:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794042000,
+            "label": "04:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794045600,
+            "label": "05:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794049200,
+            "label": "06:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794052800,
+            "label": "07:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794056400,
+            "label": "08:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794060000,
+            "label": "09:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794063600,
+            "label": "10:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794067200,
+            "label": "11:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794070800,
+            "label": "12:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794074400,
+            "label": "13:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794078000,
+            "label": "14:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794081600,
+            "label": "15:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794085200,
+            "label": "16:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794088800,
+            "label": "17:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794092400,
+            "label": "18:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794096000,
+            "label": "19:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794099600,
+            "label": "20:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794103200,
+            "label": "21:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794106800,
+            "label": "22:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794110400,
+            "label": "23:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          }
+        ]
+      },
+      {
+        "date": "Sun Nov 8",
+        "verdict": "unknown",
+        "verdict_label": "Unknown",
+        "summary": "Not enough data to judge. Missing: waves, current. Past the end of the forecast",
+        "reasons": [
+          {
+            "check": "waves",
+            "kind": "no_data",
+            "text": "Missing: waves",
+            "link": null
+          },
+          {
+            "check": "current",
+            "kind": "no_data",
+            "text": "Missing: current",
+            "link": null
+          },
+          {
+            "check": "forecast",
+            "kind": "outside_forecast",
+            "text": "Past the end of the forecast",
+            "link": null
+          }
+        ],
+        "hours": [
+          {
+            "start_t": 1794114000,
+            "label": "00:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794117600,
+            "label": "01:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794121200,
+            "label": "02:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794124800,
+            "label": "03:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794128400,
+            "label": "04:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794132000,
+            "label": "05:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794135600,
+            "label": "06:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794139200,
+            "label": "07:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794142800,
+            "label": "08:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794146400,
+            "label": "09:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794150000,
+            "label": "10:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794153600,
+            "label": "11:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794157200,
+            "label": "12:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794160800,
+            "label": "13:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794164400,
+            "label": "14:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794168000,
+            "label": "15:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794171600,
+            "label": "16:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794175200,
+            "label": "17:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794178800,
+            "label": "18:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794182400,
+            "label": "19:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794186000,
+            "label": "20:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794189600,
+            "label": "21:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794193200,
+            "label": "22:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          },
+          {
+            "start_t": 1794196800,
+            "label": "23:00",
+            "verdict": "unknown",
+            "reason": "Past the end of the forecast"
+          }
+        ]
+      }
+    ]
+  }
+}

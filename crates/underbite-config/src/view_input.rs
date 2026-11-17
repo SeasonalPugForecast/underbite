@@ -4,11 +4,15 @@
 use underbite_core::model::{Measurement, SpotSnapshot};
 use underbite_core::provenance::SourceId;
 use underbite_core::time::UnixTime;
+use underbite_core::trip::TripLimits;
+use underbite_core::trip::windows::{FactorWeights, TideRule, WindowParams};
 use underbite_core::view::{MeasurementLimit, RiverRanges, SolunarSettings, ViewInput};
 
+use crate::limits::LimitsProfile;
 use crate::rivers::RiverRange;
 use crate::schema::Config;
 use crate::sources::{SourceGroup, SourcesConfig};
+use crate::windows::WindowsConfig;
 
 /// Station observations of wind and pressure have no `[sources]` group: they come from CO-OPS
 /// and NDBC stations, nearest first, and count only while fresh.
@@ -106,9 +110,47 @@ fn gauge_ranges(rivers: &[RiverRange], station_id: &str) -> Option<RiverRanges> 
     RiverRange::find(rivers, station_id).map(RiverRange::to_ranges)
 }
 
+/// The settings fishing windows are computed with, from `[windows]`. The tide rule is the core's
+/// default: the configuration has no key for it.
+pub fn window_params(windows: &WindowsConfig) -> WindowParams {
+    let w = &windows.factors;
+    WindowParams {
+        weights: FactorWeights {
+            tide_stage: w.tide_stage,
+            current_strength: w.current_strength,
+            low_light: w.low_light,
+            solunar: w.solunar,
+            pressure_falling: w.pressure_falling,
+            water_temp: w.water_temp,
+            flow_in_range: w.flow_in_range,
+        },
+        tide: TideRule::default(),
+        current_range_kn: windows.current_range_kn,
+        show_solunar: windows.show_solunar,
+        solunar_major_minutes: windows.solunar_major_minutes,
+        solunar_minor_minutes: windows.solunar_minor_minutes,
+    }
+}
+
+/// A `[[limits]]` profile as the core's copy of the limits, field for field.
+pub fn trip_limits(profile: &LimitsProfile) -> TripLimits {
+    TripLimits {
+        name: profile.name.clone(),
+        max_wind_kn: profile.max_wind_kn,
+        max_gust_kn: profile.max_gust_kn,
+        max_wave_m: profile.max_wave_m,
+        max_current_kn: profile.max_current_kn,
+        min_air_temp_c: profile.min_air_temp_c,
+        min_visibility_km: profile.min_visibility_km,
+        no_small_craft_advisory: profile.no_small_craft_advisory,
+        no_lightning: profile.no_lightning,
+    }
+}
+
 /// What `build_view` takes, from the configuration: the cards of the spot's water type in the
-/// user's order, units, voice and clock, the limits, the river ranges of the spot's gauge and
-/// the thresholds.
+/// user's order, units, voice and clock, the limits, the river ranges of the spot's gauge, the
+/// thresholds, the fishing-window settings and the first go/no-go profile (the card is left out
+/// when there is none).
 pub fn view_input(config: &Config, snapshot: SpotSnapshot, now: UnixTime) -> ViewInput {
     let river_ranges = river_ranges(&config.rivers, &snapshot);
     ViewInput {
@@ -127,6 +169,8 @@ pub fn view_input(config: &Config, snapshot: SpotSnapshot, now: UnixTime) -> Vie
         solunar: SolunarSettings {
             show: config.windows.show_solunar,
         },
+        windows: window_params(&config.windows),
+        trip_limits: config.limits.first().map(trip_limits),
     }
 }
 
@@ -215,5 +259,41 @@ mod tests {
         assert_eq!(input.voice, config.presentation.voice);
         assert_eq!(input.limits, measurement_limits(&config.sources));
         assert!(input.river_ranges.is_none());
+    }
+
+    #[test]
+    fn windows_and_limits_are_the_configurations() {
+        let mut config = Config::default();
+        config.windows.factors.solunar = 0.25;
+        config.windows.current_range_kn = [0.8, 3.0];
+        config.windows.solunar_major_minutes = 90;
+        let params = window_params(&config.windows);
+        assert!((params.weights.solunar - 0.25).abs() < f64::EPSILON);
+        assert_eq!(params.current_range_kn, [0.8, 3.0]);
+        assert_eq!(params.solunar_major_minutes, 90);
+        assert_eq!(params.tide, TideRule::default());
+        assert_eq!(
+            window_params(&WindowsConfig::default()),
+            WindowParams::default()
+        );
+
+        let kayak = &config.limits[0];
+        let limits = trip_limits(kayak);
+        assert_eq!(limits.name, "Kayak");
+        assert_eq!(limits.max_gust_kn, kayak.max_gust_kn);
+        assert_eq!(limits.max_current_kn, Some(2.0));
+        assert!(limits.no_small_craft_advisory && limits.no_lightning);
+
+        let snapshot = sample_snapshot();
+        let input = view_input(&config, snapshot.clone(), UnixTime(0));
+        assert_eq!(input.trip_limits, Some(limits));
+        assert_eq!(input.windows, params);
+        // Without a profile the go/no-go card has nothing to judge against.
+        config.limits.clear();
+        assert!(
+            view_input(&config, snapshot, UnixTime(0))
+                .trip_limits
+                .is_none()
+        );
     }
 }

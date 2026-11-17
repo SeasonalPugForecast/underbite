@@ -148,6 +148,10 @@ fn data_texts(input: &ViewInput) -> Vec<String> {
             texts.insert(p.short_credit().to_owned());
         }
     }
+    // The name of the user's limits profile is theirs.
+    if let Some(limits) = &input.trip_limits {
+        texts.insert(limits.name.clone());
+    }
     // A licence's version is part of its name, not a number to write in the locale.
     texts.insert(crate::view::packs::pseudo("CC BY 4.0"));
     let mut texts: Vec<String> = texts.into_iter().filter(|t| t.len() > 1).collect();
@@ -225,7 +229,7 @@ fn every_card_and_the_timeline_are_translated_in_the_pseudo_locale() {
     // Every card the view builds was built at least once.
     let built: BTreeSet<CardId> = CardId::ALL
         .into_iter()
-        .filter(|id| !matches!(id, CardId::Windows | CardId::GoNoGo | CardId::Species))
+        .filter(|id| !matches!(id, CardId::Species))
         .collect();
     assert_eq!(cards, built);
 }

@@ -931,10 +931,7 @@ pub fn card_catalogue(
         id: unit_id(id),
         title: strings.card_title(id).to_owned(),
         shown,
-        available: !matches!(
-            id,
-            CardId::Windows | CardId::GoNoGo | CardId::Stocking | CardId::Bloom | CardId::Species
-        ),
+        available: !matches!(id, CardId::Stocking | CardId::Bloom | CardId::Species),
     };
     let mut cards: Vec<CardInfo> = order.iter().map(|&id| info(id, true)).collect();
     cards.extend(
