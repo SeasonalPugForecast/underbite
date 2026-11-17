@@ -15,14 +15,17 @@ struct MapTab: View {
             }
             .safeAreaInset(edge: .bottom) {
                 if let notice = (try? appWords(settingsJson: store.settingsJSON))?.mapNotice {
-                    // Safety text, whole at every size; the map's own controls stay above it.
+                    // Safety text, whole at every size and on a solid ground whatever the map
+                    // shows under it; the map's own controls stay above it.
                     Text(notice)
                         .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Color.primary)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(.regularMaterial, in: Capsule())
+                        .background(Color(.systemBackground), in: Capsule())
+                        .overlay(Capsule().strokeBorder(Color(.separator)))
                         .padding(.bottom, 8)
                         .accessibilityIdentifier("map-notice")
                 }
