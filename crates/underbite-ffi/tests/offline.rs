@@ -325,6 +325,29 @@ fn fetches_without_signal_keep_the_time_of_the_last_one_online() {
 }
 
 #[test]
+fn kept_metadata_that_computes_nothing_is_not_called_a_computed_tide() {
+    let phone = Phone::new();
+    let (online, first) = fetch(&phone, now(), Vec::new());
+    assert!(
+        first.cacheable.iter().all(|c| !c.key.contains("harcon")),
+        "the online fetch kept no constants"
+    );
+    phone.lose_signal();
+    // Datums alone, then datums with constants the predictor cannot use: copies answer, but
+    // no tide is computed from them.
+    for harcon in [None, Some(br#"{"HarmonicConstituents":[]}"#.to_vec())] {
+        let cached = with_kept(&first.cacheable, harcon.clone());
+        let (s, out) = fetch(&phone, now() + 3_600, cached);
+        assert_eq!(s.marine.tide, online.marine.tide, "{harcon:?}");
+        let note = offline_note(&out);
+        assert!(
+            note.starts_with("offline: values from Nov 8, 9:30"),
+            "{harcon:?}: {note}"
+        );
+    }
+}
+
+#[test]
 fn without_the_kept_metadata_no_tide_is_computed_and_the_last_one_stays() {
     let phone = Phone::new();
     let (online, _) = fetch(&phone, now(), Vec::new());

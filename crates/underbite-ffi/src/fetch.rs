@@ -22,7 +22,7 @@ use underbite_core::model::{SourceError, SourceErrorKind, Spot, SpotSnapshot, Wa
 use underbite_core::offline::cache::{
     CachedMetadata, MetadataKind, cache_key, merge_last, serve_offline,
 };
-use underbite_core::provenance::SourceId;
+use underbite_core::provenance::{SourceId, ValueKind};
 use underbite_core::time::UnixTime;
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{Key, Strings};
@@ -219,8 +219,8 @@ struct Traffic {
     answered: usize,
     /// Requests that got no response at all.
     unreachable: usize,
-    /// When each cached copy that answered a request was fetched.
-    served: Vec<UnixTime>,
+    /// What each cached copy that answered a request was.
+    served: Vec<MetadataKind>,
 }
 
 /// The app's [`FetchHost`] as the fetch library's. Long-lived station metadata that arrives is
@@ -260,7 +260,7 @@ impl Bridge {
     /// The cached copy that answers `url` when the network cannot.
     fn offline_answer(&self, url: &str) -> Option<Fetched> {
         let served = serve_offline(url, self.cached.get(&cache_key(url)), self.now).ok()?;
-        self.traffic().served.push(served.fetched_at);
+        self.traffic().served.push(served.kind);
         Some(Fetched {
             status: 200,
             body: served.body.to_vec(),
@@ -692,14 +692,9 @@ pub async fn fetch_spot(
             snapshot.spot.time_zone.as_str()
         };
         let f = crate::map::formatter(&config, zone);
-        snapshot = offline(
-            &bridge,
-            strings,
-            &f,
-            previous.as_ref(),
-            snapshot,
-            !traffic.served.is_empty(),
-        );
+        let computed =
+            traffic.served.contains(&MetadataKind::Harmonics) && computed_here(&snapshot);
+        snapshot = offline(&bridge, strings, &f, previous.as_ref(), snapshot, computed);
     }
     Ok(SpotFetchOutcome {
         snapshot_json: serde_json::to_string(&snapshot).map_err(|e| invalid("snapshot", &e))?,
@@ -707,6 +702,17 @@ pub async fn fetch_spot(
         suggestion,
         cacheable: traffic.cacheable,
     })
+}
+
+/// Whether the fetch computed a tide or a current itself (from harmonic constants).
+fn computed_here(snapshot: &SpotSnapshot) -> bool {
+    let tide = snapshot.marine.tide.as_ref().map(|t| t.provenance.kind);
+    let current = snapshot
+        .marine
+        .tidal_current
+        .as_ref()
+        .map(|c| c.provenance.kind);
+    [tide, current].contains(&Some(ValueKind::Computed))
 }
 
 /// The spot's snapshot as the last fetch stored it.
@@ -720,7 +726,8 @@ fn last_snapshot(bridge: &Bridge, spot_id: &str) -> Option<SpotSnapshot> {
 
 /// The snapshot of a fetch without signal: the values it lacks come from the last snapshot with
 /// their own times, the offline note is added to its errors, and the result is kept in place of
-/// the sparse one the fetch stored, so the next fetch without signal still has them.
+/// the sparse one the fetch stored, so the next fetch without signal still has them. `computed`
+/// says the fetch computed a tide or current from kept harmonic constants.
 fn offline(
     bridge: &Bridge,
     strings: Strings,
