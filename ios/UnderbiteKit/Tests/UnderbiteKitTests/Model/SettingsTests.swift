@@ -67,7 +67,21 @@ final class SettingsTests: XCTestCase {
             ]
         ]
         doc["providers"] = ["usgs": [String: Any](), "copernicus": ["enabled": true]]
-        doc["map"] = ["preset": "Offshore", "offline_max_mb": 800]
+        // Every catalogue layer stays in the list, so the migration has nothing to add.
+        var map = try XCTUnwrap(doc["map"] as? [String: Any])
+        var layers = try XCTUnwrap(map["layers"] as? [[String: Any]])
+        layers[0] = ["id": layers[0]["id"] as Any, "shown": true, "opacity": 0.6, "ramp": "thermal", "range": [10.0, 28.0]]
+        map["base"] = "apple-hybrid"
+        map["layers"] = layers
+        map["presets"] = [
+            ["name": "Mine", "layers": [["id": "sst", "shown": true, "opacity": 0.5]]]
+        ]
+        map["active_preset"] = "Mine"
+        map["battery_mode"] = "on"
+        map["depth"] = ["band_m": [4.5, 7.5], "contour_interval_m": 2.0, "ramp": "depth"]
+        map["breaks"] = ["sst_c_per_km": 0.75, "chlorophyll_log10_per_km": 0.05]
+        map["offline_max_mb"] = 800
+        doc["map"] = map
         doc["storms"] = ["hurricane_distance_km": 1500.5]
         doc["thresholds"] = ["trout_stress_c": 18.5]
         let full = try Fixtures.string(doc)
@@ -80,6 +94,11 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(settings.cards.greatLakes?.hidden, ["alerts"])
         XCTAssertEqual(settings.rivers[0].bestCfs, [150, 300])
         XCTAssertTrue(settings.providers.copernicus.enabled)
+        XCTAssertEqual(settings.map.layers[0].range, [10, 28])
+        XCTAssertNil(settings.map.layers[1].opacity)
+        XCTAssertEqual(settings.map.presets[0].layers[0].opacity, 0.5)
+        XCTAssertEqual(settings.map.depth.bandM, [4.5, 7.5])
+        XCTAssertEqual(settings.map.activePreset, "Mine")
     }
 
     func testAnEditGoesThroughTheCore() throws {

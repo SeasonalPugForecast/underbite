@@ -199,8 +199,47 @@ extension Settings {
         public var timelineStepMinutes: Int
     }
 
+    /// The map section. Ranges and depths are in the core's canonical units (degrees Celsius,
+    /// metres, m/s); a `nil` opacity, ramp or range means the layer's own.
     public struct MapSettings: Codable, Sendable, Hashable {
-        public var preset: String
+        /// The base map id.
+        public var base: String
+        /// The overlay layers in drawing order, first at the bottom.
+        public var layers: [MapLayer]
+        /// The user's own presets.
+        public var presets: [MapPreset]
+        /// A built-in preset id or the name of one of the user's presets.
+        public var activePreset: String
+        /// `auto`, `on` or `off`.
+        public var batteryMode: String
+        public var depth: MapDepth
+        public var breaks: MapBreaks
         public var offlineMaxMb: Int
+    }
+
+    public struct MapLayer: Codable, Sendable, Hashable {
+        public var id: String
+        public var shown: Bool
+        public var opacity: Double?
+        public var ramp: String?
+        /// Low and high.
+        public var range: [Double]?
+    }
+
+    public struct MapPreset: Codable, Sendable, Hashable {
+        public var name: String
+        public var layers: [MapLayer]
+    }
+
+    public struct MapDepth: Codable, Sendable, Hashable {
+        /// Shallow and deep, in metres.
+        public var bandM: [Double]?
+        public var contourIntervalM: Double
+        public var ramp: String?
+    }
+
+    public struct MapBreaks: Codable, Sendable, Hashable {
+        public var sstCPerKm: Double
+        public var chlorophyllLog10PerKm: Double
     }
 }
