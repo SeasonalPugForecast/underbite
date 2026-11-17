@@ -75,15 +75,15 @@ was not fetched; plausible values and the references support it).
 | Habitat class | `species.DemersPelag` (`demersal`, `pelagic`, `benthopelagic`, ...) | species | filled for the species checked |
 | Habitat features | `ecology.Stream`, `Lakes`, `Estuaries`, `Mangroves`, `Neritic`, `Epipelagic`, `Benthic`, `Demersal`, `Pelagic`, `Rocky`, `Sand`, `Mud`, `Gravel`, `SeaGrassBeds`, `CoralReefs`, `Vegetation`, `Pilings`, ... | stock (`StockCode`) | one row per species except `Salmo trutta` (4). Coarse: for example `Centropristis striata` and `Thunnus atlanticus` have every flag 0. |
 | Light preference | `ecology.Circadian1` to `Circadian3`, `RemarksCircadian` | stock | **empty for all 33 species** |
-| Depth range | `species.DepthRangeShallow`, `DepthRangeDeep` (and `DepthRangeRef`) | species | filled for 29 of 33; one range per species, no seasonal split; often only one end (`Morone saxatilis` 30 and no deep end) |
+| Depth range | `species.DepthRangeShallow`, `DepthRangeDeep` (and `DepthRangeRef`) | species | filled for 29 of 33; one range per species, no seasonal split; often only one end (`Morone saxatilis` has only one end) |
 | Common depth range | `species.DepthRangeComShallow`, `DepthRangeComDeep` | species | filled for 11 of 33 |
 | Modelled depth | `estimate.DepthMin`, `DepthMax`, `ComDepthMin`, `ComDepthMax`, with `DepthMinEstimate`, `DepthMaxEstimate` flags | species | filled for all 33; computed, not observed; method not checked (**unverified**) |
-| Tolerated temperature | `stocks.TempMin`, `TempMax` (`TempRef`) | stock | filled for 28 of 33 species; for example `Micropterus dolomieu` 8.5 to 29.5, `Salvelinus fontinalis` 0.0 to 25.3. `TempRef` points to literature (`refrens`): Scott and Crossman 1973, Beitinger and Bennett 2000, Eaton et al. 1995, among others. Semantics (lethal limit, tolerance or occurrence range) differ by reference and are not stated in the table. |
+| Tolerated temperature | `stocks.TempMin`, `TempMax` (`TempRef`) | stock | filled for 28 of 33 species. `TempRef` points to literature (`refrens`): Scott and Crossman 1973, Beitinger and Bennett 2000, Eaton et al. 1995, among others. Semantics (lethal limit, tolerance or occurrence range) differ by reference and are not stated in the table. |
 | Preferred temperature | `stocks.TempPreferred`, `TempPref25`, `TempPref50`, `TempPref75` (`TempPrefRef`) | stock | only 19 of 33 species, **only marine and diadromous ones**; every `TempPrefRef` seen is Cheung, Watson and Pauly 2013 ("Signature of ocean warming in global fisheries catch"), a model output. No freshwater-only species has it (bass, walleye, pike, muskie, panfish, catfish, lake trout). |
 | Modelled preferred temperature | `estimate.TempPrefMin`, `TempPrefMean`, `TempPrefMax` (`nCells`) | species | 20 of 33 (the 19 above plus brook trout); from a species distribution model (the AquaMaps method is the likely origin, **unverified**) |
 | Spawning temperature | `spawning.TempLow`, `TempHigh` | per study and place (`SpawningRefNo`, `Spawningarea`, `C_Code`) | 18 of 33 species have at least one row with a value; none for most tunas, bluefish, summer flounder, black sea bass, redfish, snook, tarpon, dolphinfish, bluegill, flathead catfish, white crappie |
 | Spawning months | `spawning.Jan` to `Dec` | per study and place | the month columns hold the value `111` in the months where spawning is reported (the meaning of `111` as a presence flag is inferred, **unverified**); 32 of 33 species have rows with months; `Pomoxis annularis` has none |
-| Spawning place | `spawning.SpawningGround` (`riverine`, `lacustrine`, `estuarine`), `Spawningarea` (free text, e.g. "Delaware Bay"), `C_Code` (ISO 3166 numeric: `840` is the United States, `124` Canada; suffixed codes such as `840A` and `840B` also occur and their meaning is **unverified**), `AddInfos` (free text, e.g. "Spawning activity commences during spring at water temperature of 16 °C") | per study and place | gives regional spawning windows for some species (striped bass: Chesapeake Bay May, Delaware Bay April and May, Gulf of Maine June) |
+| Spawning place | `spawning.SpawningGround` (`riverine`, `lacustrine`, `estuarine`), `Spawningarea` (free text, e.g. "Delaware Bay"), `C_Code` (ISO 3166 numeric: `840` is the United States, `124` Canada; suffixed codes such as `840A` and `840B` also occur and their meaning is **unverified**), `AddInfos` (free text) | per study and place | gives regional spawning windows for some species |
 | Reproductive mode | `reproduc.ReproMode`, `Spawning` (pattern), `SpawnAgg`, `RepGuild1`, `ParentalCare` | stock | filled for most; useful for notes such as "male guards the nest" |
 | Game fish flag | `species.GameFish`, `GameRef` | species | |
 | Distribution | `stocks.Northernmost`, `Southermost`, `Westernmost`, `Easternmost`, `StockDefs` (free text), `EnvTemp` (`tropical`, `subtropical`, `temperate`, ...) | stock | `StockDefs` describes the range in words |
@@ -99,8 +99,7 @@ was not fetched; plausible values and the references support it).
   "wild stock/population", 5 "subspecies" and 3 "hybrid" (`Cyprinus carpio` has 29 rows, `Salmo trutta`
   7, `Salmo salar` and `Thunnus thynnus` 3 each). Temperature range and preferred temperature live
   here. The "species in general" row is the one to use for a species profile; a regional population row
-  could refine it, but regions were not mapped. For `Salmo trutta` two rows carry different ranges
-  (18.0 to 24.0 and 2.0 to 16.0), and the species table below lists both.
+  could refine it, but regions were not mapped. For `Salmo trutta` two rows carry different ranges.
 - `ecology`, `reproduc`: per stock (one row per species except `Salmo trutta`, 4 rows).
 - `spawning`: per study and place, with its own reference; several rows per species (203 rows for 33
   species; `Cyprinus carpio` 36, `Salmo trutta` 24). Ranges from different studies must be combined by
@@ -110,14 +109,13 @@ was not fetched; plausible values and the references support it).
 
 ### Quality warnings seen in the extract
 
-- Preferred temperatures disagree between FishBase's own tables: `Morone saxatilis` `stocks.TempPreferred`
-  20.0 (p25 to p75 16 to 25) against `estimate.TempPrefMean` 9.3 (1.0 to 23.5); `Thunnus atlanticus`
-  26.0 against 14.4. The modelled values are not suitable for "preferred water temperature" in a
+- Preferred temperatures disagree between FishBase's own tables: for `Morone saxatilis` and
+  `Thunnus atlanticus`, `stocks.TempPreferred` and `estimate.TempPrefMean` differ by several degrees. The modelled values are not suitable for "preferred water temperature" in a
   fishing card without review.
-- The salmon `TempPreferred` values (3 to 4 °C) describe the ocean phase, not the spawning river.
+- The salmon `TempPreferred` values describe the ocean phase, not the spawning river.
 - Freshwater species have no preferred temperature at all, so the temperature range card would depend on
   `TempMin`/`TempMax` (tolerance) and on the spawning temperatures.
-- Freshwater depth ranges are thin (`Micropterus salmoides` 0 to 6 m) and come from one reference.
+- Freshwater depth ranges are thin (`Micropterus salmoides`) and come from one reference.
 
 ## Species and coverage
 
@@ -128,50 +126,50 @@ nerka (sockeye), O. kisutch (coho), O. tshawytscha (Chinook), Salmo salar (Atlan
 extracted: blue catfish, bullhead, pink and chum salmon, rock bass, other tunas (bigeye, longfin) and
 Spanish or king mackerel.
 
-Table of `fb/v26.06` values, one row per species. Columns: `DepthRange` is
-`species.DepthRangeShallow`-`Deep` (m); `Com` is the common depth range; `TempMin-Max` is
-`stocks.TempMin`-`TempMax` over the species' stocks; `TempPref` is `stocks.TempPreferred` with p25 to p75;
-`Estimate` is `estimate.TempPrefMin/Mean/Max`; `spawn temp` is the lowest `TempLow` to the highest
-`TempHigh` over `spawning`; `-` is null. All of these are **CC BY-NC 4.0** (FishBase). Species-by-source
-columns for the agencies follow after the table.
+Coverage of `fb/v26.06`, one row per species; the values themselves are not copied here (they are
+**CC BY-NC 4.0**, FishBase) and are read from the release. Columns say whether the field is filled:
+`yes`, `no` (null) or `part` (one end of a range is null). `Depth range` is
+`species.DepthRangeShallow`-`Deep`; `Common depth` is the common depth range; `Tolerated temp.` is
+`stocks.TempMin`-`TempMax`; `Preferred temp.` is `stocks.TempPreferred` with its percentiles; `Modelled
+pref. temp.` is `estimate.TempPrefMin/Mean/Max`; `Spawn temp.` is `spawning.TempLow`-`TempHigh`;
+`Spawn months` is whether any `spawning` row has months. Species-by-source columns for the agencies
+follow after the table.
 
-| SpecCode | Species | FBname | F/B/S | DepthRange | Com | stocks | TempMin-Max | TempPref (p25-p75) | Estimate | spawn rows | spawn temp | rows with months | ecology rows |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 345 | Centropomus undecimalis | Common snook | 111 | - to 22 | - | 1 | 25.0-31.0 | 27.0 (27-27) | 23.5/27.3/28.1 | 2 | - | 2 | 1 |
-| 361 | Centropristis striata | Black seabass | 001 | 1 to - | - | 1 | - | 19.0 (14-23) | 10.8/23.6/24.9 | 1 | - | 1 | 1 |
-| 6 | Coryphaena hippurus | Common dolphinfish | 011 | 0-85 | 5-10 | 1 | 21.0-30.0 | 28.0 (26-28) | 18.1/27.4/29.1 | 15 | - | 14 | 1 |
-| 405 | Cynoscion nebulosus | Spotted weakfish | 011 | 10 to - | - | 1 | - | 23.0 (20-26) | 12.0/24.3/26.7 | 3 | 20.0-32.0 | 3 | 1 |
-| 1450 | Cyprinus carpio | Common carp | 110 | 0-29 | - | 29 | 3.0-35.0 | - | - | 36 | 7.7-28.0 | 36 | 1 |
-| 258 | Esox lucius | Northern pike | 110 | 0-30 | 1-5 | 1 | 10.0-28.0 | - | - | 11 | 4.4-15.3 | 11 | 1 |
-| 2711 | Esox masquinongy | Muskellunge | 100 | - | - | 1 | - | - | - | 1 | 9.0-15.0 | 1 | 1 |
-| 290 | Ictalurus punctatus | Channel catfish | 100 | 0-15 | - | 1 | 10.0-31.6 | - | - | 3 | 18.0-30.0 | 3 | 1 |
-| 107 | Katsuwonus pelamis | Skipjack tuna | 001 | 0-260 | 0 to - | 1 | 14.7-30.0 | 27.0 (24-27) | 13.3/26.2/29.0 | 5 | - | 5 | 1 |
-| 3375 | Lepomis macrochirus | Bluegill | 100 | - | - | 1 | 1.0-36.0 | - | - | 2 | - | 2 | 1 |
-| 1079 | Megalops atlanticus | Tarpon | 111 | 0-40 | 0-15 | 1 | 10.0-40.0 | 26.0 (25-27) | 19.6/27.0/28.0 | 4 | - | 4 | 1 |
-| 3382 | Micropterus dolomieu | Smallmouth bass | 100 | 1-7 | - | 1 | 8.5-29.5 | - | - | 4 | 12.8-22.0 | 4 | 1 |
-| 3385 | Micropterus salmoides | Largemouth black bass | 100 | 0-6 | - | 1 | 10.0-31.7 | - | - | 5 | 15.0-25.0 | 5 | 1 |
-| 353 | Morone saxatilis | Striped bass | 111 | 30 to - | - | 1 | 8.0-25.0 | 20.0 (16-25) | 1.0/9.3/23.5 | 6 | 14.0-25.0 | 5 | 1 |
-| 245 | Oncorhynchus kisutch | Coho salmon | 111 | 0-250 | - | 1 | 0.0-24.8 | 3.0 (3-6) | 1.0/3.9/8.9 | 2 | 1.0-8.0 | 1 | 1 |
-| 239 | Oncorhynchus mykiss | Rainbow trout | 111 | 0-200 | - | 1 | 10.0-24.0 | 8.0 (6-12) | 1.3/5.4/10.0 | 7 | 4.0-19.0 | 6 | 1 |
-| 243 | Oncorhynchus nerka | Sockeye salmon | 111 | 0-250 | - | 1 | 0.0-24.9 | 3.0 (3-6) | 1.0/4.2/8.4 | 4 | - | 3 | 1 |
-| 244 | Oncorhynchus tshawytscha | Chinook salmon | 111 | 0-375 | - | 1 | 0.0-24.9 | 4.0 (4-8) | 0.7/3.5/8.0 | 5 | 4.0-14.5 | 5 | 1 |
-| 1338 | Paralichthys dentatus | Summer flounder | 011 | 10-183 | - to 37 | 1 | - | 13.0 (12-20) | 9.1/19.1/24.4 | 3 | - | 3 | 1 |
-| 359 | Perca flavescens | American yellow perch | 110 | 0-56 | - to 9 | 1 | 0.0-29.7 | - | - | 2 | 6.7-12.2 | 2 | 1 |
-| 364 | Pomatomus saltatrix | Bluefish | 011 | 0-200 | - | 1 | - | 26.0 (25-28) | 8.4/21.1/27.5 | 8 | - | 8 | 1 |
-| 3387 | Pomoxis annularis | White crappie | 100 | - | - | 1 | - to 31.3 | - | - | 0 | - | 0 | 1 |
-| 3388 | Pomoxis nigromaculatus | Black crappie | 100 | 0 to - | - | 1 | 14.0-30.6 | - | - | 2 | 14.0-22.0 | 2 | 1 |
-| 3051 | Pylodictis olivaris | Flathead catfish | 100 | - | - | 1 | - to 32.5 | - | - | 1 | - | 1 | 1 |
-| 236 | Salmo salar | Atlantic salmon | 111 | 0-210 | 10-23 | 3 | 2.0-9.0 | 10.0 (6-12) | 1.5/9.3/15.3 | 15 | - | 15 | 1 |
-| 238 | Salmo trutta | Sea trout | 111 | 0-28 | 1-2 | 7 | 18.0-24.0; 2.0-16.0 | 9.0 (9-10) | 6.5/10.1/15.8 | 24 | 6.0-12.4 | 24 | 4 |
-| 246 | Salvelinus fontinalis | Brook trout | 111 | 15-27 | - | 1 | 0.0-25.3 | - | 1.5/4.5/10.7 | 4 | 3.0-10.0 | 4 | 1 |
-| 248 | Salvelinus namaycush | Lake trout | 100 | 3-61 | 18-53 | 1 | 4.0-13.0 | - | - | 8 | 8.9-14.0 | 8 | 1 |
-| 3516 | Sander vitreus | Walleye | 110 | 0-27 | - | 1 | 1.1-29.0 | - | - | 1 | 5.6-11.1 | 1 | 1 |
-| 1191 | Sciaenops ocellatus | Red drum | 011 | 10 to - | - | 1 | 15.0-26.0 | 25.0 (24-28) | 15.5/24.2/27.3 | 2 | - | 2 | 1 |
-| 143 | Thunnus albacares | Yellowfin tuna | 011 | 1-1602 | 1-250 | 1 | 15.0-31.0 | 28.0 (24-28) | 16.5/26.7/28.9 | 13 | 25.0-26.0 | 13 | 1 |
-| 144 | Thunnus atlanticus | Blackfin tuna | 001 | 0-50 | - | 1 | 20.0 to - | 26.0 (26-28) | 10.0/14.4/20.5 | 2 | - | 2 | 1 |
-| 147 | Thunnus thynnus | Atlantic bluefin tuna | 011 | 0-985 | 0-100 | 3 | 3.0-30.0 | 26.0 (19-27) | 7.5/12.6/24.7 | 2 | - | 2 | 1 |
-
-`F/B/S` is `Fresh`, `Brack`, `Saltwater`. "x to -" means one end is null.
+| SpecCode | Species | FBname | Depth range | Common depth | Tolerated temp. | Preferred temp. | Modelled pref. temp. | Spawn temp. | Spawn months |
+|---|---|---|---|---|---|---|---|---|---|
+| 345 | Centropomus undecimalis | Common snook | part | no | yes | yes | yes | no | yes |
+| 361 | Centropristis striata | Black seabass | part | no | no | yes | yes | no | yes |
+| 6 | Coryphaena hippurus | Common dolphinfish | yes | yes | yes | yes | yes | no | yes |
+| 405 | Cynoscion nebulosus | Spotted weakfish | part | no | no | yes | yes | yes | yes |
+| 1450 | Cyprinus carpio | Common carp | yes | no | yes | no | no | yes | yes |
+| 258 | Esox lucius | Northern pike | yes | yes | yes | no | no | yes | yes |
+| 2711 | Esox masquinongy | Muskellunge | no | no | no | no | no | yes | yes |
+| 290 | Ictalurus punctatus | Channel catfish | yes | no | yes | no | no | yes | yes |
+| 107 | Katsuwonus pelamis | Skipjack tuna | yes | part | yes | yes | yes | no | yes |
+| 3375 | Lepomis macrochirus | Bluegill | no | no | yes | no | no | no | yes |
+| 1079 | Megalops atlanticus | Tarpon | yes | yes | yes | yes | yes | no | yes |
+| 3382 | Micropterus dolomieu | Smallmouth bass | yes | no | yes | no | no | yes | yes |
+| 3385 | Micropterus salmoides | Largemouth black bass | yes | no | yes | no | no | yes | yes |
+| 353 | Morone saxatilis | Striped bass | part | no | yes | yes | yes | yes | yes |
+| 245 | Oncorhynchus kisutch | Coho salmon | yes | no | yes | yes | yes | yes | yes |
+| 239 | Oncorhynchus mykiss | Rainbow trout | yes | no | yes | yes | yes | yes | yes |
+| 243 | Oncorhynchus nerka | Sockeye salmon | yes | no | yes | yes | yes | no | yes |
+| 244 | Oncorhynchus tshawytscha | Chinook salmon | yes | no | yes | yes | yes | yes | yes |
+| 1338 | Paralichthys dentatus | Summer flounder | yes | part | no | yes | yes | no | yes |
+| 359 | Perca flavescens | American yellow perch | yes | part | yes | no | no | yes | yes |
+| 364 | Pomatomus saltatrix | Bluefish | yes | no | no | yes | yes | no | yes |
+| 3387 | Pomoxis annularis | White crappie | no | no | part | no | no | no | no |
+| 3388 | Pomoxis nigromaculatus | Black crappie | part | no | yes | no | no | yes | yes |
+| 3051 | Pylodictis olivaris | Flathead catfish | no | no | part | no | no | no | yes |
+| 236 | Salmo salar | Atlantic salmon | yes | yes | yes | yes | yes | no | yes |
+| 238 | Salmo trutta | Sea trout | yes | yes | yes | yes | yes | yes | yes |
+| 246 | Salvelinus fontinalis | Brook trout | yes | no | yes | no | yes | yes | yes |
+| 248 | Salvelinus namaycush | Lake trout | yes | yes | yes | no | no | yes | yes |
+| 3516 | Sander vitreus | Walleye | yes | no | yes | no | no | yes | yes |
+| 1191 | Sciaenops ocellatus | Red drum | part | no | yes | yes | yes | no | yes |
+| 143 | Thunnus albacares | Yellowfin tuna | yes | yes | yes | yes | yes | yes | yes |
+| 144 | Thunnus atlanticus | Blackfin tuna | yes | no | part | yes | yes | no | yes |
+| 147 | Thunnus thynnus | Atlantic bluefin tuna | yes | yes | yes | yes | yes | no | yes |
 
 ## Species x field x source x licence
 
@@ -185,7 +183,7 @@ species; "text" is a narrative sentence, not a number. For FishBase the table ab
 | Water type | all 33 | text, per species page | text (non-native only) | state pages not checked (**unverified**) |
 | Preferred temperature | 18 marine and diadromous species (modelled) | not given (striped bass page checked) | not structured | Eaton et al. 1995 covers about 30 US freshwater fishes as maximum weekly mean temperatures (journal article, AFS; reuse terms **unverified**; values not read) |
 | Tolerated temperature | 28 of 33 | not given | not structured | as above |
-| Spawn temperature | 18 of 33 | not given (season only) | text only for some species (common carp: spring spawning, no number read) | state pages: Michigan DNR "Smallmouth bass" (2019) is cited by FishBase for 16 °C; state terms **unverified** |
+| Spawn temperature | 18 of 33 | not given (season only) | text only for some species (common carp: spring spawning, no number read) | state pages: Michigan DNR "Smallmouth bass" (2019) is cited by FishBase for a spawning temperature; state terms **unverified** |
 | Spawn season | 32 of 33, per place | text ("In the spring...", striped bass) | text | state pages **unverified** |
 | Depth range | 29 of 33 (one range) | not given | not given | **unverified** |
 | Habitat | flags for all 33 (coarse) | text | text | **unverified** |

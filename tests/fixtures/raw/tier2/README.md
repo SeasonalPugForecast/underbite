@@ -24,3 +24,9 @@ One line per file: file name, exact request URL (no keys were used), recording d
 
 No fixture for TVA (no machine-readable endpoint reachable), NOAA Lake Erie, Gulf of Maine and Pacific
 Northwest bulletins (PDF or web pages only), and the Water Quality Portal WQX 3.0 route (timed out).
+
+## Licence notes
+
+- `overpass-nyharbor-slipways-piers.json`: data © OpenStreetMap contributors, ODbL 1.0, <https://www.openstreetmap.org/copyright>. The extract remains under the ODbL.
+- `noaa-hab-gulf-rif-currentmodelrun.zip`: a NOAA NCCOS product (public domain) that also carries cell counts from third parties named in docs/providers/hab.md (FWRI, HABscope, Pinellas County, SCCF), whose terms are unstated.
+- The DFO IWLS, GBIF and iNaturalist files above are synthetic (hand-made, invented values).
