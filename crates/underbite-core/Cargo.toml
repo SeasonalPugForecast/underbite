@@ -14,6 +14,7 @@ testdata = ["whether-core/testdata"]
 [dependencies]
 whether-core = { workspace = true, features = ["serde", "schema"] }
 serde.workspace = true
+serde_json.workspace = true
 schemars.workspace = true
 thiserror.workspace = true
 jiff = { workspace = true, features = ["tzdb-bundle-always"] }
