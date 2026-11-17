@@ -200,9 +200,17 @@ public final class URLSessionHost: FetchHost, @unchecked Sendable {
         return lock.withLock { try? String(contentsOf: file, encoding: .utf8) }
     }
 
+    /// Keeps `value` in its file. An empty value is how the core forgets one (a deleted spot's
+    /// snapshot, rankings and choices): the file is deleted, so nothing of it stays behind.
     public func store(namespace: String, key: String, value: String) {
         guard let file = file(namespace, key) else { return }
-        lock.withLock { try? write(value, to: file) }
+        lock.withLock {
+            if value.isEmpty {
+                try? FileManager.default.removeItem(at: file)
+            } else {
+                try? write(value, to: file)
+            }
+        }
     }
 
     /// Stored where `load(namespace: "usage", key: "ledger")` reads it.

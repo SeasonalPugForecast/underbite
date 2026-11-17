@@ -248,6 +248,20 @@ final class URLSessionHostTests: XCTestCase {
         XCTAssertNil(host.load(namespace: "rankings", key: "coops-water-levels"))
     }
 
+    func testAnEmptyValueDeletesItsFile() throws {
+        let host = host()
+        host.store(namespace: "snapshots", key: "spot-1", value: #"{"lat":40.7033}"#)
+        let file = try XCTUnwrap(host.file("snapshots", "spot-1"))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
+        // How the core forgets a deleted spot's values.
+        host.store(namespace: "snapshots", key: "spot-1", value: "")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
+        XCTAssertNil(host.load(namespace: "snapshots", key: "spot-1"))
+        // Forgetting what was never stored leaves no file either.
+        host.store(namespace: "snapshots", key: "spot-2", value: "")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: try XCTUnwrap(host.file("snapshots", "spot-2")).path))
+    }
+
     func testTheLedgerIsReadBackAsUsage() throws {
         let host = host()
         try host.saveUsage(ledgerJson: #"{"open-meteo":{"day":3}}"#)
