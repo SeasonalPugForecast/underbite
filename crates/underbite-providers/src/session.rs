@@ -1793,6 +1793,89 @@ mod tests {
         assert_eq!(periods.count(), waves.samples().len());
     }
 
+    /// Raystown's pool is the lake level and its release the reservoir block; the inflow request
+    /// fails without taking the release with it.
+    #[test]
+    fn session_places_a_projects_pool_and_release_from_cwms() {
+        use crate::request::Window;
+        use crate::reservoirs::cwms::Cwms;
+        use crate::testutil::fixture_bytes;
+        use underbite_core::model::Measurement::{LakeLevel, Reservoir};
+        use underbite_core::provenance::StationKind;
+
+        // 2026-11-17 10:00:00 UTC, two hours after the last values.
+        let now = UnixTime(1_794_909_600);
+        let target = Target {
+            place: Place::Station {
+                station: StationRef {
+                    source: SourceId::CWMS,
+                    id: "NAB/Raystown".into(),
+                    name: "Raystown Lake".into(),
+                    kind: StationKind::WaterLevel,
+                    latitude: 40.4271,
+                    longitude: -78.0014,
+                    bin: None,
+                    reference_id: None,
+                },
+                distance_m: Some(2_000.0),
+                relation: Relation::SameWaterBody,
+            },
+            measurements: BTreeSet::from([LakeLevel, Reservoir]),
+            window: Window {
+                from: UnixTime(now.0 - 86_400),
+                to: now,
+            },
+            datum: None,
+        };
+        let cwms: Arc<dyn Source> = Arc::new(Cwms);
+        let chain = |m: Measurement| Chain {
+            links: vec![Link {
+                source: Arc::clone(&cwms),
+                target: Target {
+                    measurements: BTreeSet::from([m]),
+                    ..target.clone()
+                },
+            }],
+            max_age_s: Some(6 * 3_600),
+        };
+        let chains = BTreeMap::from([(LakeLevel, chain(LakeLevel)), (Reservoir, chain(Reservoir))]);
+        let requirements = Requirements {
+            measurements: BTreeSet::from([LakeLevel, Reservoir]),
+            ..Requirements::default()
+        };
+        let mut s = Session::new(chains, requirements, fake::ctx(now));
+        let elev = fixture_bytes("cwms", "cwms-nab-raystown-elev-2026-11-17.json");
+        let flow = fixture_bytes("cwms", "cwms-nab-raystown-flow-out-2026-11-17.json");
+        let mut urls = Vec::new();
+        while let Some(request) = s.next_request() {
+            let url = request.url.clone();
+            let response = if url.contains(".Elev.") {
+                Response::new(200, &elev)
+            } else if url.contains(".Flow-Out.") {
+                Response::new(200, &flow)
+            } else {
+                Response::new(404, b"{\"message\":\"not found\"}")
+            };
+            s.on_response(&response);
+            urls.push(url);
+        }
+        assert_eq!(urls.len(), 3, "{urls:?}");
+        let out = s.finish(now);
+        assert_eq!(out.sources[&LakeLevel], SourceId::CWMS);
+        assert_eq!(out.sources[&Reservoir], SourceId::CWMS);
+        assert!(out.errors.is_empty(), "{:?}", out.errors);
+        assert_eq!(
+            out.water.level.as_ref().map(|h| h.series.samples().len()),
+            Some(9)
+        );
+        let reservoir = out.water.reservoir.expect("a reservoir block");
+        assert_eq!(reservoir.project, "Raystown Lake");
+        assert_eq!(reservoir.outflow_m3s.map(|s| s.samples().len()), Some(9));
+        assert!(reservoir.inflow_m3s.is_none());
+        assert_eq!(reservoir.links.len(), 1);
+        assert_eq!(out.stations.len(), 1, "one project");
+    }
+
     /// A water-level station has no predictions: its observed level is the tide it gives.
     #[test]
     fn session_keeps_a_water_level_stations_observations_as_its_tide() {

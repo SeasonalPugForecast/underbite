@@ -19,7 +19,8 @@
 //!
 //! [`Rise`] is the source, for a [`crate::request::Place::Station`] whose id is a listed
 //! project's location id: one request per item wanted, each carrying its [`Role`] to the parse,
-//! and the next pages as follow-ups.
+//! and the next pages as follow-ups. The pool is the lake level; release and inflow are the
+//! reservoir block.
 
 use serde::Deserialize;
 use serde_json::Value;
@@ -37,8 +38,8 @@ use super::cwms::{Origin, Reservoir, Role, observed, push, registered, station_o
 use crate::request::{QueryBuilder, Request, Resource, Response, Target, Window};
 use crate::source::{FetchContext, Fragments, Source, SourceError, check_response};
 
-/// The measurements the source supplies: the pool level.
-pub const MEASUREMENTS: [Measurement; 1] = [Measurement::LakeLevel];
+/// The measurements the source supplies: the pool level, and the release and inflow.
+pub const MEASUREMENTS: [Measurement; 2] = [Measurement::LakeLevel, Measurement::Reservoir];
 
 /// How long a response may be reused, seconds: the values are daily.
 const MAX_AGE_S: u32 = 3_600;
@@ -498,7 +499,8 @@ fn project_of(station: &StationRef) -> Result<&'static Project, SourceError> {
     })
 }
 
-/// The Reclamation RISE API as a source of reservoir pools. It holds no settings.
+/// The Reclamation RISE API as a source of reservoir pools, releases and inflows. It holds no
+/// settings.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Rise;
 
@@ -886,7 +888,10 @@ mod tests {
     fn source_plans_the_pool_item_and_parses_it_into_the_lake_level() {
         let source: &dyn Source = &Rise;
         assert_eq!(source.id(), SourceId::RISE);
-        assert_eq!(source.measurements(), [Measurement::LakeLevel]);
+        assert_eq!(
+            source.measurements(),
+            [Measurement::LakeLevel, Measurement::Reservoir]
+        );
         let target = project_target("1535", &[Measurement::LakeLevel, Measurement::Tide]);
         let plan = source
             .plan(&target, &Requirements::default(), &ctx())
@@ -930,6 +935,73 @@ mod tests {
         let v = level.series.samples().last().expect("a value").value;
         assert!((f64::from(v) - 6003.54 * 0.3048).abs() < 1e-2, "{v}");
         assert_eq!(level.series.provenance().source, SourceId::RISE);
+    }
+
+    #[test]
+    fn source_plans_release_and_inflow_items_and_parses_them_into_the_reservoir() {
+        use crate::source::FragmentValue;
+        let both = [Measurement::LakeLevel, Measurement::Reservoir];
+        let plan = Rise
+            .plan(
+                &project_target("1535", &both),
+                &Requirements::default(),
+                &ctx(),
+            )
+            .expect("a plan");
+        let roles: Vec<Option<&str>> = plan.iter().map(Request::carry).collect();
+        assert_eq!(roles, [Some("pool"), Some("outflow"), Some("inflow")]);
+        assert!(plan[1].url.contains("itemId=4314"), "{}", plan[1].url);
+        assert!(plan[2].url.contains("itemId=339"), "{}", plan[2].url);
+        assert!(plan[0].required && !plan[1].required && !plan[2].required);
+        assert_eq!(
+            plan[1].target.measurements,
+            std::collections::BTreeSet::from([Measurement::Reservoir])
+        );
+        // Lake Mead lists no inflow item, Canyon Ferry neither a release nor an inflow.
+        let mead = Rise
+            .plan(
+                &project_target("3514", &[Measurement::Reservoir]),
+                &Requirements::default(),
+                &ctx(),
+            )
+            .expect("a plan");
+        assert_eq!(mead.len(), 1);
+        assert_eq!(mead[0].carry(), Some("outflow"));
+        assert!(matches!(
+            Rise.plan(
+                &project_target("295", &[Measurement::Reservoir]),
+                &Requirements::default(),
+                &ctx()
+            ),
+            Err(SourceError::Unsupported(_))
+        ));
+
+        let body = fixture_bytes(
+            "rise",
+            "rise-result-4314-flaming-gorge-release-total-cfs-2026-11-17.json",
+        );
+        let mut out = Fragments::new();
+        Rise.parse(&plan[1], &ok(&body), &ctx(), &mut out)
+            .expect("parses");
+        let [fragment] = out.fragments() else {
+            panic!("one fragment, got {:?}", out.fragments());
+        };
+        assert_eq!(fragment.measurement, Measurement::Reservoir);
+        let FragmentValue::Reservoir(info) = &fragment.value else {
+            panic!("a reservoir block");
+        };
+        assert_eq!(info.project, "Flaming Gorge Reservoir");
+        assert!(info.inflow_m3s.is_none());
+        assert_eq!(info.links.len(), 1);
+        let release = info.outflow_m3s.as_ref().expect("a release");
+        assert!(release.samples().len() > 1);
+        let raw: Value = serde_json::from_slice(&body).expect("json");
+        let newest = raw["data"][0]["attributes"]["result"]
+            .as_f64()
+            .expect("number");
+        let got = release.latest().expect("a value").value;
+        assert!((f64::from(got) - newest * 0.028_316_846_592).abs() < 1e-3);
+        assert_eq!(release.provenance().source, SourceId::RISE);
     }
 
     #[test]

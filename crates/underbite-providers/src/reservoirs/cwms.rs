@@ -17,7 +17,8 @@
 //!
 //! [`Cwms`] is the source, for a [`Place::Station`] whose id is a listed project's
 //! `office/location`: one request per series wanted, each carrying its [`Role`] to the parse, and
-//! the service's next pages as follow-ups.
+//! the service's next pages as follow-ups. The pool is the lake level; release and inflow are the
+//! reservoir block.
 
 use std::collections::BTreeSet;
 
@@ -35,8 +36,8 @@ use super::catalogue::{self, Project};
 use crate::request::{Place, QueryBuilder, Request, Resource, Response, Target, Window};
 use crate::source::{FetchContext, FragmentValue, Fragments, Source, SourceError, check_response};
 
-/// The measurements the source supplies: the pool level.
-pub const MEASUREMENTS: [Measurement; 1] = [Measurement::LakeLevel];
+/// The measurements the source supplies: the pool level, and the release and inflow.
+pub const MEASUREMENTS: [Measurement; 2] = [Measurement::LakeLevel, Measurement::Reservoir];
 
 /// How long a response may be reused, seconds: the series are 15-minute to hourly.
 const MAX_AGE_S: u32 = 900;
@@ -91,11 +92,11 @@ impl Role {
         }
     }
 
-    /// The measurement the role's values stand for, when a source supplies it.
+    /// The measurement the role's values stand for.
     pub fn measurement(self) -> Option<Measurement> {
         match self {
             Self::Pool => Some(Measurement::LakeLevel),
-            Self::Outflow | Self::Inflow => None,
+            Self::Outflow | Self::Inflow => Some(Measurement::Reservoir),
         }
     }
 }
@@ -446,7 +447,8 @@ pub fn assemble(
     })
 }
 
-/// Adds the values of one parsed answer that `request` wants to `out`.
+/// Adds the values of one parsed answer that `request` wants to `out`: the pool as the lake
+/// level, a release or inflow as the reservoir block (the session merges a project's blocks).
 pub(crate) fn push(
     out: &mut Fragments,
     request: &Request,
@@ -457,6 +459,10 @@ pub(crate) fn push(
         && wanted(Measurement::LakeLevel)
     {
         out.push(Measurement::LakeLevel, FragmentValue::Heights(level))?;
+    }
+    let info = reservoir.info;
+    if (info.outflow_m3s.is_some() || info.inflow_m3s.is_some()) && wanted(Measurement::Reservoir) {
+        out.push(Measurement::Reservoir, FragmentValue::Reservoir(info))?;
     }
     Ok(())
 }
@@ -472,7 +478,7 @@ fn project_of(station: &StationRef) -> Result<&'static Project, SourceError> {
         })
 }
 
-/// The CWMS Data API as a source of reservoir pools. It holds no settings.
+/// The CWMS Data API as a source of reservoir pools, releases and inflows. It holds no settings.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Cwms;
 
@@ -955,7 +961,10 @@ mod tests {
     fn source_plans_the_pool_and_parses_it_into_the_lake_level() {
         let source: &dyn Source = &Cwms;
         assert_eq!(source.id(), SourceId::CWMS);
-        assert_eq!(source.measurements(), [Measurement::LakeLevel]);
+        assert_eq!(
+            source.measurements(),
+            [Measurement::LakeLevel, Measurement::Reservoir]
+        );
         let target = project_target("NAB/Raystown", &[Measurement::LakeLevel]);
         let plan = source
             .plan(&target, &Requirements::default(), &ctx())
@@ -997,6 +1006,95 @@ mod tests {
         let prov = level.series.provenance();
         assert_eq!(prov.source, SourceId::CWMS);
         assert_eq!(prov.distance_m, ORIGIN.distance_m);
+    }
+
+    #[test]
+    fn source_plans_release_and_inflow_and_parses_them_into_the_reservoir() {
+        let both = [Measurement::LakeLevel, Measurement::Reservoir];
+        let target = project_target("NAB/Raystown", &both);
+        let plan = Cwms
+            .plan(&target, &Requirements::default(), &ctx())
+            .expect("a plan");
+        let roles: Vec<Option<&str>> = plan.iter().map(Request::carry).collect();
+        assert_eq!(roles, [Some("pool"), Some("outflow"), Some("inflow")]);
+        assert!(plan[0].required && !plan[1].required && !plan[2].required);
+        for request in &plan[1..] {
+            assert_eq!(
+                request.target.measurements,
+                BTreeSet::from([Measurement::Reservoir])
+            );
+            assert_eq!(request.resource, Resource::CwmsTimeSeries);
+        }
+        assert!(
+            plan[1].url.contains("Raystown.Flow-Out."),
+            "{}",
+            plan[1].url
+        );
+
+        // The requirements leave the block out, or ask for it alone.
+        let pool_only = Requirements {
+            measurements: BTreeSet::from([Measurement::LakeLevel]),
+            ..Requirements::default()
+        };
+        assert_eq!(
+            Cwms.plan(&target, &pool_only, &ctx())
+                .expect("a plan")
+                .len(),
+            1
+        );
+        let block = project_target("NAB/Raystown", &[Measurement::Reservoir]);
+        let carries = |t: &Target| -> Vec<Option<String>> {
+            Cwms.plan(t, &Requirements::default(), &ctx())
+                .expect("a plan")
+                .iter()
+                .map(|r| r.carry().map(str::to_string))
+                .collect()
+        };
+        assert_eq!(
+            carries(&block),
+            [Some("outflow".to_string()), Some("inflow".to_string())]
+        );
+        // Philadelphia publishes no release at Beltzville; Hartwell has only its release.
+        let beltzville = project_target("NAP/Beltzville", &[Measurement::Reservoir]);
+        assert_eq!(carries(&beltzville), [Some("inflow".to_string())]);
+        let hartwell = project_target("SAS/Hartwell", &[Measurement::Reservoir]);
+        assert_eq!(carries(&hartwell), [Some("outflow".to_string())]);
+
+        let body = fixture_bytes("cwms", "cwms-nab-raystown-flow-out-2026-11-17.json");
+        let mut out = Fragments::new();
+        Cwms.parse(&plan[1], &ok(&body), &ctx(), &mut out)
+            .expect("parses");
+        let inflow = json("cms", "[[1794895200000,5.5,3],[1794898800000,null,5]]");
+        Cwms.parse(&plan[2], &ok(&inflow), &ctx(), &mut out)
+            .expect("parses");
+        let [release, inflow] = out.fragments() else {
+            panic!("two fragments, got {:?}", out.fragments());
+        };
+        let FragmentValue::Reservoir(release) = &release.value else {
+            panic!("a reservoir block");
+        };
+        assert_eq!(release.project, "Raystown Lake");
+        assert_eq!(
+            release.outflow_m3s.as_ref().map(|s| s.samples().len()),
+            Some(9)
+        );
+        assert!(release.inflow_m3s.is_none());
+        assert_eq!(release.links.len(), 1);
+        let prov = release
+            .outflow_m3s
+            .as_ref()
+            .expect("a release")
+            .provenance();
+        assert_eq!(prov.source, SourceId::CWMS);
+        assert_eq!(prov.distance_m, ORIGIN.distance_m);
+        assert_eq!(inflow.measurement, Measurement::Reservoir);
+        let FragmentValue::Reservoir(inflow) = &inflow.value else {
+            panic!("a reservoir block");
+        };
+        assert!(inflow.outflow_m3s.is_none());
+        let samples = inflow.inflow_m3s.as_ref().expect("an inflow").samples();
+        assert_eq!(samples.len(), 1, "the missing value is absent");
+        assert!((samples[0].value - 5.5).abs() < 1e-6);
     }
 
     #[test]
