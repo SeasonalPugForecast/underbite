@@ -1,0 +1,149 @@
+region,name,agency,noaa_region,coastal,great_lakes,kind,url,verified,checked
+US-AL,Alabama,Alabama Department of Conservation and Natural Resources,southeast,Y,N,freshwater,https://www.outdooralabama.com/hunting/alabama-hunting-and-fishing-regulations,Y,2026-11-16
+US-AL,Alabama,Alabama Department of Conservation and Natural Resources,southeast,Y,N,saltwater,https://www.outdooralabama.com/hunting/alabama-hunting-and-fishing-regulations,Y,2026-11-16
+US-AL,Alabama,Alabama Department of Conservation and Natural Resources,southeast,Y,N,licence,https://www.outdooralabama.com/license-information,Y,2026-11-16
+US-AK,Alaska,Alaska Department of Fish and Game,alaska,Y,N,freshwater,https://www.adfg.alaska.gov/index.cfm?adfg=fishregulations.main,Y,2026-11-16
+US-AK,Alaska,Alaska Department of Fish and Game,alaska,Y,N,saltwater,https://www.adfg.alaska.gov/index.cfm?adfg=fishregulations.main,Y,2026-11-16
+US-AK,Alaska,Alaska Department of Fish and Game,alaska,Y,N,licence,https://www.adfg.alaska.gov/index.cfm?adfg=license.main,Y,2026-11-16
+US-AZ,Arizona,Arizona Game and Fish Department,,N,N,freshwater,https://www.azgfd.com/fishing-2/licenses-and-regulations/,Y,2026-11-16
+US-AZ,Arizona,Arizona Game and Fish Department,,N,N,licence,https://www.azgfd.com/fishing-2/licenses-and-regulations/,Y,2026-11-16
+US-AR,Arkansas,Arkansas Game and Fish Commission,,N,N,freshwater,https://www.agfc.com/fishing/,Y,2026-11-16
+US-AR,Arkansas,Arkansas Game and Fish Commission,,N,N,licence,https://www.agfc.com/education/licensing-system-support/,Y,2026-11-16
+US-CA,California,California Department of Fish and Wildlife,west-coast,Y,N,freshwater,https://wildlife.ca.gov/Regulations/Inland-Fishing,Y,2026-11-16
+US-CA,California,California Department of Fish and Wildlife,west-coast,Y,N,saltwater,https://wildlife.ca.gov/Regulations/Marine,Y,2026-11-16
+US-CA,California,California Department of Fish and Wildlife,west-coast,Y,N,licence,https://wildlife.ca.gov/Licensing/Fishing,Y,2026-11-16
+US-CO,Colorado,Colorado Parks and Wildlife,,N,N,freshwater,https://cpw.state.co.us/fishing,Y,2026-11-16
+US-CO,Colorado,Colorado Parks and Wildlife,,N,N,licence,https://cpw.state.co.us/activities/fishing-licenses-and-dates,Y,2026-11-16
+US-CT,Connecticut,Connecticut Department of Energy and Environmental Protection,greater-atlantic,Y,N,freshwater,https://portal.ct.gov/deep/fishing/regulations/fishing-regulations,Y,2026-11-16
+US-CT,Connecticut,Connecticut Department of Energy and Environmental Protection,greater-atlantic,Y,N,saltwater,https://portal.ct.gov/deep/fishing/saltwater/saltwater-fishing,Y,2026-11-16
+US-CT,Connecticut,Connecticut Department of Energy and Environmental Protection,greater-atlantic,Y,N,licence,https://portal.ct.gov/deep/fishing/general-information/fisheries-licenses-and-permits,Y,2026-11-16
+US-DE,Delaware,Delaware Department of Natural Resources and Environmental Control,greater-atlantic,Y,N,freshwater,https://dnrec.delaware.gov/fish-wildlife/fishing/,Y,2026-11-16
+US-DE,Delaware,Delaware Department of Natural Resources and Environmental Control,greater-atlantic,Y,N,saltwater,https://dnrec.delaware.gov/fish-wildlife/fishing/,Y,2026-11-16
+US-DE,Delaware,Delaware Department of Natural Resources and Environmental Control,greater-atlantic,Y,N,licence,https://dnrec.delaware.gov/fish-wildlife/licenses/,Y,2026-11-16
+US-FL,Florida,Florida Fish and Wildlife Conservation Commission,southeast,Y,N,freshwater,https://myfwc.com/fishing/freshwater/regulations/,Y,2026-11-16
+US-FL,Florida,Florida Fish and Wildlife Conservation Commission,southeast,Y,N,saltwater,https://myfwc.com/fishing/saltwater/recreational/,Y,2026-11-16
+US-FL,Florida,Florida Fish and Wildlife Conservation Commission,southeast,Y,N,licence,https://myfwc.com/license/recreational/,Y,2026-11-16
+US-GA,Georgia,Georgia Department of Natural Resources,southeast,Y,N,freshwater,https://georgiawildlife.com/regulations,Y,2026-11-16
+US-GA,Georgia,Georgia Department of Natural Resources,southeast,Y,N,saltwater,https://coastalgadnr.org/,Y,2026-11-16
+US-GA,Georgia,Georgia Department of Natural Resources,southeast,Y,N,licence,https://georgiawildlife.com/licenses-permits-passes,Y,2026-11-16
+US-HI,Hawaii,Hawaii Division of Aquatic Resources,pacific-islands,Y,N,freshwater,https://dlnr.hawaii.gov/dar/fishing/fishing-regulations/,Y,2026-11-16
+US-HI,Hawaii,Hawaii Division of Aquatic Resources,pacific-islands,Y,N,saltwater,https://dlnr.hawaii.gov/dar/fishing/fishing-regulations/,Y,2026-11-16
+US-HI,Hawaii,Hawaii Division of Aquatic Resources,pacific-islands,Y,N,licence,https://dlnr.hawaii.gov/dar/fishing/licenses-and-permits/,Y,2026-11-16
+US-ID,Idaho,Idaho Department of Fish and Game,,N,N,freshwater,https://idfg.idaho.gov/fish/rules,Y,2026-11-16
+US-ID,Idaho,Idaho Department of Fish and Game,,N,N,licence,https://idfg.idaho.gov/licenses,Y,2026-11-16
+US-IL,Illinois,Illinois Department of Natural Resources,,N,Y,freshwater,https://dnr.illinois.gov/fishing.html,Y,2026-11-16
+US-IL,Illinois,Illinois Department of Natural Resources,,N,Y,licence,https://dnr.illinois.gov/lpr.html,Y,2026-11-16
+US-IN,Indiana,Indiana Department of Natural Resources,,N,Y,freshwater,https://www.in.gov/dnr/fish-and-wildlife/fishing/fishing-guide-and-regulations,Y,2026-11-16
+US-IN,Indiana,Indiana Department of Natural Resources,,N,Y,licence,https://www.in.gov/dnr/fish-and-wildlife/licenses-and-permits,Y,2026-11-16
+US-IA,Iowa,Iowa Department of Natural Resources,,N,N,freshwater,https://www.iowadnr.gov/things-do/fishing,Y,2026-11-16
+US-IA,Iowa,Iowa Department of Natural Resources,,N,N,licence,https://www.iowadnr.gov/about/license-vendors,Y,2026-11-16
+US-KS,Kansas,Kansas Department of Wildlife and Parks,,N,N,freshwater,https://www.ksoutdoors.gov/Fishing/Fishing-Regulations,N,2026-11-16
+US-KS,Kansas,Kansas Department of Wildlife and Parks,,N,N,licence,https://www.ksoutdoors.gov/licenses-permits-fees/fishing-licenses-permit-fees,N,2026-11-16
+US-KY,Kentucky,Kentucky Department of Fish and Wildlife Resources,,N,N,freshwater,https://fw.ky.gov/Fish/Pages/default.aspx,Y,2026-11-16
+US-KY,Kentucky,Kentucky Department of Fish and Wildlife Resources,,N,N,licence,https://fw.ky.gov/Licenses,Y,2026-11-16
+US-LA,Louisiana,Louisiana Department of Wildlife and Fisheries,southeast,Y,N,freshwater,https://www.wlf.louisiana.gov/page/recreational-freshwater-finfish-and-crawfish,Y,2026-11-16
+US-LA,Louisiana,Louisiana Department of Wildlife and Fisheries,southeast,Y,N,saltwater,https://www.wlf.louisiana.gov/page/recreational-saltwater-finfish,Y,2026-11-16
+US-LA,Louisiana,Louisiana Department of Wildlife and Fisheries,southeast,Y,N,licence,https://www.wlf.louisiana.gov/page/recreational-fishing-licenses-and-permits,Y,2026-11-16
+US-ME,Maine,Maine Department of Inland Fisheries and Wildlife; Department of Marine Resources,greater-atlantic,Y,N,freshwater,https://www.maine.gov/ifw/fishing-boating/fishing/index.html,Y,2026-11-16
+US-ME,Maine,Maine Department of Inland Fisheries and Wildlife; Department of Marine Resources,greater-atlantic,Y,N,saltwater,https://www.maine.gov/dmr/fisheries/recreational,Y,2026-11-16
+US-ME,Maine,Maine Department of Inland Fisheries and Wildlife; Department of Marine Resources,greater-atlantic,Y,N,licence,https://www.maine.gov/ifw/fishing-boating/fishing/licenses-permits/index.html,Y,2026-11-16
+US-MD,Maryland,Maryland Department of Natural Resources,greater-atlantic,Y,N,freshwater,https://dnr.maryland.gov/fisheries/Pages/default.aspx,Y,2026-11-16
+US-MD,Maryland,Maryland Department of Natural Resources,greater-atlantic,Y,N,saltwater,https://dnr.maryland.gov/fisheries/Pages/default.aspx,Y,2026-11-16
+US-MD,Maryland,Maryland Department of Natural Resources,greater-atlantic,Y,N,licence,https://dnr.maryland.gov/pages/service_fishing_license.aspx,Y,2026-11-16
+US-MA,Massachusetts,Massachusetts Division of Fisheries and Wildlife; Division of Marine Fisheries,greater-atlantic,Y,N,freshwater,https://www.mass.gov/info-details/freshwater-fishing-regulations,N,2026-11-16
+US-MA,Massachusetts,Massachusetts Division of Fisheries and Wildlife; Division of Marine Fisheries,greater-atlantic,Y,N,saltwater,https://www.mass.gov/info-details/recreational-saltwater-fishing-regulations,N,2026-11-16
+US-MA,Massachusetts,Massachusetts Division of Fisheries and Wildlife; Division of Marine Fisheries,greater-atlantic,Y,N,licence,https://www.mass.gov/how-to/buy-your-freshwater-fishing-license,N,2026-11-16
+US-MI,Michigan,Michigan Department of Natural Resources,,N,Y,freshwater,https://www.michigan.gov/dnr/things-to-do/fishing/fishing-regulations,Y,2026-11-16
+US-MI,Michigan,Michigan Department of Natural Resources,,N,Y,licence,https://www.michigan.gov/dnr/buy-and-apply,Y,2026-11-16
+US-MN,Minnesota,Minnesota Department of Natural Resources,,N,Y,freshwater,https://www.dnr.state.mn.us/regulations/index.html,Y,2026-11-16
+US-MN,Minnesota,Minnesota Department of Natural Resources,,N,Y,licence,https://www.dnr.state.mn.us/licenses/index.html,Y,2026-11-16
+US-MS,Mississippi,"Mississippi Department of Wildlife, Fisheries, and Parks; Department of Marine Resources",southeast,Y,N,freshwater,https://www.mdwfp.com/enforcement-education/general-fishing-rules-regulations,Y,2026-11-16
+US-MS,Mississippi,"Mississippi Department of Wildlife, Fisheries, and Parks; Department of Marine Resources",southeast,Y,N,saltwater,https://dmr.ms.gov/,Y,2026-11-16
+US-MS,Mississippi,"Mississippi Department of Wildlife, Fisheries, and Parks; Department of Marine Resources",southeast,Y,N,licence,https://www.mdwfp.com/licenses-permits,Y,2026-11-16
+US-MO,Missouri,Missouri Department of Conservation,,N,N,freshwater,https://mdc.mo.gov/fishing,Y,2026-11-16
+US-MO,Missouri,Missouri Department of Conservation,,N,N,licence,https://mdc.mo.gov/permits/fishing-permits,Y,2026-11-16
+US-MT,Montana,"Montana Fish, Wildlife and Parks",,N,N,freshwater,https://fwp.mt.gov/fish,Y,2026-11-16
+US-MT,Montana,"Montana Fish, Wildlife and Parks",,N,N,licence,https://fwp.mt.gov/buyandapply,Y,2026-11-16
+US-NE,Nebraska,Nebraska Game and Parks Commission,,N,N,freshwater,https://outdoornebraska.gov/fish/,Y,2026-11-16
+US-NE,Nebraska,Nebraska Game and Parks Commission,,N,N,licence,https://outdoornebraska.gov/,N,2026-11-16
+US-NV,Nevada,Nevada Department of Wildlife,,N,N,freshwater,https://www.ndow.org/get-outside/plan-your-fishing-trip/,Y,2026-11-16
+US-NV,Nevada,Nevada Department of Wildlife,,N,N,licence,https://www.ndow.org/apply-buy/fishing/,Y,2026-11-16
+US-NH,New Hampshire,New Hampshire Fish and Game Department,greater-atlantic,Y,N,freshwater,https://www.wildlife.nh.gov/fishing-new-hampshire,N,2026-11-16
+US-NH,New Hampshire,New Hampshire Fish and Game Department,greater-atlantic,Y,N,saltwater,https://www.wildlife.nh.gov/saltwater-fisheries-new-hampshire/recreational-saltwater-fishing,N,2026-11-16
+US-NH,New Hampshire,New Hampshire Fish and Game Department,greater-atlantic,Y,N,licence,https://www.wildlife.nh.gov/licenses-and-permits/nh-license-requirements,N,2026-11-16
+US-NJ,New Jersey,New Jersey Division of Fish and Wildlife,greater-atlantic,Y,N,freshwater,https://dep.nj.gov/njfw/fishing/freshwater/,Y,2026-11-16
+US-NJ,New Jersey,New Jersey Division of Fish and Wildlife,greater-atlantic,Y,N,saltwater,https://dep.nj.gov/njfw/fishing/marine/,Y,2026-11-16
+US-NJ,New Jersey,New Jersey Division of Fish and Wildlife,greater-atlantic,Y,N,licence,https://dep.nj.gov/njfw/licenses-permits/,Y,2026-11-16
+US-NM,New Mexico,New Mexico Department of Game and Fish,,N,N,freshwater,https://wildlife.dgf.nm.gov/fishing/,Y,2026-11-16
+US-NM,New Mexico,New Mexico Department of Game and Fish,,N,N,licence,https://wildlife.dgf.nm.gov/fishing/licenses-permits/,Y,2026-11-16
+US-NY,New York,New York State Department of Environmental Conservation,greater-atlantic,Y,Y,freshwater,https://dec.ny.gov/things-to-do/freshwater-fishing,Y,2026-11-16
+US-NY,New York,New York State Department of Environmental Conservation,greater-atlantic,Y,Y,saltwater,https://dec.ny.gov/things-to-do/saltwater-fishing,Y,2026-11-16
+US-NY,New York,New York State Department of Environmental Conservation,greater-atlantic,Y,Y,licence,https://dec.ny.gov/regulatory/permits-licenses,Y,2026-11-16
+US-NC,North Carolina,North Carolina Wildlife Resources Commission; Division of Marine Fisheries,southeast,Y,N,freshwater,https://www.ncwildlife.gov/hunt/fishing-hunting-trapping-regulations,Y,2026-11-16
+US-NC,North Carolina,North Carolina Wildlife Resources Commission; Division of Marine Fisheries,southeast,Y,N,saltwater,https://www.deq.nc.gov/about/divisions/marine-fisheries,Y,2026-11-16
+US-NC,North Carolina,North Carolina Wildlife Resources Commission; Division of Marine Fisheries,southeast,Y,N,licence,https://www.ncwildlife.gov/hunt/license-types-and-fees/other-licenses-permits,Y,2026-11-16
+US-ND,North Dakota,North Dakota Game and Fish Department,,N,N,freshwater,https://gf.nd.gov/regulations/fishing,Y,2026-11-16
+US-ND,North Dakota,North Dakota Game and Fish Department,,N,N,licence,https://gf.nd.gov/fishing/licensing,Y,2026-11-16
+US-OH,Ohio,Ohio Department of Natural Resources,,N,Y,freshwater,https://ohiodnr.gov/buy-and-apply/hunting-fishing-boating/fishing-resources/fishing-regulations,N,2026-11-16
+US-OH,Ohio,Ohio Department of Natural Resources,,N,Y,licence,https://ohiodnr.gov/buy-and-apply/hunting-fishing-boating/fishing-resources/fishing-licenses,N,2026-11-16
+US-OK,Oklahoma,Oklahoma Department of Wildlife Conservation,,N,N,freshwater,https://www.wildlifedepartment.com/fishing,Y,2026-11-16
+US-OK,Oklahoma,Oklahoma Department of Wildlife Conservation,,N,N,licence,https://www.wildlifedepartment.com/licensing/regs/license-fees,Y,2026-11-16
+US-OR,Oregon,Oregon Department of Fish and Wildlife,west-coast,Y,N,freshwater,https://myodfw.com/articles/oregon-fishing-hunting-regulations-and-updates,Y,2026-11-16
+US-OR,Oregon,Oregon Department of Fish and Wildlife,west-coast,Y,N,saltwater,https://myodfw.com/articles/oregon-fishing-hunting-regulations-and-updates,Y,2026-11-16
+US-OR,Oregon,Oregon Department of Fish and Wildlife,west-coast,Y,N,licence,https://myodfw.com/fishing,Y,2026-11-16
+US-PA,Pennsylvania,Pennsylvania Fish and Boat Commission,,N,Y,freshwater,https://www.pa.gov/agencies/fishandboat/fishing,Y,2026-11-16
+US-PA,Pennsylvania,Pennsylvania Fish and Boat Commission,,N,Y,licence,https://www.pa.gov/agencies/fishandboat/fishing/buy-fishing-license-permit,Y,2026-11-16
+US-RI,Rhode Island,Rhode Island Department of Environmental Management,greater-atlantic,Y,N,freshwater,https://dem.ri.gov/natural-resources-bureau/natural-resources-divisions/fish-wildlife/freshwater-fishing/freshwater,Y,2026-11-16
+US-RI,Rhode Island,Rhode Island Department of Environmental Management,greater-atlantic,Y,N,saltwater,https://dem.ri.gov/natural-resources-bureau/marine-fisheries/marine-fisheries-minimum-sizes-possession-limits,Y,2026-11-16
+US-RI,Rhode Island,Rhode Island Department of Environmental Management,greater-atlantic,Y,N,licence,https://dem.ri.gov/natural-resources-bureau/natural-resources-divisions/fish-wildlife/freshwater-fishing/freshwater,Y,2026-11-16
+US-SC,South Carolina,South Carolina Department of Natural Resources,southeast,Y,N,freshwater,https://www.dnr.sc.gov/regulations.html,Y,2026-11-16
+US-SC,South Carolina,South Carolina Department of Natural Resources,southeast,Y,N,saltwater,https://www.dnr.sc.gov/fishing.html,Y,2026-11-16
+US-SC,South Carolina,South Carolina Department of Natural Resources,southeast,Y,N,licence,https://www.dnr.sc.gov/purchase.html,Y,2026-11-16
+US-SD,South Dakota,"South Dakota Game, Fish and Parks",,N,N,freshwater,https://gfp.sd.gov/fishing/,Y,2026-11-16
+US-SD,South Dakota,"South Dakota Game, Fish and Parks",,N,N,licence,https://gfp.sd.gov/hunt-fish-license/,Y,2026-11-16
+US-TN,Tennessee,Tennessee Wildlife Resources Agency,,N,N,freshwater,https://www.tn.gov/twra/fishing-regs.html,Y,2026-11-16
+US-TN,Tennessee,Tennessee Wildlife Resources Agency,,N,N,licence,https://www.tn.gov/twra/license-sales.html,Y,2026-11-16
+US-TX,Texas,Texas Parks and Wildlife Department,southeast,Y,N,freshwater,https://tpwd.texas.gov/regulations/outdoor-annual/fishing/,Y,2026-11-16
+US-TX,Texas,Texas Parks and Wildlife Department,southeast,Y,N,saltwater,https://tpwd.texas.gov/regulations/outdoor-annual/fishing/,Y,2026-11-16
+US-TX,Texas,Texas Parks and Wildlife Department,southeast,Y,N,licence,https://tpwd.texas.gov/business/licenses/online_sales/,Y,2026-11-16
+US-UT,Utah,Utah Division of Wildlife Resources,,N,N,freshwater,https://wildlife.utah.gov/fishing,Y,2026-11-16
+US-UT,Utah,Utah Division of Wildlife Resources,,N,N,licence,https://wildlife.utah.gov/licenses,Y,2026-11-16
+US-VT,Vermont,Vermont Fish and Wildlife Department,,N,N,freshwater,https://vtfishandwildlife.com/fish,Y,2026-11-16
+US-VT,Vermont,Vermont Fish and Wildlife Department,,N,N,licence,https://vtfishandwildlife.com/fish,Y,2026-11-16
+US-VA,Virginia,Virginia Department of Wildlife Resources; Virginia Marine Resources Commission,greater-atlantic,Y,N,freshwater,https://dwr.virginia.gov/fishing/regulations/,Y,2026-11-16
+US-VA,Virginia,Virginia Department of Wildlife Resources; Virginia Marine Resources Commission,greater-atlantic,Y,N,saltwater,https://mrc.virginia.gov/regulations/,Y,2026-11-16
+US-VA,Virginia,Virginia Department of Wildlife Resources; Virginia Marine Resources Commission,greater-atlantic,Y,N,licence,https://dwr.virginia.gov/licenses/,Y,2026-11-16
+US-WA,Washington,Washington Department of Fish and Wildlife,west-coast,Y,N,freshwater,https://wdfw.wa.gov/fishing/regulations,Y,2026-11-16
+US-WA,Washington,Washington Department of Fish and Wildlife,west-coast,Y,N,saltwater,https://wdfw.wa.gov/fishing/regulations,Y,2026-11-16
+US-WA,Washington,Washington Department of Fish and Wildlife,west-coast,Y,N,licence,https://wdfw.wa.gov/licenses/fishing,Y,2026-11-16
+US-WV,West Virginia,West Virginia Division of Natural Resources,,N,N,freshwater,https://wvdnr.gov/fishing/,Y,2026-11-16
+US-WV,West Virginia,West Virginia Division of Natural Resources,,N,N,licence,https://wvdnr.gov/fishing/,Y,2026-11-16
+US-WI,Wisconsin,Wisconsin Department of Natural Resources,,N,Y,freshwater,https://dnr.wisconsin.gov/topic/Fishing,Y,2026-11-16
+US-WI,Wisconsin,Wisconsin Department of Natural Resources,,N,Y,licence,https://dnr.wisconsin.gov/permits,Y,2026-11-16
+US-WY,Wyoming,Wyoming Game and Fish Department,,N,N,freshwater,https://wgfd.wyo.gov/regulations,Y,2026-11-16
+US-WY,Wyoming,Wyoming Game and Fish Department,,N,N,licence,https://wgfd.wyo.gov/licenses-applications,Y,2026-11-16
+US-DC,District of Columbia,District Department of Energy and Environment,,N,N,freshwater,https://doee.dc.gov/service/regulated-fishing-activities,Y,2026-11-16
+US-DC,District of Columbia,District Department of Energy and Environment,,N,N,licence,https://doee.dc.gov/service/get-fishing-license,Y,2026-11-16
+US-PR,Puerto Rico,Departamento de Recursos Naturales y Ambientales,southeast,Y,N,freshwater,https://www.drna.pr.gov/,Y,2026-11-16
+US-PR,Puerto Rico,Departamento de Recursos Naturales y Ambientales,southeast,Y,N,saltwater,https://www.drna.pr.gov/,Y,2026-11-16
+US-PR,Puerto Rico,Departamento de Recursos Naturales y Ambientales,southeast,Y,N,licence,https://www.drna.pr.gov/,Y,2026-11-16
+US-VI,US Virgin Islands,Department of Planning and Natural Resources,southeast,Y,N,freshwater,https://dpnr.vi.gov/fish-and-wildlife/,Y,2026-11-16
+US-VI,US Virgin Islands,Department of Planning and Natural Resources,southeast,Y,N,saltwater,https://dpnr.vi.gov/fish-and-wildlife/,Y,2026-11-16
+US-VI,US Virgin Islands,Department of Planning and Natural Resources,southeast,Y,N,licence,https://dpnr.vi.gov/fish-and-wildlife/,Y,2026-11-16
+US-GU,Guam,Guam Division of Aquatic and Wildlife Resources,pacific-islands,Y,N,freshwater,https://doag.guam.gov/dawr-aquatic-resources/,Y,2026-11-16
+US-GU,Guam,Guam Division of Aquatic and Wildlife Resources,pacific-islands,Y,N,saltwater,https://doag.guam.gov/dawr-aquatic-resources/,Y,2026-11-16
+US-GU,Guam,Guam Division of Aquatic and Wildlife Resources,pacific-islands,Y,N,licence,https://doag.guam.gov/dawr-aquatic-resources/,Y,2026-11-16
+US-AS,American Samoa,American Samoa Department of Marine and Wildlife Resources,pacific-islands,Y,N,freshwater,https://dmwr.as.gov/,Y,2026-11-16
+US-AS,American Samoa,American Samoa Department of Marine and Wildlife Resources,pacific-islands,Y,N,saltwater,https://dmwr.as.gov/,Y,2026-11-16
+US-AS,American Samoa,American Samoa Department of Marine and Wildlife Resources,pacific-islands,Y,N,licence,https://dmwr.as.gov/,Y,2026-11-16
+US-MP,Northern Mariana Islands,CNMI Division of Fish and Wildlife,pacific-islands,Y,N,freshwater,https://dlnr.cnmi.gov/dfw-laws-and-regulations.html,Y,2026-11-16
+US-MP,Northern Mariana Islands,CNMI Division of Fish and Wildlife,pacific-islands,Y,N,saltwater,https://dlnr.cnmi.gov/dfw-laws-and-regulations.html,Y,2026-11-16
+US-MP,Northern Mariana Islands,CNMI Division of Fish and Wildlife,pacific-islands,Y,N,licence,https://dlnr.cnmi.gov/fish-and-wildlife.html,Y,2026-11-16
+NOAA-GARFO,NOAA Fisheries Greater Atlantic,NOAA Fisheries,greater-atlantic,,,federal,https://www.fisheries.noaa.gov/new-england-mid-atlantic/recreational-fishing/recreational-fishing-regulations-species,Y,2026-11-16
+NOAA-SERO,NOAA Fisheries Southeast (hub),NOAA Fisheries,southeast,,,federal,https://www.fisheries.noaa.gov/recreational-fishing/recreational-fishing-southeast,Y,2026-11-16
+NOAA-SERO,NOAA Fisheries Southeast (South Atlantic),NOAA Fisheries,southeast,,,federal,https://www.fisheries.noaa.gov/southeast/rules-regulations/current-fishing-regulations-south-atlantic,Y,2026-11-16
+NOAA-SERO,NOAA Fisheries Southeast (Gulf of America),NOAA Fisheries,southeast,,,federal,https://www.fisheries.noaa.gov/southeast/rules-regulations/fishing-regulations-and-seasonal-closures-gulf-america,Y,2026-11-16
+NOAA-WCR,NOAA Fisheries West Coast,NOAA Fisheries,west-coast,,,federal,https://www.fisheries.noaa.gov/west-coast/recreational-fishing/recreational-fisheries-west-coast,Y,2026-11-16
+NOAA-AKR,NOAA Fisheries Alaska,NOAA Fisheries,alaska,,,federal,https://www.fisheries.noaa.gov/alaska/resources-fishing/sport-fishing-alaska,Y,2026-11-16
+NOAA-PIR,NOAA Fisheries Pacific Islands,NOAA Fisheries,pacific-islands,,,federal,https://www.fisheries.noaa.gov/pacific-islands/recreational-fishing/recreational-and-non-commercial-fishing-pacific-islands,Y,2026-11-16
+NOAA-HMS,NOAA Fisheries Atlantic Highly Migratory Species,NOAA Fisheries,atlantic-hms,,,federal,https://www.fisheries.noaa.gov/atlantic-highly-migratory-species/atlantic-highly-migratory-species-fishery-compliance-guides,Y,2026-11-16
