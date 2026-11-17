@@ -161,18 +161,20 @@ final class AccessibilityAuditTests: XCTestCase {
         Thread.sleep(forTimeInterval: 4)
         let place = AuditScreen(
             app, textSizeFixed: app.launchArguments.contains(Self.largestText[0]))
+        print("AUDIT \(screen) bars \(place.bars) title \(place.barTitle)")
         for (name, check) in checks {
             for attempt in 1...3 {
                 do {
                     try app.performAccessibilityAudit(for: check) { issue in
-                        let excused = AuditExceptions.excuses(issue, on: place)
+                        let reason = AuditExceptions.reason(issue, on: place)
                         let element = issue.element.map {
                             "\($0.elementType.rawValue) '\($0.label)' \($0.frame)"
                         }
                         print(
-                            "AUDIT \(screen) [\(name)] \(excused ? "excused" : "ISSUE"): "
+                            "AUDIT \(screen) [\(name)] "
+                                + "\(reason.map { "excused (\($0.rawValue))" } ?? "ISSUE"): "
                                 + "\(issue.compactDescription) | \(element ?? "-") | \(issue.detailedDescription)")
-                        return excused
+                        return reason != nil
                     }
                     break
                 } catch where attempt < 3 {
