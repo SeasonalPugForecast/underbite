@@ -3,3 +3,5 @@
 
 pub mod file;
 pub mod merge;
+
+pub use file::{Document, FORMAT, MAX_BYTES, ShareError, SpotShare, VERSION, decode, encode, fuzz};

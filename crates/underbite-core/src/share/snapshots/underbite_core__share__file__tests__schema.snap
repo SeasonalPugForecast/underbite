@@ -1,0 +1,372 @@
+---
+source: crates/underbite-core/src/share/file.rs
+expression: schemas
+---
+{
+  "File": {
+    "$defs": {
+      "ChecklistItem": {
+        "description": "One line of a trip's checklist.",
+        "properties": {
+          "done": {
+            "default": false,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "The host's id, stable across edits so merges can match items.",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text"
+        ],
+        "type": "object"
+      },
+      "Fuzz": {
+        "description": "How much of a place's location a shared file reveals. Ordered from most to least.\n\nThe level a place carries is the level it was fuzzed to, so the receiver can say \"approximate\nlocation\".",
+        "oneOf": [
+          {
+            "const": "exact",
+            "description": "The coordinates as saved.",
+            "type": "string"
+          },
+          {
+            "const": "rounded1_km",
+            "description": "Rounded to 0.01 degrees, about a kilometre.",
+            "type": "string"
+          },
+          {
+            "const": "area_only",
+            "description": "No coordinates; the area and region only.",
+            "type": "string"
+          }
+        ]
+      },
+      "Kind": {
+        "enum": [
+          "trip",
+          "spot",
+          "layers",
+          "profile"
+        ],
+        "type": "string"
+      },
+      "Method": {
+        "description": "How a person fishes; the limits and the gear list follow it.",
+        "enum": [
+          "boat",
+          "kayak",
+          "shore",
+          "wade",
+          "ice"
+        ],
+        "type": "string"
+      },
+      "SpeciesId": {
+        "description": "A species, by its lower-case scientific name with hyphens: `morone-saxatilis`.\n\nThe species catalogue keys its profiles by this id. Only lower-case ASCII letters and digits\nin words joined by single hyphens are accepted.",
+        "type": "string"
+      },
+      "SpotShare": {
+        "description": "The `kind: \"spot\"` payload: one place and what its owner wrote about it.",
+        "properties": {
+          "notes": {
+            "default": "",
+            "type": "string"
+          },
+          "place": {
+            "$ref": "#/$defs/TripPlace"
+          }
+        },
+        "required": [
+          "place"
+        ],
+        "type": "object"
+      },
+      "Trip": {
+        "description": "A trip: places, calendar days, species and method.\n\nNever holds keys, the catch log or photos.",
+        "properties": {
+          "checklist": {
+            "default": [],
+            "items": {
+              "$ref": "#/$defs/ChecklistItem"
+            },
+            "type": "array"
+          },
+          "first": {
+            "description": "First day, a calendar date written `2027-07-12`.",
+            "type": "string"
+          },
+          "id": {
+            "description": "The host's id (a UUID in the app).",
+            "type": "string"
+          },
+          "last": {
+            "description": "Last day, inclusive.",
+            "type": "string"
+          },
+          "limits": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/TripLimits"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "method": {
+            "$ref": "#/$defs/Method"
+          },
+          "modified_at": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "When the host last changed the trip, seconds since the Unix epoch."
+          },
+          "name": {
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "type": "string"
+          },
+          "places": {
+            "items": {
+              "$ref": "#/$defs/TripPlace"
+            },
+            "type": "array"
+          },
+          "species": {
+            "default": [],
+            "items": {
+              "$ref": "#/$defs/SpeciesId"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "places",
+          "first",
+          "last",
+          "method",
+          "modified_at"
+        ],
+        "type": "object"
+      },
+      "TripLimits": {
+        "description": "A copy of the angler's limits, so whoever opens a trip sees the same numbers.\n\nIt mirrors the configuration's limits profile field for field, in canonical units (knots for\nwind and current, metres, °C, kilometres) whatever the sender displays.",
+        "properties": {
+          "max_current_kn": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max_gust_kn": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max_wave_m": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max_wind_kn": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "min_air_temp_c": {
+            "description": "Coldest air temperature, °C.",
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "min_visibility_km": {
+            "description": "Least visibility, km.",
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "no_lightning": {
+            "default": false,
+            "type": "boolean"
+          },
+          "no_small_craft_advisory": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "TripPlace": {
+        "description": "One place of a trip.",
+        "properties": {
+          "area": {
+            "description": "The area the spot is grouped under, for example \"Lower Hudson\".",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fuzz": {
+            "$ref": "#/$defs/Fuzz",
+            "default": "exact",
+            "description": "What the coordinates were reduced to before sharing."
+          },
+          "latitude": {
+            "description": "Degrees north; absent at [`Fuzz::AreaOnly`].",
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "longitude": {
+            "description": "Degrees east; absent at [`Fuzz::AreaOnly`].",
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "description": "ISO 3166-2 subdivision, for example `US-NY`; the app fills it, the core never geocodes.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "spot_id": {
+            "description": "The host's id for the saved spot.",
+            "type": "string"
+          },
+          "time_zone": {
+            "description": "IANA zone name, for example `America/New_York`.",
+            "type": "string"
+          },
+          "water_type": {
+            "$ref": "#/$defs/WaterType"
+          }
+        },
+        "required": [
+          "spot_id",
+          "name",
+          "time_zone",
+          "water_type"
+        ],
+        "type": "object"
+      },
+      "UnixTime": {
+        "description": "Seconds since 1970-01-01T00:00:00Z.",
+        "format": "int64",
+        "type": "integer"
+      },
+      "WaterType": {
+        "description": "What kind of water a spot is on. It picks the default cards and source chains.",
+        "enum": [
+          "river_stream",
+          "lake_reservoir",
+          "tidal_river_estuary",
+          "bay_inshore",
+          "surf",
+          "nearshore",
+          "offshore",
+          "great_lakes",
+          "pond",
+          "ice"
+        ],
+        "type": "string"
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "The envelope as a type, for the schema: exactly one payload member matches `kind`.",
+    "properties": {
+      "format": {
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/$defs/Kind"
+      },
+      "spot": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/SpotShare"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "trip": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/Trip"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "v": {
+        "format": "uint32",
+        "minimum": 0,
+        "type": "integer"
+      }
+    },
+    "required": [
+      "format",
+      "v",
+      "kind"
+    ],
+    "title": "File",
+    "type": "object"
+  },
+  "Fuzz": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "How much of a place's location a shared file reveals. Ordered from most to least.\n\nThe level a place carries is the level it was fuzzed to, so the receiver can say \"approximate\nlocation\".",
+    "oneOf": [
+      {
+        "const": "exact",
+        "description": "The coordinates as saved.",
+        "type": "string"
+      },
+      {
+        "const": "rounded1_km",
+        "description": "Rounded to 0.01 degrees, about a kilometre.",
+        "type": "string"
+      },
+      {
+        "const": "area_only",
+        "description": "No coordinates; the area and region only.",
+        "type": "string"
+      }
+    ],
+    "title": "Fuzz"
+  }
+}

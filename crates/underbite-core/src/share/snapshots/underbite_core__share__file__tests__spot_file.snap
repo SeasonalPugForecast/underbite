@@ -1,0 +1,23 @@
+---
+source: crates/underbite-core/src/share/file.rs
+expression: encode(&spot()).unwrap()
+---
+{
+  "format": "underbite",
+  "kind": "spot",
+  "spot": {
+    "notes": "Park at the Battery Place garage.",
+    "place": {
+      "area": "Lower Hudson",
+      "fuzz": "exact",
+      "latitude": 40.7033,
+      "longitude": -74.017,
+      "name": "The Battery",
+      "region": "US-NY",
+      "spot_id": "spot-battery",
+      "time_zone": "America/New_York",
+      "water_type": "tidal_river_estuary"
+    }
+  },
+  "v": 1
+}

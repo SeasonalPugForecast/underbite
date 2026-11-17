@@ -1,0 +1,50 @@
+---
+source: crates/underbite-core/src/share/file.rs
+expression: "encode(&Document::Trip(t)).unwrap()"
+---
+{
+  "format": "underbite",
+  "kind": "trip",
+  "trip": {
+    "checklist": [
+      {
+        "done": false,
+        "id": "c1",
+        "text": "Licence"
+      }
+    ],
+    "first": "2027-07-12",
+    "id": "trip-1",
+    "last": "2027-07-14",
+    "limits": {
+      "max_gust_kn": 18.0,
+      "max_wave_m": 0.6,
+      "max_wind_kn": 12.0,
+      "name": "Kayak",
+      "no_lightning": true,
+      "no_small_craft_advisory": true
+    },
+    "method": "boat",
+    "modified_at": 1783000000,
+    "name": "Hudson weekend",
+    "notes": "Launch at first light.",
+    "places": [
+      {
+        "area": "Lower Hudson",
+        "fuzz": "exact",
+        "latitude": 40.7033,
+        "longitude": -74.017,
+        "name": "The Battery",
+        "region": "US-NY",
+        "spot_id": "spot-battery",
+        "time_zone": "America/New_York",
+        "water_type": "tidal_river_estuary"
+      }
+    ],
+    "species": [
+      "morone-saxatilis",
+      "pomatomus-saltatrix"
+    ]
+  },
+  "v": 1
+}
