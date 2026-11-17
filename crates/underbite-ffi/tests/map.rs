@@ -1,11 +1,14 @@
-//! The map calls: the worded catalogue and presets, tile requests and their classification, and
-//! satellite dates.
+//! The map calls: the worded catalogue and presets, tile requests and their classification,
+//! satellite dates, and the grid store's requests, rendering, arrows and point inspector.
+
+use std::sync::Arc;
 
 use serde_json::{Value, json};
-use underbite_ffi::fetch::HostMethod;
+use underbite_ffi::fetch::{HostMethod, HostResponse};
 use underbite_ffi::map::{
-    LayerDates, LayerDraw, MapError, TileOutcome, classify_tile, gibs_default_date, map_catalogue,
-    map_presets, map_tile_size, previous_date, tile_request,
+    GridStore, LayerDates, LayerDraw, MAX_REQUESTS_PER_VIEW, MAX_STORE_BLOCKS, MAX_STORE_VALUES,
+    MapError, TileOutcome, classify_tile, gibs_default_date, map_catalogue, map_presets,
+    map_tile_size, parse_time_axis, previous_date, tile_request, time_axis_request,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -258,4 +261,348 @@ fn satellite_dates_start_yesterday_and_step_back() {
         ("2025-12-31", "Dec 31")
     );
     assert!(previous_date("yesterday".into()).is_err());
+}
+
+// ---------------------------------------------------------------------------------------------
+// Gridded layers
+// ---------------------------------------------------------------------------------------------
+
+/// 2026-11-15T12:00:00Z.
+const NOW: i64 = 1_794_744_000;
+
+fn fixture(path: &str) -> Vec<u8> {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/raw");
+    std::fs::read(root.join(path)).unwrap()
+}
+
+fn response(status: u16, body: Vec<u8>) -> HostResponse {
+    HostResponse {
+        status,
+        body,
+        content_type: Some("application/json;charset=UTF-8".into()),
+        date: None,
+        expires: None,
+        last_modified: None,
+        etag: None,
+        retry_after: None,
+        rate_limit_remaining: None,
+    }
+}
+
+fn mur() -> Vec<u8> {
+    fixture("erddap/jplmursst41-sst-subset-2026-11-07.json")
+}
+
+/// The view around the recorded subsets: 40.0 to 40.8 N, 74.2 to 73.0 W, at zoom 9.
+fn harbor(
+    store: &GridStore,
+    layer: &str,
+    dataset: Option<&str>,
+    time: Option<i64>,
+    now: i64,
+) -> Result<Vec<underbite_ffi::map::GridRequest>, MapError> {
+    store.grid_requests(
+        layer.into(),
+        dataset.map(Into::into),
+        time,
+        -74.2,
+        40.0,
+        -73.0,
+        40.8,
+        9.0,
+        now,
+    )
+}
+
+/// A store holding the recorded MUR subset for the newest SST.
+fn store_with_mur() -> Arc<GridStore> {
+    let store = GridStore::new();
+    let requests = harbor(&store, "sst", None, None, NOW).unwrap();
+    store
+        .add_grid(requests[0].key.clone(), response(200, mur()), NOW)
+        .unwrap();
+    store
+}
+
+#[test]
+fn grid_requests_are_blocks_of_the_view_for_the_node() {
+    let store = GridStore::new();
+    let requests = harbor(&store, "sst", None, None, NOW).unwrap();
+    assert!(!requests.is_empty() && requests.len() <= MAX_REQUESTS_PER_VIEW);
+    for r in &requests {
+        assert_eq!(r.node, "pfeg");
+        assert!(
+            r.request.url.starts_with(
+                "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json?analysed_sst%5B(last)%5D"
+            ),
+            "{}",
+            r.request.url
+        );
+        assert!(r.key.starts_with("sst/jplMURSST41/last/"), "{}", r.key);
+        assert_eq!(r.request.max_age_s, Some(3_600));
+    }
+    // A held block is not asked again while it is fresh, and is after three hours.
+    store
+        .add_grid(requests[0].key.clone(), response(200, mur()), NOW)
+        .unwrap();
+    let again = harbor(&store, "sst", None, None, NOW + 60).unwrap();
+    assert_eq!(again.len(), requests.len() - 1);
+    let later = harbor(&store, "sst", None, None, NOW + 4 * 3_600).unwrap();
+    assert_eq!(later.len(), requests.len());
+
+    // Above the layer's shallowest zoom there is nothing to ask.
+    let wide = store
+        .grid_requests("sst".into(), None, None, -80.0, 35.0, -65.0, 45.0, 4.0, NOW)
+        .unwrap();
+    assert_eq!(wide, []);
+
+    // A fixed time and the fallback dataset.
+    let dated = harbor(
+        &store,
+        "clarity",
+        Some("noaacwN20VIIRSkd490NSWUSDaily"),
+        Some(1_794_683_995),
+        NOW,
+    )
+    .unwrap();
+    assert_eq!(dated[0].node, "coastwatch");
+    assert!(dated[0].request.url.contains(
+        "noaacwN20VIIRSkd490NSWUSDaily.json?kd_490%5B(2026-11-14T19:19:55Z)%5D%5B(0.0)%5D"
+    ));
+    assert!(
+        dated[0]
+            .key
+            .starts_with("clarity/noaacwN20VIIRSkd490NSWUSDaily/1794683995/")
+    );
+    assert_eq!(dated[0].request.max_age_s, Some(86_400));
+
+    let refused = |r: Result<_, MapError>| matches!(r, Err(MapError::Invalid { .. }));
+    assert!(refused(harbor(&store, "radar", None, None, NOW)));
+    assert!(refused(harbor(
+        &store,
+        "clarity",
+        Some("jplMURSST41"),
+        None,
+        NOW
+    )));
+}
+
+#[test]
+fn the_mur_subset_renders_its_tile_and_inspects_to_fahrenheit() {
+    let store = store_with_mur();
+    let png = store
+        .render_tile("sst".into(), None, None, None, 7, 37, 48)
+        .unwrap()
+        .unwrap();
+    assert_eq!(&png[..8], b"\x89PNG\r\n\x1a\n");
+    assert!(png.len() > 100);
+    // The user's ramp and range draw too; nothing is held far away.
+    let diverging = store.render_tile(
+        "sst".into(),
+        Some("diverging".into()),
+        Some(10.0),
+        Some(20.0),
+        7,
+        37,
+        48,
+    );
+    assert!(diverging.unwrap().is_some());
+    assert_eq!(
+        store
+            .render_tile("sst".into(), None, None, None, 7, 20, 48)
+            .unwrap(),
+        None
+    );
+
+    let rows = store
+        .inspect(
+            40.5,
+            -73.5,
+            vec!["sst".into(), "radar".into(), "chlorophyll".into()],
+            default_settings_json(),
+            "America/New_York".into(),
+        )
+        .unwrap();
+    assert_eq!(rows.len(), 1, "only layers with a block over the point");
+    let row = &rows[0];
+    assert_eq!(row.layer, "sst");
+    // 16.111 °C at that grid point.
+    assert_eq!(row.value_text, "61 °F");
+    assert_eq!(row.time_text, "Nov 7");
+    assert!(row.source.contains("MUR"));
+    assert_eq!(row.label, "Sea surface temperature");
+
+    let metric_rows = store
+        .inspect(
+            40.5,
+            -73.5,
+            vec!["sst".into()],
+            metric(),
+            "America/New_York".into(),
+        )
+        .unwrap();
+    assert_eq!(metric_rows[0].value_text, "16.1 °C");
+
+    // Land at the subset's corner has no value.
+    let land = store
+        .inspect(40.0, -74.2, vec!["sst".into()], plain(), "UTC".into())
+        .unwrap();
+    assert_eq!(land[0].value_text, "No value here");
+}
+
+#[test]
+fn currents_are_arrows_and_read_as_speed_and_direction() {
+    let store = GridStore::new();
+    // 2026-11-08T08:00:00Z.
+    let time = 1_794_124_800;
+    let requests = harbor(&store, "hf-radar-currents", None, Some(time), NOW).unwrap();
+    let url = &requests[0].request.url;
+    assert!(
+        url.contains("ucsdHfrE6.json?water_u%5B(2026-11-08T08:00:00Z)%5D"),
+        "{url}"
+    );
+    assert!(url.contains(",water_v%5B"), "{url}");
+    let body = fixture("erddap/ucsdhfre6-currents-subset-2026-11-08t08.json");
+    store
+        .add_grid(requests[0].key.clone(), response(200, body), NOW)
+        .unwrap();
+    let arrows = store
+        .arrows(
+            "hf-radar-currents".into(),
+            None,
+            None,
+            None,
+            -74.2,
+            40.0,
+            -73.0,
+            40.8,
+            9.0,
+        )
+        .unwrap();
+    assert_ne!(arrows.len(), 0);
+    for a in &arrows {
+        assert!((0.0..=1.0).contains(&a.fraction));
+        assert!((0.0..360.0).contains(&a.toward_deg));
+        assert_eq!(a.colour.alpha, 255);
+    }
+    let rows = store
+        .inspect(
+            40.021_62,
+            -74.014_946,
+            vec!["hf-radar-currents".into()],
+            default_settings_json(),
+            "America/New_York".into(),
+        )
+        .unwrap();
+    // 0.12 m/s east and 0.07 m/s north: 0.14 m/s toward 60°.
+    assert_eq!(rows[0].value_text, "0.3 kn toward ENE 60°");
+    assert_eq!(rows[0].time_text, "Nov 8, 3:00 AM");
+    let raster = store.render_tile("hf-radar-currents".into(), None, None, None, 9, 150, 192);
+    assert!(raster.is_err());
+    let arrows = store.arrows(
+        "sst".into(),
+        None,
+        None,
+        None,
+        -74.2,
+        40.0,
+        -73.0,
+        40.8,
+        9.0,
+    );
+    assert!(arrows.is_err());
+}
+
+#[test]
+fn erddap_failures_come_back_as_errors() {
+    let store = GridStore::new();
+    let key = harbor(&store, "sst", None, None, NOW).unwrap()[0]
+        .key
+        .clone();
+    let none = br#"Error {
+    code=404;
+    message="Not Found: Your query produced no matching results. (nRows = 0)";
+}"#;
+    assert_eq!(
+        store.add_grid(key.clone(), response(404, none.to_vec()), NOW),
+        Err(MapError::NoData)
+    );
+    assert_eq!(
+        store.add_grid(key.clone(), response(503, Vec::new()), NOW),
+        Err(MapError::RetryLater { after_s: 60 })
+    );
+    let mut busy = response(429, Vec::new());
+    busy.retry_after = Some("120".into());
+    assert_eq!(
+        store.add_grid(key.clone(), busy, NOW),
+        Err(MapError::RetryLater { after_s: 120 })
+    );
+    let mut html = response(200, b"<html></html>".to_vec());
+    html.content_type = Some("text/html".into());
+    assert!(matches!(
+        store.add_grid(key, html, NOW),
+        Err(MapError::Invalid { .. })
+    ));
+    for bad in [
+        "sst/jplMURSST41/last/40",
+        "radar/x/last/40/-74/1",
+        "sst/jplMURSST41/now/40/-74/1",
+        "sst/jplMURSST41/last/40/-74/0",
+    ] {
+        let added = store.add_grid(bad.into(), response(200, mur()), NOW);
+        assert!(matches!(added, Err(MapError::Invalid { .. })), "{bad}");
+    }
+    assert_eq!(store.block_count(), 0);
+}
+
+#[test]
+fn the_store_stays_within_its_bound_and_is_shared_across_threads() {
+    let store = GridStore::new();
+    harbor(&store, "sst", None, None, NOW).unwrap();
+    let body = mur();
+    let threads: Vec<_> = (0..4)
+        .map(|t| {
+            let store = Arc::clone(&store);
+            let body = body.clone();
+            std::thread::spawn(move || {
+                for i in 0..150 {
+                    let key = format!("sst/jplMURSST41/last/{}/{}/1", t, -180 + i);
+                    store
+                        .add_grid(key, response(200, body.clone()), NOW)
+                        .unwrap();
+                }
+            })
+        })
+        .collect();
+    for t in threads {
+        t.join().unwrap();
+    }
+    assert_eq!(store.block_count() as usize, MAX_STORE_BLOCKS);
+    assert!(store.value_count() as usize <= MAX_STORE_VALUES);
+    store.clear();
+    assert_eq!((store.block_count(), store.value_count()), (0, 0));
+}
+
+#[test]
+fn time_axes_are_requested_and_labelled() {
+    let request = time_axis_request("clarity".into(), None, NOW).unwrap();
+    assert_eq!(
+        request.url,
+        "https://coastwatch.noaa.gov/erddap/griddap/noaacwN21VIIRSkd490NSWUSDaily.json?time%5B(2026-11-01):1:(last)%5D"
+    );
+    let hourly = time_axis_request("hf-radar-currents".into(), None, NOW).unwrap();
+    assert!(hourly.url.contains("time%5B(2026-11-13):1:(last)%5D"));
+    let body = fixture("erddap/noaacwn21viirskd490nswusdaily-time-2026-10-20-to-last.json");
+    let times = parse_time_axis(
+        "clarity".into(),
+        None,
+        response(200, body),
+        plain(),
+        "America/New_York".into(),
+    )
+    .unwrap();
+    assert_eq!(times.first().unwrap().label, "Oct 21");
+    let last = times.last().unwrap();
+    assert_eq!((last.time, last.label.as_str()), (1_794_684_142, "Nov 14"));
+    assert!(time_axis_request("radar".into(), None, NOW).is_err());
 }

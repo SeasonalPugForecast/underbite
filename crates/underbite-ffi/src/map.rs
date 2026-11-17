@@ -6,21 +6,29 @@
 //! numbers cross only where the app draws with them (coordinates, opacity, colours, fractions of
 //! a tile or a legend bar). Times are Unix seconds; dates are `YYYY-MM-DD` UTC days.
 
+use std::collections::BTreeMap;
+use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
+
 use underbite_config::schema::Config;
 use underbite_core::map::catalogue::{
-    self, AppleBase, DateMode, GridDraw, Group, Layer, LayerKind, PRESETS, resolve_preset,
+    self, AppleBase, DateMode, GridDraw, GridLayer, GridSpec, Group, Layer, LayerKind, PRESETS,
+    resolve_preset,
 };
+use underbite_core::map::grid::{self, Block, Grid};
 use underbite_core::map::render::{self, Ramp, RampRange};
 use underbite_core::map::tiles::{
     MAX_ZOOM, TILE_PX, TileOutcome as CoreTileOutcome, cache_lifetime_s, classify, over_zoom,
     previous_day,
 };
-use underbite_core::map::{TileKey, tiles};
-use underbite_core::time::{LocalDate, UnixTime, parse_date};
+use underbite_core::map::{Bbox, GeoPoint, GridHost, TileKey, tiles};
+use underbite_core::time::{LocalDate, UnixTime, UtcOffset, parse_date};
 use underbite_core::view::format::Formatter;
-use underbite_core::view::strings::{MapQuantity, SafetyKey, Strings, map_value};
+use underbite_core::view::strings::{
+    Key, MapQuantity, SafetyKey, Strings, map_current, map_time, map_value,
+};
+use underbite_providers::erddap::{self, ErddapError, FIRST_PAUSE_S, GridTime};
 
-use crate::fetch::{HostMethod, HostRequest};
+use crate::fetch::{HostMethod, HostRequest, HostResponse, fetched};
 use crate::settings::{SettingsError, load};
 
 // ---------------------------------------------------------------------------------------------
@@ -627,6 +635,636 @@ pub fn previous_date(date: String) -> Result<MapDate, MapError> {
 #[uniffi::export]
 pub fn map_tile_size() -> u32 {
     TILE_PX
+}
+
+// ---------------------------------------------------------------------------------------------
+// Gridded layers: requests, the store, rendering, arrows and the point inspector
+// ---------------------------------------------------------------------------------------------
+
+/// The most values a [`GridStore`] keeps: two million (about 8 MB of `f32`, axes included). A
+/// block holds at most 10,000 cells per variable, so this is some two hundred blocks, several
+/// screens of every grid layer.
+pub const MAX_STORE_VALUES: usize = 2_000_000;
+
+/// The most blocks a [`GridStore`] keeps, whatever their size.
+pub const MAX_STORE_BLOCKS: usize = 512;
+
+/// The most block requests one view asks for, nearest to the view's centre first. A phone at a
+/// layer's shallowest zoom needs about a dozen; a larger screen gets its middle first.
+pub const MAX_REQUESTS_PER_VIEW: usize = 24;
+
+/// How long a block asked for at the newest time (`(last)`) is kept before it is asked again:
+/// the newest time moves on.
+const LATEST_MAX_AGE_S: i64 = 3 * 3_600;
+
+/// How long the app may reuse a block response when the server says nothing: the newest time
+/// moves on, a dated block keeps (a revised day is refreshed by the store).
+const LATEST_RESPONSE_AGE_S: u64 = 3_600;
+const DATED_RESPONSE_AGE_S: u64 = 86_400;
+
+/// The most arrows one call returns.
+const MAX_ARROWS: usize = 4_000;
+
+/// Days of times a daily layer's time axis lists, and hours an hourly one's.
+const DAILY_AXIS_DAYS: i64 = 14;
+const HOURLY_AXIS_DAYS: i64 = 2;
+
+/// One block request for a view, with the key to hand its response back under.
+#[derive(Clone, Debug, PartialEq, uniffi::Record)]
+pub struct GridRequest {
+    /// Pass it to [`GridStore::add_grid`] with the response.
+    pub key: String,
+    /// The server, for [`GridPacer`]: `pfeg`, `coastwatch` or `glerl`.
+    pub node: String,
+    pub request: HostRequest,
+}
+
+/// A current arrow to draw.
+#[derive(Clone, Copy, Debug, PartialEq, uniffi::Record)]
+pub struct MapArrow {
+    pub lat: f64,
+    pub lon: f64,
+    /// The direction the water goes toward, degrees clockwise from true north: the arrow's
+    /// rotation.
+    pub toward_deg: f32,
+    /// The speed's place in the layer's range, 0 to 1: the arrow's length.
+    pub fraction: f32,
+    /// The ramp's colour for the speed.
+    pub colour: MapColour,
+}
+
+/// One layer's value at a point, worded.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct InspectorRow {
+    /// The layer's id.
+    pub layer: String,
+    /// The layer's title: "Sea surface temperature".
+    pub label: String,
+    /// The value in the user's unit ("61 °F", "0.3 kn toward NE 45°"), or that there is none.
+    pub value_text: String,
+    /// The layer's credit (safety text).
+    pub source: String,
+    /// When the value is valid: "Nov 7", "Nov 8, 4:00 AM".
+    pub time_text: String,
+}
+
+/// One time a gridded layer has, with its label.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct LayerTime {
+    /// Unix seconds, as [`GridStore::grid_requests`] takes it.
+    pub time: i64,
+    /// "Nov 7" for a daily layer (its UTC day), "Nov 8, 4:00 AM" for an hourly one.
+    pub label: String,
+}
+
+/// The node's name as requests and the pacer use it.
+fn node_name(node: GridHost) -> String {
+    serde_json::to_value(node)
+        .ok()
+        .and_then(|v| v.as_str().map(str::to_owned))
+        .unwrap_or_default()
+}
+
+/// A grid layer and the dataset asked for: the named one, else the primary.
+fn grid_spec<'a>(
+    l: &'a Layer,
+    dataset: Option<&str>,
+) -> Result<(&'a GridLayer, &'a GridSpec), MapError> {
+    let grid = l
+        .grid()
+        .ok_or_else(|| invalid(format!("`{}` is not a gridded layer", l.id)))?;
+    let spec = match dataset {
+        Some(d) => grid
+            .spec(d.trim())
+            .ok_or_else(|| invalid(format!("`{d}` is not a dataset of `{}`", l.id)))?,
+        None => &grid.primary,
+    };
+    Ok((grid, spec))
+}
+
+fn erddap_error(e: &ErddapError) -> MapError {
+    match e {
+        ErddapError::NoData => MapError::NoData,
+        ErddapError::Temporary => MapError::RetryLater {
+            after_s: u32::try_from(FIRST_PAUSE_S).unwrap_or(60),
+        },
+        ErddapError::RateLimited { retry_after_s } => MapError::RetryLater {
+            after_s: retry_after_s.unwrap_or(u32::try_from(FIRST_PAUSE_S).unwrap_or(60)),
+        },
+        other => invalid(other.to_string()),
+    }
+}
+
+/// The body of an ERDDAP response, or what went wrong.
+fn erddap_body(response: HostResponse) -> Result<Vec<u8>, MapError> {
+    let fetched = fetched(response).map_err(|e| invalid(e.to_string()))?;
+    {
+        let r = fetched.as_response();
+        erddap::check_response(&r).map_err(|e| erddap_error(&e))?;
+    }
+    Ok(fetched.body)
+}
+
+/// What a stored block is: the layer, dataset and time asked for, and the block.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct BlockId {
+    layer: String,
+    dataset: String,
+    /// Unix seconds, or none for the newest time.
+    time: Option<i64>,
+    block: Block,
+}
+
+impl BlockId {
+    /// `sst/jplMURSST41/last/40/-74/1`: layer, dataset, time (Unix seconds or `last`), south,
+    /// west, stride.
+    fn key(&self) -> String {
+        let time = self
+            .time
+            .map_or_else(|| "last".to_owned(), |t| t.to_string());
+        format!(
+            "{}/{}/{}/{}/{}/{}",
+            self.layer, self.dataset, time, self.block.south, self.block.west, self.block.stride
+        )
+    }
+
+    fn parse(key: &str) -> Result<(Self, &'static Layer, &'static GridSpec), MapError> {
+        let bad = || invalid(format!("`{key}` is not a grid key"));
+        let parts: Vec<&str> = key.split('/').collect();
+        let [layer_id, dataset, time, south, west, stride] = parts.as_slice() else {
+            return Err(bad());
+        };
+        let l = layer(layer_id)?;
+        let (_, spec) = grid_spec(l, Some(dataset))?;
+        let time = match *time {
+            "last" => None,
+            t => Some(t.parse::<i64>().map_err(|_| bad())?),
+        };
+        let block = Block {
+            south: south.parse().map_err(|_| bad())?,
+            west: west.parse().map_err(|_| bad())?,
+            stride: stride.parse().map_err(|_| bad())?,
+        };
+        if block.stride == 0 {
+            return Err(bad());
+        }
+        let id = Self {
+            layer: l.id.to_owned(),
+            dataset: spec.dataset.to_owned(),
+            time,
+            block,
+        };
+        Ok((id, l, spec))
+    }
+}
+
+/// A stored block: one grid per variable of its dataset.
+#[derive(Debug)]
+struct Stored {
+    grids: Vec<Arc<Grid>>,
+    values: usize,
+    fetched: UnixTime,
+    /// When it was last used, by the store's counter.
+    used: u64,
+}
+
+/// A grid's extent, reaching one cell spacing beyond its outermost centres.
+fn extent(grid: &Grid) -> Option<Bbox> {
+    let pad = |axis: &[f64]| match axis {
+        [_] => grid.source.native_step_deg.abs(),
+        [first, .., last] => (last - first).abs() / (axis.len() - 1) as f64,
+        [] => 0.0,
+    };
+    let (lat_pad, lon_pad) = (pad(&grid.lats), pad(&grid.lons));
+    Some(Bbox {
+        west: grid.lons.first()? - lon_pad,
+        south: grid.lats.first()? - lat_pad,
+        east: grid.lons.last()? + lon_pad,
+        north: grid.lats.last()? + lat_pad,
+    })
+}
+
+const fn overlaps(a: Bbox, b: Bbox) -> bool {
+    a.west <= b.east && b.west <= a.east && a.south <= b.north && b.south <= a.north
+}
+
+/// The store's state, behind the mutex.
+#[derive(Debug, Default)]
+struct Blocks {
+    stored: BTreeMap<BlockId, Stored>,
+    /// Per layer, the dataset and time the last view asked for: what is drawn and inspected.
+    selection: BTreeMap<String, (String, Option<i64>)>,
+    values: usize,
+    clock: u64,
+}
+
+impl Blocks {
+    fn tick(&mut self) -> u64 {
+        self.clock += 1;
+        self.clock
+    }
+
+    /// The selected blocks of `layer` whose extent overlaps `area` (any, without one), finest
+    /// stride first, each as its grids; marks them used.
+    fn selected(&mut self, layer: &str, area: Option<Bbox>) -> Vec<Vec<Arc<Grid>>> {
+        let Some((dataset, time)) = self.selection.get(layer).cloned() else {
+            return Vec::new();
+        };
+        let now = self.tick();
+        let mut found: Vec<(u32, Vec<Arc<Grid>>)> = Vec::new();
+        for (id, stored) in &mut self.stored {
+            if id.layer != layer || id.dataset != dataset || id.time != time {
+                continue;
+            }
+            let hit = match (area, stored.grids.first().and_then(|g| extent(g))) {
+                (None, _) => true,
+                (Some(a), Some(e)) => overlaps(a, e),
+                (Some(_), None) => false,
+            };
+            if hit {
+                stored.used = now;
+                found.push((id.block.stride, stored.grids.clone()));
+            }
+        }
+        found.sort_by_key(|(stride, _)| *stride);
+        found.into_iter().map(|(_, g)| g).collect()
+    }
+
+    fn insert(&mut self, id: BlockId, grids: Vec<Grid>, fetched: UnixTime) -> Result<(), MapError> {
+        let values: usize = grids
+            .iter()
+            .map(|g| g.values.len() + g.lats.len() + g.lons.len())
+            .sum();
+        if values > MAX_STORE_VALUES {
+            return Err(invalid("the block is larger than the store"));
+        }
+        if let Some(old) = self.stored.remove(&id) {
+            self.values -= old.values;
+        }
+        // Make room: the least recently used blocks go first.
+        while self.values + values > MAX_STORE_VALUES || self.stored.len() >= MAX_STORE_BLOCKS {
+            let Some(oldest) = self
+                .stored
+                .iter()
+                .min_by_key(|(_, s)| s.used)
+                .map(|(k, _)| k.clone())
+            else {
+                break;
+            };
+            if let Some(gone) = self.stored.remove(&oldest) {
+                self.values -= gone.values;
+            }
+        }
+        let used = self.tick();
+        self.values += values;
+        self.stored.insert(
+            id,
+            Stored {
+                grids: grids.into_iter().map(Arc::new).collect(),
+                values,
+                fetched,
+                used,
+            },
+        );
+        Ok(())
+    }
+}
+
+/// Gridded layers held on the device: the blocks of ERDDAP and GLERL grids fetched for the views,
+/// rendered into tiles, drawn as arrows and read by the point inspector.
+///
+/// Shared across threads: one mutex guards the blocks, held only to look up, insert or copy out
+/// a few `Arc`s; parsing and rendering happen outside it. Bounded: at most
+/// [`MAX_STORE_VALUES`] values in at most [`MAX_STORE_BLOCKS`] blocks, the least recently used
+/// dropped first. Nothing is written to disk; a later dataset (the NCEI elevation model) is one
+/// more kind of block under the same bound.
+#[derive(Debug, Default, uniffi::Object)]
+pub struct GridStore {
+    blocks: Mutex<Blocks>,
+}
+
+impl GridStore {
+    fn lock(&self) -> MutexGuard<'_, Blocks> {
+        // A panic while the lock was held leaves whole entries; keep using them.
+        self.blocks.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+}
+
+#[uniffi::export]
+impl GridStore {
+    /// An empty store.
+    #[uniffi::constructor]
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self::default())
+    }
+
+    /// The block requests a view of `layer` needs that the store does not already hold fresh,
+    /// nearest to the view's centre first, at most [`MAX_REQUESTS_PER_VIEW`]. `dataset` picks
+    /// the fallback dataset (none: the primary); `time` is one of the layer's times (none: the
+    /// newest). The view is `west`, `south`, `east`, `north` in degrees at `zoom`; above the
+    /// layer's shallowest zoom it needs nothing. The view's dataset and time become what the
+    /// store draws and inspects for the layer.
+    #[allow(clippy::too_many_arguments)] // a view is four edges and a zoom
+    #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+    pub fn grid_requests(
+        &self,
+        layer: String,
+        dataset: Option<String>,
+        time: Option<i64>,
+        west: f64,
+        south: f64,
+        east: f64,
+        north: f64,
+        zoom: f64,
+        now: i64,
+    ) -> Result<Vec<GridRequest>, MapError> {
+        let l = self::layer(&layer)?;
+        let (_, spec) = grid_spec(l, dataset.as_deref())?;
+        let source = spec.source();
+        let view = Bbox {
+            west,
+            south,
+            east,
+            north,
+        };
+        let blocks = if l.min_zoom.is_some_and(|min| zoom < f64::from(min)) {
+            Vec::new()
+        } else {
+            grid::blocks_for_view(&source, view, zoom)
+        };
+        let now = UnixTime(now);
+        let grid_time = time.map_or(GridTime::Last, |t| GridTime::At(UnixTime(t)));
+        let max_age = if time.is_some() {
+            DATED_RESPONSE_AGE_S
+        } else {
+            LATEST_RESPONSE_AGE_S
+        };
+        let mut out = Vec::new();
+        let mut store = self.lock();
+        store
+            .selection
+            .insert(l.id.to_owned(), (spec.dataset.to_owned(), time));
+        for block in blocks {
+            if out.len() >= MAX_REQUESTS_PER_VIEW {
+                break;
+            }
+            let id = BlockId {
+                layer: l.id.to_owned(),
+                dataset: spec.dataset.to_owned(),
+                time,
+                block,
+            };
+            let fresh = store.stored.get(&id).is_some_and(|s| match time {
+                Some(t) => grid::block_is_fresh(spec.dataset, UnixTime(t), s.fetched, now),
+                None => (0..LATEST_MAX_AGE_S).contains(&(now.0 - s.fetched.0)),
+            });
+            if fresh {
+                continue;
+            }
+            let request = erddap::block_request(&source, grid_time, block)
+                .map_err(|e| invalid(e.to_string()))?;
+            out.push(GridRequest {
+                key: id.key(),
+                node: node_name(request.node),
+                request: get(request.url, max_age),
+            });
+        }
+        Ok(out)
+    }
+
+    /// Stores the response to the request under `key` (from [`GridStore::grid_requests`]),
+    /// fetched at `now`. ERDDAP's failures come back as errors: [`MapError::NoData`] for a time
+    /// or box without data, [`MapError::RetryLater`] for a busy server; record the status with
+    /// the [`GridPacer`] too.
+    #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+    pub fn add_grid(&self, key: String, response: HostResponse, now: i64) -> Result<(), MapError> {
+        let (id, l, spec) = BlockId::parse(&key)?;
+        let body = erddap_body(response)?;
+        let source = spec.source();
+        let grids = if l.grid().map(|g| g.draw) == Some(GridDraw::Arrows) {
+            let c = erddap::parse_currents(&source, &body).map_err(|e| erddap_error(&e))?;
+            vec![c.u, c.v]
+        } else {
+            vec![erddap::parse_grid(&source, &body).map_err(|e| erddap_error(&e))?]
+        };
+        self.lock().insert(id, grids, UnixTime(now))
+    }
+
+    /// A 256-pixel PNG tile of a raster grid layer at `z`/`x`/`y`, coloured with `ramp` (none:
+    /// the layer's own) over `low`..`high` (canonical units; none: the layer's own range); none
+    /// when the store holds nothing of the layer's view there. Transparent over land, cloud and
+    /// outside the data.
+    #[allow(clippy::too_many_arguments)] // a tile is three numbers and a ramp is three
+    #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+    pub fn render_tile(
+        &self,
+        layer: String,
+        ramp: Option<String>,
+        low: Option<f64>,
+        high: Option<f64>,
+        z: u8,
+        x: u32,
+        y: u32,
+    ) -> Result<Option<Vec<u8>>, MapError> {
+        let l = self::layer(&layer)?;
+        if l.grid().map(|g| g.draw) != Some(GridDraw::Raster) {
+            return Err(invalid(format!("`{layer}` is not drawn as a raster")));
+        }
+        let (ramp, range) = ramp_and_range(l, ramp.as_deref(), low, high)?;
+        let key = tile_key(z, x, y)?;
+        let shared = self.lock().selected(l.id, Some(tiles::tile_bbox(key)));
+        if shared.is_empty() {
+            return Ok(None);
+        }
+        // Copied out of the lock: rendering holds no lock.
+        let grids: Vec<Grid> = shared
+            .iter()
+            .filter_map(|g| g.first().map(|g| Grid::clone(g)))
+            .collect();
+        render::render_tile(&grids, ramp, range, key, TILE_PX)
+            .map(Some)
+            .map_err(|e| invalid(e.to_string()))
+    }
+
+    /// The current arrows of an arrow layer in a view (`west`, `south`, `east`, `north`, at
+    /// `zoom`), thinned to about one per 32 points, coloured with `ramp` over `low`..`high` as
+    /// [`GridStore::render_tile`]; at most 4,000.
+    #[allow(clippy::too_many_arguments)] // a view is five numbers and a ramp is three
+    #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+    pub fn arrows(
+        &self,
+        layer: String,
+        ramp: Option<String>,
+        low: Option<f64>,
+        high: Option<f64>,
+        west: f64,
+        south: f64,
+        east: f64,
+        north: f64,
+        zoom: f64,
+    ) -> Result<Vec<MapArrow>, MapError> {
+        let l = self::layer(&layer)?;
+        if l.grid().map(|g| g.draw) != Some(GridDraw::Arrows) {
+            return Err(invalid(format!("`{layer}` is not drawn as arrows")));
+        }
+        let (ramp, range) = ramp_and_range(l, ramp.as_deref(), low, high)?;
+        let view = Bbox {
+            west,
+            south,
+            east,
+            north,
+        };
+        let shared = self.lock().selected(l.id, Some(view));
+        let mut out = Vec::new();
+        for grids in &shared {
+            let [u, v] = grids.as_slice() else {
+                continue;
+            };
+            for a in render::arrows(u, v, view, zoom) {
+                if out.len() >= MAX_ARROWS {
+                    return Ok(out);
+                }
+                let speed = f64::from(a.speed_ms);
+                out.push(MapArrow {
+                    lat: a.at.lat,
+                    lon: a.at.lon,
+                    toward_deg: a.toward_deg,
+                    fraction: range.position(speed).unwrap_or(0.0) as f32,
+                    colour: ramp
+                        .colour(range, speed)
+                        .unwrap_or(render::Rgba::TRANSPARENT)
+                        .into(),
+                });
+            }
+        }
+        Ok(out)
+    }
+
+    /// Each of `layers`' values at `lat`, `lon` from the blocks the store holds for the layer's
+    /// view, in the order given, worded for the settings: the same value the tile shows there
+    /// (one sampling rule). A layer that is not gridded, or has no block over the point, has no
+    /// row; a block over land or cloud gives "No value here". `time_zone` (IANA) words hourly
+    /// times.
+    #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+    pub fn inspect(
+        &self,
+        lat: f64,
+        lon: f64,
+        layers: Vec<String>,
+        settings_json: String,
+        time_zone: String,
+    ) -> Result<Vec<InspectorRow>, MapError> {
+        let (config, _) = load(&settings_json)?;
+        let f = formatter(&config, &time_zone);
+        let at = GeoPoint { lat, lon };
+        let point = Bbox {
+            west: lon,
+            south: lat,
+            east: lon,
+            north: lat,
+        };
+        let mut rows = Vec::new();
+        for id in &layers {
+            let Some(l) = catalogue::find(id).filter(|l| l.grid().is_some()) else {
+                continue;
+            };
+            let shared = self.lock().selected(l.id, Some(point));
+            let Some(first) = shared.first().and_then(|g| g.first()) else {
+                continue;
+            };
+            let arrows = l.grid().map(|g| g.draw) == Some(GridDraw::Arrows);
+            let found = shared.iter().find_map(|grids| {
+                let value = if arrows {
+                    let (u, v) = (grids.first()?, grids.get(1)?);
+                    let (east, north) = (
+                        f64::from(u.sample_bilinear(at)?),
+                        f64::from(v.sample_bilinear(at)?),
+                    );
+                    let toward = east.atan2(north).to_degrees().rem_euclid(360.0);
+                    map_current(&f, east.hypot(north), toward)
+                } else {
+                    let quantity = MapQuantity::of_layer(l.id)?;
+                    let g = grids.first()?;
+                    map_value(&f, quantity, f64::from(g.sample_bilinear(at)?))
+                };
+                Some((value, grids.first()?.time))
+            });
+            let (value_text, time) =
+                found.unwrap_or_else(|| (f.strings.get(Key::MapNoValue).to_owned(), first.time));
+            rows.push(InspectorRow {
+                layer: l.id.to_owned(),
+                label: f.strings.layer_title(l.id).unwrap_or(l.id).to_owned(),
+                value_text,
+                source: f.strings.layer_credit(l.id).unwrap_or_default().to_owned(),
+                time_text: map_time(&f, time, l.date_mode),
+            });
+        }
+        Ok(rows)
+    }
+
+    /// Forgets every block and view.
+    pub fn clear(&self) {
+        *self.lock() = Blocks::default();
+    }
+
+    /// How many blocks the store holds.
+    pub fn block_count(&self) -> u32 {
+        u32::try_from(self.lock().stored.len()).unwrap_or(u32::MAX)
+    }
+
+    /// How many values the store holds, axes included; at most [`MAX_STORE_VALUES`].
+    pub fn value_count(&self) -> u64 {
+        self.lock().values as u64
+    }
+}
+
+/// The request for the times a gridded layer's dataset holds (`dataset`: none for the primary):
+/// the last two weeks of a daily layer, the last two days of an hourly one, before `now`.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn time_axis_request(
+    layer: String,
+    dataset: Option<String>,
+    now: i64,
+) -> Result<HostRequest, MapError> {
+    let l = self::layer(&layer)?;
+    let (_, spec) = grid_spec(l, dataset.as_deref())?;
+    let days = if l.date_mode == DateMode::Hourly {
+        HOURLY_AXIS_DAYS
+    } else {
+        DAILY_AXIS_DAYS
+    };
+    let since = UnixTime(now.saturating_sub(days * 86_400)).local_date(UtcOffset(0));
+    let request =
+        erddap::time_axis_request(&spec.source(), since).map_err(|e| invalid(e.to_string()))?;
+    Ok(get(request.url, LATEST_RESPONSE_AGE_S))
+}
+
+/// The times in a response to [`time_axis_request`], oldest first, labelled for the settings
+/// (daily layers by their UTC day; hourly ones in `time_zone`, an IANA name).
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn parse_time_axis(
+    layer: String,
+    dataset: Option<String>,
+    response: HostResponse,
+    settings_json: String,
+    time_zone: String,
+) -> Result<Vec<LayerTime>, MapError> {
+    let l = self::layer(&layer)?;
+    grid_spec(l, dataset.as_deref())?;
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, &time_zone);
+    let body = erddap_body(response)?;
+    let axis = erddap::parse_time_axis(&body).map_err(|e| erddap_error(&e))?;
+    Ok(axis
+        .times()
+        .iter()
+        .map(|&t| LayerTime {
+            time: t.0,
+            label: map_time(&f, t, l.date_mode),
+        })
+        .collect())
 }
 
 #[cfg(test)]
