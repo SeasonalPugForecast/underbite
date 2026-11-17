@@ -708,6 +708,8 @@ fn station_pool(source: &SourceId) -> Option<SourceId> {
         SourceId::COOPS,
         SourceId::NDBC,
         SourceId::NWPS,
+        SourceId::DFO_IWLS,
+        SourceId::ECCC_HYDROMETRIC,
     ]
     .into_iter()
     .find(|s| s == source)

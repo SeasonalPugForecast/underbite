@@ -3,3 +3,4 @@
 pub mod cache;
 pub mod hydro;
 pub mod rank;
+pub mod region;
