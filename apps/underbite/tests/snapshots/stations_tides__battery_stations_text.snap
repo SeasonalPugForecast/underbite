@@ -1,0 +1,93 @@
+---
+source: apps/underbite/tests/stations_tides.rs
+expression: text
+---
+Stations near 40.7033, -74.0170 (tidal_river_estuary)
+
+water_temperature  (sources: usgs, coops, ndbc)
+  1. ndbc batn6  8518750 - The Battery, NY  0.2 mi, Same water body, last value 42 min ago
+     - Latest value 42 min ago
+  2. coops 8518750  NEW YORK (The Battery)  0.2 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+     - Not the station's main product
+  3. coops 8516945  Kings Point  15 mi, Nearby
+     - Listed by the source; Luna has not checked yet
+     - Not the station's main product
+  4. ndbc robn4  8530973 - Robbins Reef, NJ  4.1 mi, Downstream
+     - Checked just now: no recent values
+  5. ndbc mhrn6  8519532 - Mariners Harbor, NY  8.7 mi, Nearby
+     - Checked just now: no recent values
+  1 more ranked (--limit shows more)
+  902 more left out (--dropped lists them)
+
+tide  (sources: coops, coops-harmonics, open-meteo-marine)
+  1. coops 8518750  NEW YORK (The Battery)  0.2 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+  2. coops 8517847  Brooklyn Bridge  1.2 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+  3. coops 8517732  Wallabout Bay, Brooklyn Navy Yard  2.2 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+  4. coops 8518699  Williamsburg Bridge  2.6 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+  5. coops 8517673  Hunters Point, Newtown Creek  3.8 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+  79 more ranked (--limit shows more)
+  6 more left out (--dropped lists them)
+
+tidal_current  (sources: coops)
+  1. coops NYH1927 bin 13  Hudson River Entrance  0.5 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+  2. coops NYH1920 bin 12  Brooklyn Bridge  1.0 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+  3. coops NYH1921 bin 11  Corlears Hook  2.2 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+  4. coops NYH1922 bin 8  Newtown Creek  3.5 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+  5. coops ACT3431 bin 1  Manhattan, off 31st Street  3.5 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+  97 more ranked (--limit shows more)
+  93 more left out (--dropped lists them)
+
+waves  (sources: ndbc)
+  1. ndbc 44065  New York Harbor Entrance - 15 NM SE of Breezy Point , NY  28 mi, Nearby, last value 40 min ago
+     - Latest value 40 min ago
+  261 more left out (--dropped lists them)
+
+waves_forecast  (sources: open-meteo-marine)
+  no station within reach
+
+marine_forecast  (sources: nws)
+  no station within reach
+
+marine_alerts  (sources: nws)
+  no station within reach
+
+observed_wind  (sources: coops, ndbc)
+  1. coops 8518750  NEW YORK (The Battery)  0.2 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+     - Not the station's main product
+  2. ndbc robn4  8530973 - Robbins Reef, NJ  4.1 mi, Downstream, last value 36 min ago
+     - Latest value 36 min ago
+  3. ndbc mhrn6  8519532 - Mariners Harbor, NY  8.7 mi, Nearby, last value 36 min ago
+     - Latest value 36 min ago
+  4. ndbc kptn6  8516945 - Kings Point, NY  15 mi, Nearby, last value 36 min ago
+     - Latest value 36 min ago
+  5. ndbc sdhn4  8531680 - Sandy Hook, NJ  16 mi, Nearby
+     - Listed by the source; Luna has not checked yet
+  4 more ranked (--limit shows more)
+  849 more left out (--dropped lists them)
+
+observed_pressure  (sources: coops, ndbc)
+  1. ndbc batn6  8518750 - The Battery, NY  0.2 mi, Same water body, last value 42 min ago
+     - Latest value 42 min ago
+  2. coops 8518750  NEW YORK (The Battery)  0.2 mi, Same water body
+     - Listed by the source; Luna has not checked yet
+     - Not the station's main product
+  3. ndbc robn4  8530973 - Robbins Reef, NJ  4.1 mi, Downstream, last value 36 min ago
+     - Latest value 36 min ago
+  4. ndbc kptn6  8516945 - Kings Point, NY  15 mi, Nearby, last value 36 min ago
+     - Latest value 36 min ago
+  5. ndbc sdhn4  8531680 - Sandy Hook, NJ  16 mi, Nearby
+     - Listed by the source; Luna has not checked yet
+  4 more ranked (--limit shows more)
+  849 more left out (--dropped lists them)

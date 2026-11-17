@@ -381,6 +381,21 @@ fn record_refuses_a_request_that_carries_a_key() {
 }
 
 #[test]
+fn the_battery_stations_in_words() {
+    let cache = tempfile::tempdir().expect("tempdir");
+    let text = stdout(&run(
+        cache.path(),
+        &battery(),
+        &["stations", "near", "40.7033,-74.0170"],
+    ));
+    // Distance and relation are on the station's line, not repeated as reasons.
+    assert!(!text.contains("listed, not confirmed"), "{text}");
+    assert!(!text.contains("     - Same water body"), "{text}");
+    assert!(!text.contains("     - 0.2 mi"), "{text}");
+    insta::assert_snapshot!("battery_stations_text", text);
+}
+
+#[test]
 fn record_without_a_resource_lists_them() {
     let cache = tempfile::tempdir().expect("tempdir");
     let text = stdout(&run(cache.path(), &battery(), &["record", "coops"]));

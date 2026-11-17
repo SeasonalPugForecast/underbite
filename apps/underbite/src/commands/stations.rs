@@ -11,7 +11,7 @@ use clap::Subcommand;
 use serde_json::json;
 use underbite_config::schema::Config;
 use underbite_core::discover::cache::StationChoices;
-use underbite_core::discover::rank::{CoverageState, MeasurementRanking, Reason, StationKey};
+use underbite_core::discover::rank::{MeasurementRanking, Reason, StationKey};
 use underbite_core::model::{Measurement, Spot, WaterType};
 use underbite_core::provenance::SourceId;
 use underbite_core::time::UnixTime;
@@ -131,12 +131,17 @@ fn parse_name<T: serde::de::DeserializeOwned>(what: &str, name: &str) -> anyhow:
         .map_err(|_| anyhow::anyhow!("unknown {what} {name:?}"))
 }
 
-fn coverage_text(state: CoverageState) -> &'static str {
-    match state {
-        CoverageState::Reported => "reports values",
-        CoverageState::Listed => "listed, not confirmed",
-        CoverageState::NotReported => "no recent values",
-    }
+/// The reasons of a used station worth a line: its distance and relation are already on the
+/// station's line, and "listed" only stands while nothing says whether it reports.
+fn used_reasons(reasons: &[Reason]) -> impl Iterator<Item = &Reason> {
+    let settled = reasons
+        .iter()
+        .any(|r| matches!(r, Reason::Reported { .. } | Reason::NotReported { .. }));
+    reasons.iter().filter(move |r| match r {
+        Reason::Distance { .. } | Reason::Relation { .. } => false,
+        Reason::Listed => !settled,
+        _ => true,
+    })
 }
 
 fn describe(
@@ -178,12 +183,7 @@ fn describe(
             relation_text(f, s.relation),
             if s.pinned { " [pinned]" } else { "" },
         );
-        let _ = writeln!(out, "     {}", coverage_text(s.coverage));
-        for reason in s
-            .reasons
-            .iter()
-            .filter(|r| !matches!(r, Reason::Listed | Reason::NotReported { .. }))
-        {
+        for reason in used_reasons(&s.reasons) {
             let _ = writeln!(out, "     - {}", reason_text(f, reason, UnixTime(now)));
         }
     }
