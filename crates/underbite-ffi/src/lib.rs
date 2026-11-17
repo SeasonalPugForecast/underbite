@@ -1,9 +1,11 @@
 //! The Rust core for the iOS app, through `UniFFI`: fetching a spot through the Swift host, the
-//! view, the settings and the map.
+//! view, the settings, the map, its depth and its station pins.
 
 uniffi::setup_scaffolding!();
 
+pub mod depth;
 pub mod fetch;
 pub mod map;
+pub mod map_stations;
 pub mod settings;
 pub mod view;
