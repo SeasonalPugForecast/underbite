@@ -25,7 +25,8 @@ struct AboutView: View {
             }
 
             Section("In memory") {
-                // Placeholder: the dedication is written later.
+                // PLACEHOLDER FOR THE OWNER: the dedication text is theirs to write; the brackets
+                // keep it visibly unfinished until then.
                 Text("[Dedication placeholder: a few words about Luna, a bulldog who loved swimming and watching people, and snacks, most of all sashimi.]")
                 photoRow
             }
@@ -34,8 +35,18 @@ struct AboutView: View {
                 Text("Underbite is not for navigation. Tides, currents, depths, charts and every other value it shows are for planning a day on the water only. They can be wrong, late or missing. Never rely on them to steer a vessel or to judge a hazard, and always follow official charts, notices and local regulations.")
             }
 
+            Section("Regulations") {
+                Text("Underbite does not tell you what is legal. Seasons, sizes, limits, closures and licences are links to the agencies' own pages, never data held here. Check them before you fish.")
+            }
+
             Section("Privacy") {
                 Text("There is no account, no server of ours and no analytics. Spot coordinates leave your device only, rounded, to the data providers you choose, or in what you share yourself. The photo above stays in the app on this device.")
+                NavigationLink("Privacy settings") { PrivacyPage() }
+            }
+
+            Section("Sources") {
+                NavigationLink("Attribution") { AttributionView() }
+                NavigationLink("Acknowledgements") { AcknowledgementsView() }
             }
         }
         .readableText()

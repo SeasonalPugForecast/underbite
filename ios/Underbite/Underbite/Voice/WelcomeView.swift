@@ -1,11 +1,12 @@
 import SwiftUI
 
-/// The first launch's welcome: Luna swimming toward a dock. It asks for nothing: location
-/// permission comes with the action that needs it (adding a spot from where you stand).
-/// `onDone` closes it.
+/// The first launch's welcome: Luna swimming toward a dock. There is no default spot: the first
+/// one is added from where you stand ("Use my location", asked for only when tapped, while the
+/// app is in use) or found by search, in the same sheet as everywhere else. `onDone` closes it.
 struct WelcomeView: View {
     let onDone: () -> Void
     @Environment(\.voiceStyle) private var voice
+    @State private var addsSpot = false
 
     var body: some View {
         welcome
@@ -34,18 +35,36 @@ struct WelcomeView: View {
                 }
                 .padding(.top, 8)
 
-                Button(action: onDone) {
-                    Text("Get started")
+                Button {
+                    addsSpot = true
+                } label: {
+                    Label("Add your first spot", systemImage: "location")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .padding(.top, 12)
+                Text("Use my location, or search for a place, drop a pin or type coordinates.")
+                    .font(.footnote)
+                    .foregroundStyle(.readableSecondary)
+                    .multilineTextAlignment(.center)
+
+                Button(action: onDone) {
+                    Text("Not now")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
             }
             .padding(.horizontal, 32)
             .padding(.bottom, 32)
             .frame(maxWidth: 560)
             .frame(maxWidth: .infinity)
+        }
+        // The whole welcome in the iPad's sheet, not a form sheet that cuts the buttons off.
+        .presentationSizing(.page)
+        .sheet(isPresented: $addsSpot) {
+            AddSpotView { _ in onDone() }
         }
     }
 
