@@ -11,6 +11,7 @@ use whether_core::storm::{Hurricane, StormOutlook};
 use super::marine::MarineConditions;
 use super::sky::SkyConditions;
 use super::spot::Spot;
+use super::stocking::StockingEvent;
 use super::water::WaterConditions;
 use crate::provenance::{Attribution, SourceId, StationRef};
 use crate::time::UnixTime;
@@ -169,6 +170,9 @@ pub struct SpotSnapshot {
     pub fetched_at: UnixTime,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub storm: Option<StormWatch>,
+    /// Stockings of the spot's waterbody, in the order the source lists them.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub stocking: Vec<StockingEvent>,
     /// The stations the values came from.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub stations: Vec<StationRef>,
@@ -189,6 +193,7 @@ impl SpotSnapshot {
             sky: SkyConditions::default(),
             fetched_at,
             storm: None,
+            stocking: Vec::new(),
             stations: Vec::new(),
             attribution: Vec::new(),
             errors: Vec::new(),
@@ -205,6 +210,7 @@ pub mod testdata {
     use crate::model::marine::*;
     use crate::model::sky::*;
     use crate::model::spot::{WaterBodyRef, WaterType};
+    use crate::model::stocking::{LengthRange, StockingEvent, StockingWhen};
     use crate::model::water::*;
     use crate::provenance::{Provenance, Quality, Relation, StationKind, ValueKind};
     use crate::series::{Sample, Series, Vector};
@@ -382,6 +388,36 @@ pub mod testdata {
                 datum: Some(VerticalDatum::Ngvd29),
                 ..percentile(PercentileBasis::ComputedFromDaily { years: 16 })
             }),
+            reservoir: Some(ReservoirInfo {
+                project: "Beltzville Lake".into(),
+                outflow_m3s: Some(f32s(SourceId::new("cwms"), ValueKind::Observed, &[1.1])),
+                inflow_m3s: Some(f32s(SourceId::new("cwms"), ValueKind::Observed, &[0.9])),
+                links: vec![ExternalLink {
+                    label: "USACE Philadelphia District".into(),
+                    url: "https://www.nap.usace.army.mil".into(),
+                }],
+            }),
+            bloom: Some(BloomInfo {
+                cyan_max_cells_ml: Some(f32s(
+                    SourceId::new("cyan"),
+                    ValueKind::Satellite,
+                    &[9000.0],
+                )),
+                cyan_valid_cells: Some(412),
+                cyan_image_date: Some(LocalDate {
+                    year: 2026,
+                    month: 3,
+                    day: 28,
+                }),
+                hab: Some(HabForecast {
+                    location: "Sample Beach".into(),
+                    level: HabLevel::Low,
+                    confidence: Some(0.9),
+                    valid_at: at(180),
+                    distance_m: 3200.0,
+                }),
+                links: vec![],
+            }),
         }
     }
 
@@ -548,6 +584,36 @@ pub mod testdata {
             sky: sample_sky(),
             fetched_at: at(0),
             storm: Some(storm),
+            stocking: vec![
+                StockingEvent {
+                    waterbody: "Croton River".into(),
+                    county: Some("Westchester".into()),
+                    town: Some("Yorktown".into()),
+                    when: StockingWhen::Month {
+                        year: 2026,
+                        month: 4,
+                    },
+                    species_text: "Brown Trout".into(),
+                    number_estimate: Some(1200),
+                    size_m: Some(LengthRange {
+                        min_m: 0.2,
+                        max_m: 0.3,
+                    }),
+                    planned: false,
+                    source: SourceId::new("ny-dec-stocking"),
+                },
+                StockingEvent {
+                    waterbody: "Croton River".into(),
+                    county: None,
+                    town: None,
+                    when: StockingWhen::DateText("Week of April 14".into()),
+                    species_text: "Rainbow Trout".into(),
+                    number_estimate: None,
+                    size_m: None,
+                    planned: true,
+                    source: SourceId::new("ny-dec-stocking"),
+                },
+            ],
             stations: vec![station()],
             attribution: vec![Attribution {
                 source: SourceId::COOPS,
@@ -607,6 +673,19 @@ mod tests {
             "water_type":"pond","time_zone":"UTC"},"fetched_at":5}"#;
         let snap: SpotSnapshot = serde_json::from_str(json).unwrap();
         assert!(snap.errors.is_empty() && snap.storm.is_none());
+    }
+
+    #[test]
+    fn snapshot_written_before_tier2_data_decodes_without_it() {
+        let json = include_str!("fixtures/snapshot-before-tier2.synthetic.json");
+        let snap: SpotSnapshot = serde_json::from_str(json).unwrap();
+        assert_eq!(snap.stocking.len(), 0);
+        assert!(snap.water.reservoir.is_none() && snap.water.bloom.is_none());
+        assert!(snap.water.cyanobacteria_cells_ml.is_some());
+        // Writing it again adds nothing for the absent sections.
+        let again = serde_json::to_string(&snap).unwrap();
+        assert!(!again.contains("stocking") && !again.contains("reservoir"));
+        assert!(!again.contains("bloom"));
     }
 
     #[test]

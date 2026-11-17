@@ -263,6 +263,59 @@ expression: schemas
           }
         ]
       },
+      "BloomInfo": {
+        "description": "Bloom data for the spot's lake or coast. The `CyAN` mean stays in `cyanobacteria_cells_ml`.",
+        "properties": {
+          "cyan_image_date": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/LocalDate"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Date of the satellite composite the `CyAN` values come from, so a display can say how old."
+          },
+          "cyan_max_cells_ml": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Maximum cell concentration over the lake's valid cells, cells/mL."
+          },
+          "cyan_valid_cells": {
+            "description": "Number of 300 m cells with a valid retrieval, to judge how much of the lake was seen.",
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "hab": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/HabForecast"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "links": {
+            "items": {
+              "$ref": "#/$defs/ExternalLink"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
       "Celsius": {
         "description": "Temperature in degrees Celsius.",
         "format": "float",
@@ -897,6 +950,23 @@ expression: schemas
         ],
         "type": "object"
       },
+      "ExternalLink": {
+        "description": "A link to the source's own page or data for a value, shown beside it.",
+        "properties": {
+          "label": {
+            "description": "Plain label (\"USACE Philadelphia District: Beltzville Lake\").",
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "url"
+        ],
+        "type": "object"
+      },
       "FarHurricane": {
         "description": "An active cyclone whose official forecast, as of one forecast advisory,\nstays too far from the place to be drawn: it need not be looked at again\nuntil NHC's next forecast advisory.",
         "properties": {
@@ -987,6 +1057,61 @@ expression: schemas
           "text"
         ],
         "type": "object"
+      },
+      "HabForecast": {
+        "description": "A NOAA harmful-algal-bloom forecast for the nearest listed beach.",
+        "properties": {
+          "confidence": {
+            "description": "The source's confidence weighting, 0 to 1; absent when the source gives none.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "distance_m": {
+            "description": "From the spot to the beach, metres.",
+            "format": "float",
+            "type": "number"
+          },
+          "level": {
+            "$ref": "#/$defs/HabLevel"
+          },
+          "location": {
+            "description": "The beach's name as the source writes it.",
+            "type": "string"
+          },
+          "valid_at": {
+            "$ref": "#/$defs/UnixTime",
+            "description": "The time the forecast is valid for."
+          }
+        },
+        "required": [
+          "location",
+          "level",
+          "valid_at",
+          "distance_m"
+        ],
+        "type": "object"
+      },
+      "HabLevel": {
+        "description": "NOAA's respiratory-irritation level at a beach.",
+        "oneOf": [
+          {
+            "enum": [
+              "very_low",
+              "low",
+              "moderate",
+              "high"
+            ],
+            "type": "string"
+          },
+          {
+            "const": "unknown",
+            "description": "A category the source added that this version does not know.",
+            "type": "string"
+          }
+        ]
       },
       "Height": {
         "description": "A height in metres above a datum.",
@@ -1312,6 +1437,24 @@ expression: schemas
           "heavy"
         ],
         "type": "string"
+      },
+      "LengthRange": {
+        "description": "A length range in metres.",
+        "properties": {
+          "max_m": {
+            "format": "float",
+            "type": "number"
+          },
+          "min_m": {
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "required": [
+          "min_m",
+          "max_m"
+        ],
+        "type": "object"
       },
       "Level": {
         "description": "One severity scale that every display maps to colors (UV, air quality, alerts).",
@@ -2339,6 +2482,48 @@ expression: schemas
           }
         ]
       },
+      "ReservoirInfo": {
+        "description": "A reservoir project's releases and inflow. The pool level and its percentile are the\nwater's `level` and `level_percentile_for_date`.",
+        "properties": {
+          "inflow_m3s": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Inflow to the pool, m³/s."
+          },
+          "links": {
+            "description": "The operator's pages, for what the data does not carry (release schedules).",
+            "items": {
+              "$ref": "#/$defs/ExternalLink"
+            },
+            "type": "array"
+          },
+          "outflow_m3s": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Release below the dam, m³/s; absent where the operator publishes none."
+          },
+          "project": {
+            "description": "The project's name (\"Beltzville Lake\").",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "type": "object"
+      },
       "ResolvedLocation": {
         "description": "A location resolved to coordinates and a UTC offset.",
         "properties": {
@@ -2970,6 +3155,116 @@ expression: schemas
         ],
         "type": "object"
       },
+      "StockingEvent": {
+        "description": "One stocking of a waterbody. Numbers are the agency's estimates.",
+        "properties": {
+          "county": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "number_estimate": {
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "planned": {
+            "description": "True for a planned stocking, false for one that took place.",
+            "type": "boolean"
+          },
+          "size_m": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/LengthRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "$ref": "#/$defs/SourceId"
+          },
+          "species_text": {
+            "description": "The species text as the list writes it (\"Brown Trout\"); not normalised.",
+            "type": "string"
+          },
+          "town": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "waterbody": {
+            "description": "The waterbody as the list names it.",
+            "type": "string"
+          },
+          "when": {
+            "$ref": "#/$defs/StockingWhen"
+          }
+        },
+        "required": [
+          "waterbody",
+          "when",
+          "species_text",
+          "planned",
+          "source"
+        ],
+        "type": "object"
+      },
+      "StockingWhen": {
+        "description": "When a stocking took place, as precisely as the list says.",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "description": "A calendar month (`month` 1 to 12), as the actual-stocking list gives it.",
+            "properties": {
+              "month": {
+                "properties": {
+                  "month": {
+                    "format": "uint8",
+                    "maximum": 255,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "year": {
+                    "format": "uint16",
+                    "maximum": 65535,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "year",
+                  "month"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "month"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "description": "Text the list gives for a planned date (\"Week of April 14\"); never parsed.",
+            "properties": {
+              "date_text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "date_text"
+            ],
+            "type": "object"
+          }
+        ]
+      },
       "StormOutlook": {
         "description": "Everything the storms view is built from, for one place.",
         "properties": {
@@ -3498,6 +3793,16 @@ expression: schemas
       "WaterConditions": {
         "description": "Water conditions at the spot's stations. Every series carries its own provenance.",
         "properties": {
+          "bloom": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/BloomInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "chlorophyll_ug_l": {
             "anyOf": [
               {
@@ -3625,6 +3930,16 @@ expression: schemas
             "anyOf": [
               {
                 "$ref": "#/$defs/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reservoir": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ReservoirInfo"
               },
               {
                 "type": "null"
@@ -4033,6 +4348,13 @@ expression: schemas
         "description": "The stations the values came from.",
         "items": {
           "$ref": "#/$defs/StationRef"
+        },
+        "type": "array"
+      },
+      "stocking": {
+        "description": "Stockings of the spot's waterbody, in the order the source lists them.",
+        "items": {
+          "$ref": "#/$defs/StockingEvent"
         },
         "type": "array"
       },

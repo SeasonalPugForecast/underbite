@@ -6,6 +6,79 @@ use serde::{Deserialize, Serialize};
 use crate::datum::{Height, Heights, VerticalDatum};
 use crate::provenance::Provenance;
 use crate::series::Series;
+use crate::time::{LocalDate, UnixTime};
+
+/// A link to the source's own page or data for a value, shown beside it.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct ExternalLink {
+    /// Plain label ("USACE Philadelphia District: Beltzville Lake").
+    pub label: String,
+    pub url: String,
+}
+
+/// A reservoir project's releases and inflow. The pool level and its percentile are the
+/// water's `level` and `level_percentile_for_date`.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct ReservoirInfo {
+    /// The project's name ("Beltzville Lake").
+    pub project: String,
+    /// Release below the dam, m³/s; absent where the operator publishes none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub outflow_m3s: Option<Series<f32>>,
+    /// Inflow to the pool, m³/s.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inflow_m3s: Option<Series<f32>>,
+    /// The operator's pages, for what the data does not carry (release schedules).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub links: Vec<ExternalLink>,
+}
+
+/// NOAA's respiratory-irritation level at a beach.
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum HabLevel {
+    VeryLow,
+    Low,
+    Moderate,
+    High,
+    /// A category the source added that this version does not know.
+    Unknown,
+}
+
+/// A NOAA harmful-algal-bloom forecast for the nearest listed beach.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct HabForecast {
+    /// The beach's name as the source writes it.
+    pub location: String,
+    pub level: HabLevel,
+    /// The source's confidence weighting, 0 to 1; absent when the source gives none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub confidence: Option<f32>,
+    /// The time the forecast is valid for.
+    pub valid_at: UnixTime,
+    /// From the spot to the beach, metres.
+    pub distance_m: f32,
+}
+
+/// Bloom data for the spot's lake or coast. The `CyAN` mean stays in `cyanobacteria_cells_ml`.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct BloomInfo {
+    /// Maximum cell concentration over the lake's valid cells, cells/mL.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cyan_max_cells_ml: Option<Series<f32>>,
+    /// Number of 300 m cells with a valid retrieval, to judge how much of the lake was seen.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cyan_valid_cells: Option<u32>,
+    /// Date of the satellite composite the `CyAN` values come from, so a display can say how old.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cyan_image_date: Option<LocalDate>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hab: Option<HabForecast>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub links: Vec<ExternalLink>,
+}
 
 /// The unit a turbidity was measured in. The units are different methods and never convert.
 #[derive(
@@ -164,6 +237,10 @@ pub struct WaterConditions {
     pub discharge_percentile_for_date: Option<Percentile>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub level_percentile_for_date: Option<Percentile>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reservoir: Option<ReservoirInfo>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bloom: Option<BloomInfo>,
 }
 
 #[cfg(test)]
