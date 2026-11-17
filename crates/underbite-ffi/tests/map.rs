@@ -1,5 +1,6 @@
 //! The map calls: the worded catalogue and presets, tile requests and their classification,
-//! satellite dates, and the grid store's requests, rendering, arrows and point inspector.
+//! satellite dates, the grid store's requests, rendering, arrows and point inspector, the ERDDAP
+//! pacer, measuring and the radar loop.
 
 use std::sync::Arc;
 
@@ -7,8 +8,10 @@ use serde_json::{Value, json};
 use underbite_ffi::fetch::{HostMethod, HostResponse};
 use underbite_ffi::map::{
     GridPacer, GridStore, LayerDates, LayerDraw, MAX_REQUESTS_PER_VIEW, MAX_STORE_BLOCKS,
-    MAX_STORE_VALUES, MapError, TileOutcome, classify_tile, gibs_default_date, map_catalogue,
-    map_presets, map_tile_size, parse_time_axis, previous_date, tile_request, time_axis_request,
+    MAX_STORE_VALUES, MapError, MapPoint, TileOutcome, classify_tile, gibs_default_date,
+    map_catalogue, map_presets, map_tile_size, measure, parse_time_axis, previous_date,
+    radar_covers, radar_frame_request, radar_frames, radar_latest_valid, radar_meta_request,
+    tile_request, time_axis_request,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -655,4 +658,65 @@ fn the_pacer_state_round_trips_through_json() {
         GridPacer::from_json("{}".into()).unwrap().to_json(),
         r#"{"nodes":{}}"#
     );
+}
+
+// ---------------------------------------------------------------------------------------------
+// Measuring and radar
+// ---------------------------------------------------------------------------------------------
+
+#[test]
+fn a_measure_is_worded_in_the_users_units_with_its_notice() {
+    // The Battery to Sandy Hook, about 25 km to the south.
+    let battery = MapPoint {
+        lat: 40.7006,
+        lon: -74.0142,
+    };
+    let sandy_hook = MapPoint {
+        lat: 40.4669,
+        lon: -74.0094,
+    };
+    let us = measure(battery, sandy_hook, plain()).unwrap();
+    assert_eq!(us.distance, "16 mi");
+    assert_eq!(us.bearing, "S 179°");
+    assert_eq!(us.line, "16 mi at S 179°");
+    assert_eq!(us.notice, "Not for navigation.");
+    let si = measure(battery, sandy_hook, metric()).unwrap();
+    assert_eq!(si.distance, "26 km");
+    let off = MapPoint {
+        lat: 91.0,
+        lon: 0.0,
+    };
+    assert!(measure(battery, off, plain()).is_err());
+}
+
+#[test]
+fn the_radar_loop_is_labelled_in_the_users_clock() {
+    let meta = radar_meta_request();
+    assert_eq!(
+        meta.url,
+        "https://mesonet.agron.iastate.edu/data/gis/images/4326/USCOMP/n0q_0.json"
+    );
+    assert!(meta.fresh);
+    let latest =
+        radar_latest_valid(br#"{"meta": {"valid": "2026-10-10T20:15:00Z"}}"#.to_vec()).unwrap();
+    assert!(radar_latest_valid(b"{}".to_vec()).is_err());
+    let frames = radar_frames(latest, plain(), "America/New_York".into()).unwrap();
+    assert_eq!(frames.len(), 6);
+    let newest = frames.last().unwrap();
+    assert_eq!((newest.minutes_ago, newest.valid), (0, latest));
+    assert_eq!(newest.label, "4:15 PM");
+    assert_eq!(frames[0].label, "3:50 PM");
+    assert_eq!(
+        newest.tile_template,
+        "https://mesonet.agron.iastate.edu/c/tile.py/1.0.0/ridge::USCOMP-N0Q-202610102015/{z}/{x}/{y}.png"
+    );
+    let tile = radar_frame_request(latest, 8, 75, 96).unwrap().unwrap();
+    assert_eq!(
+        tile.url,
+        "https://mesonet.agron.iastate.edu/c/tile.py/1.0.0/ridge::USCOMP-N0Q-202610102015/8/75/96.png"
+    );
+    assert_eq!(radar_frame_request(latest, 5, 9, 12).unwrap(), None);
+    assert!(radar_frame_request(latest, 8, 300, 96).is_err());
+    assert!(radar_covers(40.7, -74.0));
+    assert!(!radar_covers(51.5, -0.12));
 }

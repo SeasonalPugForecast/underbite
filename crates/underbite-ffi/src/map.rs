@@ -24,10 +24,11 @@ use underbite_core::map::{Bbox, GeoPoint, GridHost, TileKey, tiles};
 use underbite_core::time::{LocalDate, UnixTime, UtcOffset, parse_date};
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{
-    Key, MapQuantity, SafetyKey, Strings, map_current, map_time, map_value,
+    Key, MapQuantity, SafetyKey, Strings, map_current, map_measure, map_time, map_value,
 };
 use underbite_providers::erddap::{self, ErddapError, ErddapPacer, FIRST_PAUSE_S, GridTime};
 use underbite_providers::request::Response;
+use whether_providers::radar;
 
 use crate::fetch::{HostMethod, HostRequest, HostResponse, fetched};
 use crate::settings::{SettingsError, load};
@@ -1360,6 +1361,154 @@ impl GridPacer {
         self.lock().on_response(node, &response, UnixTime(now));
         Ok(())
     }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Measuring
+// ---------------------------------------------------------------------------------------------
+
+/// A point on the map, in degrees.
+#[derive(Clone, Copy, Debug, PartialEq, uniffi::Record)]
+pub struct MapPoint {
+    pub lat: f64,
+    pub lon: f64,
+}
+
+impl MapPoint {
+    fn geo(self) -> Result<GeoPoint, MapError> {
+        let ok = self.lat.is_finite()
+            && self.lon.is_finite()
+            && (-90.0..=90.0).contains(&self.lat)
+            && (-180.0..=180.0).contains(&self.lon);
+        if !ok {
+            return Err(invalid("a point needs a latitude and a longitude in range"));
+        }
+        Ok(GeoPoint {
+            lat: self.lat,
+            lon: self.lon,
+        })
+    }
+}
+
+/// A measured line, worded.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct MeasureText {
+    /// The great-circle distance in the user's unit: "2.4 mi".
+    pub distance: String,
+    /// The initial bearing from the first point, true: "NE 45°".
+    pub bearing: String,
+    /// Both: "2.4 mi at NE 45°".
+    pub line: String,
+    /// "Not for navigation." (safety text): measuring is for planning.
+    pub notice: String,
+}
+
+/// The distance and bearing from `from` to `to`, in the settings' units and voice.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn measure(
+    from: MapPoint,
+    to: MapPoint,
+    settings_json: String,
+) -> Result<MeasureText, MapError> {
+    let (a, b) = (from.geo()?, to.geo()?);
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, "UTC");
+    let (distance, bearing, line) =
+        map_measure(&f, tiles::haversine_m(a, b), tiles::bearing_deg(a, b));
+    Ok(MeasureText {
+        distance,
+        bearing,
+        line,
+        notice: f.strings.safety(SafetyKey::NotForNavigation).to_owned(),
+    })
+}
+
+// ---------------------------------------------------------------------------------------------
+// Radar
+// ---------------------------------------------------------------------------------------------
+
+/// How long a radar frame's tiles keep: a frame names its composite's time and never changes.
+const RADAR_FRAME_AGE_S: u64 = 86_400;
+
+/// One frame of the radar loop.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct RadarFrame {
+    /// Minutes before the latest frame.
+    pub minutes_ago: u32,
+    /// When the composite was valid, Unix seconds.
+    pub valid: i64,
+    /// The frame's `{z}/{x}/{y}` tile URL template.
+    pub tile_template: String,
+    /// The frame's time in the settings' clock: "4:15 PM".
+    pub label: String,
+}
+
+/// Whether the NEXRAD composite covers a point (the contiguous US).
+#[uniffi::export]
+pub fn radar_covers(lat: f64, lon: f64) -> bool {
+    radar::covers(lat, lon)
+}
+
+/// The request for the latest composite's metadata.
+#[uniffi::export]
+pub fn radar_meta_request() -> HostRequest {
+    let mut request = get(radar::meta_url(), 0);
+    request.fresh = true;
+    request
+}
+
+/// The latest composite's valid time (Unix seconds) from the metadata body.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn radar_latest_valid(body: Vec<u8>) -> Result<i64, MapError> {
+    radar::parse_valid(&body)
+        .map(|t| t.0)
+        .map_err(|e| invalid(format!("the radar metadata cannot be read: {e}")))
+}
+
+/// The loop ending at `latest`, oldest first, each frame's tiles named by its composite's time,
+/// labelled in the settings' clock in `time_zone` (an IANA name).
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn radar_frames(
+    latest: i64,
+    settings_json: String,
+    time_zone: String,
+) -> Result<Vec<RadarFrame>, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, &time_zone);
+    Ok(radar::frames(UnixTime(latest))
+        .into_iter()
+        .map(|(minutes_ago, valid)| RadarFrame {
+            minutes_ago,
+            valid: valid.0,
+            tile_template: radar::archive_tile_template(valid),
+            label: f.clock(valid),
+        })
+        .collect())
+}
+
+/// The request for tile `z`/`x`/`y` of the frame valid at `valid`; none outside the radar
+/// layer's zooms.
+#[uniffi::export]
+pub fn radar_frame_request(
+    valid: i64,
+    z: u8,
+    x: u32,
+    y: u32,
+) -> Result<Option<HostRequest>, MapError> {
+    let key = tile_key(z, x, y)?;
+    let l = self::layer("radar")?;
+    let inside = l.min_zoom.is_none_or(|min| z >= min) && l.max_zoom.is_none_or(|max| z <= max);
+    if !inside {
+        return Ok(None);
+    }
+    let url = radar::archive_tile_template(UnixTime(valid))
+        .replace("{z}", &key.z.to_string())
+        .replace("{x}", &key.x.to_string())
+        .replace("{y}", &key.y.to_string());
+    Ok(Some(get(url, RADAR_FRAME_AGE_S)))
 }
 
 #[cfg(test)]
