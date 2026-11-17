@@ -154,7 +154,9 @@ struct AddSpotView: View {
                 Text(searchError).foregroundStyle(Palette.warning)
             }
         } footer: {
-            Text("What you type goes to Apple's Maps service to find the place. Underbite keeps nothing of it.")
+            Text(
+                "What you type goes to Apple's Maps service to find the place, with only an approximate area around you when your location is known. Underbite keeps nothing of it."
+            )
         }
     }
 
@@ -222,10 +224,12 @@ struct AddSpotView: View {
         defer { searching = false }
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = text
+        // Near the phone, when its location is known: only an approximate area is sent.
         if let here = store.currentPlace {
+            let centre = SearchArea.centre(latitude: here.latitude, longitude: here.longitude)
             request.region = MKCoordinateRegion(
-                center: CLLocationCoordinate2D(latitude: here.latitude, longitude: here.longitude),
-                latitudinalMeters: 200_000, longitudinalMeters: 200_000)
+                center: CLLocationCoordinate2D(latitude: centre.latitude, longitude: centre.longitude),
+                latitudinalMeters: SearchArea.span, longitudinalMeters: SearchArea.span)
         }
         do {
             results = try await MKLocalSearch(request: request).start().mapItems

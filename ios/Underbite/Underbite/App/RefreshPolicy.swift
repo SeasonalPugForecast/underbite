@@ -43,6 +43,18 @@ nonisolated enum RefreshPolicy {
     static let fixLasts: TimeInterval = 10 * 60
 }
 
+/// What a place search may send of where the phone is. Foundation only.
+nonisolated enum SearchArea {
+    /// The centre of the area to search around the phone at `latitude`, `longitude`: rounded to
+    /// one decimal (about 11 km), so the map service learns only an approximate area.
+    static func centre(latitude: Double, longitude: Double) -> (latitude: Double, longitude: Double) {
+        ((latitude * 10).rounded() / 10, (longitude * 10).rounded() / 10)
+    }
+
+    /// The span of the area searched, metres.
+    static let span: Double = 200_000
+}
+
 /// The spots a running refresh still has to fetch, in order. A refresh asked for while another
 /// runs joins it: ids not already waiting are added.
 nonisolated struct RefreshQueue: Equatable {
