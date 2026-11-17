@@ -16,7 +16,7 @@ use underbite_ffi::fetch::{
 };
 use underbite_ffi::map::GridStore;
 use underbite_ffi::offline::{
-    PackItemKind, current_table_view, pack_requests, plan_pack, tide_table_view,
+    PackItemKind, PackRequest, current_table_view, pack_requests, plan_pack, tide_table_view,
 };
 use underbite_ffi::settings::default_settings_json;
 use underbite_ffi::view::SpotInfo;
@@ -275,8 +275,9 @@ fn a_fetch_without_signal_computes_the_tide_and_keeps_the_last_values() {
     );
     assert!(out.cacheable.is_empty(), "nothing was fetched to keep");
 
-    // What was shown is kept as the last snapshot: a second trip offline still has it.
-    let (again, _) = fetch(&phone, later + 3_600, cached);
+    // What was shown is kept as the last snapshot: a second trip offline still has it, and
+    // still names the last time online.
+    let (again, out) = fetch(&phone, later + 3_600, cached);
     let water = again
         .water
         .temperature_c
@@ -284,6 +285,13 @@ fn a_fetch_without_signal_computes_the_tide_and_keeps_the_last_values() {
         .expect("still the last temperature");
     assert_eq!(water.samples().last().expect("a sample").time, observed);
     assert!(again.marine.tide.is_some());
+    let note = offline_note(&out);
+    assert!(
+        note.starts_with(
+            "offline: computed from harmonic constants, other values from Nov 8, 9:30"
+        ),
+        "{note}"
+    );
 }
 
 const BATTERY_MDAPI: &str =
@@ -425,11 +433,24 @@ fn a_fetch_that_got_answers_is_not_offline() {
 // Packs
 // ---------------------------------------------------------------------------------------------
 
+/// The harbour around the Battery: west, south, east, north.
+const HARBOUR: [f64; 4] = [-74.10, 40.60, -73.95, 40.75];
+
 fn pack_json(layers: &[&str], min_zoom: u8, max_zoom: u8, dates: &Value) -> String {
+    pack_json_in(HARBOUR, layers, min_zoom, max_zoom, dates)
+}
+
+fn pack_json_in(
+    [west, south, east, north]: [f64; 4],
+    layers: &[&str],
+    min_zoom: u8,
+    max_zoom: u8,
+    dates: &Value,
+) -> String {
     serde_json::json!({
         "id": "harbour",
         "name": "Harbour",
-        "bbox": { "west": -74.10, "south": 40.60, "east": -73.95, "north": 40.75 },
+        "bbox": { "west": west, "south": south, "east": east, "north": north },
         "min_zoom": min_zoom,
         "max_zoom": max_zoom,
         "layers": layers,
@@ -488,27 +509,21 @@ fn a_plan_reports_counts_sizes_and_words_and_pages_through_its_requests() {
     let mut kinds = BTreeSet::new();
     let mut from = 0u64;
     loop {
-        let page = pack_requests(Arc::clone(&info.plan), from, 37).expect("page");
+        let page = pack_requests(Arc::clone(&info.plan), from, 37);
         if page.is_empty() {
             break;
         }
         assert!(page.len() <= 37);
         from += page.len() as u64;
         for item in page {
-            assert!(
-                item.request.url.starts_with("https://"),
-                "{}",
-                item.request.url
-            );
-            assert!(!item.request.url.contains('{'), "{}", item.request.url);
+            assert_eq!(item.error, None, "{}", item.key);
+            let url = &item.request.as_ref().expect("a request").url;
+            assert!(url.starts_with("https://"), "{url}");
+            assert!(!url.contains('{'), "{url}");
             assert_ne!(item.host.len(), 0);
             kinds.insert(format!("{:?}", item.kind));
             if item.kind == PackItemKind::Grid {
-                assert!(
-                    item.request.url.contains("/griddap/"),
-                    "{}",
-                    item.request.url
-                );
+                assert!(url.contains("/griddap/"), "{url}");
             }
             keys.push(item.key);
         }
@@ -524,9 +539,9 @@ fn a_plan_reports_counts_sizes_and_words_and_pages_through_its_requests() {
         BTreeSet::from(["Dem".into(), "Grid".into(), "Tile".into()])
     );
     // A page past the end is empty, and one page is never the whole plan.
-    let past = pack_requests(Arc::clone(&info.plan), info.item_count + 5, 10).unwrap();
+    let past = pack_requests(Arc::clone(&info.plan), info.item_count + 5, 10);
     assert_eq!(past.len(), 0);
-    let big = pack_requests(Arc::clone(&info.plan), 0, u32::MAX).unwrap();
+    let big = pack_requests(Arc::clone(&info.plan), 0, u32::MAX);
     assert!(big.len() <= 2_000);
 }
 
@@ -557,6 +572,10 @@ fn key_numbers(key: &str, skip: usize) -> Vec<f64> {
         .collect()
 }
 
+fn url_of(item: &PackRequest) -> &str {
+    &item.request.as_ref().expect("a request").url
+}
+
 #[test]
 fn pack_items_are_the_map_stores_keys_and_requests() {
     let json = pack_json(&["sst", "depth-dem"], 12, 12, &serde_json::json!("latest"));
@@ -568,7 +587,7 @@ fn pack_items_are_the_map_stores_keys_and_requests() {
         now(),
     )
     .expect("planned");
-    let page = pack_requests(Arc::clone(&info.plan), 0, 2_000).expect("page");
+    let page = pack_requests(Arc::clone(&info.plan), 0, 2_000);
     let grid = page
         .iter()
         .find(|r| r.kind == PackItemKind::Grid)
@@ -601,7 +620,7 @@ fn pack_items_are_the_map_stores_keys_and_requests() {
     let asked = ask(&store, &grid.key, None);
     assert_eq!(asked.len(), 1, "{asked:?}");
     assert_eq!(asked[0].key, grid.key);
-    assert_eq!(asked[0].request.url, grid.request.url);
+    assert_eq!(asked[0].request.url, url_of(grid));
     let mur = fixture("erddap/jplmursst41-sst-subset-2026-11-07.json");
     store
         .add_grid(grid.key.clone(), ok("application/json", mur.clone()), now())
@@ -622,7 +641,7 @@ fn pack_items_are_the_map_stores_keys_and_requests() {
         now(),
     )
     .expect("planned");
-    let page = pack_requests(Arc::clone(&info.plan), 0, 2_000).expect("page");
+    let page = pack_requests(Arc::clone(&info.plan), 0, 2_000);
     let (dated, newest): (Vec<_>, Vec<_>) = page
         .iter()
         .partition(|r| r.key.starts_with(&format!("sst/jplMURSST41/{older}/")));
@@ -631,7 +650,7 @@ fn pack_items_are_the_map_stores_keys_and_requests() {
     let asked = ask(&store, &dated[0].key, Some(older));
     assert_eq!(asked.len(), 1, "{asked:?}");
     assert_eq!(asked[0].key, dated[0].key);
-    assert_eq!(asked[0].request.url, dated[0].request.url);
+    assert_eq!(asked[0].request.url, url_of(dated[0]));
     store
         .add_grid(dated[0].key.clone(), ok("application/json", mur), now())
         .expect("the store takes the pack's key");
@@ -649,7 +668,7 @@ fn pack_items_are_the_map_stores_keys_and_requests() {
     };
     let asked = area(&store).expect("not held yet");
     assert_eq!(asked.key, dem.key);
-    assert_eq!(asked.request.url, dem.request.url);
+    assert_eq!(asked.request.url, url_of(dem));
     let tiff = fixture("bathymetry/dem-global-mosaic-export-f32.tif");
     store
         .add_dem(dem.key.clone(), ok("image/tiff", tiff), now())
@@ -688,10 +707,18 @@ fn a_plan_over_the_offline_limit_says_so_and_a_huge_one_is_refused() {
     .expect("planned");
     assert_eq!(small.est_bytes, small.item_count * 1_000);
 
-    let world = pack_json(&["noaa-chart"], 0, 20, &serde_json::json!("latest")).replace(
-        "\"west\":-74.1,\"south\":40.6,\"east\":-73.95,\"north\":40.75",
-        "\"west\":-120.0,\"south\":20.0,\"east\":-60.0,\"north\":60.0",
-    );
+    // The same zooms over the harbour fit; over most of North America they do not.
+    let latest = serde_json::json!("latest");
+    let harbour = pack_json(&["noaa-chart"], 8, 12, &latest);
+    plan_pack(
+        harbour,
+        default_settings_json(),
+        HashMap::default(),
+        HashMap::default(),
+        now(),
+    )
+    .expect("planned");
+    let world = pack_json_in([-120.0, 20.0, -60.0, 60.0], &["noaa-chart"], 8, 12, &latest);
     let err = plan_pack(
         world,
         default_settings_json(),

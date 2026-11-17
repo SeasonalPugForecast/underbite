@@ -201,8 +201,19 @@ pub struct PackRequest {
     /// The host the request goes to, for pacing: a grid node (`pfeg`, `coastwatch`, `glerl`)
     /// or the server's name.
     pub host: String,
-    /// The request, built by the core.
-    pub request: HostRequest,
+    /// The request, built by the core; none when it could not be built (see `error`).
+    pub request: Option<HostRequest>,
+    /// Why the request could not be built: skip the item and count it as failed. The other
+    /// items of the page are unaffected.
+    pub error: Option<String>,
+}
+
+const fn item_kind(kind: &ItemKind) -> PackItemKind {
+    match kind {
+        ItemKind::Tile { .. } => PackItemKind::Tile,
+        ItemKind::Grid { .. } => PackItemKind::Grid,
+        ItemKind::Dem { .. } => PackItemKind::Dem,
+    }
 }
 
 fn date_text(d: LocalDate) -> String {
@@ -271,27 +282,39 @@ fn request_of(item: &PackItem) -> Result<PackRequest, MapError> {
         kind,
         layer: layer_id.to_owned(),
         host,
-        request,
+        request: Some(request),
+        error: None,
     })
+}
+
+/// The requests of `items`, one per item in order; an item whose request cannot be built
+/// carries the reason instead.
+fn page(items: &[PackItem]) -> Vec<PackRequest> {
+    items
+        .iter()
+        .map(|item| {
+            request_of(item).unwrap_or_else(|e| PackRequest {
+                key: item.key.clone(),
+                kind: item_kind(&item.kind),
+                layer: item.layer.as_str().to_owned(),
+                host: item.host.clone(),
+                request: None,
+                error: Some(e.to_string()),
+            })
+        })
+        .collect()
 }
 
 /// The requests of up to `count` items of `plan` from item `from` (at most
 /// [`MAX_PAGE_ITEMS`] a page); past the end the page is empty. The plan's items are in a fixed
-/// order, so paging through it returns each once.
+/// order, so paging through it returns each once: the page has one entry per item, and an item
+/// whose request cannot be built says why in its `error`, without failing the page.
 #[uniffi::export]
 #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
-pub fn pack_requests(
-    plan: Arc<PackPlanHandle>,
-    from: u64,
-    count: u32,
-) -> Result<Vec<PackRequest>, MapError> {
+pub fn pack_requests(plan: Arc<PackPlanHandle>, from: u64, count: u32) -> Vec<PackRequest> {
     let from = usize::try_from(from).unwrap_or(usize::MAX);
     let count = usize::try_from(count.min(MAX_PAGE_ITEMS)).unwrap_or(0);
-    plan.plan
-        .items(from, count)
-        .iter()
-        .map(request_of)
-        .collect()
+    page(plan.plan.items(from, count))
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -425,7 +448,10 @@ pub fn tide_table_view(
 
 fn tide_view(config: &Config, time_zone: &str, t: &TideSeries) -> TableView {
     let f = formatter(config, time_zone);
-    let mut datum_text = None;
+    let datum_text = Some(
+        f.strings
+            .fmt(Key::AboveDatum, &[("datum", f.strings.datum(t.datum))]),
+    );
     let rows = t
         .events
         .iter()
@@ -434,11 +460,6 @@ fn tide_view(config: &Config, time_zone: &str, t: &TideSeries) -> TableView {
                 datum: t.datum,
                 metres,
             }));
-            if datum_text.is_none() {
-                let unit = &height.unit;
-                let name = unit.split_once(' ').map_or("", |(_, d)| d);
-                datum_text = Some(f.strings.fmt(Key::AboveDatum, &[("datum", name)]));
-            }
             TableRow {
                 time: e.time.0,
                 date_text: f.date_of(e.time),
@@ -595,5 +616,79 @@ mod tests {
         for item in items {
             assert_eq!(request_of(item).unwrap().key, item.key);
         }
+    }
+
+    #[test]
+    fn an_item_without_a_request_says_why_and_leaves_the_page() {
+        let good = PackItem {
+            key: "dem/area/-74000000/40000000/-73900000/40100000/781".into(),
+            layer: underbite_core::map::LayerId::from_static(pack::DEM_LAYER),
+            kind: ItemKind::Dem {
+                area: Bbox {
+                    west: -74.0,
+                    south: 40.0,
+                    east: -73.9,
+                    north: 40.1,
+                },
+                cell_deg: 0.000_781,
+            },
+            host: "gis.ngdc.noaa.gov".into(),
+            est_bytes: 1,
+        };
+        let mut empty = good.clone();
+        empty.key = "dem/area/180000000/40000000/180000000/40100000/781".into();
+        empty.kind = ItemKind::Dem {
+            area: Bbox {
+                west: 180.0,
+                south: 40.0,
+                east: 180.0,
+                north: 40.1,
+            },
+            cell_deg: 0.000_781,
+        };
+        let mut unknown = good.clone();
+        unknown.layer = underbite_core::map::LayerId::new("nonsense");
+        unknown.kind = ItemKind::Tile {
+            tile: underbite_core::map::TileKey { z: 3, x: 1, y: 1 },
+            date: None,
+        };
+        let requests = page(&[good.clone(), empty, unknown, good]);
+        assert_eq!(requests.len(), 4);
+        for i in [0, 3] {
+            assert!(requests[i].request.is_some() && requests[i].error.is_none());
+        }
+        for i in [1, 2] {
+            assert!(requests[i].request.is_none(), "{:?}", requests[i]);
+            assert!(requests[i].error.as_ref().is_some_and(|e| !e.is_empty()));
+        }
+        assert_eq!(requests[1].kind, PackItemKind::Dem);
+        assert_eq!(requests[2].kind, PackItemKind::Tile);
+    }
+
+    #[test]
+    fn the_datum_line_names_the_datum_even_when_a_height_is_missing() {
+        use underbite_core::model::{TideEvent, TideKind, TideSourceKind};
+        let event = |time, height_m| TideEvent {
+            time: UnixTime(time),
+            kind: TideKind::High,
+            height_m,
+        };
+        let series = TideSeries {
+            source_kind: TideSourceKind::HarmonicStation,
+            datum: VerticalDatum::Mllw,
+            events: vec![event(1_794_042_000, None), event(1_794_086_000, Some(1.2))],
+            curve: None,
+            observed: None,
+            provenance: base(UnixTime(1_794_042_000)),
+        };
+        let (config, _) = load(&crate::settings::default_settings_json()).unwrap();
+        let view = tide_view(&config, "UTC", &series);
+        assert_eq!(view.datum_text.as_deref(), Some("above MLLW"));
+        let empty = TideSeries {
+            events: Vec::new(),
+            ..series
+        };
+        let view = tide_view(&config, "UTC", &empty);
+        assert_eq!(view.datum_text.as_deref(), Some("above MLLW"));
     }
 }
