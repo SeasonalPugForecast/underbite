@@ -8,11 +8,15 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::model::SpotSnapshot;
+use crate::model::{Measurement, SpotSnapshot};
 use crate::provenance::StationRef;
 use crate::time::UnixTime;
 
 const DAY_S: i64 = 86_400;
+/// The storm check's sources, as the fetch names them in a snapshot's errors.
+const OPEN_METEO_STORM: &str = "open-meteo-storm";
+const NHC: &str = "nhc";
+
 const WEEK_S: i64 = 7 * DAY_S;
 
 /// Decimal places spot coordinates keep in a stored bundle: about a kilometre.
@@ -237,7 +241,12 @@ impl SpotBundle {
 /// water temperature reads as the old reading it is. Whatever `fresh` has wins, including
 /// computed tide and current tables. The spot, `fetched_at` and errors are `fresh`'s. Stations
 /// and credits of `last` that `fresh` lacks are kept, so every shown value stays credited.
-/// Alerts and storm checks carry their own times and expiry for the view to judge.
+///
+/// Marine alerts and the storm watch are different: an empty answer is an answer (no alert is
+/// in force), so they are carried over only when `fresh`'s errors say their source failed
+/// (the alerts measurement, or the storm sources). The carried ones keep their own times and
+/// expiry for the view to judge. Reservoir and bloom information and the stocking list are
+/// filled like the measurements.
 pub fn merge_last(last: &SpotSnapshot, fresh: SpotSnapshot) -> SpotSnapshot {
     let mut out = fresh;
     macro_rules! fill {
@@ -257,7 +266,20 @@ pub fn merge_last(last: &SpotSnapshot, fresh: SpotSnapshot) -> SpotSnapshot {
     fill!(marine: tide, tidal_current, ocean_current, waves, sea_surface_temp_c,
         waves_forecast, sea_surface_temp_forecast_c, observed_wind, observed_pressure_hpa,
         marine_forecast);
-    if out.marine.marine_alerts.is_empty() {
+    if out.water.reservoir.is_none() {
+        out.water.reservoir.clone_from(&last.water.reservoir);
+    }
+    if out.water.bloom.is_none() {
+        out.water.bloom.clone_from(&last.water.bloom);
+    }
+    if out.stocking.is_empty() {
+        out.stocking.clone_from(&last.stocking);
+    }
+    let alerts_failed = out
+        .errors
+        .iter()
+        .any(|e| e.measurement == Some(Measurement::MarineAlerts));
+    if alerts_failed && out.marine.marine_alerts.is_empty() {
         out.marine
             .marine_alerts
             .clone_from(&last.marine.marine_alerts);
@@ -265,7 +287,11 @@ pub fn merge_last(last: &SpotSnapshot, fresh: SpotSnapshot) -> SpotSnapshot {
     if out.sky.days.is_empty() {
         out.sky.days.clone_from(&last.sky.days);
     }
-    if out.storm.is_none() {
+    let storm_failed = out
+        .errors
+        .iter()
+        .any(|e| matches!(e.source.as_str(), OPEN_METEO_STORM | NHC));
+    if storm_failed && out.storm.is_none() {
         out.storm.clone_from(&last.storm);
     }
     let known = |stations: &[StationRef], s: &StationRef| {
@@ -429,7 +455,9 @@ mod tests {
         fresh.water.temperature_c = Some(new.clone());
         let merged = merge_last(&last, fresh);
         assert_eq!(merged.water.temperature_c, Some(new));
-        assert_eq!(merged.marine, last.marine);
+        let mut kept = last.marine.clone();
+        kept.marine_alerts.clear();
+        assert_eq!(merged.marine, kept);
         assert_eq!(merged.weather, last.weather);
         assert_eq!(merged.stations, last.stations);
         assert_eq!(merged.attribution, last.attribution);
@@ -451,5 +479,66 @@ mod tests {
         let json = serde_json::to_string(&bundle).unwrap();
         assert!(!json.contains("40.7033"));
         assert_eq!(serde_json::from_str::<SpotBundle>(&json).unwrap(), bundle);
+    }
+
+    fn failure(
+        source: &'static str,
+        measurement: Option<Measurement>,
+    ) -> crate::model::SourceError {
+        crate::model::SourceError {
+            source: crate::provenance::SourceId::from_static(source),
+            measurement,
+            kind: crate::model::SourceErrorKind::Transport,
+            message: "no response".into(),
+        }
+    }
+
+    #[test]
+    fn alerts_are_carried_only_when_their_source_failed() {
+        let last = snapshot();
+        assert_ne!(last.marine.marine_alerts.len(), 0);
+        let fresh = SpotSnapshot::new(last.spot.clone(), UnixTime(last.fetched_at.0 + 600));
+        // The source answered with no alerts: none are in force.
+        let merged = merge_last(&last, fresh.clone());
+        assert_eq!(merged.marine.marine_alerts.len(), 0);
+        // Another measurement failing does not bring them back either.
+        let mut other = fresh.clone();
+        other.errors.push(failure("nws", Some(Measurement::Waves)));
+        assert_eq!(merge_last(&last, other).marine.marine_alerts.len(), 0);
+        // The alerts source failed: the last ones stay, with their own times.
+        let mut failed = fresh;
+        failed
+            .errors
+            .push(failure("nws", Some(Measurement::MarineAlerts)));
+        let merged = merge_last(&last, failed);
+        assert_eq!(merged.marine.marine_alerts, last.marine.marine_alerts);
+    }
+
+    #[test]
+    fn the_storm_watch_is_carried_only_when_a_storm_source_failed() {
+        let last = snapshot();
+        assert!(last.storm.is_some());
+        let fresh = SpotSnapshot::new(last.spot.clone(), UnixTime(last.fetched_at.0 + 600));
+        assert!(merge_last(&last, fresh.clone()).storm.is_none());
+        for source in ["open-meteo-storm", "nhc"] {
+            let mut failed = fresh.clone();
+            failed.errors.push(failure(source, None));
+            assert_eq!(merge_last(&last, failed).storm, last.storm, "{source}");
+        }
+        let mut unrelated = fresh;
+        unrelated.errors.push(failure("nws", None));
+        assert!(merge_last(&last, unrelated).storm.is_none());
+    }
+
+    #[test]
+    fn tier_two_information_is_filled_from_the_last_snapshot() {
+        let last = snapshot();
+        assert!(last.water.reservoir.is_some() && last.water.bloom.is_some());
+        assert_ne!(last.stocking.len(), 0);
+        let fresh = SpotSnapshot::new(last.spot.clone(), UnixTime(last.fetched_at.0 + 600));
+        let merged = merge_last(&last, fresh);
+        assert_eq!(merged.water.reservoir, last.water.reservoir);
+        assert_eq!(merged.water.bloom, last.water.bloom);
+        assert_eq!(merged.stocking, last.stocking);
     }
 }
