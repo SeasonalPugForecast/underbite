@@ -9,6 +9,8 @@ pub mod astro;
 pub mod datum;
 pub mod derive;
 pub mod discover;
+pub mod import;
+pub mod log;
 pub mod map;
 pub mod model;
 pub mod offline;
