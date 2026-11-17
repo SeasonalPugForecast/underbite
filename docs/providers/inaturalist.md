@@ -27,7 +27,7 @@ GET /v2/observations?taxon_id=51392&quality_grade=research
     &nelat=41.0&nelng=-73.6&swlat=40.4&swlng=-74.4&per_page=2&fields=id,observed_on,taxon.name
 ```
 
-Fixture `inaturalist-v2-observations-fields-dotted-2026-11-17.json` (329 bytes). The dotted list `a,b,taxon.name` and the nested object (Rison-like) syntax both work. The object syntax is `(key:!t,nested:(key:!t))`, where `!t` means true:
+Fixture `inaturalist-v2-observations-fields-dotted.synthetic.json` (same shape, invented records). The dotted list `a,b,taxon.name` and the nested object (Rison-like) syntax both work. The object syntax is `(key:!t,nested:(key:!t))`, where `!t` means true:
 
 ```text
 fields=(id:!t,uuid:!t,uri:!t,observed_on:!t,time_observed_at:!t,observed_time_zone:!t,
@@ -37,7 +37,7 @@ fields=(id:!t,uuid:!t,uri:!t,observed_on:!t,time_observed_at:!t,observed_time_zo
         photos:(id:!t,url:!t,license_code:!t))
 ```
 
-URL-encode it (`curl --data-urlencode`). Three observations with this field set and `license=cc-by,cc-by-nc,cc0` were 2,197 bytes (fixture `inaturalist-v2-observations-fields-striped-bass-2026-11-17.json`), about 700 bytes each, against about 70 KB in v1. Because the fields chosen name no user, the fixture holds no observer names or logins. Asking for `user` or `identifications` would return them; do not.
+URL-encode it (`curl --data-urlencode`). Three observations with this field set and `license=cc-by,cc-by-nc,cc0` were 2,197 bytes (fixture `inaturalist-v2-observations-fields-striped-bass.synthetic.json` has the same shape), about 700 bytes each, against about 70 KB in v1. Because the fields chosen name no user, the fixture holds no observer names or logins. Asking for `user` or `identifications` would return them; do not.
 
 ## Month-of-year histogram
 

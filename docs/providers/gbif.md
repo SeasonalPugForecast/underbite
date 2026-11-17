@@ -36,7 +36,7 @@ GET /v1/occurrence/search?scientificName=Morone%20saxatilis
     &decimalLatitude=40.4,41.0&decimalLongitude=-74.4,-73.6&hasCoordinate=true&limit=2&offset=0
 ```
 
-Fixture `gbif-occurrence-striped-bass-nyharbor-2-records-2026-11-17.json` (two records; `count` was 350 for the box on this date, 348 on 2026-11-08). Observer, identifier, rights-holder, creator and publisher names, and the iNaturalist login that appears under `extensions` and `http://unknown.org/nick`, were replaced with `REDACTED`.
+Fixture `gbif-occurrence-striped-bass-nyharbor-2-records.synthetic.json` (two invented records of this shape; the real `count` for the box was about 350 on 2026-11-17).
 
 Month histogram for the same species and box, with no records:
 

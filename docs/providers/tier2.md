@@ -336,7 +336,7 @@ Verdict: **usable with caveats** (2026-11-08).
   GBIF asks users to cite the data; the occurrence records repeat `datasetKey` for dataset-level
   citation.
 
-Request (fixture `gbif-occurrence-striped-bass-nyharbor.json`):
+Request (synthetic fixture `gbif-occurrence-striped-bass-nyharbor.synthetic.json`):
 
 ```text
 GET /v1/occurrence/search?scientificName=Morone%20saxatilis&decimalLatitude=40.4,41.0
@@ -371,7 +371,7 @@ Verdict: **usable with caveats** (2026-11-08).
 - The `fields` parameter I tried did not shrink the response: three observations were about 240 KB.
   Reduce the response in the adapter or find the supported syntax (**unverified**).
 
-Request (fixture `inaturalist-observations-striped-bass-nyharbor.json`, reduced to the fields below):
+Request (synthetic fixture `inaturalist-observations-striped-bass-nyharbor.synthetic.json`, with the fields below):
 
 ```text
 GET /v1/observations?taxon_name=Morone%20saxatilis&quality_grade=research
