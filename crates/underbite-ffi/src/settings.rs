@@ -190,6 +190,9 @@ pub struct UnitGroup {
     pub selected: String,
     /// The group that decides the unit while this one is not set; none for a base group.
     pub follows: Option<String>,
+    /// The choice that makes the group follow `follows` again ("Same as river flow"); none for a
+    /// base group.
+    pub same_as_label: Option<String>,
     /// Whether this group has its own unit rather than following another.
     pub overridden: bool,
 }
@@ -231,6 +234,7 @@ pub fn unit_options(settings_json: String) -> Result<Vec<UnitGroup>, SettingsErr
         options,
         selected,
         follows: follows.map(str::to_owned),
+        same_as_label: follows.map(|f| strings.unit_same_as(strings.unit_group(f).unwrap_or(f))),
         overridden,
     };
     Ok(vec![
@@ -1000,6 +1004,89 @@ pub fn measurement_titles(settings_json: String) -> Result<Vec<MeasurementTitle>
             title: strings.measurement(m).to_owned(),
         })
         .collect())
+}
+
+/// A source group's name.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct SourceGroupTitle {
+    /// The key in the settings' `[sources]` table (`"water_temperature"`, `"sst"`).
+    pub id: String,
+    /// "Water temperature", in the user's voice.
+    pub title: String,
+}
+
+/// Every source group with its name in the settings' voice, in the order the sources screen
+/// lists them.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn source_group_titles(settings_json: String) -> Result<Vec<SourceGroupTitle>, SettingsError> {
+    let (config, _) = load(&settings_json)?;
+    let strings = Strings::new(config.presentation.voice);
+    Ok(SOURCE_GROUPS
+        .into_iter()
+        .map(|id| SourceGroupTitle {
+            id: id.to_owned(),
+            title: strings.source_group(id).unwrap_or(id).to_owned(),
+        })
+        .collect())
+}
+
+/// A source group's limits in words: "within 25 km, under 3 h old", "any distance, any age".
+/// `group` is the id of [`source_group_titles`]; the distance is in kilometres and the age in
+/// minutes, as the settings hold them.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn source_limits_text(
+    group: String,
+    max_distance_km: Option<f64>,
+    max_age_minutes: Option<i64>,
+    settings_json: String,
+) -> Result<String, SettingsError> {
+    if !SOURCE_GROUPS.contains(&group.as_str()) {
+        return Err(invalid(format!("{group} is not a source group")));
+    }
+    let (config, _) = load(&settings_json)?;
+    let distance = match max_distance_km {
+        Some(km) => Some(format_setting_value(
+            format!("sources.{group}.max_distance_km"),
+            km,
+            settings_json.clone(),
+        )?),
+        None => None,
+    };
+    let age = max_age_minutes.map(|m| duration_text(&config, m as f64 * 60.0));
+    Ok(Strings::new(config.presentation.voice).source_limits(distance.as_deref(), age.as_deref()))
+}
+
+/// What a go/no-go profile checks, in words: "2 limits, no lightning"; "No limits set".
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn limit_summary(
+    set_count: u32,
+    no_small_craft_advisory: bool,
+    no_lightning: bool,
+    settings_json: String,
+) -> Result<String, SettingsError> {
+    let (config, _) = load(&settings_json)?;
+    Ok(Strings::new(config.presentation.voice).limit_summary(
+        set_count as usize,
+        no_small_craft_advisory,
+        no_lightning,
+    ))
+}
+
+/// The label of the band a flow chart shades, from the labels of its two edges ("5th
+/// percentile", "95th percentile"): "Shaded: 5th percentile to 95th percentile". The band is
+/// not the USGS "normal" range, so it carries its own words.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn percentile_band_label(
+    low: String,
+    high: String,
+    settings_json: String,
+) -> Result<String, SettingsError> {
+    let (config, _) = load(&settings_json)?;
+    Ok(Strings::new(config.presentation.voice).percentile_band(&low, &high))
 }
 
 // ---------------------------------------------------------------------------------------------

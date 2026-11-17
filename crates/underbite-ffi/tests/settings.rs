@@ -7,9 +7,9 @@ use serde_json::{Value, json};
 use underbite_ffi::settings::{
     IssueSeverity, SettingsError, card_catalogue, default_settings_json, display_stops,
     export_settings_toml, format_duration, format_setting_value, import_settings_toml,
-    measurement_titles, migrate_settings, parse_setting_value, parse_user_value,
-    setting_field_keys, setting_stops, source_catalogue, unit_options, validate_settings,
-    water_type_options,
+    limit_summary, measurement_titles, migrate_settings, parse_setting_value, parse_user_value,
+    percentile_band_label, setting_field_keys, setting_stops, source_catalogue,
+    source_group_titles, source_limits_text, unit_options, validate_settings, water_type_options,
 };
 
 fn settings(edit: impl FnOnce(&mut Value)) -> String {
@@ -605,4 +605,74 @@ fn odd_unicode_around_a_value_never_panics() {
             }
         }
     }
+}
+
+#[test]
+fn unit_groups_that_follow_another_carry_their_own_choice_label() {
+    let groups = unit_options(cfs()).unwrap();
+    let label = |id: &str| {
+        groups
+            .iter()
+            .find(|g| g.id == id)
+            .unwrap()
+            .same_as_label
+            .clone()
+    };
+    assert_eq!(label("stage").as_deref(), Some("Same as heights"));
+    assert_eq!(label("wind").as_deref(), Some("Same as speeds"));
+    assert_eq!(
+        label("air_temp").as_deref(),
+        Some("Same as water temperature")
+    );
+    assert_eq!(label("discharge"), None);
+}
+
+#[test]
+fn source_groups_are_named_in_both_voices() {
+    for voice in ["plain", "luna"] {
+        let json = settings(|v| v["presentation"]["voice"] = json!(voice));
+        let titles = source_group_titles(json).unwrap();
+        assert_eq!(titles.len(), 12);
+        assert_eq!(titles[0].id, "water_temperature");
+        assert_eq!(titles[0].title, "Water temperature");
+        let sst = titles.iter().find(|t| t.id == "sst").unwrap();
+        assert_eq!(sst.title, "Sea surface temperature");
+    }
+    assert!(source_group_titles("not json".into()).is_err());
+}
+
+#[test]
+fn source_limits_read_in_the_users_units() {
+    let text = |km, min, json: String| source_limits_text("tide".into(), km, min, json).unwrap();
+    assert_eq!(text(None, None, cfs()), "any distance, any age");
+    assert_eq!(
+        text(Some(25.0), Some(180), metric()),
+        "within 25 km, under 3 h old"
+    );
+    assert_eq!(
+        text(Some(25.0), Some(45), cfs()),
+        "within 16 mi, under 45 min old"
+    );
+    assert!(source_limits_text("nope".into(), None, None, cfs()).is_err());
+}
+
+#[test]
+fn a_profile_summary_counts_limits_and_names_the_switches() {
+    assert_eq!(
+        limit_summary(0, false, false, cfs()).unwrap(),
+        "No limits set"
+    );
+    assert_eq!(limit_summary(1, false, false, cfs()).unwrap(), "1 limit");
+    assert_eq!(
+        limit_summary(2, true, true, cfs()).unwrap(),
+        "2 limits, no small craft advisory, no lightning"
+    );
+}
+
+#[test]
+fn the_shaded_band_has_its_own_label() {
+    assert_eq!(
+        percentile_band_label("5th percentile".into(), "95th percentile".into(), cfs()).unwrap(),
+        "Shaded: 5th percentile to 95th percentile"
+    );
 }
