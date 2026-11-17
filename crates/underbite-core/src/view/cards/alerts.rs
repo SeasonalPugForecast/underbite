@@ -42,6 +42,9 @@ pub struct AlertVm {
     pub onset: Option<String>,
     pub ends: Option<String>,
     pub expires: Option<String>,
+    /// When the alert is in effect, in words: "Nov 8, 1:48 AM – Nov 9, 6:00 PM", "From …"
+    /// without an end, "Until …" without an onset (the end, else the expiry).
+    pub span: Option<String>,
     /// Zone names or ids the alert covers.
     pub zones: Vec<String>,
 }
@@ -118,6 +121,20 @@ fn when(f: &Formatter, t: UnixTime) -> String {
     format!("{}, {}", f.date_of(t), f.clock(t))
 }
 
+/// When an alert is in effect, from its onset to its end (else its expiry): safety text, the
+/// same in every voice. A bare end reads "Until …", never as a start.
+fn span(f: &Formatter, onset: Option<UnixTime>, end: Option<UnixTime>) -> Option<String> {
+    let s = f.strings;
+    match (onset.map(|t| when(f, t)), end.map(|t| when(f, t))) {
+        (Some(start), Some(end)) => {
+            Some(s.safety_fmt(SafetyKey::AlertSpan, &[("start", &start), ("end", &end)]))
+        }
+        (Some(start), None) => Some(s.safety_fmt(SafetyKey::AlertFrom, &[("start", &start)])),
+        (None, Some(end)) => Some(s.safety_fmt(SafetyKey::AlertUntil, &[("end", &end)])),
+        (None, None) => None,
+    }
+}
+
 fn marine_entry(f: &Formatter, a: &MarineAlert) -> Entry {
     Entry {
         vm: AlertVm {
@@ -132,6 +149,7 @@ fn marine_entry(f: &Formatter, a: &MarineAlert) -> Entry {
             onset: a.onset.map(|t| when(f, t)),
             ends: a.ends.map(|t| when(f, t)),
             expires: a.expires.map(|t| when(f, t)),
+            span: span(f, a.onset, a.ends.or(a.expires)),
             zones: a.zones.clone(),
         },
         vtec_key: a.vtec_key.clone(),
@@ -156,6 +174,7 @@ fn weather_entry(f: &Formatter, a: &Alert) -> Entry {
             onset: Some(when(f, a.start)),
             ends: Some(when(f, a.end)),
             expires: None,
+            span: span(f, Some(a.start), Some(a.end)),
             zones: Vec::new(),
         },
         // whether's alert id is the VTEC event key when the alert has one.
@@ -385,7 +404,45 @@ mod tests {
         assert_eq!(a.zones.len(), 6);
         assert_eq!(a.onset.as_deref(), Some("Nov 8, 1:48 AM"));
         assert_eq!(a.ends.as_deref(), Some("Nov 9, 6:00 PM"));
+        assert_eq!(a.span.as_deref(), Some("Nov 8, 1:48 AM – Nov 9, 6:00 PM"));
         insta::assert_json_snapshot!("alerts_marine_luna", card);
+    }
+
+    #[test]
+    fn the_span_says_from_and_until_when_one_end_is_missing() {
+        for voice in [Voice::Luna, Voice::Plain] {
+            let mut input = marine_input(voice);
+            let alert = &mut input.snapshot.marine.marine_alerts[0];
+            let (onset, ends) = (alert.onset, alert.ends);
+            // No end: the expiry closes it.
+            alert.ends = None;
+            alert.expires = Some(at("2026-11-08T23:00:00Z"));
+            let card = build(&input).unwrap();
+            assert_eq!(
+                card.full.alerts[0].span.as_deref(),
+                Some("Nov 8, 1:48 AM – Nov 8, 6:00 PM")
+            );
+            // No end and no expiry: from the onset.
+            input.snapshot.marine.marine_alerts[0].expires = None;
+            let card = build(&input).unwrap();
+            assert_eq!(
+                card.full.alerts[0].span.as_deref(),
+                Some("From Nov 8, 1:48 AM")
+            );
+            // No onset: a bare end reads as an end, not a start.
+            let alert = &mut input.snapshot.marine.marine_alerts[0];
+            alert.onset = None;
+            alert.ends = ends;
+            let card = build(&input).unwrap();
+            assert_eq!(
+                card.full.alerts[0].span.as_deref(),
+                Some("Until Nov 9, 6:00 PM")
+            );
+            let alert = &mut input.snapshot.marine.marine_alerts[0];
+            alert.ends = None;
+            assert!(build(&input).unwrap().full.alerts[0].span.is_none());
+            assert!(onset.is_some());
+        }
     }
 
     #[test]

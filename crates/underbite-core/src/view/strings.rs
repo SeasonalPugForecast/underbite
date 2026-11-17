@@ -580,6 +580,21 @@ keys! {
     LaneLight => ("Light", "Light"),
     /// The placeholder for an unknown value.
     Missing => ("—", "—"),
+    /// A spot's page when there are no conditions to show and the last fetch failed.
+    PageProblemTitle => (
+        "Conditions could not be loaded",
+        "Luna couldn't fetch the water",
+    ),
+    /// `{reason}`: the parser's message.
+    SnapshotUnreadable => (
+        "The saved conditions could not be read: {reason}",
+        "The saved conditions could not be read: {reason}",
+    ),
+    /// Under the place search of a new spot.
+    PlaceSearchFooter => (
+        "What you type goes to Apple's Maps service to find the place, with only an approximate area around you when your location is known. Underbite keeps nothing of it.",
+        "What you type goes to Apple's Maps service to find the place, with only an approximate area around you when your location is known. Underbite keeps nothing of it.",
+    ),
 }
 
 /// Declares [`SafetyKey`], its list and its table in one place.
@@ -618,6 +633,19 @@ safety_keys! {
     RegulationsLink => "Check the official source for current regulations; this is not legal advice.",
     /// `{threshold}`: the user's trout-stress temperature.
     TroutStress => "Consider not fishing for trout above {threshold}.",
+    /// When an alert is in effect. `{start}`, `{end}`: "Nov 8, 1:48 AM".
+    AlertSpan => "{start} – {end}",
+    /// `{start}`.
+    AlertFrom => "From {start}",
+    /// `{end}`.
+    AlertUntil => "Until {end}",
+    /// An app file that could not be read, moved aside. `{name}`: the name it was kept as.
+    FileKeptSpots => "Your spots could not be read. The file was kept as {name} and the list starts empty; nothing is saved over the kept file.",
+    /// `{name}`.
+    FileKeptSettings => "Your settings could not be read. The file was kept as {name} and the default settings are used; nothing is saved over the kept file.",
+    /// An app file that could not be read and could not be moved: it stays where it was.
+    FileLeftSpots => "Your spots could not be read. The file was left as it was and is never saved over, so changes to spots are not saved.",
+    FileLeftSettings => "Your settings could not be read. The file was left as it was and is never saved over, so changes to settings are not saved.",
     /// How serious an alert is, as the alert source grades it.
     SeverityExtreme => "Extreme",
     SeveritySevere => "Severe",
@@ -706,6 +734,15 @@ impl From<NoticeKind> for SafetyKey {
             NoticeKind::TextOnly => Self::TextOnly,
         }
     }
+}
+
+/// A file the app keeps its own data in.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum AppFile {
+    /// The spots and areas.
+    Spots,
+    /// The settings.
+    Settings,
 }
 
 /// The table, bound to a voice.
@@ -834,6 +871,21 @@ impl Strings {
             self.get(Key::LimitNone).to_owned()
         } else {
             parts.join(", ")
+        }
+    }
+
+    /// What the app says of a file of its own it could not read: `kept_as` is the name it was
+    /// moved to, `None` when it stayed where it was. Safety text, the same in every voice.
+    pub fn file_problem(self, file: AppFile, kept_as: Option<&str>) -> String {
+        match (file, kept_as) {
+            (AppFile::Spots, Some(name)) => {
+                self.safety_fmt(SafetyKey::FileKeptSpots, &[("name", name)])
+            }
+            (AppFile::Settings, Some(name)) => {
+                self.safety_fmt(SafetyKey::FileKeptSettings, &[("name", name)])
+            }
+            (AppFile::Spots, None) => self.safety(SafetyKey::FileLeftSpots).to_owned(),
+            (AppFile::Settings, None) => self.safety(SafetyKey::FileLeftSettings).to_owned(),
         }
     }
 
@@ -1167,6 +1219,49 @@ mod tests {
                 s.percentile_band("5th percentile", "95th percentile"),
                 "Shaded: 5th percentile to 95th percentile"
             );
+        }
+    }
+
+    #[test]
+    fn file_problems_are_safety_text_in_every_voice() {
+        for voice in [Voice::Plain, Voice::Luna] {
+            let s = Strings::new(voice);
+            assert_eq!(
+                s.file_problem(AppFile::Spots, Some("state.json.bad")),
+                "Your spots could not be read. The file was kept as state.json.bad and the list \
+                 starts empty; nothing is saved over the kept file."
+            );
+            let settings = s.file_problem(AppFile::Settings, Some("settings.json.bad"));
+            assert!(settings.contains("kept as settings.json.bad"), "{settings}");
+            assert!(settings.contains("default settings"), "{settings}");
+            let left = s.file_problem(AppFile::Spots, None);
+            assert!(left.contains("never saved over"), "{left}");
+            assert!(!left.contains("Luna"));
+            assert!(
+                s.file_problem(AppFile::Settings, None)
+                    .contains("changes to settings are not saved")
+            );
+        }
+    }
+
+    #[test]
+    fn page_problems_and_the_search_footer_read_in_both_voices() {
+        let plain = Strings::new(Voice::Plain);
+        let luna = Strings::new(Voice::Luna);
+        assert_eq!(
+            plain.get(Key::PageProblemTitle),
+            "Conditions could not be loaded"
+        );
+        assert_eq!(
+            luna.get(Key::PageProblemTitle),
+            "Luna couldn't fetch the water"
+        );
+        for s in [plain, luna] {
+            assert_eq!(
+                s.fmt(Key::SnapshotUnreadable, &[("reason", "EOF")]),
+                "The saved conditions could not be read: EOF"
+            );
+            assert!(s.get(Key::PlaceSearchFooter).contains("approximate area"));
         }
     }
 

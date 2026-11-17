@@ -179,6 +179,7 @@ expression: json
             "onset": "Nov 8, 1:48 AM",
             "ends": "Nov 9, 6:00 PM",
             "expires": "Nov 8, 3:00 PM",
+            "span": "Nov 8, 1:48 AM – Nov 9, 6:00 PM",
             "zones": [
               "ANZ331",
               "ANZ332",

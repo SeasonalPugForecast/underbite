@@ -46,6 +46,7 @@ expression: card
         "onset": "Nov 16, 1:00 AM",
         "ends": "Nov 16, 7:00 PM",
         "expires": "Nov 15, 11:00 PM",
+        "span": "Nov 16, 1:00 AM – Nov 16, 7:00 PM",
         "zones": [
           "GMZ250",
           "GMZ255",

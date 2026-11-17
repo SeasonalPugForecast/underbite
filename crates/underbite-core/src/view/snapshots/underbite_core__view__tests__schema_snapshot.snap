@@ -138,6 +138,13 @@ expression: schema
         "severity_label": {
           "type": "string"
         },
+        "span": {
+          "description": "When the alert is in effect, in words: \"Nov 8, 1:48 AM – Nov 9, 6:00 PM\", \"From …\"\nwithout an end, \"Until …\" without an onset (the end, else the expiry).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "zones": {
           "description": "Zone names or ids the alert covers.",
           "type": "array",

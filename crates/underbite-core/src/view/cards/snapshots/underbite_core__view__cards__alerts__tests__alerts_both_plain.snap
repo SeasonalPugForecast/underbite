@@ -53,6 +53,7 @@ expression: card
         "onset": "Nov 8, 7:30 AM",
         "ends": "Nov 9, 4:30 AM",
         "expires": null,
+        "span": "Nov 8, 7:30 AM – Nov 9, 4:30 AM",
         "zones": []
       },
       {
@@ -67,6 +68,7 @@ expression: card
         "onset": "Nov 8, 12:30 PM",
         "ends": "Nov 8, 10:30 PM",
         "expires": null,
+        "span": "Nov 8, 12:30 PM – Nov 8, 10:30 PM",
         "zones": []
       },
       {
@@ -81,6 +83,7 @@ expression: card
         "onset": "Nov 8, 1:48 AM",
         "ends": "Nov 9, 6:00 PM",
         "expires": "Nov 8, 3:00 PM",
+        "span": "Nov 8, 1:48 AM – Nov 9, 6:00 PM",
         "zones": [
           "ANZ331",
           "ANZ332",
