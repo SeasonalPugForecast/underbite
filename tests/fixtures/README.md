@@ -19,6 +19,7 @@ request URL and the recording date:
 - [glerl](raw/glerl/README.md)
 - [ncds](raw/ncds/README.md)
 - [bathymetry](raw/bathymetry/README.md)
+- [copernicus](raw/copernicus/README.md)
 - [tier2](raw/tier2/README.md)
 - [hydro](raw/hydro/README.md)
 - [weather](raw/weather/README.md)
