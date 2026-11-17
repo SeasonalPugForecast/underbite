@@ -14,20 +14,32 @@
 //! and are never read.
 //!
 //! Corps data are provisional and subject to revision.
+//!
+//! [`Cwms`] is the source, for a [`Place::Station`] whose id is a listed project's
+//! `office/location`: one request per series wanted, each carrying its [`Role`] to the parse, and
+//! the service's next pages as follow-ups.
+
+use std::collections::BTreeSet;
 
 use serde::Deserialize;
 use serde_json::Value;
 use underbite_core::datum::{Heights, VerticalDatum};
-use underbite_core::model::ReservoirInfo;
+use underbite_core::model::{Measurement, Requirements, ReservoirInfo};
 use underbite_core::provenance::{
     Attribution, Provenance, Quality, Relation, SourceId, StationKind, StationRef, ValueKind,
 };
 use underbite_core::series::{Sample, Series};
 use underbite_core::time::{UnixTime, UtcOffset};
 
-use super::catalogue::Project;
-use crate::request::{QueryBuilder, Response, Window};
-use crate::source::SourceError;
+use super::catalogue::{self, Project};
+use crate::request::{Place, QueryBuilder, Request, Resource, Response, Target, Window};
+use crate::source::{FetchContext, FragmentValue, Fragments, Source, SourceError, check_response};
+
+/// The measurements the source supplies: the pool level.
+pub const MEASUREMENTS: [Measurement; 1] = [Measurement::LakeLevel];
+
+/// How long a response may be reused, seconds: the series are 15-minute to hourly.
+const MAX_AGE_S: u32 = 900;
 
 /// The service's base URL.
 pub const BASE: &str = "https://cwms-data.usace.army.mil/cwms-data";
@@ -54,6 +66,116 @@ impl Role {
             Self::Outflow | Self::Inflow => "cms",
         }
     }
+
+    /// The role's name as a request carries it to the parse.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Pool => "pool",
+            Self::Outflow => "outflow",
+            Self::Inflow => "inflow",
+        }
+    }
+
+    /// The role `request` carries.
+    ///
+    /// # Errors
+    /// [`SourceError::Parse`] for a request that carries none.
+    pub fn of(request: &Request) -> Result<Self, SourceError> {
+        match request.carry() {
+            Some("pool") => Ok(Self::Pool),
+            Some("outflow") => Ok(Self::Outflow),
+            Some("inflow") => Ok(Self::Inflow),
+            other => Err(SourceError::Parse(format!(
+                "a reservoir request without its role: {other:?}"
+            ))),
+        }
+    }
+
+    /// The measurement the role's values stand for, when a source supplies it.
+    pub fn measurement(self) -> Option<Measurement> {
+        match self {
+            Self::Pool => Some(Measurement::LakeLevel),
+            Self::Outflow | Self::Inflow => None,
+        }
+    }
+}
+
+/// The roles `target` wants within `requirements`, in the order pool, release, inflow.
+pub(crate) fn wanted_roles(target: &Target, requirements: &Requirements) -> Vec<Role> {
+    [Role::Pool, Role::Outflow, Role::Inflow]
+        .into_iter()
+        .filter(|role| {
+            role.measurement().is_some_and(|m| {
+                target.measurements.contains(&m)
+                    && (requirements.measurements.is_empty()
+                        || requirements.measurements.contains(&m))
+            })
+        })
+        .collect()
+}
+
+/// The station of a project target of `source` and how it relates to the spot.
+pub(crate) fn station_of(
+    target: &Target,
+    source: &SourceId,
+) -> Result<(StationRef, Origin), SourceError> {
+    match &target.place {
+        Place::Station {
+            station,
+            distance_m,
+            relation,
+        } if station.source == *source => Ok((
+            station.clone(),
+            Origin {
+                distance_m: *distance_m,
+                relation: *relation,
+            },
+        )),
+        _ => Err(SourceError::Unsupported(format!(
+            "{source} values need one of its reservoir projects"
+        ))),
+    }
+}
+
+/// The part of `window` already observed at `now`.
+pub(crate) fn observed(window: Window, now: UnixTime) -> Result<Window, SourceError> {
+    let to = UnixTime(window.to.0.min(now.0));
+    if window.from > to {
+        return Err(SourceError::Unsupported(
+            "reservoir values are observations; the window is in the future".into(),
+        ));
+    }
+    Ok(Window {
+        from: window.from,
+        to,
+    })
+}
+
+/// One planned GET as the shared request type, for one measurement, carrying its role. Only the
+/// pool's request is required: a release or inflow that fails leaves the rest standing.
+pub(crate) fn registered(
+    url: String,
+    headers: Vec<(&'static str, String)>,
+    resource: Resource,
+    role: Role,
+    measurement: Measurement,
+    target: &Target,
+    max_age_s: u32,
+) -> Request {
+    let target = Target {
+        measurements: BTreeSet::from([measurement]),
+        ..target.clone()
+    };
+    let mut request = Request::new(url, resource, target)
+        .max_age_hint(max_age_s)
+        .with_carry(role.as_str());
+    for (name, value) in headers {
+        request = request.header(name, value);
+    }
+    if role != Role::Pool {
+        request = request.optional();
+    }
+    request
 }
 
 /// One GET the host sends: the URL, its headers, and which part of the project it fetches.
@@ -187,10 +309,15 @@ fn judge(quality: i64) -> Verdict {
     }
 }
 
-/// Parses `response` to a request for `role`; `url` is the request's URL, which the next page's
-/// URL extends.
-pub fn parse(role: Role, url: &str, response: &Response<'_>) -> Result<Page, SourceError> {
-    let body = check(response)?;
+/// Parses `response` to `request`, a request for `role`; the next page's URL extends the
+/// request's.
+///
+/// # Errors
+/// The failure [`check_response`] finds, [`SourceError::Parse`] for another shape or a unit other
+/// than the role's SI unit.
+pub fn parse(role: Role, request: &Request, response: &Response<'_>) -> Result<Page, SourceError> {
+    let url = request.url.as_str();
+    let body = check_response(request, response)?;
     let parsed: Body = serde_json::from_slice(body)
         .map_err(|e| SourceError::Parse(format!("not a CWMS time series: {e}")))?;
     match parsed.units.as_deref() {
@@ -235,40 +362,6 @@ pub fn parse(role: Role, url: &str, response: &Response<'_>) -> Result<Page, Sou
         samples,
         next,
     })
-}
-
-/// The status and body checks every parser of this module starts with.
-fn check<'a>(response: &Response<'a>) -> Result<&'a [u8], SourceError> {
-    let body = response.body.trim_ascii();
-    match response.status {
-        200..=299 => {}
-        404 | 410 => return Err(SourceError::NotFound(message(body))),
-        429 => {
-            return Err(SourceError::RateLimited {
-                retry_after_s: response.retry_after,
-            });
-        }
-        status => {
-            return Err(SourceError::Status {
-                status,
-                message: message(body),
-            });
-        }
-    }
-    if body.is_empty() {
-        return Err(SourceError::NoData(Some("empty response".into())));
-    }
-    if body[0] != b'{' {
-        return Err(SourceError::Parse("not a JSON object".into()));
-    }
-    Ok(body)
-}
-
-/// The `message` of a JSON error body, trimmed and cut; HTML and plain text give none.
-fn message(body: &[u8]) -> Option<String> {
-    let value: Value = serde_json::from_slice(body).ok()?;
-    let text = value.get("message")?.as_str()?.trim();
-    (!text.is_empty()).then(|| text.chars().take(200).collect())
 }
 
 fn provenance(project: &Project, origin: Origin, observed_at: UnixTime) -> Provenance {
@@ -353,6 +446,120 @@ pub fn assemble(
     })
 }
 
+/// Adds the values of one parsed answer that `request` wants to `out`.
+pub(crate) fn push(
+    out: &mut Fragments,
+    request: &Request,
+    reservoir: Reservoir,
+) -> Result<(), SourceError> {
+    let wanted = |m: Measurement| request.target.measurements.contains(&m);
+    if let Some(level) = reservoir.level
+        && wanted(Measurement::LakeLevel)
+    {
+        out.push(Measurement::LakeLevel, FragmentValue::Heights(level))?;
+    }
+    Ok(())
+}
+
+/// The listed project a CWMS station id (`office/location`) names.
+fn project_of(station: &StationRef) -> Result<&'static Project, SourceError> {
+    station
+        .id
+        .split_once('/')
+        .and_then(|(office, location)| catalogue::find(office, location))
+        .ok_or_else(|| {
+            SourceError::Unsupported(format!("{} is not a listed CWMS project", station.id))
+        })
+}
+
+/// The CWMS Data API as a source of reservoir pools. It holds no settings.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Cwms;
+
+impl Source for Cwms {
+    fn id(&self) -> SourceId {
+        SourceId::CWMS
+    }
+
+    fn attribution(&self) -> Attribution {
+        attribution()
+    }
+
+    fn measurements(&self) -> &[Measurement] {
+        &MEASUREMENTS
+    }
+
+    /// One request per series the project publishes and the target wants, over the observed
+    /// part of the window.
+    fn plan(
+        &self,
+        target: &Target,
+        requirements: &Requirements,
+        ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        let (station, _) = station_of(target, &SourceId::CWMS)?;
+        let project = project_of(&station)?;
+        let roles = wanted_roles(target, requirements);
+        let window = observed(target.window, ctx.now)?;
+        let planned: Vec<Request> = requests(project, window)
+            .into_iter()
+            .filter(|r| roles.contains(&r.role))
+            .filter_map(|r| {
+                let m = r.role.measurement()?;
+                Some(registered(
+                    r.url,
+                    r.headers,
+                    Resource::CwmsTimeSeries,
+                    r.role,
+                    m,
+                    target,
+                    MAX_AGE_S,
+                ))
+            })
+            .collect();
+        if planned.is_empty() {
+            return Err(SourceError::Unsupported(format!(
+                "{} publishes none of {:?}",
+                project.name, target.measurements
+            )));
+        }
+        Ok(planned)
+    }
+
+    /// The service's next page of the same series.
+    fn follow_up(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        _ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        let page = parse(Role::of(request)?, request, response)?;
+        Ok(page
+            .next
+            .map(|url| {
+                let mut next = request.clone();
+                next.url = url;
+                next
+            })
+            .into_iter()
+            .collect())
+    }
+
+    fn parse(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        _ctx: &FetchContext,
+        out: &mut Fragments,
+    ) -> Result<(), SourceError> {
+        let role = Role::of(request)?;
+        let (station, origin) = station_of(&request.target, &SourceId::CWMS)?;
+        let project = project_of(&station)?;
+        let page = parse(role, request, response)?;
+        push(out, request, assemble(project, origin, &[page])?)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::catalogue::find;
@@ -386,9 +593,56 @@ mod tests {
         }
     }
 
+    /// 2026-11-17T10:00:00Z.
+    const NOW: UnixTime = UnixTime(1_794_909_600);
+
+    fn project_target(id: &str, measurements: &[Measurement]) -> Target {
+        Target {
+            place: Place::Station {
+                station: StationRef {
+                    source: SourceId::CWMS,
+                    id: id.into(),
+                    name: id.into(),
+                    kind: StationKind::WaterLevel,
+                    latitude: 40.4271,
+                    longitude: -78.0014,
+                    bin: None,
+                    reference_id: None,
+                },
+                distance_m: ORIGIN.distance_m,
+                relation: ORIGIN.relation,
+            },
+            measurements: measurements.iter().copied().collect(),
+            window: Window {
+                from: UnixTime(NOW.0 - 86_400),
+                to: UnixTime(NOW.0 + 86_400),
+            },
+            datum: None,
+        }
+    }
+
+    /// A request for `url`, as the source plans it for Raystown's pool.
+    fn at(url: &str) -> Request {
+        Request::new(
+            url.to_string(),
+            Resource::CwmsTimeSeries,
+            project_target("NAB/Raystown", &[Measurement::LakeLevel]),
+        )
+        .with_carry("pool")
+    }
+
+    fn ctx() -> FetchContext {
+        FetchContext::new(NOW, "underbite/test")
+    }
+
     fn page(dir: &str, name: &str, role: Role) -> Page {
         let bytes = fixture_bytes(dir, name);
-        parse(role, "https://example.invalid/timeseries?a=b", &ok(&bytes)).expect("parses")
+        parse(
+            role,
+            &at("https://example.invalid/timeseries?a=b"),
+            &ok(&bytes),
+        )
+        .expect("parses")
     }
 
     fn json(units: &str, values: &str) -> Vec<u8> {
@@ -548,11 +802,15 @@ mod tests {
     #[test]
     fn a_project_with_no_values_at_all_has_no_data() {
         let raystown = find("NAB", "Raystown").expect("listed");
-        let empty = parse(Role::Pool, "u", &ok(&json("m", "[]"))).expect("parses");
+        let empty = parse(Role::Pool, &at("u"), &ok(&json("m", "[]"))).expect("parses");
         let err = assemble(raystown, ORIGIN, &[empty]).expect_err("nothing to show");
         assert!(matches!(err, SourceError::NoData(_)), "{err:?}");
-        let nulls =
-            parse(Role::Pool, "u", &ok(&json("m", "[[1794895200000,null,5]]"))).expect("parses");
+        let nulls = parse(
+            Role::Pool,
+            &at("u"),
+            &ok(&json("m", "[[1794895200000,null,5]]")),
+        )
+        .expect("parses");
         assert_eq!(nulls.samples.len(), 0);
     }
 
@@ -577,7 +835,7 @@ mod tests {
             "[[1794895200000,10.0,3],[1794896100000,11.0,9],[1794897000000,12.0,17],\
              [1794897900000,13.0,0]]",
         );
-        let p = parse(Role::Pool, "u", &ok(&body)).expect("parses");
+        let p = parse(Role::Pool, &at("u"), &ok(&body)).expect("parses");
         let values: Vec<(f32, Option<Quality>)> =
             p.samples.iter().map(|s| (s.value, s.quality)).collect();
         assert_eq!(
@@ -588,11 +846,13 @@ mod tests {
 
     #[test]
     fn a_pool_in_feet_is_refused() {
-        let err = parse(Role::Pool, "u", &ok(&json("ft", "[[1,2.0,3]]"))).expect_err("feet");
+        let err = parse(Role::Pool, &at("u"), &ok(&json("ft", "[[1,2.0,3]]"))).expect_err("feet");
         assert!(matches!(err, SourceError::Parse(_)), "{err:?}");
-        let err = parse(Role::Outflow, "u", &ok(&json("cfs", "[[1,2.0,3]]"))).expect_err("cfs");
+        let err =
+            parse(Role::Outflow, &at("u"), &ok(&json("cfs", "[[1,2.0,3]]"))).expect_err("cfs");
         assert!(matches!(err, SourceError::Parse(_)), "{err:?}");
-        let err = parse(Role::Outflow, "u", &ok(&json("m", "[[1,2.0,3]]"))).expect_err("wrong");
+        let err =
+            parse(Role::Outflow, &at("u"), &ok(&json("m", "[[1,2.0,3]]"))).expect_err("wrong");
         assert!(matches!(err, SourceError::Parse(_)), "{err:?}");
     }
 
@@ -602,7 +862,7 @@ mod tests {
             "cms",
             r#"[[1794896100000,2.0,3],[1794895200000,1.0,3],["x",3.0,3],[1794897000000],[1794897900000,"y",3]]"#,
         );
-        let p = parse(Role::Inflow, "u", &ok(&body)).expect("parses");
+        let p = parse(Role::Inflow, &at("u"), &ok(&body)).expect("parses");
         let values: Vec<f32> = p.samples.iter().map(|s| s.value).collect();
         assert_eq!(values, [1.0, 2.0]);
     }
@@ -611,11 +871,11 @@ mod tests {
     fn the_next_page_cursor_extends_the_request() {
         let body = br#"{"units":"m","values":[[1794895200000,1.0,3]],"next-page":"abc=="}"#;
         let url = "https://x/timeseries?office=NAB&name=N&unit=SI";
-        let p = parse(Role::Pool, url, &ok(body)).expect("parses");
+        let p = parse(Role::Pool, &at(url), &ok(body)).expect("parses");
         let next = p.next.expect("a next page");
         assert_eq!(next, format!("{url}&page=abc%3D%3D"));
         // A follow-up's own cursor replaces the old one.
-        let again = parse(Role::Pool, &next, &ok(body)).expect("parses");
+        let again = parse(Role::Pool, &at(&next), &ok(body)).expect("parses");
         assert_eq!(again.next, Some(next));
     }
 
@@ -624,13 +884,13 @@ mod tests {
         let raystown = find("NAB", "Raystown").expect("listed");
         let a = parse(
             Role::Outflow,
-            "u",
+            &at("u"),
             &ok(&json("cms", "[[1794896100000,2.0,3]]")),
         )
         .expect("parses");
         let b = parse(
             Role::Outflow,
-            "u",
+            &at("u"),
             &ok(&json("cms", "[[1794895200000,1.0,3]]")),
         )
         .expect("parses");
@@ -644,14 +904,14 @@ mod tests {
     fn errors_map_to_source_errors() {
         let err = parse(
             Role::Pool,
-            "u",
+            &at("u"),
             &status(404, br#"{"message":"no such series"}"#),
         )
         .expect_err("404");
         assert_eq!(err, SourceError::NotFound(Some("no such series".into())));
         let err = parse(
             Role::Pool,
-            "u",
+            &at("u"),
             &status(400, b"<html><body>Bad</body></html>"),
         )
         .expect_err("400");
@@ -665,21 +925,21 @@ mod tests {
         let mut limited = status(429, b"");
         limited.retry_after = Some(30);
         assert_eq!(
-            parse(Role::Pool, "u", &limited).expect_err("429"),
+            parse(Role::Pool, &at("u"), &limited).expect_err("429"),
             SourceError::RateLimited {
                 retry_after_s: Some(30)
             }
         );
         assert!(matches!(
-            parse(Role::Pool, "u", &ok(b"")).expect_err("empty"),
+            parse(Role::Pool, &at("u"), &ok(b"")).expect_err("empty"),
             SourceError::NoData(_)
         ));
         assert!(matches!(
-            parse(Role::Pool, "u", &ok(b"<html>x</html>")).expect_err("html"),
+            parse(Role::Pool, &at("u"), &ok(b"<html>x</html>")).expect_err("html"),
             SourceError::Parse(_)
         ));
         assert!(matches!(
-            parse(Role::Pool, "u", &ok(b"{\"units\":")).expect_err("cut"),
+            parse(Role::Pool, &at("u"), &ok(b"{\"units\":")).expect_err("cut"),
             SourceError::Parse(_)
         ));
     }
@@ -689,5 +949,111 @@ mod tests {
         let a = attribution();
         assert_eq!(a.source, SourceId::CWMS);
         assert!(a.credit.contains("U.S. Army Corps of Engineers"));
+    }
+
+    #[test]
+    fn source_plans_the_pool_and_parses_it_into_the_lake_level() {
+        let source: &dyn Source = &Cwms;
+        assert_eq!(source.id(), SourceId::CWMS);
+        assert_eq!(source.measurements(), [Measurement::LakeLevel]);
+        let target = project_target("NAB/Raystown", &[Measurement::LakeLevel]);
+        let plan = source
+            .plan(&target, &Requirements::default(), &ctx())
+            .expect("a plan");
+        let [request] = plan.as_slice() else {
+            panic!("one request, got {plan:?}");
+        };
+        let raystown = find("NAB", "Raystown").expect("listed");
+        let observed = Window {
+            from: target.window.from,
+            to: NOW,
+        };
+        assert_eq!(request.url, requests(raystown, observed)[0].url);
+        assert_eq!(request.resource, Resource::CwmsTimeSeries);
+        assert_eq!(request.headers, vec![("Accept", ACCEPT.to_string())]);
+        assert_eq!(request.carry(), Some("pool"));
+        assert!(request.required && !request.metered);
+        assert_eq!(
+            request.target.measurements,
+            BTreeSet::from([Measurement::LakeLevel])
+        );
+
+        let body = fixture_bytes("cwms", "cwms-nab-raystown-elev-2026-11-17.json");
+        let response = ok(&body);
+        assert_eq!(source.follow_up(request, &response, &ctx()), Ok(vec![]));
+        let mut out = Fragments::new();
+        source
+            .parse(request, &response, &ctx(), &mut out)
+            .expect("parses");
+        let [fragment] = out.fragments() else {
+            panic!("one fragment, got {:?}", out.fragments());
+        };
+        assert_eq!(fragment.measurement, Measurement::LakeLevel);
+        let FragmentValue::Heights(level) = &fragment.value else {
+            panic!("heights");
+        };
+        assert_eq!(level.datum, VerticalDatum::Gauge);
+        assert_eq!(level.series.samples().len(), 9);
+        let prov = level.series.provenance();
+        assert_eq!(prov.source, SourceId::CWMS);
+        assert_eq!(prov.distance_m, ORIGIN.distance_m);
+    }
+
+    #[test]
+    fn source_follows_the_next_page_of_the_same_series() {
+        let target = project_target("NAB/Raystown", &[Measurement::LakeLevel]);
+        let first = Cwms
+            .plan(&target, &Requirements::default(), &ctx())
+            .expect("a plan")
+            .remove(0);
+        let body = br#"{"units":"m","values":[[1794895200000,1.0,3]],"next-page":"abc=="}"#;
+        let next = Cwms
+            .follow_up(&first, &ok(body), &ctx())
+            .expect("a follow-up");
+        let [next] = next.as_slice() else {
+            panic!("one follow-up, got {next:?}");
+        };
+        assert_eq!(next.url, format!("{}&page=abc%3D%3D", first.url));
+        assert_eq!(next.carry(), Some("pool"));
+        assert_eq!(next.headers, first.headers);
+    }
+
+    #[test]
+    fn source_refuses_unlisted_projects_missing_series_and_future_windows() {
+        let ctx = ctx();
+        let none = Requirements::default();
+        let unlisted = project_target("NAB/Nowhere", &[Measurement::LakeLevel]);
+        assert!(matches!(
+            Cwms.plan(&unlisted, &none, &ctx),
+            Err(SourceError::Unsupported(_))
+        ));
+        // Hartwell's observed elevation series ended; only its release is listed.
+        let hartwell = project_target("SAS/Hartwell", &[Measurement::LakeLevel]);
+        assert!(matches!(
+            Cwms.plan(&hartwell, &none, &ctx),
+            Err(SourceError::Unsupported(_))
+        ));
+        let mut future = project_target("NAB/Raystown", &[Measurement::LakeLevel]);
+        future.window.from = UnixTime(NOW.0 + 3_600);
+        assert!(matches!(
+            Cwms.plan(&future, &none, &ctx),
+            Err(SourceError::Unsupported(_))
+        ));
+        let mut other = project_target("NAB/Raystown", &[Measurement::LakeLevel]);
+        if let Place::Station { station, .. } = &mut other.place {
+            station.source = SourceId::USGS;
+        }
+        assert!(matches!(
+            Cwms.plan(&other, &none, &ctx),
+            Err(SourceError::Unsupported(_))
+        ));
+        let mut no_role = at("u");
+        no_role.target.measurements = BTreeSet::from([Measurement::LakeLevel]);
+        let no_role = Request::new(no_role.url, Resource::CwmsTimeSeries, no_role.target);
+        let body = fixture_bytes("cwms", "cwms-nab-raystown-elev-2026-11-17.json");
+        assert!(matches!(
+            Cwms.parse(&no_role, &ok(&body), &ctx, &mut Fragments::new()),
+            Err(SourceError::Parse(_))
+        ));
     }
 }

@@ -16,22 +16,32 @@
 //! unstated).
 //!
 //! Reclamation data are provisional and subject to revision.
+//!
+//! [`Rise`] is the source, for a [`crate::request::Place::Station`] whose id is a listed
+//! project's location id: one request per item wanted, each carrying its [`Role`] to the parse,
+//! and the next pages as follow-ups.
 
 use serde::Deserialize;
 use serde_json::Value;
 use underbite_core::datum::{Heights, VerticalDatum};
 use underbite_core::map::GeoPoint;
 use underbite_core::map::tiles::haversine_m;
-use underbite_core::model::{ExternalLink, ReservoirInfo};
+use underbite_core::model::{ExternalLink, Measurement, Requirements, ReservoirInfo};
 use underbite_core::provenance::{
     Attribution, Provenance, Quality, SourceId, StationKind, StationRef, ValueKind,
 };
 use underbite_core::series::{Sample, Series};
 use underbite_core::time::{UnixTime, UtcOffset, parse_rfc3339};
 
-use super::cwms::{Origin, Reservoir, Role};
-use crate::request::{QueryBuilder, Response, Window};
-use crate::source::SourceError;
+use super::cwms::{Origin, Reservoir, Role, observed, push, registered, station_of, wanted_roles};
+use crate::request::{QueryBuilder, Request, Resource, Response, Target, Window};
+use crate::source::{FetchContext, Fragments, Source, SourceError, check_response};
+
+/// The measurements the source supplies: the pool level.
+pub const MEASUREMENTS: [Measurement; 1] = [Measurement::LakeLevel];
+
+/// How long a response may be reused, seconds: the values are daily.
+const MAX_AGE_S: u32 = 3_600;
 
 /// The service's base URL.
 pub const BASE: &str = "https://data.usbr.gov/rise/api";
@@ -328,13 +338,23 @@ struct Attributes {
     result: Option<Value>,
 }
 
-/// Parses `response` to the request `req`; the next page's URL extends the request's.
-pub fn parse(req: &RiseRequest, response: &Response<'_>) -> Result<Page, SourceError> {
-    let body = check(response)?;
-    if !req.item.unit.fits(req.role) {
+/// Parses `response` to `request`, a request for `item` in `role`; the next page's URL extends the
+/// request's.
+///
+/// # Errors
+/// The failure [`check_response`] finds, [`SourceError::Parse`] for another shape, an item whose
+/// unit does not fit the role, a row of another item, or a total that shows an ignored filter.
+pub fn parse(
+    role: Role,
+    item: Item,
+    request: &Request,
+    response: &Response<'_>,
+) -> Result<Page, SourceError> {
+    let body = check_response(request, response)?;
+    if !item.unit.fits(role) {
         return Err(SourceError::Parse(format!(
-            "unit {:?} does not fit {:?}",
-            req.item.unit, req.role
+            "unit {:?} does not fit {role:?}",
+            item.unit
         )));
     }
     let parsed: Body = serde_json::from_slice(body)
@@ -351,10 +371,10 @@ pub fn parse(req: &RiseRequest, response: &Response<'_>) -> Result<Page, SourceE
     let mut samples = Vec::with_capacity(parsed.data.len());
     for row in &parsed.data {
         let a = &row.attributes;
-        if a.item_id.is_some_and(|id| id != i64::from(req.item.id)) {
+        if a.item_id.is_some_and(|id| id != i64::from(item.id)) {
             return Err(SourceError::Parse(format!(
                 "a row of item {:?} in the answer for item {}",
-                a.item_id, req.item.id
+                a.item_id, item.id
             )));
         }
         let (Some(time), Some(value)) = (
@@ -366,7 +386,7 @@ pub fn parse(req: &RiseRequest, response: &Response<'_>) -> Result<Page, SourceE
         if !value.is_finite() {
             continue;
         }
-        samples.push(Sample::new(time, req.item.unit.to_canonical(value) as f32));
+        samples.push(Sample::new(time, item.unit.to_canonical(value) as f32));
     }
     samples.sort_by_key(|s| s.time);
     let next = match (
@@ -375,7 +395,8 @@ pub fn parse(req: &RiseRequest, response: &Response<'_>) -> Result<Page, SourceE
         parsed.meta.current_page,
     ) {
         (Some(total), Some(per), Some(page)) if per > 0 && total > page.saturating_mul(per) => {
-            let base = req.url.split("&page=").next().unwrap_or(&req.url);
+            let url = request.url.as_str();
+            let base = url.split("&page=").next().unwrap_or(url);
             Some(
                 QueryBuilder::new(base)
                     .param("page", (page + 1).to_string())
@@ -385,47 +406,10 @@ pub fn parse(req: &RiseRequest, response: &Response<'_>) -> Result<Page, SourceE
         _ => None,
     };
     Ok(Page {
-        role: req.role,
+        role,
         samples,
         next,
     })
-}
-
-/// The status and body checks, tolerant of the JSON:API and problem+json envelopes.
-fn check<'a>(response: &Response<'a>) -> Result<&'a [u8], SourceError> {
-    let body = response.body.trim_ascii();
-    match response.status {
-        200..=299 => {}
-        404 | 410 => return Err(SourceError::NotFound(message(body))),
-        429 => {
-            return Err(SourceError::RateLimited {
-                retry_after_s: response.retry_after,
-            });
-        }
-        status => {
-            return Err(SourceError::Status {
-                status,
-                message: message(body),
-            });
-        }
-    }
-    if body.is_empty() {
-        return Err(SourceError::NoData(Some("empty response".into())));
-    }
-    if body[0] != b'{' {
-        return Err(SourceError::Parse("not a JSON object".into()));
-    }
-    Ok(body)
-}
-
-/// The `detail` (else `title`) of a problem+json body, trimmed and cut; other bodies give none.
-fn message(body: &[u8]) -> Option<String> {
-    let value: Value = serde_json::from_slice(body).ok()?;
-    let text = ["detail", "title", "message"]
-        .iter()
-        .find_map(|k| value.get(k)?.as_str())?
-        .trim();
-    (!text.is_empty()).then(|| text.chars().take(200).collect())
 }
 
 fn provenance(project: &Project, origin: Origin, observed_at: UnixTime) -> Provenance {
@@ -496,9 +480,126 @@ pub fn assemble(
     })
 }
 
+impl Project {
+    /// The item that publishes `role`, if the table lists one.
+    pub fn item(&self, role: Role) -> Option<Item> {
+        match role {
+            Role::Pool => self.pool,
+            Role::Outflow => self.outflow,
+            Role::Inflow => self.inflow,
+        }
+    }
+}
+
+/// The listed project a RISE station id (the location id) names.
+fn project_of(station: &StationRef) -> Result<&'static Project, SourceError> {
+    station.id.parse().ok().and_then(find).ok_or_else(|| {
+        SourceError::Unsupported(format!("{} is not a listed RISE reservoir", station.id))
+    })
+}
+
+/// The Reclamation RISE API as a source of reservoir pools. It holds no settings.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Rise;
+
+impl Source for Rise {
+    fn id(&self) -> SourceId {
+        SourceId::RISE
+    }
+
+    fn attribution(&self) -> Attribution {
+        attribution()
+    }
+
+    fn measurements(&self) -> &[Measurement] {
+        &MEASUREMENTS
+    }
+
+    /// One request per item the project publishes and the target wants, over the observed part
+    /// of the window.
+    fn plan(
+        &self,
+        target: &Target,
+        requirements: &Requirements,
+        ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        let (station, _) = station_of(target, &SourceId::RISE)?;
+        let project = project_of(&station)?;
+        let roles = wanted_roles(target, requirements);
+        let window = observed(target.window, ctx.now)?;
+        let planned: Vec<Request> = requests(project, window)
+            .into_iter()
+            .filter(|r| roles.contains(&r.role))
+            .filter_map(|r| {
+                let m = r.role.measurement()?;
+                Some(registered(
+                    r.url,
+                    r.headers,
+                    Resource::RiseResult,
+                    r.role,
+                    m,
+                    target,
+                    MAX_AGE_S,
+                ))
+            })
+            .collect();
+        if planned.is_empty() {
+            return Err(SourceError::Unsupported(format!(
+                "{} publishes none of {:?}",
+                project.name, target.measurements
+            )));
+        }
+        Ok(planned)
+    }
+
+    /// The next page of the same item.
+    fn follow_up(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        _ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        let (role, item, _, _) = parts(request)?;
+        let page = parse(role, item, request, response)?;
+        Ok(page
+            .next
+            .map(|url| {
+                let mut next = request.clone();
+                next.url = url;
+                next
+            })
+            .into_iter()
+            .collect())
+    }
+
+    fn parse(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        _ctx: &FetchContext,
+        out: &mut Fragments,
+    ) -> Result<(), SourceError> {
+        let (role, item, project, origin) = parts(request)?;
+        let page = parse(role, item, request, response)?;
+        push(out, request, assemble(project, origin, &[page])?)
+    }
+}
+
+/// What parsing `request`'s response needs: its role, the item, the project and the origin.
+fn parts(request: &Request) -> Result<(Role, Item, &'static Project, Origin), SourceError> {
+    let role = Role::of(request)?;
+    let (station, origin) = station_of(&request.target, &SourceId::RISE)?;
+    let project = project_of(&station)?;
+    let item = project.item(role).ok_or_else(|| {
+        SourceError::Parse(format!("{} lists no item for {role:?}", project.name))
+    })?;
+    Ok((role, item, project, origin))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::request::Place;
     use crate::testutil::fixture_bytes;
     use underbite_core::provenance::Relation;
 
@@ -539,10 +640,52 @@ mod tests {
         request(item.expect("an item"), role, W)
     }
 
+    /// 2026-11-17T10:00:00Z.
+    const NOW: UnixTime = UnixTime(1_794_909_600);
+
+    fn project_target(id: &str, measurements: &[Measurement]) -> Target {
+        Target {
+            place: Place::Station {
+                station: StationRef {
+                    source: SourceId::RISE,
+                    id: id.into(),
+                    name: id.into(),
+                    kind: StationKind::WaterLevel,
+                    latitude: 40.98,
+                    longitude: -109.57,
+                    bin: None,
+                    reference_id: None,
+                },
+                distance_m: ORIGIN.distance_m,
+                relation: ORIGIN.relation,
+            },
+            measurements: measurements.iter().copied().collect(),
+            window: Window {
+                from: UnixTime(NOW.0 - 2 * DAY),
+                to: UnixTime(NOW.0 + 7 * DAY),
+            },
+            datum: None,
+        }
+    }
+
+    fn ctx() -> FetchContext {
+        FetchContext::new(NOW, "underbite/test")
+    }
+
+    /// Parses `response` to the planned `r`, sent as a registered request.
+    fn run(r: &RiseRequest, response: &Response<'_>) -> Result<Page, SourceError> {
+        let sent = Request::new(
+            r.url.clone(),
+            Resource::RiseResult,
+            project_target("1535", &[Measurement::LakeLevel]),
+        );
+        parse(r.role, r.item, &sent, response)
+    }
+
     fn fresno_pool() -> Page {
         let bytes = fixture_bytes("tier2", "rise-fresno-reservoir-elevation-2026-11.json");
         let fresno = find(337).expect("listed");
-        parse(&req(fresno.pool, Role::Pool), &ok(&bytes)).expect("parses")
+        run(&req(fresno.pool, Role::Pool), &ok(&bytes)).expect("parses")
     }
 
     #[test]
@@ -608,7 +751,7 @@ mod tests {
             "rise-result-4314-flaming-gorge-release-total-cfs-2026-11-17.json",
         );
         let flaming = find(1535).expect("listed");
-        let page = parse(&req(flaming.outflow, Role::Outflow), &ok(&bytes)).expect("parses");
+        let page = run(&req(flaming.outflow, Role::Outflow), &ok(&bytes)).expect("parses");
         assert!(page.samples.len() > 1);
         let raw: Value = serde_json::from_slice(&bytes).expect("json");
         let newest = raw["data"][0]["attributes"]["result"]
@@ -630,8 +773,8 @@ mod tests {
             "rise-result-4314-flaming-gorge-release-total-cfs-2026-11-17.json",
         );
         let pages = [
-            parse(&req(flaming.pool, Role::Pool), &ok(&elev)).expect("elevation"),
-            parse(&req(flaming.outflow, Role::Outflow), &ok(&rel)).expect("release"),
+            run(&req(flaming.pool, Role::Pool), &ok(&elev)).expect("elevation"),
+            run(&req(flaming.outflow, Role::Outflow), &ok(&rel)).expect("release"),
         ];
         let r = assemble(flaming, ORIGIN, &pages).expect("a reservoir");
         assert!(r.info.outflow_m3s.is_some());
@@ -658,13 +801,13 @@ mod tests {
         let body = br#"{"meta":{"totalItems":2,"itemsPerPage":10,"currentPage":1},"data":[
             {"attributes":{"itemId":355,"dateTime":"2026-11-07T07:00:00+00:00","result":null}},
             {"attributes":{"itemId":355,"dateTime":"2026-11-06T07:00:00+00:00","result":10.0}}]}"#;
-        let p = parse(&req(item, Role::Pool), &ok(body)).expect("parses");
+        let p = run(&req(item, Role::Pool), &ok(body)).expect("parses");
         assert_eq!(p.samples.len(), 1);
         assert!((p.samples[0].value - 3.048).abs() < 1e-4);
         let other = br#"{"data":[{"attributes":{"itemId":999,
             "dateTime":"2026-11-06T07:00:00+00:00","result":1.0}}]}"#;
         assert!(matches!(
-            parse(&req(item, Role::Pool), &ok(other)),
+            run(&req(item, Role::Pool), &ok(other)),
             Err(SourceError::Parse(_))
         ));
     }
@@ -673,21 +816,21 @@ mod tests {
     fn a_next_page_is_offered_while_the_total_exceeds_the_rows_seen() {
         let r = req(cfs(4314), Role::Outflow);
         let body = br#"{"meta":{"totalItems":25,"itemsPerPage":10,"currentPage":1},"data":[]}"#;
-        let p = parse(&r, &ok(body)).expect("parses");
+        let p = run(&r, &ok(body)).expect("parses");
         let next = p.next.expect("a next page");
         assert!(
             next.starts_with(&r.url) && next.ends_with("&page=2"),
             "{next}"
         );
         let last = br#"{"meta":{"totalItems":25,"itemsPerPage":10,"currentPage":3},"data":[]}"#;
-        assert_eq!(parse(&r, &ok(last)).expect("parses").next, None);
+        assert_eq!(run(&r, &ok(last)).expect("parses").next, None);
     }
 
     #[test]
     fn an_ignored_filter_is_refused() {
         let body = br#"{"meta":{"totalItems":29029,"itemsPerPage":10,"currentPage":1},"data":[]}"#;
         assert!(matches!(
-            parse(&req(ft(355), Role::Pool), &ok(body)),
+            run(&req(ft(355), Role::Pool), &ok(body)),
             Err(SourceError::Parse(_))
         ));
     }
@@ -696,7 +839,7 @@ mod tests {
     fn errors_map_to_source_errors() {
         let bytes = fixture_bytes("rise", "rise-result-no-filter-error-2026-11-17.json");
         let r = req(ft(355), Role::Pool);
-        match parse(&r, &status(400, &bytes)) {
+        match run(&r, &status(400, &bytes)) {
             Err(SourceError::Status {
                 status: 400,
                 message,
@@ -704,15 +847,15 @@ mod tests {
             other => panic!("{other:?}"),
         }
         assert!(matches!(
-            parse(&r, &status(404, b"{}")),
+            run(&r, &status(404, b"{}")),
             Err(SourceError::NotFound(_))
         ));
         assert!(matches!(
-            parse(&r, &ok(b"<html>")),
+            run(&r, &ok(b"<html>")),
             Err(SourceError::Parse(_))
         ));
-        assert!(matches!(parse(&r, &ok(b"")), Err(SourceError::NoData(_))));
-        let empty = parse(&r, &ok(br#"{"data":[]}"#)).expect("parses");
+        assert!(matches!(run(&r, &ok(b"")), Err(SourceError::NoData(_))));
+        let empty = run(&r, &ok(br#"{"data":[]}"#)).expect("parses");
         assert_eq!(empty.samples.len(), 0);
     }
 
@@ -721,7 +864,7 @@ mod tests {
         assert_eq!(Unit::from_rise("ft"), Some(Unit::Feet));
         assert_eq!(Unit::from_rise("cfs"), Some(Unit::CubicFeetPerSecond));
         assert_eq!(Unit::from_rise("af"), None);
-        assert!(parse(&req(ft(1), Role::Outflow), &ok(br#"{"data":[]}"#)).is_err());
+        assert!(run(&req(ft(1), Role::Outflow), &ok(br#"{"data":[]}"#)).is_err());
     }
 
     #[test]
@@ -737,5 +880,86 @@ mod tests {
         assert_eq!(a.source, SourceId::RISE);
         assert!(a.credit.contains("Bureau of Reclamation"));
         assert!(DISCLAIMER.starts_with("Data are provisional"));
+    }
+
+    #[test]
+    fn source_plans_the_pool_item_and_parses_it_into_the_lake_level() {
+        let source: &dyn Source = &Rise;
+        assert_eq!(source.id(), SourceId::RISE);
+        assert_eq!(source.measurements(), [Measurement::LakeLevel]);
+        let target = project_target("1535", &[Measurement::LakeLevel, Measurement::Tide]);
+        let plan = source
+            .plan(&target, &Requirements::default(), &ctx())
+            .expect("a plan");
+        let [request] = plan.as_slice() else {
+            panic!("one request, got {plan:?}");
+        };
+        let flaming = find(1535).expect("listed");
+        let observed = Window {
+            from: target.window.from,
+            to: NOW,
+        };
+        assert_eq!(request.url, requests(flaming, observed)[0].url);
+        assert!(request.url.contains("itemId=341"), "{}", request.url);
+        assert_eq!(request.resource, Resource::RiseResult);
+        assert_eq!(
+            request.headers,
+            vec![("Accept", "application/vnd.api+json".to_string())]
+        );
+        assert_eq!(request.carry(), Some("pool"));
+        assert!(request.required);
+
+        let body = fixture_bytes(
+            "rise",
+            "rise-result-341-flaming-gorge-elevation-2026-11-17.json",
+        );
+        let response = ok(&body);
+        assert_eq!(source.follow_up(request, &response, &ctx()), Ok(vec![]));
+        let mut out = Fragments::new();
+        source
+            .parse(request, &response, &ctx(), &mut out)
+            .expect("parses");
+        let [fragment] = out.fragments() else {
+            panic!("one fragment, got {:?}", out.fragments());
+        };
+        assert_eq!(fragment.measurement, Measurement::LakeLevel);
+        let crate::source::FragmentValue::Heights(level) = &fragment.value else {
+            panic!("heights");
+        };
+        assert_eq!(level.datum, VerticalDatum::Gauge, "EGM96 is not modelled");
+        let v = level.series.samples().last().expect("a value").value;
+        assert!((f64::from(v) - 6003.54 * 0.3048).abs() < 1e-2, "{v}");
+        assert_eq!(level.series.provenance().source, SourceId::RISE);
+    }
+
+    #[test]
+    fn source_follows_pages_and_refuses_what_it_cannot_serve() {
+        let ctx = ctx();
+        let none = Requirements::default();
+        let first = Rise
+            .plan(
+                &project_target("1535", &[Measurement::LakeLevel]),
+                &none,
+                &ctx,
+            )
+            .expect("a plan")
+            .remove(0);
+        let body = br#"{"meta":{"totalItems":25,"itemsPerPage":10,"currentPage":1},"data":[]}"#;
+        let next = Rise
+            .follow_up(&first, &ok(body), &ctx)
+            .expect("a follow-up");
+        assert_eq!(next.len(), 1);
+        assert!(next[0].url.ends_with("&page=2"), "{}", next[0].url);
+        assert_eq!(next[0].carry(), Some("pool"));
+        for id in ["9999999", "Flaming Gorge"] {
+            assert!(matches!(
+                Rise.plan(&project_target(id, &[Measurement::LakeLevel]), &none, &ctx),
+                Err(SourceError::Unsupported(_))
+            ));
+        }
+        assert!(matches!(
+            Rise.plan(&project_target("1535", &[Measurement::Waves]), &none, &ctx),
+            Err(SourceError::Unsupported(_))
+        ));
     }
 }
