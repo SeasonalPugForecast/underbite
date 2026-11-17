@@ -17,6 +17,7 @@ use std::future::ready;
 use std::sync::{Arc, Mutex, PoisonError};
 
 use underbite_config::schema::Config;
+use underbite_core::datum::{DatumTable, VerticalDatum};
 use underbite_core::discover::rank::Ranking;
 use underbite_core::model::{SourceError, SourceErrorKind, Spot, SpotSnapshot, WaterType};
 use underbite_core::offline::cache::{
@@ -28,6 +29,8 @@ use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{Key, Strings};
 use underbite_fetch::store::{self, Choice, parse_station_key};
 use underbite_fetch::{self as library, Call, Fetched, TransportError};
+use underbite_providers::coops::mdapi::{self, StationList};
+use underbite_providers::ndbc;
 use underbite_providers::request::{is_secret_header, redact_url, secret_values};
 use underbite_providers::source::Secrets;
 use whether_core::time::parse_http_date;
@@ -215,17 +218,20 @@ pub trait FetchHost: Send + Sync {
 struct Traffic {
     /// Metadata responses worth keeping, one per key.
     cacheable: Vec<CachedResponse>,
-    /// Requests that got a successful response.
+    /// Requests that got an answer: a 2xx response that is not a web page and, for metadata,
+    /// one its provider reads.
     answered: usize,
-    /// Requests that got no response at all.
-    unreachable: usize,
+    /// Requests that got none: no response, another status, or a page in its place (a captive
+    /// portal's sign-in page, whatever status it comes with).
+    unanswered: usize,
     /// What each cached copy that answered a request was.
     served: Vec<MetadataKind>,
 }
 
-/// The app's [`FetchHost`] as the fetch library's. Long-lived station metadata that arrives is
-/// noted for the app to keep (`Traffic::cacheable`); when such a request gets no response at
-/// all, the copy the app kept answers it instead, if it is not too old.
+/// The app's [`FetchHost`] as the fetch library's. Long-lived station metadata that arrives and
+/// its provider reads is noted for the app to keep (`Traffic::cacheable`); when such a request
+/// gets no answer (no response, another status than 2xx, a page in its place or a body its
+/// provider does not read), the copy the app kept answers it instead, if it is not too old.
 struct Bridge {
     host: Arc<dyn FetchHost>,
     cached: BTreeMap<String, CachedMetadata>,
@@ -275,39 +281,105 @@ impl Bridge {
         })
     }
 
-    /// Notes a successful response to `url` when it is metadata worth keeping.
-    fn note(&self, url: &str, response: &Fetched) {
+    /// Whether `response` answers the request for `url`, counted either way; metadata its
+    /// provider reads is noted to keep.
+    fn note(&self, url: &str, response: &Fetched) -> bool {
+        let kind = MetadataKind::of_url(url);
+        let answered = (200..300).contains(&response.status)
+            && !is_page(response)
+            && kind.is_none_or(|kind| metadata_reads(kind, url, &response.body));
         let mut traffic = self.traffic();
+        if !answered {
+            traffic.unanswered += 1;
+            return false;
+        }
         traffic.answered += 1;
-        if !(200..300).contains(&response.status) {
-            return;
-        }
         let Some(entry) = CachedMetadata::new(url, response.body.clone(), self.now) else {
-            return;
+            return true;
         };
-        if traffic.cacheable.iter().any(|c| c.key == entry.key) {
-            return;
+        if !traffic.cacheable.iter().any(|c| c.key == entry.key) {
+            traffic.cacheable.push(CachedResponse {
+                key: entry.key,
+                body: entry.body,
+                fetched_at: entry.fetched_at.0,
+            });
         }
-        traffic.cacheable.push(CachedResponse {
-            key: entry.key,
-            body: entry.body,
-            fetched_at: entry.fetched_at.0,
-        });
+        true
+    }
+}
+
+/// Whether a response is a web page: what a captive portal sends in place of an answer, and
+/// never what a source the fetch reads answers with.
+fn is_page(response: &Fetched) -> bool {
+    let html_type = response
+        .content_type
+        .as_deref()
+        .is_some_and(|t| t.to_ascii_lowercase().contains("html"));
+    let start = response.body.trim_ascii_start();
+    let head = start[..start.len().min(16)].to_ascii_lowercase();
+    html_type || head.starts_with(b"<!doctype html") || head.starts_with(b"<html")
+}
+
+/// The station id in a CO-OPS metadata URL (`.../stations/{id}/harcon.json`).
+fn station_of(url: &str) -> Option<&str> {
+    let path = url.split(['?', '#']).next()?;
+    let (_, rest) = path.split_once("/stations/")?;
+    rest.split('/').next().filter(|id| !id.is_empty())
+}
+
+/// The value of a query parameter of `url`.
+fn query_value<'a>(url: &'a str, name: &str) -> Option<&'a str> {
+    let query = url.split('#').next()?.split_once('?')?.1;
+    query
+        .split('&')
+        .find_map(|pair| pair.strip_prefix(name)?.strip_prefix('='))
+}
+
+/// Whether the provider of a metadata response reads `body`: a copy is kept, and counts as an
+/// answer, only then.
+fn metadata_reads(kind: MetadataKind, url: &str, body: &[u8]) -> bool {
+    let station = station_of(url).unwrap_or_default();
+    match kind {
+        // A current station's constants are asked for by bin.
+        MetadataKind::Harmonics if url.contains("bin=") => query_value(url, "bin")
+            .and_then(|bin| bin.parse().ok())
+            .is_some_and(|bin| mdapi::parse_current_harmonics(station, Some(bin), body).is_ok()),
+        MetadataKind::Harmonics => {
+            // Only the constants are read here; `Z0` comes from the datums.
+            let msl = DatumTable::new(station, BTreeMap::from([("MSL".to_owned(), 0.0)]));
+            mdapi::parse_tide_harmonics(station, body, &msl, VerticalDatum::Msl).is_ok()
+        }
+        MetadataKind::Datums => mdapi::parse_datums(station, body).is_ok(),
+        MetadataKind::TideOffsets => mdapi::parse_tide_offsets(body).is_ok(),
+        MetadataKind::CurrentOffsets => mdapi::parse_current_offsets(None, body).is_ok(),
+        MetadataKind::Bins => mdapi::parse_bins(body).is_ok(),
+        MetadataKind::CoopsStations => [
+            StationList::TidePredictions,
+            StationList::CurrentPredictions,
+            StationList::WaterLevels,
+            StationList::Currents,
+        ]
+        .into_iter()
+        .find(|list| query_value(url, "type") == Some(list.type_name()))
+        .is_some_and(|list| mdapi::parse_station_list(list, body).is_ok()),
+        MetadataKind::NdbcStations => std::str::from_utf8(body)
+            .is_ok_and(|text| ndbc::stations::parse(text).is_ok_and(|s| !s.is_empty())),
     }
 }
 
 impl library::FetchHost for Bridge {
     async fn send(&self, call: &Call) -> Result<Fetched, TransportError> {
-        match self.host.send(host_request(call)).await {
-            Ok(response) => {
-                let fetched = fetched(response)?;
-                self.note(&call.url, &fetched);
-                Ok(fetched)
-            }
+        let fetched = match self.host.send(host_request(call)).await {
+            Ok(response) => fetched(response),
+            Err(e) => Err(transport_error(e, &call.url)),
+        };
+        match fetched {
+            Ok(fetched) if self.note(&call.url, &fetched) => Ok(fetched),
+            // Not an answer: a kept copy answers metadata, anything else fails as it came.
+            Ok(fetched) => Ok(self.offline_answer(&call.url).unwrap_or(fetched)),
             Err(e) => {
-                self.traffic().unreachable += 1;
-                self.offline_answer(&call.url)
-                    .ok_or_else(|| transport_error(e, &call.url))
+                self.traffic().unanswered += 1;
+                self.offline_answer(&call.url).ok_or(e)
             }
         }
     }
@@ -685,7 +757,7 @@ pub async fn fetch_spot(
     });
     let traffic = std::mem::take(&mut *bridge.traffic());
     let mut snapshot = out.snapshot;
-    if traffic.answered == 0 && traffic.unreachable > 0 {
+    if traffic.answered == 0 && traffic.unanswered > 0 {
         let zone = if snapshot.spot.time_zone.is_empty() {
             info.time_zone.as_str()
         } else {
@@ -894,6 +966,57 @@ fn choose(
 mod tests {
     use super::*;
     use underbite_providers::request::CacheHint;
+
+    fn coops(file: &str) -> Vec<u8> {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        std::fs::read(root.join("../../tests/fixtures/raw/coops").join(file)).unwrap()
+    }
+
+    #[test]
+    fn metadata_is_kept_only_when_its_provider_reads_it() {
+        let base = "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi";
+        let page = b"<!DOCTYPE html><html><body>Sign in</body></html>".to_vec();
+        let cases = [
+            (
+                MetadataKind::Harmonics,
+                format!("{base}/stations/8518750/harcon.json?units=metric"),
+                coops("coops-mdapi-8518750-harcon-metric.json"),
+            ),
+            (
+                MetadataKind::Harmonics,
+                format!("{base}/stations/NYH1927/harcon.json?bin=13"),
+                coops("coops-mdapi-NYH1927-harcon.json"),
+            ),
+            (
+                MetadataKind::Datums,
+                format!("{base}/stations/8518750/datums.json?units=metric"),
+                coops("coops-mdapi-8518750-datums-metric.json"),
+            ),
+            (
+                MetadataKind::TideOffsets,
+                format!("{base}/stations/8518919/tidepredoffsets.json"),
+                coops("coops-mdapi-8518919-tidepredoffsets.json"),
+            ),
+        ];
+        for (kind, url, body) in cases {
+            assert!(metadata_reads(kind, &url, &body), "{url}");
+            assert!(!metadata_reads(kind, &url, &page), "{url}");
+            assert!(!metadata_reads(kind, &url, b"{\"error\":"), "{url}");
+        }
+        let html = |content_type: &str, body: &[u8]| Fetched {
+            status: 200,
+            content_type: Some(content_type.into()),
+            body: body.to_vec(),
+            ..Fetched::default()
+        };
+        assert!(is_page(&html("text/html; charset=utf-8", b"Sign in")));
+        assert!(is_page(&html("application/json", b"  <HTML><body/>")));
+        assert!(!is_page(&html("application/json", b"{\"a\":1}")));
+        assert!(!is_page(&html(
+            "text/xml",
+            b"<?xml version=\"1.0\"?><stations/>"
+        )));
+    }
 
     fn response(body: Vec<u8>) -> HostResponse {
         HostResponse {

@@ -73,6 +73,8 @@ struct Phone {
     routes: Vec<Route>,
     /// Every request fails while this is set.
     offline: AtomicBool,
+    /// Every request gets this status and a sign-in page while set, as behind a captive portal.
+    portal: Mutex<Option<u16>>,
     seen: Mutex<Vec<String>>,
     values: Mutex<BTreeMap<(String, String), String>>,
 }
@@ -86,6 +88,7 @@ impl Phone {
             base,
             routes: routes.route,
             offline: AtomicBool::new(false),
+            portal: Mutex::new(None),
             seen: Mutex::new(Vec::new()),
             values: Mutex::new(BTreeMap::new()),
         })
@@ -97,6 +100,10 @@ impl Phone {
 
     fn lose_signal(&self) {
         self.offline.store(true, Ordering::SeqCst);
+    }
+
+    fn behind_portal(&self, status: u16) {
+        *self.portal.lock().unwrap() = Some(status);
     }
 
     fn requests(&self) -> usize {
@@ -111,6 +118,19 @@ impl FetchHost for Phone {
         if self.offline.load(Ordering::SeqCst) {
             return Err(HostError::Failed {
                 message: "The Internet connection appears to be offline.".into(),
+            });
+        }
+        if let Some(status) = *self.portal.lock().unwrap() {
+            return Ok(HostResponse {
+                status,
+                body: b"<!DOCTYPE html><html><body>Sign in to the network</body></html>".to_vec(),
+                content_type: Some("text/html; charset=utf-8".into()),
+                date: None,
+                expires: None,
+                last_modified: None,
+                etag: None,
+                retry_after: None,
+                rate_limit_remaining: None,
             });
         }
         let url = request.url;
@@ -343,6 +363,30 @@ fn kept_metadata_that_computes_nothing_is_not_called_a_computed_tide() {
         assert!(
             note.starts_with("offline: values from Nov 8, 9:30"),
             "{harcon:?}: {note}"
+        );
+    }
+}
+
+#[test]
+fn a_captive_portal_neither_hides_the_fallback_nor_replaces_kept_copies() {
+    for status in [200, 302, 511] {
+        let phone = Phone::new();
+        let (online, first) = fetch(&phone, now(), Vec::new());
+        let cached = with_constants(&first.cacheable);
+        phone.behind_portal(status);
+        let (s, out) = fetch(&phone, now() + 3_600, cached);
+        assert!(
+            out.cacheable.is_empty(),
+            "{status}: offered {:?}",
+            out.cacheable.iter().map(|c| &c.key).collect::<Vec<_>>()
+        );
+        let tide = s.marine.tide.as_ref().expect("a tide");
+        assert_eq!(tide.provenance.kind, ValueKind::Computed, "{status}");
+        assert_eq!(s.fetched_at, online.fetched_at, "{status}");
+        let note = offline_note(&out);
+        assert!(
+            note.starts_with("offline: computed from harmonic constants"),
+            "{status}: {note}"
         );
     }
 }
