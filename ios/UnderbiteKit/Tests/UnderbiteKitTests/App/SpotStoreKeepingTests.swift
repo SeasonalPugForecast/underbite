@@ -15,7 +15,8 @@ private final class Shared<Value>: @unchecked Sendable {
 }
 
 /// What the store keeps of a spot and for how long: the water type a fetch suggests, nothing
-/// of a deleted spot, one fetch at a time per spot, and the core's own words for an error. No network: the core's calls run against a stubbed
+/// of a deleted spot, one fetch at a time per spot, only the shown spot's cache in memory, and
+/// the core's own words for an error. No network: the core's calls run against a stubbed
 /// `URLSession`.
 @MainActor
 final class SpotStoreKeepingTests: XCTestCase {
@@ -198,6 +199,43 @@ final class SpotStoreKeepingTests: XCTestCase {
         queue.add(["a", "b"], except: ["a"])
         queue.add(["b", "c"])
         XCTAssertEqual(queue.waiting, ["b", "c"])
+    }
+
+    // MARK: - Caches
+
+    func testARefreshHoldsOnlyTheShownSpotsCache() async throws {
+        // A real snapshot (every source unreachable) stands in for a fetched one.
+        let snapshot = try await fetchSpot(
+            spot: SeedSpots.battery.info, settingsJson: defaultSettingsJson(), keys: Self.noKeys,
+            options: FetchOptions(allowMetered: true, inferWaterType: false),
+            now: 1_800_000_000,
+            host: URLSessionHost(
+                session: StubProtocol.session(), storeURL: directory.appending(path: "probe"))
+        ).snapshotJson
+        let fetches = Shared(0)
+        let fetcher: SpotStore.Fetcher = { _, _, _, _, _, _ in
+            fetches.value += 1
+            return SpotFetchOutcome(snapshotJson: snapshot, errors: [], suggestion: nil)
+        }
+        let s = store(fetcher: fetcher)
+        for id in ["a", "b", "c"] {
+            s.add(Spot(id: id, name: id, latitude: 1, longitude: 2, waterType: "pond"))
+        }
+        await s.refreshOnOpen()
+        XCTAssertEqual(fetches.value, 3)
+        XCTAssertEqual(s.heldCaches, ["a"], "only the shown spot's snapshot is in memory")
+        XCTAssertEqual(
+            s.listing.map(\.status.lastSuccess), [1_800_000_000, 1_800_000_000, 1_800_000_000])
+
+        // After a restart the statuses come from the files: none is due, only one is held.
+        let again = store(fetcher: fetcher)
+        await again.refreshOnOpen()
+        XCTAssertEqual(fetches.value, 3)
+        XCTAssertEqual(again.heldCaches, ["a"])
+        XCTAssertEqual(
+            again.listing.map(\.status.lastSuccess),
+            [1_800_000_000, 1_800_000_000, 1_800_000_000])
+        XCTAssertEqual(again.cache("b").lastSuccess, 1_800_000_000, "read when asked for")
     }
 
     // MARK: - Errors in the core's words

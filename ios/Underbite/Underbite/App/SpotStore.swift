@@ -62,6 +62,17 @@ nonisolated struct FileProblem: Equatable, Sendable {
     var keptAs: String?
 }
 
+/// What the list needs of a spot's cache: when its last fetch succeeded and why one failed.
+nonisolated struct SpotStatus: Equatable, Sendable {
+    var lastSuccess: Int64?
+    var error: String?
+
+    init(_ cache: SpotCache) {
+        lastSuccess = cache.lastSuccess
+        error = cache.error
+    }
+}
+
 /// One row of the spot list and the page header, as `view_model` returns it: the core wrote
 /// every word, the store only decodes the ones the shell shows until the view-model types land.
 nonisolated struct SpotListing: Decodable, Identifiable, Equatable, Sendable {
@@ -149,7 +160,11 @@ final class SpotStore {
     @ObservationIgnored private let fetcher: Fetcher
     @ObservationIgnored private let discoverer: Discoverer
     @ObservationIgnored private let pageBuilder: PageBuilder
+    /// The whole caches read so far: the shown spot's and those a view asked for. The others
+    /// stay on disk.
     @ObservationIgnored private var caches: [String: SpotCache] = [:]
+    /// Every spot's status, read from its cache off the main actor.
+    @ObservationIgnored private var statuses: [String: SpotStatus] = [:]
     /// Files left in place after they could not be read: never written over.
     @ObservationIgnored private var unwritable: Set<String> = []
     @ObservationIgnored private var queue = RefreshQueue()
@@ -263,12 +278,50 @@ final class SpotStore {
         fileProblems.append(FileProblem(file: file, keptAs: kept))
     }
 
-    /// The cache of `id`, read from its file the first time.
+    /// The cache of `id`, read from its file the first time and held from then on.
     func cache(_ id: String) -> SpotCache {
         if let held = caches[id] { return held }
         let read = files.read(SpotCache.self, files.cacheName(id)) ?? SpotCache()
         caches[id] = read
+        statuses[id] = SpotStatus(read)
         return read
+    }
+
+    /// The ids whose whole cache is held in memory.
+    var heldCaches: Set<String> { Set(caches.keys) }
+
+    /// The cache of `id`: the one held, else its file read off the main actor, and not held.
+    private func storedCache(_ id: String) async -> SpotCache {
+        if let held = caches[id] { return held }
+        let files = self.files
+        return await Task.detached(priority: .userInitiated) {
+            files.read(SpotCache.self, files.cacheName(id)) ?? SpotCache()
+        }.value
+    }
+
+    /// Reads the status of every spot not known yet from its cache file, off the main actor;
+    /// the snapshots are dropped, not held.
+    private func loadStatuses() async {
+        let missing = spots.map(\.id).filter { statuses[$0] == nil }
+        guard !missing.isEmpty else { return }
+        let files = self.files
+        let read = await Task.detached(priority: .userInitiated) {
+            missing.map { id in
+                (id, SpotStatus(files.read(SpotCache.self, files.cacheName(id)) ?? SpotCache()))
+            }
+        }.value
+        // A fetch that ended meanwhile wrote a newer one.
+        for (id, status) in read where statuses[id] == nil && spot(id) != nil {
+            statuses[id] = status
+        }
+    }
+
+    /// Saves `held` as the cache of `id`: its status, its file, and in memory when it is held
+    /// there already or `id` is the shown spot.
+    private func keep(_ held: SpotCache, for id: String) {
+        if caches[id] != nil || id == activeID { caches[id] = held }
+        statuses[id] = SpotStatus(held)
+        files.write(held, files.cacheName(id))
     }
 
     // MARK: - Spots
@@ -304,6 +357,7 @@ final class SpotStore {
     func remove(_ id: String) {
         spots.removeAll { $0.id == id }
         caches[id] = nil
+        statuses[id] = nil
         files.remove(files.cacheName(id))
         forgetSpot(spotId: id, host: host)
         stationProblems[id] = nil
@@ -457,10 +511,11 @@ final class SpotStore {
     /// Fetches the spots whose data is older than the refresh interval allows (all of them
     /// the first time), the shown spot first.
     func refreshOnOpen() async {
+        await loadStatuses()
         let now = clock()
         let after = RefreshPolicy.dueAfter(minutes: refreshMinutes, lowPower: lowPower())
         let due = RefreshPolicy.due(
-            spots.map { ($0.id, cache($0.id).lastSuccess) }, now: now, after: after)
+            spots.map { ($0.id, statuses[$0.id]?.lastSuccess) }, now: now, after: after)
         guard !due.isEmpty else {
             await rebuildPage()
             return
@@ -517,11 +572,12 @@ final class SpotStore {
     }
 
     private func fetchOne(_ id: String) async {
-        guard let spot = spot(id) else { return }
-        var held = cache(id)
+        guard spot(id) != nil else { return }
         refreshing.insert(id)
         defer { refreshing.remove(id) }
+        var held = await storedCache(id)
         await rebuildPage()
+        guard let spot = spot(id) else { return }
         let now = clock()
         let options = FetchOptions(
             allowMetered: true, inferWaterType: !spot.waterTypeChosen && held.suggestion == nil)
@@ -564,11 +620,10 @@ final class SpotStore {
         if let ranked {
             held.stationsJSON = ranked
             stationsRevision += 1
-        } else {
-            held.stationsJSON = cache(id).stationsJSON
+        } else if let kept = caches[id] {
+            held.stationsJSON = kept.stationsJSON
         }
-        caches[id] = held
-        files.write(held, files.cacheName(id))
+        keep(held, for: id)
     }
 
     /// What an error of a fetch or lookup says: the core's own message for the FFI's errors.
@@ -607,8 +662,7 @@ final class SpotStore {
         guard let stored = storedStations(spotId: id, host: host), stored != held.stationsJSON
         else { return }
         held.stationsJSON = stored
-        caches[id] = held
-        files.write(held, files.cacheName(id))
+        keep(held, for: id)
         stationsRevision += 1
     }
 
@@ -634,8 +688,7 @@ final class SpotStore {
                 !found.errors.isEmpty && found.errors.allSatisfy { $0.kind == "transport" }
             if !offline || held.stationsJSON == nil {
                 held.stationsJSON = found.stationsJson
-                caches[id] = held
-                files.write(held, files.cacheName(id))
+                keep(held, for: id)
                 stationsRevision += 1
             }
             stationProblems[id] = found.errors.first?.message
@@ -679,14 +732,14 @@ final class SpotStore {
     /// Builds the list rows and the active spot's page with `view_model`, off the main thread
     /// and from the cache, and publishes them unless a newer build has started.
     func rebuildPage() async {
+        await loadStatuses()
         generation += 1
         let mine = generation
         let order = arranged
         let active = order.firstIndex { $0.id == activeID } ?? 0
         let activeKey = activeID
         let activeCache = activeKey.map { cache($0) }
-        let others = Dictionary(
-            uniqueKeysWithValues: order.map { ($0.id, SpotCache.statusOnly(cache($0.id))) })
+        let others = statuses
         let busy = refreshing
         let settings = settingsJSON
         let now = clock()
@@ -727,14 +780,5 @@ final class SpotStore {
                 spots: spots, areas: areas, activeID: activeID, refreshMinutes: refreshMinutes,
                 sunMode: sunMode),
             FileProblem.File.spots.rawValue)
-    }
-}
-
-extension SpotCache {
-    /// The cache without its snapshot: what the list needs of every spot.
-    fileprivate nonisolated static func statusOnly(_ cache: SpotCache) -> SpotCache {
-        var copy = cache
-        copy.snapshotJSON = nil
-        return copy
     }
 }
