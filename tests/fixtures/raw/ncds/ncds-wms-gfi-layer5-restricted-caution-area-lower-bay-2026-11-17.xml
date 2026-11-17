@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GetFeatureInfoResponse>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="2676" code="112" acronym="RESARE" description="Restricted area" lnam="US078865773905464" geometryType="area">
+<Attribute acronym="rcid" description="" value="2676"/>
+<Attribute acronym="objectType" description="" value="RESARE"/>
+<Attribute acronym="objectTypeDescription" description="" value="Restricted area"/>
+<Attribute acronym="LNAM" description="" value="US078865773905464"/>
+		<Attribute acronym="INFORM" description="Information" value="40 CFR 140"/>
+		<Attribute acronym="RESTRN" description="Restriction" value="16" mappedValue="discharging prohibited"/>
+		<Attribute acronym="SORDAT" description="Source date" value="20111028"/>
+		<Attribute acronym="SORIND" description="Source indication" value="US,US,reprt,L-92/12"/>
+		<Attribute acronym="TXTDSC" description="Textual description" value="US381BEB.TXT"/>
+<Attribute acronym="txtdsc_token" description="" value="REDACTED"/>
+		<Attribute acronym="SCAMIN" description="Scale minimum" value="59999"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="2673" code="112" acronym="RESARE" description="Restricted area" lnam="US001656227405464" geometryType="area">
+<Attribute acronym="rcid" description="" value="2673"/>
+<Attribute acronym="objectType" description="" value="RESARE"/>
+<Attribute acronym="objectTypeDescription" description="" value="Restricted area"/>
+<Attribute acronym="LNAM" description="" value="US001656227405464"/>
+		<Attribute acronym="CATREA" description="Category of restricted area" value="1" mappedValue="offshore safety zone"/>
+		<Attribute acronym="INFORM" description="Information" value="Security zone, 33 CFR 165.169: Navigation regulations are published in Chapter 2 of the U.S. Coast Pilot for this geographic area. Refer to regulation section numbers."/>
+		<Attribute acronym="OBJNAM" description="Object name" value="New York Marine Inspection Zone and Captain of the Port Zone."/>
+		<Attribute acronym="SORDAT" description="Source date" value="201703"/>
+		<Attribute acronym="SORIND" description="Source indication" value="US,US,graph,Chart 12350"/>
+		<Attribute acronym="SCAMIN" description="Scale minimum" value="59999"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="837" code="27" acronym="CTNARE" description="Caution area" lnam="US020168414907291" geometryType="area">
+<Attribute acronym="rcid" description="" value="837"/>
+<Attribute acronym="objectType" description="" value="CTNARE"/>
+<Attribute acronym="objectTypeDescription" description="" value="Caution area"/>
+<Attribute acronym="LNAM" description="" value="US020168414907291"/>
+		<Attribute acronym="INFORM" description="Information" value="Sheepshead Bay and approaches are subject to continual change due to shoaling.  Buoys may be frequently relocated to mark best water."/>
+		<Attribute acronym="SORDAT" description="Source date" value="20210628"/>
+		<Attribute acronym="SORIND" description="Source indication" value="US,US,reprt,L-149-2021"/>
+		<Attribute acronym="SCAMIN" description="Scale minimum" value="89999"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="2668" code="302" acronym="M_COVR" description="Coverage" lnam="US408118460012241" geometryType="area">
+<Attribute acronym="rcid" description="" value="2668"/>
+<Attribute acronym="objectType" description="" value="M_COVR"/>
+<Attribute acronym="objectTypeDescription" description="" value="Coverage"/>
+<Attribute acronym="LNAM" description="" value="US408118460012241"/>
+		<Attribute acronym="CATCOV" description="Category of coverage" value="1" mappedValue="coverage available"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+</GetFeatureInfoResponse>

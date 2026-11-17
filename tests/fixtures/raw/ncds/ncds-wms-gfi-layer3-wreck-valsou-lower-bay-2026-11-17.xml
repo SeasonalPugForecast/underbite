@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GetFeatureInfoResponse>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="1139" code="159" acronym="WRECKS" description="Wreck" lnam="US096976702505457" geometryType="point">
+<Attribute acronym="rcid" description="" value="1139"/>
+<Attribute acronym="objectType" description="" value="WRECKS"/>
+<Attribute acronym="objectTypeDescription" description="" value="Wreck"/>
+<Attribute acronym="LNAM" description="" value="US096976702505457"/>
+		<Attribute acronym="CATWRK" description="Category of wreck" value="2" mappedValue="dangerous wreck"/>
+		<Attribute acronym="QUASOU" description="Quality of sounding measurement" value="6" mappedValue="least depth known"/>
+		<Attribute acronym="SORDAT" description="Source date" value="20131220"/>
+		<Attribute acronym="SORIND" description="Source indication" value="US,US,graph,H-12891"/>
+		<Attribute acronym="VALSOU" description="Value of sounding" value="2.6"/>
+		<Attribute acronym="WATLEV" description="Water level effect" value="3" mappedValue="always under water/submerged"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="point"/>
+	</Feature>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="2668" code="302" acronym="M_COVR" description="Coverage" lnam="US408118460012241" geometryType="area">
+<Attribute acronym="rcid" description="" value="2668"/>
+<Attribute acronym="objectType" description="" value="M_COVR"/>
+<Attribute acronym="objectTypeDescription" description="" value="Coverage"/>
+<Attribute acronym="LNAM" description="" value="US408118460012241"/>
+		<Attribute acronym="CATCOV" description="Category of coverage" value="1" mappedValue="coverage available"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+</GetFeatureInfoResponse>

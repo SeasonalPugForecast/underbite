@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GetFeatureInfoResponse>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="2668" code="302" acronym="M_COVR" description="Coverage" lnam="US408118460012241" geometryType="area">
+<Attribute acronym="rcid" description="" value="2668"/>
+<Attribute acronym="objectType" description="" value="M_COVR"/>
+<Attribute acronym="objectTypeDescription" description="" value="Coverage"/>
+<Attribute acronym="LNAM" description="" value="US408118460012241"/>
+		<Attribute acronym="CATCOV" description="Category of coverage" value="1" mappedValue="coverage available"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+</GetFeatureInfoResponse>

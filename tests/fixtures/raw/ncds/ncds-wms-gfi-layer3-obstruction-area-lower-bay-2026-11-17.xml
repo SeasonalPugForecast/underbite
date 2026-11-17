@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GetFeatureInfoResponse>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="842" code="86" acronym="OBSTRN" description="Obstruction" lnam="US081508493605464" geometryType="area">
+<Attribute acronym="rcid" description="" value="842"/>
+<Attribute acronym="objectType" description="" value="OBSTRN"/>
+<Attribute acronym="objectTypeDescription" description="" value="Obstruction"/>
+<Attribute acronym="LNAM" description="" value="US081508493605464"/>
+		<Attribute acronym="CATOBS" description="Category of obstruction" value="6" mappedValue="foul area"/>
+		<Attribute acronym="SORDAT" description="Source date" value="20140607"/>
+		<Attribute acronym="SORIND" description="Source indication" value="US,US,graph,GC-11246"/>
+		<Attribute acronym="VALSOU" description="Value of sounding" value=""/>
+		<Attribute acronym="WATLEV" description="Water level effect" value="3" mappedValue="always under water/submerged"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="2668" code="302" acronym="M_COVR" description="Coverage" lnam="US408118460012241" geometryType="area">
+<Attribute acronym="rcid" description="" value="2668"/>
+<Attribute acronym="objectType" description="" value="M_COVR"/>
+<Attribute acronym="objectTypeDescription" description="" value="Coverage"/>
+<Attribute acronym="LNAM" description="" value="US408118460012241"/>
+		<Attribute acronym="CATCOV" description="Category of coverage" value="1" mappedValue="coverage available"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+</GetFeatureInfoResponse>

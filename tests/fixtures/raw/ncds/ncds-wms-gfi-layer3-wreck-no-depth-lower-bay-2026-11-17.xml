@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GetFeatureInfoResponse>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="1038" code="159" acronym="WRECKS" description="Wreck" lnam="US098843702208526" geometryType="point">
+<Attribute acronym="rcid" description="" value="1038"/>
+<Attribute acronym="objectType" description="" value="WRECKS"/>
+<Attribute acronym="objectTypeDescription" description="" value="Wreck"/>
+<Attribute acronym="LNAM" description="" value="US098843702208526"/>
+		<Attribute acronym="CATWRK" description="Category of wreck" value="5" mappedValue="wreck showing any portion of hull or superstructure"/>
+		<Attribute acronym="QUASOU" description="Quality of sounding measurement" value="2" mappedValue="depth unknown"/>
+		<Attribute acronym="SORDAT" description="Source date" value="20131220"/>
+		<Attribute acronym="SORIND" description="Source indication" value="US,US,graph,H-12604"/>
+		<Attribute acronym="VALSOU" description="Value of sounding" value=""/>
+		<Attribute acronym="WATLEV" description="Water level effect" value="4" mappedValue="covers and uncovers"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="point"/>
+	</Feature>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="2668" code="302" acronym="M_COVR" description="Coverage" lnam="US408118460012241" geometryType="area">
+<Attribute acronym="rcid" description="" value="2668"/>
+<Attribute acronym="objectType" description="" value="M_COVR"/>
+<Attribute acronym="objectTypeDescription" description="" value="Coverage"/>
+<Attribute acronym="LNAM" description="" value="US408118460012241"/>
+		<Attribute acronym="CATCOV" description="Category of coverage" value="1" mappedValue="coverage available"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+</GetFeatureInfoResponse>

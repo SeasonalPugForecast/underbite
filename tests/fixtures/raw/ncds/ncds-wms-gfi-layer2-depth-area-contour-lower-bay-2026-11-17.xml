@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GetFeatureInfoResponse>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="1529" code="43" acronym="DEPCNT" description="Depth contour" lnam="US007802307205464" geometryType="line">
+<Attribute acronym="rcid" description="" value="1529"/>
+<Attribute acronym="objectType" description="" value="DEPCNT"/>
+<Attribute acronym="objectTypeDescription" description="" value="Depth contour"/>
+<Attribute acronym="LNAM" description="" value="US007802307205464"/>
+		<Attribute acronym="VALDCO" description="Value of depth contour" value="0"/>
+		<Attribute acronym="SCAMIN" description="Scale minimum" value="89999"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="line"/>
+	</Feature>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="1206" code="42" acronym="DEPARE" description="Depth area" lnam="US063637208745464" geometryType="area">
+<Attribute acronym="rcid" description="" value="1206"/>
+<Attribute acronym="objectType" description="" value="DEPARE"/>
+<Attribute acronym="objectTypeDescription" description="" value="Depth area"/>
+<Attribute acronym="LNAM" description="" value="US063637208745464"/>
+		<Attribute acronym="DRVAL1" description="Depth range value 1" value="-1.6"/>
+		<Attribute acronym="DRVAL2" description="Depth range value 2" value="0"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="1204" code="42" acronym="DEPARE" description="Depth area" lnam="US096850458808526" geometryType="area">
+<Attribute acronym="rcid" description="" value="1204"/>
+<Attribute acronym="objectType" description="" value="DEPARE"/>
+<Attribute acronym="objectTypeDescription" description="" value="Depth area"/>
+<Attribute acronym="LNAM" description="" value="US096850458808526"/>
+		<Attribute acronym="DRVAL1" description="Depth range value 1" value="0"/>
+		<Attribute acronym="DRVAL2" description="Depth range value 2" value="2"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+	<Feature dataset="US5NY1BE.000" cscl="22000" rcid="2668" code="302" acronym="M_COVR" description="Coverage" lnam="US408118460012241" geometryType="area">
+<Attribute acronym="rcid" description="" value="2668"/>
+<Attribute acronym="objectType" description="" value="M_COVR"/>
+<Attribute acronym="objectTypeDescription" description="" value="Coverage"/>
+<Attribute acronym="LNAM" description="" value="US408118460012241"/>
+		<Attribute acronym="CATCOV" description="Category of coverage" value="1" mappedValue="coverage available"/>
+<Attribute acronym="cellName" description="" value="US5NY1BE.000"/>
+<Attribute acronym="compilationScale" description="" value="22000"/>
+<Attribute acronym="geometryType" description="" value="area"/>
+	</Feature>
+</GetFeatureInfoResponse>
