@@ -11,6 +11,7 @@ pub mod derive;
 pub mod discover;
 pub mod map;
 pub mod model;
+pub mod offline;
 pub mod provenance;
 pub mod series;
 pub mod share;

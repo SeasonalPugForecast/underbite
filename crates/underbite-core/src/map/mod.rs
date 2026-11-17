@@ -16,6 +16,7 @@ pub mod contours;
 pub mod dem;
 pub mod enc;
 pub mod grid;
+pub mod pack;
 pub mod render;
 pub mod tiles;
 
