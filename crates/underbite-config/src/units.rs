@@ -71,6 +71,40 @@ impl Default for UnitsConfig {
 }
 
 impl UnitsConfig {
+    /// The default units for a device whose locale names `region` (an ISO 3166 country code,
+    /// any case). The United States and its territories, and an unknown region, keep
+    /// [`Default`]; Canada and the rest of the world get metric units, with miles and mph in
+    /// the United Kingdom. The app passes the locale's region in; the core never reads it.
+    pub fn for_device_region(region: Option<&str>) -> Self {
+        let region = region.map(str::to_ascii_uppercase);
+        let mut u = Self::default();
+        match region.as_deref() {
+            None | Some("" | "US" | "PR" | "VI" | "GU" | "AS" | "MP" | "UM") => {}
+            Some(code) => {
+                u.discharge = DischargeUnit::M3s;
+                u.height = HeightUnit::M;
+                u.water_temp = TempUnit::C;
+                u.distance = DistanceUnit::Km;
+                match code {
+                    "CA" => {
+                        u.pressure = PressureUnit::Kpa;
+                        u.wind = Some(SpeedUnit::Kmh);
+                    }
+                    "GB" => {
+                        u.pressure = PressureUnit::Hpa;
+                        u.wind = Some(SpeedUnit::Mph);
+                        u.distance = DistanceUnit::Mi;
+                    }
+                    _ => {
+                        u.pressure = PressureUnit::Hpa;
+                        u.wind = Some(SpeedUnit::Kmh);
+                    }
+                }
+            }
+        }
+        u
+    }
+
     /// Air temperature unit.
     pub fn air_temp(&self) -> TempUnit {
         self.air_temp.unwrap_or(self.water_temp)
@@ -139,6 +173,29 @@ mod tests {
         assert_eq!(u.air_temp(), TempUnit::F);
         let d = u.display_units();
         assert_eq!((d.height, d.wind_speed), (HeightUnit::M, SpeedUnit::Mph));
+    }
+
+    #[test]
+    fn device_regions_pick_default_units() {
+        let default = UnitsConfig::default();
+        assert_eq!(UnitsConfig::for_device_region(Some("us")), default);
+        assert_eq!(UnitsConfig::for_device_region(None), default);
+        assert_eq!(UnitsConfig::for_device_region(Some("PR")), default);
+
+        let ca = UnitsConfig::for_device_region(Some("CA"));
+        assert_eq!(ca.tide(), HeightUnit::M);
+        assert_eq!(ca.water_temp, TempUnit::C);
+        assert_eq!(ca.discharge, DischargeUnit::M3s);
+        assert_eq!(ca.distance, DistanceUnit::Km);
+        assert_eq!(ca.pressure, PressureUnit::Kpa);
+        assert_eq!((ca.wind(), ca.current()), (SpeedUnit::Kmh, SpeedUnit::Kn));
+
+        let pt = UnitsConfig::for_device_region(Some("PT"));
+        assert_eq!(pt.pressure, PressureUnit::Hpa);
+        assert_eq!((pt.wind(), pt.distance), (SpeedUnit::Kmh, DistanceUnit::Km));
+        let gb = UnitsConfig::for_device_region(Some("GB"));
+        assert_eq!((gb.wind(), gb.distance), (SpeedUnit::Mph, DistanceUnit::Mi));
+        assert_eq!(gb.tide(), HeightUnit::M);
     }
 
     #[test]

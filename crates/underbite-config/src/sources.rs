@@ -2,13 +2,14 @@
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use underbite_core::discover::region::Region;
 use underbite_core::provenance::SourceId;
 
 use crate::schema::Issues;
 
 /// Ids the app knows or plans to implement. An id outside this list is a warning, and an id
 /// that is listed but not implemented yet is skipped at run time without an error.
-pub const KNOWN_SOURCES: [&str; 18] = [
+pub const KNOWN_SOURCES: [&str; 20] = [
     "usgs",
     "coops",
     "coops-harmonics",
@@ -27,6 +28,8 @@ pub const KNOWN_SOURCES: [&str; 18] = [
     "met-norway",
     "acis",
     "pirate-weather",
+    "dfo-iwls",
+    "eccc-hydrometric",
 ];
 
 /// The most decimals of a coordinate that ever leave the device (about 1 km).
@@ -47,10 +50,14 @@ pub struct SourceGroup {
     pub max_age_minutes: Option<u32>,
 }
 
+fn ids(chain: &[&str]) -> Vec<SourceId> {
+    chain.iter().map(|id| SourceId::new(*id)).collect()
+}
+
 impl SourceGroup {
     fn of(chain: &[&str]) -> Self {
         Self {
-            chain: chain.iter().map(|id| SourceId::new(*id)).collect(),
+            chain: ids(chain),
             max_distance_km: None,
             max_age_minutes: None,
         }
@@ -151,6 +158,34 @@ impl Default for SourcesConfig {
 }
 
 impl SourcesConfig {
+    /// The default chains for a spot in `region`. The United States keeps [`Default`]; Canada
+    /// swaps in its tide and river-flow sources; elsewhere only gridded and satellite sources
+    /// serve, so the groups that need stations (river flow, lake level, water quality, marine
+    /// forecast) are empty, and the tide group is the modelled sea level alone.
+    pub fn for_region(region: Region) -> Self {
+        let mut s = Self::default();
+        match region {
+            Region::Us => {}
+            Region::Canada => {
+                s.tide = SourceGroup::of(&["dfo-iwls", "open-meteo-marine"]);
+                s.flow = SourceGroup::of(&["eccc-hydrometric"]);
+            }
+            Region::Elsewhere => {
+                s.water_temperature.chain = ids(&["open-meteo-marine", "mur-sst"]);
+                s.tide = SourceGroup::of(&["open-meteo-marine"]);
+                s.currents = SourceGroup::of(&["copernicus", "open-meteo-marine"]);
+                s.flow = SourceGroup::of(&[]);
+                s.lake_level = SourceGroup::of(&[]);
+                s.waves = SourceGroup::of(&["open-meteo-marine"]);
+                s.clarity = SourceGroup::of(&["copernicus"]);
+                s.water_quality = SourceGroup::of(&[]);
+                s.marine_forecast = SourceGroup::of(&[]);
+                s.weather = SourceGroup::of(&["open-meteo"]);
+            }
+        }
+        s
+    }
+
     /// The groups with their table names.
     pub fn groups(&self) -> [(&'static str, &SourceGroup); 12] {
         [
@@ -237,6 +272,77 @@ mod tests {
         );
         assert_eq!(s.coordinate_precision, 2);
         assert!(s.storm.chain.contains(&SourceId::new("open-meteo-storm")));
+    }
+
+    #[test]
+    fn the_united_states_keeps_the_default_chains() {
+        assert_eq!(
+            SourcesConfig::for_region(Region::Us),
+            SourcesConfig::default()
+        );
+    }
+
+    fn chain_ids(g: &SourceGroup) -> Vec<&str> {
+        g.chain.iter().map(SourceId::as_str).collect()
+    }
+
+    #[test]
+    fn canada_swaps_in_its_tide_and_flow_sources_only() {
+        let us = SourcesConfig::default();
+        let ca = SourcesConfig::for_region(Region::Canada);
+        assert_eq!(chain_ids(&ca.tide), ["dfo-iwls", "open-meteo-marine"]);
+        assert_eq!(chain_ids(&ca.flow), ["eccc-hydrometric"]);
+        assert_eq!(issues_of(&ca).0.len(), 0);
+        let same = us
+            .groups()
+            .iter()
+            .zip(ca.groups())
+            .filter(|((_, x), (_, y))| x == y)
+            .count();
+        assert_eq!(same, 10);
+    }
+
+    #[test]
+    fn elsewhere_has_only_gridded_and_satellite_sources() {
+        let s = SourcesConfig::for_region(Region::Elsewhere);
+        let stationed = [
+            "usgs",
+            "coops",
+            "coops-harmonics",
+            "ndbc",
+            "nwps",
+            "nws",
+            "glerl",
+            "dfo-iwls",
+            "eccc-hydrometric",
+        ];
+        for (name, group) in s.groups() {
+            for id in chain_ids(group) {
+                assert!(!stationed.contains(&id), "{name}: {id}");
+            }
+        }
+        assert_eq!(chain_ids(&s.tide), ["open-meteo-marine"]);
+        assert_eq!(chain_ids(&s.sst), ["mur-sst", "open-meteo-marine"]);
+        // Only the groups with no gridded source are empty, and they say so.
+        let empty: Vec<&str> = s
+            .groups()
+            .into_iter()
+            .filter(|(_, g)| g.chain.is_empty())
+            .map(|(n, _)| n)
+            .collect();
+        assert_eq!(
+            empty,
+            ["flow", "lake_level", "water_quality", "marine_forecast"]
+        );
+        let issues = issues_of(&s).0;
+        assert_eq!(issues.len(), empty.len());
+        assert!(issues.iter().all(|i| i.severity == Severity::Warning));
+    }
+
+    #[test]
+    fn the_new_ids_are_known() {
+        assert!(KNOWN_SOURCES.contains(&"dfo-iwls"));
+        assert!(KNOWN_SOURCES.contains(&"eccc-hydrometric"));
     }
 
     #[test]

@@ -1250,6 +1250,8 @@ fn rows() -> Vec<Row> {
             needs_key: true,
             ..weather("pirate-weather", "Pirate Weather")
         },
+        Row::new("dfo-iwls"),
+        Row::new("eccc-hydrometric"),
     ]
 }
 

@@ -14,6 +14,8 @@ use underbite_core::model::{Measurement, Requirements, WaterType};
 use underbite_core::provenance::SourceId;
 use underbite_core::view::CardId;
 use underbite_providers::coops::{Coops, CoopsHarmonics};
+use underbite_providers::dfo::Dfo;
+use underbite_providers::eccc::Eccc;
 use underbite_providers::ndbc::Ndbc;
 use underbite_providers::nwps::Nwps;
 use underbite_providers::nws_marine::NwsMarine;
@@ -36,7 +38,7 @@ use whether_providers::regions::covers_us;
 /// (sources not implemented yet) are skipped at run time. [`water_source`] is the registry;
 /// this list checks it.
 #[cfg(test)]
-const WATER_SOURCES: [SourceId; 7] = [
+const WATER_SOURCES: [SourceId; 9] = [
     SourceId::COOPS,
     SourceId::COOPS_HARMONICS,
     SourceId::USGS,
@@ -44,6 +46,8 @@ const WATER_SOURCES: [SourceId; 7] = [
     SourceId::NWPS,
     SourceId::OPEN_METEO_MARINE,
     SourceId::NWS,
+    SourceId::DFO_IWLS,
+    SourceId::ECCC_HYDROMETRIC,
 ];
 
 /// Sources that only make sense on salt water and the Great Lakes (gridded marine models).
@@ -59,6 +63,8 @@ pub(crate) fn water_source(id: &SourceId) -> Option<Arc<dyn Source>> {
         "nwps" => Arc::new(Nwps),
         "open-meteo-marine" => Arc::new(OpenMeteoMarine),
         "nws" => Arc::new(NwsMarine),
+        "dfo-iwls" => Arc::new(Dfo),
+        "eccc-hydrometric" => Arc::new(Eccc::new()),
         _ => return None,
     })
 }
