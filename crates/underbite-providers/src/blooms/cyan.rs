@@ -8,15 +8,26 @@
 //! [`request_url`] builds the one request; [`parse`] reads the body into a [`CyanReading`] that
 //! carries the date of the composite, and [`CyanReading::bloom_info`] places it in the
 //! snapshot's [`BloomInfo`].
+//!
+//! [`Cyan`] is the source, for a [`Place::Point`] on a lake: the weekly composites' mean as the
+//! spot's cyanobacteria.
+
+use std::collections::BTreeSet;
 
 use serde::Deserialize;
-use underbite_core::model::{BloomInfo, ExternalLink};
+use underbite_core::model::{BloomInfo, ExternalLink, Measurement, Requirements};
 use underbite_core::provenance::{Attribution, Provenance, Quality, Relation, SourceId, ValueKind};
 use underbite_core::series::{Sample, Series};
 use underbite_core::time::{LocalDate, UnixTime, UtcOffset};
 
-use crate::request::{Coordinates, RoundedPoint};
-use crate::source::SourceError;
+use crate::request::{Coordinates, Place, Request, Resource, Response, RoundedPoint, Target};
+use crate::source::{FetchContext, FragmentValue, Fragments, Source, SourceError, check_response};
+
+/// The measurements the source supplies: the composites' mean cell concentration.
+pub const MEASUREMENTS: [Measurement; 1] = [Measurement::Cyanobacteria];
+
+/// How long a response may be reused, seconds: composites are weekly.
+const MAX_AGE_S: u32 = 6 * 3_600;
 
 /// Records older than this (about two weeks) mean the composite feed is not current.
 pub const STALE_AFTER_S: i64 = 14 * 86_400;
@@ -267,9 +278,92 @@ fn distance_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f32 {
     (2.0 * EARTH_RADIUS_M * a.sqrt().min(1.0).asin()) as f32
 }
 
+/// `CyAN` as a source of a lake's cyanobacteria. It holds no settings.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Cyan;
+
+fn point_of(target: &Target) -> Result<RoundedPoint, SourceError> {
+    match target.place {
+        Place::Point(p) => Ok(p),
+        Place::Station { .. } | Place::Zone(_) => Err(SourceError::Unsupported(
+            "CyAN is a satellite product and needs a point".into(),
+        )),
+    }
+}
+
+impl Source for Cyan {
+    fn id(&self) -> SourceId {
+        SourceId::CYAN
+    }
+
+    fn attribution(&self) -> Attribution {
+        attribution()
+    }
+
+    fn measurements(&self) -> &[Measurement] {
+        &MEASUREMENTS
+    }
+
+    /// The weekly composites at the target's point.
+    fn plan(
+        &self,
+        target: &Target,
+        requirements: &Requirements,
+        _ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        let served: BTreeSet<Measurement> = MEASUREMENTS
+            .into_iter()
+            .filter(|m| {
+                target.measurements.contains(m)
+                    && (requirements.measurements.is_empty()
+                        || requirements.measurements.contains(m))
+            })
+            .collect();
+        if served.is_empty() {
+            return Err(SourceError::Unsupported(format!(
+                "CyAN offers none of {:?}",
+                target.measurements
+            )));
+        }
+        let url = request_url(point_of(target)?, Frequency::Weekly);
+        let target = Target {
+            measurements: served,
+            ..target.clone()
+        };
+        Ok(vec![
+            Request::new(url, Resource::Cyan, target).max_age_hint(MAX_AGE_S),
+        ])
+    }
+
+    /// The composites' mean, newest within [`STALE_AFTER_S`] of now; a stale feed or a point off
+    /// a mapped lake is an error, never "no bloom".
+    fn parse(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        ctx: &FetchContext,
+        out: &mut Fragments,
+    ) -> Result<(), SourceError> {
+        let spot = point_of(&request.target)?.coordinates();
+        let reading = parse(check_response(request, response)?, ctx.now)?;
+        if request
+            .target
+            .measurements
+            .contains(&Measurement::Cyanobacteria)
+        {
+            out.push(
+                Measurement::Cyanobacteria,
+                FragmentValue::Series(reading.mean_series(spot)),
+            )?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::request::Window;
     use crate::testutil::fixture_bytes;
     use underbite_core::time::parse_rfc3339;
 
@@ -418,6 +512,97 @@ mod tests {
         assert_eq!(a.source, SourceId::CYAN);
         assert!(a.credit.contains("U.S. EPA"));
         assert!(a.credit.contains("research tool"));
+    }
+
+    fn lake_target(now: UnixTime, measurements: &[Measurement]) -> Target {
+        Target {
+            place: Place::Point(RoundedPoint::new(SPOT, 2)),
+            measurements: measurements.iter().copied().collect(),
+            window: Window {
+                from: UnixTime(now.0 - 7 * 86_400),
+                to: now,
+            },
+            datum: None,
+        }
+    }
+
+    #[test]
+    fn source_plans_the_weekly_composites_and_parses_their_mean() {
+        // A day after the newest recorded composite, while the feed was current.
+        let now = UnixTime(1_774_670_400 + 86_400);
+        let ctx = FetchContext::new(now, "underbite/test");
+        let source: &dyn Source = &Cyan;
+        assert_eq!(source.id(), SourceId::CYAN);
+        let target = lake_target(now, &[Measurement::Cyanobacteria, Measurement::Waves]);
+        let plan = source
+            .plan(&target, &Requirements::default(), &ctx)
+            .expect("a plan");
+        let [request] = plan.as_slice() else {
+            panic!("one request, got {plan:?}");
+        };
+        assert_eq!(
+            request.url,
+            "https://cyan.epa.gov/cyan/cyano/location/data/43.2/-76/all?type=olci&frequency=weekly"
+        );
+        assert_eq!(request.resource, Resource::Cyan);
+        assert_eq!(
+            request.target.measurements,
+            BTreeSet::from([Measurement::Cyanobacteria])
+        );
+
+        let mut out = Fragments::new();
+        source
+            .parse(request, &Response::new(200, &oneida()), &ctx, &mut out)
+            .expect("parses");
+        let [fragment] = out.fragments() else {
+            panic!("one fragment, got {:?}", out.fragments());
+        };
+        assert_eq!(fragment.measurement, Measurement::Cyanobacteria);
+        let FragmentValue::Series(mean) = &fragment.value else {
+            panic!("a series");
+        };
+        assert_eq!(mean.samples().len(), 16);
+        let latest = mean.latest().expect("a value");
+        assert!((latest.value - 19_054.607).abs() < 1.0);
+        assert_eq!(mean.provenance().kind, ValueKind::Satellite);
+    }
+
+    #[test]
+    fn source_says_stale_or_not_a_lake_and_never_no_bloom() {
+        let now = at("2026-11-17T12:00:00Z");
+        let ctx = FetchContext::new(now, "underbite/test");
+        let request = Cyan
+            .plan(
+                &lake_target(now, &[Measurement::Cyanobacteria]),
+                &Requirements::default(),
+                &ctx,
+            )
+            .expect("a plan")
+            .remove(0);
+        let mut out = Fragments::new();
+        assert_eq!(
+            Cyan.parse(&request, &Response::new(200, &oneida()), &ctx, &mut out),
+            Err(SourceError::Stale {
+                latest: UnixTime(1_774_670_400)
+            })
+        );
+        let croton = fixture_bytes("cyan", "cyan-new-croton-unknown-location-2026-11-17.json");
+        assert!(matches!(
+            Cyan.parse(&request, &Response::new(200, &croton), &ctx, &mut out),
+            Err(SourceError::NoData(_))
+        ));
+        assert_eq!(out.fragments().len(), 0);
+        let mut station = lake_target(now, &[Measurement::Cyanobacteria]);
+        station.place = Place::Zone(crate::request::ZoneTarget {
+            id: "LEZ146".into(),
+            name: "Lake Erie".into(),
+            kind: underbite_core::model::ZoneKind::GreatLakesNearshore,
+            office: None,
+        });
+        assert!(matches!(
+            Cyan.plan(&station, &Requirements::default(), &ctx),
+            Err(SourceError::Unsupported(_))
+        ));
     }
 
     /// Run by hand: save a live response with curl (the URL is `request_url`'s) and point
