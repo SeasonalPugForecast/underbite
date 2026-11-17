@@ -10,15 +10,26 @@
 //! The CSV differs from its own data dictionary (a `Not Present` cell category, `fwri_sftp` as a
 //! source, wind directions as floats), so a row is read by column name, unknown categories are
 //! tolerated and a row that cannot be read is skipped rather than failing the file.
+//!
+//! [`HabGulf`] is the source, for a [`Place::Point`] in the Gulf forecast's area: the zip (which
+//! names no place, so the point never leaves the device) parsed into the bloom block with the
+//! region's link.
 
+use std::collections::BTreeSet;
 use std::io::{Cursor, Read};
 
-use underbite_core::model::{ExternalLink, HabForecast, HabLevel};
+use underbite_core::model::{ExternalLink, HabForecast, HabLevel, Measurement, Requirements};
 use underbite_core::provenance::{Attribution, Provenance, Quality, Relation, SourceId, ValueKind};
 use underbite_core::time::{UnixTime, parse_rfc3339};
 
-use crate::request::Coordinates;
-use crate::source::SourceError;
+use crate::request::{Coordinates, Place, Request, Resource, Response, Target};
+use crate::source::{FetchContext, FragmentValue, Fragments, Source, SourceError, check_response};
+
+/// The measurements the source supplies: the bloom block.
+pub const MEASUREMENTS: [Measurement; 1] = [Measurement::Bloom];
+
+/// How long a response may be reused, seconds: the model runs a few times a day.
+const MAX_AGE_S: u32 = 3_600;
 
 /// The current model run as a zip. It has no key and no history.
 pub const GULF_ZIP_URL: &str = "https://nccospublicstor.blob.core.windows.net/hab-data/no_Explorer/rif_model/csv/RIFv2_currentmodelrun.zip";
@@ -126,12 +137,22 @@ pub fn region_links() -> Vec<(HabRegion, ExternalLink)> {
 pub fn links_near(point: Coordinates) -> Vec<ExternalLink> {
     REGIONS
         .iter()
-        .filter(|r| {
-            let (south, west, north, east) = r.bounds;
-            (south..=north).contains(&point.latitude) && (west..=east).contains(&point.longitude)
-        })
+        .filter(|r| contains(r, point))
         .map(link)
         .collect()
+}
+
+/// Whether `point` is in an area the Gulf forecast covers (the Florida and Texas regions).
+pub fn in_gulf_area(point: Coordinates) -> bool {
+    REGIONS
+        .iter()
+        .filter(|r| matches!(r.id, HabRegion::Florida | HabRegion::Texas))
+        .any(|r| contains(r, point))
+}
+
+fn contains(region: &Region, point: Coordinates) -> bool {
+    let (south, west, north, east) = region.bounds;
+    (south..=north).contains(&point.latitude) && (west..=east).contains(&point.longitude)
 }
 
 /// One forecast row, kept only for the beach nearest the spot.
@@ -321,6 +342,88 @@ pub fn parse_gulf_zip(
         valid_at: row.valid_at,
         distance_m: row.distance_m,
     })
+}
+
+/// The NOAA Gulf respiratory irritation forecast as a source of a beach's bloom forecast. It holds
+/// no settings.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct HabGulf;
+
+/// The point of a target in the Gulf forecast's area.
+fn gulf_point(target: &Target) -> Result<Coordinates, SourceError> {
+    let point = match target.place {
+        Place::Point(p) => p.coordinates(),
+        Place::Station { .. } | Place::Zone(_) => {
+            return Err(SourceError::Unsupported(
+                "the Gulf bloom forecast needs a point".into(),
+            ));
+        }
+    };
+    if !in_gulf_area(point) {
+        return Err(SourceError::Unsupported(
+            "the Gulf bloom forecast covers the Florida and Texas coasts only".into(),
+        ));
+    }
+    Ok(point)
+}
+
+impl Source for HabGulf {
+    fn id(&self) -> SourceId {
+        SourceId::NOAA_HAB
+    }
+
+    fn attribution(&self) -> Attribution {
+        attribution()
+    }
+
+    fn measurements(&self) -> &[Measurement] {
+        &MEASUREMENTS
+    }
+
+    /// The current model run, for a point in the forecast's area.
+    fn plan(
+        &self,
+        target: &Target,
+        requirements: &Requirements,
+        _ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        let wanted = |m: &Measurement| {
+            target.measurements.contains(m)
+                && (requirements.measurements.is_empty() || requirements.measurements.contains(m))
+        };
+        if !MEASUREMENTS.iter().any(wanted) {
+            return Err(SourceError::Unsupported(format!(
+                "the Gulf bloom forecast offers none of {:?}",
+                target.measurements
+            )));
+        }
+        gulf_point(target)?;
+        let target = Target {
+            measurements: BTreeSet::from(MEASUREMENTS),
+            ..target.clone()
+        };
+        Ok(vec![
+            Request::new(GULF_ZIP_URL.to_string(), Resource::HabGulfZip, target)
+                .max_age_hint(MAX_AGE_S),
+        ])
+    }
+
+    /// The nearest beach's forecast and the region's link; no beach in range or an old run is
+    /// an error, never "no bloom".
+    fn parse(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        ctx: &FetchContext,
+        out: &mut Fragments,
+    ) -> Result<(), SourceError> {
+        let spot = gulf_point(&request.target)?;
+        let forecast = parse_gulf_zip(check_response(request, response)?, spot, ctx.now)?;
+        if let Some(info) = super::bloom_info(spot, None, Some(forecast), links_near(spot)) {
+            out.push(Measurement::Bloom, FragmentValue::Bloom(info))?;
+        }
+        Ok(())
+    }
 }
 
 /// Great-circle distance in metres between two points.
@@ -656,6 +759,157 @@ mod tests {
                 .iter()
                 .all(|(_, l)| l.url.starts_with("https://"))
         );
+    }
+
+    fn gulf_target(point: Coordinates, measurements: &[Measurement]) -> Target {
+        let now = at("2026-11-17T09:00:00Z");
+        Target {
+            place: Place::Point(crate::request::RoundedPoint::new(point, 2)),
+            measurements: measurements.iter().copied().collect(),
+            window: crate::request::Window {
+                from: now,
+                to: UnixTime(now.0 + 86_400),
+            },
+            datum: None,
+        }
+    }
+
+    #[test]
+    fn source_plans_the_current_run_and_parses_the_nearest_beach() {
+        let ctx = FetchContext::new(at("2026-11-17T09:00:00Z"), "underbite/test");
+        let source: &dyn Source = &HabGulf;
+        assert_eq!(source.id(), SourceId::NOAA_HAB);
+        assert_eq!(source.measurements(), [Measurement::Bloom]);
+        let target = gulf_target(LONGBOAT, &[Measurement::Bloom, Measurement::Waves]);
+        let plan = source
+            .plan(&target, &Requirements::default(), &ctx)
+            .expect("a plan");
+        let [request] = plan.as_slice() else {
+            panic!("one request, got {plan:?}");
+        };
+        assert_eq!(request.url, GULF_ZIP_URL);
+        assert!(!request.url.contains("27.4"), "the point stays here");
+        assert_eq!(request.resource, Resource::HabGulfZip);
+        assert!(request.required && !request.metered);
+        assert_eq!(
+            request.target.measurements,
+            BTreeSet::from([Measurement::Bloom])
+        );
+
+        let zip = zip();
+        let mut out = Fragments::new();
+        source
+            .parse(request, &Response::new(200, &zip), &ctx, &mut out)
+            .expect("parses");
+        let [fragment] = out.fragments() else {
+            panic!("one fragment, got {:?}", out.fragments());
+        };
+        assert_eq!(fragment.measurement, Measurement::Bloom);
+        let FragmentValue::Bloom(info) = &fragment.value else {
+            panic!("a bloom block");
+        };
+        let hab = info.hab.as_ref().expect("a forecast");
+        assert_eq!(hab.location, "Longboat Pass Boat Ramp (Sarasota Bay)");
+        assert_eq!(hab.level, HabLevel::VeryLow);
+        assert_eq!(hab.valid_at, at("2026-11-17T08:00:00Z"));
+        assert!(hab.distance_m < MAX_BEACH_DISTANCE_M);
+        assert!(info.cyan_image_date.is_none() && info.cyan_max_cells_ml.is_none());
+        assert_eq!(info.links.len(), 1);
+        assert_eq!(info.links[0].label, "NOAA Florida respiratory forecast");
+    }
+
+    #[test]
+    fn source_says_stale_or_out_of_range_and_never_no_bloom() {
+        let zip = zip();
+        let late = FetchContext::new(at("2026-11-20T09:00:00Z"), "underbite/test");
+        let request = HabGulf
+            .plan(
+                &gulf_target(LONGBOAT, &[Measurement::Bloom]),
+                &Requirements::default(),
+                &late,
+            )
+            .expect("a plan")
+            .remove(0);
+        let mut out = Fragments::new();
+        assert!(matches!(
+            HabGulf.parse(&request, &Response::new(200, &zip), &late, &mut out),
+            Err(SourceError::Stale { .. })
+        ));
+        // In Florida, but 24 km offshore: no beach within range.
+        let ctx = FetchContext::new(at("2026-11-17T09:00:00Z"), "underbite/test");
+        let offshore = Coordinates {
+            latitude: CLEARWATER.latitude,
+            longitude: -83.1,
+        };
+        let request = HabGulf
+            .plan(
+                &gulf_target(offshore, &[Measurement::Bloom]),
+                &Requirements::default(),
+                &ctx,
+            )
+            .expect("a plan")
+            .remove(0);
+        assert!(matches!(
+            HabGulf.parse(&request, &Response::new(200, &zip), &ctx, &mut out),
+            Err(SourceError::NoData(_))
+        ));
+        assert!(matches!(
+            HabGulf.parse(&request, &Response::new(200, b""), &ctx, &mut out),
+            Err(SourceError::NoData(_))
+        ));
+        assert!(matches!(
+            HabGulf.parse(&request, &Response::new(503, b"busy"), &ctx, &mut out),
+            Err(SourceError::Status { status: 503, .. })
+        ));
+        assert!(out.is_empty());
+    }
+
+    #[test]
+    fn source_plans_nothing_outside_the_gulf_or_without_a_bloom() {
+        let ctx = FetchContext::new(at("2026-11-17T09:00:00Z"), "underbite/test");
+        let none = Requirements::default();
+        let battery = Coordinates {
+            latitude: 40.7033,
+            longitude: -74.017,
+        };
+        let galveston = Coordinates {
+            latitude: 29.28,
+            longitude: -94.8,
+        };
+        assert!(in_gulf_area(LONGBOAT) && in_gulf_area(galveston));
+        assert!(!in_gulf_area(battery));
+        for target in [
+            gulf_target(battery, &[Measurement::Bloom]),
+            gulf_target(LONGBOAT, &[Measurement::Cyanobacteria]),
+        ] {
+            assert!(matches!(
+                HabGulf.plan(&target, &none, &ctx),
+                Err(SourceError::Unsupported(_))
+            ));
+        }
+        let lake_only = Requirements {
+            measurements: BTreeSet::from([Measurement::LakeLevel]),
+            ..Requirements::default()
+        };
+        assert!(matches!(
+            HabGulf.plan(
+                &gulf_target(LONGBOAT, &[Measurement::Bloom]),
+                &lake_only,
+                &ctx
+            ),
+            Err(SourceError::Unsupported(_))
+        ));
+        let mut zone = gulf_target(LONGBOAT, &[Measurement::Bloom]);
+        zone.place = Place::Zone(crate::request::ZoneTarget {
+            id: "GMZ830".into(),
+            name: "Tampa Bay".into(),
+            kind: underbite_core::model::ZoneKind::Coastal,
+            office: None,
+        });
+        assert!(matches!(
+            HabGulf.plan(&zone, &none, &ctx),
+            Err(SourceError::Unsupported(_))
+        ));
     }
 
     #[test]
