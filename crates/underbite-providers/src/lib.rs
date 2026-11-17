@@ -8,6 +8,7 @@
 #[cfg(test)]
 pub(crate) mod testutil;
 
+pub mod access;
 pub mod blooms;
 pub mod coops;
 pub mod dfo;
