@@ -9,9 +9,9 @@ use underbite_ffi::fetch::{HostMethod, HostResponse};
 use underbite_ffi::map::{
     GridPacer, GridStore, LayerDates, LayerDraw, MAX_REQUESTS_PER_VIEW, MAX_STORE_BLOCKS,
     MAX_STORE_VALUES, MapError, MapPoint, TileOutcome, ValueRange, classify_tile,
-    gibs_default_date, map_catalogue, map_legend, map_presets, map_range, map_tile_size, measure,
-    parse_time_axis, previous_date, radar_covers, radar_frame_request, radar_frames,
-    radar_latest_valid, radar_meta_request, tile_request, time_axis_request,
+    gibs_default_date, map_catalogue, map_fitted_caption, map_legend, map_presets, map_range,
+    map_tile_size, measure, parse_time_axis, previous_date, radar_covers, radar_frame_request,
+    radar_frames, radar_latest_valid, radar_meta_request, tile_request, time_axis_request,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -758,6 +758,16 @@ fn the_visible_range_fits_the_held_block_and_the_legend_follows_it() {
     // Nothing set: the fitted range is used, and the legend ends are its, in the user's unit.
     let got = map_range(metric(), "sst".into(), Some(fitted)).unwrap();
     assert_eq!(got, fitted);
+    assert_eq!(
+        map_fitted_caption(metric(), "sst".into(), Some(fitted))
+            .unwrap()
+            .as_deref(),
+        Some("Colours fitted to this view")
+    );
+    assert_eq!(
+        map_fitted_caption(metric(), "sst".into(), None).unwrap(),
+        None
+    );
     let legend = map_legend(metric(), "sst".into(), Some(fitted)).unwrap();
     assert!(legend.first().unwrap().label.ends_with("°C"));
     assert_ne!(legend.first().unwrap().label, "0 °C");
@@ -775,6 +785,10 @@ fn the_visible_range_fits_the_held_block_and_the_legend_follows_it() {
             low: 5.0,
             high: 25.0
         }
+    );
+    assert_eq!(
+        map_fitted_caption(set.clone(), "sst".into(), Some(fitted)).unwrap(),
+        None
     );
     assert!(map_legend(set, "sst".into(), Some(fitted)).is_ok());
 }

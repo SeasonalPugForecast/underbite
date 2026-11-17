@@ -326,6 +326,58 @@ fn fit_limits(quantity: MapQuantity) -> (f64, f64) {
     }
 }
 
+/// Which range [`chosen_range`] picked.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum RangeSource {
+    User,
+    Fitted,
+    Layer,
+}
+
+/// The range a layer is drawn with and where it came from: the settings' own range if it can be
+/// drawn, else `fitted` if it can, else the layer's own.
+fn chosen_range(
+    settings_json: &str,
+    layer: &str,
+    fitted: Option<ValueRange>,
+) -> Result<(ValueRange, RangeSource), MapError> {
+    let (config, _) = load(settings_json)?;
+    let l = self::layer(layer)?;
+    let state = config.map.layers.iter().find(|st| st.id.as_str() == l.id);
+    let ramp = state
+        .and_then(|st| st.ramp.as_deref())
+        .filter(|id| render::ramp(id).is_some());
+    let user = state
+        .and_then(|st| st.range)
+        .map(|(lo, hi)| (RangeSource::User, f64::from(lo), f64::from(hi)));
+    let fitted = fitted.map(|r| (RangeSource::Fitted, r.low, r.high));
+    // The user's range, then the fitted one, each only when it can be drawn; then the layer's own.
+    let chosen = [user, fitted]
+        .into_iter()
+        .flatten()
+        .find_map(|(source, low, high)| {
+            ramp_and_range(l, ramp, Some(low), Some(high))
+                .ok()
+                .map(|(_, range)| (range, source))
+        })
+        .or_else(|| {
+            ramp_and_range(l, ramp, None, None)
+                .ok()
+                .map(|(_, range)| (range, RangeSource::Layer))
+        });
+    chosen
+        .map(|(range, source)| {
+            (
+                ValueRange {
+                    low: range.low,
+                    high: range.high,
+                },
+                source,
+            )
+        })
+        .ok_or_else(|| invalid(format!("`{layer}` does not colour values")))
+}
+
 /// The colour range a layer is drawn with: the range the user set in the settings if any, else
 /// `fitted` (from [`GridStore::visible_range`]) if it can be drawn, else the layer's own.
 #[uniffi::export]
@@ -335,28 +387,23 @@ pub fn map_range(
     layer: String,
     fitted: Option<ValueRange>,
 ) -> Result<ValueRange, MapError> {
+    chosen_range(&settings_json, &layer, fitted).map(|(range, _)| range)
+}
+
+/// The words under a legend whose range is the fitted one ("Colours fitted to this view"), in
+/// the settings' voice and language; none when the user's range or the layer's own is drawn.
+/// `fitted` is what [`map_range`] was given.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn map_fitted_caption(
+    settings_json: String,
+    layer: String,
+    fitted: Option<ValueRange>,
+) -> Result<Option<String>, MapError> {
     let (config, _) = load(&settings_json)?;
-    let l = self::layer(&layer)?;
-    let state = config.map.layers.iter().find(|st| st.id.as_str() == l.id);
-    let ramp = state
-        .and_then(|st| st.ramp.as_deref())
-        .filter(|id| render::ramp(id).is_some());
-    let user = state
-        .and_then(|st| st.range)
-        .map(|(lo, hi)| (f64::from(lo), f64::from(hi)));
-    let fitted = fitted.map(|r| (r.low, r.high));
-    // The user's range, then the fitted one, each only when it can be drawn; then the layer's own.
-    let chosen = [user, fitted]
-        .into_iter()
-        .flatten()
-        .find_map(|(low, high)| ramp_and_range(l, ramp, Some(low), Some(high)).ok());
-    if let Some((_, range)) = chosen.or_else(|| ramp_and_range(l, ramp, None, None).ok()) {
-        return Ok(ValueRange {
-            low: range.low,
-            high: range.high,
-        });
-    }
-    Err(invalid(format!("`{layer}` does not colour values")))
+    let f = formatter(&config, "UTC");
+    let (_, source) = chosen_range(&settings_json, &layer, fitted)?;
+    Ok((source == RangeSource::Fitted).then(|| f.strings.legend_fitted().to_owned()))
 }
 
 /// The legend bar of a grid layer over `range` (canonical units; the same precedence as
