@@ -1,4 +1,4 @@
-# Regulations and licence links (United States)
+# Regulations and licence links
 
 Verified on **2026-11-16**. Regulations are published as pages and yearly booklets, not as a data
 service, so the app links to the official pages and never copies limits or seasons. This note records
@@ -151,3 +151,165 @@ yearly summary PDF as well. No state was found that publishes only a PDF, but pa
   on agency home pages.
 - Territorial regulations (PR, VI, GU, AS, MP) beyond the agency landing pages.
 - The recorded status reflects 2026-11-16 only; the catalogue needs a recheck at least once a year.
+
+# Canada
+
+Verified on **2026-11-17**. As for the United States, regulations are pages and yearly guides, not a data
+service, so the app links to the official pages and never copies limits, seasons or species rules. The link
+list is `tests/fixtures/raw/regulations/ca-links.csv` (51 rows), indexed in
+`tests/fixtures/raw/regulations/README.md`.
+
+## Who regulates what
+
+- Freshwater angling is managed by each province or territory, in several of them under federal fishery
+  regulations that the province administers (the Maritime Provinces, Newfoundland and Labrador, Yukon and
+  Northwest Territories fishery regulations). Nunavut is covered by the Northwest Territories Fishery
+  Regulations; Fisheries and Oceans Canada (DFO) is consulting on separate Nunavut regulations (DFO search
+  summary, 2026-11-17).
+- Tidal waters and the sea are federal. DFO publishes a recreational fishing page per region: Pacific,
+  Maritimes, Gulf, Quebec, Newfoundland and Labrador, and Arctic. A search summary of DFO's Maritimes pages says
+  no licence is needed for angling in tidal waters of the Maritime provinces while a provincial licence is
+  needed inland (**unverified on the page itself**; page bodies were not read).
+- In Newfoundland and Labrador, DFO publishes the Anglers' Guide for inland waters. The CSV uses the DFO guide
+  page as the regulations link and the province's angling licence page as the licence link.
+- National parks have their own Parks Canada fishing licence, and provincial and territorial licences are not
+  valid there (stated in several provincial guides). No Parks Canada link was checked.
+
+## What was checked
+
+- 39 rows for the 10 provinces and 3 territories: a regulations link and a licence link each, with an English
+  and a French row where the agency has both; French rows exist for MB, ON, QC, NB, PE, NL, YT, NT and NU.
+- 12 rows for DFO's six regions, English and French.
+- Every URL was requested once with GET, following redirects, at least a second apart per host, with the
+  User-Agent `underbite-scout/0.1 (provider docs check)` and no cookies or keys. No banner or consent form was
+  accepted and no browser-like retry was made. Guessed URLs that answered 404 were replaced by pages found on
+  the agencies' own sites or in their search listings; only the final choices are in the CSV.
+
+## Result summary
+
+| Outcome | Rows |
+|---|---|
+| 200 | 45 |
+| 403 (Yukon and Nunavut, all six rows) | 6 |
+
+`www.gov.nt.ca` is slow and occasionally fails: the English sport fishing page returned 504 and then timed out
+once at 25 s, and answered 200 on a repeat with a 40 s timeout, which is the recorded result. The app should
+treat that host as flaky.
+
+## Links by jurisdiction
+
+Paths are abbreviated; the CSV has every full URL.
+
+| Code | Regulations (en) | Licence (en) | French |
+|---|---|---|---|
+| CA-BC | `www2.gov.bc.ca/gov/content/sports-culture/recreation/fishing-hunting/fishing/fishing-regulations` | `.../fishing/recreational-freshwater-fishing-licence` | none found |
+| CA-AB | `albertaregulations.ca/fishingregs/` | `mywildalberta.ca/buy-licences/fishing-licenses-fees` | none found |
+| CA-SK | `saskatchewan.ca/residents/parks-culture-heritage-and-sport/hunting-trapping-and-angling/angling` | `.../angling/angling-licences` | none found |
+| CA-MB | `gov.mb.ca/nrnd/fish-wildlife/fish/recreational_fishing/index.html` | `www.manitobaelicensing.ca` | regulations: `.../index.fr.html` |
+| CA-ON | `ontario.ca/document/ontario-fishing-regulations-summary` | `.../recreational-fishing-licences-and-fees` | both: `ontario.ca/fr/document/resume-des-reglements-de-la-peche`, `.../permis-de-peche-recreative-et-frais` |
+| CA-QC | `quebec.ca/en/tourism-recreation-sport/sporting-and-outdoor-activities/sport-fishing` | `.../sport-fishing/fishing-licence` | both: `quebec.ca/tourisme-loisirs-sport/activites-sportives-et-de-plein-air/peche-sportive`, `.../peche-sportive/permis` |
+| CA-NB | `gnb.ca/en/topic/tourism-recreation/hunting-fishing.html` | `www2.gnb.ca/content/gnb/en/services/services_renderer.1115.Fishing_Licence.html` | both: `gnb.ca/fr/sujet/tourisme-loisirs/chasse-peche.html`, `www2.gnb.ca/content/gnb/fr/services/services_renderer.1115.Fishing_Licence.html` |
+| CA-NS | `novascotia.ca/fish/laws-and-regulations/` | `novascotia.ca/programs-and-services/sportfishing-licensing` | none found |
+| CA-PE | `princeedwardisland.ca/en/information/communities-land-and-environment/angling-resources-and-information-centre` | `.../en/service/online-fishing-licences` | both: `.../fr/information/terres-et-environnement/guide-de-la-peche-sportive`, `.../fr/service/permis-de-peche-en-ligne` |
+| CA-NL | `nfl.dfo-mpo.gc.ca/en/NL/AG/Anglersguide` (DFO) | `gov.nl.ca/gs/licences/hunting/angling/` | regulations (DFO): `nfl.dfo-mpo.gc.ca/fr/TNL/GPL/Guidedupecheuralaligne` |
+| CA-YT | `yukon.ca/en/fishing-regulations` (403) | `yukon.ca/en/yukon-fishing-licence` (403) | `yukon.ca/fr/reglements-de-peche` (403) |
+| CA-NT | `gov.nt.ca/ecc/en/services/sport-fishing` | `gov.nt.ca/ecc/en/services/get-fishing-licence` | regulations: `gov.nt.ca/ecc/fr/services/peche-sportive` |
+| CA-NU | `gov.nu.ca/en/environment` (403) | `gov.nu.ca/how-do-i-get-fishing-license` (403) | `gov.nu.ca/fr/environnement` (403) |
+
+Where a jurisdiction has no French licence row, the French regulations row (if any) is the only French link.
+The French rows were checked for status only; whether they mirror the English pages is **unverified**.
+
+## DFO tidal regions
+
+| Code | Region | English page (French: replace `eng` with `fra`) |
+|---|---|---|
+| DFO-PAC | Pacific | `www.pac.dfo-mpo.gc.ca/fm-gp/rec/index-eng.html` |
+| DFO-MAR | Maritimes | `www.dfo-mpo.gc.ca/fisheries-peches/recreational-recreative/maritimes/index-eng.html` |
+| DFO-GLF | Gulf | `.../recreational-recreative/gulf/index-eng.html` |
+| DFO-QC | Quebec | `.../recreational-recreative/quebec/index-eng.html` |
+| DFO-NL | Newfoundland and Labrador | `.../recreational-recreative/newfoundland-labrador/index-eng.html` |
+| DFO-ARC | Arctic | `.../recreational-recreative/arctic-arctique/index-eng.html` |
+
+All twelve returned 200 without a redirect. The Pacific page is on its own subdomain. Which region applies to a
+point of tidal water is a mapping the app must make; DFO's region descriptions (as read in search summaries)
+put the Northumberland Strait and the Gulf of St. Lawrence coasts of New Brunswick and Prince Edward Island in
+the Gulf region, the Atlantic coast of Nova Scotia and the Bay of Fundy in the Maritimes, the St. Lawrence
+estuary in Quebec, Hudson Bay, James Bay and the northern territories in the Arctic. That mapping is
+**unverified** against a boundary document. The Great Lakes have no DFO recreational page in the list and are
+treated as fresh water under the provincial page.
+
+## Links that failed
+
+| Jurisdiction | Kind | Status | URL |
+|---|---|---|---|
+| CA-YT | regulations (en, fr), licence | 403 | `yukon.ca/en/fishing-regulations`, `yukon.ca/fr/reglements-de-peche`, `yukon.ca/en/yukon-fishing-licence` |
+| CA-NU | regulations (en, fr), licence | 403 | `gov.nu.ca/en/environment`, `gov.nu.ca/fr/environnement`, `gov.nu.ca/how-do-i-get-fishing-license` |
+
+Both hosts refused the descriptive User-Agent, including their home pages (`yukon.ca/en`, `www.gov.nu.ca/`). The
+URLs come from the agencies' own search listings and are **unverified** as to their content. Whether a
+browser-like client is served is **unverified**: none was tried. The app should open these in a browser view
+and not fetch them. For Nunavut only yearly guide PDFs were found in search results (2021-22 the newest), so
+the Department of Environment landing page is used.
+
+## Links that redirected
+
+- `mywildalberta.ca/buy-licences/fishing-licenses-fees` redirects to `.../default.aspx` on the same host.
+- `manitobaelicensing.ca` without `www` fails TLS name verification (the certificate does not match the host);
+  `www.manitobaelicensing.ca` redirects to `/public`. The CSV uses the `www` host. Manitoba's licences are sold
+  on this separate e-licensing site.
+- `ontario.ca/fr/document/resume-des-reglements-de-la-peche-en-ontario` redirects to
+  `/fr/document/resume-des-reglements-de-la-peche`, and Ontario appends `redirect_id` and `redirect_year`
+  parameters to moved pages; the CSV holds the clean current path, which answered 200.
+- `gov.nu.ca` redirects to `www.gov.nu.ca` (the status stays 403).
+- `princeedwardisland.ca/angling`, a short link, redirects to the resource centre page; the full path is used.
+
+## Pages that did not exist
+
+Several guessed paths answered 404 and were replaced; they show how agencies reorganise: BC's
+`outdoor-recreation/fishing-and-hunting/...` paths (the live path is `sports-culture/recreation/fishing-hunting/...`);
+Alberta's `alberta.ca` fishing pages (licences are on `mywildalberta.ca` and `eservices.alberta.ca`); Ontario's
+`/page/fishing-ontario`; Quebec's `tourism-and-recreation/...` English paths (now
+`tourism-recreation-sport/sporting-and-outdoor-activities/...`); Newfoundland and Labrador's `gov.nl.ca/ecc/...`
+(the department's path segment changes with each reorganisation: `fal`, `ffa` and `gs` were all seen);
+Nova Scotia has no French pages for these topics. **A 200 does not prove a page exists**: `gov.mb.ca/fish-wildlife/fishing/index.html`
+(a guessed path) answered 200 after redirecting to `manitoba.ca/404.html`, the province's own not-found page. Every
+final URL in the CSV was compared with its request to catch this.
+
+## Pages that serve more than one purpose
+
+- Nunavut: the regulations link is the Department of Environment landing page, not a regulations page.
+- New Brunswick: the regulations link is the hunting and fishing topic hub; the yearly regulations summary is
+  linked from it but not recorded because it is a yearly document.
+- Newfoundland and Labrador: the regulations link is DFO's guide, the licence link is the province's page.
+
+## Yearly PDFs and year-bound URLs
+
+Alberta, Saskatchewan, Ontario, New Brunswick, Northwest Territories and Yukon publish yearly guides; Quebec and
+BC publish two-year guides (Quebec changes on 1 April of even-numbered years); Manitoba publishes an anglers'
+guide as a PDF. The CSV links the stable landing page, not the PDF. The NWT page `/ecc/en/content/nwt-sport-fishing-guide`
+redirects directly to a PDF whose name carries the year and is not used. No URL in the CSV contains a year.
+
+## Language
+
+English only (none found): BC, AB, SK, NS. French rows exist for MB, ON, QC, NB, PE, NL, NT, YT and NU (YT and NU
+unverified). Quebec's pages are French first; its English pages are translations. The app should choose the link
+language from its own language setting and fall back to English when a jurisdiction has no French row.
+
+## Terms of use
+
+- No page offered an API and none was used. Linking to public agency pages needs no licence or attribution; the
+  app credits each agency by name in the link label and shows the check date. Agency copyright notices were not
+  read page by page and no page content was copied.
+- Provincial guides describe themselves as summaries, not legal documents; the app text must say regulations
+  may have changed and link, not quote.
+- Closures and rule changes happen during the season (for example short-notice stream closures in Alberta and the
+  rules that took effect in New Brunswick in March 2026, as announced on gnb.ca).
+
+## Unverified
+
+- Page content for every link: only HTTP status and final URL were observed.
+- The Yukon and Nunavut links (403 to the descriptive User-Agent; no other client tried).
+- That the French pages mirror the English ones.
+- The Maritimes tidal-licence statement and the region boundaries above.
+- Whether each landing page is the best entry point; the status reflects 2026-11-17 only, and the catalogue needs a
+  recheck at least once a year.
