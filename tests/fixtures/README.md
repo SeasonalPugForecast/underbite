@@ -24,6 +24,7 @@ request URL and the recording date:
 - [weather](raw/weather/README.md)
 - [regulations](raw/regulations/README.md)
 - [state-maps](raw/state-maps/README.md)
+- [fishbase](raw/fishbase/README.md)
 
 ## Conventions
 
