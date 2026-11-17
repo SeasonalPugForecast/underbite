@@ -8,11 +8,13 @@
 use whether_core::time::Weekday;
 
 use crate::discover::hydro::{WaterTypeReason, WaterbodyKind};
-use crate::map::catalogue::{Group, UnavailableReason};
+use crate::map::catalogue::{DateMode, Group, UnavailableReason};
 use crate::model::{
     AlertSeverity, Measurement, MoonPhase, PrincipalPhase, TideKind, WaterType, ZoneKind,
 };
 use crate::provenance::{Relation, SourceId, UsgsSiteType};
+use crate::time::{UnixTime, UtcOffset};
+use crate::view::format::Formatter;
 use crate::view::{CardId, NoticeKind, Voice};
 
 /// Declares [`Key`], its list and its table in one place.
@@ -662,6 +664,14 @@ keys! {
     MapPresetGreatLakesTrolling => ("Great Lakes trolling", "Great Lakes trolling"),
     /// In place of the switch of a layer that cannot be turned on.
     MapNoSource => ("No source yet", "Luna hasn't found a source yet"),
+    /// The point inspector where a layer has no value (land, cloud, outside its data).
+    MapNoValue => ("No value here", "Nothing here"),
+    /// A surface current at a point: `{speed}`, `{direction}`.
+    MapCurrentToward => ("{speed} toward {direction}", "{speed} toward {direction}"),
+    /// When an hourly field is valid: `{date}`, `{time}`.
+    MapDateTime => ("{date}, {time}", "{date}, {time}"),
+    /// A measured line: `{distance}`, `{bearing}`.
+    MapMeasure => ("{distance} at {bearing}", "{distance} at {bearing}"),
 }
 
 /// Declares [`SafetyKey`], its list and its table in one place.
@@ -1378,6 +1388,82 @@ impl Strings {
     }
 }
 
+/// What a map layer's values measure, which decides how they read.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MapQuantity {
+    /// Water temperature, °C.
+    Temperature,
+    /// Chlorophyll a, mg m⁻³ (the same number as µg/L).
+    Chlorophyll,
+    /// The diffuse attenuation coefficient at 490 nm, m⁻¹.
+    Kd490,
+    /// Current speed, m/s.
+    CurrentSpeed,
+}
+
+impl MapQuantity {
+    /// What a layer's values measure; `None` for a layer whose values the map does not read out.
+    pub fn of_layer(id: &str) -> Option<Self> {
+        Some(match id {
+            "sst" | "sst-imagery" | "great-lakes-sst" => Self::Temperature,
+            "chlorophyll" | "chlorophyll-imagery" => Self::Chlorophyll,
+            "clarity" => Self::Kd490,
+            "hf-radar-currents" => Self::CurrentSpeed,
+            _ => return None,
+        })
+    }
+}
+
+/// A map value in canonical units as the user reads it: "54 °F", "1.2 µg/L" (two decimals
+/// below 1, none from 10), "0.25 1/m", "0.8 kn". These are the units the conditions cards use.
+pub fn map_value(f: &Formatter, quantity: MapQuantity, canonical: f64) -> String {
+    let v = canonical as f32;
+    match quantity {
+        MapQuantity::Temperature => f.temperature(Some(v)).full(),
+        MapQuantity::CurrentSpeed => f.current_speed(Some(v)).full(),
+        MapQuantity::Chlorophyll => {
+            let decimals = u8::from(v.abs() < 1.0) + u8::from(v.abs() < 10.0);
+            format!("{} µg/L", Formatter::number(v, decimals))
+        }
+        MapQuantity::Kd490 => format!("{} 1/m", Formatter::number(v, 2)),
+    }
+}
+
+/// A surface current at a point: "0.8 kn toward NE 45°" (the direction the water goes).
+pub fn map_current(f: &Formatter, speed_ms: f64, toward_deg: f64) -> String {
+    f.strings.fmt(
+        Key::MapCurrentToward,
+        &[
+            ("speed", &map_value(f, MapQuantity::CurrentSpeed, speed_ms)),
+            ("direction", &f.direction(Some(toward_deg as f32))),
+        ],
+    )
+}
+
+/// When a map layer's field is valid: the UTC day for a daily field ("Nov 7"), the day and
+/// time in the formatter's zone for hourly fields and frames ("Nov 8, 4 PM").
+pub fn map_time(f: &Formatter, t: UnixTime, mode: DateMode) -> String {
+    match mode {
+        DateMode::Daily | DateMode::None => f.date(t.local_date(UtcOffset(0))),
+        DateMode::Hourly | DateMode::Frames => f.strings.fmt(
+            Key::MapDateTime,
+            &[("date", &f.date_of(t)), ("time", &f.clock(t))],
+        ),
+    }
+}
+
+/// A measured line as the user reads it: the distance ("2.4 mi"), the bearing from the start
+/// ("NE 45°", degrees clockwise from true north) and both in one line ("2.4 mi at NE 45°").
+pub fn map_measure(f: &Formatter, metres: f64, bearing_deg: f64) -> (String, String, String) {
+    let distance = f.distance(Some(metres as f32)).full();
+    let bearing = f.direction(Some(bearing_deg as f32));
+    let line = f.strings.fmt(
+        Key::MapMeasure,
+        &[("distance", &distance), ("bearing", &bearing)],
+    );
+    (distance, bearing, line)
+}
+
 /// Every kind of water, in the order a picker lists them.
 pub const WATER_TYPES: [WaterType; 10] = [
     WaterType::RiverStream,
@@ -1833,6 +1919,68 @@ mod tests {
             assert_eq!(s.layer_acknowledgements("sst-imagery").len(), 2);
             assert!(s.layer_acknowledgements("sst")[0].contains("MEaSUREs"));
             assert_eq!(s.layer_acknowledgements("radar"), Vec::<&str>::new());
+        }
+
+        fn formatter(metric: bool) -> Formatter {
+            use crate::units::{
+                DischargeUnit, DistanceUnit, HeightUnit, PressureUnit, SpeedUnit, TempUnit,
+            };
+            let (temperature, height, speed, distance) = if metric {
+                (TempUnit::C, HeightUnit::M, SpeedUnit::Ms, DistanceUnit::Km)
+            } else {
+                (TempUnit::F, HeightUnit::Ft, SpeedUnit::Kn, DistanceUnit::Mi)
+            };
+            let units = crate::view::DisplayUnits {
+                temperature,
+                air_temperature: temperature,
+                height,
+                stage: height,
+                lake_level: height,
+                waves: height,
+                discharge: DischargeUnit::Cfs,
+                current_speed: speed,
+                wind_speed: speed,
+                pressure: PressureUnit::Hpa,
+                distance,
+            };
+            Formatter::new(
+                units,
+                Voice::Plain,
+                whether_core::presentation::TimeFormat::H12,
+                "America/New_York",
+            )
+        }
+
+        #[test]
+        fn map_values_read_in_the_users_units() {
+            let (us, si) = (formatter(false), formatter(true));
+            let t = MapQuantity::of_layer("sst").unwrap();
+            assert_eq!(map_value(&us, t, 15.0), "59 °F");
+            assert_eq!(map_value(&si, t, 15.04), "15.0 °C");
+            assert_eq!(MapQuantity::of_layer("great-lakes-sst"), Some(t));
+            let chl = MapQuantity::Chlorophyll;
+            assert_eq!(map_value(&us, chl, 0.034), "0.03 µg/L");
+            assert_eq!(map_value(&us, chl, 2.46), "2.5 µg/L");
+            assert_eq!(map_value(&us, chl, 12.4), "12 µg/L");
+            assert_eq!(map_value(&si, MapQuantity::Kd490, 0.254), "0.25 1/m");
+            assert_eq!(map_value(&us, MapQuantity::CurrentSpeed, 0.5144), "1.0 kn");
+            assert_eq!(MapQuantity::of_layer("radar"), None);
+            assert_eq!(map_current(&us, 0.5144, 45.0), "1.0 kn toward NE 45°");
+        }
+
+        #[test]
+        fn map_times_and_measures_read_in_the_users_clock_and_units() {
+            let us = formatter(false);
+            // 2026-11-07T09:00:00Z, 4 AM in New York.
+            let t = UnixTime(1_794_042_000);
+            assert_eq!(map_time(&us, t, DateMode::Daily), "Nov 7");
+            assert_eq!(map_time(&us, t, DateMode::Hourly), "Nov 7, 4:00 AM");
+            let (distance, bearing, line) = map_measure(&us, 3_862.4, 90.0);
+            assert_eq!(distance, "2.4 mi");
+            assert_eq!(bearing, "E 90°");
+            assert_eq!(line, "2.4 mi at E 90°");
+            let (km, _, _) = map_measure(&formatter(true), 3_862.4, 0.0);
+            assert_eq!(km, "3.9 km");
         }
 
         #[test]
