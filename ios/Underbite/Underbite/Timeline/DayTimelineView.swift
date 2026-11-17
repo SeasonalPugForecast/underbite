@@ -83,6 +83,22 @@ struct DayTimelineView: View {
     private var strip: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             ZStack(alignment: .topLeading) {
+                if let now = TimelineLayout.now(timeline) {
+                    // Below the hour labels, so it never covers one, and under the lanes,
+                    // whose shading lets it through and whose event labels sit on a backing.
+                    Rectangle()
+                        .fill(Color.red)
+                        .frame(
+                            width: 1.5 * Palette.strokeScale(sunMode),
+                            height: stripHeight - axisHeight
+                        )
+                        .offset(
+                            x: CGFloat(TimelineLayout.x(now, start: timeline.startT)),
+                            y: axisHeight
+                        )
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
                 VStack(alignment: .leading, spacing: rowSpacing) {
                     TimelineAxis(timeline: timeline, visible: visible).frame(height: axisHeight)
                     ForEach(lanes, id: \.kind) { lane in
@@ -106,21 +122,6 @@ struct DayTimelineView: View {
                         .frame(width: CGFloat(TimelineLayout.hourWidth), height: stripHeight)
                         .offset(x: CGFloat(x))
                         .allowsHitTesting(false)
-                }
-                if let now = TimelineLayout.now(timeline) {
-                    // Below the hour labels, so it never covers one.
-                    Rectangle()
-                        .fill(Color.red)
-                        .frame(
-                            width: 1.5 * Palette.strokeScale(sunMode),
-                            height: stripHeight - axisHeight
-                        )
-                        .offset(
-                            x: CGFloat(TimelineLayout.x(now, start: timeline.startT)),
-                            y: axisHeight
-                        )
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
                 }
             }
             .frame(width: stripWidth, height: stripHeight, alignment: .topLeading)
