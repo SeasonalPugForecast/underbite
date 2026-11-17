@@ -166,18 +166,27 @@ impl Grid {
 
     /// The value at `at`, interpolated between the four surrounding cell centres.
     ///
-    /// Missing cells are left out and the others reweighted, so a point near a coast still gets
-    /// the water's value; but a point whose nearest cell centre is missing (land, cloud) has no
-    /// value. At a cell centre the result is that cell's value. `None` outside the span of the
-    /// cell centres.
+    /// This is the one sampling rule of the map: [`render`](crate::map::render) colours its tiles
+    /// with it, so the point inspector reads what the tile shows. Missing cells are left out and
+    /// the others reweighted, so a point near a coast still gets the water's value; but a point
+    /// whose nearest cell centre is missing (land, cloud) has no value. At a cell centre the
+    /// result is that cell's value. A cell stands for the square around its centre, so the grid
+    /// reaches half a step beyond its outermost centres, where the edge cells' values are used
+    /// (this lets neighbouring blocks join without a seam); `None` beyond that.
     pub fn sample_bilinear(&self, at: GeoPoint) -> Option<f32> {
-        let (i0, i1, ty) = bracket(&self.lats, at.lat)?;
-        let (j0, j1, tx) = bracket(&self.lons, at.lon)?;
+        let lone = half_step(self.source.native_step_deg);
+        let row = locate(&self.lats, at.lat, lone)?;
+        let col = locate_lon(&self.lons, at.lon, lone)?;
+        self.sample_cell(row, col)
+    }
+
+    /// The reweighted bilinear value of a located point; see [`Grid::sample_bilinear`].
+    pub(crate) fn sample_cell(&self, row: Cell, col: Cell) -> Option<f32> {
         let corners = [
-            (i0, j0, (1.0 - ty) * (1.0 - tx)),
-            (i0, j1, (1.0 - ty) * tx),
-            (i1, j0, ty * (1.0 - tx)),
-            (i1, j1, ty * tx),
+            (row.lo, col.lo, (1.0 - row.w) * (1.0 - col.w)),
+            (row.lo, col.hi, (1.0 - row.w) * col.w),
+            (row.hi, col.lo, row.w * (1.0 - col.w)),
+            (row.hi, col.hi, row.w * col.w),
         ];
         let nearest = corners.iter().copied().max_by(|a, b| a.2.total_cmp(&b.2))?;
         if !self.value(nearest.0, nearest.1)?.is_finite() {
@@ -278,32 +287,71 @@ impl Grid {
     }
 }
 
+/// Where a coordinate falls between two grid points: the value is
+/// `axis[lo] * (1 - w) + axis[hi] * w`.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct Cell {
+    pub(crate) lo: usize,
+    pub(crate) hi: usize,
+    pub(crate) w: f64,
+}
+
+/// Locates a coordinate on an ascending axis. Grid values stand for cells centred on the axis
+/// points, so the grid reaches half a step beyond its outermost points; there the value of the
+/// edge points is used (`lone_half` for an axis of one point). None outside that.
+pub(crate) fn locate(axis: &[f64], x: f64, lone_half: f64) -> Option<Cell> {
+    let (&first, &last) = (axis.first()?, axis.last()?);
+    if !x.is_finite() {
+        return None;
+    }
+    let n = axis.len();
+    let (below, above) = match (axis.get(1), n.checked_sub(2).and_then(|k| axis.get(k))) {
+        (Some(&second), Some(&before_last)) => ((second - first) / 2.0, (last - before_last) / 2.0),
+        _ => (lone_half, lone_half),
+    };
+    if x < first - below || x > last + above {
+        return None;
+    }
+    if x <= first {
+        return Some(Cell {
+            lo: 0,
+            hi: 0,
+            w: 0.0,
+        });
+    }
+    if x >= last {
+        return Some(Cell {
+            lo: n - 1,
+            hi: n - 1,
+            w: 0.0,
+        });
+    }
+    // first < x < last on an ascending axis: 1 <= hi <= n - 1.
+    let hi = axis.partition_point(|&a| a <= x).clamp(1, n - 1);
+    let lo = hi - 1;
+    let span = axis[hi] - axis[lo];
+    let w = if span > 0.0 {
+        ((x - axis[lo]) / span).clamp(0.0, 1.0)
+    } else {
+        0.0
+    };
+    Some(Cell { lo, hi, w })
+}
+
+/// Locates a longitude, also trying it a turn east and west for grids on 0 to 360 degrees.
+pub(crate) fn locate_lon(axis: &[f64], lon: f64, lone_half: f64) -> Option<Cell> {
+    locate(axis, lon, lone_half)
+        .or_else(|| locate(axis, lon + 360.0, lone_half))
+        .or_else(|| locate(axis, lon - 360.0, lone_half))
+}
+
 /// Half the native step, or 0 for a step that is not a positive number.
-fn half_step(step: f64) -> f64 {
+pub(crate) fn half_step(step: f64) -> f64 {
     if step.is_finite() && step > 0.0 {
         step / 2.0
     } else {
         0.0
     }
-}
-
-/// The neighbouring indices around `x` on an ascending axis and the fraction of the way from
-/// the first to the second. `None` outside the axis.
-fn bracket(axis: &[f64], x: f64) -> Option<(usize, usize, f64)> {
-    let (&first, &last) = (axis.first()?, axis.last()?);
-    if !x.is_finite() || x < first || x > last {
-        return None;
-    }
-    let k = axis.partition_point(|&a| a <= x);
-    if k >= axis.len() {
-        let n = axis.len() - 1;
-        return Some((n, n, 0.0));
-    }
-    let i = k.checked_sub(1)?;
-    let (a0, a1) = (*axis.get(i)?, *axis.get(k)?);
-    let span = a1 - a0;
-    let t = if span > 0.0 { (x - a0) / span } else { 0.0 };
-    Some((i, k, t.clamp(0.0, 1.0)))
 }
 
 /// The index of the axis value nearest to `x`, if `x` is within half a spacing of the ends
@@ -878,8 +926,10 @@ mod tests {
         assert!(close(g.sample_bilinear(at(40.2, -73.95)), 16.5));
         // Nearest to the missing cell: no value.
         assert_eq!(g.sample_bilinear(at(40.09, -73.99)), None);
-        // Outside the cell centres.
-        assert_eq!(g.sample_bilinear(at(40.21, -73.9)), None);
+        // Half a step past the outermost centres the edge cells' values are used; beyond it none.
+        assert!(close(g.sample_bilinear(at(40.24, -73.9)), 17.0));
+        assert_eq!(g.sample_bilinear(at(40.26, -73.9)), None);
+        assert_eq!(g.sample_bilinear(at(40.1, -74.06)), None);
         assert_eq!(g.sample_bilinear(at(f64::NAN, -73.9)), None);
     }
 

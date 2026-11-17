@@ -11,7 +11,7 @@
 use std::f64::consts::PI;
 use std::fmt;
 
-use crate::map::grid::Grid;
+use crate::map::grid::{Cell, Grid, half_step, locate, locate_lon};
 use crate::map::{Arrow, Bbox, GeoPoint, TileKey};
 
 /// The largest tile edge [`render_tile`] draws, in pixels.
@@ -325,6 +325,16 @@ pub static SPEED: Ramp = Ramp {
     default_range: RampRange::linear(0.0, 1.5),
 };
 
+/// Water clarity as the diffuse attenuation coefficient Kd490 (`lajolla` again, pale yellow for
+/// clear water through orange to dark brown for sediment-laden water) on a log10 scale, 0.02 to
+/// 3 m⁻¹. The same stops as [`SPEED`], kept apart so each layer names its own ramp and range.
+pub static TURBIDITY: Ramp = Ramp {
+    id: "turbidity",
+    kind: RampKind::Sequential,
+    stops: &LAJOLLA,
+    default_range: RampRange::log10(0.02, 3.0),
+};
+
 /// Depth below the surface (`devon` reversed, white shallows to dark blue-violet depths),
 /// 0 to 100 m.
 pub static DEPTH: Ramp = Ramp {
@@ -344,7 +354,7 @@ pub static DIVERGING: Ramp = Ramp {
 };
 
 /// Every ramp, in the order a picker lists them.
-pub static RAMPS: [&Ramp; 5] = [&THERMAL, &ALGAE, &SPEED, &DEPTH, &DIVERGING];
+pub static RAMPS: [&Ramp; 6] = [&THERMAL, &ALGAE, &TURBIDITY, &SPEED, &DEPTH, &DIVERGING];
 
 /// The ramp with an id, if this version has it.
 pub fn ramp(id: &str) -> Option<&'static Ramp> {
@@ -416,15 +426,6 @@ impl fmt::Display for TileLabel {
     }
 }
 
-/// Where a coordinate falls between two grid points: the value is
-/// `axis[lo] * (1 - w) + axis[hi] * w`.
-#[derive(Clone, Copy, Debug)]
-struct Cell {
-    lo: usize,
-    hi: usize,
-    w: f64,
-}
-
 /// Where a tile's columns and rows fall on one grid's axes.
 struct Located<'a> {
     grid: &'a Grid,
@@ -445,88 +446,10 @@ fn usable(grid: &Grid) -> bool {
         && strictly_ascending(&grid.lons)
 }
 
-/// Half a grid step for an axis with a single point.
-fn fallback_half_step(grid: &Grid) -> f64 {
-    let step = grid.source.native_step_deg;
-    if step.is_finite() && step > 0.0 {
-        step / 2.0
-    } else {
-        0.0
-    }
-}
-
-/// Locates a coordinate on an ascending axis. Grid values stand for cells centred on the axis
-/// points, so the grid reaches half a step beyond its outermost points; there the value of the
-/// edge points is used. None outside that.
-fn locate(axis: &[f64], x: f64, single_half: f64) -> Option<Cell> {
-    let (&first, &last) = (axis.first()?, axis.last()?);
-    if !x.is_finite() {
-        return None;
-    }
-    let n = axis.len();
-    let (below, above) = if n > 1 {
-        ((axis[1] - axis[0]) / 2.0, (axis[n - 1] - axis[n - 2]) / 2.0)
-    } else {
-        (single_half, single_half)
-    };
-    if x < first - below || x > last + above {
-        return None;
-    }
-    if x <= first {
-        return Some(Cell {
-            lo: 0,
-            hi: 0,
-            w: 0.0,
-        });
-    }
-    if x >= last {
-        return Some(Cell {
-            lo: n - 1,
-            hi: n - 1,
-            w: 0.0,
-        });
-    }
-    // first < x < last on a strictly ascending axis: 1 <= hi <= n - 1.
-    let hi = axis.partition_point(|&a| a <= x).clamp(1, n - 1);
-    let lo = hi - 1;
-    let span = axis[hi] - axis[lo];
-    let w = if span > 0.0 {
-        ((x - axis[lo]) / span).clamp(0.0, 1.0)
-    } else {
-        0.0
-    };
-    Some(Cell { lo, hi, w })
-}
-
-/// Locates a longitude, also trying it a turn east and west for grids on 0 to 360 degrees.
-fn locate_lon(axis: &[f64], lon: f64, single_half: f64) -> Option<Cell> {
-    locate(axis, lon, single_half)
-        .or_else(|| locate(axis, lon + 360.0, single_half))
-        .or_else(|| locate(axis, lon - 360.0, single_half))
-}
-
-/// The bilinear value of a cell; none when any of the four neighbours is missing.
-fn bilinear(grid: &Grid, row: Cell, col: Cell) -> Option<f64> {
-    let width = grid.lons.len();
-    let at = |i: usize, j: usize| -> Option<f64> {
-        let v = *grid.values.get(i * width + j)?;
-        v.is_finite().then_some(f64::from(v))
-    };
-    let v00 = at(row.lo, col.lo)?;
-    let v01 = at(row.lo, col.hi)?;
-    let v10 = at(row.hi, col.lo)?;
-    let v11 = at(row.hi, col.hi)?;
-    let south = v00 + (v01 - v00) * col.w;
-    let north = v10 + (v11 - v10) * col.w;
-    Some(south + (north - south) * row.w)
-}
-
-/// The value of a grid at a point, bilinear between the four surrounding grid points.
+/// The value of a grid at a point: [`Grid::sample_bilinear`], the one sampling rule the tile and
+/// the point inspector share.
 fn sample(grid: &Grid, at: GeoPoint) -> Option<f64> {
-    let half = fallback_half_step(grid);
-    let row = locate(&grid.lats, at.lat, half)?;
-    let col = locate_lon(&grid.lons, at.lon, half)?;
-    bilinear(grid, row, col)
+    grid.sample_bilinear(at).map(f64::from)
 }
 
 /// The latitude of a Web Mercator position, `y` from 0 (north edge) to 1 (south edge).
@@ -554,10 +477,12 @@ fn check_tile(tile: TileKey, size: u32) -> Result<(), RenderError> {
 /// Renders grids into a square tile of `size` × `size` straight-alpha RGBA pixels, row by row
 /// from the north-west corner.
 ///
-/// Each pixel takes the bilinear value of the first grid that has one at the pixel centre's
-/// latitude and longitude (Web Mercator inverted per row and column) and the ramp's colour for
-/// it. A pixel is transparent outside every grid, or where the value or any of its four
-/// neighbouring grid values is missing, so no colour bleeds onto land or into cloud gaps.
+/// Each pixel takes the value [`Grid::sample_bilinear`] gives for the first grid that has one at
+/// the pixel centre's latitude and longitude (Web Mercator inverted per row and column) and the
+/// ramp's colour for it: the point inspector reads the same value the tile shows. A pixel is
+/// transparent outside every grid (a grid reaches half a step past its outermost points, so
+/// blocks side by side join), and where the nearest grid point has no value, so no colour spreads
+/// from the coast onto land or into cloud gaps.
 ///
 /// # Errors
 /// [`RenderError`] for a size beyond 1 to [`MAX_TILE_SIZE`], a tile key outside its zoom level,
@@ -589,7 +514,7 @@ pub fn render_rgba(
         .iter()
         .filter(|g| usable(g))
         .map(|g| {
-            let half = fallback_half_step(g);
+            let half = half_step(g.source.native_step_deg);
             let cols = lons
                 .iter()
                 .map(|&lon| locate_lon(&g.lons, lon, half))
@@ -609,7 +534,7 @@ pub fn render_rgba(
             let value = located.iter().find_map(|l| {
                 let row = l.rows.get(py).copied().flatten()?;
                 let col = l.cols.get(px).copied().flatten()?;
-                bilinear(l.grid, row, col)
+                l.grid.sample_cell(row, col).map(f64::from)
             });
             let colour = value
                 .and_then(|v| ramp.colour(range, v))
@@ -1085,8 +1010,9 @@ mod tests {
     }
 
     #[test]
-    fn a_missing_neighbour_makes_a_pixel_transparent() {
-        // Two by two cells, one missing: every pixel between the four points is transparent.
+    fn a_pixel_nearest_a_missing_point_is_transparent_and_the_others_reweight() {
+        // Two by two cells, one missing: pixels nearest the missing point are transparent, and the
+        // rest take the value of the three present points.
         let g = Grid::new(
             source("synthetic", &["v"], 1.0),
             UnixTime(0),
@@ -1096,13 +1022,92 @@ mod tests {
             "degree_C",
         )
         .unwrap();
-        let tile = TileKey {
-            z: 9,
-            x: 150,
-            y: 192,
-        };
+        let tile = TileKey { z: 8, x: 75, y: 96 };
         let rgba = render_rgba(&[g], &THERMAL, RampRange::linear(0.0, 5.0), tile, 64).unwrap();
-        assert!(rgba.as_chunks::<4>().0.iter().all(|p| p[3] == 0));
+        let opaque = rgba
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .filter(|p| p[3] == 255)
+            .count();
+        assert!(opaque > 0 && opaque < 64 * 64, "{opaque}");
+        // The missing point is the north-west one: the pixels around it are bare.
+        let nw = pixel_of(
+            tile,
+            64,
+            GeoPoint {
+                lat: 40.9,
+                lon: -73.95,
+            },
+        );
+        assert_eq!(alpha(&rgba, 64, nw), 0);
+        let se = pixel_of(
+            tile,
+            64,
+            GeoPoint {
+                lat: 40.05,
+                lon: -73.2,
+            },
+        );
+        assert_eq!(alpha(&rgba, 64, se), 255);
+    }
+
+    #[test]
+    fn a_pixel_of_a_tile_is_the_colour_of_the_grids_own_sample() {
+        // Every pixel of the coastal tile agrees with `Grid::sample_bilinear` at its centre, so
+        // the point inspector reads what the tile shows.
+        let grid = mur();
+        let range = RampRange::linear(15.5, 16.5);
+        let size = 256u32;
+        let rgba =
+            render_rgba(std::slice::from_ref(&grid), &THERMAL, range, MUR_TILE, size).unwrap();
+        let world = f64::from(size) * f64::from(1u32 << MUR_TILE.z);
+        let (mut coloured, mut bare, mut coast) = (0, 0, 0);
+        for py in 0..size {
+            for px in 0..size {
+                let at = GeoPoint {
+                    lat: mercator_lat(
+                        (f64::from(MUR_TILE.y) * f64::from(size) + f64::from(py) + 0.5) / world,
+                    ),
+                    lon: (f64::from(MUR_TILE.x) * f64::from(size) + f64::from(px) + 0.5) / world
+                        * 360.0
+                        - 180.0,
+                };
+                let want = grid
+                    .sample_bilinear(at)
+                    .and_then(|v| THERMAL.colour(range, f64::from(v)))
+                    .unwrap_or(Rgba::TRANSPARENT);
+                let got = &rgba[((py * size + px) * 4) as usize..][..4];
+                assert_eq!(got, [want.r, want.g, want.b, want.a], "{px},{py}");
+                if want.a == 0 {
+                    bare += 1;
+                } else {
+                    coloured += 1;
+                }
+                // A coastal pixel: coloured although one of its four surrounding points is land.
+                let (Some(_), Some(row), Some(col)) = (
+                    grid.sample_bilinear(at),
+                    crate::map::grid::locate(&grid.lats, at.lat, 0.0),
+                    crate::map::grid::locate_lon(&grid.lons, at.lon, 0.0),
+                ) else {
+                    continue;
+                };
+                let corners = [
+                    (row.lo, col.lo),
+                    (row.lo, col.hi),
+                    (row.hi, col.lo),
+                    (row.hi, col.hi),
+                ];
+                if corners
+                    .iter()
+                    .any(|&(i, j)| grid.value(i, j).is_some_and(f32::is_nan))
+                {
+                    coast += 1;
+                }
+            }
+        }
+        assert!(coloured > 0 && bare > 0);
+        assert!(coast > 0, "the fixture tile has a coast");
     }
 
     #[test]
