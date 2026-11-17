@@ -141,6 +141,38 @@ keys! {
     UnitGroupAirTemp => ("Air temperature", "Air temperature"),
     UnitGroupPressure => ("Air pressure", "Air pressure"),
     UnitGroupDistance => ("Distances", "Distances"),
+    /// "Same as {group}": a unit picker's choice to follow another group; `{group}` is the group's
+    /// name in lower case.
+    UnitSameAs => ("Same as {group}", "Same as {group}"),
+    /// The names of the source groups (see `Strings::source_group`).
+    SourceGroupWaterTemperature => ("Water temperature", "Water temperature"),
+    SourceGroupTide => ("Tides", "Tides"),
+    SourceGroupCurrents => ("Currents", "Currents"),
+    SourceGroupFlow => ("River flow", "River flow"),
+    SourceGroupLakeLevel => ("Lake level", "Lake level"),
+    SourceGroupWaves => ("Waves", "Waves"),
+    SourceGroupSst => ("Sea surface temperature", "Sea surface temperature"),
+    SourceGroupClarity => ("Water clarity", "Water clarity"),
+    SourceGroupWaterQuality => ("Water quality", "Water quality"),
+    SourceGroupMarineForecast => ("Marine forecast", "Marine forecast"),
+    SourceGroupWeather => ("Weather", "Weather"),
+    SourceGroupStorm => ("Storms", "Storms"),
+    /// `{distance}`: "25 km".
+    SourceWithin => ("within {distance}", "within {distance}"),
+    SourceAnyDistance => ("any distance", "any distance"),
+    /// `{age}`: "3 h".
+    SourceUnderOld => ("under {age} old", "under {age} old"),
+    SourceAnyAge => ("any age", "any age"),
+    /// `{distance}`, `{age}`: the two limits of a source group, as the lines above.
+    SourceLimits => ("{distance}, {age}", "{distance}, {age}"),
+    /// `{n}` limits set on a go/no-go profile.
+    LimitCountOne => ("{n} limit", "{n} limit"),
+    LimitCountMany => ("{n} limits", "{n} limits"),
+    LimitNoSmallCraft => ("no small craft advisory", "no small craft advisory"),
+    LimitNoLightning => ("no lightning", "no lightning"),
+    LimitNone => ("No limits set", "No limits set"),
+    /// `{low}`, `{high}`: the shaded band of a flow chart, "5th percentile to 95th percentile".
+    PercentileBand => ("Shaded: {low} to {high}", "Shaded: {low} to {high}"),
     Depth => ("Depth", "Depth"),
     Night => ("Night", "Night"),
     Sunrise => ("Sunrise", "Sunrise"),
@@ -734,6 +766,82 @@ impl Strings {
         }))
     }
 
+    /// What a source group is called (`water_temperature` is "Water temperature"); `None` for
+    /// an id that names no group.
+    pub fn source_group(self, id: &str) -> Option<&'static str> {
+        Some(self.get(match id {
+            "water_temperature" => Key::SourceGroupWaterTemperature,
+            "tide" => Key::SourceGroupTide,
+            "currents" => Key::SourceGroupCurrents,
+            "flow" => Key::SourceGroupFlow,
+            "lake_level" => Key::SourceGroupLakeLevel,
+            "waves" => Key::SourceGroupWaves,
+            "sst" => Key::SourceGroupSst,
+            "clarity" => Key::SourceGroupClarity,
+            "water_quality" => Key::SourceGroupWaterQuality,
+            "marine_forecast" => Key::SourceGroupMarineForecast,
+            "weather" => Key::SourceGroupWeather,
+            "storm" => Key::SourceGroupStorm,
+            _ => return None,
+        }))
+    }
+
+    /// "Same as river flow": the choice that makes a unit group follow `group` (its name).
+    pub fn unit_same_as(self, group: &str) -> String {
+        let mut chars = group.chars();
+        let lower: String = chars
+            .next()
+            .map(|c| c.to_lowercase().chain(chars).collect())
+            .unwrap_or_default();
+        self.fmt(Key::UnitSameAs, &[("group", &lower)])
+    }
+
+    /// The limits of a source group in words: "within 25 km, under 3 h old"; `distance` and `age`
+    /// are the values already written in the user's unit, `None` for no limit.
+    pub fn source_limits(self, distance: Option<&str>, age: Option<&str>) -> String {
+        let distance = distance.map_or_else(
+            || self.get(Key::SourceAnyDistance).to_owned(),
+            |d| self.fmt(Key::SourceWithin, &[("distance", d)]),
+        );
+        let age = age.map_or_else(
+            || self.get(Key::SourceAnyAge).to_owned(),
+            |a| self.fmt(Key::SourceUnderOld, &[("age", a)]),
+        );
+        self.fmt(Key::SourceLimits, &[("distance", &distance), ("age", &age)])
+    }
+
+    /// What a go/no-go profile switches on, in words: "2 limits, no lightning"; "No limits set"
+    /// when it checks nothing.
+    pub fn limit_summary(self, set: usize, no_small_craft: bool, no_lightning: bool) -> String {
+        let mut parts: Vec<String> = Vec::new();
+        if set > 0 {
+            parts.push(self.fmt(
+                if set == 1 {
+                    Key::LimitCountOne
+                } else {
+                    Key::LimitCountMany
+                },
+                &[("n", &set.to_string())],
+            ));
+        }
+        if no_small_craft {
+            parts.push(self.get(Key::LimitNoSmallCraft).to_owned());
+        }
+        if no_lightning {
+            parts.push(self.get(Key::LimitNoLightning).to_owned());
+        }
+        if parts.is_empty() {
+            self.get(Key::LimitNone).to_owned()
+        } else {
+            parts.join(", ")
+        }
+    }
+
+    /// The label of a flow chart's shaded band between two percentile labels.
+    pub fn percentile_band(self, low: &str, high: &str) -> String {
+        self.fmt(Key::PercentileBand, &[("low", low), ("high", high)])
+    }
+
     /// What a measurement is called: "River flow", "Water temperature", ...
     pub const fn measurement(self, m: Measurement) -> &'static str {
         self.get(match m {
@@ -1031,6 +1139,34 @@ mod tests {
         for key in SafetyKey::ALL.iter().copied() {
             assert_eq!(luna.safety(key), plain.safety(key));
             assert!(!key.text().contains("Luna"));
+        }
+    }
+
+    #[test]
+    fn settings_phrases_read_in_both_voices() {
+        for voice in [Voice::Plain, Voice::Luna] {
+            let s = Strings::new(voice);
+            assert_eq!(s.source_group("sst"), Some("Sea surface temperature"));
+            assert_eq!(s.source_group("storm"), Some("Storms"));
+            assert_eq!(s.source_group("nope"), None);
+            assert_eq!(s.unit_same_as("River flow"), "Same as river flow");
+            assert_eq!(s.unit_same_as(""), "Same as ");
+            assert_eq!(
+                s.source_limits(Some("25 km"), Some("3 h")),
+                "within 25 km, under 3 h old"
+            );
+            assert_eq!(s.source_limits(None, None), "any distance, any age");
+            assert_eq!(s.limit_summary(0, false, false), "No limits set");
+            assert_eq!(s.limit_summary(1, false, false), "1 limit");
+            assert_eq!(
+                s.limit_summary(3, true, true),
+                "3 limits, no small craft advisory, no lightning"
+            );
+            assert_eq!(s.limit_summary(0, false, true), "no lightning");
+            assert_eq!(
+                s.percentile_band("5th percentile", "95th percentile"),
+                "Shaded: 5th percentile to 95th percentile"
+            );
         }
     }
 
