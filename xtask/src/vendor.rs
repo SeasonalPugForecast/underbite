@@ -46,15 +46,26 @@ fn fingerprint(bytes: &[u8]) -> String {
     format!("{hash:016x}-{}", bytes.len())
 }
 
-/// Whether the vendored sources must be made again.
-fn is_stale(lock: &[u8], stamp: Option<&str>, vendored: bool) -> bool {
-    !vendored || stamp.map(str::trim) != Some(fingerprint(lock).as_str())
+/// Bumped whenever [`host_config`] writes something new, so every checkout makes it again.
+const CONFIG_REVISION: u32 = 2;
+
+/// What the stamp file holds for `lock`: its fingerprint and the host config's revision.
+fn stamp_for(lock: &[u8]) -> String {
+    format!("{}-r{CONFIG_REVISION}", fingerprint(lock))
 }
 
-/// The Cargo config for the host: the `xtask` alias, no network, and the source
-/// replacement `cargo vendor` printed, pointing at `vendor` beside `.cargo`.
+/// Whether the vendored sources (or the host config) must be made again.
+fn is_stale(lock: &[u8], stamp: Option<&str>, vendored: bool) -> bool {
+    !vendored || stamp.map(str::trim) != Some(stamp_for(lock).as_str())
+}
+
+/// The Cargo config for the host: the `xtask` alias, no network, no incremental
+/// builds (each lane builds once per gate, and the caches filled the host's disk), and
+/// the source replacement `cargo vendor` printed, pointing at `vendor` beside `.cargo`.
 fn host_config(printed: &str) -> Result<String, String> {
-    let mut out = format!("[alias]\nxtask = \"{ALIAS}\"\n\n[net]\noffline = true\n\n");
+    let mut out = format!(
+        "[alias]\nxtask = \"{ALIAS}\"\n\n[net]\noffline = true\n\n[build]\nincremental = false\n\n"
+    );
     let mut replaced = false;
     for line in printed.lines() {
         if line.trim_start().starts_with("directory") {
@@ -102,7 +113,7 @@ pub(crate) fn ensure(root: &Path) -> Result<bool, String> {
     let config = host_config(&String::from_utf8_lossy(&out.stdout))?;
     std::fs::write(host_config_path(root), config)
         .map_err(|e| format!("{}: {e}", host_config_path(root).display()))?;
-    std::fs::write(sync.join(STAMP), fingerprint(&lock))
+    std::fs::write(sync.join(STAMP), stamp_for(&lock))
         .map_err(|e| format!("{}: {e}", sync.join(STAMP).display()))?;
     Ok(true)
 }
@@ -126,7 +137,9 @@ directory = "target/vendor-sync/vendor"
     #[test]
     fn the_stamp_tracks_the_lock() {
         let lock = b"version = 4\n";
-        let stamp = fingerprint(lock);
+        let stamp = stamp_for(lock);
+        // A stamp from before the host config's last revision is stale.
+        assert!(is_stale(lock, Some(&fingerprint(lock)), true));
         assert!(!is_stale(lock, Some(&stamp), true));
         assert!(!is_stale(lock, Some(&format!("{stamp}\n")), true));
         assert!(is_stale(b"version = 4\n# changed\n", Some(&stamp), true));
@@ -140,6 +153,7 @@ directory = "target/vendor-sync/vendor"
         let text = host_config(PRINTED).unwrap();
         let table: toml::Table = text.parse().unwrap();
         assert_eq!(table["net"]["offline"].as_bool(), Some(true));
+        assert_eq!(table["build"]["incremental"].as_bool(), Some(false));
         assert_eq!(
             table["source"]["vendored-sources"]["directory"].as_str(),
             Some("vendor")
