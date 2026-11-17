@@ -14,13 +14,18 @@
 use std::collections::BTreeMap;
 use std::fmt;
 use std::future::ready;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, PoisonError};
 
 use underbite_config::schema::Config;
 use underbite_core::discover::rank::Ranking;
-use underbite_core::model::{SourceError, Spot, WaterType};
+use underbite_core::model::{SourceError, SourceErrorKind, Spot, SpotSnapshot, WaterType};
+use underbite_core::offline::cache::{
+    CachedMetadata, MetadataKind, cache_key, merge_last, serve_offline,
+};
+use underbite_core::provenance::SourceId;
 use underbite_core::time::UnixTime;
-use underbite_core::view::strings::Strings;
+use underbite_core::view::format::Formatter;
+use underbite_core::view::strings::{Key, Strings};
 use underbite_fetch::store::{self, Choice, parse_station_key};
 use underbite_fetch::{self as library, Call, Fetched, TransportError};
 use underbite_providers::request::{is_secret_header, redact_url, secret_values};
@@ -28,6 +33,7 @@ use underbite_providers::source::Secrets;
 use whether_core::time::parse_http_date;
 use whether_providers::Method;
 
+use crate::offline::note_time;
 use crate::settings::{SettingsError, load};
 use crate::view::SpotInfo;
 
@@ -204,30 +210,121 @@ pub trait FetchHost: Send + Sync {
     fn save_usage(&self, ledger_json: String) -> Result<(), HostError>;
 }
 
-/// The app's [`FetchHost`] as the fetch library's.
-struct Bridge(Arc<dyn FetchHost>);
+/// What a fetch saw of the network and of the cached metadata.
+#[derive(Debug, Default)]
+struct Traffic {
+    /// Metadata responses worth keeping, one per key.
+    cacheable: Vec<CachedResponse>,
+    /// Requests that got a successful response.
+    answered: usize,
+    /// Requests that got no response at all.
+    unreachable: usize,
+    /// When each cached copy that answered a request was fetched.
+    served: Vec<UnixTime>,
+}
+
+/// The app's [`FetchHost`] as the fetch library's. Long-lived station metadata that arrives is
+/// noted for the app to keep (`Traffic::cacheable`); when such a request gets no response at
+/// all, the copy the app kept answers it instead, if it is not too old.
+struct Bridge {
+    host: Arc<dyn FetchHost>,
+    cached: BTreeMap<String, CachedMetadata>,
+    now: UnixTime,
+    traffic: Mutex<Traffic>,
+}
+
+impl Bridge {
+    fn new(host: Arc<dyn FetchHost>, cached: Vec<CachedResponse>, now: UnixTime) -> Self {
+        Self {
+            host,
+            cached: cached
+                .into_iter()
+                .map(|c| {
+                    let entry = CachedMetadata {
+                        key: c.key.clone(),
+                        body: c.body,
+                        fetched_at: UnixTime(c.fetched_at),
+                    };
+                    (c.key, entry)
+                })
+                .collect(),
+            now,
+            traffic: Mutex::new(Traffic::default()),
+        }
+    }
+
+    fn traffic(&self) -> std::sync::MutexGuard<'_, Traffic> {
+        self.traffic.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
+    /// The cached copy that answers `url` when the network cannot.
+    fn offline_answer(&self, url: &str) -> Option<Fetched> {
+        let served = serve_offline(url, self.cached.get(&cache_key(url)), self.now).ok()?;
+        self.traffic().served.push(served.fetched_at);
+        Some(Fetched {
+            status: 200,
+            body: served.body.to_vec(),
+            content_type: Some(
+                match served.kind {
+                    MetadataKind::NdbcStations => "application/xml",
+                    _ => "application/json",
+                }
+                .to_owned(),
+            ),
+            ..Fetched::default()
+        })
+    }
+
+    /// Notes a successful response to `url` when it is metadata worth keeping.
+    fn note(&self, url: &str, response: &Fetched) {
+        let mut traffic = self.traffic();
+        traffic.answered += 1;
+        if !(200..300).contains(&response.status) {
+            return;
+        }
+        let Some(entry) = CachedMetadata::new(url, response.body.clone(), self.now) else {
+            return;
+        };
+        if traffic.cacheable.iter().any(|c| c.key == entry.key) {
+            return;
+        }
+        traffic.cacheable.push(CachedResponse {
+            key: entry.key,
+            body: entry.body,
+            fetched_at: entry.fetched_at.0,
+        });
+    }
+}
 
 impl library::FetchHost for Bridge {
     async fn send(&self, call: &Call) -> Result<Fetched, TransportError> {
-        match self.0.send(host_request(call)).await {
-            Ok(response) => fetched(response),
-            Err(e) => Err(transport_error(e, &call.url)),
+        match self.host.send(host_request(call)).await {
+            Ok(response) => {
+                let fetched = fetched(response)?;
+                self.note(&call.url, &fetched);
+                Ok(fetched)
+            }
+            Err(e) => {
+                self.traffic().unreachable += 1;
+                self.offline_answer(&call.url)
+                    .ok_or_else(|| transport_error(e, &call.url))
+            }
         }
     }
 
     // The store and the ledger are plain calls on the app's side: each is done when it returns.
 
     fn load(&self, namespace: &str, key: &str) -> impl Future<Output = Option<String>> + Send {
-        ready(self.0.load(namespace.to_owned(), key.to_owned()))
+        ready(self.host.load(namespace.to_owned(), key.to_owned()))
     }
 
     fn store(&self, namespace: &str, key: &str, value: String) -> impl Future<Output = ()> + Send {
-        self.0.store(namespace.to_owned(), key.to_owned(), value);
+        self.host.store(namespace.to_owned(), key.to_owned(), value);
         ready(())
     }
 
     fn save_usage(&self, ledger: String) -> impl Future<Output = Result<(), String>> + Send {
-        ready(self.0.save_usage(ledger).map_err(|e| e.to_string()))
+        ready(self.host.save_usage(ledger).map_err(|e| e.to_string()))
     }
 }
 
@@ -417,6 +514,29 @@ pub struct FetchOptions {
     pub infer_water_type: bool,
 }
 
+/// A response to long-lived station metadata (harmonic constants, datums, offsets, bins, station
+/// lists) the app keeps for a spot, so a fetch without signal can still compute tides. The key
+/// is the request's URL without anything that looks like a credential.
+#[derive(Clone, PartialEq, Eq, uniffi::Record)]
+pub struct CachedResponse {
+    /// The request's cache key.
+    pub key: String,
+    /// The response body.
+    pub body: Vec<u8>,
+    /// When it was fetched, Unix seconds.
+    pub fetched_at: i64,
+}
+
+impl fmt::Debug for CachedResponse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("CachedResponse")
+            .field("key", &self.key)
+            .field("body_len", &self.body.len())
+            .field("fetched_at", &self.fetched_at)
+            .finish()
+    }
+}
+
 /// A source that failed or was passed over, as the snapshot lists it.
 #[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
 pub struct SourceIssue {
@@ -461,6 +581,10 @@ pub struct SpotFetchOutcome {
     pub errors: Vec<SourceIssue>,
     /// The water type inferred, when it was asked for and something pointed to one.
     pub suggestion: Option<WaterTypeSuggestion>,
+    /// Station metadata responses to keep for the next fetch without signal, passed back as
+    /// `cached_metadata`: one per request, each replacing the copy under its key.
+    #[uniffi(default = [])]
+    pub cacheable: Vec<CachedResponse>,
 }
 
 /// The stations around a spot.
@@ -518,7 +642,13 @@ fn options(keys: &Keys, allow_metered: bool, infer_water_type: bool) -> library:
 /// command line does. The station lists, rankings and the snapshot are stored through the host
 /// and the call ledger saved. A source that fails is listed in the outcome's errors; the fetch
 /// fails only on unreadable settings or spot.
-#[uniffi::export]
+///
+/// `cached_metadata` is what the app kept from earlier fetches' `cacheable` lists. Without
+/// signal (no request got a response) the station metadata in it answers the requests for
+/// harmonic constants, so tides are computed on the device, and the values the fetch lacks come
+/// from the spot's last snapshot with their own times; the outcome's errors then say "offline:
+/// computed from harmonic constants, other values from <time>". Anything else fails as usual.
+#[uniffi::export(default(cached_metadata = []))]
 #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
 pub async fn fetch_spot(
     spot: SpotInfo,
@@ -526,12 +656,15 @@ pub async fn fetch_spot(
     keys: Keys,
     options: FetchOptions,
     now: i64,
+    cached_metadata: Vec<CachedResponse>,
     host: Arc<dyn FetchHost>,
 ) -> Result<SpotFetchOutcome, FetchError> {
     let (config, _) = load(&settings_json)?;
-    let spot = self::spot(&spot)?;
+    let info = spot;
+    let spot = self::spot(&info)?;
     let options = self::options(&keys, options.allow_metered, options.infer_water_type);
-    let bridge = Bridge(host);
+    let bridge = Bridge::new(host, cached_metadata, UnixTime(now));
+    let previous = last_snapshot(&bridge, &spot.id);
     // Boxed: the whole fetch is a large future.
     let out = Box::pin(library::fetch_spot(
         &bridge,
@@ -550,11 +683,80 @@ pub async fn fetch_spot(
             .map(|r| strings.water_type_reason(r))
             .collect(),
     });
+    let traffic = std::mem::take(&mut *bridge.traffic());
+    let mut snapshot = out.snapshot;
+    if traffic.answered == 0 && traffic.unreachable > 0 {
+        let zone = if snapshot.spot.time_zone.is_empty() {
+            info.time_zone.as_str()
+        } else {
+            snapshot.spot.time_zone.as_str()
+        };
+        let f = crate::map::formatter(&config, zone);
+        snapshot = offline(
+            &bridge,
+            strings,
+            &f,
+            previous.as_ref(),
+            snapshot,
+            !traffic.served.is_empty(),
+        );
+    }
     Ok(SpotFetchOutcome {
-        snapshot_json: serde_json::to_string(&out.snapshot).map_err(|e| invalid("snapshot", &e))?,
-        errors: out.snapshot.errors.iter().map(SourceIssue::from).collect(),
+        snapshot_json: serde_json::to_string(&snapshot).map_err(|e| invalid("snapshot", &e))?,
+        errors: snapshot.errors.iter().map(SourceIssue::from).collect(),
         suggestion,
+        cacheable: traffic.cacheable,
     })
+}
+
+/// The spot's snapshot as the last fetch stored it.
+fn last_snapshot(bridge: &Bridge, spot_id: &str) -> Option<SpotSnapshot> {
+    let text = bridge
+        .host
+        .load(store::SPOT.to_owned(), store::spot_key(spot_id))?;
+    let stored: store::Stored<SpotSnapshot> = serde_json::from_str(&text).ok()?;
+    Some(stored.value)
+}
+
+/// The snapshot of a fetch without signal: the values it lacks come from the last snapshot with
+/// their own times, the offline note is added to its errors, and the result is kept in place of
+/// the sparse one the fetch stored, so the next fetch without signal still has them.
+fn offline(
+    bridge: &Bridge,
+    strings: Strings,
+    f: &Formatter,
+    previous: Option<&SpotSnapshot>,
+    fresh: SpotSnapshot,
+    computed: bool,
+) -> SpotSnapshot {
+    let mut merged = match previous {
+        Some(last) => merge_last(last, fresh),
+        None => fresh,
+    };
+    let time = previous.map(|last| note_time(f, last.fetched_at));
+    let message = match (computed, time) {
+        (true, Some(time)) => strings.fmt(Key::OfflineComputedLast, &[("time", &time)]),
+        (true, None) => strings.get(Key::OfflineComputedOnly).to_owned(),
+        (false, Some(time)) => strings.fmt(Key::OfflineLastOnly, &[("time", &time)]),
+        (false, None) => return merged,
+    };
+    merged.errors.push(SourceError {
+        source: SourceId::from_static("offline"),
+        measurement: None,
+        kind: SourceErrorKind::Stale,
+        message,
+    });
+    if let Ok(json) = serde_json::to_string(&store::Stored {
+        saved_at: bridge.now.0,
+        value: &merged,
+    }) {
+        bridge.host.store(
+            store::SPOT.to_owned(),
+            store::spot_key(&merged.spot.id),
+            json,
+        );
+    }
+    merged
 }
 
 /// The stations around `spot` that can serve its cards under the settings at Unix time `now`,
@@ -574,7 +776,7 @@ pub async fn discover_stations(
     let spot = self::spot(&spot)?;
     let options = self::options(&keys, allow_metered, false);
     let requirements = library::requirements(&config, spot.water_type);
-    let bridge = Bridge(host);
+    let bridge = Bridge::new(host, Vec::new(), UnixTime(now));
     let found = Box::pin(library::stations_near(
         &bridge,
         &spot,

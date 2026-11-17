@@ -204,6 +204,7 @@ fn fetched(
         keys,
         options,
         now(),
+        Vec::new(),
         host.host(),
     ))
     .expect("fetched");
@@ -447,6 +448,7 @@ fn unreadable_settings_or_spots_fail_the_call() {
             Keys::default(),
             METERED,
             now(),
+            Vec::new(),
             host.host(),
         ))
     };

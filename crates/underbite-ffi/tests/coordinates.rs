@@ -160,6 +160,7 @@ fn fetch_and_discover(spot: &SpotInfo, settings: &str, infer: bool, host: &Arc<R
         Keys::default(),
         options,
         now(),
+        Vec::new(),
         dyn_host(),
     ))
     .expect("fetched");

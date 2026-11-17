@@ -204,7 +204,7 @@ final class SpotStore {
         fetcher: @escaping Fetcher = { spot, settings, keys, options, now, host in
             try await fetchSpot(
                 spot: spot, settingsJson: settings, keys: keys, options: options, now: now,
-                host: host)
+                cachedMetadata: [], host: host)
         },
         discoverer: @escaping Discoverer = { spot, settings, keys, now, host in
             try await UnderbiteKit.discoverStations(
