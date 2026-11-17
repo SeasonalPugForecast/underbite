@@ -17,6 +17,7 @@ serde.workspace = true
 schemars.workspace = true
 thiserror.workspace = true
 jiff = { workspace = true, features = ["tzdb-bundle-always"] }
+png.workspace = true
 
 [dev-dependencies]
 whether-core = { workspace = true, features = ["serde", "schema", "testdata"] }

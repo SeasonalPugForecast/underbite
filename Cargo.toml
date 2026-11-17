@@ -34,6 +34,7 @@ tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }
 anyhow = "1.0.104"
 quick-xml = "0.42.0"
+png = "0.18.1"
 
 # The iOS bridge, at whether's versions so the git dependency unifies.
 uniffi = "0.32.2"

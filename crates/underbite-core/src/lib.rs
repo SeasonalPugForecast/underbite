@@ -9,6 +9,7 @@ pub mod astro;
 pub mod datum;
 pub mod derive;
 pub mod discover;
+pub mod map;
 pub mod model;
 pub mod provenance;
 pub mod series;
