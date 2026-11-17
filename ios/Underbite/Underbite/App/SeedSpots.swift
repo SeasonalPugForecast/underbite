@@ -38,14 +38,22 @@
             if let first = self.spot(SeedSpots.battery.id) { setActive(first.id) }
         }
 
-        /// Puts a sample `[[limits]]` profile into the settings (`-seedLimits`), so the
-        /// go/no-go card shows; plain test values, saved like any settings change.
+        /// Puts a sample `[[limits]]` profile into the settings and the go/no-go card into the
+        /// card order (`-seedLimits`): the shipped order leaves that card out. Plain test
+        /// values, saved like any settings change.
         func addSeedLimits() {
             guard
                 let data = settingsJSON.data(using: .utf8),
                 var settings = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
             else { return }
             settings["limits"] = [SeedSpots.limits]
+            if var cards = settings["cards"] as? [String: Any],
+                var order = cards["order"] as? [String], !order.contains("go_no_go")
+            {
+                order.insert("go_no_go", at: (order.firstIndex(of: "windows") ?? -1) + 1)
+                cards["order"] = order
+                settings["cards"] = cards
+            }
             guard
                 let out = try? JSONSerialization.data(
                     withJSONObject: settings, options: [.sortedKeys]),
