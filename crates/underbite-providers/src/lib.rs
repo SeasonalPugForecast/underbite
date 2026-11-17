@@ -8,9 +8,11 @@
 #[cfg(test)]
 pub(crate) mod testutil;
 
+pub mod blooms;
 pub mod coops;
 pub mod encdirect;
 pub mod erddap;
+pub mod glerl;
 pub mod hydro;
 pub mod ncei_dem;
 pub mod ndbc;
@@ -18,6 +20,7 @@ pub mod nwps;
 pub mod nws_marine;
 pub mod open_meteo_marine;
 pub mod request;
+pub mod reservoirs;
 pub mod session;
 pub mod source;
 pub mod statemaps;

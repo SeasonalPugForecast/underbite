@@ -15,8 +15,10 @@ serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 quick-xml.workspace = true
-
 tiff.workspace = true
+csv.workspace = true
+zip.workspace = true
+
 [dev-dependencies]
 insta = { workspace = true, features = ["yaml", "json"] }
 

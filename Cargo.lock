@@ -1372,6 +1372,7 @@ dependencies = [
 name = "underbite-providers"
 version = "0.1.0"
 dependencies = [
+ "csv",
  "insta",
  "quick-xml",
  "serde",
@@ -1381,6 +1382,7 @@ dependencies = [
  "underbite-core",
  "whether-core",
  "whether-providers",
+ "zip",
 ]
 
 [[package]]
