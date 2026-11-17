@@ -517,6 +517,22 @@ expression: json_schema()
             {
               "id": "artificial-reefs-ny",
               "shown": false
+            },
+            {
+              "id": "enc-depths",
+              "shown": false
+            },
+            {
+              "id": "enc-seabed",
+              "shown": false
+            },
+            {
+              "id": "enc-special-areas",
+              "shown": false
+            },
+            {
+              "id": "enc-structure-points",
+              "shown": false
             }
           ],
           "description": "The overlay layers in drawing order, first at the bottom.",
@@ -1325,6 +1341,22 @@ expression: json_schema()
           },
           {
             "id": "artificial-reefs-ny",
+            "shown": false
+          },
+          {
+            "id": "enc-depths",
+            "shown": false
+          },
+          {
+            "id": "enc-seabed",
+            "shown": false
+          },
+          {
+            "id": "enc-special-areas",
+            "shown": false
+          },
+          {
+            "id": "enc-structure-points",
             "shown": false
           }
         ],

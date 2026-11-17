@@ -4,6 +4,7 @@
 //! here is static; the words (titles, captions, credits, reasons) are kept with it for now.
 //! Presets are lists of layer ids to show, in [`PRESETS`].
 
+use crate::map::enc::{self, EncGroup};
 use crate::map::render::{self, Ramp, RampRange};
 use crate::map::tiles::{
     GibsSpec, TileService, gebco_wms_url, gibs_tile_url, ncds_wms_url, ncds_wmts_url,
@@ -161,6 +162,9 @@ pub enum LayerKind {
     Spots,
     /// Lines or points a state agency publishes, drawn on the device.
     Features(FeatureLayer),
+    /// Wrecks, obstructions and rocks from NOAA ENC Direct to GIS, drawn on the device from points
+    /// the core reads by box (`underbite_providers::encdirect`); the band is chosen by zoom.
+    EncPoints,
     /// A layer with no data source yet.
     Unsourced,
 }
@@ -455,6 +459,31 @@ const fn feature_layer(
     l
 }
 
+/// The shallowest zoom the ENC Direct points are asked at: the coastal band's widest scale
+/// (1:600,000) at the latitudes of the test places.
+const ENC_POINTS_MIN_ZOOM: u8 = 9;
+
+/// A NOAA Chart Display group drawn as a transparent WMS picture.
+const fn enc_picture(
+    id: &'static str,
+    group: Group,
+    title: &'static str,
+    enc: EncGroup,
+    legend: &'static str,
+) -> Layer {
+    let mut l = overlay(
+        id,
+        group,
+        title,
+        LayerKind::Tiles(TileSource::NcdsWms { groups: enc.groups }),
+        enc::ENC_PICTURE_CREDIT,
+    );
+    l.min_zoom = Some(enc.min_zoom);
+    l.not_for_navigation = true;
+    l.legend = Some(legend);
+    l
+}
+
 /// The base maps, in the order the picker lists them.
 pub const BASES: [Layer; 4] = [
     base(
@@ -487,7 +516,7 @@ pub const BASES: [Layer; 4] = [
 ];
 
 /// The overlay layers in drawer order.
-pub const LAYERS: [Layer; 25] = [
+pub const LAYERS: [Layer; 29] = [
     {
         let mut l = overlay(
             "gebco-relief",
@@ -775,6 +804,43 @@ pub const LAYERS: [Layer; 25] = [
         REEF_MIN_ZOOM,
         "General area of each reef site",
     ),
+    enc_picture(
+        "enc-depths",
+        Group::Depth,
+        "ENC depths and soundings",
+        enc::DEPTHS,
+        "Charted depth areas, contours and soundings, in the chart's own units and datum. Soundings appear at the finer zooms; the exact limit is unverified.",
+    ),
+    enc_picture(
+        "enc-seabed",
+        Group::Structure,
+        "ENC seabed and obstructions",
+        enc::SEABED,
+        "Charted wrecks, obstructions and foul areas. Empty when zoomed out past about 1:137,000 where checked; the limit follows each chart's scale.",
+    ),
+    enc_picture(
+        "enc-special-areas",
+        Group::Structure,
+        "ENC special areas",
+        enc::SPECIAL_AREAS,
+        "Charted restricted and caution areas. The zoom at which they appear is unverified. Rules are in the regulations, not here.",
+    ),
+    {
+        let mut l = overlay(
+            "enc-structure-points",
+            Group::Structure,
+            "Wrecks and obstructions (ENC)",
+            LayerKind::EncPoints,
+            enc::ENC_DIRECT_CREDIT,
+        );
+        l.min_zoom = Some(ENC_POINTS_MIN_ZOOM);
+        l.not_for_navigation = true;
+        l.default_opacity = 0.9;
+        l.legend = Some(
+            "Charted wrecks, obstructions and rocks with their category and survey date. No depth is shown: NOAA does not state its unit or datum.",
+        );
+        l
+    },
 ];
 
 /// The layer or base with an id.
@@ -914,7 +980,7 @@ mod tests {
     /// The ids of the overlays as the configuration lists them (`KNOWN_LAYERS`), in drawer order.
     /// The configuration crate cannot be a dependency here, so it checks its own list against this
     /// one.
-    const OVERLAY_IDS: [&str; 25] = [
+    const OVERLAY_IDS: [&str; 29] = [
         "gebco-relief",
         "sst",
         "sst-imagery",
@@ -940,6 +1006,10 @@ mod tests {
         "lake-contours-in",
         "lake-contours-mn",
         "artificial-reefs-ny",
+        "enc-depths",
+        "enc-seabed",
+        "enc-special-areas",
+        "enc-structure-points",
     ];
     const BASE_IDS: [&str; 4] = [
         "apple-standard",
@@ -1169,6 +1239,90 @@ mod tests {
             classify(ncds, 200, Some("text/html"), 700, 0),
             TileOutcome::Retry { after_s: 3 }
         );
+    }
+
+    fn layer(id: &str) -> &'static Layer {
+        find(id).unwrap()
+    }
+
+    fn ncds_groups(id: &str) -> &'static str {
+        match layer(id).kind {
+            LayerKind::Tiles(TileSource::NcdsWms { groups }) => groups,
+            other => panic!("{id}: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn enc_pictures_are_ncds_groups_with_credit_and_a_minimum_zoom() {
+        use crate::map::tiles::{Bounds3857, ncds_wms_bbox_url};
+        for (id, group, expected) in [
+            ("enc-depths", Group::Depth, "2"),
+            ("enc-seabed", Group::Structure, "3"),
+            ("enc-special-areas", Group::Structure, "5"),
+        ] {
+            let l = layer(id);
+            assert_eq!(l.group, group, "{id}");
+            assert_eq!(ncds_groups(id), expected);
+            assert_eq!(l.tile_service(), Some(TileService::Ncds));
+            assert_eq!(
+                l.credit,
+                "NOAA Office of Coast Survey, NOAA Chart Display Service (ENC). Not to be used for navigation."
+            );
+            assert_eq!(l.credit, NCDS_CREDIT);
+            assert!(l.not_for_navigation, "{id}");
+            assert_eq!(l.availability, Availability::Available);
+            assert_eq!(l.min_zoom, Some(12), "{id}");
+            assert_eq!(l.max_zoom, None);
+            assert!(l.legend.is_some());
+            let url = l.tile_url(tile(14, 4823, 6160), None, 0).unwrap();
+            assert!(url.contains(&format!("&LAYERS={expected}&")), "{url}");
+            assert!(url.ends_with("&FORMAT=image/png&TRANSPARENT=TRUE"), "{url}");
+        }
+        // Asked together, groups 2 and 3 are the request recorded with the fixtures.
+        let bounds = Bounds3857 {
+            min_x: -8_243_208.0,
+            min_y: 4_965_255.0,
+            max_x: -8_234_302.0,
+            max_y: 4_974_067.0,
+        };
+        let together = format!(
+            "{},{}",
+            ncds_groups("enc-depths"),
+            ncds_groups("enc-seabed")
+        );
+        assert_eq!(
+            ncds_wms_bbox_url(&together, bounds),
+            "https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=2,3&STYLES=&CRS=EPSG:3857&BBOX=-8243208,4965255,-8234302,4974067&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=TRUE"
+        );
+    }
+
+    #[test]
+    fn enc_unverified_limits_stay_labelled_in_the_text() {
+        assert!(layer("enc-depths").legend.unwrap().contains("unverified"));
+        assert!(
+            layer("enc-special-areas")
+                .legend
+                .unwrap()
+                .contains("unverified")
+        );
+        assert!(layer("enc-seabed").legend.unwrap().contains("1:137,000"));
+        assert!(enc::SEABED.note.contains("Lower Bay"));
+    }
+
+    #[test]
+    fn enc_points_have_their_own_credit_and_show_no_depth() {
+        let l = layer("enc-structure-points");
+        assert_eq!(l.kind, LayerKind::EncPoints);
+        assert_eq!(l.group, Group::Structure);
+        assert_eq!(
+            l.credit,
+            "NOAA Office of Coast Survey, ENC Direct to GIS. Not to be used for navigation."
+        );
+        assert!(l.not_for_navigation);
+        assert_eq!(l.min_zoom, Some(9));
+        assert_eq!(l.tile_service(), None);
+        assert_eq!(l.tile_url(tile(12, 1, 1), None, 0), None);
+        assert!(l.legend.unwrap().contains("No depth is shown"));
     }
 
     #[test]

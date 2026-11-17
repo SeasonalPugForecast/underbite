@@ -156,6 +156,22 @@
       {
         "id": "artificial-reefs-ny",
         "shown": false
+      },
+      {
+        "id": "enc-depths",
+        "shown": false
+      },
+      {
+        "id": "enc-seabed",
+        "shown": false
+      },
+      {
+        "id": "enc-special-areas",
+        "shown": false
+      },
+      {
+        "id": "enc-structure-points",
+        "shown": false
       }
     ],
     "offline_max_mb": 1500,
