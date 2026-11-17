@@ -2,15 +2,64 @@ import Foundation
 import Observation
 @preconcurrency import UnderbiteKit
 
-/// What the store keeps in `state.json`.
+/// What the store keeps in `state.json`. A key missing from the file takes its default; a file
+/// of a later version is not read.
 nonisolated private struct StoredState: Codable {
-    var version = 1
+    /// The version this app writes, and the latest it reads.
+    static let currentVersion = 1
+
+    var version = StoredState.currentVersion
     var spots: [Spot] = []
     var areas: [Area] = []
     var activeID: String?
     var refreshMinutes = RefreshPolicy.defaultMinutes
     /// Sun mode; absent from files written before it existed.
-    var sunMode: Bool?
+    var sunMode = false
+
+    private enum CodingKeys: String, CodingKey {
+        case version, spots, areas, activeID, refreshMinutes, sunMode
+    }
+
+    init(spots: [Spot], areas: [Area], activeID: String?, refreshMinutes: Int, sunMode: Bool) {
+        self.spots = spots
+        self.areas = areas
+        self.activeID = activeID
+        self.refreshMinutes = refreshMinutes
+        self.sunMode = sunMode
+    }
+
+    init(from decoder: any Decoder) throws {
+        let file = try decoder.container(keyedBy: CodingKeys.self)
+        version = try file.decodeIfPresent(Int.self, forKey: .version) ?? 1
+        guard version <= Self.currentVersion else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .version, in: file,
+                debugDescription: "version \(version) is later than \(Self.currentVersion)")
+        }
+        spots = try file.decodeIfPresent([Spot].self, forKey: .spots) ?? []
+        areas = try file.decodeIfPresent([Area].self, forKey: .areas) ?? []
+        activeID = try file.decodeIfPresent(String.self, forKey: .activeID)
+        refreshMinutes =
+            try file.decodeIfPresent(Int.self, forKey: .refreshMinutes)
+            ?? RefreshPolicy.defaultMinutes
+        sunMode = try file.decodeIfPresent(Bool.self, forKey: .sunMode) ?? false
+    }
+}
+
+/// A file of the app that could not be read when the store loaded. The store started without
+/// it (no spots, or the default settings) and never writes over it.
+nonisolated struct FileProblem: Equatable, Sendable {
+    enum File: String, Sendable {
+        /// The spots and areas, `state.json`.
+        case spots = "state.json"
+        /// The settings, `settings.json`.
+        case settings = "settings.json"
+    }
+
+    var file: File
+    /// The name the unreadable file was moved to in the app's directory (`state.json.bad`), or
+    /// `nil` when it could not be moved: then it stays where it was and is not saved over.
+    var keptAs: String?
 }
 
 /// One row of the spot list and the page header, as `view_model` returns it: the core wrote
@@ -83,6 +132,8 @@ final class SpotStore {
     private(set) var stationProblems: [String: String] = [:]
     /// Raised whenever a spot's stations change, so the views that list them follow.
     private(set) var stationsRevision = 0
+    /// The files that could not be read at launch, for the views to say so.
+    private(set) var fileProblems: [FileProblem] = []
 
     /// A fix of the phone.
     struct CurrentPlace: Equatable {
@@ -99,6 +150,8 @@ final class SpotStore {
     @ObservationIgnored private let discoverer: Discoverer
     @ObservationIgnored private let pageBuilder: PageBuilder
     @ObservationIgnored private var caches: [String: SpotCache] = [:]
+    /// Files left in place after they could not be read: never written over.
+    @ObservationIgnored private var unwritable: Set<String> = []
     @ObservationIgnored private var queue = RefreshQueue()
     /// The spots whose stations wait to be looked up, before any fetch still waiting.
     @ObservationIgnored private var lookups = RefreshQueue()
@@ -153,15 +206,7 @@ final class SpotStore {
 
     /// Before the first frame: the state, the settings and the cache of the shown spot only.
     private func load() {
-        if let state = files.read(StoredState.self, "state.json") {
-            spots = state.spots
-            areas = state.areas
-            activeID = state.activeID
-            refreshMinutes =
-                RefreshPolicy.choices.contains(state.refreshMinutes)
-                ? state.refreshMinutes : RefreshPolicy.defaultMinutes
-            sunMode = state.sunMode ?? false
-        }
+        loadState()
         loadSettings()
         if activeID == nil || !spots.contains(where: { $0.id == activeID }) {
             activeID = arranged.first?.id
@@ -169,9 +214,36 @@ final class SpotStore {
         if let activeID { _ = cache(activeID) }
     }
 
-    /// The saved settings, migrated on every load; unreadable ones leave the defaults.
+    /// The saved spots and areas; a file that cannot be read is set aside, never overwritten.
+    private func loadState() {
+        let read: StoredState?
+        do {
+            read = try files.decode(StoredState.self, FileProblem.File.spots.rawValue)
+        } catch {
+            setAside(.spots)
+            return
+        }
+        guard let state = read else { return }
+        spots = state.spots
+        areas = state.areas
+        activeID = state.activeID
+        refreshMinutes =
+            RefreshPolicy.choices.contains(state.refreshMinutes)
+            ? state.refreshMinutes : RefreshPolicy.defaultMinutes
+        sunMode = state.sunMode
+    }
+
+    /// The saved settings, migrated on every load; settings that cannot be read leave the
+    /// defaults, and their file is set aside, never overwritten.
     private func loadSettings() {
-        guard let saved = files.text("settings.json") else { return }
+        let saved: String
+        do {
+            guard let text = try files.utf8(FileProblem.File.settings.rawValue) else { return }
+            saved = text
+        } catch {
+            setAside(.settings)
+            return
+        }
         do {
             let migrated = try migrateSettings(json: saved)
             settingsJSON = migrated.json
@@ -179,7 +251,16 @@ final class SpotStore {
             if migrated.json != saved { saveSettingsNow() }
         } catch {
             settingsIssues = []
+            setAside(.settings)
         }
+    }
+
+    /// Moves an unreadable `file` aside and records it; when it cannot be moved, it is left
+    /// in place and never saved over.
+    private func setAside(_ file: FileProblem.File) {
+        let kept = files.setAside(file.rawValue)
+        if kept == nil { unwritable.insert(file.rawValue) }
+        fileProblems.append(FileProblem(file: file, keptAs: kept))
     }
 
     /// The cache of `id`, read from its file the first time.
@@ -357,7 +438,9 @@ final class SpotStore {
     func saveSettingsNow() {
         pendingSettingsSave?.cancel()
         pendingSettingsSave = nil
-        files.write(Data(settingsJSON.utf8), "settings.json")
+        let name = FileProblem.File.settings.rawValue
+        guard !unwritable.contains(name) else { return }
+        files.write(Data(settingsJSON.utf8), name)
     }
 
     /// Every kind of water with the core's name for it, in the order a picker lists them.
@@ -605,11 +688,12 @@ final class SpotStore {
     // MARK: - Saving
 
     private func saveState() {
+        guard !unwritable.contains(FileProblem.File.spots.rawValue) else { return }
         files.write(
             StoredState(
                 spots: spots, areas: areas, activeID: activeID, refreshMinutes: refreshMinutes,
                 sunMode: sunMode),
-            "state.json")
+            FileProblem.File.spots.rawValue)
     }
 }
 
