@@ -693,6 +693,22 @@ keys! {
     MapStructureSurveyed => ("Surveyed {date}", "Surveyed {date}"),
     /// A reef site's charted depths: `{range}` ("20–70 ft").
     MapReefDepth => ("Depth {range}", "Depth {range}"),
+    // Station pins
+    /// What a pin on the map is.
+    PinTideStation => ("Tide station", "Tide station"),
+    PinCurrentStation => ("Current station", "Current station"),
+    PinBuoy => ("Buoy", "Buoy"),
+    PinCoastalStation => ("Coastal station", "Coastal station"),
+    PinRiverGauge => ("River gauge", "River gauge"),
+    PinForecastGauge => ("River forecast gauge", "River forecast gauge"),
+    /// A pin with its state: `{kind}`, `{state}`.
+    PinLabel => ("{kind} · {state}", "{kind} · {state}"),
+    /// A state with how old it is: `{state}`, `{age}` ("6 min ago").
+    PinStateAge => ("{state}, {age}", "{state}, {age}"),
+    /// A gauge whose latest value is too old or missing.
+    PinNoRecentValue => ("No recent value", "Nothing lately"),
+    /// A forecast gauge with no flood stages set.
+    PinNoFloodStages => ("No flood stages", "No flood stages"),
 }
 
 /// Declares [`SafetyKey`], its list and its table in one place.
@@ -878,6 +894,16 @@ safety_keys! {
     MapLegendBathymetry => "Approximate depth below the surface",
     /// Why a charted wreck, obstruction or rock shows no depth.
     MapStructureDepthNotShown => "Charted depth not shown: the service states neither its unit nor its datum.",
+    // Station pins
+    /// A forecast gauge's observed flood category, as NOAA's National Water Prediction Service
+    /// grades it.
+    PinNoFlooding => "No flooding",
+    PinActionStage => "Action stage",
+    PinMinorFlooding => "Minor flooding",
+    PinModerateFlooding => "Moderate flooding",
+    PinMajorFlooding => "Major flooding",
+    PinLowWater => "Low water",
+    PinOutOfService => "Out of service",
 }
 
 impl SafetyKey {
