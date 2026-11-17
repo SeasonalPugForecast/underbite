@@ -478,9 +478,10 @@ fn check_tile(tile: TileKey, size: u32) -> Result<(), RenderError> {
 /// Renders grids into a square tile of `size` × `size` straight-alpha RGBA pixels, row by row
 /// from the north-west corner.
 ///
-/// Each pixel takes the value [`Grid::sample_bilinear`] gives for the first grid that has one at
+/// Each pixel takes the value [`Grid::sample_bilinear`] gives for the first grid that covers
 /// the pixel centre's latitude and longitude (Web Mercator inverted per row and column) and the
-/// ramp's colour for it: the point inspector reads the same value the tile shows. A pixel is
+/// ramp's colour for it (a later, coarser grid never fills in what an earlier one covers but has
+/// no value for): the point inspector reads the same value the tile shows. A pixel is
 /// transparent outside every grid (a grid reaches half a step past its outermost points, so
 /// blocks side by side join), and where the nearest grid point has no value, so no colour spreads
 /// from the coast onto land or into cloud gaps.
@@ -532,11 +533,16 @@ pub fn render_rgba(
     let mut out = vec![0u8; edge * edge * 4];
     for (py, line) in out.chunks_exact_mut(edge * 4).enumerate() {
         for (px, pixel) in line.as_chunks_mut::<4>().0.iter_mut().enumerate() {
-            let value = located.iter().find_map(|l| {
-                let row = l.rows.get(py).copied().flatten()?;
-                let col = l.cols.get(px).copied().flatten()?;
-                l.grid.sample_cell(row, col).map(f64::from)
-            });
+            // The first grid that covers the pixel decides, even with no value there: a finer
+            // block that knows this is land must not be filled in from a coarser one.
+            let value = located
+                .iter()
+                .find_map(|l| {
+                    let row = l.rows.get(py).copied().flatten()?;
+                    let col = l.cols.get(px).copied().flatten()?;
+                    Some(l.grid.sample_cell(row, col).map(f64::from))
+                })
+                .flatten();
             let colour = value
                 .and_then(|v| ramp.colour(range, v))
                 .unwrap_or(Rgba::TRANSPARENT);
@@ -1207,7 +1213,47 @@ mod tests {
     }
 
     #[test]
-    fn the_first_grid_with_a_value_wins() {
+    fn a_coarser_grid_does_not_paint_land_the_finer_grid_knows() {
+        // The recorded MUR block (land is missing) first, then a coarse all-water grid of the
+        // kind a wider view leaves in the store: land stays transparent, open water is drawn.
+        let fine = mur();
+        let lats = steps(39.0, 0.5, 5);
+        let lons = steps(-75.0, 0.5, 5);
+        let coarse = uniform(16.0, lats, lons);
+        let range = RampRange::linear(15.5, 16.5);
+        let rgba = render_rgba(&[fine, coarse], &THERMAL, range, MUR_TILE, 256).unwrap();
+        let land = pixel_of(
+            MUR_TILE,
+            256,
+            GeoPoint {
+                lat: 40.2,
+                lon: -74.15,
+            },
+        );
+        let water = pixel_of(
+            MUR_TILE,
+            256,
+            GeoPoint {
+                lat: 40.3,
+                lon: -73.5,
+            },
+        );
+        assert_eq!(alpha(&rgba, 256, land), 0);
+        assert_eq!(alpha(&rgba, 256, water), 255);
+        // Outside the fine grid the coarse one still shows.
+        let beyond = pixel_of(
+            MUR_TILE,
+            256,
+            GeoPoint {
+                lat: 39.5,
+                lon: -73.5,
+            },
+        );
+        assert_eq!(alpha(&rgba, 256, beyond), 255);
+    }
+
+    #[test]
+    fn the_first_grid_covering_a_pixel_decides() {
         let lats = steps(38.0, 0.25, 13);
         let lons = steps(-76.0, 0.25, 13);
         let mut holes = uniform(1.0, lats.clone(), lons.clone());
@@ -1229,7 +1275,26 @@ mod tests {
             },
         );
         let at = (p.1 * 32 + p.0) * 4;
-        assert_eq!(rgba[at..at + 4], [nine.r, nine.g, nine.b, nine.a]);
+        // A hole in the first grid stays transparent; the second grid shows only where the first
+        // does not reach (here: nowhere on this tile's grid, so compare against a wider one).
+        assert_eq!(rgba[at + 3], 0);
+        let wide = uniform(9.0, steps(30.0, 0.25, 81), steps(-80.0, 0.25, 41));
+        let holes = {
+            let mut g = uniform(1.0, steps(38.0, 0.25, 13), steps(-76.0, 0.25, 7));
+            g.values.iter_mut().step_by(2).for_each(|v| *v = f32::NAN);
+            g
+        };
+        let rgba = render_rgba(&[holes, wide], &THERMAL, range, MUR_TILE, 32).unwrap();
+        let far = pixel_of(
+            MUR_TILE,
+            32,
+            GeoPoint {
+                lat: 40.0,
+                lon: -74.0,
+            },
+        );
+        let at_far = (far.1 * 32 + far.0) * 4;
+        assert_eq!(rgba[at_far..at_far + 4], [nine.r, nine.g, nine.b, nine.a]);
         // Where both have a value, the first one's is drawn.
         let lats = steps(38.0, 0.25, 13);
         let lons = steps(-76.0, 0.25, 13);
