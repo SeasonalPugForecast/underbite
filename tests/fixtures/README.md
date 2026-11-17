@@ -23,6 +23,7 @@ request URL and the recording date:
 - [hydro](raw/hydro/README.md)
 - [weather](raw/weather/README.md)
 - [regulations](raw/regulations/README.md)
+- [state-maps](raw/state-maps/README.md)
 
 ## Conventions
 
