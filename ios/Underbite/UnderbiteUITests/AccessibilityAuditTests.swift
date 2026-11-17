@@ -103,9 +103,14 @@ final class AccessibilityAuditTests: XCTestCase {
     }
 
     func testOtherSections() throws {
-        for tab in ["map", "trips", "log"] {
+        let app = launch(["-tab", "map"])
+        XCTAssertTrue(app.maps.firstMatch.waitForExistence(timeout: 15))
+        try audit(app, "map")
+        for (tab, title) in [("trips", "Trips is coming"), ("log", "Log is coming")] {
             let app = launch(["-tab", tab])
-            XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 15))
+            let words = app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch
+            XCTAssertTrue(words.waitForExistence(timeout: 15))
             try audit(app, tab)
         }
     }
@@ -122,6 +127,8 @@ final class AccessibilityAuditTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-sample"] + arguments
         app.launch()
+        // The window takes focus, so the iPad does not draw it in its inactive look.
+        app.activate()
         return app
     }
 
@@ -145,26 +152,30 @@ final class AccessibilityAuditTests: XCTestCase {
     ]
 
     /// Audits the screen as it is; every issue is recorded unless `AuditExceptions` names it.
-    /// A check that runs out of time is tried once more.
+    /// A check that runs out of time is tried twice more.
     private func audit(
         _ app: XCUIApplication, _ screen: String,
         _ checks: [(String, XCUIAccessibilityAuditType)] = AccessibilityAuditTests.checks
     ) throws {
+        // A column or a sheet may still be sliding in.
+        Thread.sleep(forTimeInterval: 4)
+        let place = AuditScreen(
+            app, textSizeFixed: app.launchArguments.contains(Self.largestText[0]))
         for (name, check) in checks {
-            for attempt in 1...2 {
+            for attempt in 1...3 {
                 do {
                     try app.performAccessibilityAudit(for: check) { issue in
-                        let excused = AuditExceptions.excuses(
-                            issue, in: app, textSizeFixed: app.launchArguments.contains(
-                                Self.largestText[0]))
-                        let element = issue.element.map { "\($0.elementType.rawValue) '\($0.label)'" }
+                        let excused = AuditExceptions.excuses(issue, on: place)
+                        let element = issue.element.map {
+                            "\($0.elementType.rawValue) '\($0.label)' \($0.frame)"
+                        }
                         print(
                             "AUDIT \(screen) [\(name)] \(excused ? "excused" : "ISSUE"): "
                                 + "\(issue.compactDescription) | \(element ?? "-") | \(issue.detailedDescription)")
                         return excused
                     }
                     break
-                } catch where attempt == 1 {
+                } catch where attempt < 3 {
                     print("AUDIT \(screen) [\(name)] retrying: \(error)")
                 }
             }
