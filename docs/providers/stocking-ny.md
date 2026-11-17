@@ -1,0 +1,76 @@
+# New York State fish stocking (Socrata) and matching to 3DHP names
+
+Verified on 2026-11-17 (UTC) with `curl` and a small script against `data.ny.gov` (Socrata SODA 2), the Census TIGERweb county layer and the USGS 3DHP map service. An earlier survey of the two datasets is in `docs/providers/tier2.md`; the 3DHP service is described in `docs/providers/hydro.md`. Fixtures: `tests/fixtures/raw/stocking-ny/` (index in its `README.md`).
+
+## Datasets
+
+| Dataset | Title | Rows last modified (`X-SODA2-Truth-Last-Modified`) | Fields |
+|---|---|---|---|
+| `e52k-ymww` | Fish Stocking Lists (Actual): Beginning 2011 | 2026-06-24 | `year`, `county`, `waterbody`, `town`, `month`, `number`, `species`, `size_inches` |
+| `d9y2-n436` | Current Season Spring Trout Stocking | 2026-03-19 | `year`, `dec_region`, `county`, `town`, `waterbody`, `date`, `number`, `species_name`, `size_inches` |
+
+Base `https://data.ny.gov/resource/<id>.json`, SoQL parameters `$select`, `$where`, `$group`, `$order`, `$limit`. Every value is a JSON string, including aggregates (`n`). Neither dataset has coordinates, a waterbody id or a license field. Licence and limitations text: see `tier2.md` (OPEN-NY Terms of Use: no attribution required, non-exclusive revocable licence; crediting NYS DEC is advisable; stocking numbers are estimates, published about mid-May of the following year; the spring list is planned stocking).
+
+## Throttling without an app token
+
+Socrata's documentation (`https://dev.socrata.com/docs/app-tokens.html`, read 2026-11-17) says requests without an application token "come from a shared pool via IP address", that requests with a token are not throttled unless judged abusive, that the limits may change, and that a throttled request gets HTTP 429. No numeric limit is given. Authentication is an `X-App-Token` header (or the `$$app_token` parameter in SODA 2.1 and earlier). In this check, two aggregate requests (97 KB and 30 KB, 3 s apart) and a few smaller ones drew no 429 and no rate-limit headers (`X-Socrata-RequestId` and `X-Socrata-Region` only). The exact threshold is **unverified**. The data change at most twice a year, so cache the whole pair list for the life of a release and fetch rows for one waterbody only when a spot needs them.
+
+## Distinct `(county, waterbody)` pairs
+
+```text
+GET https://data.ny.gov/resource/e52k-ymww.json?$select=county,waterbody,count(*) as n
+    &$group=county,waterbody&$limit=50000
+GET https://data.ny.gov/resource/d9y2-n436.json?$select=county,waterbody,count(*) as n
+    &$group=county,waterbody&$limit=50000
+```
+
+Fixtures `socrata-ny-e52k-ymww-county-waterbody-pairs-2026-11-17.json` (97,406 bytes) and `socrata-ny-d9y2-n436-county-waterbody-pairs-2026-11-17.json` (30,543 bytes).
+
+| | `e52k-ymww` | `d9y2-n436` | both |
+|---|---|---|---|
+| distinct pairs as published | 1,603 | 508 | 1,632 in the union, 479 in both |
+| distinct counties as published | 61 | 57 | |
+| distinct pairs after normalisation (county in title case, whitespace collapsed, waterbody lower-cased) | 1,557 | 508 | 1,586 in the union |
+
+Data-quality points found: county spelled in capitals or lower case (`SULLIVAN`, `clinton`, `franklin`, `warren`) alongside the title-case form, `St Lawrence` without the full stop (the Census name is `St. Lawrence`), one waterbody with leading or trailing white space, and agency qualifiers inside the waterbody text: `Patterson Pond (#1)`, `Clear Pond (P594- Upper Hudson)`, `Palmer Pond 2 AS`, abbreviations (`Bog Brook Res`), and names that are not waterbodies at all (`County Fair`). About 56 of the 1,632 names contain parentheses. Essex (220 pairs), Hamilton (173), Warren (115) and Franklin (104) hold the most.
+
+## Name match against 3DHP
+
+Method. 50 pairs were drawn at random (`random.seed(20261117)`) from the 1,632 published pairs. For each, the county polygon was fetched from TIGERweb (`.../TIGERweb/State_County/MapServer/1/query`, `where=STATE='36' AND BASENAME='<county>'`, `outSR=4326`, `maxAllowableOffset=0.003`), and 3DHP `3DHP_all/MapServer` layer 60 (waterbody) and layer 50 (flowline) were queried by POST with the polygon as geometry (`spatialRel=esriSpatialRelIntersects`) and a `where` of `UPPER(gnisidlabel) LIKE '%<token>%'` on the two longest tokens that are not type words. 100 requests, paced 0.5 s apart; no failures. A hit means the 3DHP `gnisidlabel` equals the normalised waterbody name inside the county.
+
+Normalisation that was applied before comparing: lower-case; drop parenthetical text and `#n` numbering; drop any text after ` - `; replace `&` with `and` and `.` with a space; drop trailing digits and the qualifier `AS`; expand abbreviations `Res` to `Reservoir`, `Cr` and `Ck` to `Creek`, `Br` to `Brook`, `Pd` to `Pond`, `Mt` to `Mount`. A second class, "word-set", ignores word order (`Fish Creek East Branch` equals `East Branch Fish Creek`).
+
+Result (fixture `stocking-3dhp-name-match-sample50-2026-11-17.synthetic.json`, hand-reduced from the script output):
+
+| Outcome | Pairs |
+|---|---|
+| exact name match, in the layer that fits the type (lake, pond, reservoir in layer 60; creek, brook, river, stream in layer 50) | 39 |
+| word-order match (layer 50) | 1 |
+| **hit** | **40 of 50 (80 %)** |
+| only the name core matched with a different type word (`Patterson Pond` to `Patterson Creek`) | 1, counted as a miss |
+| no match | 9 |
+
+Details. Layer 60 alone matched 19 of the 50 (all lakes, ponds and reservoirs); layer 50 alone matched 20, plus the word-order match; no lake or pond name was found only in layer 50, and no stream name only in layer 60, so the type word picks the layer. Of the 7 pairs where a feature of a different type shared the name core in the same county (`Moose Pond` and `Moose Creek`, `Rock Pond` and `Rock Pond Brook`, `Oneida Lake` and `Oneida River`, `Canisteo River` and `Canisteo Reservoir`), none may be accepted as a match. The 10 unmatched names are small or private waters and non-waterbody labels: `Upper Saranac Lake`, `Patterson Pond (#1)`, `Upper Wallface Pond`, `Mallet Pond`, `Holliday Creek`, `County Fair`, `Peru Fish & Game Club Pond`, `Lakewood Rod and Gun Channel`, `Oppenheim Park Pond` and `Como Park Lake`. Why `Upper Saranac Lake` has no GNIS-named waterbody in Essex County was not investigated (**unverified**).
+
+Caveats. The sample is 50 pairs spread over 27 counties, so the 80 % figure has a wide margin (about 11 points at 95 % confidence); pairs in the Adirondack counties dominate the dataset. A county polygon that is generalised by 0.003 degrees can let through a same-named feature just across the boundary; the sample did not show one. Several names returned more than one 3DHP waterbody in a county (`Moose Pond` 2 candidates, `Rock Pond` 4, `Mud Pond` 3, counting names that merely contain the token), so a name match gives a candidate, not a unique feature: pick by distance to the spot. Matching is name-based, so two waterbodies with the same name in one county (three candidates were returned for `Mud Pond` in Lewis County) cannot be separated by the stocking data.
+
+Rules for the implementation, from what matched: match by normalised name in the county; try layer 60 for lake, pond and reservoir and layer 50 for creek, brook, river, stream and kill; never accept a core-only match; treat everything that fails as "stocked waterbody, location unknown", still listed by county. A reference table of pairs to 3DHP ids built offline would avoid per-spot queries.
+
+## Request examples
+
+3DHP waterbody by name in an envelope (fixture `3dhp-waterbody-layer60-name-query-kensico-2026-11-17.json`, Kensico Reservoir, Westchester County, `featuretypelabel` "Lake", 5.41 km2):
+
+```text
+GET https://hydro.nationalmap.gov/arcgis/rest/services/3DHP_all/MapServer/60/query
+    ?where=UPPER(gnisidlabel) LIKE '%KENSICO%'&geometry=-73.78,41.05,-73.7,41.14
+    &geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects
+    &outFields=id3dhp,gnisid,gnisidlabel,featuretypelabel,areasqkm&returnGeometry=false&f=json
+```
+
+The service has no county field, so a county restriction needs a county polygon or envelope, as above.
+
+## Unverified
+
+- The numeric threshold for requests without a token.
+- Whether the 80 % figure holds for the 2026 additions to the spring list.
+- Behaviour of the pair-list query once the datasets exceed the `$limit=50000` row cap (the pair lists are about 1,600 and 500 rows).
