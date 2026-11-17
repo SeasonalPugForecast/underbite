@@ -204,14 +204,21 @@ fn owner_fields(host: &str, pid: u32, lane: Option<&str>) -> String {
 
 /// An sh line that takes the lock for `dir`. Exit 0: taken. Exit 10: somebody
 /// holds it (their owner file is printed). Exit 4: `dir`'s parent is missing.
-/// A lock more than [`STALE_MINUTES`] old is taken over, with a warning.
+/// A lock more than [`STALE_MINUTES`] old is taken over, with a warning, and so is
+/// one whose owner file is still empty after a minute (written on a full disk).
+/// Exit 5: the owner file could not be written (the lock is dropped again).
 fn acquire_line(dir: &str, host: &str, pid: u32, lane: Option<&str>) -> String {
     let lock = quote(&lock_dir(dir));
     let owner = owner_fields(host, pid, lane);
     format!(
         "lock={lock}; \
-         if mkdir \"$lock\" 2>/dev/null; then {owner} > \"$lock/owner\"; exit 0; fi; \
+         if mkdir \"$lock\" 2>/dev/null; then \
+         if {owner} > \"$lock/owner\" 2>/dev/null && [ -s \"$lock/owner\" ]; then exit 0; fi; \
+         rm -rf \"$lock\"; echo \"cannot write $lock/owner: is the disk full?\" >&2; exit 5; fi; \
          [ -d \"$lock\" ] || {{ echo \"cannot create $lock\" >&2; exit 4; }}; \
+         if [ ! -s \"$lock/owner\" ] && [ -n \"$(find \"$lock\" -maxdepth 0 -mmin +1 2>/dev/null)\" ]; then \
+         echo \"taking over $lock, which names no owner\" >&2; \
+         rm -rf \"$lock\" && mkdir \"$lock\" && {owner} > \"$lock/owner\" && exit 0; fi; \
          if [ -n \"$(find \"$lock\" -maxdepth 0 -mmin +{STALE_MINUTES} 2>/dev/null)\" ]; then \
          echo \"taking over $lock, held for over 3 hours\" >&2; \
          rm -rf \"$lock\" && mkdir \"$lock\" && {owner} > \"$lock/owner\" && exit 0; fi; \
@@ -329,6 +336,11 @@ pub(crate) fn lock(
             Some(4) => {
                 println!("warning: cannot lock {dir} on {host}; running without a lock");
                 return Ok(None);
+            }
+            Some(5) => {
+                return Err(format!(
+                    "cannot write the lock's owner file for {dir} on {host}: is its disk full?"
+                ));
             }
             other => {
                 return Err(format!(
@@ -597,6 +609,24 @@ mod tests {
         assert_eq!(sh(&acquire_line(&dir, "box", 2, Some("b"))).0, 0);
         let owner = std::fs::read_to_string(lock.join("owner")).unwrap();
         assert_eq!(owner.lines().nth(1), Some("2"));
+        // A lock whose owner file is empty (written on a full disk) is waited on at
+        // first, then taken over once it is a minute old.
+        sh(&release_line(&dir, "box", 2));
+        std::fs::create_dir(&lock).unwrap();
+        std::fs::write(lock.join("owner"), "").unwrap();
+        assert_eq!(sh(&acquire_line(&dir, "box", 3, Some("c"))).0, 10);
+        assert!(
+            Command::new("touch")
+                .args(["-d", "2 minutes ago"])
+                .arg(&lock)
+                .status()
+                .unwrap()
+                .success()
+        );
+        assert_eq!(sh(&acquire_line(&dir, "box", 4, Some("d"))).0, 0);
+        let owner = std::fs::read_to_string(lock.join("owner")).unwrap();
+        assert_eq!(owner.lines().nth(1), Some("4"));
+        sh(&release_line(&dir, "box", 4));
         // A missing parent directory is an error, not a lock somebody holds.
         let missing = tmp.path().join("nope/build").to_string_lossy().to_string();
         assert_eq!(sh(&acquire_line(&missing, "box", 3, None)).0, 4);
