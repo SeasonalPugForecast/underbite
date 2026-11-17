@@ -2,11 +2,15 @@ import Foundation
 import UnderbiteKit
 
 /// Fetches the grid blocks the gridded layers need for the region on screen into the core's
-/// `GridStore`: the requests from `grid_requests` (nearest the centre first, only those the store
-/// does not hold fresh), each let through by the `GridPacer` (ERDDAP's limits per server, kept
-/// across launches through the fetch host's store), sent through the fetch host one at a time per
-/// server (ERDDAP answers several at once from one client with "busy", which pauses the server for
-/// minutes), the servers side by side.
+/// `GridStore`: the requests from `grid_requests` (a coarse overview of the whole region first
+/// when many blocks are missing, then the blocks nearest the centre, only those the store does
+/// not hold fresh). Each pass first hands the store the blocks the ``GridBlockCache`` keeps on the
+/// device that the core still counts fresh, and asks `grid_requests` again, so that kept blocks
+/// (and an overview they make needless) are not fetched. The rest are each let through by the
+/// `GridPacer` (ERDDAP's limits per server, kept across launches through the fetch host's store),
+/// sent through the fetch host one at a time per server (ERDDAP answers several at once from one
+/// client with "busy", which pauses the server for minutes), the servers side by side, and kept
+/// in the cache once the store accepts them.
 ///
 /// A new region starts a new pass; the old one sends nothing more (what it has in flight still
 /// lands in the store). A server the pacer holds back is asked again once it may be, if the
@@ -36,10 +40,14 @@ final class GridLoader {
 
     /// Servers asked at once, one block each.
     static let parallel = 3
+    /// Times a pass asks the store again after adding kept blocks: each round reaches the next
+    /// blocks out from the centre (the store lists at most 24 at a time).
+    static let cacheRounds = 4
     /// The longest pause the loader waits out by itself before asking again.
     static let longestWait: UInt32 = 120
 
     let store: GridStore
+    let cache: GridBlockCache
     private let host: FetchHost
     private let pacer: GridPacer
     private let clock: @Sendable () -> Int64
@@ -54,19 +62,32 @@ final class GridLoader {
     private static let pacerNamespace = "map"
     private static let pacerKey = "pacer"
 
-    init(host: FetchHost, store: GridStore, clock: @escaping @Sendable () -> Int64) {
+    /// - Parameter cache: the blocks kept on the device; by default kept through `host`.
+    init(
+        host: FetchHost, store: GridStore, clock: @escaping @Sendable () -> Int64,
+        cache: GridBlockCache? = nil
+    ) {
         self.host = host
         self.store = store
         self.clock = clock
+        self.cache = cache ?? GridBlockCache(host: host)
         pacer =
             host.load(namespace: Self.pacerNamespace, key: Self.pacerKey)
             .flatMap { try? GridPacer.fromJson(json: $0) } ?? GridPacer()
     }
 
-    /// Starts fetching what `layers` (the grid ones among them) need for `region`.
-    func load(_ layers: [PlannedLayer], in region: MapRegion) {
+    /// Starts loading what `layers` (the grid ones among them) need for `region`: the kept
+    /// blocks first, then the network. The task ends with the pass (tests wait for it).
+    @discardableResult
+    func load(_ layers: [PlannedLayer], in region: MapRegion) -> Task<Void, Never>? {
         generation += 1
         let current = generation
+        guard layers.contains(where: { $0.kind != .tiles }) else { return nil }
+        return Task { await self.pass(layers, generation: current, region: region) }
+    }
+
+    /// Each grid layer's requests for `region` that are not in flight, in the store's order.
+    private func requests(_ layers: [PlannedLayer], in region: MapRegion) -> [[Job]] {
         let now = clock()
         var perLayer: [[Job]] = []
         for layer in layers where layer.kind != .tiles {
@@ -78,9 +99,32 @@ final class GridLoader {
             perLayer.append(
                 requests.filter { !inFlight.contains($0.key) }.map { Job(layer: layer.id, request: $0) })
         }
-        let jobs = Self.interleaved(perLayer)
-        guard !jobs.isEmpty else { return }
-        Task { await self.run(jobs, generation: current, layers: layers, region: region) }
+        return perLayer
+    }
+
+    /// One pass: what the cache holds fresh, then what is still missing from the network.
+    private func pass(_ layers: [PlannedLayer], generation current: Int, region: MapRegion) async {
+        var tried: Set<String> = []
+        for _ in 0..<Self.cacheRounds {
+            let untried = requests(layers, in: region).joined().filter {
+                !tried.contains($0.request.key)
+            }
+            guard !untried.isEmpty else { break }
+            tried.formUnion(untried.map(\.request.key))
+            let restored = Set(
+                await cache.restore(untried.map(\.request.key), into: store, now: clock()))
+            guard current == generation else { return }
+            guard !restored.isEmpty else { break }
+            for layer in Set(untried.filter { restored.contains($0.request.key) }.map(\.layer)) {
+                onBlock(layer)
+            }
+        }
+        let jobs = Self.interleaved(requests(layers, in: region))
+        guard !jobs.isEmpty else {
+            await cache.flush()
+            return
+        }
+        await run(jobs, generation: current, layers: layers, region: region)
     }
 
     /// Each layer's jobs in turn, so that every layer starts with the middle of the screen.
@@ -120,14 +164,15 @@ final class GridLoader {
                 inFlight.insert(job.request.key)
             }
             if batch.isEmpty { break }
-            let (host, store, pacer, clock) = (host, store, pacer, clock)
+            let (host, store, cache, pacer, clock) = (host, store, cache, pacer, clock)
             let finished = await withTaskGroup(of: Finished.self) { group in
                 for (index, job) in batch.enumerated() {
                     group.addTask {
                         Finished(
                             index: index,
                             outcome: await Self.fetch(
-                                job, host: host, store: store, pacer: pacer, clock: clock))
+                                job, host: host, store: store, cache: cache, pacer: pacer,
+                                clock: clock))
                     }
                 }
                 var all: [Finished] = []
@@ -153,19 +198,21 @@ final class GridLoader {
             }
         }
         host.store(namespace: Self.pacerNamespace, key: Self.pacerKey, value: pacer.toJson())
+        await cache.flush()
         for (layer, count) in asked where empty[layer] == count {
             onNoData(layer)
         }
         guard let wait, wait <= Self.longestWait, current == generation else { return }
         Task {
             try? await Task.sleep(for: .seconds(Int(wait) + 1))
-            if current == self.generation { self.load(layers, in: region) }
+            if current == self.generation { _ = self.load(layers, in: region) }
         }
     }
 
-    /// Fetches one block and hands it to the store; the pacer hears every answer.
+    /// Fetches one block and hands it to the store, then to the cache once the store took it;
+    /// the pacer hears every answer.
     nonisolated private static func fetch(
-        _ job: Job, host: FetchHost, store: GridStore, pacer: GridPacer,
+        _ job: Job, host: FetchHost, store: GridStore, cache: GridBlockCache, pacer: GridPacer,
         clock: @Sendable () -> Int64
     ) async -> Outcome {
         let response: HostResponse
@@ -182,6 +229,7 @@ final class GridLoader {
             }, now: now)
         do {
             try store.addGrid(key: job.request.key, response: response, now: now)
+            await cache.save(job.request.key, body: response.body, fetchedAt: now)
             return .added
         } catch MapError.NoData {
             return .noData
