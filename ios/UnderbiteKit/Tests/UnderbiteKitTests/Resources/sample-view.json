@@ -1,5 +1,6 @@
 {
   "active": 0,
+  "problem": null,
   "spots": [
     {
       "id": "battery",

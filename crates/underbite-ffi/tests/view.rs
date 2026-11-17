@@ -6,7 +6,9 @@ use std::path::PathBuf;
 use serde_json::{Value, json};
 use underbite_core::model::snapshot::testdata::sample_snapshot;
 use underbite_ffi::settings::default_settings_json;
-use underbite_ffi::view::{SpotEntry, SpotInfo, ViewError, attributions, view_model};
+use underbite_ffi::view::{
+    AppFile, SpotEntry, SpotInfo, ViewError, app_words, attributions, file_problem_text, view_model,
+};
 
 fn spot() -> SpotInfo {
     let s = sample_snapshot().spot;
@@ -95,6 +97,82 @@ fn a_spot_without_a_snapshot_has_no_page_and_the_list_still_shows() {
     assert_eq!(p["spots"][0]["status"]["error"], "offline");
     assert_eq!(p["spots"][0]["status"]["refreshing"], true);
     assert_eq!(p["spots"][0]["status"]["updated"], Value::Null);
+    // The page says why it is empty, in the core's words.
+    assert_eq!(p["problem"]["title"], "Luna couldn't fetch the water");
+    assert_eq!(p["problem"]["reason"], "offline");
+    // Without an error there is nothing to explain yet.
+    let p = page(
+        &default_settings_json(),
+        vec![entry(None, None)],
+        1_800_000_000,
+    );
+    assert_eq!(p["problem"], Value::Null);
+}
+
+#[test]
+fn an_unreadable_snapshot_empties_its_page_only_and_says_why() {
+    let at = fetched();
+    let mut doc: Value = serde_json::from_str(&default_settings_json()).unwrap();
+    doc["presentation"]["voice"] = json!("plain");
+    let mut other = entry(Some(snapshot_json()), Some(at));
+    other.spot.id = "other".into();
+    other.spot.name = "Pier 1".into();
+    let mut bad = entry(Some("{".into()), Some(at));
+    bad.error = Some("offline".into());
+    let json = view_model(vec![other, bad], 1, doc.to_string(), at).unwrap();
+    let p: Value = serde_json::from_str(&json).unwrap();
+    // Both spots are listed; the shown one has no page, and its status gives the reason.
+    assert_eq!(p["spots"].as_array().unwrap().len(), 2);
+    assert_eq!(p["spots"][0]["name"], "Pier 1");
+    assert_eq!(p["spots"][0]["status"]["error"], Value::Null);
+    let error = p["spots"][1]["status"]["error"].as_str().unwrap();
+    assert!(
+        error.starts_with("The saved conditions could not be read: "),
+        "{error}"
+    );
+    assert_eq!(p["spots"][1]["status"]["updated"], "updated just now");
+    assert_eq!(p["view"], Value::Null);
+    assert_eq!(p["problem"]["title"], "Conditions could not be loaded");
+    assert_eq!(p["problem"]["reason"], error);
+}
+
+fn page_at(spots: Vec<SpotEntry>, active: u32, now: i64) -> Value {
+    let json = view_model(spots, active, default_settings_json(), now).unwrap();
+    serde_json::from_str(&json).unwrap()
+}
+
+#[test]
+fn alerts_carry_their_span_in_words() {
+    let at = fetched();
+    let p = page_at(vec![entry(Some(snapshot_json()), Some(at))], 0, at + 360);
+    let alerts = p["view"]["cards"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["card"] == "alerts")
+        .unwrap();
+    let alert = &alerts["full"]["alerts"][0];
+    let (onset, ends) = (
+        alert["onset"].as_str().unwrap(),
+        alert["ends"].as_str().unwrap(),
+    );
+    assert_eq!(alert["span"], format!("{onset} – {ends}"));
+}
+
+#[test]
+fn file_problems_and_app_words_come_from_the_core() {
+    let kept = file_problem_text(AppFile::Spots, Some("state.json.bad".into()));
+    assert!(kept.contains("kept as state.json.bad"), "{kept}");
+    let left = file_problem_text(AppFile::Settings, None);
+    assert!(
+        left.starts_with("Your settings could not be read."),
+        "{left}"
+    );
+    assert!(left.contains("never saved over"), "{left}");
+    let words = app_words(default_settings_json()).unwrap();
+    assert_eq!(words.map_notice, "Not for navigation.");
+    assert!(words.place_search_footer.contains("Apple's Maps"));
+    assert!(app_words("{\"units\":3}".into()).is_err());
 }
 
 #[test]
@@ -116,13 +194,6 @@ fn the_active_spot_is_the_one_shown_and_a_rename_shows_at_once() {
 #[test]
 fn bad_input_is_an_error_not_a_panic() {
     let at = fetched();
-    let bad_snapshot = view_model(
-        vec![entry(Some("{".into()), None)],
-        0,
-        default_settings_json(),
-        at,
-    );
-    assert!(matches!(bad_snapshot, Err(ViewError::Invalid { .. })));
     let bad_settings = view_model(Vec::new(), 0, "{\"units\":3}".into(), at);
     assert!(matches!(bad_settings, Err(ViewError::Settings { .. })));
     let mut bad_type = entry(None, None);

@@ -13,6 +13,7 @@ use underbite_core::model::{Measurement, SpotSnapshot, WaterType};
 use underbite_core::time::UnixTime;
 use underbite_core::view::format::Formatter;
 use underbite_core::view::stations;
+use underbite_core::view::strings::{self as words, Key, SafetyKey, Strings};
 use underbite_core::view::{Card, CardId, SpotView, build_view};
 
 use crate::settings::{SettingsError, load};
@@ -104,13 +105,23 @@ struct SpotSummary {
     status: Status,
 }
 
+/// Why the shown spot has no page: the core's title and the reason (the last fetch's error,
+/// or why its saved snapshot could not be read).
+#[derive(Debug, Serialize)]
+struct PageProblem {
+    title: String,
+    reason: String,
+}
+
 /// What `view_model` returns: the list, which spot is shown and its page, unchanged from the
-/// core. A spot with no snapshot yet has no page.
+/// core. A spot with no snapshot yet, or one that cannot be read, has no page; `problem` says
+/// why when there is a reason to give.
 #[derive(Debug, Serialize)]
 struct Page {
     active: u32,
     spots: Vec<SpotSummary>,
     view: Option<SpotView>,
+    problem: Option<PageProblem>,
 }
 
 fn water_type(text: &str) -> Result<WaterType, ViewError> {
@@ -142,6 +153,30 @@ pub fn view_model(
 ) -> Result<String, ViewError> {
     let (config, _) = load(&settings_json)?;
     let now = UnixTime(now);
+    let strings = Strings::new(config.presentation.voice);
+    let index = usize::try_from(active).unwrap_or(usize::MAX);
+    // The shown spot's page; a snapshot that cannot be read leaves it without one and says
+    // so in its status, and every other spot is listed as usual.
+    let mut unreadable = None;
+    let view = match spots.get(index) {
+        Some(SpotEntry {
+            spot,
+            snapshot_json: Some(json),
+            ..
+        }) => match serde_json::from_str::<SpotSnapshot>(json) {
+            Ok(snapshot) => Some(build_view(&view_input(
+                &config,
+                with_spot(snapshot, spot)?,
+                now,
+            ))),
+            Err(e) => {
+                unreadable =
+                    Some(strings.fmt(Key::SnapshotUnreadable, &[("reason", &e.to_string())]));
+                None
+            }
+        },
+        _ => None,
+    };
     let formatter = |zone: &str| {
         Formatter::new(
             config.units.display_units(),
@@ -152,8 +187,14 @@ pub fn view_model(
     };
     let summaries = spots
         .iter()
-        .map(|e| {
+        .enumerate()
+        .map(|(i, e)| {
             let f = formatter(&e.spot.time_zone);
+            let error = if i == index {
+                unreadable.clone().or_else(|| e.error.clone())
+            } else {
+                e.error.clone()
+            };
             Ok(SpotSummary {
                 id: e.spot.id.clone(),
                 name: e.spot.name.clone(),
@@ -162,34 +203,70 @@ pub fn view_model(
                 status: Status {
                     last_success: e.last_success,
                     updated: e.last_success.map(|t| f.updated(UnixTime(t), now)),
-                    error: e.error.clone(),
+                    error,
                     refreshing: e.refreshing,
                 },
             })
         })
         .collect::<Result<Vec<_>, ViewError>>()?;
-    let view = match spots.get(usize::try_from(active).unwrap_or(usize::MAX)) {
-        Some(SpotEntry {
-            spot,
-            snapshot_json: Some(json),
-            ..
-        }) => {
-            let snapshot: SpotSnapshot =
-                serde_json::from_str(json).map_err(|e| invalid("snapshot", &e))?;
-            Some(build_view(&view_input(
-                &config,
-                with_spot(snapshot, spot)?,
-                now,
-            )))
-        }
+    let problem = match (&view, summaries.get(index)) {
+        (None, Some(shown)) => shown.status.error.clone().map(|reason| PageProblem {
+            title: strings.get(Key::PageProblemTitle).to_owned(),
+            reason,
+        }),
         _ => None,
     };
     let page = Page {
         active,
         spots: summaries,
         view,
+        problem,
     };
     serde_json::to_string(&page).map_err(|e| invalid("view", &e))
+}
+
+/// A file the app keeps its own data in.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, uniffi::Enum)]
+pub enum AppFile {
+    /// The spots and areas.
+    Spots,
+    /// The settings.
+    Settings,
+}
+
+/// What the app says of one of its files it could not read at launch: that it was kept as
+/// `kept_as` (moved aside), or, when `kept_as` is `None`, left where it was and never saved
+/// over. Safety text, the same in every voice.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn file_problem_text(file: AppFile, kept_as: Option<String>) -> String {
+    let file = match file {
+        AppFile::Spots => words::AppFile::Spots,
+        AppFile::Settings => words::AppFile::Settings,
+    };
+    // The voice does not matter: this is safety text.
+    Strings::new(underbite_core::view::Voice::Plain).file_problem(file, kept_as.as_deref())
+}
+
+/// Fixed words of the app's screens, in the settings' voice.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct AppWords {
+    /// Under the place search of a new spot: what is sent to Apple's Maps service.
+    pub place_search_footer: String,
+    /// On the map: "Not for navigation." (safety text, the same in every voice).
+    pub map_notice: String,
+}
+
+/// The fixed words of the app's screens for the settings' voice.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn app_words(settings_json: String) -> Result<AppWords, ViewError> {
+    let (config, _) = load(&settings_json)?;
+    let strings = Strings::new(config.presentation.voice);
+    Ok(AppWords {
+        place_search_footer: strings.get(Key::PlaceSearchFooter).to_owned(),
+        map_notice: strings.safety(SafetyKey::NotForNavigation).to_owned(),
+    })
 }
 
 /// One station of a spot's station choices, every word written by the core.
