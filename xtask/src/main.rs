@@ -31,6 +31,9 @@ commands:
                       (ios/Underbite/Underbite/Resources/Acknowledgements.json)
   ios remote doctor|sync|build|test|app|shots|device [--host user@mac] [--dir d] [--dry-run]
                       the same on the Mac over SSH (host: ios/remote.local.toml)
+  ios remote ui [--on iphone|ipad] [--only Class/test]
+                      the UI and accessibility tests on the iPhone and iPad simulators,
+                      accessibility switched on and each simulator booted again
   ios remote exec [--fetch path] -- <command>
                       run a command in the lane's directory on the Mac, Xcode selected
   ios remote clean --lane <name> | --all-lanes

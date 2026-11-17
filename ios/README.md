@@ -40,6 +40,7 @@ or pass `--host`, or set `UNDERBITE_MAC`. Then, from the repository root:
 | `cargo xtask ios remote test` | build, then `swift test` in `ios/UnderbiteKit` |
 | `cargo xtask ios remote app` | build, then the app for the iPhone simulator, once |
 | `cargo xtask ios remote shots` | app, then run it in the iPhone and the iPad simulator and take a screenshot for each `ios/shots/*.args` file; they land in `target/ios-screens/iphone/` and `target/ios-screens/ipad/` (see `ios/shots/README.md`) |
+| `cargo xtask ios remote ui [--on iphone\|ipad] [--only Class/test]` | build, then the `UnderbiteUITests` target (accessibility audits and what VoiceOver reads) on the iPhone and the iPad simulator one after the other; it switches the simulator's accessibility on and boots it again first (writing the keys to a running simulator is not enough); `--on` picks one device, `--only` one class or test; fails naming the devices that failed |
 | `cargo xtask ios remote exec [--fetch path]… -- command…` | sync, then run the command in the lane's directory on the Mac with Xcode selected; `--fetch` copies a path (relative to the repository) back |
 | `cargo xtask ios remote device [--iphone name] [--release]` | build, sign and install the app on your iPhone (or the named one), then start it (main checkout only) |
 | `cargo xtask ios remote clean --lane name` / `--all-lanes` | delete a lane's directory and simulators on the Mac |
