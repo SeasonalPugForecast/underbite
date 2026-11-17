@@ -14,9 +14,10 @@
 //! spaces requests at least [`MIN_REQUEST_SPACING_S`] seconds apart; HTTP 429 is
 //! [`SourceError::RateLimited`] and is not retried.
 //!
-//! Registering the source needs a [`Resource`] variant per [`DfoResource`]; until then the
-//! planner and the parser are the free functions [`plan_with`] and [`parse_with`], which take the
-//! mapping between [`DfoResource`] and [`Resource`].
+//! [`Dfo`] is the source: a thin wrapper over the free functions [`plan_with`] and
+//! [`parse_with`], with each [`DfoResource`] mapped to its [`Resource`] by [`resource`]. It plans
+//! heights on chart datum: the IGLD 85 offset of a Great Lakes station is in its metadata, which
+//! the source does not read, so a target that asks for IGLD 85 gets chart-datum heights.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::time::Duration;
@@ -37,7 +38,7 @@ use crate::request::{
     Place, QueryBuilder, Request, Resource, Response, Target, Window, encode_path_segment,
 };
 use crate::source::{
-    Budget, FetchContext, FragmentValue, Fragments, Period, SourceError, check_response,
+    Budget, FetchContext, FragmentValue, Fragments, Period, Source, SourceError, check_response,
 };
 
 /// The API base.
@@ -796,6 +797,85 @@ pub fn parse_with(
     out.push(Measurement::Tide, FragmentValue::TideSeries(tide))
 }
 
+/// The registered [`Resource`] of a data resource.
+pub fn resource(resource: DfoResource) -> Resource {
+    match resource {
+        DfoResource::TideHighLow => Resource::DfoTideHighLow,
+        DfoResource::TideCurve => Resource::DfoTideCurve,
+        DfoResource::WaterLevel => Resource::DfoWaterLevel,
+    }
+}
+
+/// The data resource of a registered [`Resource`]; `None` for the station list, the metadata and
+/// other sources' resources.
+pub fn data_resource(resource: Resource) -> Option<DfoResource> {
+    match resource {
+        Resource::DfoTideHighLow => Some(DfoResource::TideHighLow),
+        Resource::DfoTideCurve => Some(DfoResource::TideCurve),
+        Resource::DfoWaterLevel => Some(DfoResource::WaterLevel),
+        _ => None,
+    }
+}
+
+/// IWLS as a source of tides at CHS stations. It holds no settings.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Dfo;
+
+impl Source for Dfo {
+    fn id(&self) -> SourceId {
+        SOURCE_ID
+    }
+
+    fn attribution(&self) -> Attribution {
+        attribution()
+    }
+
+    fn measurements(&self) -> &[Measurement] {
+        &MEASUREMENTS
+    }
+
+    fn budget(&self) -> Option<Budget> {
+        Some(budget())
+    }
+
+    /// [`plan_with`] without an IGLD 85 offset: heights are on the station's chart datum, also
+    /// when the target asks for IGLD 85.
+    fn plan(
+        &self,
+        target: &Target,
+        requirements: &Requirements,
+        ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        let chart_datum;
+        let target = if target.datum == Some(VerticalDatum::Igld85) {
+            chart_datum = Target {
+                datum: None,
+                ..target.clone()
+            };
+            &chart_datum
+        } else {
+            target
+        };
+        plan_with(target, requirements, ctx, None, resource)
+    }
+
+    fn parse(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        ctx: &FetchContext,
+        out: &mut Fragments,
+    ) -> Result<(), SourceError> {
+        let Some(data) = data_resource(request.resource) else {
+            return Err(SourceError::Unsupported(format!(
+                "{:?} is read with parse_stations or parse_metadata",
+                request.resource
+            )));
+        };
+        parse_with(request, data, response, ctx, out)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1243,5 +1323,107 @@ mod tests {
         assert!(a.credit.contains("not to be used for navigation"));
         assert!(a.credit.contains("His Majesty the King in Right of Canada"));
         assert_eq!(budget().period, Period::Hour);
+    }
+
+    #[test]
+    fn source_plans_registered_resources_and_parses_each_into_a_tide() {
+        let source: &dyn Source = &Dfo;
+        assert_eq!(source.id(), SourceId::DFO_IWLS);
+        assert_eq!(source.measurements(), [Measurement::Tide]);
+        assert_eq!(source.budget(), Some(budget()));
+        let t = target(DAY0, DAY0 + DAY, Some(VerticalDatum::Mllw));
+        let plan = source
+            .plan(&t, &Requirements::default(), &ctx())
+            .expect("plan");
+        let resources: Vec<Resource> = plan.iter().map(|r| r.resource).collect();
+        assert_eq!(
+            resources,
+            [
+                Resource::DfoTideHighLow,
+                Resource::DfoTideCurve,
+                Resource::DfoWaterLevel
+            ]
+        );
+        assert!(plan.iter().all(|r| r.metered));
+        assert!(
+            plan.iter()
+                .all(|r| r.target.datum == Some(VerticalDatum::ChsChartDatum))
+        );
+
+        let fixtures = [
+            ("tier2", "dfo-iwls-07735-wlp-hilo-2026-11-08.json"),
+            ("dfo-iwls", "wlp-07735-15min-2026-11-18.json"),
+            ("dfo-iwls", "wlo-07735-15min-2026-11-17-0800-0900.json"),
+        ];
+        let mut out = Fragments::new();
+        for (request, (dir, name)) in plan.iter().zip(fixtures) {
+            let body = fixture_bytes(dir, name);
+            source
+                .parse(request, &Response::new(200, &body), &ctx(), &mut out)
+                .unwrap_or_else(|e| panic!("{name}: {e}"));
+        }
+        let tides: Vec<&TideSeries> = out
+            .fragments()
+            .iter()
+            .map(|f| {
+                assert_eq!(f.measurement, Measurement::Tide);
+                match &f.value {
+                    FragmentValue::TideSeries(t) => t,
+                    other => panic!("not a tide series: {other:?}"),
+                }
+            })
+            .collect();
+        assert_eq!(tides.len(), 3);
+        assert!(
+            tides
+                .iter()
+                .all(|t| t.datum == VerticalDatum::ChsChartDatum)
+        );
+        assert!(tides[0].events.len() > 4);
+        assert!(tides[1].curve.is_some() && tides[1].events.is_empty());
+        assert!(tides[2].observed.is_some());
+    }
+
+    #[test]
+    fn source_gives_chart_datum_heights_when_igld85_is_asked_for() {
+        let t = target(DAY0, DAY0 + DAY, Some(VerticalDatum::Igld85));
+        let plan = Dfo
+            .plan(&t, &Requirements::default(), &ctx())
+            .expect("plan");
+        assert_eq!(plan.len(), 3);
+        assert!(
+            plan.iter().all(
+                |r| r.carry().is_none() && r.target.datum == Some(VerticalDatum::ChsChartDatum)
+            )
+        );
+    }
+
+    #[test]
+    fn source_leaves_station_lists_and_metadata_to_their_parsers() {
+        for (r, dfo) in [
+            (Resource::DfoTideHighLow, Some(DfoResource::TideHighLow)),
+            (Resource::DfoTideCurve, Some(DfoResource::TideCurve)),
+            (Resource::DfoWaterLevel, Some(DfoResource::WaterLevel)),
+            (Resource::DfoStations, None),
+            (Resource::DfoMetadata, None),
+            (Resource::CoopsTideHighLow, None),
+        ] {
+            assert_eq!(data_resource(r), dfo);
+            if let Some(d) = dfo {
+                assert_eq!(resource(d), r);
+            }
+        }
+        let body = fixture_bytes("dfo-iwls", "metadata-07735.json");
+        let mut request = request_for(None);
+        request.resource = Resource::DfoMetadata;
+        let mut out = Fragments::new();
+        assert!(matches!(
+            Dfo.parse(&request, &Response::new(200, &body), &ctx(), &mut out),
+            Err(SourceError::Unsupported(_))
+        ));
+        assert!(
+            parse_metadata(&request, &Response::new(200, &body)).is_ok(),
+            "the metadata parser reads the registered resource"
+        );
     }
 }
