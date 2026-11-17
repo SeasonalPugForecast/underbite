@@ -99,3 +99,44 @@ nonisolated struct RetiredOverlays<Item: AnyObject> {
         waiting.removeValue(forKey: key) ?? []
     }
 }
+
+/// One replacement at a time per grid layer: blocks (an overview, then the first fine blocks, or
+/// a screenful from the device's cache) arrive faster than the map draws a new overlay's tiles,
+/// and replacing an overlay before its tiles are drawn only draws them again. A revision that
+/// comes while a replacement is still drawing is owed, and all those owed are drawn by one
+/// replacement once it settles.
+nonisolated struct ReplacementGate {
+    private var drawing: Set<String> = []
+    private var owed: Set<String> = []
+
+    /// Whether a replacement of `key` is drawing its first tiles.
+    func isDrawing(_ key: String) -> Bool { drawing.contains(key) }
+
+    /// Whether a replacement of `key` is owed.
+    func isOwed(_ key: String) -> Bool { owed.contains(key) }
+
+    /// A new revision of `key` is to be drawn: true to replace the overlay now, false when a
+    /// replacement is still drawing (one more is then owed).
+    mutating func request(_ key: String) -> Bool {
+        guard !drawing.contains(key) else {
+            owed.insert(key)
+            return false
+        }
+        drawing.insert(key)
+        return true
+    }
+
+    /// The replacement of `key` drew its first tiles (or waited long enough): true when one more
+    /// is owed, to be started now (it counts as drawing).
+    mutating func settled(_ key: String) -> Bool {
+        if owed.remove(key) != nil { return true }
+        drawing.remove(key)
+        return false
+    }
+
+    /// The layer `key` left the map.
+    mutating func drop(_ key: String) {
+        drawing.remove(key)
+        owed.remove(key)
+    }
+}

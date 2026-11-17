@@ -60,6 +60,10 @@ struct MapCanvas: UIViewRepresentable {
         private var drawnRevisions: [String: Int] = [:]
         /// Grid overlays replaced by newer ones, on the map until those have their first tiles.
         private var retired = RetiredOverlays<GridTileOverlay>()
+        /// One replacement per grid layer at a time; revisions in between are drawn together.
+        private var gate = ReplacementGate()
+        /// Per grid layer, the replacing overlay whose first tiles the gate waits for.
+        private var replacing: [String: ObjectIdentifier] = [:]
         /// Per module, its overlays and annotations on the map.
         private var moduleOverlays: [ObjectIdentifier: [ObjectIdentifier: any MKOverlay]] = [:]
         private var moduleAnnotations: [ObjectIdentifier: [ObjectIdentifier: any MKAnnotation]] =
@@ -81,7 +85,8 @@ struct MapCanvas: UIViewRepresentable {
                 if drawnRevisions[layer.overlayKey] != revision {
                     drawnRevisions[layer.overlayKey] = revision
                     if let grid = overlay as? GridTileOverlay {
-                        replace(grid, with: layer, on: map)
+                        // While a replacement draws, the newest revision waits for it.
+                        if gate.request(layer.overlayKey) { replace(grid, with: layer, on: map) }
                     } else {
                         (renderer as? ArrowRenderer)?.setNeedsDisplay()
                     }
@@ -138,6 +143,8 @@ struct MapCanvas: UIViewRepresentable {
                 for old in retired.drop(key: key) {
                     take(old, off: map)
                 }
+                gate.drop(key)
+                replacing[key] = nil
                 guard let overlay = overlays.removeValue(forKey: key) else { continue }
                 take(overlay, off: map)
                 drawnRevisions[key] = nil
@@ -169,6 +176,10 @@ struct MapCanvas: UIViewRepresentable {
         /// (none asked for, such as below the layer's shallowest zoom).
         static let retireAfter: Duration = .seconds(2)
 
+        /// How long after a replacement settles an owed one starts, so that blocks landing in a
+        /// burst are drawn a few at a time rather than one replacement each.
+        static let replaceSpacing: Duration = .milliseconds(400)
+
         /// Draws a grid layer again with the blocks held and the range now drawn: a new overlay
         /// goes right above the old one, which comes off once the new one's first tiles are
         /// answered, so the layer does not blink. (MapKit asks a tile overlay for each tile once:
@@ -182,6 +193,7 @@ struct MapCanvas: UIViewRepresentable {
             retired.retire(old, key: key)
             map.insertOverlay(fresh, above: old)
             let id = ObjectIdentifier(fresh)
+            replacing[key] = id
             fresh.firstTiles.onAnswered { [weak self] in
                 Task { @MainActor in self?.settled(id, key: key) }
             }
@@ -199,6 +211,24 @@ struct MapCanvas: UIViewRepresentable {
             for old in retired.settled(id, key: key, current: current) {
                 take(old, off: map)
             }
+            // The first word from the replacement the gate waits for (its tiles, or the timer).
+            guard replacing[key] == id else { return }
+            replacing[key] = nil
+            guard gate.settled(key) else { return }
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: Self.replaceSpacing)
+                self?.replaceOwed(key)
+            }
+        }
+
+        /// Draws the revisions that came while the last replacement of `key` was drawing.
+        private func replaceOwed(_ key: String) {
+            guard let map, let layer = planned[key], let grid = overlays[key] as? GridTileOverlay
+            else {
+                gate.drop(key)
+                return
+            }
+            replace(grid, with: layer, on: map)
         }
 
         private func makeOverlay(_ layer: PlannedLayer) -> any MKOverlay {

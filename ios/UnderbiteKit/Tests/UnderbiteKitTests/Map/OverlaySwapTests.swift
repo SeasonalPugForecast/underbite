@@ -132,3 +132,36 @@ final class RetiredOverlaysTests: XCTestCase {
         XCTAssertEqual(retired.count(for: "chlorophyll"), 1)
     }
 }
+
+/// A grid layer is replaced once at a time; revisions in between are drawn together.
+final class ReplacementGateTests: XCTestCase {
+    func testRevisionsWhileAReplacementDrawsAreDrawnByOneMore() {
+        var gate = ReplacementGate()
+        XCTAssertTrue(gate.request("sst"))
+        XCTAssertTrue(gate.isDrawing("sst"))
+        // The overview, then two fine blocks, land while the first replacement draws.
+        XCTAssertFalse(gate.request("sst"))
+        XCTAssertFalse(gate.request("sst"))
+        XCTAssertTrue(gate.isOwed("sst"))
+        // It settles: one more replacement for both, which draws in turn.
+        XCTAssertTrue(gate.settled("sst"))
+        XCTAssertTrue(gate.isDrawing("sst"))
+        XCTAssertFalse(gate.isOwed("sst"))
+        // That one settles with nothing owed: the next revision replaces at once.
+        XCTAssertFalse(gate.settled("sst"))
+        XCTAssertFalse(gate.isDrawing("sst"))
+        XCTAssertTrue(gate.request("sst"))
+    }
+
+    func testLayersAreKeptApartAndALayerLeavingIsForgotten() {
+        var gate = ReplacementGate()
+        XCTAssertTrue(gate.request("sst"))
+        XCTAssertTrue(gate.request("chlorophyll"))
+        XCTAssertFalse(gate.request("sst"))
+        gate.drop("sst")
+        XCTAssertFalse(gate.isDrawing("sst"))
+        XCTAssertFalse(gate.isOwed("sst"))
+        XCTAssertTrue(gate.isDrawing("chlorophyll"))
+        XCTAssertTrue(gate.request("sst"))
+    }
+}
