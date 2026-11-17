@@ -289,7 +289,13 @@
   },
   "version": 1,
   "windows": {
+    "current_range_kn": [
+      0.5,
+      2.5
+    ],
     "factors": {
+      "current_strength": 1.0,
+      "flow_in_range": 1.0,
       "low_light": 1.0,
       "pressure_falling": 0.7,
       "solunar": 0.5,

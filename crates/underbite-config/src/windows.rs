@@ -14,6 +14,10 @@ pub struct WindowFactors {
     pub solunar: f64,
     pub pressure_falling: f64,
     pub water_temp: f64,
+    /// Tidal current speed inside `current_range_kn`; inactive without a current station.
+    pub current_strength: f64,
+    /// River flow inside the spot's best range (`[[rivers]]`); inactive without a river range.
+    pub flow_in_range: f64,
 }
 
 impl Default for WindowFactors {
@@ -24,19 +28,23 @@ impl Default for WindowFactors {
             solunar: 0.5,
             pressure_falling: 0.7,
             water_temp: 1.0,
+            current_strength: 1.0,
+            flow_in_range: 1.0,
         }
     }
 }
 
 impl WindowFactors {
     /// Every factor with its name, for validation.
-    pub(crate) fn named(&self) -> [(&'static str, f64); 5] {
+    pub(crate) fn named(&self) -> [(&'static str, f64); 7] {
         [
             ("tide_stage", self.tide_stage),
             ("low_light", self.low_light),
             ("solunar", self.solunar),
             ("pressure_falling", self.pressure_falling),
             ("water_temp", self.water_temp),
+            ("current_strength", self.current_strength),
+            ("flow_in_range", self.flow_in_range),
         ]
     }
 }
@@ -46,6 +54,8 @@ impl WindowFactors {
 #[serde(default, deny_unknown_fields)]
 pub struct WindowsConfig {
     pub factors: WindowFactors,
+    /// Current speed range, knots `[min, max]`, that counts for the `current_strength` factor.
+    pub current_range_kn: [f64; 2],
     /// Whether the solunar periods are shown at all.
     pub show_solunar: bool,
     /// Major solunar period length in minutes.
@@ -58,6 +68,7 @@ impl Default for WindowsConfig {
     fn default() -> Self {
         Self {
             factors: WindowFactors::default(),
+            current_range_kn: [0.5, 2.5],
             show_solunar: true,
             solunar_major_minutes: 120,
             solunar_minor_minutes: 60,
@@ -110,6 +121,22 @@ mod tests {
         assert!((w.factors.solunar - 0.2).abs() < f64::EPSILON);
         assert!((w.factors.tide_stage - 1.0).abs() < f64::EPSILON);
         assert_eq!(w.solunar_major_minutes, 120);
+    }
+
+    #[test]
+    fn old_configurations_take_the_new_factors() {
+        let w: WindowsConfig = toml::from_str(
+            "factors = { tide_stage = 1.0, low_light = 1.0, solunar = 0.5, pressure_falling = 0.7, water_temp = 1.0 }",
+        )
+        .unwrap();
+        assert_eq!(w, WindowsConfig::default());
+        assert!((w.factors.current_strength - 1.0).abs() < f64::EPSILON);
+        assert!((w.factors.flow_in_range - 1.0).abs() < f64::EPSILON);
+        assert_eq!(w.current_range_kn, [0.5, 2.5]);
+        let w: WindowsConfig =
+            toml::from_str("current_range_kn = [1.0, 3.0]\n[factors]\nflow_in_range = 0").unwrap();
+        assert_eq!(w.current_range_kn, [1.0, 3.0]);
+        assert!(w.factors.flow_in_range.abs() < f64::EPSILON);
     }
 
     #[test]

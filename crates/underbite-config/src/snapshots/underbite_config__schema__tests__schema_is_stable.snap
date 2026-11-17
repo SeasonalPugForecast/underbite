@@ -1104,6 +1104,18 @@ expression: json_schema()
       "additionalProperties": false,
       "description": "Weights of the factors that line up into a fishing window; 0 turns a factor off.",
       "properties": {
+        "current_strength": {
+          "default": 1.0,
+          "description": "Tidal current speed inside `current_range_kn`; inactive without a current station.",
+          "format": "double",
+          "type": "number"
+        },
+        "flow_in_range": {
+          "default": 1.0,
+          "description": "River flow inside the spot's best range (`[[rivers]]`); inactive without a river range.",
+          "format": "double",
+          "type": "number"
+        },
         "low_light": {
           "default": 1.0,
           "format": "double",
@@ -1136,9 +1148,25 @@ expression: json_schema()
       "additionalProperties": false,
       "description": "`[windows]`.",
       "properties": {
+        "current_range_kn": {
+          "default": [
+            0.5,
+            2.5
+          ],
+          "description": "Current speed range, knots `[min, max]`, that counts for the `current_strength` factor.",
+          "items": {
+            "format": "double",
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
         "factors": {
           "$ref": "#/$defs/WindowFactors",
           "default": {
+            "current_strength": 1.0,
+            "flow_in_range": 1.0,
             "low_light": 1.0,
             "pressure_falling": 0.7,
             "solunar": 0.5,
@@ -1509,7 +1537,13 @@ expression: json_schema()
     "windows": {
       "$ref": "#/$defs/WindowsConfig",
       "default": {
+        "current_range_kn": [
+          0.5,
+          2.5
+        ],
         "factors": {
+          "current_strength": 1.0,
+          "flow_in_range": 1.0,
           "low_light": 1.0,
           "pressure_falling": 0.7,
           "solunar": 0.5,
