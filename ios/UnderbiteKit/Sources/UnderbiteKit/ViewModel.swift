@@ -47,8 +47,17 @@ extension ViewModel {
     public struct Page: Decodable, Sendable, Hashable {
         public var active: Int
         public var spots: [SpotSummary]
-        /// `nil` when the active spot has no snapshot yet.
+        /// `nil` when the active spot has no snapshot yet, or its snapshot cannot be read.
         public var view: SpotView?
+        /// Why the active spot has no view, when there is a reason to give.
+        public var problem: PageProblem?
+    }
+
+    /// Why a spot's page is empty: the core's title ("Conditions could not be loaded") and
+    /// the reason (the last fetch's error, or why the saved snapshot cannot be read).
+    public struct PageProblem: Decodable, Sendable, Hashable {
+        public var title: String
+        public var reason: String
     }
 
     /// One row of the spot list.
@@ -795,6 +804,9 @@ extension ViewModel {
         public var onset: String?
         public var ends: String?
         public var expires: String?
+        /// When it is in effect, in words: "Nov 8, 1:48 AM – Nov 9, 6:00 PM", "From …" or
+        /// "Until …"; `nil` when the source gave no time.
+        public var span: String?
         public var zones: [String]
     }
 

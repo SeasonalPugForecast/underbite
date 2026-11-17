@@ -202,7 +202,29 @@ final class ViewModelTests: XCTestCase {
             """
         let page = try ViewModel.decode(json)
         XCTAssertNil(page.view)
+        XCTAssertNil(page.problem, "a page of an earlier core has none")
         XCTAssertEqual(page.spots[0].status.error, "offline")
         XCTAssertTrue(page.spots[0].status.refreshing)
+    }
+
+    func testAnEmptyPageSaysWhy() throws {
+        let json = """
+            {"active": 0, "spots": [], "view": null,
+             "problem": {"title": "Conditions could not be loaded", "reason": "offline"}}
+            """
+        let problem = try XCTUnwrap(ViewModel.decode(json).problem)
+        XCTAssertEqual(problem.title, "Conditions could not be loaded")
+        XCTAssertEqual(problem.reason, "offline")
+        XCTAssertNil(try samplePage().problem)
+    }
+
+    func testAnAlertCarriesItsSpanInTheCoresWords() throws {
+        let view = try XCTUnwrap(samplePage().view)
+        guard case .alerts(let alerts) = view.cards[1] else {
+            return XCTFail("the second card is Alerts")
+        }
+        let alert = try XCTUnwrap(alerts.full.alerts.first)
+        XCTAssertEqual(alert.span, "Nov 6, 4:20 PM – Nov 7, 2:20 AM")
+        XCTAssertEqual(alert.severityLabel, "Minor")
     }
 }
