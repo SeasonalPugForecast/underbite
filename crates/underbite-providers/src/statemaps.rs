@@ -3,8 +3,9 @@
 //! Two states publish lake contours as `ArcGIS` services: Indiana DNR (a `FeatureServer`) and Minnesota
 //! DNR (a `MapServer`). [`contour_request`] builds the `query` by envelope, in WGS 84 degrees, as
 //! `GeoJSON`, 2000 features a page and generalised for the zoom; [`parse_contours`] reads the answer
-//! into [`Polyline`]s whose `value` is the depth **below the lake surface** in metres, positive
-//! down. New York has no statewide contour layer; [`reefs_request`] and [`parse_reefs`] read the
+//! into [`Polyline`]s whose `value` is the height relative to the **lake surface** in metres,
+//! positive up (the DEM's sign: a contour 10 ft below the surface is -3.048). New York has no
+//! statewide contour layer; [`reefs_request`] and [`parse_reefs`] read the
 //! NYSDEC artificial reef table (Socrata JSON).
 //!
 //! The reference of a contour depth is the lake surface, not a datum: Indiana's contours are "feet
@@ -160,7 +161,7 @@ pub fn contour_request(
 /// A contour line with what the source says about it.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ContourLine {
-    /// The line; `value` is the depth below the lake surface in metres, positive down.
+    /// The line; `value` is its height relative to the lake surface in metres, positive up (a 10 ft contour is -3.048).
     pub line: Polyline,
     /// The lake's name as the source gives it.
     pub lake: Option<String>,
@@ -284,7 +285,7 @@ pub fn parse_contours(
             skipped += 1;
             continue;
         };
-        let value = depth.abs() * state.metres_per_unit();
+        let value = 0.0 - depth.abs() * state.metres_per_unit();
         for points in geometry {
             lines.push(ContourLine {
                 line: Polyline { points, value },
@@ -537,13 +538,13 @@ mod tests {
         let mut feet: Vec<i32> = c
             .lines
             .iter()
-            .map(|l| (l.line.value / M_PER_FT).round() as i32)
+            .map(|l| (-l.line.value / M_PER_FT).round() as i32)
             .collect();
         feet.sort_unstable();
         feet.dedup();
         assert_eq!(feet, [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22]);
         let first = &c.lines[0];
-        assert!((first.line.value - 20.0 * M_PER_FT).abs() < 1e-9);
+        assert!((first.line.value + 20.0 * M_PER_FT).abs() < 1e-9);
         assert_eq!(first.lake.as_deref(), Some("Crooked Creek Lake"));
         assert_eq!(first.index, Some(true));
         assert_eq!(first.survey, Some(UnixTime(1_466_035_200)));
@@ -562,12 +563,12 @@ mod tests {
         let mut feet: Vec<i32> = c
             .lines
             .iter()
-            .map(|l| (l.line.value / M_PER_FT).round() as i32)
+            .map(|l| (-l.line.value / M_PER_FT).round() as i32)
             .collect();
         feet.sort_unstable();
         feet.dedup();
         assert_eq!(feet, [0, 5, 10, 15, 20, 25]);
-        assert!(c.lines.iter().all(|l| l.line.value >= 0.0));
+        assert!(c.lines.iter().all(|l| l.line.value <= 0.0));
         assert_eq!(c.lines[0].lake_id.as_deref(), Some("01000100"));
         assert_eq!(c.lines[0].lake.as_deref(), Some("Pine"));
         assert_eq!(c.lines[0].survey, None);
