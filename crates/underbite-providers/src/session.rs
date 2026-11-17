@@ -1876,6 +1876,82 @@ mod tests {
         assert_eq!(out.stations.len(), 1, "one project");
     }
 
+    /// One `CyAN` answer gives the lake's mean and its bloom block; a stale feed gives neither,
+    /// and says why, instead of an empty block.
+    #[test]
+    fn session_places_a_lakes_bloom_from_cyan_or_says_it_is_stale() {
+        use crate::blooms::cyan::Cyan;
+        use crate::request::{Coordinates, RoundedPoint, Window};
+        use crate::testutil::fixture_bytes;
+        use underbite_core::model::Measurement::{Bloom, Cyanobacteria};
+
+        let run = |now: UnixTime| {
+            let target = Target {
+                place: Place::Point(RoundedPoint::new(
+                    Coordinates {
+                        latitude: 43.2,
+                        longitude: -76.0,
+                    },
+                    2,
+                )),
+                measurements: BTreeSet::from([Cyanobacteria, Bloom]),
+                window: Window {
+                    from: UnixTime(now.0 - 7 * 86_400),
+                    to: now,
+                },
+                datum: None,
+            };
+            let cyan: Arc<dyn Source> = Arc::new(Cyan);
+            let chain = |m: Measurement| Chain {
+                links: vec![Link {
+                    source: Arc::clone(&cyan),
+                    target: Target {
+                        measurements: BTreeSet::from([m]),
+                        ..target.clone()
+                    },
+                }],
+                max_age_s: None,
+            };
+            let chains =
+                BTreeMap::from([(Cyanobacteria, chain(Cyanobacteria)), (Bloom, chain(Bloom))]);
+            let requirements = Requirements {
+                measurements: BTreeSet::from([Cyanobacteria, Bloom]),
+                ..Requirements::default()
+            };
+            let mut s = Session::new(chains, requirements, fake::ctx(now));
+            let body = fixture_bytes("cyan", "cyan-oneida-lake-weekly-2026-11-17.json");
+            let mut sent = 0;
+            while s.next_request().is_some() {
+                s.on_response(&Response::new(200, &body));
+                sent += 1;
+            }
+            assert_eq!(sent, 1, "one answer serves both");
+            s.finish(now)
+        };
+
+        // A day after the newest composite, while the feed was current.
+        let fresh = run(UnixTime(1_774_670_400 + 86_400));
+        assert!(fresh.errors.is_empty(), "{:?}", fresh.errors);
+        assert_eq!(fresh.sources[&Bloom], SourceId::CYAN);
+        assert!(fresh.water.cyanobacteria_cells_ml.is_some());
+        let bloom = fresh.water.bloom.expect("a bloom block");
+        assert_eq!(
+            bloom.cyan_image_date.map(|d| (d.month, d.day)),
+            Some((3, 28))
+        );
+        assert!(bloom.cyan_max_cells_ml.is_some() && bloom.hab.is_none());
+
+        // In November the newest composite is from March.
+        let stale = run(UnixTime(1_794_909_600));
+        assert!(stale.water.bloom.is_none() && stale.water.cyanobacteria_cells_ml.is_none());
+        let bloom_error = stale
+            .errors
+            .iter()
+            .find(|e| e.measurement == Some(Bloom))
+            .expect("the bloom says why");
+        assert_eq!(bloom_error.kind, SourceErrorKind::Stale);
+    }
+
     /// A water-level station has no predictions: its observed level is the tide it gives.
     #[test]
     fn session_keeps_a_water_level_stations_observations_as_its_tide() {

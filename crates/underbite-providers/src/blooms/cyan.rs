@@ -10,7 +10,7 @@
 //! snapshot's [`BloomInfo`].
 //!
 //! [`Cyan`] is the source, for a [`Place::Point`] on a lake: the weekly composites' mean as the
-//! spot's cyanobacteria.
+//! spot's cyanobacteria, and their maxima, cell count and date as its bloom block.
 
 use std::collections::BTreeSet;
 
@@ -20,11 +20,13 @@ use underbite_core::provenance::{Attribution, Provenance, Quality, Relation, Sou
 use underbite_core::series::{Sample, Series};
 use underbite_core::time::{LocalDate, UnixTime, UtcOffset};
 
+use super::hab;
 use crate::request::{Coordinates, Place, Request, Resource, Response, RoundedPoint, Target};
 use crate::source::{FetchContext, FragmentValue, Fragments, Source, SourceError, check_response};
 
-/// The measurements the source supplies: the composites' mean cell concentration.
-pub const MEASUREMENTS: [Measurement; 1] = [Measurement::Cyanobacteria];
+/// The measurements the source supplies: the composites' mean cell concentration, and the
+/// bloom block.
+pub const MEASUREMENTS: [Measurement; 2] = [Measurement::Cyanobacteria, Measurement::Bloom];
 
 /// How long a response may be reused, seconds: composites are weekly.
 const MAX_AGE_S: u32 = 6 * 3_600;
@@ -335,8 +337,9 @@ impl Source for Cyan {
         ])
     }
 
-    /// The composites' mean, newest within [`STALE_AFTER_S`] of now; a stale feed or a point off
-    /// a mapped lake is an error, never "no bloom".
+    /// The composites' mean, and the bloom block with the links of NOAA's regional forecasts
+    /// around the point, newest within [`STALE_AFTER_S`] of now; a stale feed or a point off a
+    /// mapped lake is an error, never "no bloom".
     fn parse(
         &self,
         request: &Request,
@@ -355,6 +358,11 @@ impl Source for Cyan {
                 Measurement::Cyanobacteria,
                 FragmentValue::Series(reading.mean_series(spot)),
             )?;
+        }
+        if request.target.measurements.contains(&Measurement::Bloom)
+            && let Some(info) = super::bloom_info(spot, Some(&reading), None, hab::links_near(spot))
+        {
+            out.push(Measurement::Bloom, FragmentValue::Bloom(info))?;
         }
         Ok(())
     }
@@ -565,6 +573,85 @@ mod tests {
         let latest = mean.latest().expect("a value");
         assert!((latest.value - 19_054.607).abs() < 1.0);
         assert_eq!(mean.provenance().kind, ValueKind::Satellite);
+    }
+
+    #[test]
+    fn source_gives_the_bloom_block_beside_the_mean() {
+        let now = UnixTime(1_774_670_400 + 86_400);
+        let ctx = FetchContext::new(now, "underbite/test");
+        assert_eq!(
+            Cyan.measurements(),
+            [Measurement::Cyanobacteria, Measurement::Bloom]
+        );
+        let both = [Measurement::Cyanobacteria, Measurement::Bloom];
+        let plan = Cyan
+            .plan(&lake_target(now, &both), &Requirements::default(), &ctx)
+            .expect("a plan");
+        let [request] = plan.as_slice() else {
+            panic!("one request for both, got {plan:?}");
+        };
+        assert_eq!(request.target.measurements, BTreeSet::from(both));
+        let mut out = Fragments::new();
+        Cyan.parse(request, &Response::new(200, &oneida()), &ctx, &mut out)
+            .expect("parses");
+        let [mean, bloom] = out.fragments() else {
+            panic!("two fragments, got {:?}", out.fragments());
+        };
+        assert_eq!(mean.measurement, Measurement::Cyanobacteria);
+        assert_eq!(bloom.measurement, Measurement::Bloom);
+        let FragmentValue::Bloom(info) = &bloom.value else {
+            panic!("a bloom block");
+        };
+        assert_eq!(
+            info.cyan_image_date,
+            Some(LocalDate {
+                year: 2026,
+                month: 3,
+                day: 28
+            })
+        );
+        assert_eq!(info.cyan_valid_cells, Some(4));
+        let max = info.cyan_max_cells_ml.as_ref().expect("maxima");
+        assert_eq!(max.samples().len(), 16);
+        assert_eq!(max.provenance().kind, ValueKind::Satellite);
+        assert!(info.hab.is_none());
+        assert_eq!(info.links, [info_link()], "Oneida Lake is in no HAB region");
+
+        // The block alone, and a Lake Erie point that also links NOAA's bulletin.
+        let erie = Target {
+            place: Place::Point(RoundedPoint::new(
+                Coordinates {
+                    latitude: 41.7,
+                    longitude: -83.3,
+                },
+                2,
+            )),
+            ..lake_target(now, &[Measurement::Bloom])
+        };
+        let request = Cyan
+            .plan(&erie, &Requirements::default(), &ctx)
+            .expect("a plan")
+            .remove(0);
+        let mut out = Fragments::new();
+        Cyan.parse(&request, &Response::new(200, &oneida()), &ctx, &mut out)
+            .expect("parses");
+        let [bloom] = out.fragments() else {
+            panic!("one fragment, got {:?}", out.fragments());
+        };
+        let FragmentValue::Bloom(info) = &bloom.value else {
+            panic!("a bloom block");
+        };
+        assert_eq!(info.links.len(), 2);
+        assert!(info.links[1].label.contains("Lake Erie"));
+
+        // A stale feed gives neither the mean nor a block.
+        let later = FetchContext::new(at("2026-11-17T12:00:00Z"), "underbite/test");
+        let mut out = Fragments::new();
+        assert!(matches!(
+            Cyan.parse(&request, &Response::new(200, &oneida()), &later, &mut out),
+            Err(SourceError::Stale { .. })
+        ));
+        assert!(out.is_empty());
     }
 
     #[test]
