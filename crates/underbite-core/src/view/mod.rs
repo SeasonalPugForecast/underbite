@@ -27,10 +27,11 @@ use crate::units::{DischargeUnit, DistanceUnit, HeightUnit, PressureUnit, SpeedU
 use locale::Locale;
 
 use cards::{
-    alerts::AlertsCard, clarity::ClarityCard, current::CurrentCard, flow::FlowCard,
-    marine_forecast::MarineForecastCard, now::NowCard, pressure::PressureCard,
-    solunar::SolunarCard, sources::SourcesCard, storm_ahead::StormAheadCard, sun_moon::SunMoonCard,
-    tide::TideCard, water_temp::WaterTempCard, waves::WavesCard, wind::WindCard,
+    alerts::AlertsCard, bloom::BloomCard, clarity::ClarityCard, current::CurrentCard,
+    flow::FlowCard, marine_forecast::MarineForecastCard, now::NowCard, pressure::PressureCard,
+    solunar::SolunarCard, sources::SourcesCard, stocking::StockingCard,
+    storm_ahead::StormAheadCard, sun_moon::SunMoonCard, tide::TideCard, water_temp::WaterTempCard,
+    waves::WavesCard, wind::WindCard,
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -187,6 +188,7 @@ pub enum CardId {
     Flow,
     WaterTemp,
     Clarity,
+    Bloom,
     Waves,
     Wind,
     Pressure,
@@ -204,13 +206,14 @@ pub enum CardId {
 
 impl CardId {
     /// Every card, in the default order.
-    pub const ALL: [Self; 19] = [
+    pub const ALL: [Self; 20] = [
         Self::Now,
         Self::Tide,
         Self::Current,
         Self::Flow,
         Self::WaterTemp,
         Self::Clarity,
+        Self::Bloom,
         Self::Waves,
         Self::Wind,
         Self::Pressure,
@@ -239,12 +242,14 @@ pub enum Card {
     Flow(FlowCard),
     WaterTemp(WaterTempCard),
     Clarity(ClarityCard),
+    Bloom(BloomCard),
     Waves(WavesCard),
     Wind(WindCard),
     Pressure(PressureCard),
     SunMoon(SunMoonCard),
     Solunar(SolunarCard),
     MarineForecast(MarineForecastCard),
+    Stocking(StockingCard),
     StormAhead(StormAheadCard),
     Alerts(AlertsCard),
     Sources(SourcesCard),
@@ -260,12 +265,14 @@ impl Card {
             Self::Flow(c) => &c.chrome,
             Self::WaterTemp(c) => &c.chrome,
             Self::Clarity(c) => &c.chrome,
+            Self::Bloom(c) => &c.chrome,
             Self::Waves(c) => &c.chrome,
             Self::Wind(c) => &c.chrome,
             Self::Pressure(c) => &c.chrome,
             Self::SunMoon(c) => &c.chrome,
             Self::Solunar(c) => &c.chrome,
             Self::MarineForecast(c) => &c.chrome,
+            Self::Stocking(c) => &c.chrome,
             Self::StormAhead(c) => &c.chrome,
             Self::Alerts(c) => &c.chrome,
             Self::Sources(c) => &c.chrome,
@@ -573,6 +580,7 @@ pub fn build_view(input: &ViewInput) -> SpotView {
             CardId::Flow => cards::flow::build(input).map(Card::Flow),
             CardId::WaterTemp => cards::water_temp::build(input).map(Card::WaterTemp),
             CardId::Clarity => cards::clarity::build(input).map(Card::Clarity),
+            CardId::Bloom => cards::bloom::build(input).map(Card::Bloom),
             CardId::Waves => cards::waves::build(input).map(Card::Waves),
             CardId::Wind => cards::wind::build(input).map(Card::Wind),
             CardId::Pressure => cards::pressure::build(input).map(Card::Pressure),
@@ -584,7 +592,8 @@ pub fn build_view(input: &ViewInput) -> SpotView {
             CardId::StormAhead => cards::storm_ahead::build(input).map(Card::StormAhead),
             CardId::Alerts => cards::alerts::build(input).map(Card::Alerts),
             CardId::Sources => cards::sources::build(input).map(Card::Sources),
-            CardId::Windows | CardId::GoNoGo | CardId::Stocking | CardId::Species => None,
+            CardId::Stocking => cards::stocking::build(input).map(Card::Stocking),
+            CardId::Windows | CardId::GoNoGo | CardId::Species => None,
         })
         .collect();
     let f = format::Formatter::for_input(input);
@@ -650,10 +659,13 @@ mod tests {
             .iter()
             .map(|id| serde_json::to_string(id).unwrap().replace('"', ""))
             .collect();
-        assert_eq!(names.len(), 19);
+        assert_eq!(names.len(), 20);
         assert_eq!(names[4], "water_temp");
-        assert_eq!(names[13], "storm_ahead");
-        assert_eq!(names[14], "marine_forecast");
+        assert_eq!(names[5], "clarity");
+        assert_eq!(names[6], "bloom");
+        assert_eq!(names[14], "storm_ahead");
+        assert_eq!(names[15], "marine_forecast");
+        assert_eq!(names[16], "stocking");
     }
 
     #[test]

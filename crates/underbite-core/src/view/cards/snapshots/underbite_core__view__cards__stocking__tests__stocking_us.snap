@@ -1,0 +1,99 @@
+---
+source: crates/underbite-core/src/view/cards/stocking.rs
+expression: card(&with_events(us()))
+---
+{
+  "chrome": {
+    "id": "stocking",
+    "title": "Stocking",
+    "footnote": null,
+    "credits": [
+      {
+        "source": "NYS DEC stocking",
+        "text": "NYS DEC fish stocking lists",
+        "link": "https://data.ny.gov",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Stocking: Brown Trout · Apr 2026 · about 1,200 · 8 to 12 in"
+  },
+  "compact": {
+    "headline": {
+      "value": 3.0,
+      "text": "3",
+      "unit": "stockings"
+    },
+    "lines": [
+      "Brown Trout · Apr 2026 · about 1,200 · 8 to 12 in",
+      "Rainbow Trout · planned: Week of April 14"
+    ],
+    "spark": []
+  },
+  "full": {
+    "recent": [
+      {
+        "waterbody": "Croton River",
+        "place": "Yorktown, Westchester",
+        "species": "Brown Trout",
+        "when": "Apr 2026",
+        "summary": "Brown Trout · Apr 2026 · about 1,200 · 8 to 12 in",
+        "planned": false
+      },
+      {
+        "waterbody": "Croton River",
+        "place": "Yorktown, Westchester",
+        "species": "Brook Trout",
+        "when": "Oct 2025",
+        "summary": "Brook Trout · Oct 2025 · about 1,200 · 8 to 12 in",
+        "planned": false
+      }
+    ],
+    "planned": [
+      {
+        "waterbody": "Croton River",
+        "place": "Yorktown, Westchester",
+        "species": "Rainbow Trout",
+        "when": "planned: Week of April 14",
+        "summary": "Rainbow Trout · planned: Week of April 14",
+        "planned": true
+      }
+    ],
+    "empty": null,
+    "notes": [
+      "Numbers are the agency's estimates.",
+      "The list of stockings that took place lags about a year.",
+      "Planned stockings are a schedule and can change."
+    ],
+    "sections": [
+      {
+        "title": "Recent stockings",
+        "rows": [
+          {
+            "label": "Croton River",
+            "value": "Brown Trout · Apr 2026 · about 1,200 · 8 to 12 in",
+            "detail": "Yorktown, Westchester"
+          },
+          {
+            "label": "Croton River",
+            "value": "Brook Trout · Oct 2025 · about 1,200 · 8 to 12 in",
+            "detail": "Yorktown, Westchester"
+          }
+        ]
+      },
+      {
+        "title": "Planned stockings",
+        "rows": [
+          {
+            "label": "Croton River",
+            "value": "Rainbow Trout · planned: Week of April 14",
+            "detail": "Yorktown, Westchester"
+          }
+        ]
+      }
+    ]
+  }
+}

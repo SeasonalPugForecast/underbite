@@ -1,0 +1,88 @@
+---
+source: crates/underbite-core/src/view/cards/bloom.rs
+expression: "card(&lake(us(), recent_composite()))"
+---
+{
+  "chrome": {
+    "id": "bloom",
+    "title": "Algal bloom",
+    "footnote": "Satellite estimate up to 108,643 cells/mL (composite of Nov 2) · Oneida Lake · 1.5 mi · 3 d ago",
+    "credits": [
+      {
+        "source": "EPA CyAN",
+        "text": "U.S. EPA Cyanobacteria Assessment Network (CyAN)",
+        "link": "https://www.epa.gov/cyanohabs",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "approximate",
+        "text": "Approximate: check conditions locally before you go."
+      }
+    ],
+    "accessibility": "Algal bloom: Satellite estimate up to 108,643 cells/mL (composite of Nov 2). Algal blooms can make people and dogs sick. Keep people and pets out of green, scummy or discoloured water, and follow local health advisories."
+  },
+  "compact": {
+    "headline": {
+      "value": 108642.6,
+      "text": "108,643",
+      "unit": "cells/mL"
+    },
+    "lines": [
+      "Satellite estimate up to 108,643 cells/mL (composite of Nov 2)"
+    ],
+    "spark": []
+  },
+  "full": {
+    "cyan": {
+      "recent": true,
+      "max": {
+        "value": 108642.6,
+        "text": "108,643",
+        "unit": "cells/mL"
+      },
+      "image_date": "Nov 2",
+      "text": "Satellite estimate up to 108,643 cells/mL (composite of Nov 2)",
+      "experimental": "Experimental: provisional satellite-derived measures of cyanobacteria, which may contain errors and should be considered a research tool. Not a health advisory."
+    },
+    "hab": null,
+    "advisory": "Algal blooms can make people and dogs sick. Keep people and pets out of green, scummy or discoloured water, and follow local health advisories.",
+    "sections": [
+      {
+        "title": "Satellite estimate",
+        "rows": [
+          {
+            "label": "Highest cell count",
+            "value": "108,643 cells/mL",
+            "detail": null
+          },
+          {
+            "label": "Composite date",
+            "value": "Nov 2",
+            "detail": null
+          },
+          {
+            "label": "Cells with a reading",
+            "value": "6",
+            "detail": null
+          },
+          {
+            "label": "",
+            "value": "Experimental: provisional satellite-derived measures of cyanobacteria, which may contain errors and should be considered a research tool. Not a health advisory.",
+            "detail": null
+          }
+        ]
+      }
+    ],
+    "links": [
+      {
+        "label": "NOAA bloom forecasts",
+        "url": "https://coastalscience.noaa.gov/science-areas/habs/hab-forecasts/"
+      }
+    ]
+  }
+}

@@ -260,7 +260,9 @@ fn unit_options_list_groups_with_the_core_symbols() {
 #[test]
 fn the_card_catalogue_follows_the_users_order_and_voice() {
     let cards = card_catalogue("river_stream".into(), cfs()).unwrap();
-    assert_eq!(cards.len(), 19);
+    assert_eq!(cards.len(), 20);
+    // No source fills the bloom card yet.
+    assert!(!cards.iter().find(|c| c.id == "bloom").unwrap().available);
     assert_eq!(cards[0].id, "now");
     assert!(cards.iter().take_while(|c| c.shown).count() >= 5);
     let windows = cards.iter().find(|c| c.id == "windows").unwrap();

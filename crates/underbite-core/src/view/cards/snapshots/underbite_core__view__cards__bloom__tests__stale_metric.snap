@@ -1,0 +1,65 @@
+---
+source: crates/underbite-core/src/view/cards/bloom.rs
+expression: "card(&lake(metric(), stale_composite()))"
+---
+{
+  "chrome": {
+    "id": "bloom",
+    "title": "Algal bloom",
+    "footnote": "No recent satellite data (last composite Mar 28) · Oneida Lake · 2.4 km · 225 d ago",
+    "credits": [
+      {
+        "source": "EPA CyAN",
+        "text": "U.S. EPA Cyanobacteria Assessment Network (CyAN)",
+        "link": "https://www.epa.gov/cyanohabs",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "stale",
+      "reason": "No recent satellite data"
+    },
+    "notices": [],
+    "accessibility": "Algal bloom: No recent satellite data (last composite Mar 28). Algal blooms can make people and dogs sick. Keep people and pets out of green, scummy or discoloured water, and follow local health advisories."
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "—",
+      "unit": ""
+    },
+    "lines": [
+      "No recent satellite data (last composite Mar 28)"
+    ],
+    "spark": []
+  },
+  "full": {
+    "cyan": {
+      "recent": false,
+      "max": null,
+      "image_date": "Mar 28",
+      "text": "No recent satellite data (last composite Mar 28)",
+      "experimental": "Experimental: provisional satellite-derived measures of cyanobacteria, which may contain errors and should be considered a research tool. Not a health advisory."
+    },
+    "hab": null,
+    "advisory": "Algal blooms can make people and dogs sick. Keep people and pets out of green, scummy or discoloured water, and follow local health advisories.",
+    "sections": [
+      {
+        "title": "Satellite estimate",
+        "rows": [
+          {
+            "label": "Composite date",
+            "value": "Mar 28",
+            "detail": null
+          },
+          {
+            "label": "",
+            "value": "Experimental: provisional satellite-derived measures of cyanobacteria, which may contain errors and should be considered a research tool. Not a health advisory.",
+            "detail": null
+          }
+        ]
+      }
+    ],
+    "links": []
+  }
+}

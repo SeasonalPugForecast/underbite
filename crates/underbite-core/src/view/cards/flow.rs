@@ -96,6 +96,15 @@ pub struct FlowFull {
     /// A separate stage chart when the forecast is a stage hydrograph.
     pub stage_chart: Option<ChartVm>,
     pub sections: Vec<Section>,
+    /// The operator's pages for a reservoir's releases; empty when there is no reservoir.
+    pub reservoir_links: Vec<LinkVm>,
+}
+
+/// A link to a source's own page: its label and address.
+#[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
+pub struct LinkVm {
+    pub label: String,
+    pub url: String,
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -921,6 +930,51 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         });
     }
 
+    // A reservoir's releases and inflow: a section, and the outflow as a line of the compact form.
+    let reservoir = w.reservoir.as_ref();
+    let outflow = reservoir
+        .and_then(|r| r.outflow_m3s.as_ref())
+        .and_then(|s| latest_at(s, now).map(|l| (s, l)));
+    let inflow = reservoir
+        .and_then(|r| r.inflow_m3s.as_ref())
+        .and_then(|s| latest_at(s, now).map(|l| (s, l)));
+    let aged_row = |label: Key, (_, l): (&Series<f32>, &Sample<f32>)| {
+        let mut r = row(f.strings.get(label), &show_q(l.value).full());
+        r.detail = Some(f.age(now.0 - l.time.0));
+        r
+    };
+    let outflow_line = outflow.map(|(_, l)| {
+        f.strings.fmt(
+            Key::ReservoirOutflowLine,
+            &[
+                ("value", &show_q(l.value).full()),
+                ("age", &f.age(now.0 - l.time.0)),
+            ],
+        )
+    });
+    let reservoir_links: Vec<LinkVm> = reservoir
+        .map(|r| {
+            r.links
+                .iter()
+                .map(|l| LinkVm {
+                    label: l.label.clone(),
+                    url: l.url.clone(),
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    if let Some(r) = reservoir.filter(|_| outflow.is_some() || inflow.is_some()) {
+        let mut rows = vec![row(f.strings.get(Key::RowProject), &r.project)];
+        rows.extend(outflow.map(|o| aged_row(Key::RowOutflow, o)));
+        rows.extend(inflow.map(|i| aged_row(Key::RowInflow, i)));
+        sections.push(Section {
+            title: f.strings.get(Key::SectionReservoir).to_owned(),
+            rows,
+        });
+    }
+    qualities.extend(outflow.map(|(s, l)| sample_quality(s, l)));
+    qualities.extend(inflow.map(|(s, l)| sample_quality(s, l)));
+
     // Compact.
     let headline = discharge_q
         .clone()
@@ -934,6 +988,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
     let mut lines: Vec<String> = Vec::new();
     lines.extend(unreliable.map(|q| unreliable_text(&f, q).to_owned()));
     lines.extend(percentile.as_ref().map(|p| p.text.clone()));
+    lines.extend(outflow_line.clone());
     lines.extend(range_status.as_ref().map(|r| r.text.clone()));
     lines.extend(main_prov.map(|p| f.station_footer(p).text));
     lines.truncate(2);
@@ -960,6 +1015,8 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         .chain(q_forecast.map(Series::provenance))
         .chain(s_forecast.map(|h| h.series.provenance()))
         .chain(own_flood.map(|(_, p)| p))
+        .chain(outflow.map(|(s, _)| s.provenance()))
+        .chain(inflow.map(|(s, _)| s.provenance()))
         .collect();
     let measurement = if discharge.is_some() {
         Measurement::Discharge
@@ -1009,6 +1066,10 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         accessibility.push_str(". ");
         accessibility.push_str(unreliable_text(&f, q));
     }
+    if let Some(line) = &outflow_line {
+        accessibility.push_str(". ");
+        accessibility.push_str(line);
+    }
 
     Some(FlowCard {
         chrome: CardChrome {
@@ -1035,6 +1096,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
             chart,
             stage_chart,
             sections,
+            reservoir_links,
         },
     })
 }
@@ -1218,6 +1280,84 @@ pub(in crate::view) mod tests {
 
     fn card(input: &ViewInput) -> FlowCard {
         build(input).expect("a flow card")
+    }
+
+    pub(in crate::view) fn reservoir_input() -> ViewInput {
+        use crate::model::{ExternalLink, ReservoirInfo};
+        let mut input = croton_input(us(), Voice::Plain);
+        let p = prov(
+            SourceId::CWMS,
+            "BELT",
+            "Beltzville Lake",
+            StationKind::UsgsSite(UsgsSiteType::Lake),
+            ValueKind::Observed,
+            Quality::Provisional,
+        );
+        input.snapshot.water.reservoir = Some(ReservoirInfo {
+            project: "Beltzville Lake".into(),
+            outflow_m3s: Some(run(p.clone(), NOW - 7_200, 900, &[30.0 * CFS, 32.0 * CFS])),
+            inflow_m3s: Some(run(p, NOW - 1_800, 900, &[20.0 * CFS])),
+            links: vec![ExternalLink {
+                label: "USACE Philadelphia District".into(),
+                url: "https://www.nap.usace.army.mil".into(),
+            }],
+        });
+        input
+    }
+
+    #[test]
+    fn a_reservoirs_outflow_and_inflow_are_lines_of_the_flow_card() {
+        let c = card(&reservoir_input());
+        let s = c
+            .full
+            .sections
+            .iter()
+            .find(|s| s.title == "Reservoir")
+            .expect("a reservoir section");
+        let rows: Vec<(&str, &str, Option<&str>)> = s
+            .rows
+            .iter()
+            .map(|r| (r.label.as_str(), r.value.as_str(), r.detail.as_deref()))
+            .collect();
+        assert_eq!(
+            rows,
+            [
+                ("Project", "Beltzville Lake", None),
+                ("Outflow", "32.0 cfs", Some("2 h ago")),
+                ("Inflow", "20.0 cfs", Some("30 min ago")),
+            ]
+        );
+        assert!(
+            c.compact
+                .lines
+                .contains(&"Outflow 32.0 cfs · 2 h ago".to_owned())
+        );
+        assert_eq!(c.full.reservoir_links.len(), 1);
+        assert!(
+            c.chrome
+                .credits
+                .iter()
+                .any(|c| c.source == "US Army Corps of Engineers")
+        );
+        assert_eq!(c.chrome.id, CardId::Flow);
+    }
+
+    #[test]
+    fn a_reservoir_without_values_adds_no_lines() {
+        let mut input = reservoir_input();
+        if let Some(r) = input.snapshot.water.reservoir.as_mut() {
+            r.outflow_m3s = None;
+            r.inflow_m3s = None;
+        }
+        let c = card(&input);
+        assert!(c.full.sections.iter().all(|s| s.title != "Reservoir"));
+        // The operator's page is still offered.
+        assert_eq!(c.full.reservoir_links.len(), 1);
+    }
+
+    #[test]
+    fn reservoir_snapshot() {
+        insta::assert_json_snapshot!("reservoir_plain_us", card(&reservoir_input()));
     }
 
     #[test]

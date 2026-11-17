@@ -20,6 +20,19 @@ fn inputs() -> Vec<(&'static str, ViewInput)> {
         ("sample", crate::view::tests::sample_input()),
         ("tide", cards::tide::testing::input()),
         ("sun and moon", cards::sun_moon::testing::battery_input()),
+        (
+            "bloom forecast",
+            cards::bloom::tests::lake(
+                us(),
+                crate::model::BloomInfo {
+                    hab: Some(cards::bloom::tests::forecast(
+                        crate::model::HabLevel::Moderate,
+                        crate::view::cards::flow::fixtures::NOW,
+                    )),
+                    ..crate::model::BloomInfo::default()
+                },
+            ),
+        ),
         ("croton", croton_input(us(), Voice::Luna)),
         ("cohn6", cards::flow::tests::cohn6_input(metric())),
         ("current", cards::current::tests::nyh1927()),
@@ -41,6 +54,16 @@ fn inputs() -> Vec<(&'static str, ViewInput)> {
         ),
         ("alerts", cards::alerts::tests::marine_input(Voice::Luna)),
         ("waves", cards::waves::tests::buoy_input()),
+        ("reservoir", cards::flow::tests::reservoir_input()),
+        (
+            "bloom satellite",
+            cards::bloom::tests::lake(metric(), cards::bloom::tests::recent_composite()),
+        ),
+        (
+            "bloom stale",
+            cards::bloom::tests::lake(us(), cards::bloom::tests::stale_composite()),
+        ),
+        ("stocking", cards::stocking::tests::with_events(us())),
         ("timeline", crate::view::timeline::tests::input()),
     ]
 }
@@ -202,12 +225,7 @@ fn every_card_and_the_timeline_are_translated_in_the_pseudo_locale() {
     // Every card the view builds was built at least once.
     let built: BTreeSet<CardId> = CardId::ALL
         .into_iter()
-        .filter(|id| {
-            !matches!(
-                id,
-                CardId::Windows | CardId::GoNoGo | CardId::Stocking | CardId::Species
-            )
-        })
+        .filter(|id| !matches!(id, CardId::Windows | CardId::GoNoGo | CardId::Species))
         .collect();
     assert_eq!(cards, built);
 }

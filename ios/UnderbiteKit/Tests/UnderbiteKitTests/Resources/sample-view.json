@@ -2388,7 +2388,7 @@
       {
         "card": "flow",
         "chrome": {
-          "accessibility": "River flow: 12.0 cfs, normal, 48th percentile for Nov 8",
+          "accessibility": "River flow: 12.0 cfs, normal, 48th percentile for Nov 8. Outflow 38.8 cfs · 6 min ago",
           "credits": [
             {
               "licence": null,
@@ -2407,6 +2407,12 @@
               "link": null,
               "source": "NOAA NWPS",
               "text": "NOAA NWPS"
+            },
+            {
+              "licence": null,
+              "link": null,
+              "source": "US Army Corps of Engineers",
+              "text": "US Army Corps of Engineers"
             }
           ],
           "footnote": "Flow 12.0 cfs · The Battery · 0.4 mi · just now",
@@ -2430,7 +2436,7 @@
           },
           "lines": [
             "normal, 48th percentile for Nov 8",
-            "Luna's watching The Battery, 0.4 mi"
+            "Outflow 38.8 cfs · 6 min ago"
           ],
           "spark": [
             12.360133,
@@ -2584,6 +2590,12 @@
             ]
           },
           "range_status": null,
+          "reservoir_links": [
+            {
+              "label": "USACE Philadelphia District",
+              "url": "https://www.nap.usace.army.mil"
+            }
+          ],
           "sections": [
             {
               "rows": [
@@ -2634,6 +2646,26 @@
                 }
               ],
               "title": "Flood categories"
+            },
+            {
+              "rows": [
+                {
+                  "detail": null,
+                  "label": "Project",
+                  "value": "Beltzville Lake"
+                },
+                {
+                  "detail": "6 min ago",
+                  "label": "Outflow",
+                  "value": "38.8 cfs"
+                },
+                {
+                  "detail": "6 min ago",
+                  "label": "Inflow",
+                  "value": "31.8 cfs"
+                }
+              ],
+              "title": "Reservoir"
             }
           ],
           "stage_chart": {

@@ -933,7 +933,7 @@ pub fn card_catalogue(
         shown,
         available: !matches!(
             id,
-            CardId::Windows | CardId::GoNoGo | CardId::Stocking | CardId::Species
+            CardId::Windows | CardId::GoNoGo | CardId::Stocking | CardId::Bloom | CardId::Species
         ),
     };
     let mut cards: Vec<CardInfo> = order.iter().map(|&id| info(id, true)).collect();

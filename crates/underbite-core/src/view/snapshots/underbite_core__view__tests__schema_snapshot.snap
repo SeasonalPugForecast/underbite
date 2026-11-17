@@ -206,6 +206,72 @@ expression: schema
         "highlight"
       ]
     },
+    "BloomCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/BloomFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "BloomFull": {
+      "type": "object",
+      "properties": {
+        "advisory": {
+          "description": "The health advice about people and dogs: shown with every bloom card.",
+          "type": "string"
+        },
+        "cyan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CyanVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hab": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HabVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "links": {
+          "description": "The regional pages (bulletins, viewers).",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LinkVm"
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        }
+      },
+      "required": [
+        "advisory",
+        "sections",
+        "links"
+      ]
+    },
     "Card": {
       "description": "One card. Cards that a later phase adds are not variants yet.",
       "oneOf": [
@@ -292,6 +358,19 @@ expression: schema
           "properties": {
             "card": {
               "type": "string",
+              "const": "bloom"
+            }
+          },
+          "$ref": "#/$defs/BloomCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
               "const": "waves"
             }
           },
@@ -361,6 +440,19 @@ expression: schema
             }
           },
           "$ref": "#/$defs/MarineForecastCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
+              "const": "stocking"
+            }
+          },
+          "$ref": "#/$defs/StockingCard",
           "required": [
             "card"
           ]
@@ -462,6 +554,7 @@ expression: schema
         "flow",
         "water_temp",
         "clarity",
+        "bloom",
         "waves",
         "wind",
         "pressure",
@@ -1043,6 +1136,47 @@ expression: schema
         "unknown"
       ]
     },
+    "CyanVm": {
+      "description": "The satellite cyanobacteria estimate of the spot's lake.",
+      "type": "object",
+      "properties": {
+        "experimental": {
+          "description": "EPA's description of the product as experimental.",
+          "type": "string"
+        },
+        "image_date": {
+          "description": "The composite's date, when known.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "max": {
+          "description": "The highest cell concentration, only while `recent`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recent": {
+          "description": "False when the composite is too old or has no value: the display says so and shows no\ncount.",
+          "type": "boolean"
+        },
+        "text": {
+          "description": "The line to show: the estimate, or \"No recent satellite data\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "recent",
+        "text",
+        "experimental"
+      ]
+    },
     "FloodCategoryVm": {
       "description": "A flood category: \"Action\", \"Minor\", \"Moderate\", \"Major\".",
       "type": "object",
@@ -1138,6 +1272,13 @@ expression: schema
             }
           ]
         },
+        "reservoir_links": {
+          "description": "The operator's pages for a reservoir's releases; empty when there is no reservoir.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LinkVm"
+          }
+        },
         "sections": {
           "type": "array",
           "items": {
@@ -1168,7 +1309,8 @@ expression: schema
       },
       "required": [
         "flood_categories",
-        "sections"
+        "sections",
+        "reservoir_links"
       ]
     },
     "ForecastPeriodVm": {
@@ -1184,6 +1326,60 @@ expression: schema
       },
       "required": [
         "name",
+        "text"
+      ]
+    },
+    "HabLevel": {
+      "description": "NOAA's respiratory-irritation level at a beach.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "very_low",
+            "low",
+            "moderate",
+            "high"
+          ]
+        },
+        {
+          "description": "A category the source added that this version does not know.",
+          "type": "string",
+          "const": "unknown"
+        }
+      ]
+    },
+    "HabVm": {
+      "description": "The NOAA respiratory-irritation forecast of the nearest beach.",
+      "type": "object",
+      "properties": {
+        "confidence": {
+          "description": "The source's weighting, \"0.9 of 1\".",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "level": {
+          "description": "Only while `recent`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HabLevel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recent": {
+          "type": "boolean"
+        },
+        "text": {
+          "description": "The line to show: the forecast, or \"No recent bloom forecast\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "recent",
         "text"
       ]
     },
@@ -1306,6 +1502,22 @@ expression: schema
         "pressure",
         "light",
         "solunar"
+      ]
+    },
+    "LinkVm": {
+      "description": "A link to a source's own page: its label and address.",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "url"
       ]
     },
     "MarineForecastCard": {
@@ -2110,6 +2322,107 @@ expression: schema
         "relation",
         "kind",
         "state"
+      ]
+    },
+    "StockingCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/StockingFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "StockingFull": {
+      "type": "object",
+      "properties": {
+        "empty": {
+          "description": "\"No recent stocking reported nearby\" when there is none of either.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "description": "The estimate and lag notes, and the planned note when there are planned rows.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "planned": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StockingVm"
+          }
+        },
+        "recent": {
+          "description": "Newest first.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StockingVm"
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        }
+      },
+      "required": [
+        "recent",
+        "planned",
+        "notes",
+        "sections"
+      ]
+    },
+    "StockingVm": {
+      "description": "One stocking, ready to show.",
+      "type": "object",
+      "properties": {
+        "place": {
+          "description": "\"Yorktown, Westchester\".",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "planned": {
+          "type": "boolean"
+        },
+        "species": {
+          "description": "The species as the list writes it.",
+          "type": "string"
+        },
+        "summary": {
+          "description": "\"Brown Trout · Apr 2026 · about 1,200 · 8 to 12 in\".",
+          "type": "string"
+        },
+        "waterbody": {
+          "type": "string"
+        },
+        "when": {
+          "description": "\"Apr 2026\", or \"planned: Week of April 14\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "waterbody",
+        "species",
+        "when",
+        "summary",
+        "planned"
       ]
     },
     "StormAgreementVm": {

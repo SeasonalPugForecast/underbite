@@ -1,0 +1,83 @@
+---
+source: crates/underbite-core/src/view/cards/bloom.rs
+expression: "card(&lake(us(), info))"
+---
+{
+  "chrome": {
+    "id": "bloom",
+    "title": "Algal bloom",
+    "footnote": "Respiratory irritation low at Clearwater Beach, 2.0 mi · Clearwater Beach · 1.5 mi · just now",
+    "credits": [
+      {
+        "source": "NOAA NCCOS bloom forecast",
+        "text": "NOAA NCCOS bloom forecast",
+        "link": null,
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "modelled",
+        "text": "Modelled data: an estimate, not a measurement."
+      }
+    ],
+    "accessibility": "Algal bloom: Respiratory irritation low at Clearwater Beach, 2.0 mi. Algal blooms can make people and dogs sick. Keep people and pets out of green, scummy or discoloured water, and follow local health advisories."
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "Low",
+      "unit": ""
+    },
+    "lines": [
+      "Respiratory irritation low at Clearwater Beach, 2.0 mi"
+    ],
+    "spark": []
+  },
+  "full": {
+    "cyan": null,
+    "hab": {
+      "recent": true,
+      "level": "low",
+      "text": "Respiratory irritation low at Clearwater Beach, 2.0 mi",
+      "confidence": "0.9 of 1"
+    },
+    "advisory": "Algal blooms can make people and dogs sick. Keep people and pets out of green, scummy or discoloured water, and follow local health advisories.",
+    "sections": [
+      {
+        "title": "Bloom forecast",
+        "rows": [
+          {
+            "label": "Beach",
+            "value": "Clearwater Beach",
+            "detail": null
+          },
+          {
+            "label": "Distance",
+            "value": "2.0 mi",
+            "detail": null
+          },
+          {
+            "label": "Respiratory irritation",
+            "value": "Low",
+            "detail": null
+          },
+          {
+            "label": "Confidence",
+            "value": "0.9 of 1",
+            "detail": null
+          },
+          {
+            "label": "Forecast for",
+            "value": "Nov 6, 4:20 PM",
+            "detail": null
+          }
+        ]
+      }
+    ],
+    "links": []
+  }
+}

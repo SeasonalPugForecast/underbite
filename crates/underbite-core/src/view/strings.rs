@@ -407,6 +407,7 @@ keys! {
     ClarityWord => ("Clarity", "Clarity"),
     Cyanobacteria => ("Cyanobacteria", "Cyanobacteria"),
     /// `{value}`.
+    UnitCellsPerMl => ("cells/mL", "cells/mL"),
     CellsPerMl => ("{value} cells/mL", "{value} cells/mL"),
     SectionAlgae => ("Algae", "Algae"),
     Chlorophyll => ("Chlorophyll", "Chlorophyll"),
@@ -776,6 +777,7 @@ keys! {
     CardFlow => ("River flow", "River flow"),
     CardWaterTemp => ("Water temperature", "Water temperature"),
     CardClarity => ("Water clarity", "Water clarity"),
+    CardBloom => ("Algal bloom", "Algal bloom"),
     CardWaves => ("Waves", "Waves"),
     CardWind => ("Wind", "Wind"),
     CardPressure => ("Pressure", "Pressure"),
@@ -789,6 +791,41 @@ keys! {
     CardSpecies => ("Species", "Species"),
     CardAlerts => ("Alerts", "Alerts"),
     CardSources => ("Sources", "Sources"),
+    // -- reservoir lines of the flow card ---------------------------------------------------
+    SectionReservoir => ("Reservoir", "Reservoir"),
+    RowProject => ("Project", "Project"),
+    RowOutflow => ("Outflow", "Outflow"),
+    RowInflow => ("Inflow", "Inflow"),
+    /// `{value}`: "1,200 cfs"; `{age}`: "3 h ago".
+    ReservoirOutflowLine => ("Outflow {value} · {age}", "Outflow {value} · {age}"),
+    // -- the bloom card's labels --------------------------------------------------------------
+    BloomSectionSatellite => ("Satellite estimate", "Satellite estimate"),
+    BloomSectionForecast => ("Bloom forecast", "Bloom forecast"),
+    BloomRowMax => ("Highest cell count", "Highest cell count"),
+    BloomRowComposite => ("Composite date", "Composite date"),
+    BloomRowCells => ("Cells with a reading", "Cells with a reading"),
+    BloomRowDistance => ("Distance", "Distance"),
+    BloomRowBeach => ("Beach", "Beach"),
+    BloomRowLevel => ("Respiratory irritation", "Respiratory irritation"),
+    BloomRowConfidence => ("Confidence", "Confidence"),
+    BloomRowValid => ("Forecast for", "Forecast for"),
+    // -- the stocking card ------------------------------------------------------------------
+    StockingSectionRecent => ("Recent stockings", "Recent stockings"),
+    StockingSectionPlanned => ("Planned stockings", "Planned stockings"),
+    StockingNone => ("No recent stocking reported nearby", "No recent stocking reported nearby"),
+    StockingEstimateNote => ("Numbers are the agency's estimates.", "Numbers are the agency's estimates."),
+    StockingLagNote => ("The list of stockings that took place lags about a year.", "The list of stockings that took place lags about a year."),
+    StockingPlannedNote => ("Planned stockings are a schedule and can change.", "Planned stockings are a schedule and can change."),
+    StockingUnitOne => ("stocking", "stocking"),
+    StockingUnitMany => ("stockings", "stockings"),
+    /// `{month}` ("Apr"), `{year}`.
+    StockingMonthYear => ("{month} {year}", "{month} {year}"),
+    /// `{n}`: "about 1,200".
+    StockingAbout => ("about {n}", "about {n}"),
+    /// `{when}`: the list's own text for a planned date.
+    StockingPlannedWhen => ("planned: {when}", "planned: {when}"),
+    /// `{species}`, `{details}`.
+    StockingSummary => ("{species} · {details}", "{species} · {details}"),
     // -- unit symbols -----------------------------------------------------------------------
     UnitFahrenheit => ("°F", "°F"),
     UnitCelsius => ("°C", "°C"),
@@ -1082,6 +1119,25 @@ safety_keys! {
     SourceNwps => "NOAA NWPS",
     SourceOpenMeteoMarine => "Open-Meteo Marine",
     SourceNws => "National Weather Service",
+    /// The bloom card's words: health and satellite wording, plain in every voice.
+    BloomAdvisory => "Algal blooms can make people and dogs sick. Keep people and pets out of green, scummy or discoloured water, and follow local health advisories.",
+    /// EPA's description of the `CyAN` web application, kept in its own words.
+    BloomCyanExperimental => "Experimental: provisional satellite-derived measures of cyanobacteria, which may contain errors and should be considered a research tool. Not a health advisory.",
+    /// `{value}`: "9,000 cells/mL"; `{date}`: the composite's date.
+    BloomCyanMax => "Satellite estimate up to {value} (composite of {date})",
+    BloomNoRecentSatellite => "No recent satellite data",
+    /// `{date}`: the last composite's date.
+    BloomNoRecentSatelliteLast => "No recent satellite data (last composite {date})",
+    BloomNoRecentForecast => "No recent bloom forecast",
+    /// `{level}`, `{beach}`, `{distance}`.
+    BloomForecastLine => "Respiratory irritation {level} at {beach}, {distance}",
+    BloomLevelVeryLow => "very low",
+    BloomLevelLow => "low",
+    BloomLevelModerate => "moderate",
+    BloomLevelHigh => "high",
+    BloomLevelUnknown => "unknown",
+    /// `{value}`: the source's weighting, 0 to 1.
+    BloomConfidence => "{value} of 1",
     SourceUsgs3dhp => "USGS 3DHP",
     SourceGlerl => "NOAA GLERL",
     SourceCwms => "US Army Corps of Engineers",
@@ -1649,6 +1705,7 @@ impl Strings {
             CardId::Flow => Key::CardFlow,
             CardId::WaterTemp => Key::CardWaterTemp,
             CardId::Clarity => Key::CardClarity,
+            CardId::Bloom => Key::CardBloom,
             CardId::Waves => Key::CardWaves,
             CardId::Wind => Key::CardWind,
             CardId::Pressure => Key::CardPressure,

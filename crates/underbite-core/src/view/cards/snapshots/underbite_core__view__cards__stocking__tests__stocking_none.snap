@@ -1,0 +1,35 @@
+---
+source: crates/underbite-core/src/view/cards/stocking.rs
+expression: card(&i)
+---
+{
+  "chrome": {
+    "id": "stocking",
+    "title": "Stocking",
+    "footnote": null,
+    "credits": [],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Stocking: No recent stocking reported nearby"
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "—",
+      "unit": ""
+    },
+    "lines": [
+      "No recent stocking reported nearby"
+    ],
+    "spark": []
+  },
+  "full": {
+    "recent": [],
+    "planned": [],
+    "empty": "No recent stocking reported nearby",
+    "notes": [],
+    "sections": []
+  }
+}
