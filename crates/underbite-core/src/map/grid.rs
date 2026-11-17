@@ -3,7 +3,9 @@
 //! A map view asks for fixed square [`Block`]s at a stride chosen for its zoom
 //! ([`blocks_for_view`]), so that the same block serves every view that overlaps it and caches
 //! under one [`BlockKey`]. A block is 1° × 1° at fine strides and grows with the stride in wide
-//! views ([`block_side_deg`]), so a screen needs a handful of requests at any zoom. The blocks of one dataset and time join with [`Grid::merge`]; a grid
+//! views ([`block_side_deg`]), so a screen needs a handful of requests at any zoom. While those
+//! arrive, one coarse [`overview_block`] covers the whole view in a single request. The blocks of
+//! one dataset and time join with [`Grid::merge`]; a grid
 //! answers point queries ([`Grid::sample_bilinear`], [`Grid::sample_nearest`]) and the value range
 //! of an area ([`Grid::range_in`]).
 
@@ -218,6 +220,13 @@ impl Grid {
             }
         }
         (weight > 0.0).then(|| (sum / weight) as f32)
+    }
+
+    /// Whether `at` lies on the grid: within half a cell of its outermost centres, where
+    /// [`Grid::sample_bilinear`] reads the grid (and gives `None` only for a missing value).
+    pub fn covers(&self, at: GeoPoint) -> bool {
+        let lone = half_step(self.source.native_step_deg);
+        locate(&self.lats, at.lat, lone).is_some() && locate_lon(&self.lons, at.lon, lone).is_some()
     }
 
     /// The value of the cell whose centre is nearest to `at`; `None` where it is missing or
@@ -516,7 +525,8 @@ pub fn block_side_cells(native_step_deg: f64, stride: u32) -> u32 {
 
 /// A square block of a grid, named by its south-west corner in whole degrees, at a stride counted
 /// in native grid steps. Its side is [`block_side_deg`] of the dataset's native step and the
-/// stride, and its corner is a multiple of that side.
+/// stride. The blocks of a view ([`blocks_for_view`]) have a corner that is a multiple of that
+/// side; an overview ([`overview_block`]) has one on a finer lattice, a fifth of its side.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Block {
     /// The southern edge, degrees north (-90 to 89).
@@ -638,6 +648,140 @@ pub fn blocks_for_view(source: &GridSource, view: Bbox, zoom: f64) -> Vec<Block>
     }
     blocks.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.cmp(&b.1)));
     blocks.into_iter().map(|(_, b)| b).collect()
+}
+
+/// The most cells an overview spans along either side of the view: about 60 × 60 cells drawn,
+/// one request of at most [`MAX_BLOCK_CELLS`] like any block.
+pub const OVERVIEW_VIEW_CELLS: u32 = 60;
+
+/// The view clipped to the world, or `None` for a view with a non-finite or flipped edge.
+fn clipped(view: Bbox) -> Option<Bbox> {
+    let edges = [view.west, view.south, view.east, view.north];
+    if edges.iter().any(|e| !e.is_finite()) || view.west > view.east || view.south > view.north {
+        return None;
+    }
+    let b = Bbox {
+        west: view.west.max(-180.0),
+        south: view.south.max(-90.0),
+        east: view.east.min(180.0),
+        north: view.north.min(90.0),
+    };
+    (b.west <= b.east && b.south <= b.north).then_some(b)
+}
+
+/// The corner, in whole degrees on a lattice of `step` degrees, of a block `side` degrees wide
+/// that reaches from `lo` to `hi` without leaving `-extent..extent`; `None` when none does.
+fn lattice_corner(lo: f64, hi: f64, side: u16, step: u16, extent: i32) -> Option<i16> {
+    let (side, step) = (i32::from(side), i32::from(step.max(1)));
+    let corner = ((lo / f64::from(step)).floor() as i32 * step).clamp(-extent, extent - side);
+    let fits = f64::from(corner) <= lo && f64::from(corner + side) >= hi;
+    fits.then(|| i16::try_from(corner).ok()).flatten()
+}
+
+/// One coarse block that covers the whole of `view`, to draw while the blocks of
+/// [`blocks_for_view`] arrive: one request instead of waiting for a screenful.
+///
+/// Its stride is the finest, coarser than the one [`stride_for_zoom`] picks for `zoom`, at which
+/// the view spans at most [`OVERVIEW_VIEW_CELLS`] cells along each side and one block holds the
+/// view. The block is the usual square of [`block_side_deg`] for that stride (at most
+/// [`MAX_BLOCK_CELLS`] cells), but its corner lies on a lattice of a fifth of its side rather than
+/// of the whole side, so that it fits views of up to four fifths of its side wherever they lie
+/// while a small pan keeps the same block (and its cache key). `None` for a bad view, or one too
+/// wide for any block (more than about 72 degrees).
+pub fn overview_block(source: &GridSource, view: Bbox, zoom: f64) -> Option<Block> {
+    let step = source.native_step_deg;
+    if !(step.is_finite() && step > 0.0) {
+        return None;
+    }
+    let view = clipped(view)?;
+    let fine = stride_for_zoom(step, zoom);
+    let extent = (view.east - view.west).max(view.north - view.south);
+    let for_cells = (extent / (step * f64::from(OVERVIEW_VIEW_CELLS)) - 1e-9).ceil();
+    let mut stride = for_cells
+        .clamp(1.0, f64::from(u32::MAX))
+        .max(f64::from(fine.saturating_add(1))) as u32;
+    // Each round either fits or moves to the first stride with a larger block: at most a few
+    // dozen rounds, as the sides are a short list.
+    for _ in 0..256 {
+        let side = block_side_deg(step, stride);
+        let lattice = (side / 5).max(1);
+        let south = lattice_corner(view.south, view.north, side, lattice, 90);
+        let west = lattice_corner(view.west, view.east, side, lattice, 180);
+        if let (Some(south), Some(west)) = (south, west) {
+            return Some(Block {
+                south,
+                west,
+                stride,
+            });
+        }
+        let bigger = BLOCK_SIDES_DEG.iter().copied().find(|&s| s > side)?;
+        // The smallest stride at which a block of `bigger` degrees holds at most 100 cells a side.
+        let for_bigger = (f64::from(bigger) / (step * f64::from(MAX_SIDE_CELLS)) - 1e-9).ceil();
+        stride = stride
+            .saturating_add(1)
+            .max(for_bigger.clamp(1.0, f64::from(u32::MAX)) as u32);
+    }
+    None
+}
+
+/// Whether the union of `parts` covers every point of `area` (edges included). An area with a
+/// non-finite or flipped edge is not covered.
+///
+/// The edges of the parts cut the area into cells; the area is covered when every cell's centre
+/// lies in a part. Parts that do not touch the area are ignored.
+pub fn area_covered(area: Bbox, parts: &[Bbox]) -> bool {
+    let Some(area) = clipped_any(area) else {
+        return false;
+    };
+    let parts: Vec<Bbox> = parts
+        .iter()
+        .copied()
+        .filter(|p| {
+            p.west <= area.east
+                && area.west <= p.east
+                && p.south <= area.north
+                && area.south <= p.north
+        })
+        .collect();
+    if parts.is_empty() {
+        return false;
+    }
+    let cuts = |lo: f64, hi: f64, edges: &mut dyn Iterator<Item = f64>| {
+        let mut all: Vec<f64> = edges.filter(|e| *e > lo && *e < hi).collect();
+        all.push(lo);
+        all.push(hi);
+        all.sort_by(f64::total_cmp);
+        all.dedup();
+        if all.len() == 1 {
+            vec![lo]
+        } else {
+            all.windows(2).map(|w| f64::midpoint(w[0], w[1])).collect()
+        }
+    };
+    let xs = cuts(
+        area.west,
+        area.east,
+        &mut parts.iter().flat_map(|p| [p.west, p.east]),
+    );
+    let ys = cuts(
+        area.south,
+        area.north,
+        &mut parts.iter().flat_map(|p| [p.south, p.north]),
+    );
+    ys.iter().all(|&y| {
+        xs.iter().all(|&x| {
+            parts
+                .iter()
+                .any(|p| (p.west..=p.east).contains(&x) && (p.south..=p.north).contains(&y))
+        })
+    })
+}
+
+/// `area` when its edges are finite and in order.
+fn clipped_any(area: Bbox) -> Option<Bbox> {
+    let edges = [area.west, area.south, area.east, area.north];
+    (edges.iter().all(|e| e.is_finite()) && area.west <= area.east && area.south <= area.north)
+        .then_some(area)
 }
 
 /// Fewer finite values than this in view give no fitted range.
@@ -1017,6 +1161,205 @@ mod tests {
         // A block's request stops one native step short of its far edges.
         let r = blocks[0].request_bbox(MUR_STEP);
         assert!((r.east - (first.east - MUR_STEP)).abs() < 1e-9);
+    }
+
+    /// A phone's view of the New York Bight at about zoom 7 (4.7 degrees wide).
+    fn bight() -> Bbox {
+        Bbox {
+            west: -74.35,
+            south: 35.65,
+            east: -69.65,
+            north: 43.55,
+        }
+    }
+
+    #[test]
+    fn an_overview_is_one_coarse_block_over_the_whole_view() {
+        let view = bight();
+        let zoom = 6.9;
+        let fine = stride_for_zoom(MUR_STEP, zoom);
+        assert_eq!(fine, 4);
+        // The fine blocks are 1 degree: six by nine of them.
+        assert_eq!(blocks_for_view(&mur(), view, zoom).len(), 54);
+        let o = overview_block(&mur(), view, zoom).unwrap();
+        // 7.9 degrees in at most 60 cells: stride 14, a 10 degree block on a 2 degree lattice.
+        assert_eq!(
+            o,
+            Block {
+                south: 34,
+                west: -76,
+                stride: 14
+            }
+        );
+        let b = o.bounds(MUR_STEP);
+        assert!(b.south <= view.south && b.north >= view.north);
+        assert!(b.west <= view.west && b.east >= view.east);
+        let side = block_side_cells(MUR_STEP, o.stride);
+        assert!(side * side <= MAX_BLOCK_CELLS);
+        let across = (view.north - view.south) / (MUR_STEP * f64::from(o.stride));
+        assert!(across <= f64::from(OVERVIEW_VIEW_CELLS), "{across}");
+        assert_eq!(
+            o.key("jplMURSST41", UnixTime(0)).to_string(),
+            "jplMURSST41.0.34.-76.14"
+        );
+        // A small pan keeps the block, and so its cache key.
+        let panned = Bbox {
+            west: view.west + 0.3,
+            east: view.east + 0.3,
+            south: view.south - 0.3,
+            north: view.north - 0.3,
+        };
+        assert_eq!(overview_block(&mur(), panned, zoom), Some(o));
+    }
+
+    #[test]
+    fn overviews_grow_with_the_view_and_stay_inside_the_world() {
+        for (view, zoom) in [
+            (bight(), 6.9),
+            (
+                Bbox {
+                    west: -83.0,
+                    south: 21.6,
+                    east: -61.0,
+                    north: 57.6,
+                },
+                4.7,
+            ),
+            (
+                Bbox {
+                    west: 170.0,
+                    south: 80.0,
+                    east: 180.0,
+                    north: 90.0,
+                },
+                6.0,
+            ),
+            (
+                Bbox {
+                    west: -74.1,
+                    south: 40.5,
+                    east: -73.9,
+                    north: 40.7,
+                },
+                12.0,
+            ),
+        ] {
+            for step in [MUR_STEP, VIIRS_750M_STEP, GLSEA_STEP, 0.0375] {
+                let source = GridSource {
+                    native_step_deg: step,
+                    ..mur()
+                };
+                let o = overview_block(&source, view, zoom).unwrap();
+                let b = o.bounds(step);
+                assert!(b.south >= -90.0 && b.north <= 90.0, "{o:?}");
+                assert!(b.west >= -180.0 && b.east <= 180.0, "{o:?}");
+                assert!(
+                    b.south <= view.south && b.north >= view.north,
+                    "{o:?} {view:?}"
+                );
+                assert!(b.west <= view.west && b.east >= view.east, "{o:?} {view:?}");
+                assert!(o.stride > stride_for_zoom(step, zoom));
+                let cells = block_side_cells(step, o.stride);
+                assert!(cells * cells <= MAX_BLOCK_CELLS);
+            }
+        }
+        // 36 by 22 degrees at MUR's step: a 45 degree block at stride 60.
+        let wide = Bbox {
+            west: -83.0,
+            south: 21.6,
+            east: -61.0,
+            north: 57.6,
+        };
+        let o = overview_block(&mur(), wide, 4.7).unwrap();
+        assert_eq!((o.stride, block_side_deg(MUR_STEP, o.stride)), (60, 45));
+    }
+
+    #[test]
+    fn no_overview_for_a_bad_or_too_wide_view() {
+        let world = Bbox {
+            west: -180.0,
+            south: -90.0,
+            east: 180.0,
+            north: 90.0,
+        };
+        assert_eq!(overview_block(&mur(), world, 3.0), None);
+        let flipped = Bbox {
+            west: -73.0,
+            east: -74.0,
+            ..bight()
+        };
+        assert_eq!(overview_block(&mur(), flipped, 7.0), None);
+        let nan = Bbox {
+            north: f64::NAN,
+            ..bight()
+        };
+        assert_eq!(overview_block(&mur(), nan, 7.0), None);
+        let no_step = GridSource {
+            native_step_deg: 0.0,
+            ..mur()
+        };
+        assert_eq!(overview_block(&no_step, bight(), 7.0), None);
+    }
+
+    #[test]
+    fn an_area_is_covered_only_by_parts_without_gaps() {
+        let area = Bbox {
+            west: -74.5,
+            south: 40.2,
+            east: -72.5,
+            north: 41.8,
+        };
+        let block = |south: f64, west: f64, side: f64| Bbox {
+            west,
+            south,
+            east: west + side,
+            north: south + side,
+        };
+        let four = [
+            block(40.0, -75.0, 1.0),
+            block(40.0, -74.0, 1.0),
+            block(41.0, -75.0, 1.0),
+            block(41.0, -74.0, 1.0),
+        ];
+        // Two by two degrees leave the eastern half degree out.
+        assert!(!area_covered(area, &four));
+        let mut six = four.to_vec();
+        six.extend([block(40.0, -73.0, 1.0), block(41.0, -73.0, 1.0)]);
+        assert!(area_covered(area, &six));
+        // One missing block in the middle is a gap.
+        six.remove(1);
+        assert!(!area_covered(area, &six));
+        // A coarser block under the fine ones fills the gap.
+        six.push(block(30.0, -80.0, 15.0));
+        assert!(area_covered(area, &six));
+        assert!(area_covered(area, &[block(30.0, -80.0, 15.0)]));
+        // A point, and parts that touch nothing.
+        let point = Bbox {
+            west: -74.0,
+            south: 40.5,
+            east: -74.0,
+            north: 40.5,
+        };
+        assert!(area_covered(point, &four));
+        assert!(!area_covered(point, &[block(0.0, 0.0, 1.0)]));
+        assert!(!area_covered(area, &[]));
+        let nan = Bbox {
+            west: f64::NAN,
+            ..area
+        };
+        assert!(!area_covered(nan, &six));
+    }
+
+    #[test]
+    fn a_grid_covers_half_a_cell_past_its_edge_cells_even_over_land() {
+        let g = three_by_three();
+        // The land cell is covered, and has no value.
+        assert!(g.covers(at(40.1, -74.0)));
+        assert_eq!(g.sample_bilinear(at(40.1, -74.0)), None);
+        assert!(g.covers(at(40.24, -73.76)));
+        assert!(!g.covers(at(40.26, -73.9)));
+        assert!(!g.covers(at(40.1, -74.06)));
+        assert!(!g.covers(at(f64::NAN, -74.0)));
     }
 
     #[test]

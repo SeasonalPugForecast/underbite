@@ -1253,6 +1253,44 @@ mod tests {
     }
 
     #[test]
+    fn an_overview_under_a_fine_block_shows_only_where_the_block_does_not_reach() {
+        // A 0.14 degree overview of the whole tile at 20 degrees, with its own land (missing
+        // cells) around 39.25 N 75.25 W, under the recorded MUR block.
+        let mut overview = uniform(20.0, steps(34.0, 0.14, 72), steps(-76.0, 0.14, 72));
+        let width = overview.lons.len();
+        for (i, lat) in overview.lats.clone().into_iter().enumerate() {
+            for (j, lon) in overview.lons.clone().into_iter().enumerate() {
+                if (39.0..39.5).contains(&lat) && (-75.5..-75.0).contains(&lon) {
+                    overview.values[i * width + j] = f32::NAN;
+                }
+            }
+        }
+        let range = RampRange::linear(15.0, 21.0);
+        let warm = THERMAL.colour(range, 20.0).unwrap();
+        let rgba = render_rgba(&[mur(), overview], &THERMAL, range, MUR_TILE, 256).unwrap();
+        let pixel = |lat: f64, lon: f64| {
+            let (x, y) = pixel_of(MUR_TILE, 256, GeoPoint { lat, lon });
+            let at = (y * 256 + x) * 4;
+            Rgba {
+                r: rgba[at],
+                g: rgba[at + 1],
+                b: rgba[at + 2],
+                a: rgba[at + 3],
+            }
+        };
+        // The block's land stays clear: the overview's water value does not show through.
+        assert_eq!(pixel(40.2, -74.15).a, 0);
+        // The block's water is the block's value (about 16 degrees), not the overview's.
+        let water = pixel(40.3, -73.5);
+        assert_eq!(water.a, 255);
+        assert_ne!(water, warm);
+        // Beyond the block the overview is drawn, and its own land stays clear.
+        assert_eq!(pixel(39.5, -74.0), warm);
+        assert_eq!(pixel(40.5, -75.5), warm);
+        assert_eq!(pixel(39.25, -75.25).a, 0);
+    }
+
+    #[test]
     fn a_recorded_mur_block_fits_inside_its_own_extremes() {
         let grid = mur();
         let area = Bbox {
