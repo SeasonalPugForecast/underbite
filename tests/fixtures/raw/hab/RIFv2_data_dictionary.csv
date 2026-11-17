@@ -1,0 +1,16 @@
+Field,Description,Data type,Acceptable values,Required?,Accepts null value?
+Forecast,The respiratory irritation forecast prediction,String,Very low|Low|Moderate|High,y,n
+Sample Used,An artifact filler field from previous RIF Model version,Int,>= 1,y,n
+Cell Count Category,The cell count assigned category by the RIF Model (related to Cell Count and Sample Time fields),String,None|Very low|Low a|Low b|Medium|High,y,n
+Sample Time,The UTC time that the cell count value was collected at the beach location (related to Cell Count and Cell Count Category fields),Datetime Object,YYYY-MM-DDTHH:MN:SS+00:00,y,n
+Wind Speed,"The NDFD forecasted wind speed (in knots) for the beach location (related to Wind Dir, Wind Category, and Wind Time fields)",Float,>=0,y,n
+Wind Dir,"The NDFD forecasted wind direction in degrees for the beach location (related to Wind Speed, Wind Category, and Wind Time fields)",Int,0 to 360,y,n
+Wind Category,"The NDFD forecast wind assigned category by the RIF Model (related to Wind Speed, Wind Dir, and Wind Time fields)",String,Offshore|Light|Medium|High,y,n
+Wind Time,The UTC time the NDFD forecast wind is valid,Datetime Object,YYYY-MM-DDTHH:MN:SS+00:00,y,n
+Shoreline Angle,The 90 degree offshore angle for the beach location extracted from the shoreline shapefile,Float,0 to 360,y,n
+Lat,"The latitude coordinate for the sample beach location (related to Cell Count, Cell Count Category, and Sample Time fields)",Float,0 to 32,y,n
+Lon,"The longitude coordinate for the sample beach location (related to Cell Count, Cell Count Category, and Sample Time fields)",Float,-98.5 to -79.5',y,n
+Confidence,"A weighting factor for the forecast based on the source and age of the Cell Count sample (related to Cell Count, Cell Count Category, Sample Time and Source fields)",Float,0.0|0.1|0.9,y,n
+Location Name,The name of the beach location,String,Any string,y,n
+Model Run Time,The United States Eastern Time Zone Time the model was initalized,Datetime Object,YYYY-MM-DDTHH:MN:SS-05:00,y,n
+Cell Count Source,"The name of the source that collected the cell count sample at the beach location (related to Cell Count, Cell Count Category, and Sample Time fields)",String,fwri|habscope|pinellas|sccf,y,n

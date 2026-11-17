@@ -28,6 +28,10 @@ request URL and the recording date:
 - [fishbase](raw/fishbase/README.md)
 - [dfo-iwls](raw/dfo-iwls/README.md)
 - [eccc](raw/eccc/README.md)
+- [cwms](raw/cwms/README.md)
+- [rise](raw/rise/README.md)
+- [cyan](raw/cyan/README.md)
+- [hab](raw/hab/README.md)
 
 ## Conventions
 
