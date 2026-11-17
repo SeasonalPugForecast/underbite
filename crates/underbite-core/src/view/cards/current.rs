@@ -10,7 +10,7 @@ use crate::view::cards::tide::{credits, state};
 use crate::view::cards::wind::latest_at;
 use crate::view::chart::{Zoned, grid, speed_at, ticks, window};
 use crate::view::format::{Formatter, Phase};
-use crate::view::strings::{Key, source_name};
+use crate::view::strings::Key;
 use crate::view::{
     BandKind, CardChrome, CardId, CardState, ChartBand, ChartMarker, ChartPoint, ChartSeries,
     ChartVm, Compact, MarkerKind, Notice, NoticeKind, Quantity, Row, Section, SeriesRole,
@@ -260,7 +260,7 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
         .collect();
     let chart = (!points.is_empty()).then(|| ChartVm {
         title: f.strings.card_title(CardId::Current).to_owned(),
-        unit: input.units.current_speed.symbol().to_owned(),
+        unit: f.strings.speed_unit(input.units.current_speed).to_owned(),
         x_ticks: ticks(&z, &f, start, end),
         series: vec![ChartSeries {
             label: label.to_owned(),
@@ -330,7 +330,7 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
         value: p
             .station
             .as_ref()
-            .map_or_else(|| source_name(&p.source), |s| s.name.clone()),
+            .map_or_else(|| f.strings.source_name(&p.source), |s| s.name.clone()),
         detail: p.distance_m.map(|m| f.distance(Some(m)).full()),
     }];
     if let Some(d) = &bin_depth {
@@ -357,7 +357,7 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
                         .map(|s| s.time),
                 ),
             ),
-            credits: credits(snapshot, &p.source),
+            credits: credits(&f, snapshot, &p.source),
             state: card_state,
             notices,
             accessibility: match &next_slack {

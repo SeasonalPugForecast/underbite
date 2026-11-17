@@ -8,7 +8,7 @@ use crate::provenance::{Provenance, Quality};
 use crate::series::{Sample, Series};
 use crate::time::UnixTime;
 use crate::view::cards::flow::{
-    card_state, chart_series, chart_vm, credits, is_unreliable, qty, quality_notices, row,
+    card_state, chart_series, chart_vm, credits, is_unreliable, quality_notices, row,
     sample_quality, spark, unreliable_text,
 };
 use crate::view::cards::wind::latest_at;
@@ -71,11 +71,11 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
         latest_t.map(|(_, l)| f.turbidity(Some(l.value.value), l.value.unit));
     let chlorophyll_q = chlorophyll
         .and_then(|s| s.latest())
-        .map(|l| qty(l.value, 1, "µg/L"));
+        .map(|l| f.quantity(l.value, 1, f.strings.get(Key::UnitMicrogramsPerLitre)));
     let kd490_vm = match kd490.and_then(|s| s.latest()) {
         Some(l) => Kd490Vm {
             available: true,
-            value: Some(qty(l.value, 2, "1/m")),
+            value: Some(f.quantity(l.value, 2, f.strings.get(Key::UnitPerMetre))),
             note: f.strings.get(Key::Kd490Note).to_owned(),
         },
         None => Kd490Vm {
@@ -114,7 +114,7 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
         chart_vm(
             &f,
             f.strings.get(Key::Turbidity),
-            unit.label().to_owned(),
+            f.strings.turbidity_unit(unit).to_owned(),
             series,
             Vec::new(),
             now,
@@ -132,7 +132,7 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
             f.strings.get(Key::Cyanobacteria),
             &f.strings.fmt(
                 Key::CellsPerMl,
-                &[("value", &Formatter::number(l.value, 0))],
+                &[("value", &f.strings.grouped(l.value, 0))],
             ),
         ));
     }

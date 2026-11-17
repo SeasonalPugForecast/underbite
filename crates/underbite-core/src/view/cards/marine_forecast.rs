@@ -6,7 +6,7 @@ use serde::Serialize;
 use crate::model::{Measurement, ZoneProduct};
 use crate::provenance::SourceId;
 use crate::view::format::Formatter;
-use crate::view::strings::{Key, source_name};
+use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
     CardChrome, CardId, CardState, Compact, CreditVm, NoticeKind, Quantity, ViewInput,
 };
@@ -20,10 +20,7 @@ fn zone_page(zone_id: &str) -> String {
     format!("https://forecast.weather.gov/shmrn.php?mz={zone_id}")
 }
 
-/// The credit text of the zone forecast when the snapshot carries none.
-const CREDIT_MARINE_FORECAST: &str = "Marine forecast: NOAA National Weather Service";
-
-const fn product_label(f: &Formatter, product: ZoneProduct) -> &'static str {
+fn product_label(f: &Formatter, product: ZoneProduct) -> &'static str {
     f.strings.get(match product {
         ZoneProduct::ZoneApi => Key::ProductZone,
         ZoneProduct::Cwf => Key::ProductCwf,
@@ -113,8 +110,12 @@ pub fn build(input: &ViewInput) -> Option<MarineForecastCard> {
             .iter()
             .find(|a| a.source == SourceId::NWS);
         CreditVm {
-            source: source_name(&SourceId::NWS),
-            text: found.map_or_else(|| CREDIT_MARINE_FORECAST.to_owned(), |a| a.credit.clone()),
+            source: f.strings.source_name(&SourceId::NWS),
+            // The credit text of the zone forecast when the snapshot carries none.
+            text: found.map_or_else(
+                || f.strings.safety(SafetyKey::CreditMarineForecast).to_owned(),
+                |a| a.credit.clone(),
+            ),
             link: Some(zone_page(&forecast.id)),
             licence: None,
         }

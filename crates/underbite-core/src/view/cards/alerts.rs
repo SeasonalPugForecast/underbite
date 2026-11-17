@@ -9,7 +9,7 @@ use crate::model::{AlertSeverity, MarineAlert};
 use crate::provenance::SourceId;
 use crate::time::UnixTime;
 use crate::view::format::Formatter;
-use crate::view::strings::{Key, SafetyKey, source_name};
+use crate::view::strings::{Key, SafetyKey};
 use crate::view::{CardChrome, CardId, CardState, Compact, CreditVm, Quantity, ViewInput};
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -88,12 +88,9 @@ fn same_alert(a: &Entry, b: &Entry) -> bool {
             || a.vm.zones.iter().any(|z| b.vm.zones.contains(z)))
 }
 
-/// The credit text of the marine alerts when the snapshot carries none.
-const CREDIT_MARINE_ALERTS: &str = "Marine alerts: NOAA National Weather Service";
-
 /// How the alert source grades the alert: safety text, the same in every voice.
-const fn severity_label(severity: AlertSeverity) -> &'static str {
-    SafetyKey::severity(severity).text()
+fn severity_label(f: &Formatter, severity: AlertSeverity) -> &'static str {
+    f.strings.safety(SafetyKey::severity(severity))
 }
 
 const fn severity_rank(severity: AlertSeverity) -> u8 {
@@ -145,7 +142,7 @@ fn marine_entry(f: &Formatter, a: &MarineAlert) -> Entry {
             description: a.description.clone(),
             instruction: a.instruction.clone(),
             severity: a.severity,
-            severity_label: severity_label(a.severity).to_owned(),
+            severity_label: severity_label(f, a.severity).to_owned(),
             onset: a.onset.map(|t| when(f, t)),
             ends: a.ends.map(|t| when(f, t)),
             expires: a.expires.map(|t| when(f, t)),
@@ -170,7 +167,7 @@ fn weather_entry(f: &Formatter, a: &Alert) -> Entry {
             // whether's alerts carry no separate instruction.
             instruction: None,
             severity,
-            severity_label: severity_label(severity).to_owned(),
+            severity_label: severity_label(f, severity).to_owned(),
             onset: Some(when(f, a.start)),
             ends: Some(when(f, a.end)),
             expires: None,
@@ -236,8 +233,12 @@ pub fn build(input: &ViewInput) -> Option<AlertsCard> {
             .iter()
             .find(|a| a.source == SourceId::NWS);
         credits.push(CreditVm {
-            source: source_name(&SourceId::NWS),
-            text: found.map_or_else(|| CREDIT_MARINE_ALERTS.to_owned(), |a| a.credit.clone()),
+            source: f.strings.source_name(&SourceId::NWS),
+            // The credit text of the marine alerts when the snapshot carries none.
+            text: found.map_or_else(
+                || f.strings.safety(SafetyKey::CreditMarineAlerts).to_owned(),
+                |a| a.credit.clone(),
+            ),
             link: found.and_then(|a| a.url.clone()),
             licence: None,
         });

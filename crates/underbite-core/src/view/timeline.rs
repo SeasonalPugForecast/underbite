@@ -18,7 +18,7 @@ use crate::view::cards::sun_moon::computed_credit;
 use crate::view::cards::tide::{credits as tide_credits, notices as tide_notices};
 use crate::view::chart::{self, Zoned, level_at, speed_at};
 use crate::view::format::{Formatter, Phase};
-use crate::view::strings::{Key, SafetyKey, source_name};
+use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
     BandKind, CardId, ChartBand, ChartMarker, ChartPoint, ChartSeries, ChartTick, ChartVm,
     CreditVm, LaneKind, MarkerKind, Notice, Quantity, SeriesRole, SeriesStyle, TimelineLane,
@@ -241,12 +241,12 @@ fn tide_lane(ctx: &Ctx) -> ChartVm {
     } else {
         (f.strings.get(Key::ModelledSeaLevel), SeriesRole::Modelled)
     };
-    let credit = source_name(&tide.provenance.source);
+    let credit = ctx.f.strings.source_name(&tide.provenance.source);
     ctx.chart(
         name,
         &credit,
         if shown {
-            ctx.input.units.height.symbol()
+            ctx.f.strings.height_unit(ctx.input.units.height)
         } else {
             ""
         },
@@ -321,8 +321,8 @@ fn current_lane(ctx: &Ctx) -> ChartVm {
     };
     ctx.chart(
         name,
-        &source_name(&series.provenance.source),
-        ctx.input.units.current_speed.symbol(),
+        &ctx.f.strings.source_name(&series.provenance.source),
+        ctx.f.strings.speed_unit(ctx.input.units.current_speed),
         vec![ChartSeries {
             label: f.strings.get(Key::Predicted).to_owned(),
             role: SeriesRole::Predicted,
@@ -385,7 +385,7 @@ fn wind_lane(ctx: &Ctx) -> ChartVm {
         _ => match &snapshot.marine.observed_wind {
             Some(obs) if !obs.is_empty() => (
                 Source {
-                    credit: source_name(&obs.provenance().source),
+                    credit: ctx.f.strings.source_name(&obs.provenance().source),
                     role: SeriesRole::Observed,
                 },
                 obs.samples()
@@ -422,7 +422,7 @@ fn wind_lane(ctx: &Ctx) -> ChartVm {
     ctx.chart(
         name,
         &source.credit,
-        ctx.input.units.wind_speed.symbol(),
+        ctx.f.strings.speed_unit(ctx.input.units.wind_speed),
         series,
         Vec::new(),
         Vec::new(),
@@ -445,7 +445,7 @@ fn pressure_lane(ctx: &Ctx) -> ChartVm {
         ),
         _ => match &snapshot.marine.observed_pressure_hpa {
             Some(obs) if !obs.is_empty() => (
-                source_name(&obs.provenance().source),
+                ctx.f.strings.source_name(&obs.provenance().source),
                 SeriesRole::Observed,
                 obs.samples().iter().map(|s| (s.time.0, s.value)).collect(),
             ),
@@ -460,7 +460,7 @@ fn pressure_lane(ctx: &Ctx) -> ChartVm {
     ctx.chart(
         name,
         &credit,
-        ctx.input.units.pressure.symbol(),
+        ctx.f.strings.pressure_unit(ctx.input.units.pressure),
         vec![ChartSeries {
             label: name.to_owned(),
             role,
@@ -681,7 +681,7 @@ fn lane_extras(ctx: &Ctx, kind: LaneKind) -> (Vec<CreditVm>, Vec<Notice>) {
             .as_ref()
             .map_or_else(Default::default, |t| {
                 (
-                    tide_credits(snapshot, &t.provenance.source),
+                    tide_credits(&ctx.f, snapshot, &t.provenance.source),
                     tide_notices(&ctx.f, t),
                 )
             }),
@@ -692,7 +692,7 @@ fn lane_extras(ctx: &Ctx, kind: LaneKind) -> (Vec<CreditVm>, Vec<Notice>) {
                 .as_ref()
                 .map_or_else(Default::default, |c| {
                     (
-                        tide_credits(snapshot, &c.provenance.source),
+                        tide_credits(&ctx.f, snapshot, &c.provenance.source),
                         current_notices(&ctx.f, c),
                     )
                 })

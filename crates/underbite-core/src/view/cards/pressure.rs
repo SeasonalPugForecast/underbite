@@ -17,7 +17,7 @@ use crate::view::cards::wind::{
 };
 use crate::view::chart::{Zoned, ticks, window};
 use crate::view::format::Formatter;
-use crate::view::strings::{Key, source_name};
+use crate::view::strings::Key;
 use crate::view::{
     CardChrome, CardId, ChartVm, Compact, NoticeKind, Quantity, Row, Section, SeriesRole,
     TrendDirection, TrendVm, ViewInput,
@@ -100,7 +100,7 @@ fn trend_vm(f: &Formatter, trend: Trend, change: Option<&Quantity>) -> TrendVm {
 }
 
 /// A signed change in the display unit.
-fn change_quantity(unit: PressureUnit, delta_hpa: f32, base_hpa: f32) -> Quantity {
+fn change_quantity(f: &Formatter, unit: PressureUnit, delta_hpa: f32, base_hpa: f32) -> Quantity {
     let value = pressure_from_hpa(unit, base_hpa + delta_hpa) - pressure_from_hpa(unit, base_hpa);
     let decimals = match unit {
         PressureUnit::Hpa | PressureUnit::MmHg => 1,
@@ -108,8 +108,11 @@ fn change_quantity(unit: PressureUnit, delta_hpa: f32, base_hpa: f32) -> Quantit
     };
     Quantity {
         value: Some(value),
-        text: format!("{value:+.decimals$}"),
-        unit: unit.symbol().to_owned(),
+        text: f
+            .strings
+            .locale
+            .with_decimal_mark(&format!("{value:+.decimals$}")),
+        unit: f.strings.pressure_unit(unit).to_owned(),
     }
 }
 
@@ -167,7 +170,7 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
         }
     };
     let value = f.pressure(Some(hpa));
-    let change = delta.map(|d| change_quantity(input.units.pressure, d, hpa));
+    let change = delta.map(|d| change_quantity(&f, input.units.pressure, d, hpa));
     let trend = trend.map(|t| trend_vm(&f, t, change.as_ref()));
 
     let headline = format!(
@@ -205,7 +208,7 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
             pts,
         ));
         if any || basis == Basis::Observed {
-            chart_credits.push(station_credit(snapshot, &o.provenance().source, None));
+            chart_credits.push(station_credit(&f, snapshot, &o.provenance().source, None));
         }
     }
     if let Some(w) = weather {
@@ -229,7 +232,7 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
     }
     let chart = (!series.is_empty()).then(|| ChartVm {
         title: f.strings.card_title(CardId::Pressure).to_owned(),
-        unit: input.units.pressure.symbol().to_owned(),
+        unit: f.strings.pressure_unit(input.units.pressure).to_owned(),
         x_ticks: ticks(&z, &f, start, end),
         series,
         bands: Vec::new(),
@@ -265,11 +268,10 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
     let source_row = match (basis, observed.zip(newest), weather) {
         (Basis::Observed, Some((o, s)), _) => Row {
             label: f.strings.get(Key::Station).to_owned(),
-            value: o
-                .provenance()
-                .station
-                .as_ref()
-                .map_or_else(|| source_name(&o.provenance().source), |st| st.name.clone()),
+            value: o.provenance().station.as_ref().map_or_else(
+                || f.strings.source_name(&o.provenance().source),
+                |st| st.name.clone(),
+            ),
             detail: Some(
                 f.strings
                     .fmt(Key::ObservedAt, &[("time", &f.clock(s.time))]),

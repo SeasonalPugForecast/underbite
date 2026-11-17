@@ -2,11 +2,16 @@
 //!
 //! One table holds every fixed user-visible text. Playful texts ([`Key`]) have a plain and a Luna
 //! variant; safety texts ([`SafetyKey`]) have exactly one, and no function takes a voice for them:
-//! the split is by type, so a safety text cannot be given a Luna variant by accident. A later
-//! localisation replaces this table.
+//! the split is by type, so a safety text cannot be given a Luna variant by accident.
+//!
+//! The table is English. A [`Strings`] carries the [`Locale`] of the view input: its language
+//! picks the words (English, or the pseudo-locale of [`crate::view::packs`] in tests and debug
+//! builds), its number and date conventions the way values are written. Sentences with values
+//! are templates with `{name}` placeholders, never pieces glued in English word order.
 
 use whether_core::time::Weekday;
 
+use crate::datum::VerticalDatum;
 use crate::discover::hydro::{WaterTypeReason, WaterbodyKind};
 use crate::map::breaks::BreakKind;
 use crate::map::catalogue::{DateMode, Group, UnavailableReason};
@@ -14,11 +19,14 @@ use crate::map::dem::{ApproxDepth, DepthReading};
 use crate::map::enc::{SourceDate, StructureKind};
 use crate::map::pack::{PlanError, SkipReason};
 use crate::model::{
-    AlertSeverity, Measurement, MoonPhase, PrincipalPhase, TideKind, WaterType, ZoneKind,
+    AlertSeverity, Measurement, MoonPhase, PrincipalPhase, TideKind, TurbidityUnit, WaterType,
+    ZoneKind,
 };
 use crate::provenance::{Relation, SourceId, UsgsSiteType};
 use crate::time::{UnixTime, UtcOffset};
+use crate::units::{DischargeUnit, DistanceUnit, HeightUnit, PressureUnit, SpeedUnit, TempUnit};
 use crate::view::format::{Formatter, distance_to_metres};
+use crate::view::locale::{DateOrder, Language, Locale};
 use crate::view::{CardId, NoticeKind, Voice};
 
 /// Declares [`Key`], its list and its table in one place.
@@ -34,8 +42,8 @@ macro_rules! keys {
             /// Every key, for tests and for a later localisation.
             pub const ALL: &'static [Self] = &[$(Self::$name,)*];
 
-            /// `(plain, luna)`.
-            const fn variants(self) -> (&'static str, &'static str) {
+            /// The English `(plain, luna)`.
+            pub(in crate::view) const fn english(self) -> (&'static str, &'static str) {
                 match self {
                     $(Self::$name => ($plain, $luna),)*
                 }
@@ -85,8 +93,9 @@ keys! {
                 "{direction} {amount} in {hours} h",
                 "{direction} {amount} in {hours} h",
             ),
-    Upstream => ("upstream", "upstream"),
-    Downstream => ("downstream", "downstream"),
+    /// `{distance}`: "4.0 mi".
+    Upstream => ("{distance} upstream", "{distance} upstream"),
+    Downstream => ("{distance} downstream", "{distance} downstream"),
     Modelled => ("modelled", "modelled"),
     Satellite => ("satellite", "satellite"),
     /// `{distance}`, `{limit}`: why a value is greyed.
@@ -344,10 +353,11 @@ keys! {
     /// `{value}`, `{unit}`.
     RangeFrom => ("from {value} {unit}", "from {value} {unit}"),
     RangeUpTo => ("up to {value} {unit}", "up to {value} {unit}"),
-    RuleWadeableBelow => ("Wadeable below", "Wadeable below"),
-    RuleBestFrom => ("Best from", "Best from"),
-    RuleBestUpTo => ("Best up to", "Best up to"),
-    RuleBlownOutAbove => ("Blown out above", "Blown out above"),
+    /// A range's rule on the flow chart: `{value}`, `{unit}`.
+    RuleWadeableBelow => ("Wadeable below {value} {unit}", "Wadeable below {value} {unit}"),
+    RuleBestFrom => ("Best from {value} {unit}", "Best from {value} {unit}"),
+    RuleBestUpTo => ("Best up to {value} {unit}", "Best up to {value} {unit}"),
+    RuleBlownOutAbove => ("Blown out above {value} {unit}", "Blown out above {value} {unit}"),
     FloodAction => ("Action", "Action"),
     FloodMinor => ("Minor", "Minor"),
     FloodModerate => ("Moderate", "Moderate"),
@@ -759,6 +769,113 @@ keys! {
         "offline: computed from harmonic constants",
     ),
     OfflineLastOnly => ("offline: values from {time}", "offline: values from {time}"),
+    // -- card titles ----------------------------------------------------------------------
+    CardNow => ("Now", "Now"),
+    CardTide => ("Tide", "Tide"),
+    CardCurrent => ("Current", "Current"),
+    CardFlow => ("River flow", "River flow"),
+    CardWaterTemp => ("Water temperature", "Water temperature"),
+    CardClarity => ("Water clarity", "Water clarity"),
+    CardWaves => ("Waves", "Waves"),
+    CardWind => ("Wind", "Wind"),
+    CardPressure => ("Pressure", "Pressure"),
+    CardSunMoon => ("Sun and moon", "Sun and moon"),
+    CardSolunar => ("Solunar", "Solunar"),
+    CardWindows => ("Fishing windows", "Snack times"),
+    CardGoNoGo => ("Go or no go", "Luna's verdict"),
+    CardStormAhead => ("Storm ahead", "Storm ahead"),
+    CardMarineForecast => ("Marine forecast", "Marine forecast"),
+    CardStocking => ("Stocking", "Stocking"),
+    CardSpecies => ("Species", "Species"),
+    CardAlerts => ("Alerts", "Alerts"),
+    CardSources => ("Sources", "Sources"),
+    // -- unit symbols -----------------------------------------------------------------------
+    UnitFahrenheit => ("°F", "°F"),
+    UnitCelsius => ("°C", "°C"),
+    UnitFeet => ("ft", "ft"),
+    UnitMetres => ("m", "m"),
+    UnitKnots => ("kn", "kn"),
+    UnitMph => ("mph", "mph"),
+    UnitKmh => ("km/h", "km/h"),
+    UnitMetresPerSecond => ("m/s", "m/s"),
+    UnitCfs => ("cfs", "cfs"),
+    UnitCubicMetresPerSecond => ("m³/s", "m³/s"),
+    UnitHpa => ("hPa", "hPa"),
+    UnitInHg => ("inHg", "inHg"),
+    UnitMmHg => ("mmHg", "mmHg"),
+    UnitKpa => ("kPa", "kPa"),
+    UnitKilometres => ("km", "km"),
+    UnitMiles => ("mi", "mi"),
+    UnitFnu => ("FNU", "FNU"),
+    UnitFtu => ("FTU", "FTU"),
+    UnitNtu => ("NTU", "NTU"),
+    UnitSeconds => ("s", "s"),
+    UnitMicrogramsPerLitre => ("µg/L", "µg/L"),
+    UnitPerMetre => ("1/m", "1/m"),
+    UnitInches => ("in", "in"),
+    UnitCentimetres => ("cm", "cm"),
+    UnitMillimetres => ("mm", "mm"),
+    /// A height's unit with its datum: `{unit}`, `{datum}`: "ft MLLW".
+    UnitWithDatum => ("{unit} {datum}", "{unit} {datum}"),
+    // -- vertical datums ----------------------------------------------------------------------
+    DatumMllw => ("MLLW", "MLLW"),
+    DatumMlw => ("MLW", "MLW"),
+    DatumMsl => ("MSL", "MSL"),
+    DatumMtl => ("MTL", "MTL"),
+    DatumNavd88 => ("NAVD88", "NAVD88"),
+    DatumNgvd29 => ("NGVD29", "NGVD29"),
+    DatumIgld85 => ("IGLD85", "IGLD85"),
+    DatumGauge => ("gage datum", "gage datum"),
+    DatumChsChart => ("chart datum (CHS)", "chart datum (CHS)"),
+    DatumModelMean => ("model mean", "model mean"),
+    // -- compass points, clockwise from north --------------------------------------------------
+    CompassN => ("N", "N"),
+    CompassNne => ("NNE", "NNE"),
+    CompassNe => ("NE", "NE"),
+    CompassEne => ("ENE", "ENE"),
+    CompassE => ("E", "E"),
+    CompassEse => ("ESE", "ESE"),
+    CompassSe => ("SE", "SE"),
+    CompassSse => ("SSE", "SSE"),
+    CompassS => ("S", "S"),
+    CompassSsw => ("SSW", "SSW"),
+    CompassSw => ("SW", "SW"),
+    CompassWsw => ("WSW", "WSW"),
+    CompassW => ("W", "W"),
+    CompassWnw => ("WNW", "WNW"),
+    CompassNw => ("NW", "NW"),
+    CompassNnw => ("NNW", "NNW"),
+    /// How steep the waves are, as NDBC grades it.
+    SteepnessVerySteep => ("Very steep", "Very steep"),
+    SteepnessSteep => ("Steep", "Steep"),
+    SteepnessAverage => ("Average", "Average"),
+    SteepnessSwell => ("Swell", "Swell"),
+    // -- times and dates ----------------------------------------------------------------------
+    /// A 12-hour time: `{time}` ("7:03", "4").
+    TimeAm => ("{time} AM", "{time} AM"),
+    TimePm => ("{time} PM", "{time} PM"),
+    MonthJan => ("Jan", "Jan"),
+    MonthFeb => ("Feb", "Feb"),
+    MonthMar => ("Mar", "Mar"),
+    MonthApr => ("Apr", "Apr"),
+    MonthMay => ("May", "May"),
+    MonthJun => ("Jun", "Jun"),
+    MonthJul => ("Jul", "Jul"),
+    MonthAug => ("Aug", "Aug"),
+    MonthSep => ("Sep", "Sep"),
+    MonthOct => ("Oct", "Oct"),
+    MonthNov => ("Nov", "Nov"),
+    MonthDec => ("Dec", "Dec"),
+    /// A span of time: `{n}`.
+    DurationMinutes => ("{n} min", "{n} min"),
+    DurationHours => ("{n} h", "{n} h"),
+    DurationDays => ("{n} d", "{n} d"),
+    /// An ordinal number: `{n}`. English picks the suffix by the last digits (1st, 2nd, 3rd,
+    /// 11th); a language with one form gives all four the same text.
+    OrdinalSt => ("{n}st", "{n}st"),
+    OrdinalNd => ("{n}nd", "{n}nd"),
+    OrdinalRd => ("{n}rd", "{n}rd"),
+    OrdinalTh => ("{n}th", "{n}th"),
 }
 
 /// Declares [`SafetyKey`], its list and its table in one place.
@@ -827,9 +944,10 @@ safety_keys! {
     StormBrings => "{wet} brings {wet_amount} {noun}; {dry} {dry_amount}.",
     StormOfSnow => "of snow",
     StormOfRain => "of rain",
-    StormPartMorning => "morning",
-    StormPartAfternoon => "afternoon",
-    StormPartNight => "night",
+    /// A part of a day: `{day}` ("Sun").
+    StormPartMorning => "{day} morning",
+    StormPartAfternoon => "{day} afternoon",
+    StormPartNight => "{day} night",
     /// `{window}`.
     StormTitle => "Storm ahead · {window}",
     /// `{window}`.
@@ -842,15 +960,16 @@ safety_keys! {
     StormStale => "Checked {hours} h ago; forecasts may have changed.",
     /// `{date}`, `{time}`.
     StormChecked => "Storm outlook checked {date}, {time} · modelled",
-    HurricaneHurricane => "Hurricane",
-    HurricaneTropicalStorm => "Tropical Storm",
-    HurricaneTropicalDepression => "Tropical Depression",
-    HurricaneSubtropicalStorm => "Subtropical Storm",
-    HurricaneSubtropicalDepression => "Subtropical Depression",
-    HurricanePostTropical => "Post-Tropical Cyclone",
-    HurricanePotentialTropical => "Potential Tropical Cyclone",
-    HurricaneTyphoon => "Typhoon",
-    HurricaneCyclone => "Tropical Cyclone",
+    /// A storm by its kind: `{name}` ("Josephine").
+    HurricaneHurricane => "Hurricane {name}",
+    HurricaneTropicalStorm => "Tropical Storm {name}",
+    HurricaneTropicalDepression => "Tropical Depression {name}",
+    HurricaneSubtropicalStorm => "Subtropical Storm {name}",
+    HurricaneSubtropicalDepression => "Subtropical Depression {name}",
+    HurricanePostTropical => "Post-Tropical Cyclone {name}",
+    HurricanePotentialTropical => "Potential Tropical Cyclone {name}",
+    HurricaneTyphoon => "Typhoon {name}",
+    HurricaneCyclone => "Tropical Cyclone {name}",
     /// `{name}`, `{category}`.
     HurricaneCategory => "{name} · Category {category}",
     StormStationary => "Stationary",
@@ -954,6 +1073,45 @@ safety_keys! {
     PinMajorFlooding => "Major flooding",
     PinLowWater => "Low water",
     PinOutOfService => "Out of service",
+    // -- sources and their terms ------------------------------------------------------------
+    /// A source's name as displayed, by its id.
+    SourceUsgs => "USGS",
+    SourceCoops => "NOAA CO-OPS",
+    SourceCoopsHarmonics => "NOAA CO-OPS harmonics",
+    SourceNdbc => "NOAA NDBC",
+    SourceNwps => "NOAA NWPS",
+    SourceOpenMeteoMarine => "Open-Meteo Marine",
+    SourceNws => "National Weather Service",
+    SourceUsgs3dhp => "USGS 3DHP",
+    /// The credit of a USGS value whose snapshot carries no attribution.
+    CreditUsgs => "U.S. Geological Survey",
+    SourceOpenMeteo => "Open-Meteo",
+    SourceNhc => "NOAA National Hurricane Center",
+    /// The storm card's credits, as the sources ask to be credited.
+    CreditOpenMeteoModels => "Weather model data by Open-Meteo.com, with ECMWF, NOAA GFS, GEM and ICON forecasts",
+    CreditNhc => "Advisories, forecast tracks and the forecast cone: NOAA National Hurricane Center",
+    /// The credits of tide sources, marine forecasts and alerts whose snapshot carries none.
+    CreditTideCoops => "Predictions and observations: NOAA CO-OPS",
+    CreditTideHarmonics => "Computed from NOAA harmonic constants",
+    CreditTideOpenMeteo => "Sea level model: Open-Meteo",
+    CreditMarineForecast => "Marine forecast: NOAA National Weather Service",
+    CreditMarineAlerts => "Marine alerts: NOAA National Weather Service",
+    /// The standard credit lines of the station sources and the wave model.
+    CreditObservationsNdbc => "Observations: NOAA National Data Buoy Center",
+    CreditObservationsCoops => "Observations: NOAA CO-OPS",
+    CreditWaveModel => "Wave model: Open-Meteo.com",
+    /// The sources card's credit lines, as the sources ask to be credited.
+    CreditCoops => "Tide, water-level and current data: NOAA/NOS CO-OPS",
+    CreditHarmonics => "Computed on this device from NOAA CO-OPS harmonic constants",
+    CreditNwps => "River forecasts: NOAA National Water Prediction Service",
+    CreditNws => "Marine forecasts and alerts: NOAA National Weather Service",
+    CreditOpenMeteo => "Weather data by Open-Meteo.com",
+    /// What Open-Meteo's model providers are called as a credit.
+    SourceModelProviders => "Open-Meteo model providers",
+    /// The model providers Open-Meteo's marine data comes from, as its terms ask them credited.
+    CreditMarineModels => "Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean)",
+    LicencePublicDomain => "Public domain",
+    LicenceCcBy4 => "CC BY 4.0",
 }
 
 impl SafetyKey {
@@ -991,24 +1149,53 @@ pub enum AppFile {
     Settings,
 }
 
-/// The table, bound to a voice.
+/// The table, bound to a voice and a locale.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Strings {
     pub voice: Voice,
+    pub locale: Locale,
+}
+
+/// A playful text from the language's pack; `None` writes English.
+#[cfg(any(test, debug_assertions))]
+fn pack_key(language: Language, key: Key, luna: bool) -> Option<&'static str> {
+    (language == Language::Pseudo).then(|| crate::view::packs::key(key, luna))
+}
+
+#[cfg(not(any(test, debug_assertions)))]
+const fn pack_key(_: Language, _: Key, _: bool) -> Option<&'static str> {
+    None
+}
+
+/// A safety text from the language's pack; `None` writes English.
+#[cfg(any(test, debug_assertions))]
+fn pack_safety(language: Language, key: SafetyKey) -> Option<&'static str> {
+    (language == Language::Pseudo).then(|| crate::view::packs::safety(key))
+}
+
+#[cfg(not(any(test, debug_assertions)))]
+const fn pack_safety(_: Language, _: SafetyKey) -> Option<&'static str> {
+    None
 }
 
 impl Strings {
+    /// English words, numbers and dates.
     pub const fn new(voice: Voice) -> Self {
-        Self { voice }
+        Self::localized(voice, Locale::ENGLISH)
+    }
+
+    /// The words, numbers and dates of `locale`.
+    pub const fn localized(voice: Voice, locale: Locale) -> Self {
+        Self { voice, locale }
     }
 
     /// A playful text in the voice.
-    pub const fn get(self, key: Key) -> &'static str {
-        let (plain, luna) = key.variants();
-        match self.voice {
-            Voice::Plain => plain,
-            Voice::Luna => luna,
-        }
+    pub fn get(self, key: Key) -> &'static str {
+        let luna = matches!(self.voice, Voice::Luna);
+        pack_key(self.locale.language, key, luna).unwrap_or_else(|| {
+            let (plain, luna_text) = key.english();
+            if luna { luna_text } else { plain }
+        })
     }
 
     /// A playful text with its `{name}` placeholders filled.
@@ -1017,15 +1204,205 @@ impl Strings {
     }
 
     /// A safety text: the same in every voice.
-    #[allow(clippy::unused_self)]
-    pub const fn safety(self, key: SafetyKey) -> &'static str {
-        key.text()
+    pub fn safety(self, key: SafetyKey) -> &'static str {
+        pack_safety(self.locale.language, key).unwrap_or_else(|| key.text())
     }
 
     /// A safety text with its `{name}` placeholders filled: the same in every voice.
-    #[allow(clippy::unused_self)]
     pub fn safety_fmt(self, key: SafetyKey, args: &[(&str, &str)]) -> String {
-        fill(key.text(), args)
+        fill(self.safety(key), args)
+    }
+
+    // -- numbers, units, dates ------------------------------------------------------------
+
+    /// A number in the locale, without thousands separators: "1020", "12.4".
+    pub fn number(self, value: f32, decimals: u8) -> String {
+        self.locale.number(value, decimals)
+    }
+
+    /// A number in the locale with the thousands grouped: "1,500", "12,345.6".
+    pub fn grouped(self, value: f32, decimals: u8) -> String {
+        self.locale.grouped(value, decimals)
+    }
+
+    /// The symbol of a temperature unit: "°F".
+    pub fn temp_unit(self, unit: TempUnit) -> &'static str {
+        self.get(match unit {
+            TempUnit::F => Key::UnitFahrenheit,
+            TempUnit::C => Key::UnitCelsius,
+        })
+    }
+
+    /// The symbol of a height unit: "ft".
+    pub fn height_unit(self, unit: HeightUnit) -> &'static str {
+        self.get(match unit {
+            HeightUnit::Ft => Key::UnitFeet,
+            HeightUnit::M => Key::UnitMetres,
+        })
+    }
+
+    /// The symbol of a speed unit: "kn".
+    pub fn speed_unit(self, unit: SpeedUnit) -> &'static str {
+        self.get(match unit {
+            SpeedUnit::Kn => Key::UnitKnots,
+            SpeedUnit::Mph => Key::UnitMph,
+            SpeedUnit::Kmh => Key::UnitKmh,
+            SpeedUnit::Ms => Key::UnitMetresPerSecond,
+        })
+    }
+
+    /// The symbol of a discharge unit: "cfs".
+    pub fn discharge_unit(self, unit: DischargeUnit) -> &'static str {
+        self.get(match unit {
+            DischargeUnit::Cfs => Key::UnitCfs,
+            DischargeUnit::M3s => Key::UnitCubicMetresPerSecond,
+        })
+    }
+
+    /// The symbol of a pressure unit: "inHg".
+    pub fn pressure_unit(self, unit: PressureUnit) -> &'static str {
+        self.get(match unit {
+            PressureUnit::Hpa => Key::UnitHpa,
+            PressureUnit::InHg => Key::UnitInHg,
+            PressureUnit::MmHg => Key::UnitMmHg,
+            PressureUnit::Kpa => Key::UnitKpa,
+        })
+    }
+
+    /// The symbol of a distance unit: "mi".
+    pub fn distance_unit(self, unit: DistanceUnit) -> &'static str {
+        self.get(match unit {
+            DistanceUnit::Km => Key::UnitKilometres,
+            DistanceUnit::Mi => Key::UnitMiles,
+        })
+    }
+
+    /// The unit a turbidity was measured in: "FNU". The value is never converted.
+    pub fn turbidity_unit(self, unit: TurbidityUnit) -> &'static str {
+        self.get(match unit {
+            TurbidityUnit::Fnu => Key::UnitFnu,
+            TurbidityUnit::Ftu => Key::UnitFtu,
+            TurbidityUnit::Ntu => Key::UnitNtu,
+        })
+    }
+
+    /// What a height is measured from: "MLLW", "gage datum".
+    pub fn datum(self, datum: VerticalDatum) -> &'static str {
+        self.get(match datum {
+            VerticalDatum::Mllw => Key::DatumMllw,
+            VerticalDatum::Mlw => Key::DatumMlw,
+            VerticalDatum::Msl => Key::DatumMsl,
+            VerticalDatum::Mtl => Key::DatumMtl,
+            VerticalDatum::Navd88 => Key::DatumNavd88,
+            VerticalDatum::Ngvd29 => Key::DatumNgvd29,
+            VerticalDatum::Igld85 => Key::DatumIgld85,
+            VerticalDatum::Gauge => Key::DatumGauge,
+            VerticalDatum::ChsChartDatum => Key::DatumChsChart,
+            VerticalDatum::ModelMean => Key::DatumModelMean,
+        })
+    }
+
+    /// The 16-point compass name of a bearing in degrees: "SW".
+    pub fn compass(self, degrees: f32) -> &'static str {
+        const POINTS: [Key; 16] = [
+            Key::CompassN,
+            Key::CompassNne,
+            Key::CompassNe,
+            Key::CompassEne,
+            Key::CompassE,
+            Key::CompassEse,
+            Key::CompassSe,
+            Key::CompassSse,
+            Key::CompassS,
+            Key::CompassSsw,
+            Key::CompassSw,
+            Key::CompassWsw,
+            Key::CompassW,
+            Key::CompassWnw,
+            Key::CompassNw,
+            Key::CompassNnw,
+        ];
+        // INVARIANT: the bearing is reduced to 0..360 first, so the rounded sector is 0..=16
+        // and fits after `% 16`; a NaN bearing casts to 0.
+        let sector = (degrees.rem_euclid(360.0) / 22.5).round() as usize % 16;
+        self.get(POINTS[sector])
+    }
+
+    /// A 16-point compass name as a source writes it ("ESE"), in the locale; `None` for other
+    /// text.
+    pub fn compass_point(self, text: &str) -> Option<&'static str> {
+        const NAMES: [&str; 16] = [
+            "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW",
+            "NW", "NNW",
+        ];
+        let index = NAMES
+            .iter()
+            .position(|n| n.eq_ignore_ascii_case(text.trim()))?;
+        Some(self.compass(index as f32 * 22.5))
+    }
+
+    /// A 12-hour time with its AM or PM: `time` is "7:03" or "4".
+    pub fn twelve_hour(self, time: &str, pm: bool) -> String {
+        self.fmt(
+            if pm { Key::TimePm } else { Key::TimeAm },
+            &[("time", time)],
+        )
+    }
+
+    /// The short name of month 1–12: "Nov"; the placeholder for anything else.
+    pub fn month(self, month: u8) -> &'static str {
+        self.get(match month {
+            1 => Key::MonthJan,
+            2 => Key::MonthFeb,
+            3 => Key::MonthMar,
+            4 => Key::MonthApr,
+            5 => Key::MonthMay,
+            6 => Key::MonthJun,
+            7 => Key::MonthJul,
+            8 => Key::MonthAug,
+            9 => Key::MonthSep,
+            10 => Key::MonthOct,
+            11 => Key::MonthNov,
+            12 => Key::MonthDec,
+            _ => Key::Missing,
+        })
+    }
+
+    /// A short date in the locale's order: "Nov 8" or "8 Nov".
+    pub fn date(self, month: u8, day: u8) -> String {
+        let month = self.month(month);
+        match self.locale.dates {
+            DateOrder::MonthDay => format!("{month} {day}"),
+            DateOrder::DayMonth => format!("{day} {month}"),
+        }
+    }
+
+    /// An ordinal number: "1st", "45th", "93rd".
+    pub fn ordinal(self, n: u32) -> String {
+        let key = match (n % 100, n % 10) {
+            (11..=13, _) => Key::OrdinalTh,
+            (_, 1) => Key::OrdinalSt,
+            (_, 2) => Key::OrdinalNd,
+            (_, 3) => Key::OrdinalRd,
+            _ => Key::OrdinalTh,
+        };
+        self.fmt(key, &[("n", &n.to_string())])
+    }
+
+    /// A source's name as displayed: "NOAA CO-OPS"; an unknown source shows its id.
+    pub fn source_name(self, id: &SourceId) -> String {
+        let key = match id.as_str() {
+            "usgs" => SafetyKey::SourceUsgs,
+            "coops" => SafetyKey::SourceCoops,
+            "coops-harmonics" => SafetyKey::SourceCoopsHarmonics,
+            "ndbc" => SafetyKey::SourceNdbc,
+            "nwps" => SafetyKey::SourceNwps,
+            "open-meteo-marine" => SafetyKey::SourceOpenMeteoMarine,
+            "nws" => SafetyKey::SourceNws,
+            "usgs-3dhp" => SafetyKey::SourceUsgs3dhp,
+            other => return other.to_owned(),
+        };
+        self.safety(key).to_owned()
     }
 
     /// What a unit picker's group is called ("discharge" is "River flow"); `None` for an id
@@ -1141,7 +1518,7 @@ impl Strings {
     }
 
     /// What a measurement is called: "River flow", "Water temperature", ...
-    pub const fn measurement(self, m: Measurement) -> &'static str {
+    pub fn measurement(self, m: Measurement) -> &'static str {
         self.get(match m {
             Measurement::WaterTemperature => Key::MeasWaterTemperature,
             Measurement::Discharge => Key::MeasDischarge,
@@ -1172,7 +1549,7 @@ impl Strings {
     }
 
     /// How a station relates to the spot: "Same water body", "Upstream", ...
-    pub const fn relation(self, relation: Relation) -> &'static str {
+    pub fn relation(self, relation: Relation) -> &'static str {
         self.get(match relation {
             Relation::SameWaterBody => Key::RelSameWaterBody,
             Relation::Upstream => Key::RelUpstream,
@@ -1238,35 +1615,32 @@ impl Strings {
     }
 
     /// The card title.
-    pub const fn card_title(self, id: CardId) -> &'static str {
-        let luna = matches!(self.voice, Voice::Luna);
-        match id {
-            CardId::Now => "Now",
-            CardId::Tide => "Tide",
-            CardId::Current => "Current",
-            CardId::Flow => "River flow",
-            CardId::WaterTemp => "Water temperature",
-            CardId::Clarity => "Water clarity",
-            CardId::Waves => "Waves",
-            CardId::Wind => "Wind",
-            CardId::Pressure => "Pressure",
-            CardId::SunMoon => "Sun and moon",
-            CardId::Solunar => "Solunar",
-            CardId::Windows if luna => "Snack times",
-            CardId::Windows => "Fishing windows",
-            CardId::GoNoGo if luna => "Luna's verdict",
-            CardId::GoNoGo => "Go or no go",
-            CardId::StormAhead => "Storm ahead",
-            CardId::MarineForecast => "Marine forecast",
-            CardId::Stocking => "Stocking",
-            CardId::Species => "Species",
-            CardId::Alerts => "Alerts",
-            CardId::Sources => "Sources",
-        }
+    pub fn card_title(self, id: CardId) -> &'static str {
+        self.get(match id {
+            CardId::Now => Key::CardNow,
+            CardId::Tide => Key::CardTide,
+            CardId::Current => Key::CardCurrent,
+            CardId::Flow => Key::CardFlow,
+            CardId::WaterTemp => Key::CardWaterTemp,
+            CardId::Clarity => Key::CardClarity,
+            CardId::Waves => Key::CardWaves,
+            CardId::Wind => Key::CardWind,
+            CardId::Pressure => Key::CardPressure,
+            CardId::SunMoon => Key::CardSunMoon,
+            CardId::Solunar => Key::CardSolunar,
+            CardId::Windows => Key::CardWindows,
+            CardId::GoNoGo => Key::CardGoNoGo,
+            CardId::StormAhead => Key::CardStormAhead,
+            CardId::MarineForecast => Key::CardMarineForecast,
+            CardId::Stocking => Key::CardStocking,
+            CardId::Species => Key::CardSpecies,
+            CardId::Alerts => Key::CardAlerts,
+            CardId::Sources => Key::CardSources,
+        })
     }
 
     /// "High" or "Low".
-    pub const fn tide_kind(self, kind: TideKind) -> &'static str {
+    pub fn tide_kind(self, kind: TideKind) -> &'static str {
         self.get(match kind {
             TideKind::High => Key::TideHigh,
             TideKind::Low => Key::TideLow,
@@ -1274,7 +1648,7 @@ impl Strings {
     }
 
     /// "Waxing gibbous", "Full moon", ...
-    pub const fn moon_phase(self, phase: MoonPhase) -> &'static str {
+    pub fn moon_phase(self, phase: MoonPhase) -> &'static str {
         self.get(match phase {
             MoonPhase::New => Key::MoonNew,
             MoonPhase::WaxingCrescent => Key::MoonWaxingCrescent,
@@ -1288,7 +1662,7 @@ impl Strings {
     }
 
     /// "New moon", "First quarter", "Full moon" or "Last quarter".
-    pub const fn principal_phase(self, phase: PrincipalPhase) -> &'static str {
+    pub fn principal_phase(self, phase: PrincipalPhase) -> &'static str {
         self.get(match phase {
             PrincipalPhase::New => Key::MoonNew,
             PrincipalPhase::FirstQuarter => Key::MoonFirstQuarter,
@@ -1298,7 +1672,7 @@ impl Strings {
     }
 
     /// "Mon", "Tue", ...
-    pub const fn weekday(self, day: Weekday) -> &'static str {
+    pub fn weekday(self, day: Weekday) -> &'static str {
         self.get(match day {
             Weekday::Mon => Key::WeekdayMon,
             Weekday::Tue => Key::WeekdayTue,
@@ -1311,7 +1685,7 @@ impl Strings {
     }
 
     /// "River or stream", "Tidal river or estuary", ...
-    pub const fn water_type(self, water_type: WaterType) -> &'static str {
+    pub fn water_type(self, water_type: WaterType) -> &'static str {
         self.get(match water_type {
             WaterType::RiverStream => Key::WaterRiver,
             WaterType::LakeReservoir => Key::WaterLake,
@@ -1333,7 +1707,7 @@ impl Strings {
 /// layers are safety texts, the same in every voice.
 impl Strings {
     /// A drawer section's title.
-    pub const fn map_group(self, group: Group) -> &'static str {
+    pub fn map_group(self, group: Group) -> &'static str {
         self.get(match group {
             Group::Base => Key::MapGroupBase,
             Group::Depth => Key::MapGroupDepth,
@@ -1497,7 +1871,7 @@ impl Strings {
     }
 
     /// Why a layer cannot be turned on, shown in place of its switch.
-    pub const fn unavailable_reason(self, reason: UnavailableReason) -> &'static str {
+    pub fn unavailable_reason(self, reason: UnavailableReason) -> &'static str {
         match reason {
             UnavailableReason::NoSource => self.get(Key::MapNoSource),
         }
@@ -1539,9 +1913,17 @@ pub fn map_value(f: &Formatter, quantity: MapQuantity, canonical: f64) -> String
         MapQuantity::CurrentSpeed => f.current_speed(Some(v)).full(),
         MapQuantity::Chlorophyll => {
             let decimals = u8::from(v.abs() < 1.0) + u8::from(v.abs() < 10.0);
-            format!("{} µg/L", Formatter::number(v, decimals))
+            format!(
+                "{} {}",
+                f.strings.grouped(v, decimals),
+                f.strings.get(Key::UnitMicrogramsPerLitre)
+            )
         }
-        MapQuantity::Kd490 => format!("{} 1/m", Formatter::number(v, 2)),
+        MapQuantity::Kd490 => format!(
+            "{} {}",
+            f.strings.grouped(v, 2),
+            f.strings.get(Key::UnitPerMetre)
+        ),
     }
 }
 
@@ -1587,7 +1969,11 @@ pub fn depth_label(f: &Formatter, metres: f64) -> String {
     let v = unit.from_canonical(metres as f32);
     let tenths = (v * 10.0).round() / 10.0;
     let decimals = u8::from(tenths.fract() != 0.0);
-    format!("{} {}", Formatter::number(tenths, decimals), unit.symbol())
+    format!(
+        "{} {}",
+        f.strings.grouped(tenths, decimals),
+        f.strings.height_unit(unit)
+    )
 }
 
 /// The elevation model a DEM raster belongs to, by its name; `None` for one not recognised.
@@ -1650,18 +2036,28 @@ pub fn break_strength(f: &Formatter, kind: BreakKind, per_km: f64) -> String {
             let t = f.units.temperature;
             let change = t.from_canonical(per_unit as f32) - t.from_canonical(0.0);
             let decimals = u8::from(change.abs() < 10.0);
-            let text = format!("{} {}", Formatter::number(change, decimals), t.symbol());
+            let text = format!(
+                "{} {}",
+                f.strings.grouped(change, decimals),
+                f.strings.temp_unit(t)
+            );
             f.strings.fmt(
                 Key::MapBreakTemperature,
-                &[("change", &text), ("distance", distance.symbol())],
+                &[
+                    ("change", &text),
+                    ("distance", f.strings.distance_unit(distance)),
+                ],
             )
         }
         BreakKind::Chlorophyll => {
             let ratio = 10f64.powf(per_unit) as f32;
-            let text = Formatter::number(ratio, 1 + u8::from(ratio < 2.0));
+            let text = f.strings.grouped(ratio, 1 + u8::from(ratio < 2.0));
             f.strings.fmt(
                 Key::MapBreakChlorophyll,
-                &[("ratio", &text), ("distance", distance.symbol())],
+                &[
+                    ("ratio", &text),
+                    ("distance", f.strings.distance_unit(distance)),
+                ],
             )
         }
     }
@@ -1704,13 +2100,14 @@ pub fn reef_depths(f: &Formatter, min_m: Option<f64>, max_m: Option<f64>) -> Opt
     let unit = f.units.height;
     let number = |m: f64| {
         let v = (unit.from_canonical(m as f32) * 10.0).round() / 10.0;
-        Formatter::number(v, u8::from(v.fract() != 0.0))
+        f.strings.grouped(v, u8::from(v.fract() != 0.0))
     };
+    let symbol = f.strings.height_unit(unit);
     let range = match (min_m, max_m) {
         (Some(a), Some(b)) if (a - b).abs() > f64::EPSILON => {
-            format!("{}–{} {}", number(a), number(b), unit.symbol())
+            format!("{}–{} {symbol}", number(a), number(b))
         }
-        (Some(m), _) | (None, Some(m)) => format!("{} {}", number(m), unit.symbol()),
+        (Some(m), _) | (None, Some(m)) => format!("{} {symbol}", number(m)),
         (None, None) => return None,
     };
     Some(f.strings.fmt(Key::MapReefDepth, &[("range", &range)]))
@@ -1781,7 +2178,7 @@ impl Strings {
         } else {
             (Key::PackSizeGb, bytes as f32 / 1e9, 1)
         };
-        self.fmt(key, &[("n", &Formatter::number(value, decimals))])
+        self.fmt(key, &[("n", &self.grouped(value, decimals))])
     }
 
     /// A download time: "under a minute", "12 min", "2 h", "1 h 20 min".
@@ -1805,7 +2202,7 @@ impl Strings {
     }
 
     /// Why a layer of a pack is left out.
-    pub const fn pack_skip(self, reason: SkipReason) -> &'static str {
+    pub fn pack_skip(self, reason: SkipReason) -> &'static str {
         self.get(match reason {
             SkipReason::Unknown => Key::PackSkipUnknown,
             SkipReason::Unavailable => Key::PackSkipUnavailable,
@@ -1827,38 +2224,10 @@ impl Strings {
     }
 }
 
-/// A source's name as displayed.
+/// A source's name as displayed, in English: "NOAA CO-OPS". The view uses
+/// [`Strings::source_name`], in its locale.
 pub fn source_name(id: &SourceId) -> String {
-    match id.as_str() {
-        "usgs" => "USGS".to_owned(),
-        "coops" => "NOAA CO-OPS".to_owned(),
-        "coops-harmonics" => "NOAA CO-OPS harmonics".to_owned(),
-        "ndbc" => "NOAA NDBC".to_owned(),
-        "nwps" => "NOAA NWPS".to_owned(),
-        "open-meteo-marine" => "Open-Meteo Marine".to_owned(),
-        "nws" => "National Weather Service".to_owned(),
-        "usgs-3dhp" => "USGS 3DHP".to_owned(),
-        other => other.to_owned(),
-    }
-}
-
-/// English month abbreviation, 1-based; no locale lookups.
-pub const fn month_abbrev(month: u8) -> &'static str {
-    match month {
-        1 => "Jan",
-        2 => "Feb",
-        3 => "Mar",
-        4 => "Apr",
-        5 => "May",
-        6 => "Jun",
-        7 => "Jul",
-        8 => "Aug",
-        9 => "Sep",
-        10 => "Oct",
-        11 => "Nov",
-        12 => "Dec",
-        _ => "?",
-    }
+    Strings::new(Voice::Plain).source_name(id)
 }
 
 #[cfg(test)]
@@ -1975,7 +2344,7 @@ mod tests {
         let mut seen = std::collections::BTreeSet::new();
         for key in Key::ALL {
             assert!(seen.insert(key), "{key:?} listed twice");
-            let (plain, luna) = key.variants();
+            let (plain, luna) = key.english();
             let names = |s: &str| {
                 let mut v: Vec<String> = s
                     .split('{')

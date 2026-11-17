@@ -8,6 +8,9 @@
 pub mod cards;
 pub mod chart;
 pub mod format;
+pub mod locale;
+#[cfg(any(test, debug_assertions))]
+pub mod packs;
 pub mod stations;
 pub mod strings;
 pub mod timeline;
@@ -19,6 +22,7 @@ use whether_core::presentation::TimeFormat;
 use crate::model::{Measurement, SpotSnapshot, WaterType};
 use crate::time::UnixTime;
 use crate::units::{DischargeUnit, DistanceUnit, HeightUnit, PressureUnit, SpeedUnit, TempUnit};
+use locale::Locale;
 
 use cards::{
     alerts::AlertsCard, clarity::ClarityCard, current::CurrentCard, flow::FlowCard,
@@ -106,6 +110,9 @@ pub struct ViewInput {
     pub units: DisplayUnits,
     pub voice: Voice,
     pub clock: TimeFormat,
+    /// The words and the number and date conventions; given by the caller, never read from the
+    /// system.
+    pub locale: Locale,
     pub timeline_span: TimelineSpan,
     /// Cards to show, in order, for the spot's water type.
     pub card_order: Vec<CardId>,
@@ -618,6 +625,7 @@ mod tests {
             },
             voice: Voice::Luna,
             clock: TimeFormat::H12,
+            locale: Locale::ENGLISH,
             timeline_span: TimelineSpan {
                 hours: 24,
                 step_minutes: 60,

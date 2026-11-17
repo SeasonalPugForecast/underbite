@@ -9,8 +9,8 @@ use crate::provenance::{Provenance, Quality, SourceId, StationRef};
 use crate::series::{Sample, Series};
 use crate::time::{LocalDate, UnixTime};
 use crate::view::cards::wind::latest_at;
-use crate::view::format::{Formatter, number, ordinal};
-use crate::view::strings::{Key, source_name};
+use crate::view::format::Formatter;
+use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
     CardChrome, CardId, CardState, ChartPoint, ChartRule, ChartSeries, ChartTick, ChartVm, Compact,
     CreditVm, Notice, NoticeKind, Quantity, RiverRanges, Row, RuleKind, Section, SeriesRole,
@@ -29,8 +29,6 @@ const STAGE_TREND_M: f32 = 0.01;
 /// Compact sparklines keep at most this many points.
 const SPARK_POINTS: usize = 84;
 const PROVISIONAL_STATEMENT: &str = "https://waterdata.usgs.gov/provisional-data-statement/";
-/// The credit text of a USGS value whose snapshot carries no attribution.
-const CREDIT_USGS: &str = "U.S. Geological Survey";
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
 pub struct FlowCard {
@@ -103,15 +101,6 @@ pub struct FlowFull {
 // ---------------------------------------------------------------------------------------------
 // Helpers shared by the water cards
 // ---------------------------------------------------------------------------------------------
-
-/// A quantity from a number, with the unit as given.
-pub(super) fn qty(value: f32, decimals: u8, unit: &str) -> Quantity {
-    Quantity {
-        value: Some(value),
-        text: number(value, decimals),
-        unit: unit.to_owned(),
-    }
-}
 
 pub(super) fn capitalize(s: &str) -> String {
     let mut chars = s.chars();
@@ -196,7 +185,7 @@ pub(in crate::view) fn credits(input: &ViewInput, provs: &[&Provenance]) -> Vec<
     let f = Formatter::for_input(input);
     let mut out: Vec<CreditVm> = Vec::new();
     for p in provs {
-        let name = source_name(&p.source);
+        let name = f.strings.source_name(&p.source);
         let found = input
             .snapshot
             .attribution
@@ -204,7 +193,10 @@ pub(in crate::view) fn credits(input: &ViewInput, provs: &[&Provenance]) -> Vec<
             .find(|a| a.source == p.source);
         let text = match found {
             Some(a) => a.credit.clone(),
-            None if p.source == SourceId::USGS => CREDIT_USGS.to_owned(),
+            // The credit text of a USGS value whose snapshot carries no attribution.
+            None if p.source == SourceId::USGS => {
+                f.strings.safety(SafetyKey::CreditUsgs).to_owned()
+            }
             None => name.clone(),
         };
         let credit = CreditVm {
@@ -372,7 +364,7 @@ pub(super) fn trend(
     let hours = ((last.time.0 - base.time.0) as f32 / 3_600.0)
         .round()
         .max(1.0);
-    let hours = number(hours, 0);
+    let hours = f.strings.number(hours, 0);
     let delta = last.value - base.value;
     let (direction, text) = if delta.abs() < min_change {
         (
@@ -405,8 +397,10 @@ pub(super) fn trend(
 // ---------------------------------------------------------------------------------------------
 
 fn ordinal_label(f: &Formatter, n: u8) -> String {
-    f.strings
-        .fmt(Key::PercentileRank, &[("ordinal", &ordinal(u32::from(n)))])
+    f.strings.fmt(
+        Key::PercentileRank,
+        &[("ordinal", &f.strings.ordinal(u32::from(n)))],
+    )
 }
 
 fn percentile_date(p: &Percentile) -> Option<LocalDate> {
@@ -560,7 +554,7 @@ fn range_rules(f: &Formatter, r: &RiverRanges) -> Vec<ChartRule> {
         q.value.map(|value| ChartRule {
             kind: RuleKind::UserRange,
             value,
-            label: format!("{} {} {unit}", f.strings.get(label), q.text),
+            label: f.strings.fmt(label, &[("value", &q.text), ("unit", &unit)]),
         })
     };
     [
@@ -908,8 +902,8 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
                 value: p
                     .station
                     .as_ref()
-                    .map_or_else(|| source_name(&p.source), |s| s.name.clone()),
-                detail: Some(source_name(&p.source)),
+                    .map_or_else(|| f.strings.source_name(&p.source), |s| s.name.clone()),
+                detail: Some(f.strings.source_name(&p.source)),
             }],
         });
     }

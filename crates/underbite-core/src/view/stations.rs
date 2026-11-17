@@ -14,7 +14,7 @@ use crate::model::Measurement;
 use crate::provenance::{Relation, StationRef};
 use crate::time::UnixTime;
 use crate::view::format::Formatter;
-use crate::view::strings::{Key, MEASUREMENTS, source_name};
+use crate::view::strings::{Key, MEASUREMENTS};
 
 /// One station of a measurement.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -136,7 +136,7 @@ fn row(
     f: &Formatter,
     finish: impl FnOnce(&mut StationRow),
 ) -> StationRow {
-    let source = source_name(&station.source);
+    let source = f.strings.source_name(&station.source);
     let id = match station.bin {
         Some(bin) => format!(
             "{} · {}",

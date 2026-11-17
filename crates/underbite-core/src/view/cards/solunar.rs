@@ -2,12 +2,11 @@
 
 use schemars::JsonSchema;
 use serde::Serialize;
-use whether_core::presentation::TimeFormat;
 
 use crate::model::{SolunarCause, SolunarKind, SolunarPeriod};
 use crate::time::UnixTime;
 use crate::view::cards::sun_moon::{computed_credit, day_label, today_and_after};
-use crate::view::format::{Formatter, number};
+use crate::view::format::Formatter;
 use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
     CardChrome, CardId, CardState, Compact, NoticeKind, Quantity, Row, Section, ViewInput,
@@ -65,14 +64,7 @@ fn cause_label(f: &Formatter, cause: SolunarCause) -> &'static str {
 
 /// "6:10 to 8:10 AM": a shared AM or PM is written once.
 pub(crate) fn range_text(f: &Formatter, start: UnixTime, end: UnixTime) -> String {
-    let (a, b) = (f.clock(start), f.clock(end));
-    if f.clock == TimeFormat::H12
-        && let (Some((ta, sa)), Some((_, sb))) = (a.rsplit_once(' '), b.rsplit_once(' '))
-        && sa == sb
-    {
-        return f.strings.fmt(Key::Range, &[("from", ta), ("to", &b)]);
-    }
-    f.strings.fmt(Key::Range, &[("from", &a), ("to", &b)])
+    f.clock_range(start, end)
 }
 
 fn period_vm(f: &Formatter, p: &SolunarPeriod) -> SolunarPeriodVm {
@@ -145,14 +137,14 @@ pub fn build(input: &ViewInput) -> Option<SolunarCard> {
         } else if minutes < 120.0 {
             Quantity {
                 value: Some(minutes),
-                text: number(minutes, 0),
+                text: f.strings.number(minutes, 0),
                 unit: f.strings.get(Key::UnitMinutes).to_owned(),
             }
         } else {
             let hours = minutes / 60.0;
             Quantity {
                 value: Some(hours),
-                text: number(hours, 1),
+                text: f.strings.number(hours, 1),
                 unit: f.strings.get(Key::UnitHours).to_owned(),
             }
         }

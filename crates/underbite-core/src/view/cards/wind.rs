@@ -14,7 +14,7 @@ use crate::time::UnixTime;
 use crate::view::cards::tide::state;
 use crate::view::chart::{Zoned, ticks, window};
 use crate::view::format::Formatter;
-use crate::view::strings::{Key, source_name};
+use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
     CardChrome, CardId, CardState, ChartPoint, ChartSeries, ChartVm, Compact, CreditVm, NoticeKind,
     Quantity, Row, Section, SeriesRole, SeriesStyle, ViewInput,
@@ -95,36 +95,29 @@ pub(super) fn aged_state(
     }
 }
 
-/// The standard credit lines of the station sources.
-const CREDIT_NDBC: &str = "Observations: NOAA National Data Buoy Center";
-const CREDIT_COOPS: &str = "Observations: NOAA CO-OPS";
-
-/// The credit a station source is owed: the snapshot's own text when it has one, else `fallback`,
-/// else a standard line for the source.
+/// The credit a station source is owed: the snapshot's own text when it has one, else
+/// `fallback`, else a standard line for the source.
 pub(super) fn station_credit(
+    f: &Formatter,
     snapshot: &SpotSnapshot,
     id: &SourceId,
-    fallback: Option<&str>,
+    fallback: Option<SafetyKey>,
 ) -> CreditVm {
     let found = snapshot.attribution.iter().find(|a| a.source == *id);
     let standard = match id.as_str() {
-        "ndbc" => CREDIT_NDBC,
-        "coops" => CREDIT_COOPS,
-        _ => "",
+        "ndbc" => Some(SafetyKey::CreditObservationsNdbc),
+        "coops" => Some(SafetyKey::CreditObservationsCoops),
+        _ => None,
     };
     let text = found.map_or_else(
-        || {
-            let text = fallback.unwrap_or(standard);
-            if text.is_empty() {
-                source_name(id)
-            } else {
-                text.to_owned()
-            }
+        || match fallback.or(standard) {
+            Some(key) => f.strings.safety(key).to_owned(),
+            None => f.strings.source_name(id),
         },
         |a| a.credit.clone(),
     );
     CreditVm {
-        source: source_name(id),
+        source: f.strings.source_name(id),
         text,
         link: found.and_then(|a| a.url.clone()),
         licence: None,
@@ -386,7 +379,7 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
             rows(|w| w.gust_ms),
         ));
         if series.len() > before || basis == WindBasis::Observed {
-            chart_credits.push(station_credit(snapshot, &o.provenance().source, None));
+            chart_credits.push(station_credit(&f, snapshot, &o.provenance().source, None));
         }
     }
     if let Some(w) = weather {
@@ -417,7 +410,7 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
     }
     let chart = (!series.is_empty()).then(|| ChartVm {
         title: f.strings.card_title(CardId::Wind).to_owned(),
-        unit: input.units.wind_speed.symbol().to_owned(),
+        unit: f.strings.speed_unit(input.units.wind_speed).to_owned(),
         x_ticks: ticks(&z, &f, start, end),
         series,
         bands: Vec::new(),
@@ -450,11 +443,10 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
     let source_row = match (basis, observed.zip(newest), weather) {
         (WindBasis::Observed, Some((o, s)), _) => Some(Row {
             label: f.strings.get(Key::Station).to_owned(),
-            value: o
-                .provenance()
-                .station
-                .as_ref()
-                .map_or_else(|| source_name(&o.provenance().source), |st| st.name.clone()),
+            value: o.provenance().station.as_ref().map_or_else(
+                || f.strings.source_name(&o.provenance().source),
+                |st| st.name.clone(),
+            ),
             detail: Some(
                 f.strings
                     .fmt(Key::ObservedAt, &[("time", &f.clock(s.time))]),

@@ -1,8 +1,9 @@
 //! Formatting of values, units, times and provenance footnotes.
 //!
 //! The only place values are converted and rounded for display. Conversions go through
-//! [`crate::units`]; times are rendered in the spot's IANA zone (never a fixed offset); nothing
-//! here depends on the locale, so output is deterministic.
+//! [`crate::units`]; times are rendered in the spot's IANA zone (never a fixed offset); words,
+//! numbers and dates follow the [`Locale`] the formatter is given, never the system's, so output
+//! is deterministic.
 
 use jiff::Timestamp;
 use jiff::tz::TimeZone;
@@ -14,10 +15,9 @@ use crate::provenance::{Provenance, Relation, ValueKind};
 use crate::time::{LocalDate, UnixTime, UtcOffset, zone};
 use crate::units::PressureUnit;
 use crate::units::{DischargeUnit, DistanceUnit, pressure_from_hpa};
-use crate::view::strings::{Key, SafetyKey, Strings, month_abbrev, source_name};
+use crate::view::locale::Locale;
+use crate::view::strings::{Key, SafetyKey, Strings};
 use crate::view::{DisplayUnits, Notice, NoticeKind, Quantity, ViewInput, Voice};
-
-pub use whether_core::view::format::number;
 
 /// The tidal phase of a current.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -78,7 +78,7 @@ pub struct Formatter {
 }
 
 impl Formatter {
-    /// A formatter for a zone name; an unknown zone falls back to UTC.
+    /// An English formatter for a zone name; an unknown zone falls back to UTC.
     pub fn new(units: DisplayUnits, voice: Voice, clock: TimeFormat, time_zone: &str) -> Self {
         Self {
             units,
@@ -88,7 +88,14 @@ impl Formatter {
         }
     }
 
-    /// A formatter for a view input, in its spot's zone.
+    /// The same formatter writing in `locale`.
+    #[must_use]
+    pub fn with_locale(mut self, locale: Locale) -> Self {
+        self.strings.locale = locale;
+        self
+    }
+
+    /// A formatter for a view input, in its spot's zone and its locale.
     pub fn for_input(input: &ViewInput) -> Self {
         Self::new(
             input.units,
@@ -96,6 +103,7 @@ impl Formatter {
             input.clock,
             &input.snapshot.spot.time_zone,
         )
+        .with_locale(input.locale)
     }
 
     fn missing(&self, unit: &str) -> Quantity {
@@ -106,10 +114,11 @@ impl Formatter {
         }
     }
 
-    fn quantity(value: f32, decimals: u8, unit: &str) -> Quantity {
+    /// A value with `decimals` places in the locale, without thousands separators, and its unit.
+    pub fn quantity(&self, value: f32, decimals: u8, unit: &str) -> Quantity {
         Quantity {
             value: Some(value),
-            text: number(value, decimals),
+            text: self.strings.number(value, decimals),
             unit: unit.to_owned(),
         }
     }
@@ -120,8 +129,9 @@ impl Formatter {
     /// below 10 m³/s: small flows keep the decimal they are read to.
     pub fn discharge(&self, m3s: Option<f32>) -> Quantity {
         let unit = self.units.discharge;
+        let symbol = self.strings.discharge_unit(unit);
         let Some(m3s) = m3s else {
-            return self.missing(unit.symbol());
+            return self.missing(symbol);
         };
         let v = unit.from_canonical(m3s);
         let small = match unit {
@@ -131,17 +141,8 @@ impl Formatter {
         let decimals = u8::from(v.abs() < small);
         Quantity {
             value: Some(v),
-            text: Self::number(v, decimals),
-            unit: unit.symbol().to_owned(),
-        }
-    }
-
-    /// A number with the thousands grouped: "1,500", "12,345.6".
-    pub fn number(value: f32, decimals: u8) -> String {
-        let text = number(value, decimals);
-        match text.split_once('.') {
-            Some((whole, fraction)) => format!("{}.{fraction}", group_thousands(whole)),
-            None => group_thousands(&text),
+            text: self.strings.grouped(v, decimals),
+            unit: symbol.to_owned(),
         }
     }
 
@@ -177,14 +178,18 @@ impl Formatter {
     }
 
     fn height_in(&self, unit: crate::units::HeightUnit, h: Option<Height>) -> Quantity {
+        let symbol = self.strings.height_unit(unit);
         let Some(h) = h else {
-            return self.missing(unit.symbol());
+            return self.missing(symbol);
         };
         if h.datum == VerticalDatum::ModelMean {
             return self.missing("");
         }
-        let label = format!("{} {}", unit.symbol(), datum_label(h.datum));
-        Self::quantity(unit.from_canonical(h.metres), 1, &label)
+        let label = self.strings.fmt(
+            Key::UnitWithDatum,
+            &[("unit", symbol), ("datum", self.strings.datum(h.datum))],
+        );
+        self.quantity(unit.from_canonical(h.metres), 1, &label)
     }
 
     /// A length or a difference that has no datum: depth, a rise: "3.3 ft".
@@ -193,38 +198,42 @@ impl Formatter {
     }
 
     fn length_in(&self, unit: crate::units::HeightUnit, metres: Option<f32>) -> Quantity {
+        let symbol = self.strings.height_unit(unit);
         match metres {
-            Some(m) => Self::quantity(unit.from_canonical(m), 1, unit.symbol()),
-            None => self.missing(unit.symbol()),
+            Some(m) => self.quantity(unit.from_canonical(m), 1, symbol),
+            None => self.missing(symbol),
         }
     }
 
     /// A tidal current: one decimal, "1.4 kn".
     pub fn current_speed(&self, ms: Option<f32>) -> Quantity {
         let unit = self.units.current_speed;
+        let symbol = self.strings.speed_unit(unit);
         match ms {
-            Some(v) => Self::quantity(unit.from_canonical(v), 1, unit.symbol()),
-            None => self.missing(unit.symbol()),
+            Some(v) => self.quantity(unit.from_canonical(v), 1, symbol),
+            None => self.missing(symbol),
         }
     }
 
     /// Wind: whole numbers, one decimal in m/s.
     pub fn wind_speed(&self, ms: Option<f32>) -> Quantity {
         let unit = self.units.wind_speed;
+        let symbol = self.strings.speed_unit(unit);
         let decimals = u8::from(unit == crate::units::SpeedUnit::Ms);
         match ms {
-            Some(v) => Self::quantity(unit.from_canonical(v), decimals, unit.symbol()),
-            None => self.missing(unit.symbol()),
+            Some(v) => self.quantity(unit.from_canonical(v), decimals, symbol),
+            None => self.missing(symbol),
         }
     }
 
     /// "54 °F" (whole degrees) or "12.3 °C".
     pub fn temperature(&self, c: Option<f32>) -> Quantity {
         let unit = self.units.temperature;
+        let symbol = self.strings.temp_unit(unit);
         let decimals = u8::from(unit == crate::units::TempUnit::C);
         match c {
-            Some(v) => Self::quantity(unit.from_canonical(v), decimals, unit.symbol()),
-            None => self.missing(unit.symbol()),
+            Some(v) => self.quantity(unit.from_canonical(v), decimals, symbol),
+            None => self.missing(symbol),
         }
     }
 
@@ -236,34 +245,37 @@ impl Formatter {
             PressureUnit::InHg => 2,
             PressureUnit::Kpa => 1,
         };
+        let symbol = self.strings.pressure_unit(unit);
         match hpa {
-            Some(v) => Self::quantity(pressure_from_hpa(unit, v), decimals, unit.symbol()),
-            None => self.missing(unit.symbol()),
+            Some(v) => self.quantity(pressure_from_hpa(unit, v), decimals, symbol),
+            None => self.missing(symbol),
         }
     }
 
     /// A station distance in the user's unit: "0.4 mi", "12 mi".
     pub fn distance(&self, metres: Option<f32>) -> Quantity {
         let unit = self.units.distance;
+        let symbol = self.strings.distance_unit(unit);
         let Some(m) = metres else {
-            return self.missing(unit.symbol());
+            return self.missing(symbol);
         };
         let v = distance_from_metres(unit, f64::from(m)) as f32;
-        Self::quantity(v, u8::from(v < 10.0), unit.symbol())
+        self.quantity(v, u8::from(v < 10.0), symbol)
     }
 
     /// Turbidity keeps the unit it was measured in; it is never converted: "2.1 FNU".
     pub fn turbidity(&self, value: Option<f32>, unit: TurbidityUnit) -> Quantity {
+        let symbol = self.strings.turbidity_unit(unit);
         match value {
-            Some(v) => Self::quantity(v, 1, unit.label()),
-            None => self.missing(unit.label()),
+            Some(v) => self.quantity(v, 1, symbol),
+            None => self.missing(symbol),
         }
     }
 
     /// "62%".
     pub fn percent(&self, v: Option<f32>) -> Quantity {
         match v {
-            Some(v) => Self::quantity(v, 0, "%"),
+            Some(v) => self.quantity(v, 0, "%"),
             None => self.missing("%"),
         }
     }
@@ -274,9 +286,9 @@ impl Formatter {
             return self.strings.get(Key::Missing).to_owned();
         };
         let d = d.rem_euclid(360.0);
-        let shown = number(d, 0);
+        let shown = self.strings.number(d, 0);
         let shown = if shown == "360" { "0" } else { &shown };
-        format!("{} {shown}°", compass(d))
+        format!("{} {shown}°", self.strings.compass(d))
     }
 
     /// "Flood", "Ebb" or "Slack".
@@ -302,10 +314,32 @@ impl Formatter {
         match self.clock {
             TimeFormat::H24 => format!("{:02}:{:02}", l.hour, l.minute),
             TimeFormat::H12 => {
-                let (h, ampm) = twelve_hour(l.hour);
-                format!("{h}:{:02} {ampm}", l.minute)
+                let (h, pm) = twelve_hour(l.hour);
+                self.strings
+                    .twelve_hour(&format!("{h}:{:02}", l.minute), pm)
             }
         }
+    }
+
+    /// A span of clock times: "6:10 to 8:10 AM", a shared AM or PM written once; "06:10 to
+    /// 08:10" on a 24-hour clock.
+    pub fn clock_range(&self, start: UnixTime, end: UnixTime) -> String {
+        let to = self.clock(end);
+        let from = match self.clock {
+            TimeFormat::H24 => self.clock(start),
+            TimeFormat::H12 => {
+                let a = start.to_local(self.offset_at(start));
+                let b = end.to_local(self.offset_at(end));
+                let (h, pm) = twelve_hour(a.hour);
+                if pm == (b.hour >= 12) {
+                    format!("{h}:{:02}", a.minute)
+                } else {
+                    self.clock(start)
+                }
+            }
+        };
+        self.strings
+            .fmt(Key::Range, &[("from", &from), ("to", &to)])
     }
 
     /// Every local midnight in the spot's zone from `from` to `to`, both inclusive: 23 or 25
@@ -343,15 +377,15 @@ impl Formatter {
         match self.clock {
             TimeFormat::H24 => format!("{:02}:00", l.hour),
             TimeFormat::H12 => {
-                let (h, ampm) = twelve_hour(l.hour);
-                format!("{h} {ampm}")
+                let (h, pm) = twelve_hour(l.hour);
+                self.strings.twelve_hour(&h.to_string(), pm)
             }
         }
     }
 
-    /// "Nov 8".
+    /// "Nov 8", or "8 Nov" in a locale that puts the day first.
     pub fn date(&self, d: LocalDate) -> String {
-        format!("{} {}", month_abbrev(d.month), d.day)
+        self.strings.date(d.month, d.day)
     }
 
     /// The date of an instant in the spot's zone: "Nov 8".
@@ -379,14 +413,26 @@ impl Formatter {
     pub fn duration(&self, seconds: i64) -> String {
         let s = seconds.max(0);
         let (key, n) = if s >= 86_400 && s % 86_400 == 0 {
-            (Key::AgeDays, s / 86_400)
+            (Key::DurationDays, s / 86_400)
         } else if s >= 3_600 && s % 3_600 == 0 {
-            (Key::AgeHours, s / 3_600)
+            (Key::DurationHours, s / 3_600)
         } else {
-            (Key::AgeMinutes, s / 60)
+            (Key::DurationMinutes, s / 60)
         };
-        let text = self.strings.fmt(key, &[("n", &n.to_string())]);
-        text.trim_end_matches(" ago").to_owned()
+        self.strings.fmt(key, &[("n", &n.to_string())])
+    }
+
+    /// An age without "ago", rounded down like [`Self::age`]: "2 h" for 7,300 s.
+    fn age_span(&self, seconds: i64) -> String {
+        let s = seconds.max(0);
+        let (key, n) = if s < 3_600 {
+            (Key::DurationMinutes, s / 60)
+        } else if s < 86_400 {
+            (Key::DurationHours, s / 3_600)
+        } else {
+            (Key::DurationDays, s / 86_400)
+        };
+        self.strings.fmt(key, &[("n", &n.to_string())])
     }
 
     /// The header line: "updated 6 min ago".
@@ -440,11 +486,11 @@ impl Formatter {
             } else {
                 (Key::PercentileRankAbove, 95)
             };
-            s.fmt(key, &[("ordinal", &ordinal(bound))])
+            s.fmt(key, &[("ordinal", &s.ordinal(bound))])
         } else {
             s.fmt(
                 Key::PercentileRank,
-                &[("ordinal", &ordinal(round_u32(rank)))],
+                &[("ordinal", &s.ordinal(round_u32(rank)))],
             )
         };
         Some(s.fmt(
@@ -464,15 +510,15 @@ impl Formatter {
     ) -> Vec<String> {
         let mut parts = vec![match &p.station {
             Some(s) => s.name.clone(),
-            None => source_name(&p.source),
+            None => self.strings.source_name(&p.source),
         }];
         let distance = p.distance_m.map(|m| self.distance(Some(m)).full());
         match (p.relation, distance) {
             (Relation::Upstream, Some(d)) => {
-                parts.push(format!("{d} {}", self.strings.get(Key::Upstream)));
+                parts.push(self.strings.fmt(Key::Upstream, &[("distance", &d)]));
             }
             (Relation::Downstream, Some(d)) => {
-                parts.push(format!("{d} {}", self.strings.get(Key::Downstream)));
+                parts.push(self.strings.fmt(Key::Downstream, &[("distance", &d)]));
             }
             (Relation::Gridded, _) => parts.push(self.strings.get(Key::Modelled).to_owned()),
             (Relation::Satellite, _) => parts.push(self.strings.get(Key::Satellite).to_owned()),
@@ -514,14 +560,15 @@ impl Formatter {
     pub fn station_footer(&self, p: &Provenance) -> Footer {
         let station = match &p.station {
             Some(s) => s.name.clone(),
-            None => source_name(&p.source),
+            None => self.strings.source_name(&p.source),
         };
         let distance = self.distance(p.distance_m).full();
         let args = [
             ("station", station.as_str()),
             ("distance", distance.as_str()),
         ];
-        let plain = Strings::new(Voice::Plain).fmt(Key::StationFooter, &args);
+        let plain =
+            Strings::localized(Voice::Plain, self.strings.locale).fmt(Key::StationFooter, &args);
         let text = if p.distance_m.is_some() {
             self.strings.fmt(Key::StationFooter, &args)
         } else {
@@ -551,10 +598,12 @@ impl Formatter {
 
     /// Why a value older than the user's age limit is greyed.
     pub fn stale_reason(&self, age_s: i64, limit_s: i64) -> String {
-        let bare = |s: i64| self.age(s).trim_end_matches(" ago").to_owned();
         self.strings.fmt(
             Key::StaleReason,
-            &[("age", &bare(age_s)), ("limit", &bare(limit_s))],
+            &[
+                ("age", &self.age_span(age_s)),
+                ("limit", &self.age_span(limit_s)),
+            ],
         )
     }
 
@@ -582,68 +631,18 @@ impl Formatter {
     }
 }
 
-fn datum_label(datum: VerticalDatum) -> &'static str {
-    match datum {
-        VerticalDatum::Mllw => "MLLW",
-        VerticalDatum::Mlw => "MLW",
-        VerticalDatum::Msl => "MSL",
-        VerticalDatum::Mtl => "MTL",
-        VerticalDatum::Navd88 => "NAVD88",
-        VerticalDatum::Ngvd29 => "NGVD29",
-        VerticalDatum::Igld85 => "IGLD85",
-        VerticalDatum::Gauge => "gage datum",
-        VerticalDatum::ChsChartDatum => "chart datum (CHS)",
-        VerticalDatum::ModelMean => "model mean",
-    }
-}
-
-fn compass(degrees: f32) -> &'static str {
-    const NAMES: [&str; 16] = [
-        "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW",
-        "NW", "NNW",
-    ];
-    let idx = round_u32(degrees / 22.5) as usize % 16;
-    NAMES[idx]
-}
-
 fn round_u32(x: f32) -> u32 {
     // INVARIANT: callers pass values in 0..=360, so the rounded value fits.
     x.round() as u32
 }
 
-pub(crate) fn ordinal(n: u32) -> String {
-    let suffix = match (n % 100, n % 10) {
-        (11..=13, _) => "th",
-        (_, 1) => "st",
-        (_, 2) => "nd",
-        (_, 3) => "rd",
-        _ => "th",
-    };
-    format!("{n}{suffix}")
-}
-
-fn twelve_hour(hour: u8) -> (u8, &'static str) {
-    let ampm = if hour < 12 { "AM" } else { "PM" };
+/// The hour on a 12-hour clock and whether it is after noon.
+fn twelve_hour(hour: u8) -> (u8, bool) {
     let h = match hour % 12 {
         0 => 12,
         h => h,
     };
-    (h, ampm)
-}
-
-/// "1200" to "1,200"; handles a leading minus.
-fn group_thousands(digits: &str) -> String {
-    let (sign, body) = digits
-        .strip_prefix('-')
-        .map_or(("", digits), |rest| ("-", rest));
-    let mut out = String::with_capacity(body.len() + body.len() / 3);
-    for (i, c) in body.chars().enumerate() {
-        if i > 0 && (body.len() - i) % 3 == 0 {
-            out.push(',');
-        }
-        out.push(c);
-    }
-    format!("{sign}{out}")
+    (h, hour >= 12)
 }
 
 #[cfg(test)]
@@ -719,19 +718,46 @@ mod tests {
 
     #[test]
     fn numbers_group_and_never_show_negative_zero() {
-        assert_eq!(group_thousands("1200"), "1,200");
-        assert_eq!(group_thousands("999"), "999");
-        assert_eq!(group_thousands("1234567"), "1,234,567");
-        assert_eq!(group_thousands("-4500"), "-4,500");
-        assert_eq!(number(-0.04, 1), "0.0");
-        assert_eq!(Formatter::number(1500.0, 0), "1,500");
-        assert_eq!(Formatter::number(1_234_567.8, 1), "1,234,567.8");
-        assert_eq!(Formatter::number(-4500.0, 0), "-4,500");
-        assert_eq!(Formatter::number(12.5, 1), "12.5");
-        assert_eq!(ordinal(1), "1st");
-        assert_eq!(ordinal(12), "12th");
-        assert_eq!(ordinal(45), "45th");
-        assert_eq!(ordinal(93), "93rd");
+        let s = Strings::new(Voice::Plain);
+        assert_eq!(s.number(-0.04, 1), "0.0");
+        assert_eq!(s.grouped(1500.0, 0), "1,500");
+        assert_eq!(s.grouped(1_234_567.8, 1), "1,234,567.8");
+        assert_eq!(s.grouped(-4500.0, 0), "-4,500");
+        assert_eq!(s.grouped(12.5, 1), "12.5");
+        assert_eq!(s.ordinal(1), "1st");
+        assert_eq!(s.ordinal(12), "12th");
+        assert_eq!(s.ordinal(45), "45th");
+        assert_eq!(s.ordinal(93), "93rd");
+        assert_eq!(s.ordinal(111), "111th");
+        assert_eq!(s.ordinal(22), "22nd");
+    }
+
+    #[test]
+    fn values_dates_and_times_follow_the_locale() {
+        let de = Locale {
+            numbers: crate::view::locale::NumberStyle::Comma,
+            dates: crate::view::locale::DateOrder::DayMonth,
+            ..Locale::ENGLISH
+        };
+        let f = fmt(us(), Voice::Plain, TimeFormat::H12).with_locale(de);
+        assert_eq!(f.discharge(Some(33.98)).full(), "1.200 cfs");
+        assert_eq!(f.current_speed(Some(0.72)).full(), "1,4 kn");
+        assert_eq!(f.date_of(UnixTime(1_794_744_180)), "15 Nov");
+        assert_eq!(f.clock(UnixTime(1_794_744_180)), "7:03 AM");
+        assert_eq!(
+            f.percentile(
+                Some(PercentileClass::Normal),
+                Some(45.0),
+                false,
+                LocalDate {
+                    year: 2026,
+                    month: 11,
+                    day: 8
+                }
+            )
+            .as_deref(),
+            Some("normal, 45th percentile for 8 Nov")
+        );
     }
 
     #[test]

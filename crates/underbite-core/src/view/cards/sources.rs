@@ -10,7 +10,7 @@ use crate::series::Series;
 use crate::time::UnixTime;
 use crate::view::cards::flow::card_state;
 use crate::view::format::Formatter;
-use crate::view::strings::{Key, Strings, source_name};
+use crate::view::strings::{Key, SafetyKey, Strings};
 use crate::view::{
     CardChrome, CardId, CardState, Compact, CreditVm, Notice, NoticeKind, Quantity, ViewInput,
 };
@@ -18,23 +18,6 @@ use crate::view::{
 const PROVISIONAL_STATEMENT: &str = "https://waterdata.usgs.gov/provisional-data-statement/";
 const OPEN_METEO: &str = "https://open-meteo.com/";
 const OPEN_METEO_LICENCE: &str = "https://open-meteo.com/en/licence";
-/// Licences as the sources state them.
-const PUBLIC_DOMAIN: &str = "Public domain";
-const CC_BY_4: &str = "CC BY 4.0";
-/// What Open-Meteo's model providers are called as a credit.
-const MODEL_PROVIDERS: &str = "Open-Meteo model providers";
-/// The credit lines of the sources, as they ask to be credited.
-const CREDIT_USGS: &str = "U.S. Geological Survey";
-const CREDIT_COOPS: &str = "Tide, water-level and current data: NOAA/NOS CO-OPS";
-const CREDIT_HARMONICS: &str = "Computed on this device from NOAA CO-OPS harmonic constants";
-const CREDIT_NDBC: &str = "Observations: NOAA National Data Buoy Center";
-const CREDIT_NWPS: &str = "River forecasts: NOAA National Water Prediction Service";
-const CREDIT_NWS: &str = "Marine forecasts and alerts: NOAA National Weather Service";
-const CREDIT_OPEN_METEO: &str = "Weather data by Open-Meteo.com";
-/// The model providers Open-Meteo's marine data comes from, as its terms ask them credited.
-const MARINE_MODELS: &str = "Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), \
-    ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service \
-    (ERA5-Ocean)";
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
 pub struct SourcesCard {
@@ -227,46 +210,59 @@ fn error_kind_label(f: &Formatter, k: SourceErrorKind) -> &'static str {
     })
 }
 
-/// The credit a source is owed: the snapshot's own wording and link when it has them.
-fn credit_for(snapshot: &SpotSnapshot, id: &SourceId) -> CreditVm {
+/// The credit a source is owed: the snapshot's own wording and link when it has them, else the
+/// credit line the source asks for, with its licence as the source states it.
+fn credit_for(snapshot: &SpotSnapshot, id: &SourceId, strings: Strings) -> CreditVm {
     let (text, link, licence) = match id.as_str() {
         "usgs" => (
-            CREDIT_USGS,
+            Some(SafetyKey::CreditUsgs),
             "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
-            Some(PUBLIC_DOMAIN),
+            Some(SafetyKey::LicencePublicDomain),
         ),
         "coops" => (
-            CREDIT_COOPS,
+            Some(SafetyKey::CreditCoops),
             "https://tidesandcurrents.noaa.gov/",
-            Some(PUBLIC_DOMAIN),
+            Some(SafetyKey::LicencePublicDomain),
         ),
         "coops-harmonics" => (
-            CREDIT_HARMONICS,
+            Some(SafetyKey::CreditHarmonics),
             "https://tidesandcurrents.noaa.gov/",
-            Some(PUBLIC_DOMAIN),
+            Some(SafetyKey::LicencePublicDomain),
         ),
         "ndbc" => (
-            CREDIT_NDBC,
+            Some(SafetyKey::CreditObservationsNdbc),
             "https://www.ndbc.noaa.gov/",
-            Some(PUBLIC_DOMAIN),
+            Some(SafetyKey::LicencePublicDomain),
         ),
-        "nwps" => (CREDIT_NWPS, "https://water.noaa.gov/", Some(PUBLIC_DOMAIN)),
-        "nws" => (CREDIT_NWS, "https://www.weather.gov/", Some(PUBLIC_DOMAIN)),
-        "open-meteo-marine" => (CREDIT_OPEN_METEO, OPEN_METEO, Some(CC_BY_4)),
-        _ => ("", "", None),
+        "nwps" => (
+            Some(SafetyKey::CreditNwps),
+            "https://water.noaa.gov/",
+            Some(SafetyKey::LicencePublicDomain),
+        ),
+        "nws" => (
+            Some(SafetyKey::CreditNws),
+            "https://www.weather.gov/",
+            Some(SafetyKey::LicencePublicDomain),
+        ),
+        "open-meteo-marine" => (
+            Some(SafetyKey::CreditOpenMeteo),
+            OPEN_METEO,
+            Some(SafetyKey::LicenceCcBy4),
+        ),
+        _ => (None, "", None),
     };
     let found = snapshot.attribution.iter().find(|a| a.source == *id);
-    let name = source_name(id);
+    let name = strings.source_name(id);
     CreditVm {
-        text: match found {
-            Some(a) => a.credit.clone(),
-            None if text.is_empty() => name.clone(),
-            None => text.to_owned(),
+        text: match (found, text) {
+            (Some(a), _) => a.credit.clone(),
+            (None, None) => name.clone(),
+            (None, Some(key)) => strings.safety(key).to_owned(),
         },
         link: found
             .and_then(|a| a.url.clone())
             .or_else(|| (!link.is_empty()).then(|| link.to_owned())),
-        licence: licence.map(str::to_owned),
+        licence: licence.map(|key| strings.safety(key).to_owned()),
         source: name,
     }
 }
@@ -295,7 +291,7 @@ fn credits(snapshot: &SpotSnapshot, used: &[Used<'_>], strings: Strings) -> Vec<
         if seen.contains(&id) {
             continue;
         }
-        add(&mut out, credit_for(snapshot, &id));
+        add(&mut out, credit_for(snapshot, &id, strings));
         seen.push(id);
     }
 
@@ -307,7 +303,8 @@ fn credits(snapshot: &SpotSnapshot, used: &[Used<'_>], strings: Strings) -> Vec<
                 source: w.provider.display_name().to_owned(),
                 text: w.provider.attribution().to_owned(),
                 link: (w.provider == ProviderId::OpenMeteo).then(|| OPEN_METEO.to_owned()),
-                licence: (w.provider == ProviderId::OpenMeteo).then(|| CC_BY_4.to_owned()),
+                licence: (w.provider == ProviderId::OpenMeteo)
+                    .then(|| strings.safety(SafetyKey::LicenceCcBy4).to_owned()),
             },
         );
         for p in &w.supplemented_by {
@@ -331,13 +328,13 @@ fn credits(snapshot: &SpotSnapshot, used: &[Used<'_>], strings: Strings) -> Vec<
         }
     }
     if seen.contains(&SourceId::OPEN_METEO_MARINE) {
-        models.push(MARINE_MODELS.to_owned());
+        models.push(strings.safety(SafetyKey::CreditMarineModels).to_owned());
     }
     if !models.is_empty() {
         add(
             &mut out,
             CreditVm {
-                source: MODEL_PROVIDERS.to_owned(),
+                source: strings.safety(SafetyKey::SourceModelProviders).to_owned(),
                 text: models.join(". "),
                 link: Some(OPEN_METEO_LICENCE.to_owned()),
                 licence: None,
@@ -351,7 +348,7 @@ fn credits(snapshot: &SpotSnapshot, used: &[Used<'_>], strings: Strings) -> Vec<
         add(
             &mut out,
             CreditVm {
-                source: source_name(&SourceId::USGS),
+                source: strings.source_name(&SourceId::USGS),
                 text: strings.get(Key::ProvisionalStatement).to_owned(),
                 link: Some(PROVISIONAL_STATEMENT.to_owned()),
                 licence: None,
@@ -380,7 +377,9 @@ fn station_uses(input: &ViewInput, f: &Formatter, used: &[Used<'_>]) -> Vec<Stat
         // One row per station and kind of value, naming everything it supplies.
         let kind = kind_label(f, p.kind);
         if let Some(row) = out.iter_mut().find(|s| {
-            s.station_id == station.id && s.source == source_name(&p.source) && s.kind == kind
+            s.station_id == station.id
+                && s.source == f.strings.source_name(&p.source)
+                && s.kind == kind
         }) {
             if !row.measurement.split(", ").any(|m| m == measurement) {
                 row.measurement.push_str(", ");
@@ -395,7 +394,7 @@ fn station_uses(input: &ViewInput, f: &Formatter, used: &[Used<'_>]) -> Vec<Stat
             measurement: measurement.to_owned(),
             station: station.name.clone(),
             station_id: station.id.clone(),
-            source: source_name(&p.source),
+            source: f.strings.source_name(&p.source),
             distance: p.distance_m.map(|m| f.distance(Some(m)).full()),
             age: if let Some(t) = latest.filter(|_| aged) {
                 f.age(input.now.0 - t.0)
@@ -420,7 +419,7 @@ fn error_vm(f: &Formatter, e: &SourceError, count: usize) -> SourceErrorVm {
         message = format!("{message} ({more})");
     }
     SourceErrorVm {
-        source: source_name(&e.source),
+        source: f.strings.source_name(&e.source),
         measurement: e.measurement.map(|m| measurement_label(f, m).to_owned()),
         kind: error_kind_label(f, e.kind).to_owned(),
         message,

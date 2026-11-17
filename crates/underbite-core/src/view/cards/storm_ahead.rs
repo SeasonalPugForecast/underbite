@@ -7,7 +7,7 @@
 use schemars::JsonSchema;
 use serde::Serialize;
 use whether_core::models::short_name;
-use whether_core::scales::{compass16, saffir_simpson};
+use whether_core::scales::saffir_simpson;
 use whether_core::storm::analysis::{
     self, ModelEventStats, SIGNIFICANT_GUST_KMH, SIGNIFICANT_HORIZON_SECS, SIGNIFICANT_PRECIP_MM,
     SIGNIFICANT_SNOW_CM, StormEvent,
@@ -22,7 +22,7 @@ use crate::time::UnixTime;
 use crate::units::{HeightUnit, SpeedUnit};
 use crate::view::cards::sun_moon::day_label;
 use crate::view::chart::Zoned;
-use crate::view::format::{Formatter, number};
+use crate::view::format::Formatter;
 use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
     CardChrome, CardId, CardState, Compact, CreditVm, NoticeKind, Quantity, Row, Section, ViewInput,
@@ -34,19 +34,6 @@ const HOUR: i64 = 3_600;
 const DAY: i64 = 24 * HOUR;
 
 const OPEN_METEO_LINK: &str = "https://open-meteo.com/";
-/// The length units of snow and rain amounts.
-const UNIT_IN: &str = "in";
-const UNIT_CM: &str = "cm";
-const UNIT_MM: &str = "mm";
-/// The credits as the sources ask to be credited.
-const SOURCE_OPEN_METEO: &str = "Open-Meteo";
-const CREDIT_OPEN_METEO: &str =
-    "Weather model data by Open-Meteo.com, with ECMWF, NOAA GFS, GEM and ICON forecasts";
-const SOURCE_NHC: &str = "NOAA National Hurricane Center";
-const CREDIT_NHC: &str =
-    "Advisories, forecast tracks and the forecast cone: NOAA National Hurricane Center";
-const LICENCE_CC_BY_4: &str = "CC BY 4.0";
-const LICENCE_PUBLIC_DOMAIN: &str = "Public domain";
 const NHC_LINK: &str = "https://www.nhc.noaa.gov/";
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
@@ -181,24 +168,34 @@ impl Amounts<'_> {
         }
     }
 
+    /// The unit of snow (`snow`) or rain amounts: inches, else centimetres or millimetres.
+    fn unit(&self, snow: bool) -> &'static str {
+        self.f.strings.get(match (self.imperial, snow) {
+            (true, _) => Key::UnitInches,
+            (false, true) => Key::UnitCentimetres,
+            (false, false) => Key::UnitMillimetres,
+        })
+    }
+
     fn snow(&self, cm: Option<f32>) -> Quantity {
-        let (unit, factor) = if self.imperial {
-            (UNIT_IN, 1.0 / 2.54)
-        } else {
-            (UNIT_CM, 1.0)
-        };
-        cm.map_or_else(|| self.missing(unit), |cm| quantity(cm * factor, 1, unit))
+        let unit = self.unit(true);
+        let factor = if self.imperial { 1.0 / 2.54 } else { 1.0 };
+        cm.map_or_else(
+            || self.missing(unit),
+            |cm| self.f.quantity(cm * factor, 1, unit),
+        )
     }
 
     fn precipitation(&self, mm: Option<f32>) -> Quantity {
-        let (unit, factor, decimals) = if self.imperial {
-            (UNIT_IN, 1.0 / 25.4, 2)
+        let unit = self.unit(false);
+        let (factor, decimals) = if self.imperial {
+            (1.0 / 25.4, 2)
         } else {
-            (UNIT_MM, 1.0, 1)
+            (1.0, 1)
         };
         mm.map_or_else(
             || self.missing(unit),
-            |mm| quantity(mm * factor, decimals, unit),
+            |mm| self.f.quantity(mm * factor, decimals, unit),
         )
     }
 
@@ -209,24 +206,12 @@ impl Amounts<'_> {
 
 /// An amount rounded for a sentence: whole numbers from 1 up, one decimal below, one more
 /// decimal for inches of rain.
-fn rough(q: &Quantity, snow: bool) -> Quantity {
+fn rough(a: &Amounts, q: &Quantity, snow: bool) -> Quantity {
     let Some(value) = q.value else {
         return q.clone();
     };
-    let extra = u8::from(!snow && q.unit == UNIT_IN);
-    Quantity {
-        value: Some(value),
-        text: number(value, u8::from(value < 1.0) + extra),
-        unit: q.unit.clone(),
-    }
-}
-
-fn quantity(value: f32, decimals: u8, unit: &str) -> Quantity {
-    Quantity {
-        value: Some(value),
-        text: number(value, decimals),
-        unit: unit.to_owned(),
-    }
+    let extra = u8::from(!snow && a.imperial);
+    a.f.quantity(value, u8::from(value < 1.0) + extra, &q.unit)
 }
 
 /// A speed in knots in the user's wind unit.
@@ -242,7 +227,7 @@ fn advisory_wind(f: &Formatter, kt: Option<u16>) -> Quantity {
     let wind = knots(f, kt.map(f32::from));
     match wind.value {
         Some(v) if f.units.wind_speed != SpeedUnit::Ms => {
-            quantity((v / 5.0).round() * 5.0, 0, &wind.unit)
+            f.quantity((v / 5.0).round() * 5.0, 0, &wind.unit)
         }
         _ => wind,
     }
@@ -272,12 +257,13 @@ fn part_of_day(z: &Zoned, t: UnixTime) -> (Weekday, Part) {
 /// "Sun afternoon", "Tue night".
 fn day_part_label(f: &Formatter, z: &Zoned, t: UnixTime) -> String {
     let (day, part) = part_of_day(z, t);
-    let word = f.strings.safety(match part {
+    let key = match part {
         Part::Morning => SafetyKey::StormPartMorning,
         Part::Afternoon => SafetyKey::StormPartAfternoon,
         Part::Night => SafetyKey::StormPartNight,
-    });
-    format!("{} {word}", f.strings.weekday(day))
+    };
+    f.strings
+        .safety_fmt(key, &[("day", f.strings.weekday(day))])
 }
 
 /// "Sun 1 PM" or "Sun 13:00".
@@ -343,7 +329,7 @@ fn headline(a: &Amounts, event: &StormEvent) -> Option<StormHeadlineVm> {
         }
     };
     if let Some(cm) = most(|m| m.total_snow_cm) {
-        let amount = rough(&a.snow(Some(cm)), true);
+        let amount = rough(a, &a.snow(Some(cm)), true);
         consider(
             event.mean_snow_cm / SIGNIFICANT_SNOW_CM,
             StormHeadlineVm {
@@ -357,7 +343,7 @@ fn headline(a: &Amounts, event: &StormEvent) -> Option<StormHeadlineVm> {
         );
     }
     if let Some(mm) = most(|m| m.total_mm) {
-        let amount = rough(&a.precipitation(Some(mm)), false);
+        let amount = rough(a, &a.precipitation(Some(mm)), false);
         consider(
             event.mean_total_mm / SIGNIFICANT_PRECIP_MM,
             StormHeadlineVm {
@@ -408,8 +394,8 @@ fn agreement_vm(a: &Amounts, event: &StormEvent, spot: (f64, f64)) -> Option<Sto
                 .and_then(|m| m.total_snow_cm)
         };
         let amount = |snow: Option<f32>, mm: f32| match snow {
-            Some(cm) if event.has_snow() => rough(&a.snow(Some(cm)), true),
-            _ => rough(&a.precipitation(Some(mm)), false),
+            Some(cm) if event.has_snow() => rough(a, &a.snow(Some(cm)), true),
+            _ => rough(a, &a.precipitation(Some(mm)), false),
         };
         let (wet_snow, dry_snow) = (snow_of(&wet.model), snow_of(&dry.model));
         let snowy = event.has_snow() && wet_snow.is_some() && dry_snow.is_some();
@@ -513,7 +499,7 @@ fn severity(h: &Hurricane) -> StormSeverity {
 
 /// "Hurricane Josephine", "Tropical Storm Josephine".
 fn kind_name(f: &Formatter, h: &Hurricane) -> String {
-    let kind = f.strings.safety(match h.classification.as_str() {
+    let kind = match h.classification.as_str() {
         "HU" => SafetyKey::HurricaneHurricane,
         "TS" => SafetyKey::HurricaneTropicalStorm,
         "TD" => SafetyKey::HurricaneTropicalDepression,
@@ -523,8 +509,8 @@ fn kind_name(f: &Formatter, h: &Hurricane) -> String {
         "PC" => SafetyKey::HurricanePotentialTropical,
         "TY" => SafetyKey::HurricaneTyphoon,
         _ => SafetyKey::HurricaneCyclone,
-    });
-    format!("{kind} {}", h.name)
+    };
+    f.strings.safety_fmt(kind, &[("name", &h.name)])
 }
 
 /// "NE at 13 mph", "Stationary" below 1 kt, or the missing placeholder.
@@ -534,7 +520,7 @@ fn movement(f: &Formatter, h: &Hurricane) -> String {
         (Some(deg), Some(kt)) => f.strings.safety_fmt(
             SafetyKey::StormMovement,
             &[
-                ("direction", compass16(deg)),
+                ("direction", f.strings.compass(deg)),
                 ("speed", &knots(f, Some(kt)).full()),
             ],
         ),
@@ -627,27 +613,28 @@ fn hurricanes_ahead(
 
 // -- the card ---------------------------------------------------------------------------------
 
-fn credits(event: bool, hurricanes: &[HurricaneAheadVm]) -> Vec<CreditVm> {
+fn credits(f: &Formatter, event: bool, hurricanes: &[HurricaneAheadVm]) -> Vec<CreditVm> {
+    let s = f.strings;
     let mut credits = Vec::new();
     if event {
         credits.push(CreditVm {
-            source: SOURCE_OPEN_METEO.to_owned(),
-            text: CREDIT_OPEN_METEO.to_owned(),
+            source: s.safety(SafetyKey::SourceOpenMeteo).to_owned(),
+            text: s.safety(SafetyKey::CreditOpenMeteoModels).to_owned(),
             link: Some(OPEN_METEO_LINK.to_owned()),
-            licence: Some(LICENCE_CC_BY_4.to_owned()),
+            licence: Some(s.safety(SafetyKey::LicenceCcBy4).to_owned()),
         });
     }
     if !hurricanes.is_empty() {
         credits.push(CreditVm {
-            source: SOURCE_NHC.to_owned(),
-            text: CREDIT_NHC.to_owned(),
+            source: s.safety(SafetyKey::SourceNhc).to_owned(),
+            text: s.safety(SafetyKey::CreditNhc).to_owned(),
             link: Some(
                 hurricanes[0]
                     .advisory_url
                     .clone()
                     .unwrap_or_else(|| NHC_LINK.to_owned()),
             ),
-            licence: Some(LICENCE_PUBLIC_DOMAIN.to_owned()),
+            licence: Some(s.safety(SafetyKey::LicencePublicDomain).to_owned()),
         });
     }
     credits
@@ -656,16 +643,12 @@ fn credits(event: bool, hurricanes: &[HurricaneAheadVm]) -> Vec<CreditVm> {
 /// Why the card shows, and the safety text.
 fn sections(a: &Amounts, hurricanes: bool) -> Vec<Section> {
     let (snow, precip) = if a.imperial {
-        (
-            format!("{} {UNIT_IN}", number(SIGNIFICANT_SNOW_CM / 2.54, 0)),
-            format!("{} {UNIT_IN}", number(SIGNIFICANT_PRECIP_MM / 25.4, 0)),
-        )
+        (SIGNIFICANT_SNOW_CM / 2.54, SIGNIFICANT_PRECIP_MM / 25.4)
     } else {
-        (
-            format!("{} {UNIT_CM}", number(SIGNIFICANT_SNOW_CM, 0)),
-            format!("{} {UNIT_MM}", number(SIGNIFICANT_PRECIP_MM, 0)),
-        )
+        (SIGNIFICANT_SNOW_CM, SIGNIFICANT_PRECIP_MM)
     };
+    let snow = a.f.quantity(snow, 0, a.unit(true)).full();
+    let precip = a.f.quantity(precip, 0, a.unit(false)).full();
     let gust = a.gust(Some(SIGNIFICANT_GUST_KMH)).full();
     let days = SIGNIFICANT_HORIZON_SECS / DAY;
     let s = a.f.strings;
@@ -793,7 +776,7 @@ pub fn build(input: &ViewInput) -> Option<StormAheadCard> {
         ],
     );
     let full_sections = sections(&a, !hurricanes.is_empty());
-    let credits = credits(event.is_some(), &hurricanes);
+    let credits = credits(&f, event.is_some(), &hurricanes);
 
     Some(StormAheadCard {
         chrome: CardChrome {

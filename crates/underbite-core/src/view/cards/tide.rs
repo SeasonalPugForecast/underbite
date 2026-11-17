@@ -15,7 +15,7 @@ use crate::view::cards::sun_moon::{MoonPhaseVm, day_label};
 use crate::view::cards::wind::latest_at;
 use crate::view::chart::{Zoned, grid, level_at, ticks, window};
 use crate::view::format::Formatter;
-use crate::view::strings::{Key, source_name};
+use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
     BandKind, CardChrome, CardId, CardState, ChartBand, ChartMarker, ChartPoint, ChartSeries,
     ChartVm, Compact, CreditVm, MarkerKind, Notice, NoticeKind, Quantity, Row, Section, SeriesRole,
@@ -92,7 +92,11 @@ pub struct TideFull {
 const SLACK_MINUTES: f64 = 15.0;
 
 /// The credits owed for a series: the source's, and for on-device harmonics also the data's.
-pub(in crate::view) fn credits(snapshot: &SpotSnapshot, source: &SourceId) -> Vec<CreditVm> {
+pub(in crate::view) fn credits(
+    f: &Formatter,
+    snapshot: &SpotSnapshot,
+    source: &SourceId,
+) -> Vec<CreditVm> {
     let ids = if *source == SourceId::COOPS_HARMONICS {
         vec![SourceId::COOPS, SourceId::COOPS_HARMONICS]
     } else {
@@ -102,8 +106,8 @@ pub(in crate::view) fn credits(snapshot: &SpotSnapshot, source: &SourceId) -> Ve
         .map(|id| {
             let found = snapshot.attribution.iter().find(|a| a.source == *id);
             CreditVm {
-                source: source_name(id),
-                text: found.map_or_else(|| default_credit(id), |a| a.credit.clone()),
+                source: f.strings.source_name(id),
+                text: found.map_or_else(|| default_credit(f, id), |a| a.credit.clone()),
                 link: found.and_then(|a| a.url.clone()),
                 licence: None,
             }
@@ -111,17 +115,15 @@ pub(in crate::view) fn credits(snapshot: &SpotSnapshot, source: &SourceId) -> Ve
         .collect()
 }
 
-const CREDIT_COOPS: &str = "Predictions and observations: NOAA CO-OPS";
-const CREDIT_HARMONICS: &str = "Computed from NOAA harmonic constants";
-const CREDIT_OPEN_METEO: &str = "Sea level model: Open-Meteo";
-
-fn default_credit(id: &SourceId) -> String {
-    match id.as_str() {
-        "coops" => CREDIT_COOPS.to_owned(),
-        "coops-harmonics" => CREDIT_HARMONICS.to_owned(),
-        "open-meteo-marine" => CREDIT_OPEN_METEO.to_owned(),
-        _ => source_name(id),
-    }
+/// The credit of a tide source whose snapshot carries no attribution.
+fn default_credit(f: &Formatter, id: &SourceId) -> String {
+    let key = match id.as_str() {
+        "coops" => SafetyKey::CreditTideCoops,
+        "coops-harmonics" => SafetyKey::CreditTideHarmonics,
+        "open-meteo-marine" => SafetyKey::CreditTideOpenMeteo,
+        _ => return f.strings.source_name(id),
+    };
+    f.strings.safety(key).to_owned()
 }
 
 /// The notices a tide carries: never for navigation, and either the sea-level model's notice or
@@ -394,7 +396,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
     let chart = (!series.is_empty()).then(|| ChartVm {
         title: f.strings.card_title(CardId::Tide).to_owned(),
         unit: if shown {
-            input.units.height.symbol().to_owned()
+            f.strings.height_unit(input.units.height).to_owned()
         } else {
             String::new()
         },
@@ -447,9 +449,8 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
     }
 
     let datum_label = shown.then(|| {
-        let unit_text = height(Some(0.0)).unit;
-        let name = unit_text.split_once(' ').map_or("", |(_, d)| d);
-        f.strings.fmt(Key::AboveDatum, &[("datum", name)])
+        f.strings
+            .fmt(Key::AboveDatum, &[("datum", f.strings.datum(tide.datum))])
     });
     let p = &tide.provenance;
     let mut rows = vec![Row {
@@ -457,7 +458,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
         value: p
             .station
             .as_ref()
-            .map_or_else(|| source_name(&p.source), |s| s.name.clone()),
+            .map_or_else(|| f.strings.source_name(&p.source), |s| s.name.clone()),
         detail: p.distance_m.map(|m| f.distance(Some(m)).full()),
     }];
     if let Some(label) = &datum_label {
@@ -520,7 +521,11 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
             ),
             match (&n.height, &datum_label) {
                 (Some(h), Some(d)) => {
-                    format!(", {} {} {d}", h.text, input.units.height.symbol())
+                    format!(
+                        ", {} {} {d}",
+                        h.text,
+                        f.strings.height_unit(input.units.height)
+                    )
                 }
                 _ => String::new(),
             }
@@ -543,7 +548,7 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
                         .map(|s| s.time),
                 ),
             ),
-            credits: credits(snapshot, &p.source),
+            credits: credits(&f, snapshot, &p.source),
             state: card_state,
             notices,
             accessibility,

@@ -11,7 +11,7 @@ use crate::view::cards::flow::{
     card_state, chart_series, chart_vm, credits, is_unreliable, observed_after, quality_notices,
     row, sample_quality, spark, trend, unreliable_text,
 };
-use crate::view::format::{Formatter, number};
+use crate::view::format::Formatter;
 use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
     CardChrome, CardId, ChartRule, ChartVm, Compact, NoticeKind, Quantity, Row, RuleKind, Section,
@@ -110,11 +110,12 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
         trend(&f, primary.samples(), TEMP_TREND_C, &|d| {
             // A change is scaled, not offset.
             let unit = f.units.temperature;
-            format!(
-                "{} {}",
-                number(unit.from_canonical(d) - unit.from_canonical(0.0), 1),
-                unit.symbol()
+            f.quantity(
+                unit.from_canonical(d) - unit.from_canonical(0.0),
+                1,
+                f.strings.temp_unit(unit),
             )
+            .full()
         })
     };
 

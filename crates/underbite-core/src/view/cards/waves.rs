@@ -13,7 +13,7 @@ use crate::view::cards::wind::{
 };
 use crate::view::chart::{Zoned, ticks, window};
 use crate::view::format::Formatter;
-use crate::view::strings::{Key, source_name};
+use crate::view::strings::{Key, SafetyKey};
 use crate::view::{
     CardChrome, CardId, CardState, ChartPoint, ChartVm, Compact, NoticeKind, Quantity, Row,
     Section, SeriesRole, ViewInput,
@@ -63,9 +63,6 @@ pub struct WavesFull {
     pub sections: Vec<Section>,
 }
 
-/// The credit of the wave model when the snapshot carries none.
-const CREDIT_WAVE_MODEL: &str = "Wave model: Open-Meteo.com";
-
 fn has_content(s: &WaveSample) -> bool {
     s.significant_height_m.is_some()
         || s.dominant_period_s.is_some()
@@ -74,8 +71,19 @@ fn has_content(s: &WaveSample) -> bool {
         || !s.swells.is_empty()
 }
 
-/// `VERY_STEEP` as "Very steep"; empty or not-available text is no steepness.
-fn steepness_text(raw: &str) -> Option<String> {
+/// `VERY_STEEP` as "Very steep"; empty or not-available text is no steepness. NDBC's own words
+/// are in the table; another is shown as the source writes it.
+fn steepness_text(f: &Formatter, raw: &str) -> Option<String> {
+    let key = match raw.trim() {
+        "VERY_STEEP" => Some(Key::SteepnessVerySteep),
+        "STEEP" => Some(Key::SteepnessSteep),
+        "AVERAGE" => Some(Key::SteepnessAverage),
+        "SWELL" => Some(Key::SteepnessSwell),
+        _ => None,
+    };
+    if let Some(key) = key {
+        return Some(f.strings.get(key).to_owned());
+    }
     let text = raw.trim().replace('_', " ").to_lowercase();
     if text.is_empty() || text == "n/a" {
         return None;
@@ -85,19 +93,23 @@ fn steepness_text(raw: &str) -> Option<String> {
     Some(first.to_uppercase().chain(chars).collect())
 }
 
-fn seconds(s: Option<f32>) -> Option<Quantity> {
+fn seconds(f: &Formatter, s: Option<f32>) -> Option<Quantity> {
     s.map(|v| Quantity {
         value: Some(v),
-        text: format!("{v:.1}"),
-        unit: "s".to_owned(),
+        text: f.strings.locale.with_decimal_mark(&format!("{v:.1}")),
+        unit: f.strings.get(Key::UnitSeconds).to_owned(),
     })
 }
 
-/// A direction the waves come from: degrees get a compass name, compass text stays as given.
+/// A direction the waves come from: degrees get a compass name; a compass point the source
+/// writes is named in the locale, other text stays as given.
 fn direction_text(f: &Formatter, d: &WaveDirection) -> String {
     match d {
         WaveDirection::Degrees(v) => f.direction(Some(*v)),
-        WaveDirection::Compass(text) => text.clone(),
+        WaveDirection::Compass(text) => f
+            .strings
+            .compass_point(text)
+            .map_or_else(|| text.clone(), str::to_owned),
     }
 }
 
@@ -105,7 +117,7 @@ fn train_vm(f: &Formatter, label: String, t: &WaveTrain) -> WaveTrainVm {
     WaveTrainVm {
         label,
         height: t.height_m.map(|h| f.wave_height(Some(h))),
-        period: seconds(t.period_s),
+        period: seconds(f, t.period_s),
         direction: t.direction_from.as_ref().map(|d| direction_text(f, d)),
     }
 }
@@ -115,8 +127,8 @@ fn now_vm(f: &Formatter, t: UnixTime, s: &WaveSample) -> WaveNowVm {
         t: t.0,
         time: f.clock(t),
         significant_height: s.significant_height_m.map(|h| f.wave_height(Some(h))),
-        dominant_period: seconds(s.dominant_period_s),
-        mean_period: seconds(s.mean_period_s),
+        dominant_period: seconds(f, s.dominant_period_s),
+        mean_period: seconds(f, s.mean_period_s),
         direction: s.direction_from_deg.map(|d| f.direction(Some(d))),
         wind_waves: s
             .wind_waves
@@ -131,7 +143,10 @@ fn now_vm(f: &Formatter, t: UnixTime, s: &WaveSample) -> WaveNowVm {
                 train_vm(f, label, t)
             })
             .collect(),
-        steepness: s.steepness.as_deref().and_then(steepness_text),
+        steepness: s
+            .steepness
+            .as_deref()
+            .and_then(|raw| steepness_text(f, raw)),
     }
 }
 
@@ -174,7 +189,7 @@ fn row_for(f: &Formatter, label: &str, series: &WaveSeries) -> Row {
         value: p
             .station
             .as_ref()
-            .map_or_else(|| source_name(&p.source), |s| s.name.clone()),
+            .map_or_else(|| f.strings.source_name(&p.source), |s| s.name.clone()),
         detail: p.distance_m.map(|m| f.distance(Some(m)).full()),
     }
 }
@@ -209,7 +224,7 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
 
     // Observed and modelled stay in separate series on the same axis.
     let height = |s: &WaveSample| s.significant_height_m.map(|h| f.wave_height(Some(h)));
-    let period = |s: &WaveSample| seconds(s.dominant_period_s);
+    let period = |s: &WaveSample| seconds(&f, s.dominant_period_s);
     let mut height_series = Vec::new();
     let mut period_series = Vec::new();
     if let Some(o) = observed_shown {
@@ -251,10 +266,14 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
     };
     let height_chart = chart(
         f.strings.get(Key::WaveHeight),
-        input.units.waves.symbol(),
+        f.strings.height_unit(input.units.waves),
         height_series,
     );
-    let period_chart = chart(f.strings.get(Key::WavePeriod), "s", period_series);
+    let period_chart = chart(
+        f.strings.get(Key::WavePeriod),
+        f.strings.get(Key::UnitSeconds),
+        period_series,
+    );
 
     // The headline: the buoy when shown, else the model.
     let (lead, lead_series, is_observed) =
@@ -312,13 +331,14 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
 
     let mut card_credits = Vec::new();
     if let Some(o) = observed_shown {
-        card_credits.push(station_credit(snapshot, &o.provenance().source, None));
+        card_credits.push(station_credit(&f, snapshot, &o.provenance().source, None));
     }
     if let Some(m) = forecast_shown {
         card_credits.push(station_credit(
+            &f,
             snapshot,
             &m.provenance().source,
-            Some(CREDIT_WAVE_MODEL),
+            Some(SafetyKey::CreditWaveModel),
         ));
     }
 
@@ -620,9 +640,18 @@ mod tests {
 
     #[test]
     fn steepness_text_is_readable_or_absent() {
-        assert_eq!(steepness_text("AVERAGE").as_deref(), Some("Average"));
-        assert_eq!(steepness_text("N/A"), None);
-        assert_eq!(steepness_text(""), None);
+        let f = Formatter::for_input(&sample_input());
+        assert_eq!(steepness_text(&f, "AVERAGE").as_deref(), Some("Average"));
+        assert_eq!(
+            steepness_text(&f, "VERY_STEEP").as_deref(),
+            Some("Very steep")
+        );
+        assert_eq!(
+            steepness_text(&f, "BREAKING_UP").as_deref(),
+            Some("Breaking up")
+        );
+        assert_eq!(steepness_text(&f, "N/A"), None);
+        assert_eq!(steepness_text(&f, ""), None);
     }
 
     #[test]

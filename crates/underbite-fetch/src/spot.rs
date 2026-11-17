@@ -238,6 +238,7 @@ mod tests {
             units: config.units.display_units(),
             voice: config.presentation.voice,
             clock: config.presentation.clock,
+            locale: underbite_core::view::locale::Locale::ENGLISH,
             timeline_span: config.presentation.timeline_span(),
             limits: measurement_limits(&config.sources),
             river_ranges: None,
