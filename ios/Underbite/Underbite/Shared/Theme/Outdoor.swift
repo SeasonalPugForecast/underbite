@@ -42,7 +42,7 @@ private struct SunModeStyle: ViewModifier {
 nonisolated struct ReadableSecondary: ShapeStyle {
     func resolve(in environment: EnvironmentValues) -> Color {
         // On a selected row's colour, the system's own light text.
-        if environment.backgroundProminence == .increased { return Color.white.opacity(0.85) }
+        if environment.backgroundProminence == .increased { return Color.white }
         return environment.sunMode ? Color.primary.opacity(0.88) : Palette.secondaryText
     }
 }
@@ -50,7 +50,7 @@ nonisolated struct ReadableSecondary: ShapeStyle {
 /// Tertiary marks and text (a chevron, a hint), still 4.5:1; near primary in sun mode.
 nonisolated struct ReadableTertiary: ShapeStyle {
     func resolve(in environment: EnvironmentValues) -> Color {
-        if environment.backgroundProminence == .increased { return Color.white.opacity(0.7) }
+        if environment.backgroundProminence == .increased { return Color.white.opacity(0.92) }
         return environment.sunMode ? Color.primary.opacity(0.8) : Palette.tertiaryText
     }
 }

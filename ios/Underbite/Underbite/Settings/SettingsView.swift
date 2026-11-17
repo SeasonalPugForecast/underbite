@@ -117,6 +117,10 @@ struct SettingsView: View {
                 Text("About").foregroundStyle(.readableSecondary)
             }
         }
+        .labelStyle(SettingsRowLabel())
+        // Grouped rows on the iPad too: the sidebar's glass column leaves the rows' contrast
+        // to what scrolls behind it.
+        .listStyle(.insetGrouped)
         .navigationTitle("Settings")
     }
 
@@ -139,5 +143,27 @@ struct SettingsView: View {
                 "Choose a setting", systemImage: "gearshape",
                 description: Text("Its page shows here."))
         }
+    }
+}
+
+/// A row of the Settings root: its symbol in the text's own colour and a little heavier, so
+/// its thin strokes hold their contrast on the iPad's tinted sidebar, and white on the chosen
+/// row.
+private struct SettingsRowLabel: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Label {
+            configuration.title
+        } icon: {
+            configuration.icon
+                .fontWeight(.medium)
+                .foregroundStyle(SymbolOnRow())
+        }
+    }
+}
+
+/// The primary colour, or white on a chosen row's colour.
+private nonisolated struct SymbolOnRow: ShapeStyle {
+    func resolve(in environment: EnvironmentValues) -> Color {
+        environment.backgroundProminence == .increased ? .white : .primary
     }
 }
