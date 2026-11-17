@@ -187,14 +187,12 @@ pub fn detect(bytes: &[u8], file_name: &str) -> Option<Format> {
 }
 
 /// Detects the format and reads the file.
-///
-/// KML and KMZ are recognised but answer [`ImportError::Unsupported`] until their readers land.
 pub fn import(bytes: &[u8], file_name: &str) -> Result<Imported, ImportError> {
     match detect(bytes, file_name).ok_or(ImportError::Unrecognised)? {
         Format::Gpx => gpx::parse(bytes),
         Format::Csv => csv::parse(bytes),
-        Format::Kml => Err(ImportError::Unsupported("KML")),
-        Format::Kmz => Err(ImportError::Unsupported("KMZ")),
+        Format::Kml => kml::parse(bytes),
+        Format::Kmz => kml::parse_kmz(bytes),
     }
 }
 
@@ -277,11 +275,7 @@ mod tests {
     }
 
     #[test]
-    fn unsupported_and_unrecognised() {
-        assert_eq!(
-            import(b"<kml/>", "a.kml"),
-            Err(ImportError::Unsupported("KML"))
-        );
+    fn unrecognised() {
         assert_eq!(import(b"hello", "x"), Err(ImportError::Unrecognised));
     }
 

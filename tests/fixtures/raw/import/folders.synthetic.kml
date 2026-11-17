@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Trip</name>
+    <Folder>
+      <name>Harbor</name>
+      <Placemark>
+        <name>Mixed</name>
+        <MultiGeometry>
+          <Point><coordinates>-74.0170,40.7033</coordinates></Point>
+          <Point><coordinates>-74.0140,40.7050</coordinates></Point>
+          <LineString><coordinates>-74.0170,40.7033 -74.0160,40.7040 -74.0150,40.7045</coordinates></LineString>
+        </MultiGeometry>
+      </Placemark>
+      <Folder>
+        <name>Shore</name>
+        <Placemark>
+          <name>Outline</name>
+          <Polygon><outerBoundaryIs><LinearRing>
+            <coordinates>-74.0,40.7,0 -74.0,40.8,0 -73.9,40.8,0 -74.0,40.7,0</coordinates>
+          </LinearRing></outerBoundaryIs></Polygon>
+        </Placemark>
+        <Placemark>
+          <name>Date only</name>
+          <TimeSpan><begin>2025-06-02</begin></TimeSpan>
+          <Point><coordinates>-74.0100,40.7100</coordinates></Point>
+        </Placemark>
+      </Folder>
+    </Folder>
+    <Placemark>
+      <name>Loose</name>
+      <Point><coordinates>-73.8625,41.2108</coordinates></Point>
+    </Placemark>
+  </Document>
+</kml>

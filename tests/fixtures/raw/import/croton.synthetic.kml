@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+  <Document>
+    <Placemark>
+      <name>Croton River walk</name>
+      <gx:MultiTrack>
+        <gx:Track>
+          <when>2025-05-10T13:00:00Z</when>
+          <when>2025-05-10T13:05:00Z</when>
+          <when>2025-05-10T13:10:00Z</when>
+          <gx:coord>-73.8625 41.2108 31</gx:coord>
+          <gx:coord>-73.8631 41.2112 30.5</gx:coord>
+          <gx:coord>-73.8640 41.2119 30</gx:coord>
+        </gx:Track>
+        <gx:Track>
+          <gx:coord>-73.8652 41.2131 29</gx:coord>
+          <gx:coord>-73.8660 41.2140 28</gx:coord>
+        </gx:Track>
+      </gx:MultiTrack>
+    </Placemark>
+    <Placemark>
+      <name>Route to the dam</name>
+      <LineString>
+        <tessellate>1</tessellate>
+        <coordinates>-73.8670,41.2150
+	-73.8681,41.2160</coordinates>
+      </LineString>
+    </Placemark>
+  </Document>
+</kml>

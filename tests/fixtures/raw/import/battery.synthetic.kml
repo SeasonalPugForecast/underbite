@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+  <Document>
+    <name>Harbor spots</name>
+    <Placemark>
+      <name>The Battery &amp; pier</name>
+      <description>Stripers on the push
+Bring a net</description>
+      <TimeStamp><when>2025-06-01T12:00:00Z</when></TimeStamp>
+      <ExtendedData><Data name="name"><value>ignored</value></Data></ExtendedData>
+      <Point><coordinates>-74.0170,40.7033,2.5</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name><![CDATA[Slip <2>]]></name>
+      <TimeStamp><when>2025-06-01T12:00:00</when></TimeStamp>
+      <Point><coordinates>
+        -74.0140, 40.7050
+      </coordinates></Point>
+    </Placemark>
+  </Document>
+</kml>
