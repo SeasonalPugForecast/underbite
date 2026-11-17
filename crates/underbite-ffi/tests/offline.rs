@@ -11,7 +11,8 @@ use underbite_core::model::SpotSnapshot;
 use underbite_core::provenance::{SourceId, ValueKind};
 use underbite_core::time::parse_rfc3339;
 use underbite_ffi::fetch::{
-    CachedResponse, FetchHost, FetchOptions, HostError, HostRequest, HostResponse, Keys, fetch_spot,
+    CachedResponse, FetchHost, FetchOptions, HostError, HostRequest, HostResponse, Keys,
+    SpotFetchOutcome, fetch_spot,
 };
 use underbite_ffi::map::GridStore;
 use underbite_ffi::offline::{
@@ -194,24 +195,7 @@ fn a_fetch_without_signal_computes_the_tide_and_keeps_the_last_values() {
         kept.iter().map(|c| &c.key).collect::<Vec<_>>()
     );
     // The constants and datums of the Battery were fetched earlier by the app.
-    let mdapi = "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/8518750";
-    let mut cached = first.cacheable.clone();
-    for (file, url) in [
-        (
-            "coops-mdapi-8518750-harcon-metric.json",
-            format!("{mdapi}/harcon.json?units=metric"),
-        ),
-        (
-            "coops-mdapi-8518750-datums-metric.json",
-            format!("{mdapi}/datums.json?units=metric"),
-        ),
-    ] {
-        cached.push(CachedResponse {
-            key: url,
-            body: raw(file).into_bytes(),
-            fetched_at: now() - 86_400,
-        });
-    }
+    let cached = with_constants(&first.cacheable);
     let water = online
         .water
         .temperature_c
@@ -247,7 +231,10 @@ fn a_fetch_without_signal_computes_the_tide_and_keeps_the_last_values() {
         water.provenance(),
         online.water.temperature_c.as_ref().unwrap().provenance()
     );
-    assert_eq!(s.fetched_at.0, later, "the snapshot itself is new");
+    assert_eq!(
+        s.fetched_at, online.fetched_at,
+        "the snapshot was last fetched online"
+    );
     assert!(s.weather.is_some());
     assert_eq!(s.stations.len(), online.stations.len());
 
@@ -277,6 +264,64 @@ fn a_fetch_without_signal_computes_the_tide_and_keeps_the_last_values() {
         .expect("still the last temperature");
     assert_eq!(water.samples().last().expect("a sample").time, observed);
     assert!(again.marine.tide.is_some());
+}
+
+const BATTERY_MDAPI: &str =
+    "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/8518750";
+
+/// `kept` with the Battery's `harcon` and `datums` bodies, as the app stored them a day
+/// earlier.
+fn with_kept(kept: &[CachedResponse], harcon: Option<Vec<u8>>) -> Vec<CachedResponse> {
+    let mut cached = kept.to_vec();
+    let datums = raw("coops-mdapi-8518750-datums-metric.json").into_bytes();
+    for (file, body) in [("harcon", harcon), ("datums", Some(datums))] {
+        let Some(body) = body else {
+            continue;
+        };
+        let url = format!("{BATTERY_MDAPI}/{file}.json?units=metric");
+        cached.retain(|c| c.key != url);
+        cached.push(CachedResponse {
+            key: url,
+            body,
+            fetched_at: now() - 86_400,
+        });
+    }
+    cached
+}
+
+/// `kept` with the Battery's constants and datums.
+fn with_constants(kept: &[CachedResponse]) -> Vec<CachedResponse> {
+    let harcon = raw("coops-mdapi-8518750-harcon-metric.json").into_bytes();
+    with_kept(kept, Some(harcon))
+}
+
+/// The outcome's offline note.
+fn offline_note(out: &SpotFetchOutcome) -> String {
+    out.errors
+        .iter()
+        .find(|e| e.message.starts_with("offline:"))
+        .unwrap_or_else(|| panic!("no offline note in {:?}", out.errors))
+        .message
+        .clone()
+}
+
+#[test]
+fn fetches_without_signal_keep_the_time_of_the_last_one_online() {
+    let phone = Phone::new();
+    let (online, first) = fetch(&phone, now(), Vec::new());
+    let cached = with_constants(&first.cacheable);
+    phone.lose_signal();
+    for hours in [6, 7, 8] {
+        let (s, out) = fetch(&phone, now() + hours * 3_600, cached.clone());
+        assert_eq!(s.fetched_at, online.fetched_at, "{hours} h later");
+        let note = offline_note(&out);
+        assert!(
+            note.starts_with(
+                "offline: computed from harmonic constants, other values from Nov 8, 9:30"
+            ),
+            "{hours} h later: {note}"
+        );
+    }
 }
 
 #[test]

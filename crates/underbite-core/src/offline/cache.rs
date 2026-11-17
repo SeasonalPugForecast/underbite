@@ -234,13 +234,15 @@ impl SpotBundle {
     }
 }
 
-/// `fresh` with every measurement it lacks filled from `last`.
+/// `fresh`, a fetch without signal, with every measurement it lacks filled from `last`.
 ///
 /// A filled value keeps its own series, so its original sample times and its provenance (the
 /// station, the kind, `observed_at`) stay as they were: nothing is moved to now, and a last
 /// water temperature reads as the old reading it is. Whatever `fresh` has wins, including
-/// computed tide and current tables. The spot, `fetched_at` and errors are `fresh`'s. Stations
-/// and credits of `last` that `fresh` lacks are kept, so every shown value stays credited.
+/// computed tide and current tables. The spot and errors are `fresh`'s; `fetched_at` stays
+/// `last`'s, the time the data was last fetched online, so "updated" and "values from" keep
+/// naming it through any number of fetches without signal. Stations and credits of `last` that
+/// `fresh` lacks are kept, so every shown value stays credited.
 ///
 /// Marine alerts and the storm watch are different: an empty answer is an answer (no alert is
 /// in force), so they are carried over only when `fresh`'s errors say their source failed
@@ -249,6 +251,7 @@ impl SpotBundle {
 /// filled like the measurements.
 pub fn merge_last(last: &SpotSnapshot, fresh: SpotSnapshot) -> SpotSnapshot {
     let mut out = fresh;
+    out.fetched_at = last.fetched_at;
     macro_rules! fill {
         ($group:ident: $($field:ident),+ $(,)?) => {
             $(if out.$group.$field.is_none() {
@@ -439,9 +442,9 @@ mod tests {
         let old = series(last.fetched_at.0 - 3 * 3600, 11.5);
         last.water.temperature_c = Some(old.clone());
         let fresh = SpotSnapshot::new(last.spot.clone(), UnixTime(last.fetched_at.0 + 86_400));
-        let merged = merge_last(&last, fresh.clone());
+        let merged = merge_last(&last, fresh);
         assert_eq!(merged.water.temperature_c, Some(old.clone()));
-        assert_eq!(merged.fetched_at, fresh.fetched_at);
+        assert_eq!(merged.fetched_at, last.fetched_at, "the last online fetch");
         let kept = merged.water.temperature_c.unwrap();
         assert_eq!(kept.samples()[0].time.0, last.fetched_at.0 - 3 * 3600);
         assert_eq!(kept.provenance(), old.provenance());
