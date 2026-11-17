@@ -455,6 +455,43 @@ mod tests {
     }
 
     #[test]
+    fn a_forgotten_spot_leaves_nothing_the_next_fetch_reads_back() {
+        let (_, host) = fetched(&battery(), &Config::default(), "battery");
+        let entries = store::spot_entries(&battery().id);
+        for (namespace, key) in &entries {
+            if *namespace != store::CHOICES {
+                let kept = host.value(namespace, key).expect("kept");
+                assert!(kept.contains("saved_at"), "{namespace}: {kept}");
+            }
+            pollster::block_on(FetchHost::store(
+                &host,
+                namespace,
+                key,
+                store::FORGOTTEN.to_owned(),
+            ));
+        }
+        assert_eq!(
+            host.value(store::SPOT, &spot_key(&battery().id)).as_deref(),
+            Some(store::FORGOTTEN)
+        );
+
+        // No previous snapshot: the storm point is asked for again, and the spot's values are
+        // kept anew.
+        let sent = host.seen().len();
+        let later = UnixTime(now().0 + 3_600);
+        let again = fetched_at(&host, &battery(), &Config::default(), later);
+        assert!(
+            host.seen()[sent..].iter().any(|u| u.contains("&models=")),
+            "{:#?}",
+            &host.seen()[sent..]
+        );
+        let saved: SpotSnapshot = host
+            .stored(store::SPOT, &spot_key(&battery().id))
+            .expect("saved");
+        assert_eq!(saved, again.snapshot);
+    }
+
+    #[test]
     fn croton_end_to_end() {
         let mut config = Config::default();
         config.sources.flow.max_distance_km = Some(17.0);

@@ -42,6 +42,26 @@ pub fn spot_key(spot_id: &str) -> String {
     format!("spot-{:016x}", fnv1a(spot_id.as_bytes()))
 }
 
+/// The namespaces holding values of one spot, each under the spot's [`spot_key`]: its last
+/// snapshot (with its exact position), its station rankings, and its pins and exclusions. The
+/// station lists and the observed coverage belong to rounded areas and to stations, not to a
+/// spot, and the call ledger to the device.
+pub const SPOT_NAMESPACES: [&str; 3] = [SPOT, DISCOVERY, CHOICES];
+
+/// What a forgotten value is stored as: nothing a fetch reads back, so it is passed over as if
+/// nothing were stored. A host may delete a value stored empty instead of keeping it.
+pub const FORGOTTEN: &str = "";
+
+/// The namespace and key of every value kept for the spot `spot_id`: storing [`FORGOTTEN`]
+/// under each leaves nothing of the spot once it is deleted.
+pub fn spot_entries(spot_id: &str) -> Vec<(&'static str, String)> {
+    let key = spot_key(spot_id);
+    SPOT_NAMESPACES
+        .iter()
+        .map(|namespace| (*namespace, key.clone()))
+        .collect()
+}
+
 /// FNV-1a, 64 bit: a stable name for a key (std's hashers are not stable across releases).
 fn fnv1a(bytes: &[u8]) -> u64 {
     bytes.iter().fold(0xcbf2_9ce4_8422_2325, |hash, &b| {
@@ -152,6 +172,36 @@ mod tests {
         assert!(!key.contains("40.7"), "{key}");
         // The name existing caches use.
         assert_eq!(spot_key(""), "spot-cbf29ce484222325");
+    }
+
+    #[test]
+    fn a_spots_entries_are_its_snapshot_rankings_and_choices_under_its_key() {
+        let key = spot_key("battery");
+        assert_eq!(
+            spot_entries("battery"),
+            [
+                (SPOT, key.clone()),
+                (DISCOVERY, key.clone()),
+                (CHOICES, key)
+            ]
+        );
+        // A forgotten value reads back as no value.
+        assert!(serde_json::from_str::<Stored<StationChoices>>(FORGOTTEN).is_err());
+        let pinned = apply_choice(
+            Some(FORGOTTEN),
+            Choice::Pin,
+            parse_station_key("coops:8518750").unwrap(),
+            UnixTime(1_794_744_000),
+        )
+        .unwrap();
+        assert_eq!(
+            serde_json::from_str::<Stored<StationChoices>>(&pinned)
+                .unwrap()
+                .value
+                .pinned
+                .len(),
+            1
+        );
     }
 
     #[test]
