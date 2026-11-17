@@ -6,9 +6,9 @@ use std::sync::Arc;
 use serde_json::{Value, json};
 use underbite_ffi::fetch::{HostMethod, HostResponse};
 use underbite_ffi::map::{
-    GridStore, LayerDates, LayerDraw, MAX_REQUESTS_PER_VIEW, MAX_STORE_BLOCKS, MAX_STORE_VALUES,
-    MapError, TileOutcome, classify_tile, gibs_default_date, map_catalogue, map_presets,
-    map_tile_size, parse_time_axis, previous_date, tile_request, time_axis_request,
+    GridPacer, GridStore, LayerDates, LayerDraw, MAX_REQUESTS_PER_VIEW, MAX_STORE_BLOCKS,
+    MAX_STORE_VALUES, MapError, TileOutcome, classify_tile, gibs_default_date, map_catalogue,
+    map_presets, map_tile_size, parse_time_axis, previous_date, tile_request, time_axis_request,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -605,4 +605,54 @@ fn time_axes_are_requested_and_labelled() {
     let last = times.last().unwrap();
     assert_eq!((last.time, last.label.as_str()), (1_794_684_142, "Nov 14"));
     assert!(time_axis_request("radar".into(), None, NOW).is_err());
+}
+
+// ---------------------------------------------------------------------------------------------
+// Pacing
+// ---------------------------------------------------------------------------------------------
+
+#[test]
+fn the_pacer_allows_ten_a_minute_and_pauses_after_busy() {
+    let pacer = GridPacer::new();
+    for _ in 0..10 {
+        assert!(pacer.may_send("pfeg".into(), NOW).unwrap().send);
+    }
+    let held = pacer.may_send("pfeg".into(), NOW + 5).unwrap();
+    assert_eq!((held.send, held.wait_s), (false, 55));
+    // Each server has its own minute.
+    assert!(pacer.may_send("coastwatch".into(), NOW + 5).unwrap().send);
+    assert!(pacer.may_send("pfeg".into(), NOW + 60).unwrap().send);
+
+    pacer.record("glerl".into(), 503, None, NOW).unwrap();
+    let paused = pacer.may_send("glerl".into(), NOW + 1).unwrap();
+    assert_eq!((paused.send, paused.wait_s), (false, 59));
+    pacer
+        .record("glerl".into(), 429, Some(600), NOW + 61)
+        .unwrap();
+    assert_eq!(
+        pacer.may_send("glerl".into(), NOW + 62).unwrap().wait_s,
+        599
+    );
+    assert!(pacer.may_send("ncei".into(), NOW).is_err());
+    assert!(pacer.record("erddap".into(), 200, None, NOW).is_err());
+}
+
+#[test]
+fn the_pacer_state_round_trips_through_json() {
+    let pacer = GridPacer::new();
+    assert!(pacer.may_send("pfeg".into(), NOW).unwrap().send);
+    pacer.record("coastwatch".into(), 503, None, NOW).unwrap();
+    let json = pacer.to_json();
+    assert_eq!(
+        json,
+        r#"{"nodes":{"pfeg":{"sent":[1794744000]},"coastwatch":{"paused_until":1794744060,"last_pause_s":60}}}"#
+    );
+    let back = GridPacer::from_json(json.clone()).unwrap();
+    assert_eq!(back.to_json(), json);
+    assert!(!back.may_send("coastwatch".into(), NOW + 30).unwrap().send);
+    assert!(GridPacer::from_json("not json".into()).is_err());
+    assert_eq!(
+        GridPacer::from_json("{}".into()).unwrap().to_json(),
+        r#"{"nodes":{}}"#
+    );
 }

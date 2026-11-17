@@ -26,7 +26,8 @@ use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{
     Key, MapQuantity, SafetyKey, Strings, map_current, map_time, map_value,
 };
-use underbite_providers::erddap::{self, ErddapError, FIRST_PAUSE_S, GridTime};
+use underbite_providers::erddap::{self, ErddapError, ErddapPacer, FIRST_PAUSE_S, GridTime};
+use underbite_providers::request::Response;
 
 use crate::fetch::{HostMethod, HostRequest, HostResponse, fetched};
 use crate::settings::{SettingsError, load};
@@ -1265,6 +1266,100 @@ pub fn parse_time_axis(
             label: map_time(&f, t, l.date_mode),
         })
         .collect())
+}
+
+// ---------------------------------------------------------------------------------------------
+// Pacing ERDDAP requests
+// ---------------------------------------------------------------------------------------------
+
+fn node_of(name: &str) -> Result<GridHost, MapError> {
+    serde_json::from_value(serde_json::Value::String(name.trim().to_owned()))
+        .map_err(|_| invalid(format!("`{name}` is not a grid server")))
+}
+
+/// Whether a request may go to a grid server now.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PaceDecision {
+    /// Send it: the request has been counted.
+    pub send: bool,
+    /// Otherwise, seconds until a request may go.
+    pub wait_s: u32,
+}
+
+/// Keeps requests to each ERDDAP server polite: at most 10 a minute, and a pause after "busy"
+/// (429 or 503) that doubles with each further one up to 15 minutes, or what the server's
+/// `Retry-After` asks, up to an hour. The app keeps one across launches as JSON
+/// ([`GridPacer::to_json`], [`GridPacer::from_json`]); it holds no coordinates.
+#[derive(Debug, Default, uniffi::Object)]
+pub struct GridPacer {
+    pacer: Mutex<ErddapPacer>,
+}
+
+impl GridPacer {
+    fn lock(&self) -> MutexGuard<'_, ErddapPacer> {
+        self.pacer.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+}
+
+#[uniffi::export]
+impl GridPacer {
+    /// A pacer with no history.
+    #[uniffi::constructor]
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self::default())
+    }
+
+    /// A pacer from its saved JSON.
+    #[uniffi::constructor]
+    #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+    pub fn from_json(json: String) -> Result<Arc<Self>, MapError> {
+        let pacer: ErddapPacer = serde_json::from_str(&json)
+            .map_err(|e| invalid(format!("the saved pacing cannot be read: {e}")))?;
+        Ok(Arc::new(Self {
+            pacer: Mutex::new(pacer),
+        }))
+    }
+
+    /// The pacer as JSON, to save.
+    pub fn to_json(&self) -> String {
+        // A map of plain records always serializes.
+        serde_json::to_string(&*self.lock()).unwrap_or_else(|_| "{}".to_owned())
+    }
+
+    /// Whether a request to `node` (a [`GridRequest`]'s) may be sent at `now`; when it may, it
+    /// is counted as sent.
+    #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+    pub fn may_send(&self, node: String, now: i64) -> Result<PaceDecision, MapError> {
+        let node = node_of(&node)?;
+        let now = UnixTime(now);
+        Ok(match self.lock().try_send(node, now) {
+            Ok(()) => PaceDecision {
+                send: true,
+                wait_s: 0,
+            },
+            Err(wait) => PaceDecision {
+                send: false,
+                wait_s: wait.after_s(now),
+            },
+        })
+    }
+
+    /// Records the status of a response from `node` at `now`, with the `Retry-After` it sent in
+    /// seconds: 429 and 503 pause the server, an answer from it resets the pause.
+    #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+    pub fn record(
+        &self,
+        node: String,
+        status: u16,
+        retry_after_s: Option<u32>,
+        now: i64,
+    ) -> Result<(), MapError> {
+        let node = node_of(&node)?;
+        let mut response = Response::new(status, &[]);
+        response.retry_after = retry_after_s;
+        self.lock().on_response(node, &response, UnixTime(now));
+        Ok(())
+    }
 }
 
 #[cfg(test)]
