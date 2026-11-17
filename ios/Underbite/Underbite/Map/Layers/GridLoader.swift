@@ -113,11 +113,13 @@ final class GridLoader {
             tried.formUnion(untried.map(\.request.key))
             let restored = Set(
                 await cache.restore(untried.map(\.request.key), into: store, now: clock()))
-            guard current == generation else { return }
-            guard !restored.isEmpty else { break }
+            // The blocks are in the store whatever pass comes next, which will not list them
+            // again: say so before giving way to it, or the layer is never drawn again.
             for layer in Set(untried.filter { restored.contains($0.request.key) }.map(\.layer)) {
                 onBlock(layer)
             }
+            guard current == generation else { return }
+            guard !restored.isEmpty else { break }
         }
         let jobs = Self.interleaved(requests(layers, in: region))
         guard !jobs.isEmpty else {
