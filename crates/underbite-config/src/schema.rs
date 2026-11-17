@@ -296,7 +296,7 @@ best_cfs = [400, 900]
 factors = { tide_stage = 1.0, low_light = 1.0, solunar = 0.5, pressure_falling = 0.7, water_temp = 1.0 }
 
 [map]
-active_preset = "Inshore flats"
+active_preset = "inshore-flats"
 offline_max_mb = 1500
 "#;
 

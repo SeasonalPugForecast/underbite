@@ -473,7 +473,7 @@ mod tests {
         assert_eq!(ids.len(), KNOWN_LAYERS.len());
         assert_eq!(
             (c.map.layers[0].shown, c.map.layers[0].opacity),
-            (true, 0.5)
+            (true, Some(0.5))
         );
         assert!(c.map.layers[2..].iter().all(|l| !l.shown));
         assert_eq!(c.map.base.as_str(), "apple-standard");

@@ -68,20 +68,16 @@ pub struct LayerState {
     /// Whether the layer is on the map.
     #[serde(default)]
     pub shown: bool,
-    /// 0 (clear) to 1 (solid).
-    #[serde(default = "full_opacity")]
-    pub opacity: f32,
+    /// 0 (clear) to 1 (solid); none means the layer's own default.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub opacity: Option<f32>,
     /// The colour ramp by id; none means the layer's own.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ramp: Option<String>,
     /// The value range the ramp spans, low and high, in canonical units; none means the layer's
     /// own.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub range: Option<(f32, f32)>,
-}
-
-fn full_opacity() -> f32 {
-    1.0
 }
 
 impl LayerState {
@@ -90,7 +86,7 @@ impl LayerState {
         Self {
             id,
             shown: false,
-            opacity: full_opacity(),
+            opacity: None,
             ramp: None,
             range: None,
         }
@@ -112,10 +108,12 @@ pub struct MapPreset {
 pub struct DepthConfig {
     /// The depths to highlight, shallow and deep, in metres below the surface; none means no
     /// highlight.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub band_m: Option<(f32, f32)>,
     /// The depth between contour lines, in metres.
     pub contour_interval_m: f32,
     /// The depth colour ramp by id; none means the layer's own.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ramp: Option<String>,
 }
 
@@ -159,7 +157,10 @@ pub struct MapConfig {
     pub layers: Vec<LayerState>,
     /// The user's own presets. The built-in ones belong to the layer catalogue.
     pub presets: Vec<MapPreset>,
-    /// The preset applied when the map opens, by name (built-in or the user's own).
+    /// The preset applied when the map opens: either the id of a built-in preset (kebab-case,
+    /// such as `inshore-flats`; the layer catalogue defines the ids and the core words their
+    /// labels) or the `name` of one of the user's own presets. When a user preset's name equals a
+    /// built-in id, the user's preset wins.
     #[serde(alias = "preset")]
     pub active_preset: String,
     pub battery_mode: BatteryMode,
@@ -178,7 +179,7 @@ impl Default for MapConfig {
                 .map(|id| LayerState::hidden(LayerId::from_static(id)))
                 .collect(),
             presets: Vec::new(),
-            active_preset: "Inshore flats".to_owned(),
+            active_preset: "inshore-flats".to_owned(),
             battery_mode: BatteryMode::default(),
             depth: DepthConfig::default(),
             breaks: BreaksConfig::default(),
@@ -199,7 +200,9 @@ fn check_layers(list: &[LayerState], path: &str, issues: &mut Issues) {
         } else if list[..i].iter().any(|l| l.id == layer.id) {
             issues.warning(format!("{at}.id"), format!("`{id}` is listed twice"));
         }
-        if !(layer.opacity.is_finite() && (0.0..=1.0).contains(&layer.opacity)) {
+        if let Some(o) = layer.opacity
+            && !(o.is_finite() && (0.0..=1.0).contains(&o))
+        {
             issues.error(
                 format!("{at}.opacity"),
                 "must be between 0 (clear) and 1 (solid)",
@@ -284,7 +287,7 @@ mod tests {
         let m: MapConfig = toml::from_str("offline_max_mb = 500").unwrap();
         assert_eq!(
             (m.active_preset.as_str(), m.offline_max_mb),
-            ("Inshore flats", 500)
+            ("inshore-flats", 500)
         );
         assert_eq!(m.layers.len(), KNOWN_LAYERS.len());
         assert_eq!(m.depth.contour_interval_m, 5.0);
@@ -314,7 +317,7 @@ mod tests {
     fn the_default_section_serialises_as_documented() {
         let text = toml::to_string_pretty(&MapConfig::default()).unwrap();
         assert!(text.starts_with("base = \"apple-standard\"\n"), "{text}");
-        assert!(text.contains("active_preset = \"Inshore flats\"\n"));
+        assert!(text.contains("active_preset = \"inshore-flats\"\n"));
         assert!(text.contains("battery_mode = \"auto\"\n"));
         assert!(
             text.contains("[depth]\ncontour_interval_m = 5.0\n"),
@@ -333,7 +336,7 @@ mod tests {
                 LayerState {
                     id: LayerId::new("usgs-gauges"),
                     shown: true,
-                    opacity: 0.75,
+                    opacity: Some(0.75),
                     ramp: Some("flow".to_owned()),
                     range: Some((0.5, 12.5)),
                 },

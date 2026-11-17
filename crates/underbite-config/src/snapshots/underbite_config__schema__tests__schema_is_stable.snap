@@ -183,7 +183,6 @@ expression: json_schema()
       "description": "Depth shading, the highlight band and contours.",
       "properties": {
         "band_m": {
-          "default": null,
           "description": "The depths to highlight, shallow and deep, in metres below the surface; none means no\nhighlight.",
           "maxItems": 2,
           "minItems": 2,
@@ -209,7 +208,6 @@ expression: json_schema()
           "type": "number"
         },
         "ramp": {
-          "default": null,
           "description": "The depth colour ramp by id; none means the layer's own.",
           "type": [
             "string",
@@ -276,13 +274,14 @@ expression: json_schema()
           "$ref": "#/$defs/LayerId"
         },
         "opacity": {
-          "default": 1.0,
-          "description": "0 (clear) to 1 (solid).",
+          "description": "0 (clear) to 1 (solid); none means the layer's own default.",
           "format": "float",
-          "type": "number"
+          "type": [
+            "number",
+            "null"
+          ]
         },
         "ramp": {
-          "default": null,
           "description": "The colour ramp by id; none means the layer's own.",
           "type": [
             "string",
@@ -290,7 +289,6 @@ expression: json_schema()
           ]
         },
         "range": {
-          "default": null,
           "description": "The value range the ramp spans, low and high, in canonical units; none means the layer's\nown.",
           "maxItems": 2,
           "minItems": 2,
@@ -392,8 +390,8 @@ expression: json_schema()
       "description": "`[map]`.",
       "properties": {
         "active_preset": {
-          "default": "Inshore flats",
-          "description": "The preset applied when the map opens, by name (built-in or the user's own).",
+          "default": "inshore-flats",
+          "description": "The preset applied when the map opens: either the id of a built-in preset (kebab-case,\nsuch as `inshore-flats`; the layer catalogue defines the ids and the core words their\nlabels) or the `name` of one of the user's own presets. When a user preset's name equals a\nbuilt-in id, the user's preset wins.",
           "type": "string"
         },
         "base": {
@@ -415,165 +413,97 @@ expression: json_schema()
         "depth": {
           "$ref": "#/$defs/DepthConfig",
           "default": {
-            "band_m": null,
-            "contour_interval_m": 5.0,
-            "ramp": null
+            "contour_interval_m": 5.0
           }
         },
         "layers": {
           "default": [
             {
               "id": "gebco-relief",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "sst",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "sst-imagery",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "chlorophyll",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "chlorophyll-imagery",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "clarity",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "true-color-viirs-n20",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "true-color-viirs-n21",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "true-color-modis-terra",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "true-color-modis-aqua",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "hf-radar-currents",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "great-lakes-sst",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "radar",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "wind",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "pressure",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "waves",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "tide-stations",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "current-stations",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "usgs-gauges",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "buoys",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "nwps-gauges",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             },
             {
               "id": "spots",
-              "opacity": 1.0,
-              "ramp": null,
-              "range": null,
               "shown": false
             }
           ],
@@ -1274,7 +1204,7 @@ expression: json_schema()
     "map": {
       "$ref": "#/$defs/MapConfig",
       "default": {
-        "active_preset": "Inshore flats",
+        "active_preset": "inshore-flats",
         "base": "apple-standard",
         "battery_mode": "auto",
         "breaks": {
@@ -1282,163 +1212,95 @@ expression: json_schema()
           "sst_c_per_km": 0.5
         },
         "depth": {
-          "band_m": null,
-          "contour_interval_m": 5.0,
-          "ramp": null
+          "contour_interval_m": 5.0
         },
         "layers": [
           {
             "id": "gebco-relief",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "sst",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "sst-imagery",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "chlorophyll",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "chlorophyll-imagery",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "clarity",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "true-color-viirs-n20",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "true-color-viirs-n21",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "true-color-modis-terra",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "true-color-modis-aqua",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "hf-radar-currents",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "great-lakes-sst",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "radar",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "wind",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "pressure",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "waves",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "tide-stations",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "current-stations",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "usgs-gauges",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "buoys",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "nwps-gauges",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           },
           {
             "id": "spots",
-            "opacity": 1.0,
-            "ramp": null,
-            "range": null,
             "shown": false
           }
         ],
