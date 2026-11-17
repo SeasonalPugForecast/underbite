@@ -1,0 +1,84 @@
+---
+source: crates/underbite-providers/src/usgs/statistics.rs
+expression: range
+---
+measurement: discharge
+datum: ~
+days:
+  - day_of_year: 11-05
+    thresholds:
+      p05: 0.018122781
+      p10: 0.027637243
+      p25: 0.04346636
+      p50: 0.33980215
+      p75: 6.923469
+      p90: 19.595259
+      p95: 28.481085
+    sample_count: 93
+  - day_of_year: 11-06
+    thresholds:
+      p05: 0.016905157
+      p10: 0.023106547
+      p25: 0.0368119
+      p50: 0.31431702
+      p75: 6.852677
+      p90: 18.717436
+      p95: 27.674053
+    sample_count: 93
+  - day_of_year: 11-07
+    thresholds:
+      p05: 0.018490901
+      p10: 0.025201993
+      p25: 0.04049309
+      p50: 0.368119
+      p75: 6.82436
+      p90: 18.751415
+      p95: 27.21249
+    sample_count: 93
+  - day_of_year: 11-08
+    thresholds:
+      p05: 0.017952882
+      p10: 0.027354075
+      p25: 0.043749526
+      p50: 0.4247527
+      p75: 6.7110925
+      p90: 19.527296
+      p95: 33.41388
+    sample_count: 93
+  - day_of_year: 11-09
+    thresholds:
+      p05: 0.016423771
+      p10: 0.023219815
+      p25: 0.0421921
+      p50: 0.4785547
+      p75: 7.0084195
+      p90: 22.257042
+      p95: 39.218834
+    sample_count: 93
+  - day_of_year: 11-10
+    thresholds:
+      p05: 0.017386544
+      p10: 0.024522388
+      p25: 0.04247527
+      p50: 0.368119
+      p75: 7.291588
+      p90: 25.320925
+      p95: 42.078835
+    sample_count: 93
+provenance:
+  source: usgs
+  station:
+    source: usgs
+    id: "01375000"
+    name: Test site
+    kind:
+      usgs_site: stream
+    latitude: 41.225
+    longitude: -73.859
+    bin: ~
+    reference_id: ~
+  distance_m: 1200
+  relation: same_water_body
+  observed_at: 1794148200
+  kind: computed
+  quality: approved

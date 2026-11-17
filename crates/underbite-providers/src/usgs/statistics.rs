@@ -9,6 +9,11 @@
 //! a value and the follow-up is a `daily` request over the last years. Its parse computes the
 //! same thresholds with [`from_daily`]. A request that fell back says so in the error it ends
 //! with, which names the basis ("statistics API: …; computed from daily means: …").
+//!
+//! [`Usgs::statistics_range_requests`] asks for the normals of every day of a date range at
+//! once (a trip's dates), for discharge, lake level or water temperature, and
+//! [`Usgs::parse_statistics_range`] reads them into a [`NormalsRange`]. A range has no daily
+//! fallback: a site without normals is [`SourceError::NoData`].
 
 use std::collections::BTreeSet;
 
@@ -18,7 +23,7 @@ use underbite_core::datum::VerticalDatum;
 use underbite_core::derive::percentile::{DEFAULT_MIN_YEARS, class, from_daily, rank_detail};
 use underbite_core::model::{Measurement, Percentile, PercentileBasis, PercentileThresholds};
 use underbite_core::provenance::{Provenance, Quality, SourceId, ValueKind};
-use underbite_core::time::{LocalDate, UnixTime, UtcOffset, day_key, parse_date};
+use underbite_core::time::{LocalDate, UnixTime, UtcOffset, day_key, day_number, parse_date};
 use underbite_core::units::{Canonical, to_canonical};
 
 use super::Usgs;
@@ -208,6 +213,244 @@ impl Usgs {
     }
 }
 
+/// Water temperature, read by the range requests only.
+const TEMPERATURE: Series = Series {
+    code: "00010",
+    measurement: Measurement::WaterTemperature,
+    unit: "degC",
+    datum: None,
+};
+
+/// The series whose normals a range request may ask for.
+fn range_series(measurement: Measurement, datum: Option<VerticalDatum>) -> Option<Series> {
+    if measurement == Measurement::WaterTemperature {
+        return Some(TEMPERATURE);
+    }
+    SERIES
+        .iter()
+        .find(|s| {
+            s.measurement == measurement
+                && (measurement != Measurement::LakeLevel || datum.is_none() || s.datum == datum)
+        })
+        .copied()
+}
+
+fn range_series_by_code(code: &str) -> Option<Series> {
+    std::iter::once(&TEMPERATURE)
+        .chain(SERIES)
+        .find(|s| s.code == code)
+        .copied()
+}
+
+/// What a range request carries to its parse. Never sent.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct RangeCarry {
+    /// Marks the carry as a range's.
+    range: bool,
+    code: String,
+}
+
+/// The carry of `request` when it is a range request's.
+fn range_carry(request: &Request) -> Option<RangeCarry> {
+    serde_json::from_str::<RangeCarry>(request.carry()?)
+        .ok()
+        .filter(|c| c.range)
+}
+
+/// The normals of one day of the year.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct DayNormals {
+    /// The day as `MM-DD` (`02-29` has its own row).
+    pub day_of_year: String,
+    /// The 5th to 95th percentiles in canonical units.
+    pub thresholds: PercentileThresholds,
+    /// Years in the sample.
+    pub sample_count: u32,
+}
+
+/// The normals of a date range at one site, in day-of-year order, as the Statistics API gives
+/// them (approved data only).
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct NormalsRange {
+    /// `Discharge`, `LakeLevel` or `WaterTemperature`.
+    pub measurement: Measurement,
+    /// Vertical datum of a lake level.
+    pub datum: Option<VerticalDatum>,
+    /// One entry per day with normals, sorted by `MM-DD`.
+    pub days: Vec<DayNormals>,
+    /// The station and source of the normals.
+    pub provenance: Provenance,
+}
+
+impl NormalsRange {
+    /// Adds the days of `other` (the other half of a range split at the year end) and keeps
+    /// the days in order.
+    pub fn extend(&mut self, other: NormalsRange) {
+        self.days.extend(other.days);
+        self.days.sort_by(|a, b| a.day_of_year.cmp(&b.day_of_year));
+        self.days.dedup_by(|a, b| a.day_of_year == b.day_of_year);
+    }
+
+    /// The normals of `day` (`MM-DD`), when the range has them.
+    pub fn day(&self, day: &str) -> Option<&DayNormals> {
+        self.days.iter().find(|d| d.day_of_year == day)
+    }
+}
+
+impl Usgs {
+    /// The requests for the normals of every day from `start` to `end` inclusive at the
+    /// target's site: one series (`measurement`, with `datum` choosing among lake-level
+    /// parameters), `observationNormals` with all four filters. Only the month and day of
+    /// the dates count. A range that crosses the year end (`12-30` to `01-02`) is split into
+    /// two requests, and a range of a year or more asks for the whole year. Parse each
+    /// response with [`Usgs::parse_statistics_range`] and join the halves with
+    /// [`NormalsRange::extend`].
+    ///
+    /// # Errors
+    /// [`SourceError::Unsupported`] when the target is not a station, the measurement has no
+    /// normals or `end` is before `start`.
+    pub fn statistics_range_requests(
+        &self,
+        target: &Target,
+        measurement: Measurement,
+        datum: Option<VerticalDatum>,
+        start: LocalDate,
+        end: LocalDate,
+        ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        let Place::Station { station, .. } = &target.place else {
+            return Err(SourceError::Unsupported(
+                "USGS normals need a station".to_string(),
+            ));
+        };
+        let Some(spec) = range_series(measurement, datum) else {
+            return Err(SourceError::Unsupported(format!(
+                "no USGS normals for {measurement:?}"
+            )));
+        };
+        let span = day_number(end) - day_number(start) + 1;
+        if span < 1 {
+            return Err(SourceError::Unsupported(
+                "the range ends before it starts".to_string(),
+            ));
+        }
+        let (first, last) = (day_key(start), day_key(end));
+        let pieces: Vec<(String, String)> = if span >= 366 {
+            vec![("01-01".into(), "12-31".into())]
+        } else if first <= last {
+            vec![(first, last)]
+        } else {
+            vec![(first, "12-31".into()), ("01-01".into(), last)]
+        };
+        let carry = serde_json::to_string(&RangeCarry {
+            range: true,
+            code: spec.code.to_string(),
+        })
+        .map_err(|e| SourceError::Parse(e.to_string()))?;
+        let mut wanted = target.clone();
+        wanted.measurements = std::iter::once(spec.measurement).collect();
+        Ok(pieces
+            .into_iter()
+            .map(|(from, to)| {
+                let url = QueryBuilder::new(STATISTICS_URL)
+                    .param("monitoring_location_id", site_id(&station.id))
+                    .param("parameter_code", spec.code)
+                    .param("normal_type", "DOY")
+                    .param("computation_type", "percentile")
+                    .param("start_date", &from)
+                    .param("end_date", &to)
+                    .finish();
+                with_key(
+                    Request::new(url, Resource::UsgsStatistics, wanted.clone())
+                        .optional()
+                        .metered()
+                        .max_age_hint(86_400)
+                        .with_carry(carry.clone()),
+                    ctx,
+                )
+            })
+            .collect())
+    }
+
+    /// Reads the response to one of the [`statistics_range_requests`](Self::statistics_range_requests).
+    ///
+    /// # Errors
+    /// The response's failure ([`check_response`]); [`SourceError::Parse`] when the body is
+    /// not a Statistics response or the request is not a range request;
+    /// [`SourceError::NoData`] when the site has no normals for the series in the range.
+    pub fn parse_statistics_range(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        ctx: &FetchContext,
+    ) -> Result<NormalsRange, SourceError> {
+        let carry = range_carry(request)
+            .ok_or_else(|| SourceError::Parse("not a statistics range request".into()))?;
+        let spec = range_series_by_code(&carry.code)
+            .ok_or_else(|| SourceError::Parse(format!("parameter {}", carry.code)))?;
+        let site = match &request.target.place {
+            Place::Station { station, .. } => site_id(&station.id),
+            _ => return Err(SourceError::Unsupported("not a station".into())),
+        };
+        let body = check_response(request, response)?;
+        let collection: Collection = serde_json::from_slice(body)
+            .map_err(|e| SourceError::Parse(format!("unexpected shape: {e}")))?;
+        let none = || SourceError::NoData(Some(format!("no normals for {} at {site}", carry.code)));
+        let parameter = collection
+            .features
+            .iter()
+            .filter(|f| {
+                f.properties
+                    .monitoring_location_id
+                    .as_deref()
+                    .is_none_or(|id| id == site)
+            })
+            .flat_map(|f| &f.properties.data)
+            .find(|p| p.code == carry.code)
+            .ok_or_else(none)?;
+        let unit = parameter.unit_of_measure.as_deref();
+        let mut days: Vec<DayNormals> = Vec::new();
+        for entry in &parameter.values {
+            let (Some(day), Some("percentile")) =
+                (entry.time_of_year.as_deref(), entry.computation.as_deref())
+            else {
+                continue;
+            };
+            let mut thresholds = PercentileThresholds::default();
+            for (label, value) in entry.percentiles.iter().zip(&entry.values) {
+                let slot = match number(label) {
+                    Some(5.0) => &mut thresholds.p05,
+                    Some(10.0) => &mut thresholds.p10,
+                    Some(25.0) => &mut thresholds.p25,
+                    Some(50.0) => &mut thresholds.p50,
+                    Some(75.0) => &mut thresholds.p75,
+                    Some(90.0) => &mut thresholds.p90,
+                    Some(95.0) => &mut thresholds.p95,
+                    _ => continue,
+                };
+                *slot = number(value).and_then(|raw| canon(&spec, raw, unit));
+            }
+            if thresholds != PercentileThresholds::default() {
+                days.push(DayNormals {
+                    day_of_year: day.to_string(),
+                    thresholds,
+                    sample_count: entry.sample_count.unwrap_or(0),
+                });
+            }
+        }
+        if days.is_empty() {
+            return Err(none());
+        }
+        days.sort_by(|a, b| a.day_of_year.cmp(&b.day_of_year));
+        Ok(NormalsRange {
+            measurement: spec.measurement,
+            datum: spec.datum,
+            days,
+            provenance: provenance(&request.target, ctx.now.0, Quality::Approved)?,
+        })
+    }
+}
+
 /// What a Statistics API response comes to.
 enum Normals {
     Done(Box<Percentile>),
@@ -269,7 +512,8 @@ fn canon(spec: &Series, raw: f32, unit: Option<&str>) -> Option<f32> {
     let unit = unit.filter(|u| !u.is_empty()).unwrap_or(spec.unit);
     match (spec.measurement, to_canonical(raw, unit).ok()?) {
         (Measurement::Discharge, Canonical::Discharge(v))
-        | (Measurement::LakeLevel, Canonical::Length(v)) => Some(v),
+        | (Measurement::LakeLevel, Canonical::Length(v))
+        | (Measurement::WaterTemperature, Canonical::Temperature(v)) => Some(v),
         _ => None,
     }
 }
@@ -518,6 +762,11 @@ pub(super) fn parse(
     response: &Response<'_>,
     out: &mut Fragments,
 ) -> Result<(), SourceError> {
+    if range_carry(request).is_some() {
+        return Err(SourceError::Unsupported(
+            "a range request is parsed with parse_statistics_range".into(),
+        ));
+    }
     let carry = Carry::read(request)?;
     let spec = carry.series()?;
     let percentile = if carry.fallback {
@@ -549,6 +798,9 @@ pub(super) fn follow_up(
     response: &Response<'_>,
     ctx: &FetchContext,
 ) -> Result<Vec<Request>, SourceError> {
+    if range_carry(request).is_some() {
+        return Ok(Vec::new());
+    }
     let carry = Carry::read(request)?;
     if carry.fallback {
         return Ok(Vec::new());
@@ -872,5 +1124,257 @@ mod tests {
             )
             .unwrap();
         assert!(plan.iter().all(|r| r.resource != Resource::UsgsStatistics));
+    }
+
+    fn date(year: i32, month: u8, day: u8) -> LocalDate {
+        LocalDate { year, month, day }
+    }
+
+    fn range_requests(
+        measurement: Measurement,
+        datum: Option<VerticalDatum>,
+        start: LocalDate,
+        end: LocalDate,
+    ) -> Vec<Request> {
+        let id = if measurement == Measurement::LakeLevel {
+            "01323500"
+        } else {
+            "01375000"
+        };
+        Usgs::new()
+            .statistics_range_requests(
+                &target(id, measurement),
+                measurement,
+                datum,
+                start,
+                end,
+                &ctx(),
+            )
+            .unwrap()
+    }
+
+    fn parse_range(
+        request: &Request,
+        status: u16,
+        body: &[u8],
+    ) -> Result<NormalsRange, SourceError> {
+        Usgs::new().parse_statistics_range(request, &Response::new(status, body), &ctx())
+    }
+
+    fn croton_range() -> Request {
+        range_requests(
+            Measurement::Discharge,
+            None,
+            date(2026, 11, 5),
+            date(2026, 11, 10),
+        )
+        .remove(0)
+    }
+
+    #[test]
+    fn range_request_sends_all_four_filters_and_the_dates() {
+        let request = croton_range();
+        for part in [
+            "monitoring_location_id=USGS-01375000",
+            "parameter_code=00060",
+            "normal_type=DOY",
+            "computation_type=percentile",
+            "start_date=11-05",
+            "end_date=11-10",
+        ] {
+            assert!(request.url.contains(part), "{part} in {}", request.url);
+        }
+        assert!(request.url.starts_with(STATISTICS_URL));
+        assert!(request.metered && !request.required);
+        assert_eq!(request.resource, Resource::UsgsStatistics);
+    }
+
+    #[test]
+    fn a_range_across_the_year_end_is_two_requests() {
+        let requests = range_requests(
+            Measurement::Discharge,
+            None,
+            date(2026, 12, 30),
+            date(2027, 1, 2),
+        );
+        let dates: Vec<_> = requests
+            .iter()
+            .map(|r| {
+                let part = |key: &str| {
+                    r.url
+                        .split('&')
+                        .find_map(|p| p.strip_prefix(key))
+                        .unwrap()
+                        .to_string()
+                };
+                (part("start_date="), part("end_date="))
+            })
+            .collect();
+        assert_eq!(
+            dates,
+            [
+                ("12-30".to_string(), "12-31".to_string()),
+                ("01-01".to_string(), "01-02".to_string())
+            ]
+        );
+        // A year or more is the whole year in one request.
+        let year = range_requests(
+            Measurement::Discharge,
+            None,
+            date(2026, 3, 1),
+            date(2027, 3, 1),
+        );
+        assert_eq!(year.len(), 1);
+        assert!(year[0].url.contains("start_date=01-01"));
+        assert!(year[0].url.contains("end_date=12-31"));
+    }
+
+    #[test]
+    fn range_requests_refuse_what_they_cannot_ask() {
+        let t = target("01375000", Measurement::Discharge);
+        let ask = |t: &Target, m, start, end| {
+            Usgs::new().statistics_range_requests(t, m, None, start, end, &ctx())
+        };
+        let (a, b) = (date(2026, 11, 5), date(2026, 11, 10));
+        assert!(matches!(
+            ask(&t, Measurement::Discharge, b, a),
+            Err(SourceError::Unsupported(_))
+        ));
+        assert!(matches!(
+            ask(&t, Measurement::Tide, a, b),
+            Err(SourceError::Unsupported(_))
+        ));
+        let point = Target {
+            place: Place::Point(ctx().round(crate::request::Coordinates {
+                latitude: 41.2,
+                longitude: -73.8,
+            })),
+            ..t.clone()
+        };
+        assert!(matches!(
+            ask(&point, Measurement::Discharge, a, b),
+            Err(SourceError::Unsupported(_))
+        ));
+    }
+
+    #[test]
+    fn croton_range_has_six_days_in_order() {
+        let body = fixture_bytes("usgs", CROTON_NORMALS);
+        let range = parse_range(&croton_range(), 200, &body).unwrap();
+        let days: Vec<_> = range.days.iter().map(|d| d.day_of_year.as_str()).collect();
+        assert_eq!(days, ["11-05", "11-06", "11-07", "11-08", "11-09", "11-10"]);
+        let eighth = range.day("11-08").unwrap();
+        assert!((eighth.thresholds.p50.unwrap() - 15.0 * CFS).abs() < 1e-4);
+        assert!((eighth.thresholds.p95.unwrap() - 1180.0 * CFS).abs() < 1e-2);
+        assert_eq!(eighth.sample_count, 93);
+        assert_eq!(range.measurement, Measurement::Discharge);
+        assert_eq!(range.datum, None);
+        let prov = &range.provenance;
+        assert_eq!(prov.source, SourceId::USGS);
+        assert_eq!(prov.quality, Quality::Approved);
+        assert_eq!(prov.observed_at, NOW);
+        insta::assert_yaml_snapshot!("croton_normals_range_1105_1110", range);
+    }
+
+    #[test]
+    fn lake_range_is_in_metres_with_its_datum() {
+        let requests = range_requests(
+            Measurement::LakeLevel,
+            Some(VerticalDatum::Ngvd29),
+            date(2026, 11, 8),
+            date(2026, 11, 8),
+        );
+        assert!(requests[0].url.contains("parameter_code=62614"));
+        let body = fixture_bytes(
+            "usgs",
+            "usgs-statistics-normals-great-sacandaga-01323500-62614-doy-percentile-11-08.json",
+        );
+        let range = parse_range(&requests[0], 200, &body).unwrap();
+        assert_eq!(range.measurement, Measurement::LakeLevel);
+        assert_eq!(range.datum, Some(VerticalDatum::Ngvd29));
+        let [day] = range.days.as_slice() else {
+            panic!("{range:?}");
+        };
+        assert_eq!(day.day_of_year, "11-08");
+        assert_eq!(day.sample_count, 96);
+        assert!((day.thresholds.p50.unwrap() - 754.97 * 0.3048).abs() < 1e-2);
+    }
+
+    // No recorded 00010 normals exist yet: this body is made up in the API's shape.
+    const TEMPERATURE_SYNTHETIC: &str = r#"{"type":"FeatureCollection","features":[{"properties":{"monitoring_location_id":"USGS-01375000","data":[{"parameter_code":"00010","unit_of_measure":"deg C","values":[{"time_of_year":"11-08","computation":"percentile","values":["4.0","5.5","7.0","9.0","11.0","12.5","13.5"],"percentiles":["5","10","25","50","75","90","95"],"sample_count":12}]}]}}],"next":null}"#;
+
+    #[test]
+    fn temperature_range_asks_for_parameter_00010() {
+        let requests = range_requests(
+            Measurement::WaterTemperature,
+            None,
+            date(2026, 11, 8),
+            date(2026, 11, 8),
+        );
+        assert!(requests[0].url.contains("parameter_code=00010"));
+        let range = parse_range(&requests[0], 200, TEMPERATURE_SYNTHETIC.as_bytes()).unwrap();
+        assert_eq!(range.measurement, Measurement::WaterTemperature);
+        let p = range.days[0].thresholds;
+        assert_eq!((p.p05, p.p50, p.p95), (Some(4.0), Some(9.0), Some(13.5)));
+    }
+
+    #[test]
+    fn range_halves_join_in_day_order() {
+        let body = fixture_bytes("usgs", CROTON_NORMALS);
+        let all = parse_range(&croton_range(), 200, &body).unwrap();
+        let mut late = all.clone();
+        late.days.retain(|d| d.day_of_year.as_str() >= "11-08");
+        let mut early = all.clone();
+        early.days.retain(|d| d.day_of_year.as_str() < "11-08");
+        late.extend(early);
+        assert_eq!(late, all);
+    }
+
+    #[test]
+    fn range_failures_are_errors_not_empty_normals() {
+        let request = croton_range();
+        assert!(matches!(
+            parse_range(&request, 200, b"  \n"),
+            Err(SourceError::NoData(_))
+        ));
+        assert!(matches!(
+            parse_range(&request, 200, br#"{"features":[],"next":null}"#),
+            Err(SourceError::NoData(_))
+        ));
+        assert!(matches!(
+            parse_range(&request, 200, CHANGED_SHAPE.as_bytes()),
+            Err(SourceError::Parse(_))
+        ));
+        assert!(matches!(
+            parse_range(&request, 200, br#"{"features":"#),
+            Err(SourceError::Parse(_))
+        ));
+        assert!(matches!(
+            parse_range(&request, 429, b"slow down"),
+            Err(SourceError::RateLimited { .. })
+        ));
+        assert!(matches!(
+            parse_range(&request, 500, b"oops"),
+            Err(SourceError::Status { .. })
+        ));
+    }
+
+    #[test]
+    fn range_and_single_day_requests_do_not_mix() {
+        let range = croton_range();
+        let body = fixture_bytes("usgs", CROTON_NORMALS);
+        let mut out = Fragments::new();
+        let err = Usgs::new()
+            .parse(&range, &Response::new(200, &body), &ctx(), &mut out)
+            .unwrap_err();
+        assert!(matches!(err, SourceError::Unsupported(_)), "{err:?}");
+        let next = Usgs::new()
+            .follow_up(&range, &Response::new(500, b"x"), &ctx())
+            .unwrap();
+        assert_eq!(next.len(), 0);
+        assert!(matches!(
+            parse_range(&croton_request(NOW, 0.35), 200, &body),
+            Err(SourceError::Parse(_))
+        ));
     }
 }
