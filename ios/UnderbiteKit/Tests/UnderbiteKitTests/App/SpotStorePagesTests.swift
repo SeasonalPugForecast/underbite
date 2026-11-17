@@ -4,8 +4,9 @@ import XCTest
 @testable import UnderbiteKit
 
 /// The pages the store builds: one per spot on screen (each iPad window may show its own), the
-/// list kept when one spot's saved data cannot be read, and the reason a page is empty. No
-/// network: the core's calls run against a stubbed `URLSession`.
+/// list kept when one spot's saved data cannot be read, the reason a page is empty, saved spots
+/// read leniently, and the core's words for an unreadable file. No network: the core's calls
+/// run against a stubbed `URLSession`.
 @MainActor
 final class SpotStorePagesTests: XCTestCase {
     /// A directory of its own for each test (XCTest makes an instance per test).
@@ -162,5 +163,42 @@ final class SpotStorePagesTests: XCTestCase {
         await s.show(SeedSpots.battery.id, viewer: UUID())
         XCTAssertEqual(s.pageJSON(for: SeedSpots.battery.id), "")
         XCTAssertEqual(s.listing.map(\.id), [SeedSpots.battery.id, SeedSpots.croton.id])
+    }
+
+    // MARK: - Files
+
+    func testAnOddSpotLoadsWithDefaultsAndTheFileIsNotSetAside() throws {
+        // Written by hand or by an older version: only the position and a few keys.
+        let state = """
+            {"version": 1, "spots": [
+              {"id": "a", "name": "A", "latitude": 40.7033, "longitude": -74.017,
+               "waterType": "tidal_river_estuary", "waterTypeChosen": true, "timeZone": "",
+               "pinned": false, "favourite": false, "order": 0},
+              {"latitude": 41.2, "longitude": -73.9, "name": "Odd", "pinned": "yes"}
+            ]}
+            """
+        files.write(Data(state.utf8), "state.json")
+        let s = store()
+        XCTAssertTrue(s.fileProblems.isEmpty)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: files.url("state.json.bad").path))
+        XCTAssertEqual(s.spots.map(\.name), ["A", "Odd"])
+        let odd = s.spots[1]
+        XCTAssertEqual(odd.latitude, 41.2)
+        XCTAssertFalse(odd.id.isEmpty)
+        XCTAssertEqual(odd.waterType, Spot.unknownWaterType)
+        XCTAssertFalse(odd.waterTypeChosen, "a fetch may suggest the type")
+        XCTAssertFalse(odd.pinned)
+        XCTAssertEqual(odd.order, 0)
+        XCTAssertNil(odd.areaID)
+    }
+
+    func testFileProblemsAreWordedByTheCore() {
+        XCTAssertEqual(
+            FileProblem(file: .spots, keptAs: "state.json.bad").text,
+            fileProblemText(file: .spots, keptAs: "state.json.bad"))
+        XCTAssertTrue(
+            FileProblem(file: .settings, keptAs: "settings.json.bad").text
+                .contains("kept as settings.json.bad"))
+        XCTAssertTrue(FileProblem(file: .spots, keptAs: nil).text.contains("never saved over"))
     }
 }

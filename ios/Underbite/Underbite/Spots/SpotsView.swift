@@ -148,6 +148,9 @@ private struct SpotList: View {
         .overlay {
             if store.spots.isEmpty { emptyState }
         }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if !store.fileProblems.isEmpty { FileProblemsBanner(problems: store.fileProblems) }
+        }
         .refreshable { await store.refresh() }
         .navigationTitle("Spots")
         .toolbar {
@@ -270,6 +273,34 @@ private struct SpotList: View {
                 .controlSize(.large)
                 .padding(.bottom, 32)
         }
+    }
+}
+
+/// The app's own files it could not read at launch, and what became of them, in the core's
+/// words: above the list until the next launch, so a spots list that starts empty says why.
+private struct FileProblemsBanner: View {
+    let problems: [FileProblem]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(problems, id: \.file) { problem in
+                Label {
+                    Text(problem.text).fixedSize(horizontal: false, vertical: true)
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(Palette.warning)
+                        .accessibilityHidden(true)
+                }
+            }
+        }
+        .font(.subheadline)
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .padding(.horizontal)
+        .padding(.vertical, 6)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("file-problems")
     }
 }
 

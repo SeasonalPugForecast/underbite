@@ -60,6 +60,11 @@ nonisolated struct FileProblem: Equatable, Sendable {
     /// The name the unreadable file was moved to in the app's directory (`state.json.bad`), or
     /// `nil` when it could not be moved: then it stays where it was and is not saved over.
     var keptAs: String?
+
+    /// What the app says of it, in the core's words.
+    var text: String {
+        fileProblemText(file: file == .spots ? .spots : .settings, keptAs: keptAs)
+    }
 }
 
 /// What the list needs of a spot's cache: when its last fetch succeeded and why one failed.

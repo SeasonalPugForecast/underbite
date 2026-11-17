@@ -38,6 +38,35 @@ nonisolated struct Spot: Codable, Hashable, Identifiable, Sendable {
         self.order = order
     }
 
+    private enum CodingKeys: String, CodingKey {
+        case id, name, latitude, longitude, waterType, waterTypeChosen, timeZone, areaID, pinned
+        case favourite, order
+    }
+
+    /// The water type of a spot saved without one: a fetch suggests the right one, since it
+    /// counts as not chosen.
+    static let unknownWaterType = "river_stream"
+
+    /// Reads a saved spot; only its position is required. A key a file lacks (an older
+    /// version's, or one edited by hand) takes its default, so one odd spot never makes the
+    /// whole file unreadable.
+    init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        latitude = try c.decode(Double.self, forKey: .latitude)
+        longitude = try c.decode(Double.self, forKey: .longitude)
+        id = (try? c.decodeIfPresent(String.self, forKey: .id)) ?? UUID().uuidString
+        name = (try? c.decodeIfPresent(String.self, forKey: .name)) ?? ""
+        let waterType = try? c.decodeIfPresent(String.self, forKey: .waterType)
+        self.waterType = waterType ?? Self.unknownWaterType
+        waterTypeChosen =
+            waterType == nil ? false : (try? c.decodeIfPresent(Bool.self, forKey: .waterTypeChosen)) ?? true
+        timeZone = (try? c.decodeIfPresent(String.self, forKey: .timeZone)) ?? ""
+        areaID = try? c.decodeIfPresent(String.self, forKey: .areaID)
+        pinned = (try? c.decodeIfPresent(Bool.self, forKey: .pinned)) ?? false
+        favourite = (try? c.decodeIfPresent(Bool.self, forKey: .favourite)) ?? false
+        order = (try? c.decodeIfPresent(Int.self, forKey: .order)) ?? 0
+    }
+
     /// The spot as the core takes it.
     var info: SpotInfo {
         SpotInfo(
