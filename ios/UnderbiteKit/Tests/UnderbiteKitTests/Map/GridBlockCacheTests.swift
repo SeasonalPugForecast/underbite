@@ -38,13 +38,13 @@ func murTable(south: Double = 40, west: Double = -74, value: Double = 16) -> Dat
     for i in 0..<2 {
         for j in 0..<2 {
             let (lat, lon) = (south + 0.5 * Double(i), west + 0.5 * Double(j))
-            rows.append("[\"2026-11-07T09:00:00Z\", \(lat), \(lon), \(value)]")
+            rows.append("[\"2026-11-07T09:00:00Z\", \(lat), \(lon), \(value), 1]")
         }
     }
     let table = """
-        {"table": {"columnNames": ["time", "latitude", "longitude", "analysed_sst"],
-        "columnTypes": ["String", "float", "float", "double"],
-        "columnUnits": ["UTC", "degrees_north", "degrees_east", "degree_C"],
+        {"table": {"columnNames": ["time", "latitude", "longitude", "analysed_sst", "mask"],
+        "columnTypes": ["String", "float", "float", "double", "byte"],
+        "columnUnits": ["UTC", "degrees_north", "degrees_east", "degree_C", null],
         "rows": [\(rows.joined(separator: ", "))]}}
         """
     return Data(table.utf8)

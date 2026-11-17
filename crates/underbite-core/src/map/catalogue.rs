@@ -349,10 +349,12 @@ const fn station(id: &'static str, kind: StationKind) -> Layer {
     l
 }
 
+// MUR fills land (Long Island, the city) with analysed values; its `mask` flag says which cells
+// are land, and the ERDDAP parser blanks those.
 const MUR_GRID: GridSpec = GridSpec {
     node: GridHost::Pfeg,
     dataset: "jplMURSST41",
-    variables: &["analysed_sst"],
+    variables: &["analysed_sst", "mask"],
     altitude_axis: false,
     native_step_deg: 0.01,
 };
@@ -976,7 +978,10 @@ mod tests {
             k => panic!("{id}: {k:?}"),
         };
         assert_eq!(grid("sst").primary.source().dataset, "jplMURSST41");
-        assert_eq!(grid("sst").primary.source().variables, ["analysed_sst"]);
+        assert_eq!(
+            grid("sst").primary.source().variables,
+            ["analysed_sst", "mask"]
+        );
         assert_eq!(
             grid("chlorophyll").primary.dataset,
             "noaacwN20VIIRSchlaDaily"

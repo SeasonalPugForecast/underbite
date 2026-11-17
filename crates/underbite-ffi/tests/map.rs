@@ -295,7 +295,7 @@ fn response(status: u16, body: Vec<u8>) -> HostResponse {
 }
 
 fn mur() -> Vec<u8> {
-    fixture("erddap/jplmursst41-sst-subset-2026-11-07.json")
+    fixture("erddap/jplmursst41-sst-mask-subset-2026-11-17.json")
 }
 
 /// The view around the recorded subsets: 40.0 to 40.8 N, 74.2 to 73.0 W, at zoom 9.
@@ -431,9 +431,9 @@ fn the_mur_subset_renders_its_tile_and_inspects_to_fahrenheit() {
     assert_eq!(rows.len(), 1, "only layers with a block over the point");
     let row = &rows[0];
     assert_eq!(row.layer, "sst");
-    // 16.111 °C at that grid point.
-    assert_eq!(row.value_text, "61 °F");
-    assert_eq!(row.time_text, "Nov 7");
+    // 13.871 °C at that grid point.
+    assert_eq!(row.value_text, "57 °F");
+    assert_eq!(row.time_text, "Nov 16");
     assert!(row.source.contains("MUR"));
     assert_eq!(row.label, "Sea surface temperature");
 
@@ -446,7 +446,7 @@ fn the_mur_subset_renders_its_tile_and_inspects_to_fahrenheit() {
             "America/New_York".into(),
         )
         .unwrap();
-    assert_eq!(metric_rows[0].value_text, "16.1 °C");
+    assert_eq!(metric_rows[0].value_text, "13.9 °C");
 
     // Land at the subset's corner has no value.
     let land = store
@@ -556,13 +556,13 @@ fn mur_table(south: f64, west: f64, step: f64, rows: usize, cols: usize, value: 
     for i in 0..rows {
         for j in 0..cols {
             let (lat, lon) = (south + step * i as f64, west + step * j as f64);
-            cells.push(json!(["2026-11-07T09:00:00Z", lat, lon, value]));
+            cells.push(json!(["2026-11-07T09:00:00Z", lat, lon, value, 1]));
         }
     }
     let table = json!({"table": {
-        "columnNames": ["time", "latitude", "longitude", "analysed_sst"],
-        "columnTypes": ["String", "float", "float", "double"],
-        "columnUnits": ["UTC", "degrees_north", "degrees_east", "degree_C"],
+        "columnNames": ["time", "latitude", "longitude", "analysed_sst", "mask"],
+        "columnTypes": ["String", "float", "float", "double", "byte"],
+        "columnUnits": ["UTC", "degrees_north", "degrees_east", "degree_C", null],
         "rows": cells,
     }});
     serde_json::to_vec(&table).unwrap()
@@ -581,7 +581,9 @@ fn a_wide_view_asks_for_an_overview_first() {
         overview
             .request
             .url
-            .ends_with("analysed_sst%5B(last)%5D%5B(34.0):14:(43.99)%5D%5B(-76.0):14:(-66.01)%5D"),
+            .ends_with(
+                "analysed_sst%5B(last)%5D%5B(34.0):14:(43.99)%5D%5B(-76.0):14:(-66.01)%5D,mask%5B(last)%5D%5B(34.0):14:(43.99)%5D%5B(-76.0):14:(-66.01)%5D"
+            ),
         "{}",
         overview.request.url
     );
@@ -724,7 +726,7 @@ fn the_inspector_reads_land_from_the_fine_block_over_an_overview() {
     };
     // Land in the fine block stays land; its water is its own value.
     assert_eq!(read(40.0, -74.2), "No value here");
-    assert_eq!(read(40.5, -73.5), "61 °F");
+    assert_eq!(read(40.5, -73.5), "57 °F");
     // Beyond the fine block the overview answers.
     assert_eq!(read(39.0, -74.0), "77 °F");
 }

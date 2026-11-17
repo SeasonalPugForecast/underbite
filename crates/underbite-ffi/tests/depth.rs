@@ -494,8 +494,10 @@ fn the_store_bound_covers_elevation_blocks() {
 /// A MUR block at one hundredth of a degree (stride 1) with a front across -73.75: 14 °C to the
 /// west and 20 °C to the east over 0.04 degrees, in the shape ERDDAP answers.
 fn front_block() -> Vec<u8> {
-    let template: Value =
-        serde_json::from_slice(&fixture("erddap/jplmursst41-sst-subset-2026-11-07.json")).unwrap();
+    let template: Value = serde_json::from_slice(&fixture(
+        "erddap/jplmursst41-sst-mask-subset-2026-11-17.json",
+    ))
+    .unwrap();
     let mut rows = Vec::new();
     for i in 0..=50 {
         let lat = 40.0 + f64::from(i) * 0.01;
@@ -504,10 +506,11 @@ fn front_block() -> Vec<u8> {
             let t = ((lon + 73.77) / 0.04).clamp(0.0, 1.0);
             let sst = 14.0 + 6.0 * t * t * (3.0 - 2.0 * t);
             rows.push(json!([
-                "2026-11-07T09:00:00Z",
+                "2026-11-16T09:00:00Z",
                 (lat * 100.0).round() / 100.0,
                 (lon * 100.0).round() / 100.0,
-                (sst * 1000.0).round() / 1000.0
+                (sst * 1000.0).round() / 1000.0,
+                1
             ]));
         }
     }
@@ -620,7 +623,9 @@ fn breaks_need_a_layer_that_has_them_and_blocks_near_the_grids_own_resolution() 
     coarse
         .add_grid(
             requests[0].key.clone(),
-            json_response(&fixture("erddap/jplmursst41-sst-subset-2026-11-07.json")),
+            json_response(&fixture(
+                "erddap/jplmursst41-sst-mask-subset-2026-11-17.json",
+            )),
             NOW,
         )
         .unwrap();

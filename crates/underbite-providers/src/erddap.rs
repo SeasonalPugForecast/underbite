@@ -368,7 +368,20 @@ fn sorted_axis(mut axis: Vec<f64>) -> Vec<f64> {
     axis
 }
 
+/// The name of a land/sea flag variable. Where a source lists it, [`parse_grids`] blanks the
+/// other variables on land cells and returns no grid for it.
+pub const MASK_VARIABLE: &str = "mask";
+
+/// The bit of the MUR `mask` flag that marks land (`flag_masks 1, 2, 4, 8, 16` meaning open sea,
+/// land, open lake, open sea with ice, open lake with ice). Lakes, with or without ice, are water
+/// and keep their values.
+const LAND_FLAG: i64 = 2;
+
 /// One grid per variable of `source`, in its order, from a griddap JSON table.
+///
+/// A variable named [`MASK_VARIABLE`] is a land/sea flag: its cells with the land bit set turn
+/// every other variable to `NaN` there, and no grid is returned for it. A cell without a flag
+/// keeps its values.
 ///
 /// Every row is placed by its own latitude and longitude, so the order of the rows does not
 /// matter; the grids' latitudes ascend. All rows must share one time.
@@ -419,6 +432,8 @@ pub fn parse_grids(source: &GridSource, body: &[u8]) -> Result<Vec<Grid>, Erddap
     let cells = table.rows.len();
     let mut seen = vec![false; cells];
     let mut values = vec![vec![f32::NAN; cells]; var_cols.len()];
+    let mask_at = source.variables.iter().position(|v| v == MASK_VARIABLE);
+    let mut land = vec![false; cells];
     for row in &table.rows {
         let lat = coordinate(row, lat_col, "latitude")?;
         let lon = coordinate(row, lon_col, "longitude")?;
@@ -438,12 +453,23 @@ pub fn parse_grids(source: &GridSource, body: &[u8]) -> Result<Vec<Grid>, Erddap
                 *slot = cell(row, *column)?;
             }
         }
+        if let (Some(m), Some(is_land)) = (mask_at, land.get_mut(at)) {
+            let flag = values.get(m).and_then(|g| g.get(at)).copied();
+            *is_land = flag.is_some_and(|f| f.is_finite() && (f as i64) & LAND_FLAG != 0);
+        }
     }
 
     var_cols
         .iter()
         .zip(values)
-        .map(|(&column, values)| {
+        .enumerate()
+        .filter(|(i, _)| Some(*i) != mask_at)
+        .map(|(_, (&column, mut values))| {
+            if mask_at.is_some() {
+                for (v, _) in values.iter_mut().zip(&land).filter(|(_, l)| **l) {
+                    *v = f32::NAN;
+                }
+            }
             Grid::new(
                 source.clone(),
                 time,
@@ -748,6 +774,16 @@ mod tests {
         )
     }
 
+    fn mur_masked() -> GridSource {
+        source(
+            GridHost::Pfeg,
+            "jplMURSST41",
+            &["analysed_sst", MASK_VARIABLE],
+            false,
+            0.01,
+        )
+    }
+
     fn hf_radar() -> GridSource {
         source(
             GridHost::Pfeg,
@@ -1024,6 +1060,89 @@ mod tests {
         let not_erddap = Err(ErddapError::InvalidRequest("host is not an ERDDAP server"));
         assert_eq!(grid_request(&dem, GridTime::Last, harbor(), 1), not_erddap);
         assert_eq!(time_axis_request(&dem, day(2026, 11, 5)), not_erddap);
+    }
+
+    #[test]
+    fn erddap_mur_mask_blanks_land_and_keeps_open_water() {
+        let body = fixture_bytes("erddap", "jplmursst41-sst-mask-subset-2026-11-17.json");
+        let grids = parse_grids(&mur_masked(), &body).unwrap();
+        // The mask is consumed: one grid, for the temperature.
+        assert_eq!(grids.len(), 1);
+        let g = &grids[0];
+        assert_eq!((g.lats.len(), g.lons.len()), (17, 25));
+        assert_eq!(g.unit, "degree_C");
+        let at = |lat: f64, lon: f64| g.sample_nearest(GeoPoint { lat, lon }).unwrap_or(f32::NAN);
+        // Central Islip: inland, the source holds 13.585 there but flags it as land.
+        assert!(at(40.8, -73.2).is_nan());
+        // Open water south of Long Island keeps its value.
+        assert_eq!(at(40.4, -73.2), 14.656);
+        // A cell the source fills with a value but flags as land (Staten Island side).
+        assert!(at(40.6, -74.15).is_nan());
+        // Only open-sea cells (flag 1) remain.
+        assert_eq!(g.valid_count(), 292);
+    }
+
+    #[test]
+    fn erddap_mur_mask_leaves_land_transparent_in_a_rendered_tile() {
+        use underbite_core::map::TileKey;
+        use underbite_core::map::render::{RampRange, ramp, render_rgba};
+        let body = fixture_bytes("erddap", "jplmursst41-sst-mask-subset-2026-11-17.json");
+        let grids = parse_grids(&mur_masked(), &body).unwrap();
+        let thermal = ramp("thermal").unwrap();
+        let range = RampRange::linear(10.0, 20.0);
+        // Zoom 9 tile over the box; find the pixel of a point by Web Mercator.
+        let (z, size) = (9_u8, 256_u32);
+        let n = f64::from(1_u32 << z);
+        let world = |lat: f64, lon: f64| {
+            let x = (lon + 180.0) / 360.0 * n;
+            let y = (1.0
+                - (lat.to_radians().tan() + 1.0 / lat.to_radians().cos()).ln()
+                    / std::f64::consts::PI)
+                / 2.0
+                * n;
+            (x, y)
+        };
+        let (cx, cy) = world(40.8, -73.2);
+        let tile = TileKey {
+            z,
+            x: cx.floor() as u32,
+            y: cy.floor() as u32,
+        };
+        let rgba = render_rgba(&grids, thermal, range, tile, size).unwrap();
+        let alpha = |lat: f64, lon: f64| {
+            let (x, y) = world(lat, lon);
+            let px = ((x - f64::from(tile.x)) * f64::from(size)) as usize;
+            let py = ((y - f64::from(tile.y)) * f64::from(size)) as usize;
+            rgba[(py * size as usize + px) * 4 + 3]
+        };
+        assert_eq!(alpha(40.8, -73.2), 0, "Central Islip must be transparent");
+        // The point just offshore is on the same tile? Use any opaque pixel in the tile.
+        assert!(
+            rgba.iter().skip(3).step_by(4).any(|a| *a > 0),
+            "open water is drawn"
+        );
+    }
+
+    #[test]
+    fn erddap_old_body_without_the_mask_is_refused_for_a_masked_source() {
+        let body = fixture_bytes("erddap", "jplmursst41-sst-subset-2026-11-07.json");
+        assert!(matches!(
+            parse_grids(&mur_masked(), &body),
+            Err(ErddapError::BadTable(_))
+        ));
+    }
+
+    #[test]
+    fn erddap_mur_request_asks_for_the_mask_with_the_same_stride() {
+        let r = grid_request(&mur_masked(), GridTime::Last, harbor(), 5).unwrap();
+        let query = r.url.split_once('?').unwrap().1;
+        let parts: Vec<&str> = query.split(',').collect();
+        assert_eq!(parts.len(), 2);
+        assert!(parts[0].starts_with("analysed_sst%5B(last)%5D"));
+        assert_eq!(
+            parts[1].strip_prefix("mask"),
+            parts[0].strip_prefix("analysed_sst")
+        );
     }
 
     #[test]

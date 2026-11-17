@@ -621,7 +621,7 @@ fn pack_items_are_the_map_stores_keys_and_requests() {
     assert_eq!(asked.len(), 1, "{asked:?}");
     assert_eq!(asked[0].key, grid.key);
     assert_eq!(asked[0].request.url, url_of(grid));
-    let mur = fixture("erddap/jplmursst41-sst-subset-2026-11-07.json");
+    let mur = fixture("erddap/jplmursst41-sst-mask-subset-2026-11-17.json");
     store
         .add_grid(grid.key.clone(), ok("application/json", mur.clone()), now())
         .expect("the store takes the pack's key");

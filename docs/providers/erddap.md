@@ -18,7 +18,7 @@ Redirect to know about: on the pfeg node, data requests (`.json`, `.csv`, ...) f
 
 | Layer | Node | Dataset id | Variable(s) | Grid | Time step | Latest time at check | Fill / missing |
 |---|---|---|---|---|---|---|---|
-| MUR SST, v4.1, global | pfeg | `jplMURSST41` | `analysed_sst` (degree_C); also `analysis_error`, `mask`, `sea_ice_fraction` | 0.01 degree (about 1.1 km), lat -89.99..89.99, lon -179.99..180 | daily, 09:00Z | 2026-11-07T09:00Z (dataset `time_coverage_end`), about 29 h before the check | land and ice-masked cells are `null` in JSON, `NaN` in CSV; raw `_FillValue` -7.768 |
+| MUR SST, v4.1, global | pfeg | `jplMURSST41` | `analysed_sst` (degree_C); also `analysis_error`, `mask`, `sea_ice_fraction` | 0.01 degree (about 1.1 km), lat -89.99..89.99, lon -179.99..180 | daily, 09:00Z | 2026-11-07T09:00Z (dataset `time_coverage_end`), about 29 h before the check | `analysed_sst` is `null` only where the analysis has no value (part of the coast, e.g. the NJ shore); **land is not reliably null**: Long Island and parts of the city carry values (13.585 degree_C at 40.8, -73.2 on 2026-11-16). Use `mask` (below); raw `_FillValue` -7.768 |
 | VIIRS chlorophyll-a, NOAA-20, near real time, global 4 km | coastwatch.noaa.gov | `noaacwN20VIIRSchlaDaily` | `chlor_a` (mg m^-3, OC3) | 0.0375 degree (4 km), 4788 x 9602, with an `altitude` axis of length 1 | daily, 12:00Z, irregular (days without a swath are missing from the time axis) | 2026-11-05T12:00Z (3 days before the check) | clouds and no-data are `null` / `NaN`; raw `_FillValue` NaN; `valid_min` 0.001, `valid_max` 1000 |
 | VIIRS chlorophyll-a, S-NPP, near real time, global 4 km | coastwatch.noaa.gov (also under pfeg id `nesdisVHNchlaDaily`, which redirects) | `noaacwNPPVIIRSchlaDaily` | `chlor_a` | same grid | daily 12:00Z | 2026-11-06T12:00Z | as above |
 | VIIRS Kd490, S-NPP, near real time, global 4 km | coastwatch.noaa.gov (pfeg id `nesdisVHNkd490Daily` redirects) | `noaacwNPPVIIRSkd490Daily` | `kd_490` (m^-1) | same grid | daily 12:00Z | 2026-11-06T12:00Z | `null` / `NaN`; raw `_FillValue` -6.5534 |
@@ -39,6 +39,7 @@ Observations that affect clients:
 - Chlorophyll coverage on a given day is patchy: for the test box (stride 3) the NOAA-20 series from 2026-10-15 to 2026-11-05 had 63 to 66 valid cells of 88 on 12 days and 0 to 4 on 8 days; the newest day (2026-11-05) was empty. The app must step back to the latest day with data (date picker per §6.7).
 - Latitude order differs: `jplMURSST41` and `ucsdHfrE6` list latitude ascending; the 4 km VIIRS datasets list it descending (the first row of the subset is 40.78125 N). A parser must read the coordinates from each row, never assume the order.
 - Longitude is -180..180 on the unsuffixed ids. The `_Lon0360` variants exist for the datasets listed and are not needed.
+- MUR land: draw `analysed_sst` only where `mask` is not land (flag 2). In the New York test box (17 x 25 cells at stride 5) 133 cells are flagged land and 77 of them hold a temperature. The app keeps lakes (flags 4 and 16) as water and drops cells flagged land; a cell without a flag keeps its value.
 - MUR revises history: "the data for the most recent 7 days is usually revised every day" (dataset `history`), with a nominal 4-day latency for the final version replacing a 1-day near-real-time version. Re-fetch rather than cache the latest week indefinitely.
 
 ## Kd490 re-check, 2026-11-16
@@ -113,6 +114,8 @@ Recommendation recorded for the catalogue: Kd490 can use `noaacwN21VIIRSkd490NSW
 Test box 40.0 to 40.8 N, 73.0 to 74.2 W (all recorded; see fixtures):
 
 ```
+# MUR SST with the land/sea mask (request both in one query, same constraints), recorded 2026-11-17
+# https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json?analysed_sst%5B(last)%5D%5B(40.0):5:(40.8)%5D%5B(-74.2):5:(-73.0)%5D,mask%5B(last)%5D%5B(40.0):5:(40.8)%5D%5B(-74.2):5:(-73.0)%5D
 # MUR SST, newest day, every 5th cell
 https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json?analysed_sst%5B(last)%5D%5B(40.0):5:(40.8)%5D%5B(-74.2):5:(-73.0)%5D
 
@@ -138,7 +141,8 @@ URL template: `{base}/griddap/{id}.json?{var}%5B({t})%5D%5B({lat0}):{step}:({lat
 | all | `time` | string | UTC ISO 8601 | nominal time of the field | n/a |
 | all | `latitude`, `longitude` | number | degrees north, degrees east | cell centre | n/a |
 | 4 km VIIRS | `altitude` | number | m | always 0 | n/a |
-| `jplMURSST41` | `analysed_sst` | number | degree_C | foundation SST analysis | `null` over land |
+| `jplMURSST41` | `analysed_sst` | number | degree_C | foundation SST analysis | `null` where the analysis has no value; many land cells still hold a value |
+| `jplMURSST41` | `mask` | byte | none | sea/land composite flag; `flag_masks` 1, 2, 4, 8, 16 = `open_sea`, `land`, `open_lake`, `open_sea_with_ice_in_the_grid`, `open_lake_with_ice_in_the_grid`; `valid_min` 1, `valid_max` 31, `_FillValue` -128 | `null` outside the valid range |
 | `ucsdHfrE6` | `water_u` | number | m s-1 | eastward surface velocity (upper 2.4 m) | `null` outside radar coverage (190 of the 315 test-box cells had a value) |
 | `ucsdHfrE6` | `water_v` | number | m s-1 | northward surface velocity | `null` |
 | `noaacwN20VIIRSchlaDaily` | `chlor_a` | number | mg m^-3 | chlorophyll-a, OC3 | `null` (cloud, glint, land) |
