@@ -167,6 +167,8 @@ final class SpotStore {
     @ObservationIgnored private var statuses: [String: SpotStatus] = [:]
     /// Files left in place after they could not be read: never written over.
     @ObservationIgnored private var unwritable: Set<String> = []
+    /// The refresh while the app is open.
+    @ObservationIgnored private var openLoop: Task<Void, Never>?
     @ObservationIgnored private var queue = RefreshQueue()
     /// The spots whose stations wait to be looked up, before any fetch still waiting.
     @ObservationIgnored private var lookups = RefreshQueue()
@@ -507,6 +509,29 @@ final class SpotStore {
     }
 
     // MARK: - Refresh
+
+    /// Starts the refresh while the app is open (`foreground`), or stops it: in the foreground
+    /// the due spots are fetched, and the page built again, every `RefreshPolicy.whileOpen`;
+    /// in the background nothing is started (a fetch under way ends first).
+    func setForeground(_ foreground: Bool) {
+        if foreground {
+            guard openLoop == nil else { return }
+            openLoop = Task { await self.whileOpen() }
+        } else {
+            openLoop?.cancel()
+            openLoop = nil
+        }
+    }
+
+    /// Until cancelled, every `tick`: fetches the spots that are due, or builds the page again
+    /// when none is, so its ages, the values of now and what has gone stale follow the clock.
+    /// Cancelling it cancels no fetch: the refresh runs in a task of its own.
+    func whileOpen(every tick: Duration = RefreshPolicy.whileOpen) async {
+        while !Task.isCancelled {
+            await Task { await self.refreshOnOpen() }.value
+            try? await Task.sleep(for: tick)
+        }
+    }
 
     /// Fetches the spots whose data is older than the refresh interval allows (all of them
     /// the first time), the shown spot first.

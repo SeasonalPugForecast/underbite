@@ -12,11 +12,14 @@ struct UnderbiteApp: App {
                 .environment(store)
                 .environment(\.voiceStyle, voice)
                 .sunMode(store.sunMode || LaunchArguments.sunMode)
-                .task { await store.refreshOnOpen() }
-                .onChange(of: phase) { _, phase in
+                // While the app is open, due spots are fetched and the page built again every
+                // minute; in the background nothing is.
+                .onChange(of: phase, initial: true) { _, phase in
                     switch phase {
-                    case .active: Task { await store.refreshOnOpen() }
-                    case .background: store.saveSettingsNow()
+                    case .active: store.setForeground(true)
+                    case .background:
+                        store.setForeground(false)
+                        store.saveSettingsNow()
                     default: break
                     }
                 }

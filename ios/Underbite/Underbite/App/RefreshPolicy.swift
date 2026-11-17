@@ -41,6 +41,10 @@ nonisolated enum RefreshPolicy {
 
     /// How long a location fix answers for a new one.
     static let fixLasts: TimeInterval = 10 * 60
+
+    /// How often, while the app is open, the due spots are fetched and the page is built again
+    /// (its ages, the values of now, the now line and what has gone stale).
+    static let whileOpen: Duration = .seconds(60)
 }
 
 /// What a place search may send of where the phone is. Foundation only.
