@@ -25,11 +25,4 @@ final class RangeFitTests: XCTestCase {
         let far = ValueRange(low: 12, high: 20)
         XCTAssertEqual(RangeFit.settle(new: far, held: held), far)
     }
-
-    func testTheRangeBoxHoldsWhatWasSet() {
-        let box = RangeBox(nil)
-        XCTAssertNil(box.range)
-        box.range = held
-        XCTAssertEqual(box.range, held)
-    }
 }

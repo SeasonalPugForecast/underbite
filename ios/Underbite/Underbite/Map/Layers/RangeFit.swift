@@ -27,17 +27,3 @@ nonisolated struct MapLegendState: Equatable, Sendable {
     var stops: [LegendStop]
     var fittedCaption: String?
 }
-
-/// A grid layer's drawn range, read from any thread (tiles render off the main thread) and set on
-/// the main thread when the range changes.
-nonisolated final class RangeBox: @unchecked Sendable {
-    private let lock = NSLock()
-    private var value: ValueRange?
-
-    init(_ value: ValueRange?) { self.value = value }
-
-    var range: ValueRange? {
-        get { lock.withLock { value } }
-        set { lock.withLock { value = newValue } }
-    }
-}

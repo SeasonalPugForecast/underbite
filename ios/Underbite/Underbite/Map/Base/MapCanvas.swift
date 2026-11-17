@@ -58,6 +58,8 @@ struct MapCanvas: UIViewRepresentable {
         private var keys: [ObjectIdentifier: String] = [:]
         private var renderers: [ObjectIdentifier: MKOverlayRenderer] = [:]
         private var drawnRevisions: [String: Int] = [:]
+        /// Grid overlays replaced by newer ones, on the map until those have their first tiles.
+        private var retired = RetiredOverlays<GridTileOverlay>()
         /// Per module, its overlays and annotations on the map.
         private var moduleOverlays: [ObjectIdentifier: [ObjectIdentifier: any MKOverlay]] = [:]
         private var moduleAnnotations: [ObjectIdentifier: [ObjectIdentifier: any MKAnnotation]] =
@@ -78,9 +80,11 @@ struct MapCanvas: UIViewRepresentable {
                 let revision = revisions[layer.id] ?? 0
                 if drawnRevisions[layer.overlayKey] != revision {
                     drawnRevisions[layer.overlayKey] = revision
-                    (overlay as? GridTileOverlay)?.setRange(controller.drawnRanges[layer.id])
-                    (renderer as? MKTileOverlayRenderer)?.reloadData()
-                    (renderer as? ArrowRenderer)?.setNeedsDisplay()
+                    if let grid = overlay as? GridTileOverlay {
+                        replace(grid, with: layer, on: map)
+                    } else {
+                        (renderer as? ArrowRenderer)?.setNeedsDisplay()
+                    }
                 }
             }
             if askedModules?.revision != moduleRevision || askedModules?.plan != plan {
@@ -131,10 +135,11 @@ struct MapCanvas: UIViewRepresentable {
             guard wanted != order else { return }
             let steps = OverlayOrder.steps(current: order, wanted: wanted)
             for key in steps.remove {
+                for old in retired.drop(key: key) {
+                    take(old, off: map)
+                }
                 guard let overlay = overlays.removeValue(forKey: key) else { continue }
-                map.removeOverlay(overlay)
-                keys[ObjectIdentifier(overlay)] = nil
-                renderers[ObjectIdentifier(overlay)] = nil
+                take(overlay, off: map)
                 drawnRevisions[key] = nil
             }
             for (key, above) in steps.insert {
@@ -152,6 +157,48 @@ struct MapCanvas: UIViewRepresentable {
                 }
             }
             order = wanted
+        }
+
+        private func take(_ overlay: any MKOverlay, off map: MKMapView) {
+            map.removeOverlay(overlay)
+            keys[ObjectIdentifier(overlay)] = nil
+            renderers[ObjectIdentifier(overlay)] = nil
+        }
+
+        /// How long a replaced grid overlay stays at most when the new one's tiles do not answer
+        /// (none asked for, such as below the layer's shallowest zoom).
+        static let retireAfter: Duration = .seconds(2)
+
+        /// Draws a grid layer again with the blocks held and the range now drawn: a new overlay
+        /// goes right above the old one, which comes off once the new one's first tiles are
+        /// answered, so the layer does not blink. (MapKit asks a tile overlay for each tile once:
+        /// reloading its renderer drops the tiles it has and does not ask for them again.)
+        private func replace(_ old: GridTileOverlay, with layer: PlannedLayer, on map: MKMapView) {
+            let key = layer.overlayKey
+            let fresh = GridTileOverlay(
+                layer, store: controller.gridStore, range: controller.drawnRanges[layer.id])
+            overlays[key] = fresh
+            keys[ObjectIdentifier(fresh)] = key
+            retired.retire(old, key: key)
+            map.insertOverlay(fresh, above: old)
+            let id = ObjectIdentifier(fresh)
+            fresh.firstTiles.onAnswered { [weak self] in
+                Task { @MainActor in self?.settled(id, key: key) }
+            }
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: Self.retireAfter)
+                self?.settled(id, key: key)
+            }
+        }
+
+        /// The grid overlay `id` drew its first tiles (or waited long enough): the overlays it
+        /// replaced come off the map.
+        private func settled(_ id: ObjectIdentifier, key: String) {
+            guard let map else { return }
+            let current = overlays[key] as? GridTileOverlay
+            for old in retired.settled(id, key: key, current: current) {
+                take(old, off: map)
+            }
         }
 
         private func makeOverlay(_ layer: PlannedLayer) -> any MKOverlay {
