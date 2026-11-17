@@ -11,6 +11,9 @@ struct ConditionsView: View {
 
     @State private var loaded: LoadedPage?
     @State private var firstShowDone = false
+    /// This page's own token with the store, which builds a page for each spot on screen: two
+    /// iPad windows may show two spots.
+    @State private var viewer = UUID()
     @State private var customizing = false
     @State private var openCard: ViewModel.Card?
 
@@ -41,9 +44,10 @@ struct ConditionsView: View {
             }
             .task(id: spotID) {
                 firstShowDone = false
-                await store.show(spotID)
+                await store.show(spotID, viewer: viewer)
                 firstShowDone = true
             }
+            .onDisappear { store.hide(viewer: viewer) }
             .task {
                 // A launch argument opens the sheet once the page has finished appearing: a sheet
                 // asked for while the page is still being pushed aborts the app.
@@ -64,8 +68,11 @@ struct ConditionsView: View {
                     openCard = view.cards.first { $0.chrome?.id == arguments[flag + 1] }
                 #endif
             }
-            .task(id: store.pageJSON) {
-                let json = store.pageJSON
+            .task(id: store.pageJSON(for: spotID)) {
+                let json = store.pageJSON(for: spotID)
+                // Let go while a card's page was pushed over this one: the last one stays
+                // until the store builds it again.
+                guard !json.isEmpty else { return }
                 let settings = store.settingsJSON
                 loaded = await Task.detached(priority: .userInitiated) {
                     LoadedPage.make(json: json, settingsJSON: settings)
@@ -76,7 +83,8 @@ struct ConditionsView: View {
     private var pageView: ViewModel.SpotView? { loaded?.view(for: spotID) }
 
     private var isLoading: Bool {
-        !firstShowDone || loaded?.json != store.pageJSON || store.refreshing.contains(spotID)
+        !firstShowDone || loaded?.json != store.pageJSON(for: spotID)
+            || store.refreshing.contains(spotID)
     }
 
     @ViewBuilder private var content: some View {
@@ -85,7 +93,13 @@ struct ConditionsView: View {
                 dashboard(view, loaded: loaded)
             } else {
                 Group {
-                    if isLoading { LunaLoading() } else { LunaEmptyState(kind: .conditions) }
+                    if isLoading {
+                        LunaLoading()
+                    } else if let problem = loaded?.problem(for: spotID) {
+                        PageProblemView(problem: problem)
+                    } else {
+                        LunaEmptyState(kind: .conditions)
+                    }
                 }
                 .containerRelativeFrame(.vertical)
             }
@@ -188,6 +202,13 @@ nonisolated struct LoadedPage: Sendable {
         page.spots.first { $0.id == id }?.status
     }
 
+    /// Why spot `id` has no page, when the page is its own and gives a reason.
+    func problem(for id: String) -> ViewModel.PageProblem? {
+        guard page.spots.indices.contains(page.active), page.spots[page.active].id == id
+        else { return nil }
+        return page.problem
+    }
+
     /// The alerts cards, shown on top rather than in the grid.
     func alerts(in view: ViewModel.SpotView) -> [ViewModel.AlertsCard] {
         view.cards.compactMap { card in
@@ -254,6 +275,33 @@ private struct PageHeader: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// A spot with no conditions to show and a reason: the core's title and the reason (the last
+/// fetch's error, or why the saved conditions could not be read), whole. Pull to refresh tries
+/// again.
+private struct PageProblemView: View {
+    let problem: ViewModel.PageProblem
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.largeTitle)
+                .foregroundStyle(Palette.warning)
+                .accessibilityHidden(true)
+            Text(problem.title)
+                .font(.title3.bold())
+                .multilineTextAlignment(.center)
+            Text(problem.reason)
+                .foregroundStyle(.readableSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: 420)
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .combine)
     }
 }
 

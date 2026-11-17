@@ -133,8 +133,9 @@ final class SpotStore {
     private(set) var refreshing: Set<String> = []
     /// The list rows of the last page build, in list order.
     private(set) var listing: [SpotListing] = []
-    /// The page JSON of the active spot (`view_model`), for the views to decode.
-    private(set) var pageJSON = ""
+    /// Per spot shown, its page JSON (`view_model` with it the active spot), for the views to
+    /// decode: each window of an iPad may show a spot of its own.
+    private(set) var pages: [String: String] = [:]
     /// Where the phone is, when it was asked; never saved unless the user saves it as a spot.
     private(set) var currentPlace: CurrentPlace?
     /// The ids whose stations are being looked up now.
@@ -160,9 +161,11 @@ final class SpotStore {
     @ObservationIgnored private let fetcher: Fetcher
     @ObservationIgnored private let discoverer: Discoverer
     @ObservationIgnored private let pageBuilder: PageBuilder
-    /// The whole caches read so far: the shown spot's and those a view asked for. The others
+    /// The whole caches read so far: the shown spots' and those a view asked for. The others
     /// stay on disk.
     @ObservationIgnored private var caches: [String: SpotCache] = [:]
+    /// Which spot each page on screen shows, by the page's own token.
+    @ObservationIgnored private var viewers: [UUID: String] = [:]
     /// Every spot's status, read from its cache off the main actor.
     @ObservationIgnored private var statuses: [String: SpotStatus] = [:]
     /// Files left in place after they could not be read: never written over.
@@ -319,9 +322,9 @@ final class SpotStore {
     }
 
     /// Saves `held` as the cache of `id`: its status, its file, and in memory when it is held
-    /// there already or `id` is the shown spot.
+    /// there already or `id` is a shown spot.
     private func keep(_ held: SpotCache, for id: String) {
-        if caches[id] != nil || id == activeID { caches[id] = held }
+        if caches[id] != nil || shownIDs.contains(id) { caches[id] = held }
         statuses[id] = SpotStatus(held)
         files.write(held, files.cacheName(id))
     }
@@ -334,6 +337,19 @@ final class SpotStore {
     var activeSpot: Spot? { spots.first { $0.id == activeID } }
 
     func spot(_ id: String) -> Spot? { spots.first { $0.id == id } }
+
+    /// The page JSON of spot `id`, once a page showing it has been built; empty before.
+    func pageJSON(for id: String) -> String { pages[id] ?? "" }
+
+    /// The page JSON of the active spot.
+    var pageJSON: String { activeID.map(pageJSON(for:)) ?? "" }
+
+    /// The spots whose pages are built: the active one first, then those shown on screen.
+    var shownIDs: [String] {
+        var ids = activeID.map { [$0] } ?? []
+        for id in viewers.values.sorted() where !ids.contains(id) { ids.append(id) }
+        return ids.filter { spot($0) != nil }
+    }
 
     func listing(for id: String) -> SpotListing? { listing.first { $0.id == id } }
 
@@ -360,6 +376,7 @@ final class SpotStore {
         spots.removeAll { $0.id == id }
         caches[id] = nil
         statuses[id] = nil
+        pages[id] = nil
         files.remove(files.cacheName(id))
         forgetSpot(spotId: id, host: host)
         stationProblems[id] = nil
@@ -443,6 +460,29 @@ final class SpotStore {
     func show(_ id: String) async {
         setActive(id)
         await rebuildPage()
+    }
+
+    /// A page on screen (`viewer`, its own token) shows spot `id`: its page is built, and kept
+    /// with every rebuild until the page goes (`hide`). It becomes the active spot, the one a
+    /// launch opens. Several pages may show different spots at once, one per iPad window.
+    func show(_ id: String, viewer: UUID) async {
+        guard spot(id) != nil else { return }
+        let previous = viewers.updateValue(id, forKey: viewer)
+        _ = cache(id)
+        // The spot this page showed before, unless another page shows it, is let go.
+        if let previous, previous != id, !viewers.values.contains(previous) {
+            caches[previous] = nil
+        }
+        await show(id)
+    }
+
+    /// The page `viewer` has gone: its spot's page and cache are let go unless another page
+    /// shows it or it is the active spot.
+    func hide(viewer: UUID) {
+        guard let id = viewers.removeValue(forKey: viewer) else { return }
+        guard !shownIDs.contains(id) else { return }
+        pages[id] = nil
+        caches[id] = nil
     }
 
     /// Makes `id` the shown spot; its cache is read now, the others stay on disk.
@@ -651,8 +691,9 @@ final class SpotStore {
         keep(held, for: id)
     }
 
-    /// What an error of a fetch or lookup says: the core's own message for the FFI's errors.
-    private nonisolated static func message(of error: any Error) -> String {
+    /// What an error of a fetch, lookup or station choice says: the core's own message for the
+    /// FFI's errors.
+    nonisolated static func message(of error: any Error) -> String {
         switch error {
         case FetchError.Settings(let message): message
         case FetchError.Invalid(_, let message): message
@@ -754,40 +795,57 @@ final class SpotStore {
 
     // MARK: - The page
 
-    /// Builds the list rows and the active spot's page with `view_model`, off the main thread
-    /// and from the cache, and publishes them unless a newer build has started.
+    /// Builds the list rows and the page of every shown spot with `view_model`, off the main
+    /// thread and from the cache, and publishes them unless a newer build has started. Each
+    /// page holds one spot's view; a page that cannot be built leaves the others and the list.
     func rebuildPage() async {
         await loadStatuses()
         generation += 1
         let mine = generation
         let order = arranged
-        let active = order.firstIndex { $0.id == activeID } ?? 0
-        let activeKey = activeID
-        let activeCache = activeKey.map { cache($0) }
+        let shown = shownIDs.compactMap { id in
+            order.firstIndex { $0.id == id }.map { (id: id, index: $0, cache: cache(id)) }
+        }
         let others = statuses
         let busy = refreshing
         let settings = settingsJSON
         let now = clock()
         let build = pageBuilder
         let built = await Task.detached(priority: .userInitiated) {
-            () -> (String, [SpotListing]) in
-            let entries = order.map { spot -> SpotEntry in
-                let held = spot.id == activeKey ? activeCache : nil
-                let status = others[spot.id]
-                return SpotEntry(
-                    spot: spot.info, snapshotJson: held?.snapshotJSON,
-                    lastSuccess: status?.lastSuccess, error: status?.error,
-                    refreshing: busy.contains(spot.id))
+            () -> (pages: [String: String], listing: [SpotListing]?) in
+            func entries(snapshot: (Spot) -> String?) -> [SpotEntry] {
+                order.map { spot in
+                    let status = others[spot.id]
+                    return SpotEntry(
+                        spot: spot.info, snapshotJson: snapshot(spot),
+                        lastSuccess: status?.lastSuccess, error: status?.error,
+                        refreshing: busy.contains(spot.id))
+                }
             }
-            guard
-                let json = try? build(entries, UInt32(active), settings, now),
-                let head = try? Self.decoder.decode(PageHead.self, from: Data(json.utf8))
-            else { return ("", []) }
-            return (json, head.spots)
+            func head(_ json: String) -> [SpotListing]? {
+                (try? Self.decoder.decode(PageHead.self, from: Data(json.utf8)))?.spots
+            }
+            var pages: [String: String] = [:]
+            var listing: [SpotListing]?
+            for page in shown {
+                let all = entries { $0.id == page.id ? page.cache.snapshotJSON : nil }
+                guard let json = try? build(all, UInt32(page.index), settings, now) else {
+                    continue
+                }
+                pages[page.id] = json
+                if listing == nil { listing = head(json) }
+            }
+            // No page could be built (or none is shown): the list from the statuses alone.
+            if listing == nil,
+                let json = try? build(entries { _ in nil }, 0, settings, now)
+            {
+                listing = head(json)
+            }
+            return (pages, listing)
         }.value
         guard mine == generation else { return }
-        pageJSON = built.0
-        listing = built.1
+        pages = built.pages
+        listing = built.listing ?? []
     }
 
     private nonisolated static let decoder: JSONDecoder = {
