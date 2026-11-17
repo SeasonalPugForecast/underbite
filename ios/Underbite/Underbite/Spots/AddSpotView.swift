@@ -1,6 +1,7 @@
 import CoreLocation
 import MapKit
 import SwiftUI
+import UnderbiteKit
 
 /// Adds a spot four ways: where the phone is, a place found by search, a pin dropped on a small
 /// map, or typed coordinates. The exact position stays in the store; the core rounds what a
@@ -154,9 +155,9 @@ struct AddSpotView: View {
                 Text(searchError).foregroundStyle(Palette.warning)
             }
         } footer: {
-            Text(
-                "What you type goes to Apple's Maps service to find the place, with only an approximate area around you when your location is known. Underbite keeps nothing of it."
-            )
+            if let words = try? appWords(settingsJson: store.settingsJSON) {
+                Text(words.placeSearchFooter)
+            }
         }
     }
 

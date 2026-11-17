@@ -92,7 +92,7 @@ struct StationsView: View {
             do {
                 try await store.chooseStation(choice, key: row.key, for: id)
             } catch {
-                failure = String(describing: error)
+                failure = SpotStore.message(of: error)
             }
             pending[row.key] = nil
             await store.refresh(only: [id])
