@@ -1,8 +1,9 @@
-//! The map layer catalogue: groups, layers, sources, legends, credits and availability.
+//! The map layer catalogue: groups, layers, sources, legends and availability.
 //!
 //! Every overlay and base map is a [`Layer`] in [`LAYERS`] or [`BASES`], in drawer order. The data
-//! here is static; the words (titles, captions, credits, reasons) are kept with it for now.
-//! Presets are lists of layer ids to show, in [`PRESETS`].
+//! here is static and holds no words: titles, legend captions, credits, preset names and the
+//! reasons a layer is unavailable are in [`crate::view::strings`], looked up by layer or preset
+//! id. Presets are lists of layer ids to show, in [`PRESETS`].
 
 use crate::map::enc::{self, EncGroup};
 use crate::map::render::{self, Ramp, RampRange};
@@ -26,6 +27,19 @@ pub enum Group {
     Mine,
 }
 
+impl Group {
+    /// Every group, in drawer order.
+    pub const ALL: [Self; 7] = [
+        Self::Base,
+        Self::Depth,
+        Self::Structure,
+        Self::Water,
+        Self::Weather,
+        Self::Stations,
+        Self::Mine,
+    ];
+}
+
 /// How often a layer's data changes, which decides what its date control offers.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DateMode {
@@ -39,13 +53,20 @@ pub enum DateMode {
     Frames,
 }
 
+/// Why a listed layer cannot be turned on; the view words it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum UnavailableReason {
+    /// No free source serves the layer yet.
+    NoSource,
+}
+
 /// Whether a layer can be shown.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Availability {
     Available,
     /// The layer is listed but cannot be turned on; the reason is shown in place of the switch.
     Unavailable {
-        reason: &'static str,
+        reason: UnavailableReason,
     },
 }
 
@@ -113,6 +134,18 @@ pub struct GridLayer {
     pub draw: GridDraw,
 }
 
+impl GridLayer {
+    /// The primary dataset, then the fallback.
+    pub fn specs(&self) -> impl Iterator<Item = &GridSpec> {
+        std::iter::once(&self.primary).chain(self.fallback.as_ref())
+    }
+
+    /// The dataset with this id, among the primary and the fallback.
+    pub fn spec(&self, dataset: &str) -> Option<&GridSpec> {
+        self.specs().find(|s| s.dataset == dataset)
+    }
+}
+
 /// What a station layer shows.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum StationKind {
@@ -132,19 +165,14 @@ pub enum FeatureKind {
     ArtificialReefs,
 }
 
-/// A state agency's vector layer: the state, what the source says about its depths and terms, and
-/// where it has data.
+/// A state agency's vector layer: the state, what it holds and where it has data. What the
+/// source says about its depths and its terms is worded in the view, by layer id.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FeatureLayer {
     pub state: &'static str,
     pub kind: FeatureKind,
     /// A box around the source's data; the layer asks nothing outside it.
     pub coverage: Bbox,
-    /// What the depths are measured from, as the source states it. Never the DEM's "approximate
-    /// depth": contours are below a lake surface, not a datum.
-    pub reference: &'static str,
-    /// The source's terms, as far as they are known.
-    pub licence: &'static str,
 }
 
 /// What a layer is made of.
@@ -169,13 +197,12 @@ pub enum LayerKind {
     Unsourced,
 }
 
-/// One layer of the drawer.
+/// One layer of the drawer. Its words (title, legend caption, credit) are the view's, by `id`.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Layer {
     /// The stable id, as in the map configuration.
     pub id: &'static str,
     pub group: Group,
-    pub title: &'static str,
     pub kind: LayerKind,
     /// The shallowest zoom the layer serves, when it has a limit.
     pub min_zoom: Option<u8>,
@@ -183,8 +210,6 @@ pub struct Layer {
     /// layers drawn on the device.
     pub max_zoom: Option<u8>,
     pub date_mode: DateMode,
-    /// The credit line shown on the map; every layer has one.
-    pub credit: &'static str,
     /// Charts, currents and depth carry "not for navigation".
     pub not_for_navigation: bool,
     pub availability: Availability,
@@ -192,14 +217,17 @@ pub struct Layer {
     pub default_opacity: f32,
     /// The colour ramp's id, for layers that colour values.
     pub ramp: Option<&'static str>,
-    /// A short caption under the legend.
-    pub legend: Option<&'static str>,
 }
 
 impl Layer {
     /// The layer's id as the model type.
     pub fn layer_id(&self) -> LayerId {
         LayerId::from_static(self.id)
+    }
+
+    /// Whether the layer is a base map.
+    pub fn is_base(&self) -> bool {
+        self.group == Group::Base
     }
 
     /// The layer's colour ramp, if it colours values.
@@ -211,6 +239,14 @@ impl Layer {
     /// or m⁻¹, m/s), which a user range overrides with [`RampRange::with_bounds`].
     pub fn default_range(&self) -> Option<RampRange> {
         self.colour_ramp().map(|r| r.default_range)
+    }
+
+    /// The layer's grids, for a gridded layer.
+    pub fn grid(&self) -> Option<&GridLayer> {
+        match &self.kind {
+            LayerKind::Grid(g) => Some(g),
+            _ => None,
+        }
     }
 
     /// The service that answers this layer's tile requests, for [`classify`](crate::map::tiles::classify).
@@ -251,25 +287,8 @@ impl Layer {
     }
 }
 
-/// The full GIBS acknowledgement for the sources page; layers carry the short form.
-pub const GIBS_ACKNOWLEDGEMENT: &str = "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).";
-
-/// The extra acknowledgement of the MUR sea surface temperature layers.
-pub const MUR_ACKNOWLEDGEMENT: &str =
-    "These data were provided by JPL under support by NASA MEaSUREs program.";
-
-const NCDS_CREDIT: &str =
-    "NOAA Office of Coast Survey, NOAA Chart Display Service (ENC). Not to be used for navigation.";
-/// The GEBCO credit as its WMS states it for the 2026 grid; a release changes the year.
-const GEBCO_CREDIT: &str = "Imagery reproduced from the GEBCO_2026 Grid, GEBCO Compilation Group (2026) GEBCO 2026 Grid (doi:10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa)";
-const VIIRS_CREDIT: &str = "Ocean colour: NOAA CoastWatch / NOAA STAR VIIRS";
-const IN_CONTOURS_CREDIT: &str =
-    "Lake contours: Indiana DNR, Division of Fish and Wildlife. Not for navigation.";
-const MN_CONTOURS_CREDIT: &str =
-    "Lake contours: Minnesota Department of Natural Resources (MNDNR). Not for navigation.";
-const NY_REEFS_CREDIT: &str = "Artificial reefs: New York State Department of Environmental Conservation. Not for navigation.";
 const NO_SOURCE: Availability = Availability::Unavailable {
-    reason: "no source yet",
+    reason: UnavailableReason::NoSource,
 };
 
 const MUR_GIBS: GibsSpec = GibsSpec {
@@ -294,61 +313,38 @@ const fn true_colour(layer: &'static str) -> GibsSpec {
     }
 }
 
-const fn base(id: &'static str, title: &'static str, kind: LayerKind) -> Layer {
+const fn base(id: &'static str, kind: LayerKind) -> Layer {
     Layer {
         id,
         group: Group::Base,
-        title,
         kind,
         min_zoom: None,
         max_zoom: None,
         date_mode: DateMode::None,
-        credit: "Map data: Apple Maps",
         not_for_navigation: false,
         availability: Availability::Available,
         default_opacity: 1.0,
         ramp: None,
-        legend: None,
     }
 }
 
-const fn overlay(
-    id: &'static str,
-    group: Group,
-    title: &'static str,
-    kind: LayerKind,
-    credit: &'static str,
-) -> Layer {
+const fn overlay(id: &'static str, group: Group, kind: LayerKind) -> Layer {
     Layer {
         id,
         group,
-        title,
         kind,
         min_zoom: None,
         max_zoom: None,
         date_mode: DateMode::None,
-        credit,
         not_for_navigation: false,
         availability: Availability::Available,
         default_opacity: 0.7,
         ramp: None,
-        legend: None,
     }
 }
 
-const fn station(
-    id: &'static str,
-    title: &'static str,
-    kind: StationKind,
-    credit: &'static str,
-) -> Layer {
-    let mut l = overlay(
-        id,
-        Group::Stations,
-        title,
-        LayerKind::Stations(kind),
-        credit,
-    );
+const fn station(id: &'static str, kind: StationKind) -> Layer {
+    let mut l = overlay(id, Group::Stations, LayerKind::Stations(kind));
     l.default_opacity = 1.0;
     l
 }
@@ -400,37 +396,16 @@ const GLSEA_GRID: GridSpec = GridSpec {
 /// requests; wider views would take hundreds for a layer nobody can read at that scale.
 const GRID_MIN_ZOOM: u8 = 5;
 
-const fn grid_layer(
-    id: &'static str,
-    group: Group,
-    title: &'static str,
-    grid: GridLayer,
-    credit: &'static str,
-    ramp: &'static str,
-    legend: &'static str,
-) -> Layer {
-    let mut l = overlay(id, group, title, LayerKind::Grid(grid), credit);
+const fn grid_layer(id: &'static str, group: Group, grid: GridLayer, ramp: &'static str) -> Layer {
+    let mut l = overlay(id, group, LayerKind::Grid(grid));
     l.date_mode = DateMode::Daily;
     l.min_zoom = Some(GRID_MIN_ZOOM);
     l.ramp = Some(ramp);
-    l.legend = Some(legend);
     l
 }
 
-const fn gibs_layer(
-    id: &'static str,
-    title: &'static str,
-    spec: GibsSpec,
-    credit: &'static str,
-    ramp: Option<&'static str>,
-) -> Layer {
-    let mut l = overlay(
-        id,
-        Group::Water,
-        title,
-        LayerKind::Tiles(TileSource::Gibs(spec)),
-        credit,
-    );
+const fn gibs_layer(id: &'static str, spec: GibsSpec, ramp: Option<&'static str>) -> Layer {
+    let mut l = overlay(id, Group::Water, LayerKind::Tiles(TileSource::Gibs(spec)));
     l.max_zoom = Some(spec.max_zoom);
     l.date_mode = DateMode::Daily;
     l.ramp = ramp;
@@ -445,17 +420,13 @@ const REEF_MIN_ZOOM: u8 = 7;
 const fn feature_layer(
     id: &'static str,
     group: Group,
-    title: &'static str,
     feature: FeatureLayer,
-    credit: &'static str,
     min_zoom: u8,
-    legend: &'static str,
 ) -> Layer {
-    let mut l = overlay(id, group, title, LayerKind::Features(feature), credit);
+    let mut l = overlay(id, group, LayerKind::Features(feature));
     l.min_zoom = Some(min_zoom);
     l.not_for_navigation = true;
     l.default_opacity = 0.9;
-    l.legend = Some(legend);
     l
 }
 
@@ -464,50 +435,34 @@ const fn feature_layer(
 const ENC_POINTS_MIN_ZOOM: u8 = 9;
 
 /// A NOAA Chart Display group drawn as a transparent WMS picture.
-const fn enc_picture(
-    id: &'static str,
-    group: Group,
-    title: &'static str,
-    enc: EncGroup,
-    legend: &'static str,
-) -> Layer {
+const fn enc_picture(id: &'static str, group: Group, enc: EncGroup) -> Layer {
     let mut l = overlay(
         id,
         group,
-        title,
         LayerKind::Tiles(TileSource::NcdsWms { groups: enc.groups }),
-        enc::ENC_PICTURE_CREDIT,
     );
     l.min_zoom = Some(enc.min_zoom);
     l.not_for_navigation = true;
-    l.legend = Some(legend);
+    l
+}
+
+const fn unsourced(id: &'static str) -> Layer {
+    let mut l = overlay(id, Group::Weather, LayerKind::Unsourced);
+    l.availability = NO_SOURCE;
+    l.date_mode = DateMode::Hourly;
     l
 }
 
 /// The base maps, in the order the picker lists them.
 pub const BASES: [Layer; 4] = [
-    base(
-        "apple-standard",
-        "Standard",
-        LayerKind::AppleBase(AppleBase::Standard),
-    ),
+    base("apple-standard", LayerKind::AppleBase(AppleBase::Standard)),
     base(
         "apple-satellite",
-        "Satellite",
         LayerKind::AppleBase(AppleBase::Satellite),
     ),
-    base(
-        "apple-hybrid",
-        "Hybrid",
-        LayerKind::AppleBase(AppleBase::Hybrid),
-    ),
+    base("apple-hybrid", LayerKind::AppleBase(AppleBase::Hybrid)),
     {
-        let mut l = base(
-            "noaa-chart",
-            "NOAA chart",
-            LayerKind::Tiles(TileSource::NcdsWmts),
-        );
-        l.credit = NCDS_CREDIT;
+        let mut l = base("noaa-chart", LayerKind::Tiles(TileSource::NcdsWmts));
         l.min_zoom = Some(2);
         l.max_zoom = Some(20);
         l.not_for_navigation = true;
@@ -521,110 +476,75 @@ pub const LAYERS: [Layer; 29] = [
         let mut l = overlay(
             "gebco-relief",
             Group::Depth,
-            "GEBCO relief",
             LayerKind::Tiles(TileSource::GebcoWms),
-            GEBCO_CREDIT,
         );
         l.max_zoom = Some(10);
         l.not_for_navigation = true;
         l.default_opacity = 0.6;
-        l.legend = Some("Offshore depth where the chart has none");
         l
     },
     grid_layer(
         "sst",
         Group::Water,
-        "Sea surface temperature",
         GridLayer {
             primary: MUR_GRID,
             fallback: None,
             draw: GridDraw::Raster,
         },
-        "SST: NASA JPL MUR (MEaSUREs), via NOAA CoastWatch ERDDAP",
         "thermal",
-        "Cold to warm",
     ),
-    gibs_layer(
-        "sst-imagery",
-        "Sea surface temperature (imagery)",
-        MUR_GIBS,
-        "SST: NASA JPL MUR (MEaSUREs), via NASA GIBS",
-        Some("thermal"),
-    ),
+    gibs_layer("sst-imagery", MUR_GIBS, Some("thermal")),
     grid_layer(
         "chlorophyll",
         Group::Water,
-        "Chlorophyll",
         GridLayer {
             primary: CHL_GRID,
             fallback: None,
             draw: GridDraw::Raster,
         },
-        VIIRS_CREDIT,
         "algae",
-        "Clear to green water",
     ),
-    gibs_layer(
-        "chlorophyll-imagery",
-        "Chlorophyll (imagery)",
-        CHL_GIBS,
-        "Ocean colour: NASA GIBS, NOAA-20 VIIRS",
-        Some("algae"),
-    ),
+    gibs_layer("chlorophyll-imagery", CHL_GIBS, Some("algae")),
     grid_layer(
         "clarity",
         Group::Water,
-        "Water clarity",
         GridLayer {
             primary: KD_N21,
             fallback: Some(KD_N20),
             draw: GridDraw::Raster,
         },
-        "Water clarity: NOAA CoastWatch / NOAA STAR VIIRS",
         "turbidity",
-        "Clear to turbid",
     ),
     gibs_layer(
         "true-color-viirs-n20",
-        "True colour, VIIRS NOAA-20",
         true_colour("VIIRS_NOAA20_CorrectedReflectance_TrueColor"),
-        "Imagery: NASA GIBS, NOAA-20 VIIRS",
         None,
     ),
     gibs_layer(
         "true-color-viirs-n21",
-        "True colour, VIIRS NOAA-21",
         true_colour("VIIRS_NOAA21_CorrectedReflectance_TrueColor"),
-        "Imagery: NASA GIBS, NOAA-21 VIIRS",
         None,
     ),
     gibs_layer(
         "true-color-modis-terra",
-        "True colour, MODIS Terra",
         true_colour("MODIS_Terra_CorrectedReflectance_TrueColor"),
-        "Imagery: NASA GIBS, MODIS Terra",
         None,
     ),
     gibs_layer(
         "true-color-modis-aqua",
-        "True colour, MODIS Aqua",
         true_colour("MODIS_Aqua_CorrectedReflectance_TrueColor"),
-        "Imagery: NASA GIBS, MODIS Aqua",
         None,
     ),
     {
         let mut l = grid_layer(
             "hf-radar-currents",
             Group::Water,
-            "Surface currents",
             GridLayer {
                 primary: HF_GRID,
                 fallback: None,
                 draw: GridDraw::Arrows,
             },
-            "Surface currents: NOAA IOOS HF Radar Network",
             "speed",
-            "Slow to fast",
         );
         l.date_mode = DateMode::Hourly;
         // Arrows are thinned to one per 32 px, so a wide view of them says little.
@@ -636,115 +556,41 @@ pub const LAYERS: [Layer; 29] = [
     grid_layer(
         "great-lakes-sst",
         Group::Water,
-        "Great Lakes temperature",
         GridLayer {
             primary: GLSEA_GRID,
             fallback: None,
             draw: GridDraw::Raster,
         },
-        "NOAA Great Lakes Environmental Research Laboratory (CoastWatch Great Lakes Node)",
         "thermal",
-        "Cold to warm",
     ),
     {
-        let mut l = overlay(
-            "radar",
-            Group::Weather,
-            "Radar",
-            LayerKind::Tiles(TileSource::Radar),
-            "Radar: NOAA NEXRAD via Iowa Environmental Mesonet",
-        );
+        let mut l = overlay("radar", Group::Weather, LayerKind::Tiles(TileSource::Radar));
         l.min_zoom = Some(6);
         l.max_zoom = Some(10);
         l.date_mode = DateMode::Frames;
         l.default_opacity = 0.75;
         l
     },
+    unsourced("wind"),
+    unsourced("pressure"),
+    unsourced("waves"),
+    station("tide-stations", StationKind::Tide),
     {
-        let mut l = overlay(
-            "wind",
-            Group::Weather,
-            "Wind",
-            LayerKind::Unsourced,
-            "Wind: no source yet",
-        );
-        l.availability = NO_SOURCE;
-        l.date_mode = DateMode::Hourly;
-        l
-    },
-    {
-        let mut l = overlay(
-            "pressure",
-            Group::Weather,
-            "Pressure",
-            LayerKind::Unsourced,
-            "Pressure: no source yet",
-        );
-        l.availability = NO_SOURCE;
-        l.date_mode = DateMode::Hourly;
-        l
-    },
-    {
-        let mut l = overlay(
-            "waves",
-            Group::Weather,
-            "Waves",
-            LayerKind::Unsourced,
-            "Waves: no source yet",
-        );
-        l.availability = NO_SOURCE;
-        l.date_mode = DateMode::Hourly;
-        l
-    },
-    station(
-        "tide-stations",
-        "Tide stations",
-        StationKind::Tide,
-        "Tides: NOAA CO-OPS",
-    ),
-    {
-        let mut l = station(
-            "current-stations",
-            "Current stations",
-            StationKind::Current,
-            "Currents: NOAA CO-OPS",
-        );
+        let mut l = station("current-stations", StationKind::Current);
         l.not_for_navigation = true;
         l
     },
-    station(
-        "usgs-gauges",
-        "River gauges",
-        StationKind::RiverGauge,
-        "River data: USGS",
-    ),
-    station(
-        "buoys",
-        "Buoys",
-        StationKind::Buoy,
-        "Buoys: NOAA National Data Buoy Center",
-    ),
-    station(
-        "nwps-gauges",
-        "River forecasts",
-        StationKind::ForecastGauge,
-        "River forecasts: NOAA National Water Prediction Service",
-    ),
+    station("usgs-gauges", StationKind::RiverGauge),
+    station("buoys", StationKind::Buoy),
+    station("nwps-gauges", StationKind::ForecastGauge),
     {
-        let mut l = overlay(
-            "spots",
-            Group::Mine,
-            "My spots",
-            LayerKind::Spots,
-            "Your saved spots, kept on this device",
-        );
+        let mut l = overlay("spots", Group::Mine, LayerKind::Spots);
         l.default_opacity = 1.0;
         l
     },
     feature_layer(
         "lake-contours-in",
         Group::Depth,
-        "Lake contours (Indiana)",
         FeatureLayer {
             state: "Indiana",
             kind: FeatureKind::LakeContours,
@@ -755,17 +601,12 @@ pub const LAYERS: [Layer; 29] = [
                 east: -84.80,
                 north: 41.77,
             },
-            reference: "Feet below the lake surface; the contours of some lakes are adjusted to the lake's legal gauge level. Survey date per lake.",
-            licence: "Terms for the GIS layer are not stated; credit Indiana DNR, Division of Fish and Wildlife.",
         },
-        IN_CONTOURS_CREDIT,
         CONTOUR_MIN_ZOOM,
-        "Depth below the lake surface at survey",
     ),
     feature_layer(
         "lake-contours-mn",
         Group::Depth,
-        "Lake contours (Minnesota)",
         FeatureLayer {
             state: "Minnesota",
             kind: FeatureKind::LakeContours,
@@ -776,17 +617,12 @@ pub const LAYERS: [Layer; 29] = [
                 east: -89.49,
                 north: 49.38,
             },
-            reference: "Depth below the lake surface on the original lake map, in feet (unit per DNR DEM metadata, unconfirmed for the contour layer). Survey dates vary by lake.",
-            licence: "MNDNR must be acknowledged; the data may not be sold without MNDNR's written permission.",
         },
-        MN_CONTOURS_CREDIT,
         CONTOUR_MIN_ZOOM,
-        "Depth below the lake surface on the original map",
     ),
     feature_layer(
         "artificial-reefs-ny",
         Group::Structure,
-        "Artificial reefs (New York)",
         FeatureLayer {
             state: "New York",
             kind: FeatureKind::ArtificialReefs,
@@ -797,48 +633,21 @@ pub const LAYERS: [Layer; 29] = [
                 east: -72.46,
                 north: 41.058_333,
             },
-            reference: "Depths as NYSDEC lists them (minimum and maximum, in feet); no datum is stated. A site is the general area where material was placed.",
-            licence: "Terms are not stated; credit the New York State Department of Environmental Conservation.",
         },
-        NY_REEFS_CREDIT,
         REEF_MIN_ZOOM,
-        "General area of each reef site",
     ),
-    enc_picture(
-        "enc-depths",
-        Group::Depth,
-        "ENC depths and soundings",
-        enc::DEPTHS,
-        "Charted depth areas, contours and soundings, in the chart's own units and datum. Soundings appear at the finer zooms; the exact limit is unverified.",
-    ),
-    enc_picture(
-        "enc-seabed",
-        Group::Structure,
-        "ENC seabed and obstructions",
-        enc::SEABED,
-        "Charted wrecks, obstructions and foul areas. Empty when zoomed out past about 1:137,000 where checked; the limit follows each chart's scale.",
-    ),
-    enc_picture(
-        "enc-special-areas",
-        Group::Structure,
-        "ENC special areas",
-        enc::SPECIAL_AREAS,
-        "Charted restricted and caution areas. The zoom at which they appear is unverified. Rules are in the regulations, not here.",
-    ),
+    enc_picture("enc-depths", Group::Depth, enc::DEPTHS),
+    enc_picture("enc-seabed", Group::Structure, enc::SEABED),
+    enc_picture("enc-special-areas", Group::Structure, enc::SPECIAL_AREAS),
     {
         let mut l = overlay(
             "enc-structure-points",
             Group::Structure,
-            "Wrecks and obstructions (ENC)",
             LayerKind::EncPoints,
-            enc::ENC_DIRECT_CREDIT,
         );
         l.min_zoom = Some(ENC_POINTS_MIN_ZOOM);
         l.not_for_navigation = true;
         l.default_opacity = 0.9;
-        l.legend = Some(
-            "Charted wrecks, obstructions and rocks with their category and survey date. No depth is shown: NOAA does not state its unit or datum.",
-        );
         l
     },
 ];
@@ -865,12 +674,12 @@ const fn on(id: &'static str) -> PresetLayer {
     PresetLayer { id, opacity: None }
 }
 
-/// A built-in set of layers to show; every other layer is hidden.
+/// A built-in set of layers to show; every other layer is hidden. Its name is the view's, by
+/// `id`.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Preset {
     /// The kebab-case id stored as the active preset.
     pub id: &'static str,
-    pub name: &'static str,
     /// The base map the preset starts on.
     pub base: &'static str,
     pub layers: &'static [PresetLayer],
@@ -883,7 +692,6 @@ pub const DEFAULT_PRESET: &str = "inshore-flats";
 pub const PRESETS: [Preset; 6] = [
     Preset {
         id: "inshore-flats",
-        name: "Inshore flats",
         base: "apple-satellite",
         layers: &[
             on("clarity"),
@@ -894,7 +702,6 @@ pub const PRESETS: [Preset; 6] = [
     },
     Preset {
         id: "offshore-pelagics",
-        name: "Offshore pelagics",
         base: "apple-standard",
         layers: &[
             on("sst"),
@@ -907,7 +714,6 @@ pub const PRESETS: [Preset; 6] = [
     },
     Preset {
         id: "trout-stream",
-        name: "Trout stream",
         base: "apple-standard",
         layers: &[
             on("usgs-gauges"),
@@ -918,19 +724,16 @@ pub const PRESETS: [Preset; 6] = [
     },
     Preset {
         id: "bass-lake",
-        name: "Bass lake",
         base: "apple-satellite",
         layers: &[on("radar"), on("spots")],
     },
     Preset {
         id: "surf",
-        name: "Surf",
         base: "apple-standard",
         layers: &[on("buoys"), on("tide-stations"), on("radar"), on("spots")],
     },
     Preset {
         id: "great-lakes-trolling",
-        name: "Great Lakes trolling",
         base: "apple-standard",
         layers: &[
             on("great-lakes-sst"),
@@ -1026,9 +829,6 @@ mod tests {
             "../../../../tests/fixtures/raw/gibs/wmts-epsg3857-best-capabilities.excerpt-2026-11-16.xml"
         ),
     ];
-    const GEBCO_CAPS: &str =
-        include_str!("../../../../tests/fixtures/raw/bathymetry/gebco-wms-capabilities-1.3.0.xml");
-
     fn tile(z: u8, x: u32, y: u32) -> TileKey {
         TileKey { z, x, y }
     }
@@ -1045,11 +845,10 @@ mod tests {
     }
 
     #[test]
-    fn every_layer_has_a_credit_and_charts_say_not_for_navigation() {
+    fn charts_currents_and_depth_say_not_for_navigation() {
         for l in BASES.iter().chain(LAYERS.iter()) {
-            assert!(!l.credit.trim().is_empty(), "{}", l.id);
-            assert!(!l.title.trim().is_empty(), "{}", l.id);
             assert!((0.0..=1.0).contains(&l.default_opacity), "{}", l.id);
+            assert_eq!(l.is_base(), BASES.iter().any(|b| b.id == l.id), "{}", l.id);
         }
         for id in [
             "noaa-chart",
@@ -1059,12 +858,6 @@ mod tests {
         ] {
             assert!(find(id).unwrap().not_for_navigation, "{id}");
         }
-        assert!(
-            find("noaa-chart")
-                .unwrap()
-                .credit
-                .contains("Not to be used for navigation.")
-        );
     }
 
     #[test]
@@ -1108,11 +901,6 @@ mod tests {
             checked += 1;
         }
         assert_eq!(checked, 6);
-    }
-
-    #[test]
-    fn the_gebco_credit_matches_the_capabilities() {
-        assert!(GEBCO_CAPS.contains(GEBCO_CREDIT));
     }
 
     #[test]
@@ -1217,7 +1005,7 @@ mod tests {
             assert_eq!(
                 find(id).unwrap().availability,
                 Availability::Unavailable {
-                    reason: "no source yet"
+                    reason: UnavailableReason::NoSource
                 }
             );
         }
@@ -1253,7 +1041,7 @@ mod tests {
     }
 
     #[test]
-    fn enc_pictures_are_ncds_groups_with_credit_and_a_minimum_zoom() {
+    fn enc_pictures_are_ncds_groups_with_a_minimum_zoom() {
         use crate::map::tiles::{Bounds3857, ncds_wms_bbox_url};
         for (id, group, expected) in [
             ("enc-depths", Group::Depth, "2"),
@@ -1264,16 +1052,10 @@ mod tests {
             assert_eq!(l.group, group, "{id}");
             assert_eq!(ncds_groups(id), expected);
             assert_eq!(l.tile_service(), Some(TileService::Ncds));
-            assert_eq!(
-                l.credit,
-                "NOAA Office of Coast Survey, NOAA Chart Display Service (ENC). Not to be used for navigation."
-            );
-            assert_eq!(l.credit, NCDS_CREDIT);
             assert!(l.not_for_navigation, "{id}");
             assert_eq!(l.availability, Availability::Available);
             assert_eq!(l.min_zoom, Some(12), "{id}");
             assert_eq!(l.max_zoom, None);
-            assert!(l.legend.is_some());
             let url = l.tile_url(tile(14, 4823, 6160), None, 0).unwrap();
             assert!(url.contains(&format!("&LAYERS={expected}&")), "{url}");
             assert!(url.ends_with("&FORMAT=image/png&TRANSPARENT=TRUE"), "{url}");
@@ -1297,32 +1079,14 @@ mod tests {
     }
 
     #[test]
-    fn enc_unverified_limits_stay_labelled_in_the_text() {
-        assert!(layer("enc-depths").legend.unwrap().contains("unverified"));
-        assert!(
-            layer("enc-special-areas")
-                .legend
-                .unwrap()
-                .contains("unverified")
-        );
-        assert!(layer("enc-seabed").legend.unwrap().contains("1:137,000"));
-        assert!(enc::SEABED.note.contains("Lower Bay"));
-    }
-
-    #[test]
-    fn enc_points_have_their_own_credit_and_show_no_depth() {
+    fn enc_points_are_drawn_on_the_device_from_zoom_9() {
         let l = layer("enc-structure-points");
         assert_eq!(l.kind, LayerKind::EncPoints);
         assert_eq!(l.group, Group::Structure);
-        assert_eq!(
-            l.credit,
-            "NOAA Office of Coast Survey, ENC Direct to GIS. Not to be used for navigation."
-        );
         assert!(l.not_for_navigation);
         assert_eq!(l.min_zoom, Some(9));
         assert_eq!(l.tile_service(), None);
         assert_eq!(l.tile_url(tile(12, 1, 1), None, 0), None);
-        assert!(l.legend.unwrap().contains("No depth is shown"));
     }
 
     #[test]
@@ -1360,7 +1124,7 @@ mod tests {
                 "great-lakes-trolling"
             ]
         );
-        assert_eq!(resolve_preset("surf").unwrap().name, "Surf");
+        assert_eq!(resolve_preset("surf").unwrap().id, "surf");
         assert_eq!(
             resolve_preset("  Trout-Stream ").unwrap().id,
             "trout-stream"
@@ -1444,67 +1208,56 @@ mod tests {
     }
 
     #[test]
-    fn state_feature_layers_carry_their_sources_credit_terms_and_depth_reference() {
+    fn state_feature_layers_are_not_for_navigation_with_a_coverage_box() {
         let feature = |id: &str| match find(id).unwrap().kind {
             LayerKind::Features(f) => f,
             other => panic!("{id}: {other:?}"),
         };
-        for (id, group, kind, credit) in [
-            (
-                "lake-contours-in",
-                Group::Depth,
-                FeatureKind::LakeContours,
-                "Indiana DNR, Division of Fish and Wildlife",
-            ),
-            (
-                "lake-contours-mn",
-                Group::Depth,
-                FeatureKind::LakeContours,
-                "Minnesota Department of Natural Resources",
-            ),
+        for (id, group, kind) in [
+            ("lake-contours-in", Group::Depth, FeatureKind::LakeContours),
+            ("lake-contours-mn", Group::Depth, FeatureKind::LakeContours),
             (
                 "artificial-reefs-ny",
                 Group::Structure,
                 FeatureKind::ArtificialReefs,
-                "New York State Department of Environmental Conservation",
             ),
         ] {
             let l = find(id).unwrap();
             let f = feature(id);
             assert_eq!(l.group, group, "{id}");
             assert_eq!(f.kind, kind, "{id}");
-            assert!(l.credit.contains(credit), "{id}");
             assert!(l.not_for_navigation, "{id}");
-            assert!(l.credit.contains("Not for navigation"), "{id}");
             assert!(l.min_zoom.is_some(), "{id}");
             assert_eq!(l.availability, Availability::Available, "{id}");
             assert!(f.coverage.west < f.coverage.east, "{id}");
             assert!(f.coverage.south < f.coverage.north, "{id}");
-            assert!(!f.licence.is_empty(), "{id}");
-            assert!(!f.reference.contains("pproximate depth"), "{id}");
         }
-        assert!(
-            feature("lake-contours-in")
-                .reference
-                .contains("lake surface")
+    }
+
+    #[test]
+    fn grid_layers_find_their_datasets() {
+        let clarity = find("clarity").unwrap().grid().unwrap();
+        let ids: Vec<_> = clarity.specs().map(|s| s.dataset).collect();
+        assert_eq!(
+            ids,
+            [
+                "noaacwN21VIIRSkd490NSWUSDaily",
+                "noaacwN20VIIRSkd490NSWUSDaily"
+            ]
         );
-        assert!(feature("lake-contours-in").reference.contains("gauge"));
-        assert!(
-            feature("lake-contours-mn")
-                .reference
-                .contains("unconfirmed")
+        assert_eq!(
+            clarity
+                .spec("noaacwN20VIIRSkd490NSWUSDaily")
+                .unwrap()
+                .dataset,
+            "noaacwN20VIIRSkd490NSWUSDaily"
         );
-        assert!(
-            feature("lake-contours-mn")
-                .licence
-                .contains("MNDNR must be acknowledged")
-        );
-        assert!(feature("lake-contours-mn").licence.contains("sold"));
-        assert!(
-            feature("artificial-reefs-ny")
-                .reference
-                .contains("no datum")
-        );
+        assert!(clarity.spec("jplMURSST41").is_none());
+        assert!(find("radar").unwrap().grid().is_none());
+        assert_eq!(Group::ALL.len(), 7);
+        for l in BASES.iter().chain(LAYERS.iter()) {
+            assert!(Group::ALL.contains(&l.group), "{}", l.id);
+        }
     }
 
     #[test]

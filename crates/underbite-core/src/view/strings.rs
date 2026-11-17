@@ -8,6 +8,7 @@
 use whether_core::time::Weekday;
 
 use crate::discover::hydro::{WaterTypeReason, WaterbodyKind};
+use crate::map::catalogue::{Group, UnavailableReason};
 use crate::model::{
     AlertSeverity, Measurement, MoonPhase, PrincipalPhase, TideKind, WaterType, ZoneKind,
 };
@@ -595,6 +596,72 @@ keys! {
         "What you type goes to Apple's Maps service to find the place, with only an approximate area around you when your location is known. Underbite keeps nothing of it.",
         "What you type goes to Apple's Maps service to find the place, with only an approximate area around you when your location is known. Underbite keeps nothing of it.",
     ),
+    // -- the map ------------------------------------------------------------------------
+    /// The drawer's sections.
+    MapGroupBase => ("Base map", "Base map"),
+    MapGroupDepth => ("Depth", "Depth"),
+    MapGroupStructure => ("Structure", "Structure"),
+    MapGroupWater => ("Water", "Water"),
+    MapGroupWeather => ("Weather", "Weather"),
+    MapGroupStations => ("Stations", "Stations"),
+    MapGroupMine => ("Mine", "Mine"),
+    /// Layer titles, by the catalogue's layer ids.
+    MapLayerAppleStandard => ("Standard", "Standard"),
+    MapLayerAppleSatellite => ("Satellite", "Satellite"),
+    MapLayerAppleHybrid => ("Hybrid", "Hybrid"),
+    MapLayerNoaaChart => ("NOAA chart", "NOAA chart"),
+    MapLayerGebcoRelief => ("GEBCO relief", "GEBCO relief"),
+    MapLayerSst => ("Sea surface temperature", "Sea surface temperature"),
+    MapLayerSstImagery => (
+        "Sea surface temperature (imagery)",
+        "Sea surface temperature (imagery)",
+    ),
+    MapLayerChlorophyll => ("Chlorophyll", "Chlorophyll"),
+    MapLayerChlorophyllImagery => ("Chlorophyll (imagery)", "Chlorophyll (imagery)"),
+    MapLayerClarity => ("Water clarity", "Water clarity"),
+    MapLayerTrueColourViirsN20 => ("True colour, VIIRS NOAA-20", "True colour, VIIRS NOAA-20"),
+    MapLayerTrueColourViirsN21 => ("True colour, VIIRS NOAA-21", "True colour, VIIRS NOAA-21"),
+    MapLayerTrueColourModisTerra => ("True colour, MODIS Terra", "True colour, MODIS Terra"),
+    MapLayerTrueColourModisAqua => ("True colour, MODIS Aqua", "True colour, MODIS Aqua"),
+    MapLayerHfRadarCurrents => ("Surface currents", "Surface currents"),
+    MapLayerGreatLakesSst => ("Great Lakes temperature", "Great Lakes temperature"),
+    MapLayerRadar => ("Radar", "Radar"),
+    MapLayerWind => ("Wind", "Wind"),
+    MapLayerPressure => ("Pressure", "Pressure"),
+    MapLayerWaves => ("Waves", "Waves"),
+    MapLayerTideStations => ("Tide stations", "Tide stations"),
+    MapLayerCurrentStations => ("Current stations", "Current stations"),
+    MapLayerUsgsGauges => ("River gauges", "River gauges"),
+    MapLayerBuoys => ("Buoys", "Buoys"),
+    MapLayerNwpsGauges => ("River forecasts", "River forecasts"),
+    MapLayerSpots => ("My spots", "My spots"),
+    MapLayerLakeContoursIn => ("Lake contours (Indiana)", "Lake contours (Indiana)"),
+    MapLayerLakeContoursMn => ("Lake contours (Minnesota)", "Lake contours (Minnesota)"),
+    MapLayerArtificialReefsNy => (
+        "Artificial reefs (New York)",
+        "Artificial reefs (New York)",
+    ),
+    MapLayerEncDepths => ("ENC depths and soundings", "ENC depths and soundings"),
+    MapLayerEncSeabed => ("ENC seabed and obstructions", "ENC seabed and obstructions"),
+    MapLayerEncSpecialAreas => ("ENC special areas", "ENC special areas"),
+    MapLayerEncStructurePoints => (
+        "Wrecks and obstructions (ENC)",
+        "Wrecks and obstructions (ENC)",
+    ),
+    /// Legend captions of the colour ramps.
+    MapLegendColdToWarm => ("Cold to warm", "Cold to warm"),
+    MapLegendClearToGreen => ("Clear to green water", "Clear to green water"),
+    MapLegendClearToTurbid => ("Clear to turbid", "Clear to turbid"),
+    MapLegendSlowToFast => ("Slow to fast", "Slow to fast"),
+    /// The built-in presets, by id.
+    MapPresetInshoreFlats => ("Inshore flats", "Inshore flats"),
+    MapPresetOffshorePelagics => ("Offshore pelagics", "Offshore pelagics"),
+    MapPresetTroutStream => ("Trout stream", "Trout stream"),
+    MapPresetBassLake => ("Bass lake", "Bass lake"),
+    MapPresetSurf => ("Surf", "Surf"),
+    MapPresetGreatLakesTrolling => ("Great Lakes trolling", "Great Lakes trolling"),
+    /// In place of the switch of a layer that cannot be turned on.
+    MapNoSource => ("No source yet", "Luna hasn't found a source yet"),
 }
 
 /// Declares [`SafetyKey`], its list and its table in one place.
@@ -708,6 +775,59 @@ safety_keys! {
     StormSectionSafety => "Safety",
     StormForecastsChange => "Forecasts change",
     StormForecastsChangeText => "Storm forecasts change from one run to the next and can be wrong about where a storm goes. Check the National Weather Service and the National Hurricane Center, and follow local officials, before you go on or near the water.",
+    // -- the map: credits, depth references and terms ---------------------------------------
+    MapCreditApple => "Map data: Apple Maps",
+    /// The NOAA chart and the Chart Display pictures.
+    MapCreditNcds => "NOAA Office of Coast Survey, NOAA Chart Display Service (ENC). Not to be used for navigation.",
+    MapCreditEncDirect => "NOAA Office of Coast Survey, ENC Direct to GIS. Not to be used for navigation.",
+    /// As GEBCO's WMS states it for the 2026 grid; a release changes the year.
+    MapCreditGebco => "Imagery reproduced from the GEBCO_2026 Grid, GEBCO Compilation Group (2026) GEBCO 2026 Grid (doi:10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa)",
+    MapCreditMurErddap => "SST: NASA JPL MUR (MEaSUREs), via NOAA CoastWatch ERDDAP",
+    MapCreditMurGibs => "SST: NASA JPL MUR (MEaSUREs), via NASA GIBS",
+    MapCreditViirsColour => "Ocean colour: NOAA CoastWatch / NOAA STAR VIIRS",
+    MapCreditGibsChlorophyll => "Ocean colour: NASA GIBS, NOAA-20 VIIRS",
+    MapCreditClarity => "Water clarity: NOAA CoastWatch / NOAA STAR VIIRS",
+    MapCreditGibsViirsN20 => "Imagery: NASA GIBS, NOAA-20 VIIRS",
+    MapCreditGibsViirsN21 => "Imagery: NASA GIBS, NOAA-21 VIIRS",
+    MapCreditGibsModisTerra => "Imagery: NASA GIBS, MODIS Terra",
+    MapCreditGibsModisAqua => "Imagery: NASA GIBS, MODIS Aqua",
+    MapCreditHfRadar => "Surface currents: NOAA IOOS HF Radar Network",
+    MapCreditGlerl => "NOAA Great Lakes Environmental Research Laboratory (CoastWatch Great Lakes Node)",
+    MapCreditRadar => "Radar: NOAA NEXRAD via Iowa Environmental Mesonet",
+    MapCreditWind => "Wind: no source yet",
+    MapCreditPressure => "Pressure: no source yet",
+    MapCreditWaves => "Waves: no source yet",
+    MapCreditTides => "Tides: NOAA CO-OPS",
+    MapCreditCurrents => "Currents: NOAA CO-OPS",
+    MapCreditUsgs => "River data: USGS",
+    MapCreditBuoys => "Buoys: NOAA National Data Buoy Center",
+    MapCreditNwps => "River forecasts: NOAA National Water Prediction Service",
+    MapCreditSpots => "Your saved spots, kept on this device",
+    MapCreditContoursIn => "Lake contours: Indiana DNR, Division of Fish and Wildlife. Not for navigation.",
+    MapCreditContoursMn => "Lake contours: Minnesota Department of Natural Resources (MNDNR). Not for navigation.",
+    MapCreditReefsNy => "Artificial reefs: New York State Department of Environmental Conservation. Not for navigation.",
+    /// The full GIBS acknowledgement for the sources page; layers carry the short credit.
+    MapAckGibs => "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).",
+    /// The extra acknowledgement of the MUR sea surface temperature layers.
+    MapAckMur => "These data were provided by JPL under support by NASA MEaSUREs program.",
+    /// Legend captions that say what a depth or chart layer shows.
+    MapLegendGebco => "Offshore depth where the chart has none",
+    MapLegendContoursIn => "Depth below the lake surface at survey",
+    MapLegendContoursMn => "Depth below the lake surface on the original map",
+    MapLegendReefsNy => "General area of each reef site",
+    MapLegendEncDepths => "Charted depth areas, contours and soundings, in the chart's own units and datum. Soundings appear at the finer zooms; the exact limit is unverified.",
+    MapLegendEncSeabed => "Charted wrecks, obstructions and foul areas. Empty when zoomed out past about 1:137,000 where checked; the limit follows each chart's scale.",
+    MapLegendEncSpecialAreas => "Charted restricted and caution areas. The zoom at which they appear is unverified. Rules are in the regulations, not here.",
+    MapLegendEncStructurePoints => "Charted wrecks, obstructions and rocks with their category and survey date. No depth is shown: NOAA does not state its unit or datum.",
+    /// What a state layer's depths are measured from, as the source states it. Never the DEM's
+    /// "approximate depth": contours are below a lake surface, not a datum.
+    MapReferenceContoursIn => "Feet below the lake surface; the contours of some lakes are adjusted to the lake's legal gauge level. Survey date per lake.",
+    MapReferenceContoursMn => "Depth below the lake surface on the original lake map, in feet (unit per DNR DEM metadata, unconfirmed for the contour layer). Survey dates vary by lake.",
+    MapReferenceReefsNy => "Depths as NYSDEC lists them (minimum and maximum, in feet); no datum is stated. A site is the general area where material was placed.",
+    /// A state layer's terms, as far as they are known.
+    MapLicenceContoursIn => "Terms for the GIS layer are not stated; credit Indiana DNR, Division of Fish and Wildlife.",
+    MapLicenceContoursMn => "MNDNR must be acknowledged; the data may not be sold without MNDNR's written permission.",
+    MapLicenceReefsNy => "Terms are not stated; credit the New York State Department of Environmental Conservation.",
 }
 
 impl SafetyKey {
@@ -1081,6 +1201,183 @@ impl Strings {
     }
 }
 
+/// The map's words: the catalogue holds ids and data, the words are here, looked up by layer or
+/// preset id. Titles, colour-scale captions, preset names and the unavailable reason are playful
+/// texts; credits, acknowledgements, depth references, terms and the captions of depth and chart
+/// layers are safety texts, the same in every voice.
+impl Strings {
+    /// A drawer section's title.
+    pub const fn map_group(self, group: Group) -> &'static str {
+        self.get(match group {
+            Group::Base => Key::MapGroupBase,
+            Group::Depth => Key::MapGroupDepth,
+            Group::Structure => Key::MapGroupStructure,
+            Group::Water => Key::MapGroupWater,
+            Group::Weather => Key::MapGroupWeather,
+            Group::Stations => Key::MapGroupStations,
+            Group::Mine => Key::MapGroupMine,
+        })
+    }
+
+    /// A layer's or base map's title; `None` for an id the catalogue does not have.
+    pub fn layer_title(self, id: &str) -> Option<&'static str> {
+        Some(self.get(match id {
+            "apple-standard" => Key::MapLayerAppleStandard,
+            "apple-satellite" => Key::MapLayerAppleSatellite,
+            "apple-hybrid" => Key::MapLayerAppleHybrid,
+            "noaa-chart" => Key::MapLayerNoaaChart,
+            "gebco-relief" => Key::MapLayerGebcoRelief,
+            "sst" => Key::MapLayerSst,
+            "sst-imagery" => Key::MapLayerSstImagery,
+            "chlorophyll" => Key::MapLayerChlorophyll,
+            "chlorophyll-imagery" => Key::MapLayerChlorophyllImagery,
+            "clarity" => Key::MapLayerClarity,
+            "true-color-viirs-n20" => Key::MapLayerTrueColourViirsN20,
+            "true-color-viirs-n21" => Key::MapLayerTrueColourViirsN21,
+            "true-color-modis-terra" => Key::MapLayerTrueColourModisTerra,
+            "true-color-modis-aqua" => Key::MapLayerTrueColourModisAqua,
+            "hf-radar-currents" => Key::MapLayerHfRadarCurrents,
+            "great-lakes-sst" => Key::MapLayerGreatLakesSst,
+            "radar" => Key::MapLayerRadar,
+            "wind" => Key::MapLayerWind,
+            "pressure" => Key::MapLayerPressure,
+            "waves" => Key::MapLayerWaves,
+            "tide-stations" => Key::MapLayerTideStations,
+            "current-stations" => Key::MapLayerCurrentStations,
+            "usgs-gauges" => Key::MapLayerUsgsGauges,
+            "buoys" => Key::MapLayerBuoys,
+            "nwps-gauges" => Key::MapLayerNwpsGauges,
+            "spots" => Key::MapLayerSpots,
+            "lake-contours-in" => Key::MapLayerLakeContoursIn,
+            "lake-contours-mn" => Key::MapLayerLakeContoursMn,
+            "artificial-reefs-ny" => Key::MapLayerArtificialReefsNy,
+            "enc-depths" => Key::MapLayerEncDepths,
+            "enc-seabed" => Key::MapLayerEncSeabed,
+            "enc-special-areas" => Key::MapLayerEncSpecialAreas,
+            "enc-structure-points" => Key::MapLayerEncStructurePoints,
+            _ => return None,
+        }))
+    }
+
+    /// The short caption under a layer's legend; `None` for a layer without one.
+    pub fn layer_legend(self, id: &str) -> Option<&'static str> {
+        let playful = match id {
+            "sst" | "great-lakes-sst" => Some(Key::MapLegendColdToWarm),
+            "chlorophyll" => Some(Key::MapLegendClearToGreen),
+            "clarity" => Some(Key::MapLegendClearToTurbid),
+            "hf-radar-currents" => Some(Key::MapLegendSlowToFast),
+            _ => None,
+        };
+        if let Some(key) = playful {
+            return Some(self.get(key));
+        }
+        Some(self.safety(match id {
+            "gebco-relief" => SafetyKey::MapLegendGebco,
+            "lake-contours-in" => SafetyKey::MapLegendContoursIn,
+            "lake-contours-mn" => SafetyKey::MapLegendContoursMn,
+            "artificial-reefs-ny" => SafetyKey::MapLegendReefsNy,
+            "enc-depths" => SafetyKey::MapLegendEncDepths,
+            "enc-seabed" => SafetyKey::MapLegendEncSeabed,
+            "enc-special-areas" => SafetyKey::MapLegendEncSpecialAreas,
+            "enc-structure-points" => SafetyKey::MapLegendEncStructurePoints,
+            _ => return None,
+        }))
+    }
+
+    /// The credit line a layer shows on the map (safety text); `None` for an id the catalogue
+    /// does not have.
+    pub fn layer_credit(self, id: &str) -> Option<&'static str> {
+        Some(self.safety(match id {
+            "apple-standard" | "apple-satellite" | "apple-hybrid" => SafetyKey::MapCreditApple,
+            "noaa-chart" | "enc-depths" | "enc-seabed" | "enc-special-areas" => {
+                SafetyKey::MapCreditNcds
+            }
+            "enc-structure-points" => SafetyKey::MapCreditEncDirect,
+            "gebco-relief" => SafetyKey::MapCreditGebco,
+            "sst" => SafetyKey::MapCreditMurErddap,
+            "sst-imagery" => SafetyKey::MapCreditMurGibs,
+            "chlorophyll" => SafetyKey::MapCreditViirsColour,
+            "chlorophyll-imagery" => SafetyKey::MapCreditGibsChlorophyll,
+            "clarity" => SafetyKey::MapCreditClarity,
+            "true-color-viirs-n20" => SafetyKey::MapCreditGibsViirsN20,
+            "true-color-viirs-n21" => SafetyKey::MapCreditGibsViirsN21,
+            "true-color-modis-terra" => SafetyKey::MapCreditGibsModisTerra,
+            "true-color-modis-aqua" => SafetyKey::MapCreditGibsModisAqua,
+            "hf-radar-currents" => SafetyKey::MapCreditHfRadar,
+            "great-lakes-sst" => SafetyKey::MapCreditGlerl,
+            "radar" => SafetyKey::MapCreditRadar,
+            "wind" => SafetyKey::MapCreditWind,
+            "pressure" => SafetyKey::MapCreditPressure,
+            "waves" => SafetyKey::MapCreditWaves,
+            "tide-stations" => SafetyKey::MapCreditTides,
+            "current-stations" => SafetyKey::MapCreditCurrents,
+            "usgs-gauges" => SafetyKey::MapCreditUsgs,
+            "buoys" => SafetyKey::MapCreditBuoys,
+            "nwps-gauges" => SafetyKey::MapCreditNwps,
+            "spots" => SafetyKey::MapCreditSpots,
+            "lake-contours-in" => SafetyKey::MapCreditContoursIn,
+            "lake-contours-mn" => SafetyKey::MapCreditContoursMn,
+            "artificial-reefs-ny" => SafetyKey::MapCreditReefsNy,
+            _ => return None,
+        }))
+    }
+
+    /// The acknowledgements a layer's source asks for on the sources page, beyond its credit.
+    pub fn layer_acknowledgements(self, id: &str) -> Vec<&'static str> {
+        let keys: &[SafetyKey] = match id {
+            "sst" => &[SafetyKey::MapAckMur],
+            "sst-imagery" => &[SafetyKey::MapAckGibs, SafetyKey::MapAckMur],
+            "chlorophyll-imagery"
+            | "true-color-viirs-n20"
+            | "true-color-viirs-n21"
+            | "true-color-modis-terra"
+            | "true-color-modis-aqua" => &[SafetyKey::MapAckGibs],
+            _ => &[],
+        };
+        keys.iter().map(|&k| self.safety(k)).collect()
+    }
+
+    /// What a state layer's depths are measured from, as its source states it.
+    pub fn layer_reference(self, id: &str) -> Option<&'static str> {
+        Some(self.safety(match id {
+            "lake-contours-in" => SafetyKey::MapReferenceContoursIn,
+            "lake-contours-mn" => SafetyKey::MapReferenceContoursMn,
+            "artificial-reefs-ny" => SafetyKey::MapReferenceReefsNy,
+            _ => return None,
+        }))
+    }
+
+    /// A state layer's terms, as far as they are known.
+    pub fn layer_licence(self, id: &str) -> Option<&'static str> {
+        Some(self.safety(match id {
+            "lake-contours-in" => SafetyKey::MapLicenceContoursIn,
+            "lake-contours-mn" => SafetyKey::MapLicenceContoursMn,
+            "artificial-reefs-ny" => SafetyKey::MapLicenceReefsNy,
+            _ => return None,
+        }))
+    }
+
+    /// A built-in preset's name; `None` for an id that is not a built-in preset.
+    pub fn preset_name(self, id: &str) -> Option<&'static str> {
+        Some(self.get(match id {
+            "inshore-flats" => Key::MapPresetInshoreFlats,
+            "offshore-pelagics" => Key::MapPresetOffshorePelagics,
+            "trout-stream" => Key::MapPresetTroutStream,
+            "bass-lake" => Key::MapPresetBassLake,
+            "surf" => Key::MapPresetSurf,
+            "great-lakes-trolling" => Key::MapPresetGreatLakesTrolling,
+            _ => return None,
+        }))
+    }
+
+    /// Why a layer cannot be turned on, shown in place of its switch.
+    pub const fn unavailable_reason(self, reason: UnavailableReason) -> &'static str {
+        match reason {
+            UnavailableReason::NoSource => self.get(Key::MapNoSource),
+        }
+    }
+}
+
 /// Every kind of water, in the order a picker lists them.
 pub const WATER_TYPES: [WaterType; 10] = [
     WaterType::RiverStream,
@@ -1402,5 +1699,160 @@ mod tests {
             Strings::new(Voice::Plain).measurement(Measurement::Discharge),
             "River flow"
         );
+    }
+
+    mod map {
+        use super::*;
+        use crate::map::catalogue::{BASES, LAYERS, PRESETS, find};
+        use crate::map::enc;
+
+        const GEBCO_CAPS: &str = include_str!(
+            "../../../../tests/fixtures/raw/bathymetry/gebco-wms-capabilities-1.3.0.xml"
+        );
+
+        fn both() -> [Strings; 2] {
+            [Strings::new(Voice::Plain), Strings::new(Voice::Luna)]
+        }
+
+        #[test]
+        fn every_layer_has_a_title_and_a_credit_in_both_voices() {
+            for s in both() {
+                for l in BASES.iter().chain(LAYERS.iter()) {
+                    let title = s.layer_title(l.id).unwrap_or_else(|| panic!("{}", l.id));
+                    assert!(!title.trim().is_empty(), "{}", l.id);
+                    let credit = s.layer_credit(l.id).unwrap_or_else(|| panic!("{}", l.id));
+                    assert!(!credit.trim().is_empty(), "{}", l.id);
+                    assert!(!credit.contains("Luna"), "{}", l.id);
+                    if l.ramp.is_some() && l.grid().is_some() {
+                        assert!(s.layer_legend(l.id).is_some(), "{}", l.id);
+                    }
+                }
+                assert_eq!(s.layer_title("nope"), None);
+                assert_eq!(s.layer_credit("nope"), None);
+                assert_eq!(s.layer_legend("radar"), None);
+                for g in crate::map::catalogue::Group::ALL {
+                    assert_ne!(s.map_group(g), "");
+                }
+            }
+            let plain = Strings::new(Voice::Plain);
+            assert_eq!(plain.layer_title("sst"), Some("Sea surface temperature"));
+            assert_eq!(plain.layer_title("noaa-chart"), Some("NOAA chart"));
+            assert_eq!(plain.layer_legend("sst"), Some("Cold to warm"));
+        }
+
+        #[test]
+        fn credits_of_charts_and_depth_say_not_for_navigation() {
+            let s = Strings::new(Voice::Luna);
+            for id in [
+                "noaa-chart",
+                "enc-depths",
+                "enc-seabed",
+                "enc-special-areas",
+            ] {
+                assert_eq!(s.layer_credit(id), Some(enc::ENC_PICTURE_CREDIT), "{id}");
+            }
+            assert_eq!(
+                s.layer_credit("enc-structure-points"),
+                Some(enc::ENC_DIRECT_CREDIT)
+            );
+            assert!(
+                s.layer_credit("noaa-chart")
+                    .unwrap()
+                    .contains("Not to be used for navigation.")
+            );
+            for id in [
+                "lake-contours-in",
+                "lake-contours-mn",
+                "artificial-reefs-ny",
+            ] {
+                assert!(
+                    s.layer_credit(id).unwrap().contains("Not for navigation"),
+                    "{id}"
+                );
+                assert!(find(id).unwrap().not_for_navigation, "{id}");
+            }
+            assert!(GEBCO_CAPS.contains(s.layer_credit("gebco-relief").unwrap()));
+        }
+
+        #[test]
+        fn depth_and_chart_captions_are_safety_text() {
+            let [plain, luna] = both();
+            for l in BASES.iter().chain(LAYERS.iter()) {
+                assert_eq!(
+                    plain.layer_legend(l.id),
+                    luna.layer_legend(l.id),
+                    "{}",
+                    l.id
+                );
+                assert_eq!(
+                    plain.layer_credit(l.id),
+                    luna.layer_credit(l.id),
+                    "{}",
+                    l.id
+                );
+            }
+            let legend = |id: &str| plain.layer_legend(id).unwrap();
+            assert!(legend("enc-depths").contains("unverified"));
+            assert!(legend("enc-special-areas").contains("unverified"));
+            assert!(legend("enc-seabed").contains("1:137,000"));
+            assert!(legend("enc-structure-points").contains("No depth is shown"));
+            assert!(enc::SEABED.note.contains("Lower Bay"));
+        }
+
+        #[test]
+        fn state_layers_state_their_depth_reference_and_terms() {
+            let s = Strings::new(Voice::Plain);
+            for id in [
+                "lake-contours-in",
+                "lake-contours-mn",
+                "artificial-reefs-ny",
+            ] {
+                assert!(!s.layer_licence(id).unwrap().is_empty(), "{id}");
+                assert!(
+                    !s.layer_reference(id).unwrap().contains("pproximate depth"),
+                    "{id}"
+                );
+            }
+            let reference = |id: &str| s.layer_reference(id).unwrap();
+            let licence = |id: &str| s.layer_licence(id).unwrap();
+            assert!(reference("lake-contours-in").contains("lake surface"));
+            assert!(reference("lake-contours-in").contains("gauge"));
+            assert!(reference("lake-contours-mn").contains("unconfirmed"));
+            assert!(licence("lake-contours-mn").contains("MNDNR must be acknowledged"));
+            assert!(licence("lake-contours-mn").contains("sold"));
+            assert!(reference("artificial-reefs-ny").contains("no datum"));
+            assert!(licence("lake-contours-in").contains("Indiana DNR"));
+            assert_eq!(s.layer_reference("sst"), None);
+            assert_eq!(s.layer_licence("sst"), None);
+        }
+
+        #[test]
+        fn imagery_layers_carry_their_acknowledgements() {
+            let s = Strings::new(Voice::Luna);
+            assert!(s.layer_acknowledgements("true-color-viirs-n20")[0].contains("(GIBS)"));
+            assert_eq!(s.layer_acknowledgements("sst-imagery").len(), 2);
+            assert!(s.layer_acknowledgements("sst")[0].contains("MEaSUREs"));
+            assert_eq!(s.layer_acknowledgements("radar"), Vec::<&str>::new());
+        }
+
+        #[test]
+        fn presets_and_the_unavailable_reason_are_worded() {
+            for s in both() {
+                for p in &PRESETS {
+                    assert!(s.preset_name(p.id).is_some(), "{}", p.id);
+                }
+                assert_eq!(s.preset_name("surf"), Some("Surf"));
+                assert_eq!(s.preset_name("Sunday morning"), None);
+            }
+            let reason = crate::map::catalogue::UnavailableReason::NoSource;
+            assert_eq!(
+                Strings::new(Voice::Plain).unavailable_reason(reason),
+                "No source yet"
+            );
+            assert_eq!(
+                Strings::new(Voice::Luna).unavailable_reason(reason),
+                "Luna hasn't found a source yet"
+            );
+        }
     }
 }
