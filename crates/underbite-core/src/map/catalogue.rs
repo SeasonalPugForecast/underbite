@@ -9,7 +9,7 @@ use crate::map::tiles::{
     GibsSpec, TileService, gebco_wms_url, gibs_tile_url, ncds_wms_url, ncds_wmts_url,
     radar_tile_url,
 };
-use crate::map::{Bbox, ErddapNode, GridSource, LayerId, TileKey};
+use crate::map::{Bbox, GridHost, GridSource, LayerId, TileKey};
 use crate::time::LocalDate;
 
 /// The drawer sections.
@@ -74,7 +74,7 @@ pub enum TileSource {
 /// Where a grid layer's data is requested: an ERDDAP dataset and its variables.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct GridSpec {
-    pub node: ErddapNode,
+    pub node: GridHost,
     pub dataset: &'static str,
     pub variables: &'static [&'static str],
     pub altitude_axis: bool,
@@ -350,42 +350,42 @@ const fn station(
 }
 
 const MUR_GRID: GridSpec = GridSpec {
-    node: ErddapNode::Pfeg,
+    node: GridHost::Pfeg,
     dataset: "jplMURSST41",
     variables: &["analysed_sst"],
     altitude_axis: false,
     native_step_deg: 0.01,
 };
 const CHL_GRID: GridSpec = GridSpec {
-    node: ErddapNode::Coastwatch,
+    node: GridHost::Coastwatch,
     dataset: "noaacwN20VIIRSchlaDaily",
     variables: &["chlor_a"],
     altitude_axis: true,
     native_step_deg: 0.0375,
 };
 const KD_N21: GridSpec = GridSpec {
-    node: ErddapNode::Coastwatch,
+    node: GridHost::Coastwatch,
     dataset: "noaacwN21VIIRSkd490NSWUSDaily",
     variables: &["kd_490"],
     altitude_axis: true,
     native_step_deg: 0.0075,
 };
 const KD_N20: GridSpec = GridSpec {
-    node: ErddapNode::Coastwatch,
+    node: GridHost::Coastwatch,
     dataset: "noaacwN20VIIRSkd490NSWUSDaily",
     variables: &["kd_490"],
     altitude_axis: true,
     native_step_deg: 0.0075,
 };
 const HF_GRID: GridSpec = GridSpec {
-    node: ErddapNode::Pfeg,
+    node: GridHost::Pfeg,
     dataset: "ucsdHfrE6",
     variables: &["water_u", "water_v"],
     altitude_axis: false,
     native_step_deg: 0.054,
 };
 const GLSEA_GRID: GridSpec = GridSpec {
-    node: ErddapNode::Glerl,
+    node: GridHost::Glerl,
     dataset: "GLSEA_ACSPO_GCS",
     variables: &["sst"],
     altitude_axis: false,
@@ -1137,7 +1137,7 @@ mod tests {
         let hf = grid("hf-radar-currents");
         assert_eq!(hf.primary.variables, ["water_u", "water_v"]);
         assert_eq!(hf.draw, GridDraw::Arrows);
-        assert_eq!(grid("great-lakes-sst").primary.node, ErddapNode::Glerl);
+        assert_eq!(grid("great-lakes-sst").primary.node, GridHost::Glerl);
         assert_eq!(grid("great-lakes-sst").primary.variables, ["sst"]);
     }
 

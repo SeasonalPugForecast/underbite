@@ -99,27 +99,36 @@ pub struct Arrow {
     pub toward_deg: f32,
 }
 
-/// An ERDDAP server that serves gridded data.
+/// The server a gridded layer's data comes from: three ERDDAP servers and the NCEI elevation
+/// model.
 #[derive(
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
 )]
 #[serde(rename_all = "snake_case")]
-pub enum ErddapNode {
-    /// The NOAA West Coast node (`coastwatch.pfeg.noaa.gov`): MUR SST and HF radar.
+pub enum GridHost {
+    /// The NOAA West Coast ERDDAP node (`coastwatch.pfeg.noaa.gov`): MUR SST and HF radar.
     Pfeg,
-    /// The NOAA national node (`coastwatch.noaa.gov`): VIIRS ocean colour.
+    /// The NOAA national ERDDAP node (`coastwatch.noaa.gov`): VIIRS ocean colour.
     Coastwatch,
     /// NOAA GLERL (`apps.glerl.noaa.gov`): Great Lakes SST.
     Glerl,
+    /// The NCEI DEM global mosaic, an `ArcGIS` image service rather than an ERDDAP server.
+    NceiDem,
 }
 
-impl ErddapNode {
-    /// The server's base URL, without a trailing slash; `/griddap/{dataset}.json` follows.
-    pub const fn base_url(self) -> &'static str {
+/// The former name of [`GridHost`], from when every grid came from an ERDDAP server.
+#[deprecated(note = "use GridHost")]
+pub type ErddapNode = GridHost;
+
+impl GridHost {
+    /// The ERDDAP server's base URL, without a trailing slash (`/griddap/{dataset}.json`
+    /// follows); `None` for a host that is not an ERDDAP server.
+    pub const fn erddap_base_url(self) -> Option<&'static str> {
         match self {
-            Self::Pfeg => "https://coastwatch.pfeg.noaa.gov/erddap",
-            Self::Coastwatch => "https://coastwatch.noaa.gov/erddap",
-            Self::Glerl => "https://apps.glerl.noaa.gov/erddap",
+            Self::Pfeg => Some("https://coastwatch.pfeg.noaa.gov/erddap"),
+            Self::Coastwatch => Some("https://coastwatch.noaa.gov/erddap"),
+            Self::Glerl => Some("https://apps.glerl.noaa.gov/erddap"),
+            Self::NceiDem => None,
         }
     }
 }
@@ -127,7 +136,7 @@ impl ErddapNode {
 /// Where a gridded layer's data comes from.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct GridSource {
-    pub node: ErddapNode,
+    pub node: GridHost,
     /// The ERDDAP dataset id, such as `jplMURSST41`.
     pub dataset: String,
     /// The variables to request, such as `analysed_sst`, or `water_u` and `water_v` for currents.
@@ -156,21 +165,27 @@ mod tests {
 
     #[test]
     fn node_urls_match_the_documented_servers() {
-        assert_eq!(
-            ErddapNode::Pfeg.base_url(),
-            "https://coastwatch.pfeg.noaa.gov/erddap"
-        );
-        assert_eq!(
-            ErddapNode::Coastwatch.base_url(),
-            "https://coastwatch.noaa.gov/erddap"
-        );
-        assert_eq!(
-            ErddapNode::Glerl.base_url(),
-            "https://apps.glerl.noaa.gov/erddap"
-        );
-        assert_eq!(
-            serde_json::to_string(&ErddapNode::Coastwatch).unwrap(),
-            "\"coastwatch\""
-        );
+        let urls = [
+            (GridHost::Pfeg, "https://coastwatch.pfeg.noaa.gov/erddap"),
+            (GridHost::Coastwatch, "https://coastwatch.noaa.gov/erddap"),
+            (GridHost::Glerl, "https://apps.glerl.noaa.gov/erddap"),
+        ];
+        for (host, url) in urls {
+            assert_eq!(host.erddap_base_url(), Some(url));
+        }
+        assert_eq!(GridHost::NceiDem.erddap_base_url(), None);
+    }
+
+    #[test]
+    fn host_names_are_stable() {
+        let names = [
+            (GridHost::Pfeg, "\"pfeg\""),
+            (GridHost::Coastwatch, "\"coastwatch\""),
+            (GridHost::Glerl, "\"glerl\""),
+            (GridHost::NceiDem, "\"ncei_dem\""),
+        ];
+        for (host, name) in names {
+            assert_eq!(serde_json::to_string(&host).unwrap(), name);
+        }
     }
 }

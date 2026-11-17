@@ -684,12 +684,12 @@ pub fn arrows(u: &Grid, v: &Grid, bbox: Bbox, zoom: f64) -> Vec<Arrow> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::map::{ErddapNode, GridSource};
+    use crate::map::{GridHost, GridSource};
     use crate::time::UnixTime;
 
     fn source(dataset: &str, variables: &[&str], step: f64) -> GridSource {
         GridSource {
-            node: ErddapNode::Pfeg,
+            node: GridHost::Pfeg,
             dataset: dataset.to_owned(),
             variables: variables.iter().map(|&v| v.to_owned()).collect(),
             altitude_axis: false,

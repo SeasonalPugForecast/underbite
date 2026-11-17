@@ -641,11 +641,11 @@ pub fn block_is_fresh(dataset: &str, time: UnixTime, fetched: UnixTime, now: Uni
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::map::ErddapNode;
+    use crate::map::GridHost;
 
     fn source() -> GridSource {
         GridSource {
-            node: ErddapNode::Coastwatch,
+            node: GridHost::Coastwatch,
             dataset: "noaacwN20VIIRSchlaDaily".to_owned(),
             variables: vec!["chlor_a".to_owned()],
             altitude_axis: true,
@@ -729,7 +729,7 @@ mod tests {
 
     fn mur() -> GridSource {
         GridSource {
-            node: ErddapNode::Pfeg,
+            node: GridHost::Pfeg,
             dataset: "jplMURSST41".to_owned(),
             variables: vec!["analysed_sst".to_owned()],
             altitude_axis: false,

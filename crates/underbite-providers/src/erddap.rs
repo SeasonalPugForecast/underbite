@@ -17,7 +17,7 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 use underbite_core::map::grid::{Block, Grid, GridError};
-use underbite_core::map::{Bbox, ErddapNode, GridSource};
+use underbite_core::map::{Bbox, GridHost, GridSource};
 use underbite_core::time::{LocalDate, UnixTime, UtcOffset, parse_rfc3339};
 
 use crate::request::Response;
@@ -66,7 +66,7 @@ pub enum ErddapResource {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ErddapRequest {
     /// The server, for [`ErddapPacer`].
-    pub node: ErddapNode,
+    pub node: GridHost,
     /// The full URL with the query, brackets percent-encoded.
     pub url: String,
     /// What it asks for.
@@ -119,7 +119,16 @@ fn valid_name(name: &str) -> bool {
     !name.is_empty() && name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_')
 }
 
-fn check_source(source: &GridSource) -> Result<(), ErddapError> {
+/// The ERDDAP server of a source; a host that is not an ERDDAP server is refused.
+fn erddap_base(source: &GridSource) -> Result<&'static str, ErddapError> {
+    source
+        .node
+        .erddap_base_url()
+        .ok_or(ErddapError::InvalidRequest("host is not an ERDDAP server"))
+}
+
+fn check_source(source: &GridSource) -> Result<&'static str, ErddapError> {
+    let base = erddap_base(source)?;
     if !valid_name(&source.dataset) {
         return Err(ErddapError::InvalidRequest("dataset id"));
     }
@@ -129,7 +138,7 @@ fn check_source(source: &GridSource) -> Result<(), ErddapError> {
     if !source.variables.iter().all(|v| valid_name(v)) {
         return Err(ErddapError::InvalidRequest("variable name"));
     }
-    Ok(())
+    Ok(base)
 }
 
 /// A coordinate as ERDDAP's recorded requests write it: up to six decimals, at least one
@@ -183,7 +192,7 @@ pub fn grid_request(
     area: Bbox,
     stride: u32,
 ) -> Result<ErddapRequest, ErddapError> {
-    check_source(source)?;
+    let base = check_source(source)?;
     let edges = [area.west, area.south, area.east, area.north];
     if edges.iter().any(|e| !e.is_finite()) || area.west > area.east || area.south > area.north {
         return Err(ErddapError::InvalidRequest("box"));
@@ -210,7 +219,7 @@ pub fn grid_request(
         node: source.node,
         url: format!(
             "{}/griddap/{}.json?{}",
-            source.node.base_url(),
+            base,
             source.dataset,
             query.join(",")
         ),
@@ -245,6 +254,7 @@ pub fn time_axis_request(
     source: &GridSource,
     since: LocalDate,
 ) -> Result<ErddapRequest, ErddapError> {
+    let base = erddap_base(source)?;
     if !valid_name(&source.dataset) {
         return Err(ErddapError::InvalidRequest("dataset id"));
     }
@@ -252,11 +262,7 @@ pub fn time_axis_request(
         node: source.node,
         url: format!(
             "{}/griddap/{}.json?time%5B({:04}-{:02}-{:02}):1:(last)%5D",
-            source.node.base_url(),
-            source.dataset,
-            since.year,
-            since.month,
-            since.day
+            base, source.dataset, since.year, since.month, since.day
         ),
         resource: ErddapResource::TimeAxis,
     })
@@ -656,7 +662,7 @@ impl NodePace {
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ErddapPacer {
     #[serde(default)]
-    nodes: BTreeMap<ErddapNode, NodePace>,
+    nodes: BTreeMap<GridHost, NodePace>,
 }
 
 impl ErddapPacer {
@@ -666,7 +672,7 @@ impl ErddapPacer {
     }
 
     /// When the next request to `node` may be sent: `now` if it may go now.
-    pub fn ready_at(&self, node: ErddapNode, now: UnixTime) -> UnixTime {
+    pub fn ready_at(&self, node: GridHost, now: UnixTime) -> UnixTime {
         self.nodes.get(&node).map_or(now, |pace| pace.ready_at(now))
     }
 
@@ -675,7 +681,7 @@ impl ErddapPacer {
     /// # Errors
     /// [`PaceWait`] with the time the next request may go, when the node is paused or has had
     /// its requests for this minute.
-    pub fn try_send(&mut self, node: ErddapNode, now: UnixTime) -> Result<(), PaceWait> {
+    pub fn try_send(&mut self, node: GridHost, now: UnixTime) -> Result<(), PaceWait> {
         let pace = self.nodes.entry(node).or_default();
         pace.prune(now);
         let until = pace.ready_at(now);
@@ -688,7 +694,7 @@ impl ErddapPacer {
 
     /// Records the answer to a request to `node`: a 429 or 503 pauses the node; any other
     /// answer the node itself gave (2xx, or 404 for an empty subset) resets the back-off.
-    pub fn on_response(&mut self, node: ErddapNode, response: &Response<'_>, now: UnixTime) {
+    pub fn on_response(&mut self, node: GridHost, response: &Response<'_>, now: UnixTime) {
         let pace = self.nodes.entry(node).or_default();
         match response.status {
             429 | 503 => {
@@ -717,7 +723,7 @@ mod tests {
     use underbite_core::map::GeoPoint;
 
     fn source(
-        node: ErddapNode,
+        node: GridHost,
         dataset: &str,
         variables: &[&str],
         altitude: bool,
@@ -734,7 +740,7 @@ mod tests {
 
     fn mur() -> GridSource {
         source(
-            ErddapNode::Pfeg,
+            GridHost::Pfeg,
             "jplMURSST41",
             &["analysed_sst"],
             false,
@@ -744,7 +750,7 @@ mod tests {
 
     fn hf_radar() -> GridSource {
         source(
-            ErddapNode::Pfeg,
+            GridHost::Pfeg,
             "ucsdHfrE6",
             &["water_u", "water_v"],
             false,
@@ -754,7 +760,7 @@ mod tests {
 
     fn chlorophyll() -> GridSource {
         source(
-            ErddapNode::Coastwatch,
+            GridHost::Coastwatch,
             "noaacwN20VIIRSchlaDaily",
             &["chlor_a"],
             true,
@@ -764,7 +770,7 @@ mod tests {
 
     fn kd490_4km() -> GridSource {
         source(
-            ErddapNode::Coastwatch,
+            GridHost::Coastwatch,
             "noaacwNPPVIIRSkd490Daily",
             &["kd_490"],
             true,
@@ -774,7 +780,7 @@ mod tests {
 
     fn kd490() -> GridSource {
         source(
-            ErddapNode::Coastwatch,
+            GridHost::Coastwatch,
             "noaacwN21VIIRSkd490NSWUSDaily",
             &["kd_490"],
             true,
@@ -784,7 +790,7 @@ mod tests {
 
     fn glsea() -> GridSource {
         source(
-            ErddapNode::Glerl,
+            GridHost::Glerl,
             "GLSEA_ACSPO_GCS",
             &["sst"],
             false,
@@ -889,7 +895,7 @@ mod tests {
             "https://coastwatch.noaa.gov/erddap/griddap/noaacwN21VIIRSkd490NSWUSDaily.json?time%5B(2026-10-20):1:(last)%5D"
         );
         let n20 = source(
-            ErddapNode::Coastwatch,
+            GridHost::Coastwatch,
             "noaacwN20VIIRSkd490NSWUSDaily",
             &["kd_490"],
             true,
@@ -904,7 +910,7 @@ mod tests {
             "https://coastwatch.noaa.gov/erddap/griddap/noaacwNPPVIIRSkd490Daily.json?time%5B(2026-10-20):1:(last)%5D"
         );
         let modis = source(
-            ErddapNode::Pfeg,
+            GridHost::Pfeg,
             "erdMH1kd4901day_R2022NRT",
             &["Kd_490"],
             true,
@@ -932,10 +938,7 @@ mod tests {
             stride: 5,
         };
         let r = block_request(&mur(), GridTime::At(at("2026-11-07T09:00:00Z")), block).unwrap();
-        assert_eq!(
-            (r.node, r.resource),
-            (ErddapNode::Pfeg, ErddapResource::Grid)
-        );
+        assert_eq!((r.node, r.resource), (GridHost::Pfeg, ErddapResource::Grid));
         assert_eq!(
             r.url,
             "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json?analysed_sst%5B(2026-11-07T09:00:00Z)%5D%5B(40.0):5:(40.99)%5D%5B(-74.0):5:(-73.01)%5D"
@@ -991,7 +994,7 @@ mod tests {
             Err(ErddapError::InvalidRequest("box"))
         );
         let injected = source(
-            ErddapNode::Pfeg,
+            GridHost::Pfeg,
             "jplMURSST41",
             &["analysed_sst[0]"],
             false,
@@ -1001,16 +1004,26 @@ mod tests {
             grid_request(&injected, GridTime::Last, harbor(), 1),
             Err(ErddapError::InvalidRequest("variable name"))
         );
-        let none = source(ErddapNode::Pfeg, "jplMURSST41", &[], false, 0.01);
+        let none = source(GridHost::Pfeg, "jplMURSST41", &[], false, 0.01);
         assert_eq!(
             grid_request(&none, GridTime::Last, harbor(), 1),
             Err(ErddapError::InvalidRequest("no variables"))
         );
-        let odd_id = source(ErddapNode::Pfeg, "../x", &["sst"], false, 0.01);
+        let odd_id = source(GridHost::Pfeg, "../x", &["sst"], false, 0.01);
         assert_eq!(
             time_axis_request(&odd_id, day(2026, 11, 5)),
             Err(ErddapError::InvalidRequest("dataset id"))
         );
+        let dem = source(
+            GridHost::NceiDem,
+            "DEM_global_mosaic",
+            &["elevation"],
+            false,
+            0.005,
+        );
+        let not_erddap = Err(ErddapError::InvalidRequest("host is not an ERDDAP server"));
+        assert_eq!(grid_request(&dem, GridTime::Last, harbor(), 1), not_erddap);
+        assert_eq!(time_axis_request(&dem, day(2026, 11, 5)), not_erddap);
     }
 
     #[test]
@@ -1269,7 +1282,7 @@ mod tests {
             bad("a time that is not ISO 8601")
         );
         assert_eq!(refuse(&table(&format!("[{t},40,-74]"))), bad("a short row"));
-        let other_var = source(ErddapNode::Glerl, "GLSEA_ACSPO_GCS", &["ice"], false, 0.014);
+        let other_var = source(GridHost::Glerl, "GLSEA_ACSPO_GCS", &["ice"], false, 0.014);
         assert_eq!(
             parse_grid(&other_var, ok.as_bytes()),
             Err(bad("no ice column"))
@@ -1353,25 +1366,22 @@ mod tests {
         let mut pacer = ErddapPacer::new();
         for k in 0..10 {
             assert_eq!(
-                pacer.try_send(ErddapNode::Pfeg, plus(k * 5)),
+                pacer.try_send(GridHost::Pfeg, plus(k * 5)),
                 Ok(()),
                 "request {k}"
             );
         }
-        let wait = pacer.try_send(ErddapNode::Pfeg, plus(50)).unwrap_err();
+        let wait = pacer.try_send(GridHost::Pfeg, plus(50)).unwrap_err();
         assert_eq!(wait.until, plus(60));
         assert_eq!(wait.after_s(plus(50)), 10);
-        assert_eq!(pacer.ready_at(ErddapNode::Pfeg, plus(50)), plus(60));
+        assert_eq!(pacer.ready_at(GridHost::Pfeg, plus(50)), plus(60));
         // Other nodes are counted apart.
-        assert_eq!(pacer.try_send(ErddapNode::Coastwatch, plus(50)), Ok(()));
-        assert_eq!(pacer.ready_at(ErddapNode::Glerl, plus(50)), plus(50));
+        assert_eq!(pacer.try_send(GridHost::Coastwatch, plus(50)), Ok(()));
+        assert_eq!(pacer.ready_at(GridHost::Glerl, plus(50)), plus(50));
         // A minute after the first, one more may go; then the second must age out.
-        assert_eq!(pacer.try_send(ErddapNode::Pfeg, plus(60)), Ok(()));
+        assert_eq!(pacer.try_send(GridHost::Pfeg, plus(60)), Ok(()));
         assert_eq!(
-            pacer
-                .try_send(ErddapNode::Pfeg, plus(61))
-                .unwrap_err()
-                .until,
+            pacer.try_send(GridHost::Pfeg, plus(61)).unwrap_err().until,
             plus(65)
         );
     }
@@ -1379,7 +1389,7 @@ mod tests {
     #[test]
     fn erddap_pacer_waits_60_s_after_a_429_doubling_to_15_minutes() {
         let mut pacer = ErddapPacer::new();
-        let node = ErddapNode::Pfeg;
+        let node = GridHost::Pfeg;
         assert_eq!(pacer.try_send(node, T0), Ok(()));
         pacer.on_response(node, &Response::new(429, b""), plus(1));
         assert_eq!(pacer.try_send(node, plus(60)).unwrap_err().until, plus(61));
@@ -1419,19 +1429,19 @@ mod tests {
     fn erddap_pacer_survives_a_clock_that_goes_back() {
         let mut pacer = ErddapPacer::new();
         for k in 0..10 {
-            pacer.try_send(ErddapNode::Glerl, plus(86_400 + k)).unwrap();
+            pacer.try_send(GridHost::Glerl, plus(86_400 + k)).unwrap();
         }
-        pacer.on_response(ErddapNode::Glerl, &Response::new(429, b""), plus(86_400));
+        pacer.on_response(GridHost::Glerl, &Response::new(429, b""), plus(86_400));
         // A day earlier: the requests "ahead" are forgotten and the pause lasts an hour at most.
-        assert_eq!(pacer.ready_at(ErddapNode::Glerl, T0), plus(3_600));
+        assert_eq!(pacer.ready_at(GridHost::Glerl, T0), plus(3_600));
     }
 
     #[test]
     fn erddap_pacer_saves_and_loads_as_json() {
         let mut pacer = ErddapPacer::new();
-        pacer.try_send(ErddapNode::Pfeg, T0).unwrap();
-        pacer.on_response(ErddapNode::Pfeg, &Response::new(429, b""), T0);
-        pacer.try_send(ErddapNode::Glerl, T0).unwrap();
+        pacer.try_send(GridHost::Pfeg, T0).unwrap();
+        pacer.on_response(GridHost::Pfeg, &Response::new(429, b""), T0);
+        pacer.try_send(GridHost::Glerl, T0).unwrap();
         let json = serde_json::to_string(&pacer).unwrap();
         assert_eq!(
             json,

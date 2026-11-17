@@ -22,7 +22,7 @@ use tiff::decoder::{Decoder, DecodingResult};
 use tiff::tags::Tag;
 use underbite_core::map::grid::{Grid, GridError};
 use underbite_core::map::tiles::{MAX_ZOOM, ORIGIN_M, WORLD_M, tile_bounds_3857};
-use underbite_core::map::{Bbox, GridSource, TileKey};
+use underbite_core::map::{Bbox, GridHost, GridSource, TileKey};
 use underbite_core::time::{LocalDate, UnixTime, UtcOffset};
 
 use crate::request::{Response, RoundedPoint};
@@ -30,6 +30,12 @@ use crate::request::{Response, RoundedPoint};
 /// The mosaic's `ImageServer`, without a trailing slash.
 pub const BASE_URL: &str =
     "https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/ImageServer";
+
+/// The dataset name DEM grids are filed under (`GridSource::dataset`).
+pub const DATASET: &str = "DEM_global_mosaic";
+
+/// The variable name DEM grids are filed under (`GridSource::variables`).
+pub const VARIABLE: &str = "elevation";
 
 /// The value asked for where the mosaic has no data (`noData=-9999`).
 pub const NO_DATA: f32 = -9999.0;
@@ -417,14 +423,26 @@ impl DemImage {
 
     /// The image as a map grid at the cell centres, in [`UNIT`], latitudes ascending.
     ///
-    /// The mosaic is not a dataset of the map's grid catalogue, so the caller names the source
-    /// the grid is filed under, and the instant it stands for (the DEM has no time of its own).
+    /// The grid is filed under [`GridHost::NceiDem`] and the dataset [`DATASET`]; `time` is the
+    /// instant it stands for (the DEM has no time of its own). Its `native_step_deg` is the
+    /// image's own longitude step.
     ///
     /// # Errors
     /// [`DemError::Grid`] if the axes do not make a grid.
-    pub fn into_grid(self, source: GridSource, time: UnixTime) -> Result<Grid, DemError> {
+    pub fn into_grid(self, time: UnixTime) -> Result<Grid, DemError> {
         let lats = self.lats_north_to_south();
         let lons = self.lons();
+        let native_step_deg = match (lons.first(), lons.last()) {
+            (Some(first), Some(last)) if lons.len() > 1 => (last - first) / (lons.len() - 1) as f64,
+            _ => 0.0,
+        };
+        let source = GridSource {
+            node: GridHost::NceiDem,
+            dataset: DATASET.to_owned(),
+            variables: vec![VARIABLE.to_owned()],
+            altitude_axis: false,
+            native_step_deg,
+        };
         Ok(Grid::new(source, time, lats, lons, self.values, UNIT)?)
     }
 }
@@ -768,23 +786,13 @@ mod tests {
     use super::*;
     use crate::request::Coordinates;
     use crate::testutil::{fixture_bytes, fixture_str};
-    use underbite_core::map::{ErddapNode, GeoPoint};
+    use underbite_core::map::GeoPoint;
 
     const EXPORT: &str = "dem-global-mosaic-export-f32.tif";
     const QUERY: &str = "dem-global-mosaic-query-battery.json";
 
     fn export() -> DemImage {
         parse_export(&fixture_bytes("bathymetry", EXPORT), DemCrs::Wgs84).unwrap()
-    }
-
-    fn source() -> GridSource {
-        GridSource {
-            node: ErddapNode::Pfeg,
-            dataset: "DEM_global_mosaic".to_owned(),
-            variables: vec!["elevation".to_owned()],
-            altitude_axis: false,
-            native_step_deg: 0.005,
-        }
     }
 
     /// The recorded request URLs, from the fixtures' README.
@@ -837,7 +845,10 @@ mod tests {
 
     #[test]
     fn ncei_dem_export_becomes_a_grid_at_cell_centres() {
-        let grid = export().into_grid(source(), UnixTime(0)).unwrap();
+        let grid = export().into_grid(UnixTime(0)).unwrap();
+        assert_eq!(grid.source.node, GridHost::NceiDem);
+        assert_eq!(grid.source.dataset, "DEM_global_mosaic");
+        assert!((grid.source.native_step_deg - 0.005).abs() < 1e-9);
         assert_eq!((grid.lats.len(), grid.lons.len()), (160, 240));
         assert_eq!(grid.unit, "m");
         // Latitudes ascend after the north-to-south rows are reversed.
@@ -1206,7 +1217,7 @@ mod tests {
         let x = -8_243_208.0 + 0.5 * 69.578;
         assert!((lons[0] - (x / r).to_degrees()).abs() < 1e-9);
         assert!((lons[0] + 74.0496).abs() < 1e-3, "{}", lons[0]);
-        let grid = image.into_grid(source(), UnixTime(0)).unwrap();
+        let grid = image.into_grid(UnixTime(0)).unwrap();
         // The southern row comes first in the grid.
         assert_eq!(grid.value(0, 1), Some(6.0));
         assert!(grid.value(0, 0).unwrap().is_nan());
