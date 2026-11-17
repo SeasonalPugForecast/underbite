@@ -8,13 +8,16 @@
 use whether_core::time::Weekday;
 
 use crate::discover::hydro::{WaterTypeReason, WaterbodyKind};
+use crate::map::breaks::BreakKind;
 use crate::map::catalogue::{DateMode, Group, UnavailableReason};
+use crate::map::dem::{ApproxDepth, DepthReading};
+use crate::map::enc::{SourceDate, StructureKind};
 use crate::model::{
     AlertSeverity, Measurement, MoonPhase, PrincipalPhase, TideKind, WaterType, ZoneKind,
 };
 use crate::provenance::{Relation, SourceId, UsgsSiteType};
 use crate::time::{UnixTime, UtcOffset};
-use crate::view::format::Formatter;
+use crate::view::format::{Formatter, distance_to_metres};
 use crate::view::{CardId, NoticeKind, Voice};
 
 /// Declares [`Key`], its list and its table in one place.
@@ -672,6 +675,24 @@ keys! {
     MapDateTime => ("{date}, {time}", "{date}, {time}"),
     /// A measured line: `{distance}`, `{bearing}`.
     MapMeasure => ("{distance} at {bearing}", "{distance} at {bearing}"),
+    // Depth on the map
+    /// The depth shading's title in the layer drawer.
+    MapDepthTitle => ("Water depth", "Water depth"),
+    /// A temperature break's strength: `{change}` ("0.9 °F"), `{distance}` ("mi").
+    MapBreakTemperature => ("{change} per {distance}", "{change} per {distance}"),
+    /// A chlorophyll break's strength as a ratio of concentrations: `{ratio}` ("1.3"), `{distance}`.
+    MapBreakChlorophyll => ("×{ratio} per {distance}", "×{ratio} per {distance}"),
+    /// What a charted structure point is.
+    MapStructureWreck => ("Wreck", "Wreck"),
+    MapStructureObstruction => ("Obstruction", "Obstruction"),
+    MapStructureRock => ("Rock", "Rock"),
+    MapStructureFishHaven => ("Fish haven", "Fish haven"),
+    /// The chart's own category of a structure point: `{category}`.
+    MapStructureCategory => ("As charted: {category}", "As charted: {category}"),
+    /// When a chart object was surveyed: `{date}` ("2019", "2019-03", "2019-03-14").
+    MapStructureSurveyed => ("Surveyed {date}", "Surveyed {date}"),
+    /// A reef site's charted depths: `{range}` ("20–70 ft").
+    MapReefDepth => ("Depth {range}", "Depth {range}"),
 }
 
 /// Declares [`SafetyKey`], its list and its table in one place.
@@ -838,6 +859,25 @@ safety_keys! {
     MapLicenceContoursIn => "Terms for the GIS layer are not stated; credit Indiana DNR, Division of Fish and Wildlife.",
     MapLicenceContoursMn => "MNDNR must be acknowledged; the data may not be sold without MNDNR's written permission.",
     MapLicenceReefsNy => "Terms are not stated; credit the New York State Department of Environmental Conservation.",
+    // Depth on the map
+    /// The depth inspector row's label.
+    MapDepthRow => "Approximate depth",
+    /// The depth row's value: `{depth}` ("97 ft"), `{datum}` ("EGM 2008").
+    MapDepthApprox => "approximate depth {depth} ({datum})",
+    /// As above with the elevation model that gave the value: `{model}` ("Coastal Relief Model").
+    MapDepthApproxModel => "approximate depth {depth} ({datum}, {model})",
+    /// A lake bed's height above the model's datum, where no lake level is known: `{height}`.
+    MapDepthBed => "bed elevation {height} ({datum})",
+    MapDepthBedModel => "bed elevation {height} ({datum}, {model})",
+    MapDepthDatumUnknown => "datum not stated",
+    MapDepthModelCrm => "Coastal Relief Model",
+    MapDepthModelCudem => "CUDEM",
+    MapDepthModelEtopo => "ETOPO 2022",
+    MapCreditBathymetry => "Bathymetry: NOAA NCEI (DEM global mosaic, Coastal Relief Model, CUDEM). Not for navigation.",
+    MapReferenceBathymetry => "Heights are metres relative to a vertical datum that depends on the source model (NAVD 88 or EGM 2008), not chart datum. They are shown as approximate depth and are never compared with charted soundings or tide heights.",
+    MapLegendBathymetry => "Approximate depth below the surface",
+    /// Why a charted wreck, obstruction or rock shows no depth.
+    MapStructureDepthNotShown => "Charted depth not shown: the service states neither its unit nor its datum.",
 }
 
 impl SafetyKey {
@@ -1464,6 +1504,142 @@ pub fn map_measure(f: &Formatter, metres: f64, bearing_deg: f64) -> (String, Str
     (distance, bearing, line)
 }
 
+/// A depth in the user's height unit for a map label: "33 ft", "10 m", "6.1 m" (a decimal only
+/// where the value is not whole to a tenth).
+pub fn depth_label(f: &Formatter, metres: f64) -> String {
+    let unit = f.units.height;
+    let v = unit.from_canonical(metres as f32);
+    let tenths = (v * 10.0).round() / 10.0;
+    let decimals = u8::from(tenths.fract() != 0.0);
+    format!("{} {}", Formatter::number(tenths, decimals), unit.symbol())
+}
+
+/// The elevation model a DEM raster belongs to, by its name; `None` for one not recognised.
+fn dem_model(f: &Formatter, raster: &str) -> Option<&'static str> {
+    let name = raster.to_ascii_lowercase();
+    let key = if name.starts_with("crm_") {
+        SafetyKey::MapDepthModelCrm
+    } else if name.starts_with("ncei19_") {
+        SafetyKey::MapDepthModelCudem
+    } else if name.starts_with("etopo_2022") {
+        SafetyKey::MapDepthModelEtopo
+    } else {
+        return None;
+    };
+    Some(f.strings.safety(key))
+}
+
+/// A DEM reading for the inspector: "approximate depth 97 ft (EGM 2008, Coastal Relief Model)".
+/// The datum is the finest source's; "datum not stated" where it states none. Never chart datum.
+pub fn depth_reading(f: &Formatter, reading: &ApproxDepth) -> String {
+    let datum = reading
+        .vertical_datum
+        .as_deref()
+        .unwrap_or_else(|| f.strings.safety(SafetyKey::MapDepthDatumUnknown));
+    let model = reading.source.as_deref().and_then(|s| dem_model(f, s));
+    let (name, value, plain, with_model) = match reading.reading {
+        DepthReading::Depth { depth_m } => (
+            "depth",
+            depth_label(f, depth_m),
+            SafetyKey::MapDepthApprox,
+            SafetyKey::MapDepthApproxModel,
+        ),
+        DepthReading::BedElevation { elevation_m } => (
+            "height",
+            depth_label(f, elevation_m),
+            SafetyKey::MapDepthBed,
+            SafetyKey::MapDepthBedModel,
+        ),
+    };
+    match model {
+        Some(model) => f.strings.safety_fmt(
+            with_model,
+            &[(name, &value), ("datum", datum), ("model", model)],
+        ),
+        None => f
+            .strings
+            .safety_fmt(plain, &[(name, &value), ("datum", datum)]),
+    }
+}
+
+/// A break's strength in the user's units. Temperature: the change per distance unit in the
+/// user's temperature unit ("0.9 °F per mi"). Chlorophyll: the ratio of concentrations across one
+/// distance unit ("×1.3 per km"). `per_km` is the canonical gradient: °C per km, or log10 units
+/// per km.
+pub fn break_strength(f: &Formatter, kind: BreakKind, per_km: f64) -> String {
+    let distance = f.units.distance;
+    let per_unit = per_km * distance_to_metres(distance, 1.0) / 1_000.0;
+    match kind {
+        BreakKind::Sst => {
+            let t = f.units.temperature;
+            let change = t.from_canonical(per_unit as f32) - t.from_canonical(0.0);
+            let decimals = u8::from(change.abs() < 10.0);
+            let text = format!("{} {}", Formatter::number(change, decimals), t.symbol());
+            f.strings.fmt(
+                Key::MapBreakTemperature,
+                &[("change", &text), ("distance", distance.symbol())],
+            )
+        }
+        BreakKind::Chlorophyll => {
+            let ratio = 10f64.powf(per_unit) as f32;
+            let text = Formatter::number(ratio, 1 + u8::from(ratio < 2.0));
+            f.strings.fmt(
+                Key::MapBreakChlorophyll,
+                &[("ratio", &text), ("distance", distance.symbol())],
+            )
+        }
+    }
+}
+
+/// A charted structure point's title: "Wreck", "Obstruction", "Rock", "Fish haven".
+pub fn structure_title(f: &Formatter, kind: StructureKind, fish_haven: bool) -> &'static str {
+    f.strings.get(match (kind, fish_haven) {
+        (_, true) => Key::MapStructureFishHaven,
+        (StructureKind::Wreck, _) => Key::MapStructureWreck,
+        (StructureKind::Obstruction, _) => Key::MapStructureObstruction,
+        (StructureKind::Rock, _) => Key::MapStructureRock,
+    })
+}
+
+/// The chart's own category of a point, as charted: "As charted: dangerous wreck". The service
+/// cuts long categories, so one that may be cut ends in an ellipsis.
+pub fn structure_category(f: &Formatter, category: &str, may_be_cut: bool) -> String {
+    let category = if may_be_cut {
+        format!("{category}…")
+    } else {
+        category.to_owned()
+    };
+    f.strings
+        .fmt(Key::MapStructureCategory, &[("category", &category)])
+}
+
+/// When a chart object was surveyed: "Surveyed 2019", "Surveyed 2019-03", "Surveyed 2019-03-14".
+pub fn structure_surveyed(f: &Formatter, date: SourceDate) -> String {
+    let text = match (date.month, date.day) {
+        (Some(m), Some(d)) => format!("{:04}-{m:02}-{d:02}", date.year),
+        (Some(m), None) => format!("{:04}-{m:02}", date.year),
+        _ => format!("{:04}", date.year),
+    };
+    f.strings.fmt(Key::MapStructureSurveyed, &[("date", &text)])
+}
+
+/// A reef site's depth range in the user's unit: "Depth 20–70 ft"; `None` with neither depth.
+pub fn reef_depths(f: &Formatter, min_m: Option<f64>, max_m: Option<f64>) -> Option<String> {
+    let unit = f.units.height;
+    let number = |m: f64| {
+        let v = (unit.from_canonical(m as f32) * 10.0).round() / 10.0;
+        Formatter::number(v, u8::from(v.fract() != 0.0))
+    };
+    let range = match (min_m, max_m) {
+        (Some(a), Some(b)) if (a - b).abs() > f64::EPSILON => {
+            format!("{}–{} {}", number(a), number(b), unit.symbol())
+        }
+        (Some(m), _) | (None, Some(m)) => format!("{} {}", number(m), unit.symbol()),
+        (None, None) => return None,
+    };
+    Some(f.strings.fmt(Key::MapReefDepth, &[("range", &range)]))
+}
+
 /// Every kind of water, in the order a picker lists them.
 pub const WATER_TYPES: [WaterType; 10] = [
     WaterType::RiverStream,
@@ -1966,6 +2142,83 @@ mod tests {
             assert_eq!(map_value(&us, MapQuantity::CurrentSpeed, 0.5144), "1.0 kn");
             assert_eq!(MapQuantity::of_layer("radar"), None);
             assert_eq!(map_current(&us, 0.5144, 45.0), "1.0 kn toward NE 45°");
+        }
+
+        #[test]
+        fn depth_words_read_in_the_users_units_and_name_the_datum() {
+            let (us, si) = (formatter(false), formatter(true));
+            assert_eq!(depth_label(&us, 3.048), "10 ft");
+            assert_eq!(depth_label(&us, 29.6), "97.1 ft");
+            assert_eq!(depth_label(&si, 6.096), "6.1 m");
+            assert_eq!(depth_label(&si, 10.0), "10 m");
+            let reading = |datum: Option<&str>, source: Option<&str>| ApproxDepth {
+                reading: DepthReading::Depth { depth_m: 29.6 },
+                vertical_datum: datum.map(str::to_owned),
+                source: source.map(str::to_owned),
+            };
+            assert_eq!(
+                depth_reading(&us, &reading(Some("EGM 2008"), Some("crm_vol1_2023"))),
+                "approximate depth 97.1 ft (EGM 2008, Coastal Relief Model)"
+            );
+            assert_eq!(
+                depth_reading(
+                    &si,
+                    &reading(Some("NAVD 88"), Some("ncei19_n40x75_w074x25_2015v1"))
+                ),
+                "approximate depth 29.6 m (NAVD 88, CUDEM)"
+            );
+            assert_eq!(
+                depth_reading(&us, &reading(None, Some("mystery"))),
+                "approximate depth 97.1 ft (datum not stated)"
+            );
+            let bed = ApproxDepth {
+                reading: DepthReading::BedElevation {
+                    elevation_m: -3.048,
+                },
+                vertical_datum: Some("NAVD 88".to_owned()),
+                source: None,
+            };
+            assert_eq!(depth_reading(&us, &bed), "bed elevation -10 ft (NAVD 88)");
+        }
+
+        #[test]
+        fn breaks_structure_and_reefs_are_worded_in_the_users_units() {
+            let (us, si) = (formatter(false), formatter(true));
+            assert_eq!(break_strength(&si, BreakKind::Sst, 0.5), "0.5 °C per km");
+            assert_eq!(break_strength(&us, BreakKind::Sst, 0.5), "1.4 °F per mi");
+            assert_eq!(
+                break_strength(&si, BreakKind::Chlorophyll, 0.0375),
+                "×1.09 per km"
+            );
+            assert_eq!(structure_title(&us, StructureKind::Wreck, false), "Wreck");
+            assert_eq!(
+                structure_title(&us, StructureKind::Obstruction, true),
+                "Fish haven"
+            );
+            assert_eq!(
+                structure_category(&us, "dangerous wreck", false),
+                "As charted: dangerous wreck"
+            );
+            assert!(structure_category(&us, "x", true).ends_with('…'));
+            let date = |month, day| SourceDate {
+                year: 2019,
+                month,
+                day,
+            };
+            assert_eq!(structure_surveyed(&us, date(None, None)), "Surveyed 2019");
+            assert_eq!(
+                structure_surveyed(&us, date(Some(3), Some(4))),
+                "Surveyed 2019-03-04"
+            );
+            assert_eq!(
+                reef_depths(&us, Some(6.096), Some(21.336)).as_deref(),
+                Some("Depth 20–70 ft")
+            );
+            assert_eq!(
+                reef_depths(&si, Some(10.0), Some(10.0)).as_deref(),
+                Some("Depth 10 m")
+            );
+            assert_eq!(reef_depths(&si, None, None), None);
         }
 
         #[test]
