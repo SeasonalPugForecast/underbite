@@ -4,6 +4,7 @@
 //! here is static; the words (titles, captions, credits, reasons) are kept with it for now.
 //! Presets are lists of layer ids to show, in [`PRESETS`].
 
+use crate::map::render::{self, Ramp, RampRange};
 use crate::map::tiles::{
     GibsSpec, TileService, gebco_wms_url, gibs_tile_url, ncds_wms_url, ncds_wmts_url,
     radar_tile_url,
@@ -167,6 +168,17 @@ impl Layer {
     /// The layer's id as the model type.
     pub fn layer_id(&self) -> LayerId {
         LayerId::from_static(self.id)
+    }
+
+    /// The layer's colour ramp, if it colours values.
+    pub fn colour_ramp(&self) -> Option<&'static Ramp> {
+        self.ramp.and_then(render::ramp)
+    }
+
+    /// The layer's default value range in canonical units (the ramp's own: °C, log10 of mg m⁻³
+    /// or m⁻¹, m/s), which a user range overrides with [`RampRange::with_bounds`].
+    pub fn default_range(&self) -> Option<RampRange> {
+        self.colour_ramp().map(|r| r.default_range)
     }
 
     /// The service that answers this layer's tile requests, for [`classify`](crate::map::tiles::classify).
@@ -347,6 +359,10 @@ const GLSEA_GRID: GridSpec = GridSpec {
     native_step_deg: 0.014_015_517,
 };
 
+/// The shallowest zoom a grid layer is drawn at. From here a view takes about a dozen block
+/// requests; wider views would take hundreds for a layer nobody can read at that scale.
+const GRID_MIN_ZOOM: u8 = 5;
+
 const fn grid_layer(
     id: &'static str,
     group: Group,
@@ -358,6 +374,7 @@ const fn grid_layer(
 ) -> Layer {
     let mut l = overlay(id, group, title, LayerKind::Grid(grid), credit);
     l.date_mode = DateMode::Daily;
+    l.min_zoom = Some(GRID_MIN_ZOOM);
     l.ramp = Some(ramp);
     l.legend = Some(legend);
     l
@@ -440,7 +457,7 @@ pub const LAYERS: [Layer; 22] = [
             draw: GridDraw::Raster,
         },
         "SST: NASA JPL MUR (MEaSUREs), via NOAA CoastWatch ERDDAP",
-        "sst",
+        "thermal",
         "Cold to warm",
     ),
     gibs_layer(
@@ -448,7 +465,7 @@ pub const LAYERS: [Layer; 22] = [
         "Sea surface temperature (imagery)",
         MUR_GIBS,
         "SST: NASA JPL MUR (MEaSUREs), via NASA GIBS",
-        Some("sst"),
+        Some("thermal"),
     ),
     grid_layer(
         "chlorophyll",
@@ -460,7 +477,7 @@ pub const LAYERS: [Layer; 22] = [
             draw: GridDraw::Raster,
         },
         VIIRS_CREDIT,
-        "chlorophyll",
+        "algae",
         "Clear to green water",
     ),
     gibs_layer(
@@ -468,7 +485,7 @@ pub const LAYERS: [Layer; 22] = [
         "Chlorophyll (imagery)",
         CHL_GIBS,
         "Ocean colour: NASA GIBS, NOAA-20 VIIRS",
-        Some("chlorophyll"),
+        Some("algae"),
     ),
     grid_layer(
         "clarity",
@@ -480,7 +497,7 @@ pub const LAYERS: [Layer; 22] = [
             draw: GridDraw::Raster,
         },
         "Water clarity: NOAA CoastWatch / NOAA STAR VIIRS",
-        "clarity",
+        "turbidity",
         "Clear to turbid",
     ),
     gibs_layer(
@@ -522,10 +539,12 @@ pub const LAYERS: [Layer; 22] = [
                 draw: GridDraw::Arrows,
             },
             "Surface currents: NOAA IOOS HF Radar Network",
-            "currents",
+            "speed",
             "Slow to fast",
         );
         l.date_mode = DateMode::Hourly;
+        // Arrows are thinned to one per 32 px, so a wide view of them says little.
+        l.min_zoom = Some(6);
         l.not_for_navigation = true;
         l.default_opacity = 0.9;
         l
@@ -540,7 +559,7 @@ pub const LAYERS: [Layer; 22] = [
             draw: GridDraw::Raster,
         },
         "NOAA Great Lakes Environmental Research Laboratory (CoastWatch Great Lakes Node)",
-        "sst",
+        "thermal",
         "Cold to warm",
     ),
     {
@@ -770,6 +789,8 @@ pub fn default_preset() -> &'static Preset {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::map::Bbox;
+    use crate::map::grid::blocks_for_view;
     use crate::map::tiles::{GibsSpec, TileOutcome, classify};
 
     /// The ids of the overlays as the configuration lists them (`KNOWN_LAYERS`), in drawer order.
@@ -1075,6 +1096,69 @@ mod tests {
         );
         assert_eq!(default_preset().id, DEFAULT_PRESET);
         assert_eq!(resolve_preset(DEFAULT_PRESET).unwrap().id, DEFAULT_PRESET);
+    }
+
+    #[test]
+    fn every_layer_ramp_resolves_with_a_drawable_default_range() {
+        for l in BASES.iter().chain(LAYERS.iter()) {
+            if let Some(id) = l.ramp {
+                let ramp = render::ramp(id).unwrap_or_else(|| panic!("{}: no ramp {id}", l.id));
+                assert_eq!(l.colour_ramp(), Some(ramp));
+                assert!(l.default_range().unwrap().is_valid(), "{}", l.id);
+            } else {
+                assert!(l.colour_ramp().is_none() && l.default_range().is_none());
+            }
+            if let LayerKind::Grid(_) = l.kind {
+                assert!(l.ramp.is_some(), "{}: a grid layer colours values", l.id);
+            }
+        }
+        let range = |id: &str| find(id).unwrap().default_range().unwrap();
+        assert_eq!(range("sst"), RampRange::linear(0.0, 30.0));
+        assert_eq!(range("great-lakes-sst"), range("sst"));
+        assert_eq!(range("chlorophyll"), RampRange::log10(0.03, 30.0));
+        // Kd490 seen at 0.08 to 1.48 per metre off New York and 0.28 to 2.94 in Lake Erie.
+        assert_eq!(range("clarity"), RampRange::log10(0.02, 3.0));
+        assert_eq!(range("hf-radar-currents"), RampRange::linear(0.0, 1.5));
+        assert_eq!(find("sst-imagery").unwrap().ramp, Some("thermal"));
+    }
+
+    /// A phone-sized map (390 by 844 points) at `zoom` around New York Harbor.
+    fn harbor_view(zoom: f64) -> Bbox {
+        let (lat, lon): (f64, f64) = (40.70, -74.02);
+        let deg_per_pt = 360.0 / (256.0 * zoom.exp2());
+        let half_w = 390.0 / 2.0 * deg_per_pt;
+        let half_h = 844.0 / 2.0 * deg_per_pt * lat.to_radians().cos();
+        Bbox {
+            west: lon - half_w,
+            south: lat - half_h,
+            east: lon + half_w,
+            north: lat + half_h,
+        }
+    }
+
+    #[test]
+    fn a_grid_layer_is_drawn_from_a_zoom_where_a_view_needs_a_dozen_requests() {
+        for l in &LAYERS {
+            let LayerKind::Grid(g) = l.kind else {
+                continue;
+            };
+            let min = l
+                .min_zoom
+                .unwrap_or_else(|| panic!("{}: no minimum zoom", l.id));
+            let zoom = f64::from(min);
+            for spec in std::iter::once(g.primary).chain(g.fallback) {
+                let n = blocks_for_view(&spec.source(), harbor_view(zoom), zoom).len();
+                println!("{} ({}): {n} requests at zoom {min}", l.id, spec.dataset);
+                assert!(
+                    (1..=12).contains(&n),
+                    "{} ({}): {n} requests at zoom {min}",
+                    l.id,
+                    spec.dataset
+                );
+            }
+        }
+        assert_eq!(find("sst").unwrap().min_zoom, Some(5));
+        assert_eq!(find("great-lakes-sst").unwrap().min_zoom, Some(5));
     }
 
     #[test]
