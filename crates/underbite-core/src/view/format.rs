@@ -592,6 +592,7 @@ fn datum_label(datum: VerticalDatum) -> &'static str {
         VerticalDatum::Ngvd29 => "NGVD29",
         VerticalDatum::Igld85 => "IGLD85",
         VerticalDatum::Gauge => "gage datum",
+        VerticalDatum::ChsChartDatum => "chart datum (CHS)",
         VerticalDatum::ModelMean => "model mean",
     }
 }

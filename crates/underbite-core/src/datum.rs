@@ -31,8 +31,12 @@ pub enum VerticalDatum {
     Ngvd29,
     /// International Great Lakes Datum 1985.
     Igld85,
-    /// A station's own datum (CO-OPS `STND`, a USGS gage datum).
+    /// A station's own datum (CO-OPS `STND`, a USGS gage datum, an ECCC station's assumed datum).
     Gauge,
+    /// The Canadian Hydrographic Service's chart datum at a station: in tidal waters a low
+    /// water surface CHS sets per region, on the Great Lakes a fixed elevation above IGLD 85 that
+    /// the station's metadata gives. Never the same surface as US MLLW and never compared with it.
+    ChsChartDatum,
     /// A model's mean sea level.
     ModelMean,
 }
@@ -50,7 +54,7 @@ impl VerticalDatum {
             Self::Ngvd29 => "NGVD29",
             Self::Igld85 => "IGLD85",
             Self::Gauge => "STND",
-            Self::ModelMean => return None,
+            Self::ChsChartDatum | Self::ModelMean => return None,
         })
     }
 }
@@ -203,6 +207,22 @@ mod tests {
         assert!(t.convert(&h, VerticalDatum::Igld85).is_none());
         assert!(t.convert(&h, VerticalDatum::ModelMean).is_none());
         assert!(t.z0(VerticalDatum::ModelMean).is_none());
+        // A CHS chart datum is never reached from a US station's table.
+        assert!(t.convert(&h, VerticalDatum::ChsChartDatum).is_none());
+        assert_eq!(VerticalDatum::ChsChartDatum.coops_name(), None);
+    }
+
+    #[test]
+    fn the_chs_chart_datum_round_trips_under_its_own_name() {
+        let h = Height {
+            datum: VerticalDatum::ChsChartDatum,
+            metres: 1.17,
+        };
+        let json = serde_json::to_string(&h).unwrap();
+        assert!(json.contains("\"chs_chart_datum\""), "{json}");
+        let back: Height = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, h);
+        assert_ne!(VerticalDatum::ChsChartDatum, VerticalDatum::Mllw);
     }
 
     #[test]

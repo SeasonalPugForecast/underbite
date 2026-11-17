@@ -57,6 +57,10 @@ impl SourceId {
     pub const INATURALIST: SourceId = SourceId::from_static("inaturalist");
     /// USGS Nonindigenous Aquatic Species.
     pub const USGS_NAS: SourceId = SourceId::from_static("usgs-nas");
+    /// Fisheries and Oceans Canada, Canadian Hydrographic Service: Integrated Water Level System.
+    pub const DFO_IWLS: SourceId = SourceId::from_static("dfo-iwls");
+    /// Environment and Climate Change Canada hydrometric data (real-time and HYDAT).
+    pub const ECCC_HYDROMETRIC: SourceId = SourceId::from_static("eccc-hydrometric");
 
     /// A compile-time id.
     pub const fn from_static(id: &'static str) -> Self {

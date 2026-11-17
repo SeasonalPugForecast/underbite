@@ -69,7 +69,12 @@ expression: schemas
           },
           {
             "const": "gauge",
-            "description": "A station's own datum (CO-OPS `STND`, a USGS gage datum).",
+            "description": "A station's own datum (CO-OPS `STND`, a USGS gage datum, an ECCC station's assumed datum).",
+            "type": "string"
+          },
+          {
+            "const": "chs_chart_datum",
+            "description": "The Canadian Hydrographic Service's chart datum at a station: in tidal waters a low\nwater surface CHS sets per region, on the Great Lakes a fixed elevation above IGLD 85 that\nthe station's metadata gives. Never the same surface as US MLLW and never compared with it.",
             "type": "string"
           },
           {
@@ -502,7 +507,12 @@ expression: schemas
           },
           {
             "const": "gauge",
-            "description": "A station's own datum (CO-OPS `STND`, a USGS gage datum).",
+            "description": "A station's own datum (CO-OPS `STND`, a USGS gage datum, an ECCC station's assumed datum).",
+            "type": "string"
+          },
+          {
+            "const": "chs_chart_datum",
+            "description": "The Canadian Hydrographic Service's chart datum at a station: in tidal waters a low\nwater surface CHS sets per region, on the Great Lakes a fixed elevation above IGLD 85 that\nthe station's metadata gives. Never the same surface as US MLLW and never compared with it.",
             "type": "string"
           },
           {
@@ -573,7 +583,12 @@ expression: schemas
       },
       {
         "const": "gauge",
-        "description": "A station's own datum (CO-OPS `STND`, a USGS gage datum).",
+        "description": "A station's own datum (CO-OPS `STND`, a USGS gage datum, an ECCC station's assumed datum).",
+        "type": "string"
+      },
+      {
+        "const": "chs_chart_datum",
+        "description": "The Canadian Hydrographic Service's chart datum at a station: in tidal waters a low\nwater surface CHS sets per region, on the Great Lakes a fixed elevation above IGLD 85 that\nthe station's metadata gives. Never the same surface as US MLLW and never compared with it.",
         "type": "string"
       },
       {
