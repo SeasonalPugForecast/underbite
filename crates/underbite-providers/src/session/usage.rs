@@ -204,6 +204,21 @@ impl UsageLedger {
         Ok(())
     }
 
+    /// Gives back one call counted by [`Self::try_spend`] when a cache answered the request
+    /// after all. Nothing changes if the counter has moved on to a new period.
+    pub fn refund(&mut self, source: &SourceId, now: UnixTime) {
+        if let Some(counter) = self.counters.get_mut(&pool(source)) {
+            let period = match counter.period {
+                Span::Hour => Period::Hour,
+                Span::Day => Period::Day,
+                Span::Month => Period::Month,
+            };
+            if bounds(period, now).0 <= counter.start {
+                counter.used = counter.used.saturating_sub(1);
+            }
+        }
+    }
+
     /// Counts one call sent outside a session (whether's Open-Meteo requests), budget or not.
     pub fn count(&mut self, source: &SourceId, period: Period, now: UnixTime) {
         let counter = self.counter(pool(source), period, now);
@@ -277,6 +292,22 @@ mod tests {
             period: Period::Day,
             limit,
         }
+    }
+
+    #[test]
+    fn a_refund_gives_back_one_call_of_this_period_only() {
+        let mut ledger = UsageLedger::new();
+        ledger.try_spend(&USGS, hourly(2), NOON).unwrap();
+        ledger.try_spend(&USGS, hourly(2), NOON).unwrap();
+        ledger.refund(&USGS, NOON);
+        assert_eq!(ledger.used(&USGS, NOON), 1);
+        // Never below zero, and a new period is not touched.
+        ledger.refund(&USGS, NOON);
+        ledger.refund(&USGS, NOON);
+        assert_eq!(ledger.used(&USGS, NOON), 0);
+        ledger.try_spend(&USGS, hourly(2), NOON).unwrap();
+        ledger.refund(&USGS, UnixTime(NOON.0 + HOUR));
+        assert_eq!(ledger.used(&USGS, NOON), 1);
     }
 
     #[test]

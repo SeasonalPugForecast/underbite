@@ -261,6 +261,18 @@ impl Session {
         self.in_flight.as_ref().map(|(_, request)| request)
     }
 
+    /// Gives back the call counted for the request last returned by [`Self::next_request`]:
+    /// a cache answered it, so it is not a call to the source.
+    pub fn refund(&mut self) {
+        if let (Some((g, request)), Some(usage)) = (&self.in_flight, &self.usage)
+            && request.metered
+        {
+            let id = self.groups[*g].source.id();
+            let now = self.ctx.now;
+            usage.with(|ledger| ledger.refund(&id, now));
+        }
+    }
+
     /// Reports the response to the request last returned by [`Self::next_request`].
     pub fn on_response(&mut self, response: &Response<'_>) {
         let Some((g, request)) = self.in_flight.take() else {

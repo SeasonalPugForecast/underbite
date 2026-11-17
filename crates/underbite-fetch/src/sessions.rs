@@ -85,6 +85,12 @@ pub(crate) async fn run_session<H: FetchHost>(
 ) -> SessionOutcome {
     while let Some(request) = session.next_request() {
         let request = request.clone();
+        let call = Call::from(&request);
+        if let Some(hit) = host.cached_response(&call).await {
+            session.refund();
+            session.on_response(&hit.as_response());
+            continue;
+        }
         if request.metered
             && let Err(e) = host.save_usage().await
         {
@@ -92,7 +98,7 @@ pub(crate) async fn run_session<H: FetchHost>(
             session.on_transport_error(&e);
             continue;
         }
-        match host.send(&Call::from(&request)).await {
+        match host.send(&call).await {
             Ok(fetched) => session.on_response(&fetched.as_response()),
             Err(e) => session.on_transport_error(&e.to_string()),
         }
@@ -241,4 +247,96 @@ fn weather_errors(attempts: &[WeatherAttempt]) -> Vec<ModelSourceError> {
             })
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use underbite_config::schema::Config;
+    use underbite_providers::session::usage::UsageLedger;
+    use underbite_providers::source::Secrets;
+
+    use super::*;
+    use crate::host::TransportError;
+    use crate::spot::{FetchOptions, fetch_spot};
+    use crate::store;
+    use crate::testing::{MemoryHost, battery, now};
+
+    /// The replay host with a response cache: it answers `cached` for every call, or for none.
+    struct CachingHost {
+        inner: MemoryHost,
+        answers_all: bool,
+    }
+
+    impl FetchHost for CachingHost {
+        fn send(
+            &self,
+            call: &Call,
+        ) -> impl Future<Output = Result<Fetched, TransportError>> + Send {
+            self.inner.send(call)
+        }
+
+        fn cached(&self, call: &Call) -> impl Future<Output = Option<Fetched>> + Send {
+            let hit = if self.answers_all {
+                pollster::block_on(self.inner.send(call)).ok()
+            } else {
+                None
+            };
+            std::future::ready(hit)
+        }
+
+        fn load(&self, namespace: &str, key: &str) -> impl Future<Output = Option<String>> + Send {
+            self.inner.load(namespace, key)
+        }
+
+        fn store(
+            &self,
+            namespace: &str,
+            key: &str,
+            value: String,
+        ) -> impl Future<Output = ()> + Send {
+            self.inner.store(namespace, key, value)
+        }
+
+        fn save_usage(&self, ledger: String) -> impl Future<Output = Result<(), String>> + Send {
+            self.inner.save_usage(ledger)
+        }
+    }
+
+    /// Open-Meteo calls in the ledger a Battery fetch through the host saved.
+    fn open_meteo_used(answers_all: bool) -> u32 {
+        let host = CachingHost {
+            inner: MemoryHost::replay("battery"),
+            answers_all,
+        };
+        let options = FetchOptions {
+            allow_metered: true,
+            secrets: Secrets::default(),
+            user_agent: "underbite/test".into(),
+            infer_water_type: false,
+        };
+        let out = pollster::block_on(fetch_spot(
+            &host,
+            &battery(),
+            &Config::default(),
+            now(),
+            &options,
+        ));
+        assert!(out.snapshot.marine.tide.is_some());
+        let ledger: UsageLedger = host
+            .inner
+            .stored(store::USAGE, store::LEDGER_KEY)
+            .expect("ledger");
+        ledger.used(&OPEN_METEO, now())
+    }
+
+    #[test]
+    fn calls_a_cache_answers_are_not_counted() {
+        assert_eq!(open_meteo_used(true), 0);
+    }
+
+    #[test]
+    fn calls_no_cache_answers_are_all_counted() {
+        // Marine, the storm point and the forecast.
+        assert_eq!(open_meteo_used(false), 3);
+    }
 }

@@ -22,6 +22,11 @@ pub(crate) async fn fetch_storms<H: FetchHost>(
     while let Some(request) = plan.next_request() {
         let call = Call::from(&request.http).with_cache(request.cache);
         let metered = request.http.metered;
+        if let Some(hit) = host.cached_response(&call).await {
+            plan.refund();
+            plan.on_response(&hit.as_response());
+            continue;
+        }
         if metered && let Err(e) = host.save_usage().await {
             tracing::warn!(error = %e, "storm request not sent");
             plan.on_transport_error(&e);

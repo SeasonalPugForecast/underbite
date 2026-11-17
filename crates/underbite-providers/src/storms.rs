@@ -262,6 +262,16 @@ impl StormWatchPlan {
         None
     }
 
+    /// Gives back the call counted for the point request last returned by
+    /// [`Self::next_request`]: a cache answered it, so it is not a call to Open-Meteo.
+    pub fn refund(&mut self) {
+        if let (Some(request), Some(usage)) = (&self.in_flight, &self.usage)
+            && request.resource == StormResource::Point
+        {
+            usage.with(|ledger| ledger.refund(&OPEN_METEO_STORM, self.now));
+        }
+    }
+
     /// Reports the response to the request last returned by [`Self::next_request`].
     pub fn on_response(&mut self, response: &Response<'_>) {
         let Some(request) = self.in_flight.take() else {
