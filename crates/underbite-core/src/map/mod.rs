@@ -10,7 +10,11 @@ use std::fmt;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+pub mod breaks;
 pub mod catalogue;
+pub mod contours;
+pub mod dem;
+pub mod enc;
 pub mod grid;
 pub mod render;
 pub mod tiles;

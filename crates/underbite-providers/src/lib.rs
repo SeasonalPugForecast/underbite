@@ -11,6 +11,7 @@ pub(crate) mod testutil;
 pub mod coops;
 pub mod erddap;
 pub mod hydro;
+pub mod ncei_dem;
 pub mod ndbc;
 pub mod nwps;
 pub mod nws_marine;

@@ -35,6 +35,8 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }
 anyhow = "1.0.104"
 quick-xml = "0.42.0"
 png = "0.18.1"
+# Tiled, uncompressed float32 GeoTIFF from NCEI; no codecs needed.
+tiff = { version = "0.11.3", default-features = false }
 
 # The iOS bridge, at whether's versions so the git dependency unifies.
 uniffi = "0.32.2"
