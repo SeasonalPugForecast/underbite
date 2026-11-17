@@ -550,6 +550,23 @@ fn whole_lists_stored_by_discovery_are_used() {
 }
 
 #[test]
+fn a_stored_list_from_any_time_never_overflows_its_age() {
+    let first = Recorded::new(&[]);
+    let found = pins(BATTERY, 13.0, &["buoys"], &first).expect("pins");
+    let ours = first
+        .load("stations".into(), "map-ndbc-active".into())
+        .expect("list");
+    let mut stored: Value = serde_json::from_str(&ours).expect("json");
+    stored["saved_at"] = Value::from(i64::MIN);
+    let second = Recorded::new(&[]);
+    second.store("stations".into(), "ndbc-active".into(), stored.to_string());
+    // Past any limit: fetched again.
+    let again = pins(BATTERY, 13.0, &["buoys"], &second).expect("pins");
+    assert_eq!(again.pins, found.pins);
+    assert_eq!(second.urls().len(), 1);
+}
+
+#[test]
 fn bad_views_and_settings_are_refused() {
     let host = Recorded::new(&[]);
     assert!(matches!(

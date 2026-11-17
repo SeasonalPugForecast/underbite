@@ -518,6 +518,18 @@ fn currents_are_arrows_and_read_as_speed_and_direction() {
 }
 
 #[test]
+fn a_block_from_any_time_never_overflows_its_age() {
+    let store = GridStore::new();
+    let requests = harbor(&store, "sst", None, None, i64::MIN).unwrap();
+    store
+        .add_grid(requests[0].key.clone(), response(200, mur()), i64::MIN)
+        .unwrap();
+    // A clock far past the fetch asks for the newest block again.
+    let again = harbor(&store, "sst", None, None, i64::MAX).unwrap();
+    assert!(again.iter().any(|r| r.key == requests[0].key));
+}
+
+#[test]
 fn erddap_failures_come_back_as_errors() {
     let store = GridStore::new();
     let key = harbor(&store, "sst", None, None, NOW).unwrap()[0]

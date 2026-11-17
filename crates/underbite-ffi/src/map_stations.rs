@@ -466,7 +466,7 @@ impl Link<'_> {
 
     /// Whether a value saved at `saved_at` is at most `ttl_s` old.
     fn fresh(&self, saved_at: i64, ttl_s: i64) -> bool {
-        (0..=ttl_s).contains(&(self.now.0 - saved_at))
+        (0..=ttl_s).contains(&(self.now.0.saturating_sub(saved_at)))
     }
 
     fn ledger(&mut self) -> &mut UsageLedger {
@@ -891,7 +891,7 @@ fn reports(candidate: &StationCandidate, now: UnixTime) -> bool {
         .offers
         .values()
         .filter_map(|c| c.last_value_at)
-        .any(|t| now.0 - t.0 <= USGS_REPORTING_WITHIN_S)
+        .any(|t| now.0.saturating_sub(t.0) <= USGS_REPORTING_WITHIN_S)
 }
 
 /// The role and words of an NWPS gauge's observed flood category.
@@ -920,11 +920,11 @@ fn flood_state(gauge: &GaugeState, now: UnixTime, f: &Formatter) -> (Role, Optio
         FloodCategory::FcstNotCurrent | FloodCategory::Unknown => return (Role::Unknown, None),
     };
     match gauge.observed_at {
-        Some(at) if now.0 - at.0 <= NWPS_STATE_MAX_AGE_S => (
+        Some(at) if now.0.saturating_sub(at.0) <= NWPS_STATE_MAX_AGE_S => (
             role,
             Some(s.fmt(
                 Key::PinStateAge,
-                &[("state", word), ("age", &f.age(now.0 - at.0))],
+                &[("state", word), ("age", &f.age(now.0.saturating_sub(at.0)))],
             )),
         ),
         // Too old to say what the river does now.
@@ -1081,7 +1081,10 @@ impl Pass<'_> {
                     Role::Reporting,
                     Some(s.fmt(
                         Key::PinStateAge,
-                        &[("state", text.as_str()), ("age", &self.f.age(now.0 - at.0))],
+                        &[
+                            ("state", text.as_str()),
+                            ("age", &self.f.age(now.0.saturating_sub(at.0))),
+                        ],
                     )),
                 ),
                 Some(Reading::NoRecent) => {
@@ -1301,6 +1304,17 @@ mod tests {
             flood_category: category,
             observed_at: age_s.map(|s| UnixTime(1_000_000 - s)),
         }
+    }
+
+    #[test]
+    fn times_from_any_clock_never_overflow_an_age() {
+        let f = formatter();
+        let mut long_ago = gauge(FloodCategory::Action, Some(0));
+        long_ago.observed_at = Some(UnixTime(i64::MIN));
+        assert_eq!(
+            flood_state(&long_ago, UnixTime(i64::MAX), &f),
+            (Role::Unknown, None)
+        );
     }
 
     #[test]

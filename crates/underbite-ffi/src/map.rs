@@ -1176,7 +1176,7 @@ impl GridStore {
             };
             let fresh = store.stored.get(&id).is_some_and(|s| match time {
                 Some(t) => grid::block_is_fresh(spec.dataset, UnixTime(t), s.fetched, now),
-                None => (0..LATEST_MAX_AGE_S).contains(&(now.0 - s.fetched.0)),
+                None => (0..LATEST_MAX_AGE_S).contains(&(now.0.saturating_sub(s.fetched.0))),
             });
             if fresh {
                 continue;
