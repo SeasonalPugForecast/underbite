@@ -1,0 +1,64 @@
+---
+source: crates/underbite-providers/src/stocking/socrata_ny.rs
+expression: events
+---
+- waterbody: Cross River Reservoir
+  county: Westchester
+  town: Bedford
+  when:
+    date_text: March - third week
+  species_text: Brown Trout
+  number_estimate: 6760
+  size_m:
+    min_m: 0.2032
+    max_m: 0.2032
+  planned: true
+  source: ny-dec-stocking
+- waterbody: Cross River Reservoir Outlet
+  county: Westchester
+  town: Bedford
+  when:
+    date_text: March - third week
+  species_text: Rainbow Trout
+  number_estimate: 50
+  size_m:
+    min_m: 0.3048
+    max_m: 0.3556
+  planned: true
+  source: ny-dec-stocking
+- waterbody: Cross River Reservoir Outlet
+  county: Westchester
+  town: Bedford
+  when:
+    date_text: March - third week
+  species_text: Rainbow Trout
+  number_estimate: 560
+  size_m:
+    min_m: 0.2286
+    max_m: 0.254
+  planned: true
+  source: ny-dec-stocking
+- waterbody: Stone Hill River
+  county: Westchester
+  town: Bedford
+  when:
+    date_text: March - third week
+  species_text: Brown Trout
+  number_estimate: 60
+  size_m:
+    min_m: 0.3048
+    max_m: 0.381
+  planned: true
+  source: ny-dec-stocking
+- waterbody: Stone Hill River
+  county: Westchester
+  town: Bedford
+  when:
+    date_text: March - third week
+  species_text: Brown Trout
+  number_estimate: 550
+  size_m:
+    min_m: 0.2286
+    max_m: 0.254
+  planned: true
+  source: ny-dec-stocking

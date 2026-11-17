@@ -1,0 +1,74 @@
+---
+source: crates/underbite-providers/src/stocking/socrata_ny.rs
+expression: events
+---
+- waterbody: Kensico Reservoir
+  county: Westchester
+  town: Harrison
+  when:
+    month:
+      year: 2025
+      month: 4
+  species_text: Brown Trout
+  number_estimate: 8920
+  size_m:
+    min_m: 0.17018
+    max_m: 0.17018
+  planned: false
+  source: ny-dec-stocking
+- waterbody: Pocantico River
+  county: Westchester
+  town: Mount Pleasant
+  when:
+    month:
+      year: 2025
+      month: 4
+  species_text: Brown Trout
+  number_estimate: 570
+  size_m:
+    min_m: 0.1778
+    max_m: 0.1778
+  planned: false
+  source: ny-dec-stocking
+- waterbody: Dogwood Pond
+  county: Westchester
+  town: Cortlandt
+  when:
+    month:
+      year: 2025
+      month: 4
+  species_text: Rainbow Trout
+  number_estimate: 370
+  size_m:
+    min_m: 0.22352
+    max_m: 0.22352
+  planned: false
+  source: ny-dec-stocking
+- waterbody: Dogwood Pond
+  county: Westchester
+  town: Cortlandt
+  when:
+    month:
+      year: 2025
+      month: 4
+  species_text: Brown Trout
+  number_estimate: 220
+  size_m:
+    min_m: 0.1778
+    max_m: 0.1778
+  planned: false
+  source: ny-dec-stocking
+- waterbody: Pocantico River
+  county: Westchester
+  town: Mount Pleasant
+  when:
+    month:
+      year: 2025
+      month: 4
+  species_text: Brown Trout
+  number_estimate: 60
+  size_m:
+    min_m: 0.36068
+    max_m: 0.36068
+  planned: false
+  source: ny-dec-stocking

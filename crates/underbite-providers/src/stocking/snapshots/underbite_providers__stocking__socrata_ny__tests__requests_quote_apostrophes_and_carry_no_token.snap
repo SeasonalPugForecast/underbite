@@ -1,0 +1,26 @@
+---
+source: crates/underbite-providers/src/stocking/socrata_ny.rs
+expression: reqs
+---
+[
+    StockingRequest {
+        url: "https://data.ny.gov/resource/e52k-ymww.json?$where=upper%28county%29%3D%27ST%20LAWRENCE%27%20AND%20upper%28waterbody%29%20in%20%28%27TILLY%20FOSTER%27%27S%20BROOK%27,%27DOGWOOD%20POND%27%29&$order=year%20DESC,waterbody,month&$limit=1000",
+        headers: [
+            (
+                "Accept",
+                "application/json",
+            ),
+        ],
+        dataset: Actual,
+    },
+    StockingRequest {
+        url: "https://data.ny.gov/resource/d9y2-n436.json?$where=upper%28county%29%3D%27ST%20LAWRENCE%27%20AND%20upper%28waterbody%29%20in%20%28%27TILLY%20FOSTER%27%27S%20BROOK%27,%27DOGWOOD%20POND%27%29&$order=waterbody,date&$limit=1000",
+        headers: [
+            (
+                "Accept",
+                "application/json",
+            ),
+        ],
+        dataset: Planned,
+    },
+]
