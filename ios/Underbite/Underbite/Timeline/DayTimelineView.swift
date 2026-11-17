@@ -392,15 +392,17 @@ private struct LaneLabels: View {
                 let text = context.resolve(
                     Text(marker.label).font(.caption2.weight(.medium))
                         .foregroundStyle(Color.primary))
-                let width = text.measure(in: size).width
+                let measured = text.measure(in: size)
+                let width = measured.width
                 var left = x + 4
                 if left + width > high { left = x - 4 - width }
                 guard left >= lastEnd + 4, left >= low, left + width <= high else { continue }
-                let box = CGRect(x: left - 2, y: 1, width: width + 4, height: 15)
+                // The backing is as tall as the words at the text size in use.
+                let box = CGRect(x: left - 2, y: 1, width: width + 4, height: measured.height + 2)
                 context.fill(
                     Path(roundedRect: box, cornerRadius: 3),
-                    with: .color(Color(.secondarySystemGroupedBackground).opacity(0.85)))
-                context.draw(text, at: CGPoint(x: left, y: 8), anchor: .leading)
+                    with: .color(Color(.secondarySystemGroupedBackground).opacity(0.9)))
+                context.draw(text, at: CGPoint(x: left, y: box.midY), anchor: .leading)
                 lastEnd = left + width
             }
         }

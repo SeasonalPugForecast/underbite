@@ -314,10 +314,11 @@ struct SpotStatusLine: View {
             : AnyLayout(HStackLayout(spacing: 6))
         layout {
             if status?.refreshing == true { ProgressView().controlSize(.mini) }
+            // Whole at every text size: a narrow column would otherwise cut it short.
             if let updated = status?.updated {
-                Text(updated)
+                Text(updated).fixedSize(horizontal: false, vertical: true)
             } else if status?.refreshing != true {
-                Text("Not updated yet")
+                Text("Not updated yet").fixedSize(horizontal: false, vertical: true)
             }
             if let error = status?.error {
                 Text(error).foregroundStyle(Palette.warning)
