@@ -315,7 +315,8 @@ macro_rules! tva {
     };
 }
 
-/// TVA reservoirs, as links. Positions are the dams to about a kilometre.
+/// TVA reservoirs, as links. Positions are approximate and not yet checked against TVA's own
+/// data; they only pick the nearest link.
 pub static LINK_PROJECTS: &[LinkProject] = &[
     tva!("Norris Lake", "TN", 36.2247, -84.0922),
     tva!("Douglas Lake", "TN", 36.0153, -83.5372),
