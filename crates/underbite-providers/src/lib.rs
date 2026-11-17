@@ -10,6 +10,8 @@ pub(crate) mod testutil;
 
 pub mod blooms;
 pub mod coops;
+pub mod dfo;
+pub mod eccc;
 pub mod encdirect;
 pub mod erddap;
 pub mod glerl;
