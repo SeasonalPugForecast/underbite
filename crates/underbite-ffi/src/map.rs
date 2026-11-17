@@ -194,7 +194,7 @@ pub enum LayerDraw {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, uniffi::Enum)]
 pub enum LayerDates {
     /// The layer has no date.
-    None,
+    Undated,
     /// One field per UTC day: a date picker.
     Daily,
     /// One field per hour: a time slider.
@@ -206,7 +206,7 @@ pub enum LayerDates {
 impl From<DateMode> for LayerDates {
     fn from(mode: DateMode) -> Self {
         match mode {
-            DateMode::None => Self::None,
+            DateMode::None => Self::Undated,
             DateMode::Daily => Self::Daily,
             DateMode::Hourly => Self::Hourly,
             DateMode::Frames => Self::Frames,

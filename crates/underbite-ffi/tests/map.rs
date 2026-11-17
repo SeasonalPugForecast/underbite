@@ -51,6 +51,7 @@ fn the_catalogue_is_worded_with_credits_and_notices() {
     let by_id = |id: &str| layers.iter().find(|l| l.id == id).unwrap();
     let chart = by_id("noaa-chart");
     assert_eq!(chart.title, "NOAA chart");
+    assert_eq!(chart.dates, LayerDates::Undated);
     assert_eq!(chart.notice.as_deref(), Some("Not for navigation."));
     assert!(chart.credit.contains("Not to be used for navigation."));
     let sst = by_id("sst");
