@@ -834,10 +834,11 @@ const ACCESSIBILITY_DEFAULTS: [&str; 3] = [
     "AutomationEnabled",
 ];
 
-/// On the Mac: for each of `devices` (a label and a simulator), boots it in the light
-/// appearance, switches its accessibility on and runs the UI tests (`only`: one class or test
-/// of them), then shuts it down so the next one runs alone. Every device is tested even when
-/// one fails; the line fails if any did, and says which.
+/// On the Mac: for each of `devices` (a label and a simulator), switches its accessibility on,
+/// boots it again so it starts with them (a switch changed under a running simulator can leave
+/// the runner unable to set accessibility up), sets the light appearance and runs the UI tests
+/// (`only`: one class or test of them), then shuts it down so the next one runs alone. Every
+/// device is tested even when one fails; the line fails if any did, and says which.
 fn ui_tests(remote: &Remote, devices: &[(&str, &str)], only: Option<&str>) -> String {
     let target = only.map_or_else(|| UI_TESTS.to_string(), |t| format!("{UI_TESTS}/{t}"));
     let mut steps = vec!["failed=".to_string()];
@@ -853,9 +854,12 @@ fn ui_tests(remote: &Remote, devices: &[(&str, &str)], only: Option<&str>) -> St
             })
             .collect::<Vec<_>>()
             .join("; ");
+        let boot = format!(
+            "xcrun simctl boot {sim} 2>/dev/null || true; xcrun simctl bootstatus {sim} -b >/dev/null"
+        );
         steps.push(format!(
-            "xcrun simctl boot {sim} 2>/dev/null || true; xcrun simctl bootstatus {sim} -b >/dev/null; \
-             xcrun simctl ui {sim} appearance light; {defaults}; echo \"UI tests on {label}\"; \
+            "{boot}; {defaults}; xcrun simctl shutdown {sim}; {boot}; \
+             xcrun simctl ui {sim} appearance light; echo \"UI tests on {label}\"; \
              xcodebuild test -project {PROJECT} -scheme {SCHEME} {} -destination {destination} \
              -derivedDataPath {DERIVED} || failed=\"$failed {label}\"; \
              xcrun simctl shutdown {sim} 2>/dev/null || true",
@@ -1842,6 +1846,18 @@ mod tests {
                 let at = line[boot..test].find(&write).map(|i| i + boot);
                 assert!(at.is_some(), "{key} set before the tests: {line}");
             }
+            // Then booted again, so the simulator starts with them, before the tests.
+            let last_write = line[boot..test].rfind("defaults write").unwrap() + boot;
+            let restart = line[last_write..test]
+                .find(&format!(
+                    "xcrun simctl shutdown {sim}; xcrun simctl boot {sim}"
+                ))
+                .map(|i| i + last_write);
+            assert!(restart.is_some(), "booted again after the writes: {line}");
+            assert!(
+                line[restart.unwrap()..test].contains(&format!("xcrun simctl bootstatus {sim} -b")),
+                "{line}"
+            );
             assert!(
                 line[test..].starts_with(&format!(
                     "xcodebuild test -project {PROJECT} -scheme {SCHEME} \
