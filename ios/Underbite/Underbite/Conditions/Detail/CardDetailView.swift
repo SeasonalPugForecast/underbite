@@ -5,6 +5,7 @@ import UnderbiteKit
 /// words, the view's own sections of label and value rows and every credit with its link. All
 /// text is the view model's; the charts only lay it out.
 struct CardDetailView: View {
+    @Environment(SpotStore.self) private var store
     let card: ViewModel.Card
 
     var body: some View {
@@ -36,7 +37,7 @@ struct CardDetailView: View {
 
     /// The card's charts, then its notices ("Not for navigation.") right under them.
     @ViewBuilder private func charts(_ chrome: ViewModel.CardChrome) -> some View {
-        let blocks = CardCharts.blocks(for: card)
+        let blocks = CardCharts.blocks(for: card, settingsJSON: store.settingsJSON)
         if !blocks.isEmpty {
             Section {
                 ForEach(blocks) { block in
@@ -283,7 +284,7 @@ struct CardDetailView: View {
         ForEach(full.alerts) { alert in
             Section(alert.event) {
                 if let headline = alert.headline { Text(headline).font(.headline) }
-                if let span = AlertsBanner.span(alert) { Text(span).foregroundStyle(.readableSecondary) }
+                if let span = alert.span { Text(span).foregroundStyle(.readableSecondary) }
                 Text(alert.severityLabel).foregroundStyle(.readableSecondary)
                 if let description = alert.description { Text(description) }
                 if let instruction = alert.instruction { Text(instruction) }

@@ -307,7 +307,8 @@ private struct PageProblemView: View {
 
 /// Marine alerts and advisories at the top of the page: the event, the National Weather
 /// Service's own headline and times, whole. Safety text, never in Luna's voice; the full
-/// description and instruction are one tap away.
+/// description and instruction are one tap away. VoiceOver reads the banner as it shows: each
+/// alert's headline, span and severity, then the notices and the credits.
 struct AlertsBanner: View {
     let card: ViewModel.AlertsCard
 
@@ -321,7 +322,7 @@ struct AlertsBanner: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(alert.headline ?? alert.event).font(.headline)
                         // Primary on the tinted banner, where secondary text would be faint.
-                        if let span = Self.span(alert) {
+                        if let span = alert.span {
                             Text(span).font(.subheadline)
                         }
                         Text(alert.severityLabel).font(.caption.weight(.medium))
@@ -347,19 +348,9 @@ struct AlertsBanner: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(Self.tint(card.full.alerts.first?.severity ?? "").opacity(0.5))
         )
+        // Every visible line, in order, as one element.
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text(card.chrome.accessibility))
-    }
-
-    /// The span the alert is in effect, as the view wrote the times.
-    static func span(_ alert: ViewModel.Alert) -> String? {
-        let end = alert.ends ?? alert.expires
-        switch (alert.onset, end) {
-        case (let start?, let end?): return "\(start) – \(end)"
-        case (let start?, nil): return start
-        case (nil, let end?): return end
-        case (nil, nil): return nil
-        }
+        .accessibilityIdentifier("alerts-banner")
     }
 
     /// A warning's shape as well as its colour: an octagon for the severe ones.
