@@ -773,8 +773,14 @@ pub const MAX_STORE_VALUES: usize = 2_000_000;
 pub const MAX_STORE_BLOCKS: usize = 512;
 
 /// The most block requests one view asks for, nearest to the view's centre first. A phone at a
-/// layer's shallowest zoom needs about a dozen; a larger screen gets its middle first.
+/// layer's shallowest zoom needs about a dozen; a larger screen gets its middle first. An
+/// overview, when one is asked for, comes on top of these.
 pub const MAX_REQUESTS_PER_VIEW: usize = 24;
+
+/// A raster view gets an overview (one coarse block over all of it) only when it still needs at
+/// least this many of its own blocks: the overview costs one request, which pays off only when it
+/// stands in for several.
+pub const OVERVIEW_MIN_MISSING: usize = 4;
 
 /// How long a block asked for at the newest time (`(last)`) is kept before it is asked again:
 /// the newest time moves on.
@@ -960,6 +966,15 @@ pub(crate) enum DemId {
     },
 }
 
+/// Whether a block fetched at `fetched` may still be used at `now`: a block of the newest time
+/// for [`LATEST_MAX_AGE_S`], a dated one by [`grid::block_is_fresh`].
+fn block_fresh(id: &BlockId, fetched: UnixTime, now: UnixTime) -> bool {
+    match id.time {
+        Some(t) => grid::block_is_fresh(&id.dataset, UnixTime(t), fetched, now),
+        None => (0..LATEST_MAX_AGE_S).contains(&now.0.saturating_sub(fetched.0)),
+    }
+}
+
 /// A stored block: one grid per variable of its dataset.
 #[derive(Debug)]
 struct Stored {
@@ -1040,6 +1055,23 @@ impl Blocks {
         }
         found.sort_by_key(|(stride, _)| *stride);
         found.into_iter().map(|(_, g)| g).collect()
+    }
+
+    /// Whether the blocks held for `id`'s layer, dataset and time at `id`'s stride or finer
+    /// already cover `view`, fresh or not (a stale block is drawn until it is fetched again).
+    fn covers(&self, id: &BlockId, view: Bbox, step: f64) -> bool {
+        let parts: Vec<Bbox> = self
+            .stored
+            .keys()
+            .filter(|k| {
+                k.layer == id.layer
+                    && k.dataset == id.dataset
+                    && k.time == id.time
+                    && k.block.stride <= id.block.stride
+            })
+            .map(|k| k.block.bounds(step))
+            .collect();
+        grid::area_covered(view, &parts)
     }
 
     /// Drops the least recently used blocks, elevation blocks included, until `values` more
@@ -1242,6 +1274,14 @@ impl GridStore {
     /// newest). The view is `west`, `south`, `east`, `north` in degrees at `zoom`; above the
     /// layer's shallowest zoom it needs nothing. The view's dataset and time become what the
     /// store draws and inspects for the layer.
+    ///
+    /// A raster layer's list starts with an overview when the view still needs at least
+    /// [`OVERVIEW_MIN_MISSING`] blocks: one coarse block over the whole view
+    /// ([`grid::overview_block`], about 60 cells across), keyed like any block, so that the
+    /// layer fills the screen after one request; the finer blocks are drawn over it as they
+    /// arrive. None is asked for while the blocks held at its stride or finer cover the view.
+    /// Ask again after adding blocks (from a cache, say): the overview drops out once they cover
+    /// the view.
     #[allow(clippy::too_many_arguments)] // a view is four edges and a zoom
     #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
     pub fn grid_requests(
@@ -1277,43 +1317,57 @@ impl GridStore {
         } else {
             LATEST_RESPONSE_AGE_S
         };
+        let request_for = |id: &BlockId| -> Result<GridRequest, MapError> {
+            let request = erddap::block_request(&source, grid_time, id.block)
+                .map_err(|e| invalid(e.to_string()))?;
+            Ok(GridRequest {
+                key: id.key(),
+                node: node_name(request.node),
+                request: get(request.url, max_age),
+            })
+        };
+        let id_of = |block: Block| BlockId {
+            layer: l.id.to_owned(),
+            dataset: spec.dataset.to_owned(),
+            time,
+            block,
+        };
         let mut out = Vec::new();
+        let mut missing = 0;
         let mut store = self.lock();
         store
             .selection
             .insert(l.id.to_owned(), (spec.dataset.to_owned(), time));
-        for block in blocks {
-            if out.len() >= MAX_REQUESTS_PER_VIEW {
-                break;
-            }
-            let id = BlockId {
-                layer: l.id.to_owned(),
-                dataset: spec.dataset.to_owned(),
-                time,
-                block,
-            };
-            let fresh = store.stored.get(&id).is_some_and(|s| match time {
-                Some(t) => grid::block_is_fresh(spec.dataset, UnixTime(t), s.fetched, now),
-                None => (0..LATEST_MAX_AGE_S).contains(&(now.0.saturating_sub(s.fetched.0))),
-            });
+        for block in &blocks {
+            let id = id_of(*block);
+            let fresh = store
+                .stored
+                .get(&id)
+                .is_some_and(|s| block_fresh(&id, s.fetched, now));
             if fresh {
                 continue;
             }
-            let request = erddap::block_request(&source, grid_time, block)
-                .map_err(|e| invalid(e.to_string()))?;
-            out.push(GridRequest {
-                key: id.key(),
-                node: node_name(request.node),
-                request: get(request.url, max_age),
-            });
+            missing += 1;
+            if out.len() < MAX_REQUESTS_PER_VIEW {
+                out.push(request_for(&id)?);
+            }
+        }
+        let raster = l.grid().map(|g| g.draw) == Some(GridDraw::Raster);
+        if raster
+            && missing >= OVERVIEW_MIN_MISSING
+            && let Some(overview) = grid::overview_block(&source, view, zoom).map(id_of)
+            && !store.covers(&overview, view, source.native_step_deg)
+        {
+            out.insert(0, request_for(&overview)?);
         }
         Ok(out)
     }
 
     /// Stores the response to the request under `key` (from [`GridStore::grid_requests`]),
-    /// fetched at `now`. ERDDAP's failures come back as errors: [`MapError::NoData`] for a time
-    /// or box without data, [`MapError::RetryLater`] for a busy server; record the status with
-    /// the [`GridPacer`] too.
+    /// fetched at `now` (for a body kept on the device, the time it was fetched, so that it goes
+    /// stale when it should; see [`grid_block_is_fresh`]). ERDDAP's failures come back as errors:
+    /// [`MapError::NoData`] for a time or box without data, [`MapError::RetryLater`] for a busy
+    /// server; record the status with the [`GridPacer`] too.
     #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
     pub fn add_grid(&self, key: String, response: HostResponse, now: i64) -> Result<(), MapError> {
         let (id, l, spec) = BlockId::parse(&key)?;
@@ -1499,7 +1553,12 @@ impl GridStore {
                 continue;
             };
             let arrows = l.grid().map(|g| g.draw) == Some(GridDraw::Arrows);
-            let found = shared.iter().find_map(|grids| {
+            // The first block that covers the point decides, as on the tile: a finer block's
+            // land is not read from a coarser block (an overview) under it.
+            let covering = shared
+                .iter()
+                .find(|grids| grids.first().is_some_and(|g| g.covers(at)));
+            let found = covering.and_then(|grids| {
                 let value = if arrows {
                     let (u, v) = (grids.first()?, grids.get(1)?);
                     let (east, north) = (
@@ -1543,6 +1602,20 @@ impl GridStore {
     pub fn value_count(&self) -> u64 {
         self.lock().values as u64
     }
+}
+
+/// Whether the block under `key` (from [`GridStore::grid_requests`]), fetched at `fetched_at`,
+/// may still be used at `now`, by the rule [`GridStore::grid_requests`] uses for the blocks it
+/// holds: a body kept on the device is handed to [`GridStore::add_grid`] (with `fetched_at` as
+/// its time) only while this holds, and fetched again otherwise.
+///
+/// # Errors
+/// [`MapError::Invalid`] for a key that is not a grid key.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn grid_block_is_fresh(key: String, fetched_at: i64, now: i64) -> Result<bool, MapError> {
+    let (id, _, _) = BlockId::parse(&key)?;
+    Ok(block_fresh(&id, UnixTime(fetched_at), UnixTime(now)))
 }
 
 /// The request for the times a gridded layer's dataset holds (`dataset`: none for the primary):

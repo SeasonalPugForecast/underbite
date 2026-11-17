@@ -8,10 +8,11 @@ use serde_json::{Value, json};
 use underbite_ffi::fetch::{HostMethod, HostResponse};
 use underbite_ffi::map::{
     GridPacer, GridStore, LayerDates, LayerDraw, MAX_REQUESTS_PER_VIEW, MAX_STORE_BLOCKS,
-    MAX_STORE_VALUES, MapError, MapPoint, TileOutcome, ValueRange, classify_tile,
-    gibs_default_date, map_catalogue, map_fitted_caption, map_legend, map_presets, map_range,
-    map_tile_size, measure, parse_time_axis, previous_date, radar_covers, radar_frame_request,
-    radar_frames, radar_latest_valid, radar_meta_request, tile_request, time_axis_request,
+    MAX_STORE_VALUES, MapError, MapPoint, OVERVIEW_MIN_MISSING, TileOutcome, ValueRange,
+    classify_tile, gibs_default_date, grid_block_is_fresh, map_catalogue, map_fitted_caption,
+    map_legend, map_presets, map_range, map_tile_size, measure, parse_time_axis, previous_date,
+    radar_covers, radar_frame_request, radar_frames, radar_latest_valid, radar_meta_request,
+    tile_request, time_axis_request,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -527,6 +528,205 @@ fn a_block_from_any_time_never_overflows_its_age() {
     // A clock far past the fetch asks for the newest block again.
     let again = harbor(&store, "sst", None, None, i64::MAX).unwrap();
     assert!(again.iter().any(|r| r.key == requests[0].key));
+}
+
+/// A phone's view of the New York Bight at about zoom 7: six by nine 1 degree MUR blocks.
+fn bight(
+    store: &GridStore,
+    layer: &str,
+    now: i64,
+) -> Result<Vec<underbite_ffi::map::GridRequest>, MapError> {
+    store.grid_requests(
+        layer.into(),
+        None,
+        None,
+        -74.35,
+        35.65,
+        -69.65,
+        43.55,
+        6.9,
+        now,
+    )
+}
+
+/// An ERDDAP `.json` table of MUR SST at `value` on a grid of `step` degrees from `south`,
+/// `west`, `rows` by `cols` (hand-made).
+fn mur_table(south: f64, west: f64, step: f64, rows: usize, cols: usize, value: f64) -> Vec<u8> {
+    let mut cells = Vec::new();
+    for i in 0..rows {
+        for j in 0..cols {
+            let (lat, lon) = (south + step * i as f64, west + step * j as f64);
+            cells.push(json!(["2026-11-07T09:00:00Z", lat, lon, value]));
+        }
+    }
+    let table = json!({"table": {
+        "columnNames": ["time", "latitude", "longitude", "analysed_sst"],
+        "columnTypes": ["String", "float", "float", "double"],
+        "columnUnits": ["UTC", "degrees_north", "degrees_east", "degree_C"],
+        "rows": cells,
+    }});
+    serde_json::to_vec(&table).unwrap()
+}
+
+#[test]
+fn a_wide_view_asks_for_an_overview_first() {
+    let store = GridStore::new();
+    let requests = bight(&store, "sst", NOW).unwrap();
+    // One coarse block over the whole view, then the 24 blocks nearest the middle.
+    assert_eq!(requests.len(), MAX_REQUESTS_PER_VIEW + 1);
+    let overview = &requests[0];
+    assert_eq!(overview.key, "sst/jplMURSST41/last/34/-76/14");
+    assert_eq!(overview.node, "pfeg");
+    assert!(
+        overview
+            .request
+            .url
+            .ends_with("analysed_sst%5B(last)%5D%5B(34.0):14:(43.99)%5D%5B(-76.0):14:(-66.01)%5D"),
+        "{}",
+        overview.request.url
+    );
+    assert!(requests[1..].iter().all(|r| r.key.ends_with("/4")));
+
+    // Once held, it is not asked again; the fine blocks still are.
+    store
+        .add_grid(
+            overview.key.clone(),
+            response(200, mur_table(34.0, -76.0, 0.14, 72, 72, 18.0)),
+            NOW,
+        )
+        .unwrap();
+    let again = bight(&store, "sst", NOW + 60).unwrap();
+    assert_eq!(again.len(), MAX_REQUESTS_PER_VIEW);
+    assert!(again.iter().all(|r| r.key.ends_with("/4")));
+    // A stale overview still draws, so it is not asked again either.
+    let later = bight(&store, "sst", NOW + 4 * 3_600).unwrap();
+    assert!(later.iter().all(|r| r.key.ends_with("/4")));
+
+    // The tile shows the overview where no fine block is held.
+    let png = store
+        .render_tile("sst".into(), None, None, None, 7, 37, 48)
+        .unwrap();
+    assert!(png.is_some());
+}
+
+#[test]
+fn fine_blocks_that_cover_the_view_need_no_overview() {
+    let store = GridStore::new();
+    // A view of six 1 degree blocks at zoom 9.
+    let view = |store: &GridStore, now: i64| {
+        store
+            .grid_requests("sst".into(), None, None, -74.5, 40.2, -72.5, 41.8, 9.0, now)
+            .unwrap()
+    };
+    let first = view(&store, NOW);
+    assert_eq!(first.len(), 7, "{first:?}");
+    let fine: Vec<String> = first[1..].iter().map(|r| r.key.clone()).collect();
+    assert!(fine.iter().all(|k| k.ends_with("/1")), "{fine:?}");
+    // With three fine blocks held, three are missing: too few for an overview.
+    for key in &fine[..3] {
+        store
+            .add_grid(key.clone(), response(200, mur()), NOW)
+            .unwrap();
+    }
+    let rest = view(&store, NOW);
+    assert_eq!(rest.len(), 3);
+    const { assert!(OVERVIEW_MIN_MISSING > 3) };
+    assert!(rest.iter().all(|r| r.key.ends_with("/1")));
+    for key in &fine[3..] {
+        store
+            .add_grid(key.clone(), response(200, mur()), NOW)
+            .unwrap();
+    }
+    assert_eq!(view(&store, NOW), []);
+    // Stale fine blocks still cover the view: they are fetched again without an overview.
+    let stale = view(&store, NOW + 4 * 3_600);
+    assert_eq!(stale.len(), 6);
+    assert!(stale.iter().all(|r| r.key.ends_with("/1")));
+}
+
+#[test]
+fn arrows_never_get_an_overview() {
+    let store = GridStore::new();
+    let requests = bight(&store, "hf-radar-currents", NOW).unwrap();
+    assert!(requests.len() >= OVERVIEW_MIN_MISSING);
+    // One stride for all: the view's own blocks.
+    let stride = |key: &str| key.rsplit('/').next().unwrap().to_owned();
+    let first = stride(&requests[0].key);
+    assert!(requests.iter().all(|r| stride(&r.key) == first));
+}
+
+#[test]
+fn a_kept_block_is_fresh_by_the_stores_rule() {
+    let last = "sst/jplMURSST41/last/40/-74/1";
+    assert_eq!(grid_block_is_fresh(last.into(), NOW, NOW + 60), Ok(true));
+    assert_eq!(
+        grid_block_is_fresh(last.into(), NOW, NOW + 3 * 3_600),
+        Ok(false)
+    );
+    // A clock that went back does not keep it.
+    assert_eq!(grid_block_is_fresh(last.into(), NOW, NOW - 60), Ok(false));
+    // A dated MUR day is revised for a week: kept a day while recent, for good after.
+    let day = 1_794_042_000;
+    let dated = format!("sst/jplMURSST41/{day}/40/-74/1");
+    assert_eq!(
+        grid_block_is_fresh(dated.clone(), day + 86_400, day + 2 * 86_400 - 1),
+        Ok(true)
+    );
+    assert_eq!(
+        grid_block_is_fresh(dated.clone(), day + 86_400, day + 2 * 86_400),
+        Ok(false)
+    );
+    assert_eq!(
+        grid_block_is_fresh(dated, day + 8 * 86_400, day + 400 * 86_400),
+        Ok(true)
+    );
+    assert!(matches!(
+        grid_block_is_fresh("sst/jplMURSST41/last/40".into(), NOW, NOW),
+        Err(MapError::Invalid { .. })
+    ));
+    // The store's own rule: a block added with its fetch time is not asked for while fresh.
+    let store = GridStore::new();
+    let key = harbor(&store, "sst", None, None, NOW).unwrap()[0]
+        .key
+        .clone();
+    let fetched = NOW - 3 * 3_600 + 1;
+    store
+        .add_grid(key.clone(), response(200, mur()), fetched)
+        .unwrap();
+    assert_eq!(grid_block_is_fresh(key.clone(), fetched, NOW), Ok(true));
+    let asked = harbor(&store, "sst", None, None, NOW).unwrap();
+    assert!(asked.iter().all(|r| r.key != key));
+    assert_eq!(
+        grid_block_is_fresh(key.clone(), fetched, NOW + 1),
+        Ok(false)
+    );
+    let asked = harbor(&store, "sst", None, None, NOW + 1).unwrap();
+    assert!(asked.iter().any(|r| r.key == key));
+}
+
+#[test]
+fn the_inspector_reads_land_from_the_fine_block_over_an_overview() {
+    let store = store_with_mur();
+    // A coarse overview with a value everywhere, the fine block's land included.
+    store
+        .add_grid(
+            "sst/jplMURSST41/last/34/-76/14".into(),
+            response(200, mur_table(34.0, -76.0, 0.14, 72, 72, 25.0)),
+            NOW,
+        )
+        .unwrap();
+    let read = |lat: f64, lon: f64| {
+        store
+            .inspect(lat, lon, vec!["sst".into()], plain(), "UTC".into())
+            .unwrap()[0]
+            .value_text
+            .clone()
+    };
+    // Land in the fine block stays land; its water is its own value.
+    assert_eq!(read(40.0, -74.2), "No value here");
+    assert_eq!(read(40.5, -73.5), "61 °F");
+    // Beyond the fine block the overview answers.
+    assert_eq!(read(39.0, -74.0), "77 °F");
 }
 
 #[test]
