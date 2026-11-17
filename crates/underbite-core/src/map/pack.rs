@@ -26,20 +26,20 @@
 //!   of day varies, so a day alone names no time; without its axis a layer holds its newest time
 //!   only. The primary dataset is planned; a fallback dataset is not.
 //! - [`DEM_LAYER`] as elevation areas of the NCEI DEM, not tiles.
-//!
-//! # Keys
-//!
-//! An item's key is the one the map's stores use for the same download, so a pack's data is
-//! what the map reads: `{layer}/{date or latest}/{z}/{x}/{y}` for a tile,
-//! `{layer}/{dataset}/{time or last}/{south}/{west}/{stride}` for a grid block (Unix seconds),
-//! `dem/area/{west}/{south}/{east}/{north}/{cell}` for an elevation area (millionths of a
-//! degree).
 //! - Not packed: base maps Apple draws, station and spot markers, state feature layers, ENC
 //!   points, radar frames (minutes old) and layers with no source. They are listed in
 //!   [`PackPlan::skipped`] with the reason.
 //!
 //! The box is clamped to Web Mercator's latitude limit for tiles and to the poles for grids; a
 //! box across the antimeridian (west east of east) is split into two.
+//!
+//! # Keys
+//!
+//! A grid block and an elevation area are keyed as the map's grid store keys the same
+//! download, so a pack's response is what the map reads:
+//! `{layer}/{dataset}/{time or last}/{south}/{west}/{stride}` for a block (Unix seconds) and
+//! `dem/area/{west}/{south}/{east}/{north}/{cell}` for an area (millionths of a degree). A tile
+//! is `{layer}/{date or latest}/{z}/{x}/{y}`.
 
 use std::collections::{BTreeMap, BTreeSet};
 
