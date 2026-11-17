@@ -26,6 +26,8 @@ request URL and the recording date:
 - [regulations](raw/regulations/README.md)
 - [state-maps](raw/state-maps/README.md)
 - [fishbase](raw/fishbase/README.md)
+- [dfo-iwls](raw/dfo-iwls/README.md)
+- [eccc](raw/eccc/README.md)
 
 ## Conventions
 
