@@ -9,7 +9,7 @@ use crate::map::tiles::{
     GibsSpec, TileService, gebco_wms_url, gibs_tile_url, ncds_wms_url, ncds_wmts_url,
     radar_tile_url,
 };
-use crate::map::{ErddapNode, GridSource, LayerId, TileKey};
+use crate::map::{Bbox, ErddapNode, GridSource, LayerId, TileKey};
 use crate::time::LocalDate;
 
 /// The drawer sections.
@@ -17,6 +17,8 @@ use crate::time::LocalDate;
 pub enum Group {
     Base,
     Depth,
+    /// Reefs and other bottom structure.
+    Structure,
     Water,
     Weather,
     Stations,
@@ -120,6 +122,30 @@ pub enum StationKind {
     ForecastGauge,
 }
 
+/// What a state agency's feature layer holds.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FeatureKind {
+    /// Depth contour lines of surveyed lakes.
+    LakeContours,
+    /// Artificial reef sites.
+    ArtificialReefs,
+}
+
+/// A state agency's vector layer: the state, what the source says about its depths and terms, and
+/// where it has data.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FeatureLayer {
+    pub state: &'static str,
+    pub kind: FeatureKind,
+    /// A box around the source's data; the layer asks nothing outside it.
+    pub coverage: Bbox,
+    /// What the depths are measured from, as the source states it. Never the DEM's "approximate
+    /// depth": contours are below a lake surface, not a datum.
+    pub reference: &'static str,
+    /// The source's terms, as far as they are known.
+    pub licence: &'static str,
+}
+
 /// What a layer is made of.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum LayerKind {
@@ -133,6 +159,8 @@ pub enum LayerKind {
     Stations(StationKind),
     /// The user's saved spots.
     Spots,
+    /// Lines or points a state agency publishes, drawn on the device.
+    Features(FeatureLayer),
     /// A layer with no data source yet.
     Unsourced,
 }
@@ -231,6 +259,11 @@ const NCDS_CREDIT: &str =
 /// The GEBCO credit as its WMS states it for the 2026 grid; a release changes the year.
 const GEBCO_CREDIT: &str = "Imagery reproduced from the GEBCO_2026 Grid, GEBCO Compilation Group (2026) GEBCO 2026 Grid (doi:10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa)";
 const VIIRS_CREDIT: &str = "Ocean colour: NOAA CoastWatch / NOAA STAR VIIRS";
+const IN_CONTOURS_CREDIT: &str =
+    "Lake contours: Indiana DNR, Division of Fish and Wildlife. Not for navigation.";
+const MN_CONTOURS_CREDIT: &str =
+    "Lake contours: Minnesota Department of Natural Resources (MNDNR). Not for navigation.";
+const NY_REEFS_CREDIT: &str = "Artificial reefs: New York State Department of Environmental Conservation. Not for navigation.";
 const NO_SOURCE: Availability = Availability::Unavailable {
     reason: "no source yet",
 };
@@ -400,6 +433,28 @@ const fn gibs_layer(
     l
 }
 
+/// The shallowest zoom the lake contours are drawn at: a lake is a few hundred metres across.
+const CONTOUR_MIN_ZOOM: u8 = 10;
+/// The shallowest zoom the reef sites are drawn at: sixteen sites along Long Island's shores.
+const REEF_MIN_ZOOM: u8 = 7;
+
+const fn feature_layer(
+    id: &'static str,
+    group: Group,
+    title: &'static str,
+    feature: FeatureLayer,
+    credit: &'static str,
+    min_zoom: u8,
+    legend: &'static str,
+) -> Layer {
+    let mut l = overlay(id, group, title, LayerKind::Features(feature), credit);
+    l.min_zoom = Some(min_zoom);
+    l.not_for_navigation = true;
+    l.default_opacity = 0.9;
+    l.legend = Some(legend);
+    l
+}
+
 /// The base maps, in the order the picker lists them.
 pub const BASES: [Layer; 4] = [
     base(
@@ -432,7 +487,7 @@ pub const BASES: [Layer; 4] = [
 ];
 
 /// The overlay layers in drawer order.
-pub const LAYERS: [Layer; 22] = [
+pub const LAYERS: [Layer; 25] = [
     {
         let mut l = overlay(
             "gebco-relief",
@@ -657,6 +712,69 @@ pub const LAYERS: [Layer; 22] = [
         l.default_opacity = 1.0;
         l
     },
+    feature_layer(
+        "lake-contours-in",
+        Group::Depth,
+        "Lake contours (Indiana)",
+        FeatureLayer {
+            state: "Indiana",
+            kind: FeatureKind::LakeContours,
+            // The service's extent: certain Indiana lakes, not all.
+            coverage: Bbox {
+                west: -87.53,
+                south: 37.99,
+                east: -84.80,
+                north: 41.77,
+            },
+            reference: "Feet below the lake surface; the contours of some lakes are adjusted to the lake's legal gauge level. Survey date per lake.",
+            licence: "Terms for the GIS layer are not stated; credit Indiana DNR, Division of Fish and Wildlife.",
+        },
+        IN_CONTOURS_CREDIT,
+        CONTOUR_MIN_ZOOM,
+        "Depth below the lake surface at survey",
+    ),
+    feature_layer(
+        "lake-contours-mn",
+        Group::Depth,
+        "Lake contours (Minnesota)",
+        FeatureLayer {
+            state: "Minnesota",
+            kind: FeatureKind::LakeContours,
+            // The state's extent: the layer holds selected lakes only.
+            coverage: Bbox {
+                west: -97.24,
+                south: 43.50,
+                east: -89.49,
+                north: 49.38,
+            },
+            reference: "Depth below the lake surface on the original lake map, in feet (unit per DNR DEM metadata, unconfirmed for the contour layer). Survey dates vary by lake.",
+            licence: "MNDNR must be acknowledged; the data may not be sold without MNDNR's written permission.",
+        },
+        MN_CONTOURS_CREDIT,
+        CONTOUR_MIN_ZOOM,
+        "Depth below the lake surface on the original map",
+    ),
+    feature_layer(
+        "artificial-reefs-ny",
+        Group::Structure,
+        "Artificial reefs (New York)",
+        FeatureLayer {
+            state: "New York",
+            kind: FeatureKind::ArtificialReefs,
+            // The corners of the sixteen listed sites.
+            coverage: Bbox {
+                west: -73.856_333,
+                south: 40.423_833,
+                east: -72.46,
+                north: 41.058_333,
+            },
+            reference: "Depths as NYSDEC lists them (minimum and maximum, in feet); no datum is stated. A site is the general area where material was placed.",
+            licence: "Terms are not stated; credit the New York State Department of Environmental Conservation.",
+        },
+        NY_REEFS_CREDIT,
+        REEF_MIN_ZOOM,
+        "General area of each reef site",
+    ),
 ];
 
 /// The layer or base with an id.
@@ -796,7 +914,7 @@ mod tests {
     /// The ids of the overlays as the configuration lists them (`KNOWN_LAYERS`), in drawer order.
     /// The configuration crate cannot be a dependency here, so it checks its own list against this
     /// one.
-    const OVERLAY_IDS: [&str; 22] = [
+    const OVERLAY_IDS: [&str; 25] = [
         "gebco-relief",
         "sst",
         "sst-imagery",
@@ -819,6 +937,9 @@ mod tests {
         "buoys",
         "nwps-gauges",
         "spots",
+        "lake-contours-in",
+        "lake-contours-mn",
+        "artificial-reefs-ny",
     ];
     const BASE_IDS: [&str; 4] = [
         "apple-standard",
@@ -1166,5 +1287,85 @@ mod tests {
         let spec: GibsSpec = MUR_GIBS;
         assert_eq!(spec.max_zoom, 7);
         assert_eq!(true_colour("X").max_zoom, 9);
+    }
+
+    #[test]
+    fn state_feature_layers_carry_their_sources_credit_terms_and_depth_reference() {
+        let feature = |id: &str| match find(id).unwrap().kind {
+            LayerKind::Features(f) => f,
+            other => panic!("{id}: {other:?}"),
+        };
+        for (id, group, kind, credit) in [
+            (
+                "lake-contours-in",
+                Group::Depth,
+                FeatureKind::LakeContours,
+                "Indiana DNR, Division of Fish and Wildlife",
+            ),
+            (
+                "lake-contours-mn",
+                Group::Depth,
+                FeatureKind::LakeContours,
+                "Minnesota Department of Natural Resources",
+            ),
+            (
+                "artificial-reefs-ny",
+                Group::Structure,
+                FeatureKind::ArtificialReefs,
+                "New York State Department of Environmental Conservation",
+            ),
+        ] {
+            let l = find(id).unwrap();
+            let f = feature(id);
+            assert_eq!(l.group, group, "{id}");
+            assert_eq!(f.kind, kind, "{id}");
+            assert!(l.credit.contains(credit), "{id}");
+            assert!(l.not_for_navigation, "{id}");
+            assert!(l.credit.contains("Not for navigation"), "{id}");
+            assert!(l.min_zoom.is_some(), "{id}");
+            assert_eq!(l.availability, Availability::Available, "{id}");
+            assert!(f.coverage.west < f.coverage.east, "{id}");
+            assert!(f.coverage.south < f.coverage.north, "{id}");
+            assert!(!f.licence.is_empty(), "{id}");
+            assert!(!f.reference.contains("pproximate depth"), "{id}");
+        }
+        assert!(
+            feature("lake-contours-in")
+                .reference
+                .contains("lake surface")
+        );
+        assert!(feature("lake-contours-in").reference.contains("gauge"));
+        assert!(
+            feature("lake-contours-mn")
+                .reference
+                .contains("unconfirmed")
+        );
+        assert!(
+            feature("lake-contours-mn")
+                .licence
+                .contains("MNDNR must be acknowledged")
+        );
+        assert!(feature("lake-contours-mn").licence.contains("sold"));
+        assert!(
+            feature("artificial-reefs-ny")
+                .reference
+                .contains("no datum")
+        );
+    }
+
+    #[test]
+    fn the_state_coverage_boxes_hold_the_recorded_data() {
+        let coverage = |id: &str| match find(id).unwrap().kind {
+            LayerKind::Features(f) => f.coverage,
+            other => panic!("{id}: {other:?}"),
+        };
+        let inside = |b: Bbox, lon: f64, lat: f64| {
+            (b.west..=b.east).contains(&lon) && (b.south..=b.north).contains(&lat)
+        };
+        // Crooked Creek Lake, Indiana; Pine Lake, Minnesota; two New York reef corners.
+        assert!(inside(coverage("lake-contours-in"), -86.2976, 39.1244));
+        assert!(inside(coverage("lake-contours-mn"), -93.07, 46.19));
+        assert!(inside(coverage("artificial-reefs-ny"), -73.7175, 40.5296));
+        assert!(inside(coverage("artificial-reefs-ny"), -72.46, 41.0));
     }
 }

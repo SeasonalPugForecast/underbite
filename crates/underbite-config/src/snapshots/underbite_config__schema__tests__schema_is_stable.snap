@@ -505,6 +505,18 @@ expression: json_schema()
             {
               "id": "spots",
               "shown": false
+            },
+            {
+              "id": "lake-contours-in",
+              "shown": false
+            },
+            {
+              "id": "lake-contours-mn",
+              "shown": false
+            },
+            {
+              "id": "artificial-reefs-ny",
+              "shown": false
             }
           ],
           "description": "The overlay layers in drawing order, first at the bottom.",
@@ -1301,6 +1313,18 @@ expression: json_schema()
           },
           {
             "id": "spots",
+            "shown": false
+          },
+          {
+            "id": "lake-contours-in",
+            "shown": false
+          },
+          {
+            "id": "lake-contours-mn",
+            "shown": false
+          },
+          {
+            "id": "artificial-reefs-ny",
             "shown": false
           }
         ],

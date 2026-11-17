@@ -22,7 +22,7 @@ pub const KNOWN_BASES: [&str; 4] = [
 
 /// The overlay layers in drawer order. The layer list of a settings file is completed from this
 /// when it is imported.
-pub const KNOWN_LAYERS: [&str; 22] = [
+pub const KNOWN_LAYERS: [&str; 25] = [
     "gebco-relief",
     "sst",
     "sst-imagery",
@@ -45,6 +45,9 @@ pub const KNOWN_LAYERS: [&str; 22] = [
     "buoys",
     "nwps-gauges",
     "spots",
+    "lake-contours-in",
+    "lake-contours-mn",
+    "artificial-reefs-ny",
 ];
 
 /// How much the map saves power: no animation and fewer layers.

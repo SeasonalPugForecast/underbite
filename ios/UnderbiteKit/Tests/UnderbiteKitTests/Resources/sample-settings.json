@@ -144,6 +144,18 @@
       {
         "id": "spots",
         "shown": false
+      },
+      {
+        "id": "lake-contours-in",
+        "shown": false
+      },
+      {
+        "id": "lake-contours-mn",
+        "shown": false
+      },
+      {
+        "id": "artificial-reefs-ny",
+        "shown": false
       }
     ],
     "offline_max_mb": 1500,
