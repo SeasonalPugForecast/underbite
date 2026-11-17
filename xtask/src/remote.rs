@@ -361,9 +361,15 @@ fn claim(remote: &Remote) -> String {
     )
 }
 
+/// How the working tree is copied: by content, not by time. A file is sent only when its
+/// checksum differs, and then lands with the host's own time, so it is always newer than
+/// the host's last build of it; local times (`-t`) are not kept, as a copied time older
+/// than the host's last build left cargo and Xcode using a stale build.
+pub(crate) const TREE_COPY: [&str; 2] = ["-rlpz", "--checksum"];
+
 fn rsync_args(remote: &Remote) -> Vec<String> {
-    let mut args: Vec<String> = vec![
-        "-az".into(),
+    let mut args: Vec<String> = TREE_COPY.iter().map(|a| (*a).to_owned()).collect();
+    args.extend([
         "--delete".into(),
         // Every .gitignore applies, so build output and secrets stay here, and
         // the host's own target/ is neither replaced nor deleted.
@@ -374,7 +380,7 @@ fn rsync_args(remote: &Remote) -> Vec<String> {
         // excluded, they are not deleted either.
         "--exclude=/.cargo/config.toml".into(),
         "--exclude=/vendor".into(),
-    ];
+    ]);
     args.extend(local_excludes());
     args.extend(["./".into(), format!("{}:{}/", remote.host, remote.dir)]);
     args
@@ -801,6 +807,9 @@ mod tests {
         assert_eq!(steps[0].1[1], posix(&claim(&r)));
         assert!(claim(&r).contains(MARKER) && claim(&r).contains(r"'it'\''s here'"));
         let rsync = &steps[1].1;
+        // By content, with the host's own times.
+        assert_eq!(rsync[..2], ["-rlpz", "--checksum"]);
+        assert!(!rsync.iter().any(|a| a == "-az" || a == "-a"));
         assert!(rsync.contains(&"--filter=:- .gitignore".to_string()));
         assert!(rsync.contains(&"--exclude=/.git".to_string()));
         assert!(

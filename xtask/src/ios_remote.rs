@@ -479,24 +479,25 @@ fn claim(remote: &Remote) -> String {
 }
 
 fn rsync_args(remote: &Remote) -> Vec<String> {
-    vec![
-        "-az".into(),
-        "--delete".into(),
-        // Every .gitignore applies, so build output and secrets stay here.
-        "--filter=:- .gitignore".into(),
-        format!("--filter=P /{MARKER}"),
-        format!("--filter=P /{STAGE}"),
-        format!("--filter=P /{DERIVED}"),
-        format!("--filter=P /{SCREENS}"),
-        // What `build` made there stays for the steps after it (`exec`, `sync`).
-        format!("--filter=P /{XCFRAMEWORK}"),
-        format!("--filter=P /{SWIFT_DEST}/{SWIFT}"),
-        "--exclude=/.git".into(),
-    ]
-    .into_iter()
-    .chain(crate::remote::local_excludes())
-    .chain(["./".into(), format!("{}:{}/", remote.host, remote.dir)])
-    .collect()
+    crate::remote::TREE_COPY
+        .iter()
+        .map(|a| (*a).to_owned())
+        .chain([
+            "--delete".into(),
+            // Every .gitignore applies, so build output and secrets stay here.
+            "--filter=:- .gitignore".into(),
+            format!("--filter=P /{MARKER}"),
+            format!("--filter=P /{STAGE}"),
+            format!("--filter=P /{DERIVED}"),
+            format!("--filter=P /{SCREENS}"),
+            // What `build` made there stays for the steps after it (`exec`, `sync`).
+            format!("--filter=P /{XCFRAMEWORK}"),
+            format!("--filter=P /{SWIFT_DEST}/{SWIFT}"),
+            "--exclude=/.git".into(),
+        ])
+        .chain(crate::remote::local_excludes())
+        .chain(["./".into(), format!("{}:{}/", remote.host, remote.dir)])
+        .collect()
 }
 
 /// Copies the staged build (`stage`, here) into the directory's `.stage/`.
@@ -2138,6 +2139,7 @@ mod tests {
         assert_eq!(XCFRAMEWORK, "ios/UnderbiteKit/UnderbiteFFI.xcframework");
         // Every .gitignore applies, so secrets and build output stay here.
         let rsync = &p.0[1].1;
+        assert_eq!(rsync[..2], ["-rlpz", "--checksum"]);
         assert!(rsync.contains(&"--filter=P /.underbite-remote".to_string()));
         assert!(rsync.contains(&"--filter=:- .gitignore".to_string()));
         // The framework and bindings the Mac made survive a later sync.
