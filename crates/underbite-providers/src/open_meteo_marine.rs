@@ -20,7 +20,7 @@ use underbite_core::model::{
 };
 use underbite_core::provenance::{Attribution, Provenance, Quality, Relation, SourceId, ValueKind};
 use underbite_core::series::{Sample, Series, Vector};
-use underbite_core::time::{UnixTime, UtcOffset, parse_local_iso};
+use underbite_core::time::{LocalDate, UnixTime, UtcOffset, day_number, parse_local_iso};
 use underbite_core::units::{Canonical, to_canonical};
 
 use crate::request::{Place, QueryBuilder, Request, Resource, Response, RoundedPoint, Target};
@@ -244,6 +244,222 @@ impl Source for OpenMeteoMarine {
                 "the model has no values for this point".into(),
             )))
         }
+    }
+}
+
+/// First day the archive answers for.
+const HISTORY_START: LocalDate = LocalDate {
+    year: 1940,
+    month: 1,
+    day: 1,
+};
+
+/// Days past today the history endpoint still accepts as an end date.
+const HISTORY_AHEAD_DAYS: i64 = 15;
+
+/// Hourly columns of the ERA5-Ocean wave history. Its 0.5 degree grid has waves only.
+const HISTORY_WAVES: &str = "wave_height,wave_period,wave_direction";
+
+/// What a history request asks of the archive.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum HistoryKind {
+    /// Waves from the ERA5-Ocean reanalysis (`models=era5_ocean`), back to 1940 and about
+    /// five days behind today. Its sea surface temperature is always null.
+    Waves,
+    /// Sea surface temperature from the default model. Best match starts between June and
+    /// December 2022; before that the column is null.
+    SeaSurfaceTemp,
+}
+
+impl HistoryKind {
+    fn measurement(self) -> Measurement {
+        match self {
+            Self::Waves => Measurement::WavesForecast,
+            Self::SeaSurfaceTemp => Measurement::SeaSurfaceTempForecast,
+        }
+    }
+}
+
+/// What one history response holds, in the forecast's series types. A part the model has no
+/// values for is absent.
+#[derive(Clone, Debug, PartialEq)]
+pub struct MarineHistory {
+    pub waves: Option<WaveSeries>,
+    pub sea_surface_temp: Option<Series<f32>>,
+}
+
+fn is_leap(year: i32) -> bool {
+    (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
+}
+
+/// `date` moved to `year`; 29 February becomes 28 February in a year without one.
+fn in_year(date: LocalDate, year: i32) -> LocalDate {
+    let day = if date.month == 2 && date.day == 29 && !is_leap(year) {
+        28
+    } else {
+        date.day
+    };
+    LocalDate {
+        year,
+        month: date.month,
+        day,
+    }
+}
+
+fn iso(d: LocalDate) -> String {
+    format!("{:04}-{:02}-{:02}", d.year, d.month, d.day)
+}
+
+impl OpenMeteoMarine {
+    /// The request for the hourly history of `kind` from `start` to `end` inclusive (UTC
+    /// days) at the target's point, whose coordinates are already rounded. Parse the response
+    /// with [`OpenMeteoMarine::parse_history`].
+    ///
+    /// # Errors
+    /// [`SourceError::Unsupported`] when the target is not a point, `end` is before `start`,
+    /// `start` is before 1940-01-01 or `end` is more than 15 days after today (the server
+    /// answers HTTP 400 beyond that).
+    pub fn history_request(
+        &self,
+        target: &Target,
+        kind: HistoryKind,
+        start: LocalDate,
+        end: LocalDate,
+        ctx: &FetchContext,
+    ) -> Result<Request, SourceError> {
+        let point = point(target)?;
+        let today = ctx.now.to_local(UtcOffset(0)).date;
+        if day_number(end) < day_number(start) {
+            return Err(SourceError::Unsupported(
+                "the history range ends before it starts".into(),
+            ));
+        }
+        if day_number(start) < day_number(HISTORY_START) {
+            return Err(SourceError::Unsupported(
+                "Open-Meteo history starts on 1940-01-01".into(),
+            ));
+        }
+        if day_number(end) > day_number(today) + HISTORY_AHEAD_DAYS {
+            return Err(SourceError::Unsupported(
+                "Open-Meteo history ends 15 days after today".into(),
+            ));
+        }
+        let (lat, lon) = point.fmt_param();
+        let mut query = QueryBuilder::new(BASE)
+            .param("latitude", lat)
+            .param("longitude", lon);
+        query = match kind {
+            HistoryKind::Waves => query
+                .param("hourly", HISTORY_WAVES)
+                .param("models", "era5_ocean"),
+            HistoryKind::SeaSurfaceTemp => query.param("hourly", SST),
+        };
+        let url = query
+            .param("start_date", iso(start))
+            .param("end_date", iso(end))
+            .param("timezone", "UTC")
+            .finish();
+        let target = Target {
+            measurements: std::iter::once(kind.measurement()).collect(),
+            ..target.clone()
+        };
+        Ok(Request::new(url, Resource::OpenMeteoMarine, target)
+            .optional()
+            .metered()
+            .max_age_hint(86_400))
+    }
+
+    /// One history request per year of `years`, each for the same month-day range as
+    /// `start` to `end` (only their month and day count; an `end` earlier in the year than
+    /// `start` runs into the next year, and 29 February is 28 February in years without one).
+    /// Years whose range the archive cannot answer (before 1940, or beyond 15 days after
+    /// today) are left out. The requests are in year order.
+    ///
+    /// # Errors
+    /// [`SourceError::Unsupported`] when the target is not a point.
+    pub fn history_year_requests(
+        &self,
+        target: &Target,
+        kind: HistoryKind,
+        years: std::ops::RangeInclusive<i32>,
+        start: LocalDate,
+        end: LocalDate,
+        ctx: &FetchContext,
+    ) -> Result<Vec<Request>, SourceError> {
+        point(target)?;
+        let wraps = (end.month, end.day) < (start.month, start.day);
+        let mut requests = Vec::new();
+        for year in years {
+            let from = in_year(start, year);
+            let to = in_year(end, if wraps { year + 1 } else { year });
+            match self.history_request(target, kind, from, to, ctx) {
+                Ok(r) => requests.push(r),
+                Err(SourceError::Unsupported(_)) => {}
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(requests)
+    }
+
+    /// Reads the response to a [`history_request`](Self::history_request): waves and sea
+    /// surface temperature in the forecast's series types, UTC times, canonical units.
+    ///
+    /// # Errors
+    /// The response's failure ([`check_response`], including the HTTP 400 of a date out of
+    /// range); [`SourceError::Parse`] for a body that is not an Open-Meteo response;
+    /// [`SourceError::NoData`] when every value is null (before a variable's start, or
+    /// ERA5-Ocean's last days).
+    pub fn parse_history(
+        &self,
+        request: &Request,
+        response: &Response<'_>,
+        ctx: &FetchContext,
+    ) -> Result<MarineHistory, SourceError> {
+        let body = check_response(request, response)?;
+        let envelope: Envelope = serde_json::from_slice(body)
+            .map_err(|e| parse_error(format!("not an Open-Meteo response: {e}")))?;
+        let spot = point(&request.target)?.coordinates();
+        let distance_m = match (envelope.latitude, envelope.longitude) {
+            (Some(lat), Some(lon)) => Some(distance_m(spot.latitude, spot.longitude, lat, lon)),
+            _ => None,
+        };
+        let provenance = Provenance {
+            source: SourceId::OPEN_METEO_MARINE,
+            station: None,
+            distance_m,
+            relation: Relation::Gridded,
+            observed_at: ctx.now,
+            kind: ValueKind::Modelled,
+            quality: Quality::Provisional,
+        };
+        let block = envelope
+            .hourly
+            .map(|c| Block::new(c, envelope.hourly_units.unwrap_or_default()))
+            .transpose()?
+            .ok_or_else(|| parse_error("no hourly block"))?;
+        let wanted = &request.target.measurements;
+        let waves = if wanted.contains(&Measurement::WavesForecast) {
+            waves(&block, &provenance)?
+        } else {
+            None
+        };
+        let sea_surface_temp = if wanted.contains(&Measurement::SeaSurfaceTempForecast) {
+            block
+                .scalar(SST, Kind::Temperature)?
+                .filter(|s| !s.is_empty())
+                .map(|s| Series::new(provenance.clone(), s))
+        } else {
+            None
+        };
+        if waves.is_none() && sea_surface_temp.is_none() {
+            return Err(SourceError::NoData(Some(
+                "the model has no values for these dates".into(),
+            )));
+        }
+        Ok(MarineHistory {
+            waves,
+            sea_surface_temp,
+        })
     }
 }
 
@@ -876,5 +1092,251 @@ mod tests {
         assert!(a.credit.contains("Copernicus Marine Service"));
         assert!(a.credit.contains("not suitable for coastal navigation"));
         assert_eq!(a.url.as_deref(), Some("https://open-meteo.com/"));
+    }
+
+    fn day(year: i32, month: u8, day: u8) -> LocalDate {
+        LocalDate { year, month, day }
+    }
+
+    fn history(kind: HistoryKind, start: LocalDate, end: LocalDate) -> Request {
+        OpenMeteoMarine
+            .history_request(&target(40.2512, -73.1588, &[]), kind, start, end, &ctx())
+            .unwrap()
+    }
+
+    fn parse_history(
+        request: &Request,
+        fixture: &str,
+        status: u16,
+    ) -> Result<MarineHistory, SourceError> {
+        let bytes = fixture_bytes("open-meteo-marine", fixture);
+        OpenMeteoMarine.parse_history(request, &Response::new(status, &bytes), &ctx())
+    }
+
+    const HISTORY_2024: &str = "marine-40.25_-73.16-history-2024-07-01.json";
+    const HISTORY_NULLS: &str = "marine-40.25_-73.16-history-2021-12-15-nulls.json";
+    const ERA5_1960: &str = "marine-40.25_-73.16-era5-ocean-1960-07-01.json";
+
+    #[test]
+    fn history_requests_name_the_model_dates_and_rounded_point() {
+        let d = day(2024, 7, 1);
+        let waves = history(HistoryKind::Waves, d, d);
+        assert_eq!(
+            waves.url,
+            format!(
+                "{BASE}?latitude=40.25&longitude=-73.16&hourly=wave_height,wave_period,wave_direction\
+                 &models=era5_ocean&start_date=2024-07-01&end_date=2024-07-01&timezone=UTC"
+            )
+        );
+        let sst = history(HistoryKind::SeaSurfaceTemp, d, day(2024, 7, 3));
+        assert_eq!(
+            sst.url,
+            format!(
+                "{BASE}?latitude=40.25&longitude=-73.16&hourly=sea_surface_temperature\
+                 &start_date=2024-07-01&end_date=2024-07-03&timezone=UTC"
+            )
+        );
+        assert!(sst.metered && !sst.required);
+        assert_eq!(
+            sst.target.measurements,
+            BTreeSet::from([Measurement::SeaSurfaceTempForecast])
+        );
+    }
+
+    #[test]
+    fn history_dates_outside_the_archive_are_refused() {
+        // NOW is 2026-11-08: the last allowed end date is 2026-11-23.
+        let ask = |start, end| {
+            OpenMeteoMarine.history_request(
+                &target(40.25, -73.16, &[]),
+                HistoryKind::Waves,
+                start,
+                end,
+                &ctx(),
+            )
+        };
+        assert!(ask(day(1940, 1, 1), day(1940, 1, 2)).is_ok());
+        assert!(ask(day(2026, 11, 22), day(2026, 11, 23)).is_ok());
+        for (a, b) in [
+            (day(1939, 12, 31), day(1940, 1, 2)),
+            (day(2026, 11, 22), day(2026, 11, 24)),
+            (day(2024, 7, 2), day(2024, 7, 1)),
+        ] {
+            assert!(
+                matches!(ask(a, b), Err(SourceError::Unsupported(_))),
+                "{a:?}"
+            );
+        }
+        let region = Target {
+            place: Place::Station {
+                station: underbite_core::provenance::StationRef {
+                    source: SourceId::USGS,
+                    id: "x".into(),
+                    name: "x".into(),
+                    kind: underbite_core::provenance::StationKind::UsgsSite(
+                        underbite_core::provenance::UsgsSiteType::Stream,
+                    ),
+                    latitude: 0.0,
+                    longitude: 0.0,
+                    bin: None,
+                    reference_id: None,
+                },
+                distance_m: None,
+                relation: Relation::SameWaterBody,
+            },
+            ..target(40.25, -73.16, &[])
+        };
+        assert!(matches!(
+            OpenMeteoMarine.history_request(
+                &region,
+                HistoryKind::Waves,
+                day(2024, 7, 1),
+                day(2024, 7, 1),
+                &ctx()
+            ),
+            Err(SourceError::Unsupported(_))
+        ));
+    }
+
+    #[test]
+    fn one_request_per_past_year_across_the_year_end() {
+        let requests = OpenMeteoMarine
+            .history_year_requests(
+                &target(40.25, -73.16, &[]),
+                HistoryKind::Waves,
+                2023..=2025,
+                day(2024, 12, 30),
+                day(2025, 1, 2),
+                &ctx(),
+            )
+            .unwrap();
+        let dates: Vec<_> = requests
+            .iter()
+            .map(|r| {
+                let q = r.url.split_once("start_date=").unwrap().1;
+                q.split('&').take(2).collect::<Vec<_>>().join("&")
+            })
+            .collect();
+        assert_eq!(
+            dates,
+            [
+                "2023-12-30&end_date=2024-01-02",
+                "2024-12-30&end_date=2025-01-02",
+                "2025-12-30&end_date=2026-01-02",
+            ]
+        );
+    }
+
+    #[test]
+    fn years_the_archive_cannot_answer_are_left_out_and_leap_days_clamp() {
+        let requests = OpenMeteoMarine
+            .history_year_requests(
+                &target(40.25, -73.16, &[]),
+                HistoryKind::SeaSurfaceTemp,
+                1938..=1941,
+                day(2024, 2, 28),
+                day(2024, 2, 29),
+                &ctx(),
+            )
+            .unwrap();
+        let urls: Vec<&str> = requests.iter().map(|r| r.url.as_str()).collect();
+        assert_eq!(urls.len(), 2, "{urls:?}");
+        assert!(urls[0].contains("start_date=1940-02-28&end_date=1940-02-29"));
+        assert!(urls[1].contains("start_date=1941-02-28&end_date=1941-02-28"));
+        // A range reaching beyond today + 15 days in the current year is dropped too.
+        let future = OpenMeteoMarine
+            .history_year_requests(
+                &target(40.25, -73.16, &[]),
+                HistoryKind::Waves,
+                2025..=2027,
+                day(2025, 11, 20),
+                day(2025, 11, 30),
+                &ctx(),
+            )
+            .unwrap();
+        assert_eq!(future.len(), 1);
+        assert!(future[0].url.contains("start_date=2025-11-20"));
+    }
+
+    #[test]
+    fn default_model_history_gives_waves_and_sea_surface_temperature() {
+        let d = day(2024, 7, 1);
+        let waves = parse_history(&history(HistoryKind::Waves, d, d), HISTORY_2024, 200).unwrap();
+        let w = waves.waves.unwrap();
+        assert_eq!(w.samples().len(), 24);
+        assert_eq!(w.samples()[0].time, UnixTime(1_719_792_000));
+        close(w.samples()[0].value.significant_height_m.unwrap(), 1.28);
+        assert_eq!(w.provenance().relation, Relation::Gridded);
+        assert_eq!(w.provenance().kind, ValueKind::Modelled);
+        // A waves request keeps the waves only.
+        assert!(waves.sea_surface_temp.is_none());
+
+        let sst = parse_history(
+            &history(HistoryKind::SeaSurfaceTemp, d, d),
+            HISTORY_2024,
+            200,
+        )
+        .unwrap();
+        let s = sst.sea_surface_temp.unwrap();
+        assert_eq!(s.samples().len(), 24);
+        assert!((5.0..30.0).contains(&s.samples()[0].value));
+        assert!(sst.waves.is_none());
+    }
+
+    #[test]
+    fn all_null_columns_are_absent_and_an_all_null_response_is_no_data() {
+        let d = day(2021, 12, 15);
+        // Waves exist before best match's sea surface temperature does.
+        let waves = parse_history(&history(HistoryKind::Waves, d, d), HISTORY_NULLS, 200).unwrap();
+        assert!(waves.waves.is_some());
+        let sst = parse_history(
+            &history(HistoryKind::SeaSurfaceTemp, d, d),
+            HISTORY_NULLS,
+            200,
+        );
+        assert!(matches!(sst, Err(SourceError::NoData(_))), "{sst:?}");
+    }
+
+    #[test]
+    fn era5_ocean_has_waves_on_its_half_degree_cell_and_no_sea_surface_temperature() {
+        let d = day(1960, 7, 1);
+        let waves = parse_history(&history(HistoryKind::Waves, d, d), ERA5_1960, 200).unwrap();
+        let w = waves.waves.unwrap();
+        assert_eq!(w.samples().len(), 24);
+        let first = &w.samples()[0].value;
+        close(first.significant_height_m.unwrap(), 0.90);
+        assert!(first.mean_period_s.is_some());
+        assert!(first.direction_from_deg.is_some());
+        // The cell is 40.5, -73.0: about 30 km from the spot.
+        let dist = w.provenance().distance_m.unwrap();
+        assert!((25_000.0..35_000.0).contains(&dist), "{dist}");
+        let sst = parse_history(&history(HistoryKind::SeaSurfaceTemp, d, d), ERA5_1960, 200);
+        assert!(matches!(sst, Err(SourceError::NoData(_))), "{sst:?}");
+    }
+
+    #[test]
+    fn history_failures_are_errors() {
+        let d = day(2024, 7, 1);
+        let request = history(HistoryKind::Waves, d, d);
+        let out_of_range = br#"{"reason":"Parameter 'end_date' is out of allowed range from 1940-01-01 to 2026-11-23","error":true}"#;
+        let e = OpenMeteoMarine
+            .parse_history(&request, &Response::new(400, out_of_range), &ctx())
+            .unwrap_err();
+        assert!(
+            matches!(e, SourceError::Status { status: 400, .. }),
+            "{e:?}"
+        );
+        let e = OpenMeteoMarine
+            .parse_history(&request, &Response::new(200, b" \n"), &ctx())
+            .unwrap_err();
+        assert!(matches!(e, SourceError::NoData(_)), "{e:?}");
+        let e = OpenMeteoMarine
+            .parse_history(
+                &request,
+                &Response::new(200, br#"{"latitude":1.0}"#),
+                &ctx(),
+            )
+            .unwrap_err();
+        assert!(matches!(e, SourceError::Parse(_)), "{e:?}");
     }
 }
