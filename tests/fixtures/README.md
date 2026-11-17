@@ -22,6 +22,7 @@ request URL and the recording date:
 - [tier2](raw/tier2/README.md)
 - [hydro](raw/hydro/README.md)
 - [weather](raw/weather/README.md)
+- [regulations](raw/regulations/README.md)
 
 ## Conventions
 
