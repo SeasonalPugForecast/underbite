@@ -78,6 +78,7 @@ struct MapCanvas: UIViewRepresentable {
                 let revision = revisions[layer.id] ?? 0
                 if drawnRevisions[layer.overlayKey] != revision {
                     drawnRevisions[layer.overlayKey] = revision
+                    (overlay as? GridTileOverlay)?.setRange(controller.drawnRanges[layer.id])
                     (renderer as? MKTileOverlayRenderer)?.reloadData()
                     (renderer as? ArrowRenderer)?.setNeedsDisplay()
                 }
@@ -158,7 +159,8 @@ struct MapCanvas: UIViewRepresentable {
             case .tiles:
                 CoreTileOverlay(layer: layer.info, date: layer.date, loader: controller.tileLoader)
             case .gridRaster:
-                GridTileOverlay(layer, store: controller.gridStore)
+                GridTileOverlay(
+                    layer, store: controller.gridStore, range: controller.drawnRanges[layer.id])
             case .gridArrows:
                 controller.arrowOverlay(for: layer.id)
             }

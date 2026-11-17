@@ -35,6 +35,11 @@ final class MapController {
     private(set) var previewOpacities: [String: Double] = [:]
     /// Per grid layer, raised as blocks arrive: the map draws the layer again.
     private(set) var gridRevisions: [String: Int] = [:]
+    /// Per raster grid layer, the colour range drawn (canonical units): the settings' own, else
+    /// the one fitted to the values in view.
+    private(set) var drawnRanges: [String: ValueRange] = [:]
+    /// Per raster grid layer, its legend for the range drawn.
+    private(set) var legends: [String: MapLegendState] = [:]
     /// Per tiled layer and day, what its tiles came back as.
     private(set) var tileReports: [String: TileReport] = [:]
     /// Raised by ``moduleDidChange()``: the map asks the modules again.
@@ -54,6 +59,9 @@ final class MapController {
     @ObservationIgnored private var mapSettings: Settings.MapSettings?
     @ObservationIgnored private var arrowOverlays: [String: ArrowOverlay] = [:]
     @ObservationIgnored private var blocksDue: Set<String> = []
+    /// Per raster grid layer, the fitted range last taken (steadied by ``RangeFit``).
+    @ObservationIgnored private var fitted: [String: ValueRange] = [:]
+    @ObservationIgnored private var rangeTask: Task<Void, Never>?
 
     /// - Parameters:
     ///   - host: the app's fetch host; tiles and grids go through it and nothing else.
@@ -103,6 +111,7 @@ final class MapController {
             self.catalogue = catalogue
         }
         replan()
+        scheduleRanges()
     }
 
     /// Low Power Mode changed: the battery-friendly mode may follow it.
@@ -194,6 +203,7 @@ final class MapController {
             next.layers.map(\.overlayKey) != plan.layers.map(\.overlayKey)
         plan = next
         if fetchChanged { loadForRegion() }
+        scheduleRanges()
     }
 
     // MARK: - The region and taps
@@ -202,6 +212,7 @@ final class MapController {
     func regionDidSettle(_ region: MapRegion) {
         self.region = region
         loadForRegion()
+        scheduleRanges()
     }
 
     private func loadForRegion() {
@@ -283,8 +294,65 @@ final class MapController {
         for layer in layers {
             gridRevisions[layer, default: 0] += 1
         }
+        scheduleRanges()
         if plan.layers.contains(where: { $0.kind == .gridArrows && layers.contains($0.id) }) {
             refreshArrows()
+        }
+    }
+
+    // MARK: - Fitted colour ranges
+
+    /// Asks for the colour ranges of the raster layers again once the map has been quiet for a
+    /// moment; the ranges drawn stay until the new ones are known.
+    private func scheduleRanges() {
+        rangeTask?.cancel()
+        guard region != nil, plan.layers.contains(where: { $0.kind == .gridRaster }) else {
+            return
+        }
+        rangeTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
+            await self?.refreshRanges()
+        }
+    }
+
+    /// One fitted range found for a layer.
+    private nonisolated struct Fit: Sendable {
+        let layer: String
+        let range: ValueRange?
+    }
+
+    private func refreshRanges() async {
+        guard let region else { return }
+        let layers = plan.layers.filter { $0.kind == .gridRaster }.map(\.id)
+        let (store, json) = (gridStore, settingsJSON)
+        // The store scans its blocks outside the main thread.
+        let found = await Task.detached(priority: .userInitiated) { () -> [Fit] in
+            layers.map { id in
+                let range =
+                    try? store.visibleRange(
+                        layer: id, west: region.west, south: region.south, east: region.east,
+                        north: region.north, zoom: region.zoom)
+                return Fit(layer: id, range: range)
+            }
+        }.value
+        guard !Task.isCancelled, json == settingsJSON else { return }
+        for one in found {
+            let id = one.layer
+            let used = RangeFit.settle(new: one.range, held: fitted[id])
+            fitted[id] = used
+            guard let range = try? mapRange(settingsJson: json, layer: id, fitted: used) else {
+                continue
+            }
+            let legend = MapLegendState(
+                stops: (try? mapLegend(settingsJson: json, layer: id, range: range)) ?? [],
+                fittedCaption: (try? mapFittedCaption(settingsJson: json, layer: id, fitted: used))
+                    ?? nil)
+            if legends[id] != legend { legends[id] = legend }
+            if drawnRanges[id] != range {
+                drawnRanges[id] = range
+                gridRevisions[id, default: 0] += 1
+            }
         }
     }
 

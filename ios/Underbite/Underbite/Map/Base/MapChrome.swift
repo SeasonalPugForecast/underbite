@@ -72,10 +72,18 @@ struct MapCredits: View {
 /// at its ends and middle in the user's units, and the core's caption.
 struct MapLegend: View {
     let layer: LayerInfo
+    /// The legend for the range drawn when it is not the settings' own (a range fitted to the
+    /// view): its bar and the core's caption saying so.
+    var state: MapLegendState?
+
+    private var stops: [LegendStop] {
+        guard let state, !state.stops.isEmpty else { return layer.legend }
+        return state.stops
+    }
 
     /// The stops labelled under the bar: the ends and the one nearest the middle.
     private var labelled: [LegendStop] {
-        let stops = layer.legend
+        let stops = stops
         guard let first = stops.first, let last = stops.last, stops.count > 1 else { return stops }
         let middle = stops.dropFirst().dropLast().min {
             abs($0.fraction - 0.5) < abs($1.fraction - 0.5)
@@ -88,7 +96,7 @@ struct MapLegend: View {
             Text(layer.title)
                 .font(.caption.weight(.semibold))
             LinearGradient(
-                stops: layer.legend.map {
+                stops: stops.map {
                     Gradient.Stop(color: $0.colour.color, location: CGFloat($0.fraction))
                 },
                 startPoint: .leading, endPoint: .trailing
@@ -104,6 +112,12 @@ struct MapLegend: View {
                 }
             }
             .font(.caption2.monospacedDigit())
+            if let fitted = state?.fittedCaption {
+                Text(fitted)
+                    .font(.caption2)
+                    .foregroundStyle(.readableSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if let caption = layer.legendCaption {
                 Text(caption)
                     .font(.caption2)

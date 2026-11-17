@@ -87,7 +87,7 @@ private struct MapScreen: View {
                 VStack(alignment: .leading, spacing: 8) {
                     TimeControls(controller: controller)
                     if let legend = controller.plan.legend {
-                        MapLegend(layer: legend)
+                        MapLegend(layer: legend, state: controller.legends[legend.id])
                     }
                     MapCredits(credits: controller.plan.credits)
                     if controller.plan.notice == nil, let notice = mapNotice {
