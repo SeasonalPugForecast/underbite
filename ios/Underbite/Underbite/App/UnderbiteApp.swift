@@ -31,8 +31,8 @@ struct UnderbiteApp: App {
         VoiceStyle(setting: (try? Settings(json: store.settingsJSON).presentation.voice) ?? "luna")
     }
 
-    /// The one store of the process; `-seed` adds the test places, `-seedLimits` a sample limits profile, `-seedTrip` a sample trip
-    /// and `-sample` swaps in the offline sample (debug builds).
+    /// The one store of the process; `-seed` adds the test places, `-seedLimits` a sample limits profile, `-seedTrip` a sample trip,
+    /// `-seedCatches` sample catches and `-sample` swaps in the offline sample (debug builds).
     private static func makeStore() -> SpotStore {
         #if DEBUG
             if SampleMode.isOn { return SpotStore.sample() }
@@ -40,6 +40,7 @@ struct UnderbiteApp: App {
             if ProcessInfo.processInfo.arguments.contains("-seed") { store.addSeedSpots() }
             if ProcessInfo.processInfo.arguments.contains("-seedLimits") { store.addSeedLimits() }
             if ProcessInfo.processInfo.arguments.contains("-seedTrip") { TripSeeds.seed(into: store) }
+            if ProcessInfo.processInfo.arguments.contains("-seedCatches") { CatchSeeds.seed(into: store) }
             return store
         #else
             return SpotStore.shared
