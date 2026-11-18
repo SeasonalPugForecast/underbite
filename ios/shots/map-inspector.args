@@ -1,0 +1,2 @@
+-seed -tab map -mapLayers sst-imagery,sst,tide-stations -mapAt 40.36,-73.95,0.35 -mapInspect 40.45,-73.93
+wait 120
