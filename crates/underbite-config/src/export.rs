@@ -13,7 +13,7 @@ use crate::schema::{Config, ConfigError, Issue};
 use crate::sources::MAX_COORDINATE_PRECISION;
 
 const HEADER: &str = "# Underbite settings\n\
-# Units, sources, cards, limits, rivers, windows, map defaults and alert rules.\n\
+# Units, sources, cards, limits, rivers, windows, followed species, map defaults and alert rules.\n\
 # Keys and passwords are never written here; they stay in the keychain or the environment.\n\
 # Alert rules name spots and trips by id; their boxes are rounded like the coordinates sent to providers.\n\n";
 
@@ -81,6 +81,7 @@ pub fn parse_json(text: &str) -> Result<(Config, Vec<Issue>), ImportError> {
 mod tests {
     use super::*;
     use crate::schema::{Severity, has_errors};
+    use underbite_core::trip::SpeciesId;
 
     const ARCH_EXAMPLE: &str = r#"
 [units]
@@ -309,6 +310,44 @@ all_of = [{ kind = "measurement", metric = "sea_surface_temp", above = 20.0 }]
         let (config, issues) = parse_toml(ARCH_EXAMPLE).unwrap();
         assert_eq!(issues, []);
         assert_eq!(config.alerts, []);
+    }
+
+    const SPECIES: &str = r#"
+[species]
+followed = ["micropterus-dolomieu", "salmo-trutta", "no-such-fish"]
+"#;
+
+    #[test]
+    fn species_export_and_import_keep_the_order_and_drop_unknown_ids() {
+        let (config, issues) = parse_toml(SPECIES).unwrap();
+        let paths: Vec<_> = issues.iter().map(|i| i.path.as_str()).collect();
+        assert_eq!(paths, ["species.followed[2]"]);
+        assert!(!has_errors(&issues));
+        let ids: Vec<_> = config
+            .species
+            .followed
+            .iter()
+            .map(SpeciesId::as_str)
+            .collect();
+        assert_eq!(ids, ["micropterus-dolomieu", "salmo-trutta"]);
+
+        let text = to_toml(&config).unwrap();
+        assert!(text.contains("[species]"), "{text}");
+        assert!(!text.contains("no-such-fish"), "{text}");
+        let (back, issues) = parse_toml(&text).unwrap();
+        assert_eq!(issues, []);
+        assert_eq!(back, config);
+        let (stored, issues) = parse_json(&to_json(&config).unwrap()).unwrap();
+        assert_eq!(issues, []);
+        assert_eq!(stored, config);
+    }
+
+    #[test]
+    fn species_an_old_file_without_them_follows_none() {
+        let (config, issues) = parse_toml(ARCH_EXAMPLE).unwrap();
+        assert_eq!(issues, []);
+        assert_eq!(config.species.followed, []);
+        assert!(to_toml(&Config::default()).unwrap().contains("[species]"));
     }
 
     #[test]

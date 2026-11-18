@@ -278,6 +278,9 @@
       ]
     }
   },
+  "species": {
+    "followed": []
+  },
   "storms": {
     "hurricane_distance_km": 3000.0
   },

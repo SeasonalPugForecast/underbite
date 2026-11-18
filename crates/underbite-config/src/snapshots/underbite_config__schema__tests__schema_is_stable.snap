@@ -1211,6 +1211,25 @@ expression: json_schema()
       },
       "type": "object"
     },
+    "SpeciesConfig": {
+      "additionalProperties": false,
+      "description": "`[species]`: the species the user follows. The user's edits of their profiles are not kept\nhere: the app stores them apart and they are laid over the catalogue's values when a view\nis built.",
+      "properties": {
+        "followed": {
+          "default": [],
+          "description": "Species ids from the bundled catalogue (`morone-saxatilis`), in the order the species\ncard lists them. Ids the catalogue lacks are dropped on import with a warning.",
+          "items": {
+            "$ref": "#/$defs/SpeciesId"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "SpeciesId": {
+      "description": "A species, by its lower-case scientific name with hyphens: `morone-saxatilis`.\n\nThe species catalogue keys its profiles by this id. Only lower-case ASCII letters and digits\nin words joined by single hyphens are accepted.",
+      "type": "string"
+    },
     "SpeedUnit": {
       "description": "Speed display unit for currents and wind (each has its own setting).",
       "oneOf": [
@@ -1834,6 +1853,13 @@ expression: json_schema()
           ]
         }
       }
+    },
+    "species": {
+      "$ref": "#/$defs/SpeciesConfig",
+      "default": {
+        "followed": []
+      },
+      "description": "The species the user follows, for the species card."
     },
     "storms": {
       "$ref": "#/$defs/StormsConfig",

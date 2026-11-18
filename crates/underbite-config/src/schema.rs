@@ -15,6 +15,7 @@ use crate::limits::{LimitsProfile, StormsConfig, Thresholds};
 use crate::map::MapConfig;
 use crate::rivers::RiverRange;
 use crate::sources::{ProvidersConfig, SourcesConfig};
+use crate::species::SpeciesConfig;
 use crate::units::UnitsConfig;
 use crate::windows::{PresentationConfig, WindowsConfig};
 
@@ -107,6 +108,8 @@ pub struct Config {
     pub rivers: Vec<RiverRange>,
     pub windows: WindowsConfig,
     pub presentation: PresentationConfig,
+    /// The species the user follows, for the species card.
+    pub species: SpeciesConfig,
     pub map: MapConfig,
     /// Alert rules; spots and trips are named by id.
     pub alerts: Vec<AlertRule>,
@@ -126,6 +129,7 @@ impl Default for Config {
             rivers: Vec::new(),
             windows: WindowsConfig::default(),
             presentation: PresentationConfig::default(),
+            species: SpeciesConfig::default(),
             map: MapConfig::default(),
             alerts: Vec::new(),
         }
@@ -170,6 +174,7 @@ impl Config {
         }
         self.validate_windows(&mut issues);
         self.validate_presentation(&mut issues);
+        self.species.validate(&mut issues);
         self.map.validate(&mut issues);
         crate::alerts::validate(&self.alerts, &mut issues);
         issues.0
@@ -345,6 +350,7 @@ offline_max_mb = 1500
             ("[[limits]]\nname = \"a\"\nmax_knots = 1", "max_knots"),
             ("[storms]\nradius = 1", "radius"),
             ("[[alerts]]\nid = \"a\"\nlabel = \"x\"", "label"),
+            ("[species]\nedits = {}", "edits"),
         ] {
             let err = Config::from_toml(text).unwrap_err().to_string();
             assert!(err.contains(key), "{text}: {err}");

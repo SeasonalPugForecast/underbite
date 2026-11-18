@@ -2,15 +2,16 @@
 //!
 //! Imported text is first decoded into a generic value. Everything that needs the document's
 //! shape (refusing anything key-like, upgrading older versions, naming unknown keys by their full
-//! path, clamping the coordinate precision, dropping unknown source and map layer ids and alert
-//! rules of unknown kinds) happens on that value, before the typed decode, so a file from an
-//! older version always decodes and every change made on the way is reported.
+//! path, clamping the coordinate precision, dropping unknown source, map layer and species ids
+//! and alert rules of unknown kinds) happens on that value, before the typed decode, so a file
+//! from an older version always decodes and every change made on the way is reported.
 
 use serde_json::{Map, Value};
 
 use crate::map::{KNOWN_BASES, KNOWN_LAYERS};
 use crate::schema::{CURRENT_VERSION, Issue, Issues, json_schema};
 use crate::sources::{KNOWN_SOURCES, MAX_COORDINATE_PRECISION};
+use crate::species::is_known_species;
 
 /// Importing a configuration file failed.
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
@@ -319,6 +320,34 @@ fn tidy_map(doc: &mut Value, issues: &mut Issues) {
     }
 }
 
+/// Drops followed species the bundled catalogue does not have, and repeats, recording a warning
+/// for each. An entry that is not a string is left for the typed decode to refuse.
+fn tidy_species(doc: &mut Value, issues: &mut Issues) {
+    let Some(followed) = doc
+        .get_mut("species")
+        .and_then(|s| s.get_mut("followed"))
+        .and_then(Value::as_array_mut)
+    else {
+        return;
+    };
+    let mut kept: Vec<Value> = Vec::with_capacity(followed.len());
+    for (i, entry) in followed.drain(..).enumerate() {
+        let path = format!("species.followed[{i}]");
+        match entry.as_str() {
+            Some(id) if !is_known_species(id) => issues.warning(
+                path,
+                format!("`{id}` is not a species this version knows and was dropped"),
+            ),
+            Some(_) if kept.contains(&entry) => issues.warning(
+                path,
+                "this species was listed twice; the first entry was kept",
+            ),
+            _ => kept.push(entry),
+        }
+    }
+    *followed = kept;
+}
+
 /// Checks and upgrades a decoded document in place, ready for the typed decode. Returns the
 /// warnings for what was changed.
 pub fn prepare(doc: &mut Value) -> Result<Vec<Issue>, ImportError> {
@@ -341,6 +370,7 @@ pub fn prepare(doc: &mut Value) -> Result<Vec<Issue>, ImportError> {
     tidy_sources(doc, &mut issues);
     tidy_map(doc, &mut issues);
     crate::alerts::tidy(doc, &mut issues);
+    tidy_species(doc, &mut issues);
     Ok(issues.0)
 }
 
@@ -348,6 +378,7 @@ pub fn prepare(doc: &mut Value) -> Result<Vec<Issue>, ImportError> {
 mod tests {
     use super::*;
     use serde_json::json;
+    use underbite_core::trip::SpeciesId;
 
     fn obj(v: &Value) -> Map<String, Value> {
         v.as_object().cloned().unwrap()
@@ -586,6 +617,49 @@ mod tests {
         assert_eq!(c.alerts.len(), 1);
         assert_eq!(c.alerts[0].id, "b");
         assert_eq!(c.validate(), []);
+    }
+
+    #[test]
+    fn species_a_document_without_them_follows_none() {
+        let mut d = json!({ "version": 1, "windows": { "show_solunar": false } });
+        assert_eq!(prepare(&mut d), Ok(vec![]));
+        let c: crate::schema::Config = serde_json::from_value(d).unwrap();
+        assert_eq!(c.species, crate::species::SpeciesConfig::default());
+        assert_eq!(c.validate(), []);
+    }
+
+    #[test]
+    fn species_unknown_and_repeated_ids_are_dropped_with_warnings() {
+        let mut d = json!({ "species": { "followed": [
+            "micropterus-dolomieu", "no-such-fish", "Salmo trutta",
+            "salmo-trutta", "micropterus-dolomieu"
+        ] } });
+        let issues = prepare(&mut d).unwrap();
+        let paths: Vec<_> = issues.iter().map(|i| i.path.as_str()).collect();
+        assert_eq!(
+            paths,
+            [
+                "species.followed[1]",
+                "species.followed[2]",
+                "species.followed[4]"
+            ]
+        );
+        assert!(issues[0].message.contains("no-such-fish"));
+        let c: crate::schema::Config = serde_json::from_value(d).unwrap();
+        let ids: Vec<_> = c.species.followed.iter().map(SpeciesId::as_str).collect();
+        assert_eq!(ids, ["micropterus-dolomieu", "salmo-trutta"]);
+        assert_eq!(c.validate(), []);
+    }
+
+    #[test]
+    fn species_an_unknown_key_is_named_by_path() {
+        let mut d = json!({ "species": { "followed": [], "favourite": "salmo-trutta" } });
+        assert_eq!(
+            prepare(&mut d),
+            Err(ImportError::UnknownKey {
+                path: "species.favourite".into()
+            })
+        );
     }
 
     #[test]
