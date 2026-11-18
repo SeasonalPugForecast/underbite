@@ -6,7 +6,8 @@
     /// and the Croton River, the test places `-seed` adds, each with the conditions of a small
     /// hand-made snapshot of its spot (a tide, water temperature, pressure and wind at the
     /// Battery; flow and water temperature on the Croton). Their times are fixed, so the list
-    /// reads the same on every run.
+    /// reads the same on every run. `-seedCatches many` adds a season of striped bass at the
+    /// Battery, enough catches for what worked to read a pattern.
     nonisolated enum CatchSeeds {
         /// One sample catch.
         struct Seed: Sendable {
@@ -27,6 +28,9 @@
             /// The water temperature, °C, and the flow, m³/s (the Croton only).
             var waterC: Double
             var flow: Double? = nil
+            /// Seconds from the last high water to the catch (the Battery only); past the low
+            /// that follows it, about 6.25 h, the tide is rising.
+            var sinceHigh: Int64 = 14_700
         }
 
         /// The sample catches, newest first.
@@ -59,6 +63,44 @@
                 lure: "Tube jig", method: "Wading", waterC: 17.6, flow: 1.8),
         ]
 
+        /// The striped bass `-seedCatches many` adds: a spring and a fall run at the Battery,
+        /// most of them on the first hours of the ebb in 12 to 14 °C water.
+        static let more: [Seed] = [
+            bass("D1", 1_793_532_600, inches: "30", centimetres: "76", waterC: 13.1, sinceHigh: 9_000),
+            bass("D2", 1_793_479_800, inches: "24", centimetres: "61", waterC: 13.6, sinceHigh: 10_800),
+            bass("D3", 1_792_840_500, inches: "27", centimetres: "69", waterC: 14.4, sinceHigh: 8_100),
+            bass("D4", 1_792_272_600, inches: "33", centimetres: "84", waterC: 15.2, sinceHigh: 26_100),
+            bass("D5", 1_791_629_100, inches: "22", centimetres: "56", waterC: 16.4, sinceHigh: 9_900),
+            bass("D6", 1_791_065_400, inches: "29", centimetres: "74", waterC: 17.1, sinceHigh: 4_500),
+            bass("D7", 1_780_738_200, inches: "35", centimetres: "89", waterC: 17.8, sinceHigh: 29_700),
+            bass("D8", 1_780_139_100, inches: "26", centimetres: "66", waterC: 15.9, sinceHigh: 9_300),
+            bass("D9", 1_779_581_700, inches: "31", centimetres: "79", waterC: 14.8, sinceHigh: 12_600),
+            bass("DA", 1_778_925_000, inches: "25", centimetres: "64", waterC: 13.4, sinceHigh: 7_800),
+            bass("DB", 1_778_370_000, inches: "23", centimetres: "58", waterC: 12.6, sinceHigh: 24_300),
+            bass("DC", 1_777_717_200, inches: "28", centimetres: "71", waterC: 12.2, sinceHigh: 10_200),
+        ]
+
+        /// A striped bass released at the Battery.
+        private static func bass(
+            _ tag: String, _ caughtAt: Int64, inches: String, centimetres: String, waterC: Double,
+            sinceHigh: Int64
+        ) -> Seed {
+            Seed(
+                id: "5EED0000-0000-4000-8000-0000000000\(tag)", caughtAt: caughtAt,
+                spot: SeedSpots.battery, species: "morone-saxatilis", inches: inches,
+                centimetres: centimetres, fate: .released, lure: "Bucktail jig", method: "Shore",
+                waterC: waterC, sinceHigh: sinceHigh)
+        }
+
+        /// The catches the launch arguments ask for: the five, and the season of striped bass
+        /// after `-seedCatches many`.
+        static func seeds(for arguments: [String]) -> [Seed] {
+            guard let at = arguments.firstIndex(of: "-seedCatches"), at + 1 < arguments.count,
+                arguments[at + 1] == "many"
+            else { return seeds }
+            return seeds + more
+        }
+
         /// The editor's fields of `seed`, its sizes typed in `units`.
         static func input(_ seed: Seed, units: FishUnitsInfo) -> CatchInput {
             let inches = units.lengthUnit == "inches"
@@ -73,12 +115,14 @@
                 photos: [])
         }
 
-        /// Saves the sample catches into `catches` with their conditions; seeding again updates
-        /// them.
+        /// Saves the sample catches `chosen` into `catches` with their conditions; seeding again
+        /// updates them.
         @MainActor
-        static func seed(catches: CatchStore, settingsJSON: String) {
+        static func seed(
+            catches: CatchStore, settingsJSON: String, chosen: [Seed] = CatchSeeds.seeds
+        ) {
             guard let units = try? fishUnitsInfo(settingsJson: settingsJSON) else { return }
-            for seed in seeds {
+            for seed in chosen {
                 guard (try? catches.save(input(seed, units: units), settingsJSON: settingsJSON)) != nil
                 else { continue }
                 _ = try? catches.attachConditions(to: seed.id, snapshotJSON: snapshot(seed))
@@ -92,7 +136,9 @@
             for spot in [SeedSpots.battery, SeedSpots.croton] where store.spot(spot.id) == nil {
                 store.add(spot)
             }
-            seed(catches: catches, settingsJSON: store.settingsJSON)
+            seed(
+                catches: catches, settingsJSON: store.settingsJSON,
+                chosen: seeds(for: ProcessInfo.processInfo.arguments))
         }
 
         // MARK: - The hand-made snapshots
@@ -100,6 +146,7 @@
         /// A snapshot of the seed's spot around its catch time, shaped like a fetch's.
         static func snapshot(_ seed: Seed) -> String {
             let t = seed.caughtAt
+            let high = t - seed.sinceHigh
             let battery = seed.spot.id == SeedSpots.battery.id
             let station = battery ? coops : usgs
             let source = battery ? "coops" : "usgs"
@@ -117,9 +164,9 @@
                 marine["tide"] = [
                     "source_kind": "harmonic_station", "datum": "mllw",
                     "events": [
-                        ["time": t - 14_700, "kind": "high", "height_m": 1.52],
-                        ["time": t + 7_800, "kind": "low", "height_m": 0.12],
-                        ["time": t + 30_000, "kind": "high", "height_m": 1.61],
+                        ["time": high, "kind": "high", "height_m": 1.52],
+                        ["time": high + 22_500, "kind": "low", "height_m": 0.12],
+                        ["time": high + 44_700, "kind": "high", "height_m": 1.61],
                     ] as [[String: Any]],
                     "observed": series(
                         source, station, observedAt: t - 360,
