@@ -261,8 +261,11 @@ fn unit_options_list_groups_with_the_core_symbols() {
 fn the_card_catalogue_follows_the_users_order_and_voice() {
     let cards = card_catalogue("river_stream".into(), cfs()).unwrap();
     assert_eq!(cards.len(), 20);
-    // No source fills the bloom card yet.
-    assert!(!cards.iter().find(|c| c.id == "bloom").unwrap().available);
+    // The stocking and bloom cards are built; bloom is in no shipped order, so it waits among the
+    // hidden cards until the user adds it.
+    let card = |id: &str| cards.iter().find(|c| c.id == id).unwrap();
+    assert!(card("stocking").available && card("stocking").shown);
+    assert!(card("bloom").available && !card("bloom").shown);
     // No setting chooses species yet, so the page cannot show the species card.
     let species = cards.iter().find(|c| c.id == "species").unwrap();
     assert!(!species.available);
@@ -331,6 +334,22 @@ fn the_source_catalogue_credits_every_source() {
     assert!(coops.measurements.iter().any(|m| m == "Tide"));
     let copernicus = sources.iter().find(|s| s.id == "copernicus").unwrap();
     assert!(copernicus.needs_key && copernicus.opt_in && !copernicus.implemented);
+    // The reservoir, bloom, Great Lakes and Canadian sources run in a spot's fetch.
+    for id in [
+        "cwms",
+        "rise",
+        "cyan",
+        "noaa-hab",
+        "glerl",
+        "dfo-iwls",
+        "eccc-hydrometric",
+    ] {
+        let source = sources.iter().find(|s| s.id == id).unwrap();
+        assert!(source.implemented, "{id}");
+        assert!(source.url.is_some(), "{id}");
+    }
+    let cyan = sources.iter().find(|s| s.id == "cyan").unwrap();
+    assert!(cyan.measurements.iter().any(|m| m == "Algal bloom"));
     let usgs = sources.iter().find(|s| s.id == "usgs").unwrap();
     assert!(usgs.key_optional && !usgs.needs_key);
     assert!(

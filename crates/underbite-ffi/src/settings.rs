@@ -19,11 +19,18 @@ use underbite_core::units::{
 use underbite_core::view::format::{Formatter, distance_from_metres, distance_to_metres};
 use underbite_core::view::strings::{MEASUREMENTS, Strings, WATER_TYPES, source_name};
 use underbite_core::view::{CardId, DisplayUnits, Voice};
+use underbite_providers::blooms::cyan::Cyan;
+use underbite_providers::blooms::hab::HabGulf;
 use underbite_providers::coops::{Coops, CoopsHarmonics};
+use underbite_providers::dfo::Dfo;
+use underbite_providers::eccc::Eccc;
+use underbite_providers::glerl::Glsea;
 use underbite_providers::ndbc::Ndbc;
 use underbite_providers::nwps::Nwps;
 use underbite_providers::nws_marine::NwsMarine;
 use underbite_providers::open_meteo_marine::OpenMeteoMarine;
+use underbite_providers::reservoirs::cwms::Cwms;
+use underbite_providers::reservoirs::rise::Rise;
 use underbite_providers::source::Source;
 use underbite_providers::usgs::Usgs;
 use whether_core::presentation::TimeFormat;
@@ -932,7 +939,7 @@ pub fn card_catalogue(
         title: strings.card_title(id).to_owned(),
         shown,
         // No setting chooses species yet, so the page never builds the species card.
-        available: !matches!(id, CardId::Stocking | CardId::Bloom | CardId::Species),
+        available: id != CardId::Species,
     };
     let mut cards: Vec<CardInfo> = order.iter().map(|&id| info(id, true)).collect();
     cards.extend(
@@ -1303,6 +1310,13 @@ fn provider(id: &str) -> Option<Arc<dyn Source>> {
         "nwps" => Arc::new(Nwps),
         "nws" => Arc::new(NwsMarine),
         "open-meteo-marine" => Arc::new(OpenMeteoMarine),
+        "dfo-iwls" => Arc::new(Dfo),
+        "eccc-hydrometric" => Arc::new(Eccc::new()),
+        "glerl" => Arc::new(Glsea),
+        "cwms" => Arc::new(Cwms),
+        "rise" => Arc::new(Rise),
+        "cyan" => Arc::new(Cyan),
+        "noaa-hab" => Arc::new(HabGulf),
         _ => return None,
     })
 }
