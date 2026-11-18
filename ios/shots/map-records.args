@@ -1,0 +1,2 @@
+-seed -tab map -mapBase apple-standard -mapLayers species-records -mapAt 40.65,-74.03,0.25 -mapRecordsSpecies morone-saxatilis -mapRecordsFind -mapRecordsOpen -speciesRegion US-NY
+wait 60

@@ -5,6 +5,7 @@ enum MapModules {
         [
             InspectorModule(controller: controller),
             SourcesModule(controller: controller),
+            RecordsModule(controller: controller),
             StationsModule(controller: controller),
             MineModule(controller: controller),
         ]
