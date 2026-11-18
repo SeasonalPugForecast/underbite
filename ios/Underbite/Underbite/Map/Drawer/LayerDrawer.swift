@@ -234,6 +234,9 @@ private struct LayerRow: View {
                         stops: stops, fitted: controller.legends[layer.id]?.fittedCaption,
                         caption: layer.legendCaption)
                 }
+                if LayerRange.measurement(for: layer.id) != nil {
+                    LayerRangeRow(layer: layer)
+                }
             }
             if !layer.credit.isEmpty {
                 DrawerCredit(text: layer.credit)
