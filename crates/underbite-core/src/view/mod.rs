@@ -16,6 +16,7 @@ mod pseudo_tests;
 pub mod stations;
 pub mod strings;
 pub mod timeline;
+pub mod trip;
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
