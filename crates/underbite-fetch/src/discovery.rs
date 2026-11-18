@@ -280,11 +280,11 @@ pub(crate) async fn discover_with<H: FetchHost>(
     spot: &Spot,
     chains: BTreeMap<Measurement, ChainSpec>,
 ) -> Discovery {
-    let point = ctx.round(Coordinates {
+    let at = Coordinates {
         latitude: spot.latitude,
         longitude: spot.longitude,
-    });
-    let lists = station_lists(host, ctx, point, &chains).await;
+    };
+    let lists = station_lists(host, ctx, at, ctx.round(at), &chains).await;
     let mut errors = lists.errors;
     let reach_m = chains
         .values()
@@ -496,6 +496,85 @@ mod tests {
             "{:#?}",
             floods.dropped
         );
+    }
+
+    #[test]
+    fn a_spot_on_beltzville_lake_takes_its_project_pool_and_inflow() {
+        use underbite_core::discover::rank::Limits;
+        use underbite_core::model::WaterType;
+        use underbite_providers::session::Session;
+
+        use crate::sessions::{run_session, session_chains};
+
+        let spot = Spot {
+            id: "beltzville".into(),
+            name: "Beltzville Lake".into(),
+            latitude: 40.855,
+            longitude: -75.627,
+            water_type: WaterType::LakeReservoir,
+            water_body: None,
+            time_zone: "America/New_York".into(),
+        };
+        // The hydrography around the spot answers nothing mapped.
+        let at = Coordinates {
+            latitude: spot.latitude,
+            longitude: spot.longitude,
+        };
+        let radius = crate::hydrography::HYDRO_RADIUS_M;
+        let empty = r#"{"features":[]}"#;
+        let host = MemoryHost::replay("beltzville")
+            .answering(
+                hydro::flowlines_query(at, radius, &ctx())
+                    .expect("query")
+                    .url,
+                empty,
+            )
+            .answering(
+                hydro::waterbodies_query(at, radius, &ctx())
+                    .expect("query")
+                    .url,
+                empty,
+            );
+        // Only the reservoir sources: no station list is asked of anyone.
+        let lake = ChainSpec {
+            sources: vec![SourceId::CWMS, SourceId::RISE],
+            limits: Limits::default(),
+        };
+        let chains = BTreeMap::from([(M::LakeLevel, lake.clone()), (M::Reservoir, lake)]);
+        let d = pollster::block_on(discover(&host, &ctx(), &spot, chains, true));
+        assert_eq!(d.errors, [], "{:#?}", d.errors);
+        for m in [M::LakeLevel, M::Reservoir] {
+            let link = first_link(&d, m);
+            assert_eq!(
+                (link.0.as_str(), link.1.as_str()),
+                ("cwms", "NAP/Beltzville")
+            );
+        }
+
+        // The session takes the project's pool as the lake level and its inflow as the
+        // reservoir block.
+        let requirements = Requirements {
+            measurements: BTreeSet::from([M::LakeLevel, M::Reservoir]),
+            ..Requirements::default()
+        };
+        let driver = pollster::block_on(Driver::new(&host, ctx().now, true));
+        let session = Session::new(
+            session_chains(&d.plan, &requirements, &ctx()),
+            requirements.clone(),
+            ctx(),
+        );
+        let out = pollster::block_on(run_session(&driver, session));
+        assert_eq!(out.errors, [], "{:#?}", out.errors);
+        let level = out.water.level.as_ref().expect("pool");
+        let pool = level.series.samples();
+        assert!((191.0..192.0).contains(&pool[0].value), "{:?}", pool[0]);
+        let reservoir = out.water.reservoir.as_ref().expect("reservoir");
+        assert_eq!(reservoir.project, "Beltzville Lake");
+        assert!(reservoir.outflow_m3s.is_none());
+        let inflow = reservoir.inflow_m3s.as_ref().expect("inflow");
+        assert_eq!(inflow.samples().len(), 2);
+        assert!(out.attribution.iter().any(|a| a.source == SourceId::CWMS));
+        assert_eq!(host.missed(), Vec::<String>::new());
     }
 
     #[test]

@@ -1,0 +1,12 @@
+# Recorded responses for a spot on Beltzville Lake, Pennsylvania (USACE Philadelphia District's
+# Beltzville project). Each route answers the first request whose URL contains `match`; `file` is
+# relative to this file. A request with no route fails with its redacted URL.
+
+# The project's pool elevation and computed inflow (the district publishes no release).
+[[route]]
+match = "cwms-data/timeseries?office=NAP&name=Beltzville.Elev.Inst.15Minutes.0.Rev-DCP&"
+file = "../../raw/tier2/cwms-nap-beltzville-elev-2026-11-08.json"
+
+[[route]]
+match = "cwms-data/timeseries?office=NAP&name=Beltzville.Flow-In.Inst.1Hour.0.Computed&"
+file = "../../raw/cwms/cwms-nap-beltzville-flow-in-2026-11-08.json"

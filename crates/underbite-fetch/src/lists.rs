@@ -1,5 +1,6 @@
 //! Station lists: CO-OPS's and NDBC's whole lists, and USGS sites and NWPS gauges in a box
-//! around the rounded spot, each stored for a while.
+//! around the rounded spot, each stored for a while; and the reservoir projects of the bundled
+//! CWMS and RISE tables, found on the device.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -15,7 +16,9 @@ use underbite_providers::coops::Coops;
 use underbite_providers::coops::mdapi::{self, Metadata, StationList};
 use underbite_providers::ndbc::{self, Ndbc};
 use underbite_providers::nwps::{self, Nwps};
-use underbite_providers::request::{Place, RoundedPoint, Target, Window};
+use underbite_providers::request::{Coordinates, Place, RoundedPoint, Target, Window};
+use underbite_providers::reservoirs::catalogue::{self as cwms_catalogue, Near};
+use underbite_providers::reservoirs::rise;
 use underbite_providers::source::{FetchContext, Source, SourceError, check_response};
 use underbite_providers::usgs::{Usgs, sites};
 
@@ -265,16 +268,104 @@ fn with_station_observations(candidates: &mut [StationCandidate]) {
     }
 }
 
-/// The lists of every station source in `chains`.
+/// A reservoir project as a station: the pool as the lake level, a release or inflow as the
+/// reservoir block. Listed, not confirmed: the bundled table names the series, not their
+/// latest values.
+fn reservoir_candidate(
+    source: SourceId,
+    id: String,
+    name: &str,
+    at: (f64, f64),
+    pool: bool,
+    flows: bool,
+) -> StationCandidate {
+    let listed = Coverage {
+        last_value_at: None,
+        primary: true,
+    };
+    let mut offers = BTreeMap::new();
+    if pool {
+        offers.insert(Measurement::LakeLevel, listed);
+    }
+    if flows {
+        offers.insert(Measurement::Reservoir, listed);
+    }
+    StationCandidate {
+        station: StationRef {
+            source,
+            id,
+            name: name.to_owned(),
+            kind: StationKind::WaterLevel,
+            latitude: at.0,
+            longitude: at.1,
+            bin: None,
+            reference_id: None,
+        },
+        offers,
+    }
+}
+
+/// The farthest any chain naming `source` reaches, metres; none when no chain names it.
+fn reach_of(chains: &BTreeMap<Measurement, ChainSpec>, source: &SourceId) -> Option<f64> {
+    chains
+        .values()
+        .filter(|c| c.sources.contains(source))
+        .map(|c| c.limits.max_distance_m)
+        .reduce(f64::max)
+}
+
+/// The reservoir projects of the bundled CWMS and RISE tables within the reach of the chains
+/// that name their source. Found on the device from the exact spot: no request is made and
+/// nothing about the spot leaves the device. Link-only projects carry no values and are left
+/// out.
+fn reservoir_candidates(
+    spot: Coordinates,
+    chains: &BTreeMap<Measurement, ChainSpec>,
+) -> Vec<StationCandidate> {
+    let mut out = Vec::new();
+    if let Some(reach) = reach_of(chains, &SourceId::CWMS) {
+        let near = cwms_catalogue::nearby(spot.latitude, spot.longitude, reach as f32);
+        out.extend(near.into_iter().filter_map(|n| match n.project {
+            Near::Cwms(p) => Some(reservoir_candidate(
+                SourceId::CWMS,
+                p.station_id(),
+                p.name,
+                (p.latitude, p.longitude),
+                p.pool.is_some(),
+                p.outflow.is_some() || p.inflow.is_some(),
+            )),
+            Near::Link(_) => None,
+        }));
+    }
+    if let Some(reach) = reach_of(chains, &SourceId::RISE) {
+        let near = rise::nearby(spot.latitude, spot.longitude, reach as f32);
+        out.extend(near.into_iter().map(|(p, _)| {
+            reservoir_candidate(
+                SourceId::RISE,
+                p.station_id(),
+                p.name,
+                (p.latitude, p.longitude),
+                p.pool.is_some(),
+                p.outflow.is_some() || p.inflow.is_some(),
+            )
+        }));
+    }
+    out
+}
+
+/// The lists of every station source in `chains`: those asked of the sources around the
+/// rounded `point`, and the reservoir projects of the bundled tables around the exact `spot`.
 pub(crate) async fn station_lists<H: FetchHost>(
     host: &Driver<'_, H>,
     ctx: &FetchContext,
+    spot: Coordinates,
     point: RoundedPoint,
     chains: &BTreeMap<Measurement, ChainSpec>,
 ) -> Lists {
     let sources: BTreeSet<&SourceId> = chains.values().flat_map(|c| &c.sources).collect();
     let target = point_target(point, host.now);
     let mut lists = Lists::default();
+    lists.candidates.extend(reservoir_candidates(spot, chains));
     if sources.contains(&SourceId::COOPS) || sources.contains(&SourceId::COOPS_HARMONICS) {
         for kind in [
             StationList::TidePredictions,
@@ -336,6 +427,81 @@ pub(crate) async fn station_lists<H: FetchHost>(
 mod tests {
     use super::*;
     use crate::testing::fixtures;
+    use underbite_core::discover::rank::Limits;
+
+    /// On Beltzville Lake, a little over a kilometre from the project's point.
+    const BELTZVILLE: Coordinates = Coordinates {
+        latitude: 40.855,
+        longitude: -75.627,
+    };
+
+    fn lake_chains(sources: &[SourceId], km: Option<f64>) -> BTreeMap<Measurement, ChainSpec> {
+        [Measurement::LakeLevel, Measurement::Reservoir]
+            .into_iter()
+            .map(|m| {
+                let spec = ChainSpec {
+                    sources: sources.to_vec(),
+                    limits: Limits::from_config(km, None),
+                };
+                (m, spec)
+            })
+            .collect()
+    }
+
+    #[test]
+    fn a_reservoir_spot_lists_its_project_from_the_bundled_table() {
+        let chains = lake_chains(&[SourceId::USGS, SourceId::CWMS, SourceId::RISE], None);
+        let found = reservoir_candidates(BELTZVILLE, &chains);
+        let ids: Vec<(&str, &str)> = found
+            .iter()
+            .map(|c| (c.station.source.as_str(), c.station.id.as_str()))
+            .collect();
+        assert_eq!(ids, [("cwms", "NAP/Beltzville")]);
+        let beltzville = &found[0];
+        assert_eq!(beltzville.station.name, "Beltzville Lake");
+        assert_eq!(beltzville.station.kind, StationKind::WaterLevel);
+        // The pool and the inflow, listed but unconfirmed.
+        assert_eq!(
+            beltzville.offers.keys().copied().collect::<Vec<_>>(),
+            [Measurement::LakeLevel, Measurement::Reservoir]
+        );
+        assert!(
+            beltzville
+                .offers
+                .values()
+                .all(|c| c.primary && c.last_value_at.is_none())
+        );
+    }
+
+    #[test]
+    fn reservoir_projects_stay_within_their_chains_reach() {
+        // A 1 km limit leaves the project out; so does a chain without its source.
+        let near = lake_chains(&[SourceId::CWMS], Some(1.0));
+        assert_eq!(reservoir_candidates(BELTZVILLE, &near), []);
+        let other = lake_chains(&[SourceId::USGS, SourceId::RISE], None);
+        assert_eq!(reservoir_candidates(BELTZVILLE, &other), []);
+        // Nothing within the default 50 km of the Battery.
+        let battery = Coordinates {
+            latitude: 40.7033,
+            longitude: -74.0170,
+        };
+        let all = lake_chains(&[SourceId::CWMS, SourceId::RISE], None);
+        assert_eq!(reservoir_candidates(battery, &all), []);
+        // Reclamation's projects come from their own table.
+        let powell = Coordinates {
+            latitude: 37.07,
+            longitude: -111.32,
+        };
+        let found = reservoir_candidates(powell, &all);
+        assert_eq!(found.len(), 1, "{found:#?}");
+        assert_eq!(
+            (
+                found[0].station.source.as_str(),
+                found[0].station.id.as_str()
+            ),
+            ("rise", "393")
+        );
+    }
 
     #[test]
     fn bin_depths_are_read_in_metres() {
