@@ -1401,6 +1401,13 @@ keys! {
     ReceiveAddCopy => ("Add as a copy", "Add as a copy"),
     ReceiveReplace => ("Replace mine", "Replace mine"),
     ReceiveAdded => ("Added", "Added"),
+    /// A file of a kind this version cannot open: `{kind}`, a `ReceiveKind…` text.
+    ReceiveCannotOpen => (
+        "This version of the app cannot open a {kind} file yet.",
+        "This version of the app cannot open a {kind} file yet.",
+    ),
+    ReceiveKindProfile => ("species profile", "species profile"),
+    ReceiveKindLayers => ("map layers", "map layers"),
     TripProblemTimeZone => (
         "Unknown time zone: no days for this place",
         "Unknown time zone: no days for this place",

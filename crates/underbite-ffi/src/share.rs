@@ -327,29 +327,21 @@ pub fn read_file(bytes: Vec<u8>, settings_json: String) -> Result<SharedFile, Sh
             notes: Some(share.notes),
         }),
         // A species profile is read by `species::species_read_file`.
-        Document::Profile(_) => Err(ShareError::Unsupported {
-            message: sentence(&format!(
-                "this version of the app cannot open a {} file yet",
-                kind_words("profile")
-            )),
-            kind: "profile".to_owned(),
-        }),
-        Document::Unsupported { kind } => Err(ShareError::Unsupported {
-            message: sentence(&format!(
-                "this version of the app cannot open a {} file yet",
-                kind_words(&kind)
-            )),
-            kind,
-        }),
+        Document::Profile(_) => Err(cannot_open(strings, "profile".to_owned())),
+        Document::Unsupported { kind } => Err(cannot_open(strings, kind)),
     }
 }
 
-/// A reserved kind in words.
-fn kind_words(kind: &str) -> &str {
-    match kind {
-        "layers" => "map layers",
-        "profile" => "species profile",
+/// The error for a file of a kind this version cannot open yet, in the table's words.
+fn cannot_open(strings: Strings, kind: String) -> ShareError {
+    let words = match kind.as_str() {
+        "layers" => strings.get(Key::ReceiveKindLayers),
+        "profile" => strings.get(Key::ReceiveKindProfile),
         other => other,
+    };
+    ShareError::Unsupported {
+        message: strings.fmt(Key::ReceiveCannotOpen, &[("kind", words)]),
+        kind,
     }
 }
 
@@ -563,6 +555,7 @@ pub fn merge_trips(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use underbite_core::view::Voice;
 
     #[test]
     fn core_problems_keep_their_text_as_a_sentence() {
@@ -573,6 +566,19 @@ mod tests {
                 message: "This file needs a newer version of the app.".into()
             }
         );
-        assert_eq!(kind_words("layers"), "map layers");
+    }
+
+    #[test]
+    fn kinds_it_cannot_open_yet_are_worded_by_the_strings_table() {
+        let s = Strings::new(Voice::Plain);
+        for (kind, words) in [("layers", "map layers"), ("profile", "species profile")] {
+            assert_eq!(
+                cannot_open(s, kind.to_owned()),
+                ShareError::Unsupported {
+                    message: format!("This version of the app cannot open a {words} file yet."),
+                    kind: kind.to_owned(),
+                }
+            );
+        }
     }
 }
