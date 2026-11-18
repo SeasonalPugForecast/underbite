@@ -3,7 +3,7 @@ import UnderbiteKit
 
 /// A page of the Settings root.
 enum SettingsDestination: Hashable {
-    case sources, keys, species, alerts, cards, about, attribution, acknowledgements
+    case sources, keys, species, alerts, cards, colors, about, attribution, acknowledgements
     case preference(PreferencePageID)
 
     /// The page `-settings <name>` asks for, in debug builds only (screenshots). `-preferences
@@ -17,6 +17,7 @@ enum SettingsDestination: Hashable {
             case "species": return .species
             case "alerts": return .alerts
             case "cards": return .cards
+            case "colors": return .colors
             case "about": return .about
             case "attribution": return .attribution
             case "acknowledgements": return .acknowledgements
@@ -113,6 +114,7 @@ struct SettingsView: View {
                 Label("Cards", systemImage: "rectangle.grid.1x2").tag(SettingsDestination.cards)
                 row(.voice)
                 row(.display)
+                Label("Colours", systemImage: "paintpalette").tag(SettingsDestination.colors)
                 row(.privacy)
             } header: {
                 Text("Look and privacy").foregroundStyle(.readableSecondary)
@@ -152,6 +154,7 @@ struct SettingsView: View {
         case .species: SpeciesBrowser()
         case .alerts: AlertRulesPage()
         case .cards: CustomizeView()
+        case .colors: ColorsView()
         case .about: AboutView()
         case .attribution: AttributionView()
         case .acknowledgements: AcknowledgementsView()

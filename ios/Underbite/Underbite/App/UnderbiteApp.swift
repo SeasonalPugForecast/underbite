@@ -19,6 +19,7 @@ struct UnderbiteApp: App {
                 .environment(store)
                 .environment(\.voiceStyle, voice)
                 .sunMode(store.sunMode || LaunchArguments.sunMode)
+                .paintsWithTheme(sunMode: store.sunMode || LaunchArguments.sunMode)
                 // While the app is open, due spots are fetched and the page built again every
                 // minute; in the background nothing is.
                 .onChange(of: phase, initial: true) { _, phase in
