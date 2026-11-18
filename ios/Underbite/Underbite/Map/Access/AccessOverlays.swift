@@ -88,11 +88,11 @@ nonisolated final class AccessShapeRenderer: MKOverlayRenderer {
             switch shape.form {
             case .area:
                 context.addPath(path)
-                context.setFillColor(colour.withAlphaComponent(0.18 * alpha).cgColor)
+                context.setFillColor(colour.withAlphaComponent(0.24 * alpha).cgColor)
                 context.fillPath(using: .evenOdd)
                 context.addPath(path)
                 context.setStrokeColor(colour.withAlphaComponent(0.85 * alpha).cgColor)
-                context.setLineWidth(CGFloat(1.5 * perPoint))
+                context.setLineWidth(CGFloat(2 * perPoint))
                 if !shape.role.filled {
                     context.setLineDash(
                         phase: 0, lengths: [CGFloat(4 * perPoint), CGFloat(3 * perPoint)])
