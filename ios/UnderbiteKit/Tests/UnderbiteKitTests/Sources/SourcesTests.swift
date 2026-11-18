@@ -75,9 +75,9 @@ final class SourcesTests: XCTestCase {
         let base = try defaults()
         let catalogue = sourceCatalogue()
         let rows = SourceChains.rows(.waterTemperature, sources: base.sources, defaults: base.sources, catalogue: catalogue)
-        let glerl = try XCTUnwrap(rows.first { $0.id == "glerl" })
-        XCTAssertFalse(glerl.implemented)
-        XCTAssertTrue(glerl.used)
+        let mur = try XCTUnwrap(rows.first { $0.id == "mur-sst" })
+        XCTAssertFalse(mur.implemented)
+        XCTAssertTrue(mur.used)
         let coops = try XCTUnwrap(rows.first { $0.id == "coops" })
         XCTAssertTrue(coops.implemented)
 
