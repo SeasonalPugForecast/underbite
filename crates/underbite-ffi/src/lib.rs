@@ -12,5 +12,6 @@ pub mod map_stations;
 pub mod offline;
 pub mod settings;
 pub mod share;
+pub mod species;
 pub mod trip;
 pub mod view;

@@ -14,6 +14,7 @@ pub mod log;
 pub mod packs;
 #[cfg(test)]
 mod pseudo_tests;
+pub mod species;
 pub mod stations;
 pub mod strings;
 pub mod timeline;

@@ -11,6 +11,7 @@ pub mod now;
 pub mod pressure;
 pub mod solunar;
 pub mod sources;
+pub mod species;
 pub mod stocking;
 pub mod storm_ahead;
 pub mod sun_moon;
