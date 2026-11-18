@@ -66,6 +66,8 @@ nonisolated struct AlertCheck: Sendable {
                 }
             }
         }
+        // A check cancelled during its last fetch is not evaluated either: the state stays.
+        try Task.checkCancellation()
         var data = infos.map { info in
             AlertSpotData(spot: info, snapshotJson: fetched[info.id] ?? lastSnapshot(info.id))
         }
