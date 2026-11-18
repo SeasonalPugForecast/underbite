@@ -9,6 +9,7 @@ pub mod cards;
 pub mod chart;
 pub mod format;
 pub mod locale;
+pub mod log;
 #[cfg(any(test, debug_assertions))]
 pub mod packs;
 #[cfg(test)]
