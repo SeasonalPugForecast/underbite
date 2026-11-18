@@ -103,13 +103,16 @@ struct LogTab: View {
 }
 
 /// The list column: "What worked", then the catches that pass the filters; swipe or touch and
-/// hold to delete. Its toolbar logs a new catch and filters.
+/// hold to delete. Its toolbar logs a new catch, filters and exports the log.
 private struct CatchListColumn: View {
+    @Environment(SpotStore.self) private var spots
     let catches: CatchStore
     @Binding var selection: LogSelection?
     @Binding var filter: CatchListFilter
     @Binding var editor: CatchEditorSheet?
     @State private var deleting: CatchRow?
+    /// The exported file the share sheet is showing.
+    @State private var sharing: URL?
 
     var body: some View {
         let rows = catches.list?.rows ?? []
@@ -175,8 +178,14 @@ private struct CatchListColumn: View {
                 ToolbarItem(placement: .primaryAction) {
                     CatchFilterMenu(rows: rows, filter: $filter)
                 }
+                if let words = try? logExportWords(settingsJson: spots.settingsJSON) {
+                    ToolbarItem(placement: .primaryAction) {
+                        CatchExportMenu(catches: catches, words: words, sharing: $sharing)
+                    }
+                }
             }
         }
+        .background(ExportSharePresenter(file: $sharing))
         .confirmationDialog(
             "Delete this catch?",
             isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
