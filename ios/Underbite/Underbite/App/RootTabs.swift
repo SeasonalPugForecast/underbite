@@ -21,9 +21,7 @@ struct RootTabs: View {
                 SpotsView()
             }
             Tab("Trips", systemImage: "calendar", value: AppTab.trips) {
-                ComingSection(
-                    title: "Trips", systemImage: "calendar",
-                    text: "Plan a trip's days, with a checklist and maps for offline use.")
+                TripsTab()
             }
             Tab("Log", systemImage: "book.closed", value: AppTab.log) {
                 ComingSection(
