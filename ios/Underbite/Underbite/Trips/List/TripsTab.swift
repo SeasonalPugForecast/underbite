@@ -1,5 +1,6 @@
 import Combine
 import SwiftUI
+@preconcurrency import UnderbiteKit
 
 /// What the Trips screen has open over it.
 private enum TripsSheet: Identifiable {
@@ -109,6 +110,9 @@ private struct TripList: View {
         let upcoming = trips.upcoming
         let past = trips.past
         List(selection: $selection) {
+            if trips.unreadable {
+                Section { unreadableNotice }
+            }
             if !upcoming.isEmpty {
                 Section("Upcoming") { rows(upcoming) }
             }
@@ -159,6 +163,18 @@ private struct TripList: View {
                     }
                 }
         }
+    }
+
+    private var unreadableNotice: some View {
+        Label {
+            Text(fileProblemText(file: .trips, keptAs: trips.keptAs))
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(Palette.warning)
+                .accessibilityHidden(true)
+        }
+        .font(.subheadline)
     }
 
     private var emptyState: some View {
