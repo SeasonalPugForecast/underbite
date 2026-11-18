@@ -73,6 +73,8 @@ struct CardDetailView: View {
             WindowsDetail(full: c.full)
             sections(c.full.sections)
         case .goNoGo(let c): GoNoGoDetail(full: c.full)
+        case .bloom(let c): BloomDetail(full: c.full)
+        case .stocking(let c): StockingDetail(full: c.full)
         case .unknown: EmptyView()
         }
     }
@@ -161,6 +163,8 @@ struct CardDetailView: View {
             }
         }
         sections(full.sections)
+        // A reservoir's operator pages, after its section (project, outflow, inflow).
+        PageLinks(links: full.reservoirLinks)
     }
 
     @ViewBuilder private func waterTempRows(_ full: ViewModel.WaterTempFull) -> some View {

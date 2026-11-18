@@ -112,7 +112,7 @@ final class ViewModelTests: XCTestCase {
         let first = try XCTUnwrap(cards.first as? [String: Any])
         // One with a frame, one with nothing a decoder would know, one with the wrong shape.
         cards.append([
-            "card": "stocking", "chrome": first["chrome"] as Any, "full": ["stocked": []],
+            "card": "tackle_shops", "chrome": first["chrome"] as Any, "full": ["shops": []],
         ])
         cards.append(["card": "future_card", "anything": [1, 2, 3]])
         cards.append(["card": "odd", "chrome": "not a frame"])
@@ -126,7 +126,7 @@ final class ViewModelTests: XCTestCase {
         guard case .unknown(let kind, let chrome) = all[known] else {
             return XCTFail("a card of an unknown kind decodes as .unknown")
         }
-        XCTAssertEqual(kind, "stocking")
+        XCTAssertEqual(kind, "tackle_shops")
         XCTAssertEqual(chrome?.id, "now")
         guard case .unknown("future_card", nil) = all[known + 1] else {
             return XCTFail("an unknown card without a frame has none")
@@ -260,5 +260,171 @@ final class ViewModelTests: XCTestCase {
         let alert = try XCTUnwrap(alerts.full.alerts.first)
         XCTAssertEqual(alert.span, "Nov 6, 4:20 PM – Nov 7, 2:20 AM")
         XCTAssertEqual(alert.severityLabel, "Minor")
+    }
+
+    // The bloom and stocking cards and a flow card with a reservoir, as the core writes them
+    // (its card snapshots, shortened).
+    private func tierTwoCards() throws -> [ViewModel.Card] {
+        func chrome(_ id: String, _ title: String, credits: String, state: String) -> String {
+            """
+            "chrome": {"id": "\(id)", "title": "\(title)", "footnote": null,
+              "credits": [\(credits)], "state": \(state), "notices": [], "accessibility": "a"}
+            """
+        }
+        let fresh = #"{"state": "fresh"}"#
+        let cyan = """
+            {"source": "EPA CyAN", "text": "U.S. EPA Cyanobacteria Assessment Network (CyAN)",
+             "link": "https://www.epa.gov/cyanohabs", "licence": null}
+            """
+        let stale = #"{"state": "stale", "reason": "No recent satellite data"}"#
+        let advisory =
+            "Algal blooms can make people and dogs sick. Keep people and pets out of green, "
+            + "scummy or discoloured water, and follow local health advisories."
+        let experimental =
+            "Experimental: provisional satellite-derived measures of cyanobacteria, which may "
+            + "contain errors and should be considered a research tool. Not a health advisory."
+        let none = #"{"value": null, "text": "—", "unit": ""}"#
+        let json = """
+            [
+             {"card": "bloom", \(chrome("bloom", "Algal bloom", credits: "", state: fresh)),
+              "compact": {"headline": {"value": null, "text": "Low", "unit": ""},
+               "lines": ["Respiratory irritation low at Clearwater Beach, 2.0 mi"], "spark": []},
+              "full": {"cyan": null,
+               "hab": {"recent": true, "level": "low",
+                "text": "Respiratory irritation low at Clearwater Beach, 2.0 mi",
+                "confidence": "0.9 of 1"},
+               "advisory": "\(advisory)",
+               "sections": [{"title": "Bloom forecast", "rows": [
+                {"label": "Beach", "value": "Clearwater Beach", "detail": null},
+                {"label": "Respiratory irritation", "value": "Low", "detail": null}]}],
+               "links": []}},
+             {"card": "bloom", \(chrome("bloom", "Algal bloom", credits: cyan, state: stale)),
+              "compact": {"headline": \(none),
+               "lines": ["No recent satellite data (last composite Mar 28)"], "spark": []},
+              "full": {"cyan": {"recent": false, "max": null, "image_date": "Mar 28",
+                "text": "No recent satellite data (last composite Mar 28)",
+                "experimental": "\(experimental)"},
+               "hab": null, "advisory": "\(advisory)",
+               "sections": [{"title": "Satellite estimate", "rows": [
+                {"label": "Composite date", "value": "Mar 28", "detail": null},
+                {"label": "", "value": "\(experimental)", "detail": null}]}],
+               "links": [{"label": "NOAA bloom forecasts",
+                "url": "https://coastalscience.noaa.gov/science-areas/habs/hab-forecasts/"}]}},
+             {"card": "stocking", \(chrome("stocking", "Stocking", credits: "", state: fresh)),
+              "compact": {"headline": {"value": 3.0, "text": "3", "unit": "stockings"},
+               "lines": ["Brown Trout · Apr 2026 · about 1,200 · 8 to 12 in",
+                "Rainbow Trout · planned: Week of April 14"], "spark": []},
+              "full": {"recent": [{"waterbody": "Croton River", "place": "Yorktown, Westchester",
+                "species": "Brown Trout", "when": "Apr 2026",
+                "summary": "Brown Trout · Apr 2026 · about 1,200 · 8 to 12 in",
+                "planned": false}],
+               "planned": [{"waterbody": "Croton River", "place": null,
+                "species": "Rainbow Trout", "when": "planned: Week of April 14",
+                "summary": "Rainbow Trout · planned: Week of April 14", "planned": true}],
+               "empty": null,
+               "notes": ["Numbers are the agency's estimates.",
+                "Planned stockings are a schedule and can change."],
+               "sections": [{"title": "Recent stockings", "rows": [
+                {"label": "Croton River",
+                 "value": "Brown Trout · Apr 2026 · about 1,200 · 8 to 12 in",
+                 "detail": "Yorktown, Westchester"}]}]}},
+             {"card": "stocking", \(chrome("stocking", "Stocking", credits: "", state: fresh)),
+              "compact": {"headline": \(none), "lines": ["No recent stocking reported nearby"],
+               "spark": []},
+              "full": {"recent": [], "planned": [], "empty": "No recent stocking reported nearby",
+               "notes": [], "sections": []}},
+             {"card": "flow", \(chrome("flow", "River flow", credits: "", state: fresh)),
+              "compact": {"headline": {"value": 12.4, "text": "12.4", "unit": "cfs"},
+               "lines": ["normal, 45th percentile for Nov 8", "Outflow 32.0 cfs · 2 h ago"],
+               "spark": [11.0, 12.4]},
+              "full": {"discharge": {"value": 12.4, "text": "12.4", "unit": "cfs"},
+               "trend": {"direction": "rising", "text": "Rising 0.7 cfs in 3 h"},
+               "gage_height": null, "percentile": null, "range_status": null,
+               "flood_categories": [], "chart": null, "stage_chart": null,
+               "sections": [{"title": "Reservoir", "rows": [
+                {"label": "Project", "value": "Beltzville Lake", "detail": null},
+                {"label": "Outflow", "value": "32.0 cfs", "detail": "2 h ago"},
+                {"label": "Inflow", "value": "20.0 cfs", "detail": "30 min ago"}]}],
+               "reservoir_links": [{"label": "USACE Philadelphia District",
+                "url": "https://www.nap.usace.army.mil"}]}}
+            ]
+            """
+        return try ViewModel.decoder().decode([ViewModel.Card].self, from: Data(json.utf8))
+    }
+
+    func testTheBloomCardDecodesTheForecastAndTheSatellite() throws {
+        let cards = try tierTwoCards()
+        guard case .bloom(let forecast) = cards[0], case .bloom(let stale) = cards[1] else {
+            return XCTFail("the first two cards are bloom cards")
+        }
+        XCTAssertEqual(forecast.chrome.id, "bloom")
+        XCTAssertNil(forecast.full.cyan)
+        let hab = try XCTUnwrap(forecast.full.hab)
+        XCTAssertTrue(hab.recent)
+        XCTAssertEqual(hab.level, "low")
+        XCTAssertEqual(hab.confidence, "0.9 of 1")
+        XCTAssertEqual(hab.text, "Respiratory irritation low at Clearwater Beach, 2.0 mi")
+        XCTAssertTrue(
+            forecast.full.advisory.hasPrefix("Algal blooms can make people and dogs sick."))
+        XCTAssertEqual(forecast.compact.headline.text, "Low")
+        XCTAssertTrue(forecast.full.links.isEmpty)
+
+        // A stale composite says so: no count, never "no bloom".
+        XCTAssertEqual(stale.chrome.state, .stale(reason: "No recent satellite data"))
+        XCTAssertEqual(stale.chrome.credits.first?.link, "https://www.epa.gov/cyanohabs")
+        let cyan = try XCTUnwrap(stale.full.cyan)
+        XCTAssertFalse(cyan.recent)
+        XCTAssertNil(cyan.max)
+        XCTAssertEqual(cyan.imageDate, "Mar 28")
+        XCTAssertEqual(cyan.text, "No recent satellite data (last composite Mar 28)")
+        XCTAssertTrue(cyan.experimental.hasPrefix("Experimental:"))
+        XCTAssertNil(stale.full.hab)
+        XCTAssertEqual(stale.full.sections[0].rows[1].label, "")
+        XCTAssertEqual(stale.full.links.first?.label, "NOAA bloom forecasts")
+    }
+
+    func testTheStockingCardDecodesItsRowsAndItsEmptyLine() throws {
+        let cards = try tierTwoCards()
+        guard case .stocking(let some) = cards[2], case .stocking(let empty) = cards[3] else {
+            return XCTFail("the third and fourth cards are stocking cards")
+        }
+        XCTAssertEqual(some.compact.headline.unit, "stockings")
+        XCTAssertEqual(some.full.recent.map(\.species), ["Brown Trout"])
+        XCTAssertEqual(some.full.recent[0].place, "Yorktown, Westchester")
+        XCTAssertFalse(some.full.recent[0].planned)
+        XCTAssertEqual(some.full.planned[0].when, "planned: Week of April 14")
+        XCTAssertNil(some.full.planned[0].place)
+        XCTAssertTrue(some.full.planned[0].planned)
+        XCTAssertNil(some.full.empty)
+        XCTAssertEqual(some.full.notes.count, 2)
+        XCTAssertEqual(some.full.sections[0].rows[0].detail, "Yorktown, Westchester")
+
+        XCTAssertEqual(empty.full.empty, "No recent stocking reported nearby")
+        XCTAssertTrue(empty.full.recent.isEmpty && empty.full.planned.isEmpty)
+        XCTAssertEqual(empty.compact.lines, ["No recent stocking reported nearby"])
+    }
+
+    func testTheFlowCardCarriesTheReservoirAndItsLinks() throws {
+        guard case .flow(let flow) = try tierTwoCards()[4] else {
+            return XCTFail("the fifth card is a flow card")
+        }
+        XCTAssertEqual(flow.compact.lines[1], "Outflow 32.0 cfs · 2 h ago")
+        let reservoir = try XCTUnwrap(flow.full.sections.first)
+        XCTAssertEqual(reservoir.rows.map(\.label), ["Project", "Outflow", "Inflow"])
+        XCTAssertEqual(reservoir.rows[2].detail, "30 min ago")
+        XCTAssertEqual(
+            flow.full.reservoirLinks,
+            [.init(label: "USACE Philadelphia District", url: "https://www.nap.usace.army.mil")])
+    }
+
+    func testTheSamplesFlowCardCarriesItsReservoir() throws {
+        let view = try XCTUnwrap(samplePage().view)
+        let flow = try XCTUnwrap(
+            view.cards.compactMap { card -> ViewModel.FlowCard? in
+                if case .flow(let flow) = card { flow } else { nil }
+            }.first)
+        XCTAssertEqual(flow.full.reservoirLinks.map(\.label), ["USACE Philadelphia District"])
+        XCTAssertEqual(flow.full.sections.last?.title, "Reservoir")
+        XCTAssertEqual(flow.compact.lines.last, "Outflow 38.8 cfs · 6 min ago")
     }
 }

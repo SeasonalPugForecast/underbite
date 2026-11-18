@@ -133,6 +133,8 @@ extension ViewModel {
     public typealias SourcesCard = CardContent<SourcesFull>
     public typealias WindowsCard = CardContent<WindowsFull>
     public typealias GoNoGoCard = CardContent<GoNoGoFull>
+    public typealias BloomCard = CardContent<BloomFull>
+    public typealias StockingCard = CardContent<StockingFull>
 
     /// One card, by its `card` tag. A kind this version does not know is `.unknown`: skip it or
     /// show its frame.
@@ -154,6 +156,8 @@ extension ViewModel {
         case sources(SourcesCard)
         case windows(WindowsCard)
         case goNoGo(GoNoGoCard)
+        case bloom(BloomCard)
+        case stocking(StockingCard)
         /// A card of a later version; `chrome` is set when its frame still decodes.
         case unknown(kind: String, chrome: CardChrome?)
 
@@ -180,6 +184,8 @@ extension ViewModel {
             case "sources": self = .sources(try SourcesCard(from: decoder))
             case "windows": self = .windows(try WindowsCard(from: decoder))
             case "go_no_go": self = .goNoGo(try GoNoGoCard(from: decoder))
+            case "bloom": self = .bloom(try BloomCard(from: decoder))
+            case "stocking": self = .stocking(try StockingCard(from: decoder))
             default:
                 let chrome = try? keys.decodeIfPresent(CardChrome.self, forKey: .chrome)
                 self = .unknown(kind: kind, chrome: chrome)
@@ -206,6 +212,8 @@ extension ViewModel {
             case .sources(let c): c.chrome
             case .windows(let c): c.chrome
             case .goNoGo(let c): c.chrome
+            case .bloom(let c): c.chrome
+            case .stocking(let c): c.chrome
             case .unknown(_, let chrome): chrome
             }
         }
@@ -230,6 +238,8 @@ extension ViewModel {
             case .sources(let c): c.compact
             case .windows(let c): c.compact
             case .goNoGo(let c): c.compact
+            case .bloom(let c): c.compact
+            case .stocking(let c): c.compact
             case .unknown: nil
             }
         }
@@ -601,7 +611,10 @@ extension ViewModel {
         public var floodCategories: [FloodCategory]
         public var chart: Chart?
         public var stageChart: Chart?
+        /// Includes a reservoir's section (project, outflow, inflow) when the spot has one.
         public var sections: [Section]
+        /// The operator's pages for a reservoir's releases; empty when there is no reservoir.
+        public var reservoirLinks: [PageLink]
     }
 
     /// `status` is `wadeable`, `best`, `fishable`, `blown_out` or `unknown`.
@@ -628,6 +641,12 @@ extension ViewModel {
     public struct FloodCategory: Decodable, Sendable, Hashable {
         public var label: String
         public var stage: Quantity
+    }
+
+    /// A link to a source's own page: its label and address.
+    public struct PageLink: Decodable, Sendable, Hashable {
+        public var label: String
+        public var url: String
     }
 
     // Water temperature
@@ -662,6 +681,66 @@ extension ViewModel {
         public var available: Bool
         public var value: Quantity?
         public var note: String
+    }
+
+    // Algal bloom
+
+    /// Every text of the bloom card is safety text: show it whole, never in Luna's voice.
+    public struct BloomFull: Decodable, Sendable, Hashable {
+        /// The satellite cyanobacteria estimate of a lake.
+        public var cyan: CyanEstimate?
+        /// The coastal respiratory-irritation forecast of the nearest beach.
+        public var hab: HabForecast?
+        /// The health advice about people and dogs, shown with every bloom card.
+        public var advisory: String
+        public var sections: [Section]
+        /// The regional pages (bulletins, viewers).
+        public var links: [PageLink]
+    }
+
+    /// `recent` is false when the composite is too old or empty: `text` then says "No recent
+    /// satellite data" and there is no `max`.
+    public struct CyanEstimate: Decodable, Sendable, Hashable {
+        public var recent: Bool
+        public var max: Quantity?
+        public var imageDate: String?
+        public var text: String
+        /// The source's own description of the product as experimental.
+        public var experimental: String
+    }
+
+    /// `level` is `very_low`, `low`, `moderate`, `high` or `unknown`, set only while `recent`.
+    public struct HabForecast: Decodable, Sendable, Hashable {
+        public var recent: Bool
+        public var level: String?
+        public var text: String
+        /// "0.9 of 1".
+        public var confidence: String?
+    }
+
+    // Stocking
+
+    public struct StockingFull: Decodable, Sendable, Hashable {
+        /// Newest first.
+        public var recent: [Stocking]
+        public var planned: [Stocking]
+        /// "No recent stocking reported nearby" when there is none of either.
+        public var empty: String?
+        /// The estimate and lag notes, and the planned note when there are planned rows.
+        public var notes: [String]
+        /// "Recent stockings" and "Planned stockings": the waterbody, the summary and the place.
+        public var sections: [Section]
+    }
+
+    /// One stocking: `when` is "Apr 2026" or "planned: Week of April 14"; `summary` is the
+    /// whole line.
+    public struct Stocking: Decodable, Sendable, Hashable {
+        public var waterbody: String
+        public var place: String?
+        public var species: String
+        public var when: String
+        public var summary: String
+        public var planned: Bool
     }
 
     // Waves
