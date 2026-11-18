@@ -2,16 +2,20 @@
 //!
 //! TOML is the file the user exports and shares; JSON is the form the app stores its preferences
 //! in. Both carry exactly the schema's fields, so an export holds no key, token or location, and
-//! an import is refused if the file does.
+//! an import is refused if the file does. Alert rules name spots and trips by id; a box target,
+//! the one rule with coordinates, is rounded in the TOML export.
 
 use serde_json::Value;
 
+use crate::alerts::round_boxes;
 use crate::migrate::{ImportError, find_key_like, prepare};
 use crate::schema::{Config, ConfigError, Issue};
+use crate::sources::MAX_COORDINATE_PRECISION;
 
 const HEADER: &str = "# Underbite settings\n\
-# Units, sources, cards, limits, rivers, windows and map defaults.\n\
-# Keys and passwords are never written here; they stay in the keychain or the environment.\n\n";
+# Units, sources, cards, limits, rivers, windows, map defaults and alert rules.\n\
+# Keys and passwords are never written here; they stay in the keychain or the environment.\n\
+# Alert rules name spots and trips by id; their boxes are rounded like the coordinates sent to providers.\n\n";
 
 /// Writing a configuration failed.
 #[derive(Debug, thiserror::Error)]
@@ -32,10 +36,17 @@ fn guard(config: &Config) -> Result<(), ExportError> {
     }
 }
 
-/// The user-facing export: TOML with a short comment header, in schema order.
+/// The user-facing export: TOML with a short comment header, in schema order. Alert boxes are
+/// rounded to the coordinate precision sent to providers.
 pub fn to_toml(config: &Config) -> Result<String, ExportError> {
     guard(config)?;
-    Ok(format!("{HEADER}{}", config.to_toml()?))
+    let mut shared = config.clone();
+    let decimals = config
+        .sources
+        .coordinate_precision
+        .min(MAX_COORDINATE_PRECISION);
+    round_boxes(&mut shared.alerts, decimals);
+    Ok(format!("{HEADER}{}", shared.to_toml()?))
 }
 
 /// The app's storage form: pretty JSON in schema order.
@@ -220,6 +231,84 @@ offline_max_mb = 1500
             Err(ImportError::Invalid(_))
         ));
         assert!(matches!(parse_toml("= nope"), Err(ImportError::Syntax(_))));
+    }
+
+    const ALERTS: &str = r#"
+[[alerts]]
+id = "croton-low"
+name = "Croton low"
+target = { kind = "spot", id = "croton" }
+all_of = [{ kind = "measurement", metric = "discharge", below = 22.65 }]
+
+[[alerts]]
+id = "canyon"
+name = "Warm water"
+target = { kind = "box", south = 39.512345, west = -72.498765, north = 40.4999, east = -71.5001 }
+all_of = [{ kind = "measurement", metric = "sea_surface_temp", above = 20.0 }]
+"#;
+
+    #[test]
+    fn alerts_export_rounds_boxes_and_round_trips() {
+        let (config, issues) = parse_toml(ALERTS).unwrap();
+        assert_eq!(issues, []);
+        let text = to_toml(&config).unwrap();
+        assert!(
+            !text.contains("39.512345") && !text.contains("72.498765"),
+            "{text}"
+        );
+        let (back, issues) = parse_toml(&text).unwrap();
+        assert_eq!(issues, []);
+        assert_eq!(back.alerts[0], config.alerts[0]);
+        let crate::alerts::AlertTarget::Box { south, west, .. } = back.alerts[1].target else {
+            panic!("{:?}", back.alerts[1].target);
+        };
+        assert!((south - 39.51).abs() < 1e-9 && (west + 72.5).abs() < 1e-9);
+        assert_eq!(to_toml(&back).unwrap(), text);
+        // The app's own storage keeps what was drawn.
+        let (stored, _) = parse_json(&to_json(&config).unwrap()).unwrap();
+        assert_eq!(stored, config);
+    }
+
+    #[test]
+    fn alerts_export_follows_a_coarser_precision() {
+        let (mut config, _) = parse_toml(ALERTS).unwrap();
+        config.sources.coordinate_precision = 1;
+        let (back, issues) = parse_toml(&to_toml(&config).unwrap()).unwrap();
+        assert!(!has_errors(&issues), "{issues:?}");
+        let crate::alerts::AlertTarget::Box {
+            south,
+            west,
+            north,
+            east,
+        } = back.alerts[1].target
+        else {
+            panic!("{:?}", back.alerts[1].target);
+        };
+        for (got, want) in [(south, 39.5), (west, -72.5), (north, 40.5), (east, -71.5)] {
+            assert!((got - want).abs() < 1e-9, "{got} {want}");
+        }
+    }
+
+    #[test]
+    fn alerts_unknown_keys_are_refused_with_the_path() {
+        let e = parse_toml(
+            "[[alerts]]\nid = \"a\"\nname = \"A\"\nall_of = []\n\
+             target = { kind = \"spot\", id = \"s\", latitude = 40.7 }",
+        )
+        .unwrap_err();
+        assert_eq!(
+            e,
+            ImportError::UnknownKey {
+                path: "alerts[0].target.latitude".into()
+            }
+        );
+    }
+
+    #[test]
+    fn alerts_an_old_file_without_them_imports() {
+        let (config, issues) = parse_toml(ARCH_EXAMPLE).unwrap();
+        assert_eq!(issues, []);
+        assert_eq!(config.alerts, []);
     }
 
     #[test]

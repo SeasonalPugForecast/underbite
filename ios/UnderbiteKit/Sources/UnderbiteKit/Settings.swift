@@ -23,6 +23,8 @@ public struct Settings: Codable, Sendable, Hashable {
     public var windows: Windows
     public var presentation: Presentation
     public var map: MapSettings
+    /// Alert rules; spots and trips are named by id.
+    public var alerts: [AlertRule]
 
     /// Decodes the core's settings JSON.
     public init(json: String) throws {
@@ -50,6 +52,26 @@ public struct Settings: Codable, Sendable, Hashable {
         encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.outputFormatting = [.sortedKeys]
         return encoder
+    }
+}
+
+extension Settings {
+    /// Settings written before alert rules existed have no `alerts`; they decode with none.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        version = try c.decode(Int.self, forKey: .version)
+        units = try c.decode(Units.self, forKey: .units)
+        sources = try c.decode(Sources.self, forKey: .sources)
+        providers = try c.decode(Providers.self, forKey: .providers)
+        cards = try c.decode(Cards.self, forKey: .cards)
+        limits = try c.decode([Limit].self, forKey: .limits)
+        thresholds = try c.decode(Thresholds.self, forKey: .thresholds)
+        storms = try c.decode(Storms.self, forKey: .storms)
+        rivers = try c.decode([RiverRange].self, forKey: .rivers)
+        windows = try c.decode(Windows.self, forKey: .windows)
+        presentation = try c.decode(Presentation.self, forKey: .presentation)
+        map = try c.decode(MapSettings.self, forKey: .map)
+        alerts = try c.decodeIfPresent([AlertRule].self, forKey: .alerts) ?? []
     }
 }
 
@@ -245,5 +267,50 @@ extension Settings {
     public struct MapBreaks: Codable, Sendable, Hashable {
         public var sstCPerKm: Double
         public var chlorophyllLog10PerKm: Double
+    }
+
+    /// An alert rule: notify when every condition holds at the target. Thresholds are in the
+    /// core's canonical units for their metric (m³/s, metres, °C, m/s, hPa, µg/L).
+    public struct AlertRule: Codable, Sendable, Hashable {
+        /// Stable and unique among the rules.
+        public var id: String
+        public var name: String
+        public var enabled: Bool
+        public var target: AlertTarget
+        public var allOf: [AlertCondition]
+        /// Hours before the rule may notify again while it stays true; `nil` waits until it
+        /// stops holding.
+        public var repeatAfterHours: Int?
+        public var quietHours: QuietHours?
+    }
+
+    /// What a rule watches, by `kind`: `spot` and `trip` carry `id`; `box` carries `south`,
+    /// `west`, `north` and `east` in degrees (at most 1° by 1°).
+    public struct AlertTarget: Codable, Sendable, Hashable {
+        public var kind: String
+        public var id: String?
+        public var south: Double?
+        public var west: Double?
+        public var north: Double?
+        public var east: Double?
+    }
+
+    /// One condition, by `kind`: `measurement` carries `metric` and `below`, `above` or both;
+    /// `marine_alert` carries `event` (an NWS event name such as `Small Craft Advisory`);
+    /// `window_starts` carries `withinMinutes`; `trip_go` and `storm_ahead` carry nothing.
+    public struct AlertCondition: Codable, Sendable, Hashable {
+        public var kind: String
+        public var metric: String?
+        public var below: Double?
+        public var above: Double?
+        public var event: String?
+        public var withinMinutes: Int?
+    }
+
+    /// Minutes after midnight in the target's time zone; crosses midnight when `startMinute`
+    /// is after `endMinute`.
+    public struct QuietHours: Codable, Sendable, Hashable {
+        public var startMinute: Int
+        public var endMinute: Int
     }
 }

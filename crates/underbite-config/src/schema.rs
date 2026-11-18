@@ -9,6 +9,7 @@ use std::fmt;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::alerts::AlertRule;
 use crate::cards::CardsConfig;
 use crate::limits::{LimitsProfile, StormsConfig, Thresholds};
 use crate::map::MapConfig;
@@ -107,6 +108,8 @@ pub struct Config {
     pub windows: WindowsConfig,
     pub presentation: PresentationConfig,
     pub map: MapConfig,
+    /// Alert rules; spots and trips are named by id.
+    pub alerts: Vec<AlertRule>,
 }
 
 impl Default for Config {
@@ -124,6 +127,7 @@ impl Default for Config {
             windows: WindowsConfig::default(),
             presentation: PresentationConfig::default(),
             map: MapConfig::default(),
+            alerts: Vec::new(),
         }
     }
 }
@@ -167,6 +171,7 @@ impl Config {
         self.validate_windows(&mut issues);
         self.validate_presentation(&mut issues);
         self.map.validate(&mut issues);
+        crate::alerts::validate(&self.alerts, &mut issues);
         issues.0
     }
 
@@ -339,6 +344,7 @@ offline_max_mb = 1500
             ("[providers.usgs]\napi_key = \"x\"", "api_key"),
             ("[[limits]]\nname = \"a\"\nmax_knots = 1", "max_knots"),
             ("[storms]\nradius = 1", "radius"),
+            ("[[alerts]]\nid = \"a\"\nlabel = \"x\"", "label"),
         ] {
             let err = Config::from_toml(text).unwrap_err().to_string();
             assert!(err.contains(key), "{text}: {err}");

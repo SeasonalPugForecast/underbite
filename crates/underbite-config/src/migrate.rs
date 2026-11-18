@@ -2,10 +2,9 @@
 //!
 //! Imported text is first decoded into a generic value. Everything that needs the document's
 //! shape (refusing anything key-like, upgrading older versions, naming unknown keys by their full
-//! path, clamping the coordinate precision, dropping unknown source and map layer ids) happens
-//! on that value,
-//! before the typed decode, so a file from an older version always decodes and every change made
-//! on the way is reported.
+//! path, clamping the coordinate precision, dropping unknown source and map layer ids and alert
+//! rules of unknown kinds) happens on that value, before the typed decode, so a file from an
+//! older version always decodes and every change made on the way is reported.
 
 use serde_json::{Map, Value};
 
@@ -144,20 +143,44 @@ fn describes_array(schema: &Value) -> bool {
     schema.get("items").is_some()
 }
 
+/// Whether `value` carries the tag a variant of an internally tagged enum fixes with `const`
+/// (`kind = "spot"`).
+fn matches_tag(value: &Value, schema: &Value) -> bool {
+    schema
+        .get("properties")
+        .and_then(Value::as_object)
+        .is_some_and(|props| {
+            props.iter().any(|(k, s)| {
+                s.get("const")
+                    .is_some_and(|c| value.get(k).is_some_and(|v| v == c))
+            })
+        })
+}
+
 fn check(value: &Value, schema: &Value, root: &Value, path: &str) -> Option<String> {
     let schema = resolve(schema, root);
     for alts in ["anyOf", "oneOf"] {
         if let Some(list) = schema.get(alts).and_then(Value::as_array) {
-            let mut fits = list
+            let fits: Vec<&Value> = list
                 .iter()
                 .map(|s| resolve(s, root))
                 .filter(|s| match value {
                     Value::Object(_) => describes_object(s),
                     Value::Array(_) => describes_array(s),
                     _ => false,
-                });
-            return match (fits.next(), fits.next()) {
-                (Some(only), None) => check(value, only, root, path),
+                })
+                .collect();
+            // Several shapes fit: a tagged variant is picked by its tag, else nothing is judged.
+            let tagged: Vec<&Value> = if fits.len() > 1 {
+                fits.iter()
+                    .copied()
+                    .filter(|s| matches_tag(value, s))
+                    .collect()
+            } else {
+                fits
+            };
+            return match tagged.as_slice() {
+                [only] => check(value, only, root, path),
                 _ => None,
             };
         }
@@ -317,6 +340,7 @@ pub fn prepare(doc: &mut Value) -> Result<Vec<Issue>, ImportError> {
     let mut issues = Issues::default();
     tidy_sources(doc, &mut issues);
     tidy_map(doc, &mut issues);
+    crate::alerts::tidy(doc, &mut issues);
     Ok(issues.0)
 }
 
@@ -490,6 +514,78 @@ mod tests {
                 path: "map.layers[0].glow".into()
             })
         );
+    }
+
+    #[test]
+    fn alerts_unknown_keys_get_their_full_path_through_tagged_variants() {
+        let rule = |target: Value, condition: Value| {
+            json!({ "alerts": [
+                { "id": "a", "name": "A", "target": { "kind": "spot", "id": "s" }, "all_of": [] },
+                { "id": "b", "name": "B", "target": target, "all_of": [{ "kind": "storm_ahead" }, condition] }
+            ]})
+        };
+        for (doc, path) in [
+            (
+                rule(
+                    json!({ "kind": "spot", "id": "s", "lat": 40.7 }),
+                    json!({ "kind": "trip_go" }),
+                ),
+                "alerts[1].target.lat",
+            ),
+            (
+                rule(
+                    json!({ "kind": "box", "south": 40, "west": -74, "north": 40.5, "east": -73.5, "zoom": 2 }),
+                    json!({ "kind": "trip_go" }),
+                ),
+                "alerts[1].target.zoom",
+            ),
+            (
+                rule(
+                    json!({ "kind": "trip", "id": "t" }),
+                    json!({ "kind": "measurement", "metric": "discharge", "below": 1, "unit": "cfs" }),
+                ),
+                "alerts[1].all_of[1].unit",
+            ),
+            (
+                rule(
+                    json!({ "kind": "trip", "id": "t" }),
+                    json!({ "kind": "trip_go", "day": 2 }),
+                ),
+                "alerts[1].all_of[1].day",
+            ),
+            (
+                json!({ "alerts": [{ "id": "a", "name": "A", "target": { "kind": "spot", "id": "s" },
+                    "all_of": [], "quiet_hours": { "start_minute": 0, "end_minute": 60, "zone": "UTC" } }] }),
+                "alerts[0].quiet_hours.zone",
+            ),
+        ] {
+            let mut d = doc;
+            assert_eq!(
+                prepare(&mut d),
+                Err(ImportError::UnknownKey { path: path.into() })
+            );
+        }
+    }
+
+    #[test]
+    fn alerts_a_document_without_them_decodes_and_unknown_kinds_are_dropped() {
+        let mut d = json!({ "version": 1, "units": { "speed": "kn" } });
+        assert_eq!(prepare(&mut d), Ok(vec![]));
+        let c: crate::schema::Config = serde_json::from_value(d).unwrap();
+        assert_eq!(c.alerts, []);
+
+        let mut d = json!({ "alerts": [
+            { "id": "a", "name": "A", "target": { "kind": "geofence", "id": "s" }, "all_of": [] },
+            { "id": "b", "name": "B", "target": { "kind": "spot", "id": "deleted-spot" },
+              "all_of": [{ "kind": "marine_alert", "event": "Gale Warning" }] }
+        ]});
+        let issues = prepare(&mut d).unwrap();
+        let paths: Vec<_> = issues.iter().map(|i| i.path.as_str()).collect();
+        assert_eq!(paths, ["alerts[0].target.kind"]);
+        let c: crate::schema::Config = serde_json::from_value(d).unwrap();
+        assert_eq!(c.alerts.len(), 1);
+        assert_eq!(c.alerts[0].id, "b");
+        assert_eq!(c.validate(), []);
     }
 
     #[test]

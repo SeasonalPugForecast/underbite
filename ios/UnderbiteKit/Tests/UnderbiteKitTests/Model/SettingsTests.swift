@@ -84,6 +84,29 @@ final class SettingsTests: XCTestCase {
         doc["map"] = map
         doc["storms"] = ["hurricane_distance_km": 1500.5]
         doc["thresholds"] = ["trout_stress_c": 18.5]
+        doc["alerts"] = [
+            [
+                "id": "croton-low", "name": "Croton low", "enabled": false,
+                "target": ["kind": "spot", "id": "croton"],
+                "all_of": [
+                    ["kind": "measurement", "metric": "discharge", "below": 22.5, "above": 1.5],
+                    ["kind": "marine_alert", "event": "Gale Warning"],
+                    ["kind": "window_starts", "within_minutes": 30],
+                    ["kind": "storm_ahead"],
+                ],
+                "repeat_after_hours": 12,
+                "quiet_hours": ["start_minute": 1320, "end_minute": 420],
+            ],
+            [
+                "id": "trip-go", "name": "Trip on", "enabled": true,
+                "target": ["kind": "trip", "id": "trip-1"], "all_of": [["kind": "trip_go"]],
+            ],
+            [
+                "id": "warm-box", "name": "Warm water", "enabled": true,
+                "target": ["kind": "box", "south": 39.5, "west": -72.5, "north": 40.5, "east": -71.5],
+                "all_of": [["kind": "measurement", "metric": "sea_surface_temp", "above": 20.0]],
+            ],
+        ]
         let full = try Fixtures.string(doc)
 
         // The core accepts the document as is, and Swift gives it back unchanged.
@@ -99,6 +122,21 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(settings.map.presets[0].layers[0].opacity, 0.5)
         XCTAssertEqual(settings.map.depth.bandM, [4.5, 7.5])
         XCTAssertEqual(settings.map.activePreset, "Mine")
+        XCTAssertEqual(settings.alerts.map(\.target.kind), ["spot", "trip", "box"])
+        XCTAssertEqual(settings.alerts[0].allOf[0].below, 22.5)
+        XCTAssertEqual(settings.alerts[0].allOf[2].withinMinutes, 30)
+        XCTAssertEqual(settings.alerts[0].quietHours?.startMinute, 1320)
+        XCTAssertNil(settings.alerts[1].repeatAfterHours)
+        XCTAssertEqual(settings.alerts[2].target.north, 40.5)
+    }
+
+    func testSettingsWithoutAlertsDecode() throws {
+        let original = try Fixtures.text("sample-settings")
+        var doc = try XCTUnwrap(Fixtures.object(original) as? [String: Any])
+        doc.removeValue(forKey: "alerts")
+        let settings = try Settings(json: Fixtures.string(doc))
+        XCTAssertEqual(settings.alerts, [])
+        try Fixtures.assertSameJSON(settings.json(), original)
     }
 
     func testAnEditGoesThroughTheCore() throws {

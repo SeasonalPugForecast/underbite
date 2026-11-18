@@ -4,6 +4,190 @@ expression: json_schema()
 ---
 {
   "$defs": {
+    "AlertMetric": {
+      "description": "A value a measurement condition compares, with its canonical unit.",
+      "oneOf": [
+        {
+          "const": "discharge",
+          "description": "River discharge, m³/s.",
+          "type": "string"
+        },
+        {
+          "const": "gage_height",
+          "description": "Gage height (stage), metres.",
+          "type": "string"
+        },
+        {
+          "const": "water_temperature",
+          "description": "Water temperature at a station, °C.",
+          "type": "string"
+        },
+        {
+          "const": "sea_surface_temp",
+          "description": "Sea surface temperature, °C.",
+          "type": "string"
+        },
+        {
+          "const": "wave_height",
+          "description": "Significant wave height, metres.",
+          "type": "string"
+        },
+        {
+          "const": "wind",
+          "description": "Sustained wind speed, m/s.",
+          "type": "string"
+        },
+        {
+          "const": "gusts",
+          "description": "Wind gusts, m/s.",
+          "type": "string"
+        },
+        {
+          "const": "pressure_trend",
+          "description": "Pressure change over the last 3 hours, hPa (negative when falling).",
+          "type": "string"
+        },
+        {
+          "const": "tide_height",
+          "description": "Tide height above the station's chart datum, metres.",
+          "type": "string"
+        },
+        {
+          "const": "chlorophyll",
+          "description": "Chlorophyll a, µg/L (mg/m³).",
+          "type": "string"
+        }
+      ]
+    },
+    "AlertRule": {
+      "additionalProperties": false,
+      "description": "One `[[alerts]]` rule: tell me when every condition holds at the target.",
+      "properties": {
+        "all_of": {
+          "description": "The rule fires when all of these hold on fresh data.",
+          "items": {
+            "$ref": "#/$defs/Condition"
+          },
+          "type": "array"
+        },
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Stable id, unique among the rules; evaluation state is kept under it.",
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "quiet_hours": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/QuietHours"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Hours in the target's time zone when a notification waits."
+        },
+        "repeat_after_hours": {
+          "description": "Fire again after this many hours while the rule stays true; without it, only after the\nconditions have stopped holding.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "target": {
+          "$ref": "#/$defs/AlertTarget"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "target",
+        "all_of"
+      ],
+      "type": "object"
+    },
+    "AlertTarget": {
+      "description": "What a rule watches.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "A saved spot, by its id.",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "spot",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A saved trip, by its id.",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "trip",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "An area of gridded data, in degrees (WGS 84), at most 1° by 1°; only sea surface\ntemperature and chlorophyll conditions apply.",
+          "properties": {
+            "east": {
+              "format": "double",
+              "type": "number"
+            },
+            "kind": {
+              "const": "box",
+              "type": "string"
+            },
+            "north": {
+              "format": "double",
+              "type": "number"
+            },
+            "south": {
+              "format": "double",
+              "type": "number"
+            },
+            "west": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "south",
+            "west",
+            "north",
+            "east"
+          ],
+          "type": "object"
+        }
+      ]
+    },
     "BatteryMode": {
       "description": "How much the map saves power: no animation and fewer layers.",
       "oneOf": [
@@ -166,6 +350,109 @@ expression: json_schema()
         }
       },
       "type": "object"
+    },
+    "Condition": {
+      "description": "One condition of a rule.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "A value below `below`, above `above`, or between the two when both are given, in the\nmetric's canonical unit.",
+          "properties": {
+            "above": {
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "below": {
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "kind": {
+              "const": "measurement",
+              "type": "string"
+            },
+            "metric": {
+              "$ref": "#/$defs/AlertMetric"
+            }
+          },
+          "required": [
+            "kind",
+            "metric"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A marine alert in force whose NWS event name starts with `event`, such as\n`Small Craft Advisory` or `Gale Warning`.",
+          "properties": {
+            "event": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "marine_alert",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "event"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Go/no-go turns Go for a day of the trip (trip targets only).",
+          "properties": {
+            "kind": {
+              "const": "trip_go",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A fishing window starts within `within_minutes`.",
+          "properties": {
+            "kind": {
+              "const": "window_starts",
+              "type": "string"
+            },
+            "within_minutes": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "within_minutes"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A storm ahead, or a hurricane's forecast cone over the target (NHC).",
+          "properties": {
+            "kind": {
+              "const": "storm_ahead",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        }
+      ]
     },
     "CopernicusConfig": {
       "additionalProperties": false,
@@ -652,6 +939,29 @@ expression: json_schema()
           "default": {}
         }
       },
+      "type": "object"
+    },
+    "QuietHours": {
+      "additionalProperties": false,
+      "description": "A daily span, in minutes after midnight in the target's time zone. It crosses midnight when\n`start_minute` is after `end_minute`.",
+      "properties": {
+        "end_minute": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "start_minute": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start_minute",
+        "end_minute"
+      ],
       "type": "object"
     },
     "RawLayout": {
@@ -1205,6 +1515,14 @@ expression: json_schema()
   "additionalProperties": false,
   "description": "The whole configuration.",
   "properties": {
+    "alerts": {
+      "default": [],
+      "description": "Alert rules; spots and trips are named by id.",
+      "items": {
+        "$ref": "#/$defs/AlertRule"
+      },
+      "type": "array"
+    },
     "cards": {
       "$ref": "#/$defs/CardsConfig",
       "default": {
