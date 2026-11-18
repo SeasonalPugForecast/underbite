@@ -1,0 +1,284 @@
+---
+source: crates/underbite-core/src/species/seasons.rs
+expression: s
+---
+{
+  "months": [
+    {
+      "month": 1,
+      "stage": "too_cold",
+      "water_temp": {
+        "p10": 1.0,
+        "median": 2.0,
+        "p90": 3.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    },
+    {
+      "month": 2,
+      "stage": "pre_spawn",
+      "water_temp": {
+        "p10": 2.0,
+        "median": 3.0,
+        "p90": 4.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    },
+    {
+      "month": 3,
+      "stage": "pre_spawn",
+      "water_temp": {
+        "p10": 5.0,
+        "median": 6.0,
+        "p90": 7.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    },
+    {
+      "month": 4,
+      "stage": "pre_spawn",
+      "water_temp": {
+        "p10": 9.0,
+        "median": 10.0,
+        "p90": 11.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    },
+    {
+      "month": 5,
+      "stage": "pre_spawn",
+      "water_temp": {
+        "p10": 13.0,
+        "median": 14.0,
+        "p90": 15.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    },
+    {
+      "month": 6,
+      "stage": "spawning",
+      "water_temp": {
+        "p10": 18.0,
+        "median": 19.0,
+        "p90": 20.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    },
+    {
+      "month": 7,
+      "stage": "spawning",
+      "water_temp": {
+        "p10": 21.0,
+        "median": 22.0,
+        "p90": 23.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    },
+    {
+      "month": 8,
+      "stage": "spawning",
+      "water_temp": {
+        "p10": 21.0,
+        "median": 22.0,
+        "p90": 23.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    },
+    {
+      "month": 9,
+      "stage": "spawning",
+      "water_temp": {
+        "p10": 17.0,
+        "median": 18.0,
+        "p90": 19.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    },
+    {
+      "month": 10,
+      "stage": "too_cold",
+      "water_temp": {
+        "p10": 11.0,
+        "median": 12.0,
+        "p90": 13.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    },
+    {
+      "month": 11,
+      "stage": "too_cold",
+      "water_temp": {
+        "p10": 6.0,
+        "median": 7.0,
+        "p90": 8.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    },
+    {
+      "month": 12,
+      "stage": "too_cold",
+      "water_temp": {
+        "p10": 2.0,
+        "median": 3.0,
+        "p90": 4.0,
+        "basis": {
+          "source": "usgs",
+          "kind": "station",
+          "years": {
+            "first": 2010,
+            "last": 2024
+          },
+          "years_sampled": 15
+        }
+      },
+      "observations": null,
+      "inputs": [
+        "profile",
+        "water_temp"
+      ]
+    }
+  ]
+}

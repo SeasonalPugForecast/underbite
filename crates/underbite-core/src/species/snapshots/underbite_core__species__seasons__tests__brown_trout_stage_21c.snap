@@ -1,0 +1,15 @@
+---
+source: crates/underbite-core/src/species/seasons.rs
+expression: r
+---
+{
+  "stage": "heat_stress",
+  "water_temp_c": 21.0,
+  "trend": "rising",
+  "spawn_temp_c": null,
+  "preferred_temp_c": null,
+  "heat_limit": {
+    "celsius": 20.0,
+    "basis": "trout_stress"
+  }
+}
