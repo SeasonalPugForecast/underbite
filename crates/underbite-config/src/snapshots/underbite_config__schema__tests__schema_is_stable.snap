@@ -803,6 +803,8 @@ expression: json_schema()
           "default": {
             "chain": [
               "usgs",
+              "cwms",
+              "rise",
               "coops",
               "glerl"
             ]
@@ -851,7 +853,9 @@ expression: json_schema()
           "$ref": "#/$defs/SourceGroup",
           "default": {
             "chain": [
-              "usgs"
+              "usgs",
+              "cyan",
+              "noaa-hab"
             ]
           }
         },
@@ -1445,6 +1449,8 @@ expression: json_schema()
         "lake_level": {
           "chain": [
             "usgs",
+            "cwms",
+            "rise",
             "coops",
             "glerl"
           ]
@@ -1475,7 +1481,9 @@ expression: json_schema()
         },
         "water_quality": {
           "chain": [
-            "usgs"
+            "usgs",
+            "cyan",
+            "noaa-hab"
           ]
         },
         "water_temperature": {

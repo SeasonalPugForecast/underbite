@@ -13,14 +13,19 @@ use underbite_core::discover::rank::{ChainSpec, Limits};
 use underbite_core::model::{Measurement, Requirements, WaterType};
 use underbite_core::provenance::SourceId;
 use underbite_core::view::CardId;
+use underbite_providers::blooms::cyan::Cyan;
+use underbite_providers::blooms::hab::HabGulf;
 use underbite_providers::coops::{Coops, CoopsHarmonics};
 use underbite_providers::dfo::Dfo;
 use underbite_providers::eccc::Eccc;
+use underbite_providers::glerl::Glsea;
 use underbite_providers::ndbc::Ndbc;
 use underbite_providers::nwps::Nwps;
 use underbite_providers::nws_marine::NwsMarine;
 use underbite_providers::open_meteo_marine::OpenMeteoMarine;
 use underbite_providers::request::Coordinates;
+use underbite_providers::reservoirs::cwms::Cwms;
+use underbite_providers::reservoirs::rise::Rise;
 use underbite_providers::source::Source;
 use underbite_providers::usgs::Usgs;
 use whether_core::model::ProviderId;
@@ -38,7 +43,7 @@ use whether_providers::regions::covers_us;
 /// (sources not implemented yet) are skipped at run time. [`water_source`] is the registry;
 /// this list checks it.
 #[cfg(test)]
-const WATER_SOURCES: [SourceId; 9] = [
+const WATER_SOURCES: [SourceId; 14] = [
     SourceId::COOPS,
     SourceId::COOPS_HARMONICS,
     SourceId::USGS,
@@ -48,10 +53,35 @@ const WATER_SOURCES: [SourceId; 9] = [
     SourceId::NWS,
     SourceId::DFO_IWLS,
     SourceId::ECCC_HYDROMETRIC,
+    SourceId::GLERL,
+    SourceId::CWMS,
+    SourceId::RISE,
+    SourceId::CYAN,
+    SourceId::NOAA_HAB,
 ];
 
 /// Sources that only make sense on salt water and the Great Lakes (gridded marine models).
 const MARINE_ONLY: [SourceId; 1] = [SourceId::OPEN_METEO_MARINE];
+
+/// Sources that serve the Great Lakes alone: the GLSEA surface-temperature grid.
+const GREAT_LAKES_ONLY: [SourceId; 1] = [SourceId::GLERL];
+
+/// Whether `source` is worth asking about water of type `water`. `CyAN` maps inland lakes,
+/// reservoirs and the Great Lakes, never the open coast; the Gulf bloom forecast covers coastal
+/// water only. A bloom chain therefore reaches one of the two, whatever its order.
+fn fits_water(source: &SourceId, water: WaterType) -> bool {
+    if MARINE_ONLY.contains(source) {
+        is_marine(water)
+    } else if GREAT_LAKES_ONLY.contains(source) {
+        water == WaterType::GreatLakes
+    } else if *source == SourceId::CYAN {
+        !is_salt(water)
+    } else if *source == SourceId::NOAA_HAB {
+        is_salt(water)
+    } else {
+        true
+    }
+}
 
 /// The source registered under `id`, if a fetch runs it.
 pub(crate) fn water_source(id: &SourceId) -> Option<Arc<dyn Source>> {
@@ -65,6 +95,11 @@ pub(crate) fn water_source(id: &SourceId) -> Option<Arc<dyn Source>> {
         "nws" => Arc::new(NwsMarine),
         "dfo-iwls" => Arc::new(Dfo),
         "eccc-hydrometric" => Arc::new(Eccc::new()),
+        "glerl" => Arc::new(Glsea),
+        "cwms" => Arc::new(Cwms),
+        "rise" => Arc::new(Rise),
+        "cyan" => Arc::new(Cyan),
+        "noaa-hab" => Arc::new(HabGulf),
         _ => return None,
     })
 }
@@ -159,7 +194,7 @@ pub fn requirements(config: &Config, water: WaterType) -> Requirements {
 
 /// The chain and limits of every required measurement: the configured sources a fetch runs
 /// that supply the measurement, in order, each once; gridded marine models only on marine
-/// water.
+/// water, the GLSEA grid only on the Great Lakes, and the bloom sources on the water they map.
 pub fn chain_specs(
     sources: &SourcesConfig,
     requirements: &Requirements,
@@ -173,7 +208,7 @@ pub fn chain_specs(
             let mut chain: Vec<SourceId> = Vec::new();
             for id in group.chain {
                 let runs = water_source(&id).is_some_and(|s| s.measurements().contains(&m));
-                let fits = is_marine(water) || !MARINE_ONLY.contains(&id);
+                let fits = fits_water(&id, water);
                 if runs && fits && !chain.contains(&id) {
                     chain.push(id);
                 }
@@ -362,6 +397,45 @@ mod tests {
         assert_eq!(
             bay[&M::SeaSurfaceTempForecast].sources,
             [SourceId::OPEN_METEO_MARINE]
+        );
+    }
+
+    #[test]
+    fn the_new_sources_run_where_they_map() {
+        let config = Config::default();
+        let wanted = |m: M| Requirements {
+            measurements: BTreeSet::from([m]),
+            ..Requirements::default()
+        };
+        let names = |m: M, water: WaterType| -> Vec<String> {
+            chain_specs(&config.sources, &wanted(m), water)[&m]
+                .sources
+                .iter()
+                .map(|s| s.as_str().to_string())
+                .collect()
+        };
+        assert_eq!(
+            names(M::WaterTemperature, WaterType::GreatLakes),
+            ["usgs", "coops", "ndbc", "glerl"]
+        );
+        assert_eq!(
+            names(M::WaterTemperature, WaterType::LakeReservoir),
+            ["usgs", "coops", "ndbc"]
+        );
+        assert_eq!(
+            names(M::LakeLevel, WaterType::LakeReservoir),
+            ["usgs", "cwms", "rise"]
+        );
+        assert_eq!(
+            names(M::Reservoir, WaterType::LakeReservoir),
+            ["cwms", "rise"]
+        );
+        assert_eq!(names(M::Bloom, WaterType::LakeReservoir), ["cyan"]);
+        assert_eq!(names(M::Bloom, WaterType::BayInshore), ["noaa-hab"]);
+        assert_eq!(names(M::Cyanobacteria, WaterType::Pond), ["cyan"]);
+        assert_eq!(
+            names(M::Cyanobacteria, WaterType::Offshore),
+            Vec::<String>::new()
         );
     }
 

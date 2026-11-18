@@ -9,7 +9,7 @@ use crate::schema::Issues;
 
 /// Ids the app knows or plans to implement. An id outside this list is a warning, and an id
 /// that is listed but not implemented yet is skipped at run time without an error.
-pub const KNOWN_SOURCES: [&str; 20] = [
+pub const KNOWN_SOURCES: [&str; 24] = [
     "usgs",
     "coops",
     "coops-harmonics",
@@ -30,6 +30,10 @@ pub const KNOWN_SOURCES: [&str; 20] = [
     "pirate-weather",
     "dfo-iwls",
     "eccc-hydrometric",
+    "cwms",
+    "rise",
+    "cyan",
+    "noaa-hab",
 ];
 
 /// The most decimals of a coordinate that ever leave the device (about 1 km).
@@ -145,11 +149,11 @@ impl Default for SourcesConfig {
             tide: SourceGroup::of(&["coops", "coops-harmonics", "open-meteo-marine"]),
             currents: SourceGroup::of(&["coops", "hf-radar", "copernicus", "open-meteo-marine"]),
             flow: SourceGroup::of(&["usgs", "nwps"]),
-            lake_level: SourceGroup::of(&["usgs", "coops", "glerl"]),
+            lake_level: SourceGroup::of(&["usgs", "cwms", "rise", "coops", "glerl"]),
             waves: SourceGroup::of(&["ndbc", "open-meteo-marine"]),
             sst: SourceGroup::of(&["mur-sst", "open-meteo-marine"]),
             clarity: SourceGroup::of(&["usgs", "copernicus"]),
-            water_quality: SourceGroup::of(&["usgs"]),
+            water_quality: SourceGroup::of(&["usgs", "cyan", "noaa-hab"]),
             marine_forecast: SourceGroup::of(&["nws"]),
             weather: SourceGroup::of(&["nws", "open-meteo"]),
             storm: SourceGroup::of(&["open-meteo-storm", "nhc"]),
@@ -315,6 +319,10 @@ mod tests {
             "glerl",
             "dfo-iwls",
             "eccc-hydrometric",
+            "cwms",
+            "rise",
+            "cyan",
+            "noaa-hab",
         ];
         for (name, group) in s.groups() {
             for id in chain_ids(group) {
@@ -337,6 +345,21 @@ mod tests {
         let issues = issues_of(&s).0;
         assert_eq!(issues.len(), empty.len());
         assert!(issues.iter().all(|i| i.severity == Severity::Warning));
+    }
+
+    #[test]
+    fn reservoir_and_bloom_sources_join_the_default_chains() {
+        let s = SourcesConfig::default();
+        assert_eq!(
+            chain_ids(&s.lake_level),
+            ["usgs", "cwms", "rise", "coops", "glerl"]
+        );
+        // CyAN before the Gulf forecast: lakes have only CyAN, and a Gulf coast the forecast.
+        assert_eq!(chain_ids(&s.water_quality), ["usgs", "cyan", "noaa-hab"]);
+        assert_eq!(issues_of(&s).0.len(), 0);
+        for id in ["cwms", "rise", "cyan", "noaa-hab"] {
+            assert!(KNOWN_SOURCES.contains(&id), "{id}");
+        }
     }
 
     #[test]

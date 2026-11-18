@@ -1247,8 +1247,48 @@ fn rows() -> Vec<Row> {
             needs_key: true,
             ..weather("pirate-weather", "Pirate Weather")
         },
+    ]
+    .into_iter()
+    .chain(reservoir_and_bloom_rows())
+    .collect()
+}
+
+/// The Canadian, reservoir and bloom sources.
+fn reservoir_and_bloom_rows() -> Vec<Row> {
+    use Measurement as M;
+    vec![
         Row::new("dfo-iwls"),
         Row::new("eccc-hydrometric"),
+        Row {
+            name: Some("US Army Corps of Engineers water management"),
+            license: Some(PUBLIC_DOMAIN),
+            url: Some("https://water.usace.army.mil/"),
+            measurements: &[M::LakeLevel, M::Reservoir],
+            ..Row::new("cwms")
+        },
+        Row {
+            name: Some("Bureau of Reclamation RISE"),
+            license: Some(PUBLIC_DOMAIN),
+            url: Some("https://data.usbr.gov/"),
+            measurements: &[M::LakeLevel, M::Reservoir],
+            ..Row::new("rise")
+        },
+        Row {
+            name: Some("CyAN cyanobacteria"),
+            credit: Some("Cyanobacteria: EPA, NASA, NOAA and USGS CyAN"),
+            license: Some(PUBLIC_DOMAIN),
+            url: Some("https://www.epa.gov/water-research/cyanobacteria-assessment-network-cyan"),
+            measurements: &[M::Cyanobacteria, M::Bloom],
+            ..Row::new("cyan")
+        },
+        Row {
+            name: Some("NOAA Gulf of Mexico harmful algal bloom forecast"),
+            credit: Some("Harmful algal bloom forecast: NOAA NCCOS"),
+            license: Some(PUBLIC_DOMAIN),
+            url: Some("https://coastalscience.noaa.gov/"),
+            measurements: &[M::Bloom],
+            ..Row::new("noaa-hab")
+        },
     ]
 }
 

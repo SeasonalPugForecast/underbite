@@ -215,6 +215,8 @@
     "lake_level": {
       "chain": [
         "usgs",
+        "cwms",
+        "rise",
         "coops",
         "glerl"
       ]
@@ -245,7 +247,9 @@
     },
     "water_quality": {
       "chain": [
-        "usgs"
+        "usgs",
+        "cyan",
+        "noaa-hab"
       ]
     },
     "water_temperature": {

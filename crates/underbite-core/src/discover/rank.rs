@@ -710,6 +710,8 @@ fn station_pool(source: &SourceId) -> Option<SourceId> {
         SourceId::NWPS,
         SourceId::DFO_IWLS,
         SourceId::ECCC_HYDROMETRIC,
+        SourceId::CWMS,
+        SourceId::RISE,
     ]
     .into_iter()
     .find(|s| s == source)
@@ -728,7 +730,7 @@ fn serves(source: &SourceId, kind: StationKind) -> bool {
 }
 
 fn point_relation(source: &SourceId) -> Relation {
-    if source.as_str() == "mur-sst" {
+    if source.as_str() == "mur-sst" || *source == SourceId::CYAN {
         Relation::Satellite
     } else {
         Relation::Gridded
@@ -1446,6 +1448,83 @@ mod tests {
         let json = serde_json::to_value(rank(&input).plan(2)).unwrap();
         let place = &json["chains"]["tide"]["links"][0]["place"];
         assert_eq!(place["station"]["id"], "8518750");
+    }
+
+    const BELTZVILLE: (f64, f64) = (40.8478, -75.6383);
+
+    fn beltzville_input(lake_level: &[&str]) -> DiscoveryInput {
+        let dam = station(
+            SourceId::CWMS,
+            "NAP/Beltzville",
+            StationKind::WaterLevel,
+            BELTZVILLE.0,
+            BELTZVILLE.1,
+        );
+        let gauge = station(
+            SourceId::USGS,
+            "USGS-01449360",
+            StationKind::UsgsSite(UsgsSiteType::Stream),
+            40.8,
+            -75.7,
+        );
+        DiscoveryInput {
+            latitude: 40.86,
+            longitude: -75.65,
+            now: now(),
+            candidates: vec![
+                candidate(dam, &[(M::LakeLevel, Some(ago(30)))]),
+                candidate(gauge, &[(M::Discharge, Some(ago(30)))]),
+            ],
+            chains: BTreeMap::from([(M::LakeLevel, chain(lake_level, None, None))]),
+            ..DiscoveryInput::default()
+        }
+    }
+
+    #[test]
+    fn a_reservoir_project_ranks_from_its_own_source() {
+        let ranking = rank(&beltzville_input(&["usgs", "cwms", "rise"]));
+        let level = &ranking.measurements[&M::LakeLevel];
+        assert_eq!(ids(level), ["NAP/Beltzville"]);
+        assert!(level.stations[0].distance_m < 2_000.0);
+        let plan = ranking.plan(DEFAULT_STATIONS_PER_SOURCE);
+        let chain = &plan.chains[&M::LakeLevel];
+        assert_eq!(
+            chain.links.iter().map(link_station).collect::<Vec<_>>(),
+            [("cwms", "NAP/Beltzville", None)]
+        );
+        // USGS has no lake-level station here: said, not hidden.
+        assert_eq!(chain.skipped.len(), 2);
+        assert!(
+            chain
+                .skipped
+                .iter()
+                .all(|s| s.reason == SkipReason::NoStation)
+        );
+    }
+
+    #[test]
+    fn grid_and_satellite_sources_get_point_links() {
+        let mut input = beltzville_input(&[]);
+        input.latitude = 41.7;
+        input.longitude = -83.3;
+        input.candidates.clear();
+        input.chains = BTreeMap::from([
+            (M::WaterTemperature, chain(&["usgs", "glerl"], None, None)),
+            (M::Bloom, chain(&["cyan", "noaa-hab"], None, None)),
+        ]);
+        let plan = rank(&input).plan(DEFAULT_STATIONS_PER_SOURCE);
+        let relation = |m: M, source: &str| {
+            plan.chains[&m].links.iter().find_map(|l| match &l.place {
+                LinkPlace::Point { relation, .. } if l.source.as_str() == source => Some(*relation),
+                _ => None,
+            })
+        };
+        assert_eq!(
+            relation(M::WaterTemperature, "glerl"),
+            Some(Relation::Gridded)
+        );
+        assert_eq!(relation(M::Bloom, "cyan"), Some(Relation::Satellite));
+        assert_eq!(relation(M::Bloom, "noaa-hab"), Some(Relation::Gridded));
     }
 
     #[test]
