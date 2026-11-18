@@ -290,6 +290,7 @@ pub fn alert_rules(
                     notified_at: None,
                     pending: None,
                     marine: BTreeMap::new(),
+                    window: None,
                 })
             } else {
                 state.rules.get(&rule.id).cloned()

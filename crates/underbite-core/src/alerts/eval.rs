@@ -15,6 +15,7 @@
 //! - Marine alerts notify as whether's `AlertNotifier` does: a new alert, a stronger one, or one
 //!   that now ends an hour or more later than the one told. An alert stays remembered until it
 //!   ends, so one that drops out of a feed for a run is not told again.
+//! - A fishing window other than the one told is news while the rule stays met.
 //! - Quiet hours, in the target's time zone, hold a notification until they end; it is never
 //!   dropped.
 //!
@@ -146,7 +147,8 @@ pub struct AlertEvent {
 pub enum EventKind {
     /// Every condition holds, for the first time or after the rule re-armed.
     Met,
-    /// A marine alert the rule watches is new, stronger or lasts longer, while it stays met.
+    /// While the rule stays met: a marine alert it watches is new, stronger or lasts longer,
+    /// or a fishing window other than the one told is near.
     Update,
     /// Still met `repeat_after_hours` after the last notification.
     Repeat,
@@ -244,6 +246,9 @@ pub struct RuleState {
     /// Marine alerts told, by `spot id|VTEC key` (or the alert id without one).
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub marine: BTreeMap<String, ToldAlert>,
+    /// The start of the fishing window last told, so a later window is news.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub window: Option<UnixTime>,
 }
 
 /// The outcome of a run for one rule.
@@ -295,6 +300,7 @@ impl RuleState {
             notified_at: None,
             pending: None,
             marine: BTreeMap::new(),
+            window: None,
         }
     }
 }
@@ -346,6 +352,7 @@ fn step(
     let mut ctx = Ctx {
         inputs,
         told: &st.marine,
+        told_window: st.window,
         now,
         present: BTreeSet::new(),
     };
@@ -359,7 +366,7 @@ fn step(
         Outcome::Holds(found) => {
             st.status = RuleStatus::Met;
             st.met_since.get_or_insert(now);
-            let news = found.iter().any(|f| f.finding.reason.is_news());
+            let news = found.iter().any(|f| f.news);
             let repeat_due = rule.repeat_after_hours.is_some_and(|h| {
                 st.notified_at
                     .is_some_and(|t| now.0 - t.0 >= i64::from(h) * HOUR)
@@ -377,8 +384,12 @@ fn step(
                 st.notified_at = Some(now);
                 let mut findings = Vec::with_capacity(found.len());
                 for f in found {
-                    if let Some((key, told)) = f.told {
-                        st.marine.insert(key, told);
+                    match f.told {
+                        Some(Told::Marine(key, told)) => {
+                            st.marine.insert(key, told);
+                        }
+                        Some(Told::Window(start)) => st.window = Some(start),
+                        None => {}
                     }
                     findings.push(f.finding);
                 }
@@ -462,11 +473,22 @@ fn is_quiet(quiet: Option<QuietHours>, zone: Option<&str>, now: UnixTime) -> boo
 // Conditions
 // ---------------------------------------------------------------------------------------------
 
-/// What met a condition, with the marine alert to remember when it is told.
+/// What met a condition, with what to remember when it is told.
 #[derive(Debug)]
 struct Found {
     finding: Finding,
-    told: Option<(String, ToldAlert)>,
+    /// Not told before: notifies again while the rule stays met.
+    news: bool,
+    told: Option<Told>,
+}
+
+/// What a notification tells, remembered in the rule's state.
+#[derive(Debug)]
+enum Told {
+    /// A marine alert, by its key.
+    Marine(String, ToldAlert),
+    /// A fishing window, by its start.
+    Window(UnixTime),
 }
 
 /// How a condition, a place or a rule came out.
@@ -548,6 +570,8 @@ struct Place<'a> {
 struct Ctx<'a> {
     inputs: &'a EvalInputs,
     told: &'a BTreeMap<String, ToldAlert>,
+    /// The start of the fishing window last told.
+    told_window: Option<UnixTime>,
     now: UnixTime,
     /// The marine alert keys found in force, so the ones told are remembered while listed.
     present: BTreeSet<String>,
@@ -600,7 +624,13 @@ impl Ctx<'_> {
             match c {
                 Condition::TripGo {} => outcomes.push(trip_go(i, &trip.days)),
                 Condition::WindowStarts { within_minutes } => {
-                    outcomes.push(window_starts(i, &trip.windows, *within_minutes, self.now));
+                    outcomes.push(window_starts(
+                        i,
+                        &trip.windows,
+                        *within_minutes,
+                        self.now,
+                        self.told_window,
+                    ));
                 }
                 _ => at_places.push((i, c)),
             }
@@ -642,7 +672,7 @@ impl Ctx<'_> {
             Condition::MarineAlert { event } => self.marine(i, event, place),
             Condition::StormAhead {} => storm_ahead(i, place, now),
             Condition::WindowStarts { within_minutes } => match place.windows {
-                Some(w) => window_starts(i, w, *within_minutes, now),
+                Some(w) => window_starts(i, w, *within_minutes, now, self.told_window),
                 None => Outcome::NoData(i),
             },
             // Go/no-go belongs to trips.
@@ -758,7 +788,7 @@ impl Ctx<'_> {
                         severity: a.severity,
                         ends: alert_end(a),
                     };
-                    (key, told)
+                    Told::Marine(key, told)
                 });
                 Found {
                     finding: Finding {
@@ -768,6 +798,7 @@ impl Ctx<'_> {
                         subject: Some(a.event.clone()),
                         ..finding(i, reason, Some(place.spot_id))
                     },
+                    news: reason.is_news(),
                     told,
                 }
             })
@@ -843,6 +874,7 @@ fn trip_go(i: usize, days: &[DayVerdict]) -> Outcome {
                 at: day.hours.first().map(|h| h.start),
                 ..finding(i, FindingReason::TripGo, None)
             },
+            news: false,
             told: None,
         }]);
     }
@@ -856,12 +888,14 @@ fn trip_go(i: usize, days: &[DayVerdict]) -> Outcome {
     }
 }
 
-/// A window starts within `within_minutes`, or has started and not ended.
+/// A window starts within `within_minutes`, or has started and not ended. A window other than
+/// the one last told (`told`, by its start) is news.
 fn window_starts(
     i: usize,
     windows: &[FishingWindow],
     within_minutes: u32,
     now: UnixTime,
+    told: Option<UnixTime>,
 ) -> Outcome {
     let horizon = now.0 + i64::from(within_minutes) * 60;
     match windows.iter().find(|w| w.end > now && w.start.0 <= horizon) {
@@ -871,7 +905,8 @@ fn window_starts(
                 until: Some(w.end),
                 ..finding(i, FindingReason::WindowStarts, None)
             },
-            told: None,
+            news: told.is_some_and(|t| t != w.start),
+            told: Some(Told::Window(w.start)),
         }]),
         None => Outcome::False { clear: true },
     }
@@ -921,6 +956,7 @@ fn storm_ahead(i: usize, place: &Place<'_>, now: UnixTime) -> Outcome {
                 .into_iter()
                 .map(|finding| Found {
                     finding,
+                    news: false,
                     told: None,
                 })
                 .collect(),
@@ -1172,6 +1208,7 @@ fn measure(
                 station: r.station,
                 subject: None,
             },
+            news: false,
             told: None,
         }]),
         None => Outcome::False {
@@ -1983,6 +2020,39 @@ mod tests {
         let (events, _) = replay(&rules, times, inputs);
         let got: Vec<_> = events.iter().map(|(t, e)| (*t, e.findings[0].at)).collect();
         assert_eq!(got, [(times[1], Some(first)), (times[4], Some(second))]);
+    }
+
+    #[test]
+    fn a_window_starting_right_after_the_one_told_is_news() {
+        let rules = [rule(
+            spot("battery"),
+            vec![Condition::WindowStarts {
+                within_minutes: 120,
+            }],
+        )];
+        let a = at("2026-11-08T06:00:00Z");
+        let b = at("2026-11-08T09:00:00Z");
+        let inputs = |now: UnixTime| {
+            let mut i = trip_inputs(Vec::new(), now);
+            i.spots.get_mut("battery").unwrap().windows = vec![window(a, 2), window(b, 2)];
+            i
+        };
+        let times = [
+            at("2026-11-08T05:30:00Z"),
+            at("2026-11-08T08:30:00Z"),
+            at("2026-11-08T09:30:00Z"),
+        ];
+        let (events, _) = replay(&rules, times, inputs);
+        let got: Vec<_> = (events.iter())
+            .map(|(t, e)| (*t, e.kind, e.findings[0].at))
+            .collect();
+        assert_eq!(
+            got,
+            [
+                (times[0], EventKind::Met, Some(a)),
+                (times[1], EventKind::Update, Some(b)),
+            ]
+        );
     }
 
     #[test]

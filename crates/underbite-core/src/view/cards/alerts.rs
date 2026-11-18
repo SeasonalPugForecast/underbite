@@ -723,6 +723,7 @@ pub(in crate::view) mod tests {
             notified_at: None,
             pending: None,
             marine: BTreeMap::new(),
+            window: None,
         }
     }
 
