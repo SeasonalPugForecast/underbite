@@ -23,12 +23,15 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
         case spot(ReceivedPlace)
         /// A species profile: the sender's page and what importing its edits would do.
         case profile(ReceivedProfile)
+        /// A map layer preset: its name, its layers and the core's notes on them.
+        case preset(ReceivedPreset)
         /// A file that cannot be used, with the core's text saying why.
         case problem(String)
     }
 
     let id = UUID()
-    /// "Trip to add", "Spot to add", a profile's species; none for a file that cannot be used.
+    /// "Trip to add", "Spot to add", "Map preset to add", a profile's species; none for a file
+    /// that cannot be used.
     var heading: String?
     var content: Content
     /// "Approximate location" when a place was shared rounded or by area only.
@@ -80,9 +83,9 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
         return try handle.read(upToCount: limit) ?? Data()
     }
 
-    /// Decodes `data` with the core: a trip, a spot or a species profile to preview (the
-    /// profile against the user's species `edits`), or the core's text on why it cannot be used
-    /// (a newer version's file, a kind this build cannot open yet).
+    /// Decodes `data` with the core: a trip, a spot, a species profile (against the user's
+    /// species `edits`) or a map layer preset to preview, or the core's text on why it cannot be
+    /// used (a newer version's file, a damaged one).
     static func read(_ data: Data, settingsJSON: String, now: Int64, edits: String = "")
         -> ReceivedFile
     {
@@ -92,6 +95,8 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
             shared = try readFile(bytes: data, settingsJson: settingsJSON)
         } catch ShareError.Unsupported(let kind, _) where kind == "profile" {
             return readProfile(data, settingsJSON: settingsJSON, edits: edits)
+        } catch ShareError.Unsupported(let kind, _) where kind == "layers" {
+            return readPreset(data, settingsJSON: settingsJSON)
         } catch {
             return ReceivedFile(heading: nil, content: .problem(message(of: error)))
         }
@@ -128,6 +133,18 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
         }
     }
 
+    /// A map layer preset file, read by the core's preset call.
+    private static func readPreset(_ data: Data, settingsJSON: String) -> ReceivedFile {
+        do {
+            let preset = try PresetSharing.read(data, settingsJSON: settingsJSON)
+            return ReceivedFile(
+                heading: PresetSharing.words(settingsJSON: settingsJSON)?.receiveHeading,
+                content: .preset(preset))
+        } catch {
+            return ReceivedFile(heading: nil, content: .problem(message(of: error)))
+        }
+    }
+
     private static func message(of error: any Error) -> String { ShareText.message(of: error) }
 
     /// A file the core read but that holds nothing to add.
@@ -153,8 +170,8 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
         case .spot(let place):
             guard let spot = place.spot else { return [] }
             return spots.contains { $0.id == spot.id } ? [.addCopy] : [.add]
-        case .profile, .problem:
-            // A profile's edits are imported by its own preview.
+        case .profile, .preset, .problem:
+            // A profile's edits and a preset are added by their own previews.
             return []
         }
     }

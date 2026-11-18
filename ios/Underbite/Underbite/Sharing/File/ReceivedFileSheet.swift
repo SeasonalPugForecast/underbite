@@ -3,8 +3,8 @@ import UnderbiteKit
 
 extension View {
     /// Opens the `.underbite` files the app is handed (from Files, Mail, Messages or AirDrop):
-    /// the core decodes each and a sheet previews it, to add the trip or spot, import a
-    /// species profile's edits, or leave it.
+    /// the core decodes each and a sheet previews it, to add the trip, spot or map layer preset,
+    /// import a species profile's edits, or leave it.
     func receivesSharedFiles() -> some View {
         modifier(ReceivesSharedFiles())
     }
@@ -77,11 +77,14 @@ struct ReceivedFileSheet: View {
                     case .profile(let profile):
                         // Says itself once its edits are imported.
                         ReceivedProfileView(profile: profile, imported: $added)
+                    case .preset(let preset):
+                        // Says itself once it is added.
+                        ReceivedPresetView(preset: preset, added: $added)
                     case .problem(let message):
                         Label(message, systemImage: "exclamationmark.triangle")
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    if isProfile {
+                    if hasOwnActions {
                         EmptyView()
                     } else if added, let words {
                         Label(words.added, systemImage: "checkmark.circle.fill")
@@ -151,9 +154,12 @@ struct ReceivedFileSheet: View {
         return false
     }
 
-    private var isProfile: Bool {
-        if case .profile = file.content { return true }
-        return false
+    /// A profile or a preset, whose previews hold their own actions.
+    private var hasOwnActions: Bool {
+        switch file.content {
+        case .profile, .preset: true
+        case .trip, .spot, .problem: false
+        }
     }
 
     private static func title(of choice: ReceiveChoice, words: ShareWords) -> String {

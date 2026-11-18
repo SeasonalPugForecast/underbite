@@ -60,10 +60,12 @@ final class SpeciesShareTests: XCTestCase {
     }
 
     func testAFileOfAnotherKindIsNotReadAsAProfile() {
-        let layers = Data(#"{"format":"underbite","kind":"layers","v":1}"#.utf8)
+        let layers = Data(
+            #"{"format":"underbite","kind":"layers","v":1,"layers":{"name":"Surf","layers":[]}}"#
+                .utf8)
         let read = ReceivedFile.read(layers, settingsJSON: settings, now: 0, edits: "")
-        guard case .problem(let message) = read.content else { return XCTFail("\(read)") }
-        XCTAssertTrue(message.contains("map layers"), message)
+        guard case .preset(let preset) = read.content else { return XCTFail("\(read)") }
+        XCTAssertEqual(preset.name, "Surf")
     }
 
     func testABrokenProfileFileSaysWhyInTheCoresWords() {

@@ -19,4 +19,13 @@ enum DrawerLaunch {
     static var showsPresets: Bool { value == presets }
 
     private static let presets = "presets"
+
+    private static var shared = false
+
+    /// With `-sharePreset <id>`, the preset whose share sheet opens over the presets, once.
+    static func presetToShare() -> String? {
+        guard !shared, let id = LaunchArguments.value(after: "-sharePreset") else { return nil }
+        shared = true
+        return id
+    }
 }

@@ -102,10 +102,11 @@ final class ReceivedFileTests: XCTestCase {
     }
 
     func testFilesThisBuildCannotUseShowTheCoresText() {
+        // A preset without its layers is a damaged file, not one of a kind this build lacks.
         let layers = Data(#"{"format":"underbite","kind":"layers","v":1}"#.utf8)
         let newer = Data(#"{"format":"underbite","kind":"trip","v":99}"#.utf8)
         let junk = Data("not a file".utf8)
-        for (data, expected) in [(layers, "map layers"), (newer, "newer version"), (junk, "")] {
+        for (data, expected) in [(layers, "not a file"), (newer, "newer version"), (junk, "")] {
             let read = ReceivedFile.read(data, settingsJSON: settings, now: Self.now)
             XCTAssertNil(read.heading)
             guard case .problem(let message) = read.content else {

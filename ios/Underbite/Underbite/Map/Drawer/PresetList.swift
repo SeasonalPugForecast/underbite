@@ -34,7 +34,8 @@ struct PresetLink: View {
 }
 
 /// The presets: tap one to show it; save the layers on the map as a new one or over one; rename
-/// or delete the user's own; put the built-in ones back as they came. Names are the core's for
+/// or delete the user's own; put the built-in ones back as they came; share any as a file (a page
+/// of its own, from a row's menu or a swipe). Names are the core's for
 /// the built-in presets and the user's own as typed.
 struct PresetList: View {
     let controller: MapController
@@ -45,6 +46,8 @@ struct PresetList: View {
     @State private var name = ""
     @State private var confirmingRestore = false
     @State private var deleting: PresetEntry?
+    /// The preset being shared as a file.
+    @State private var sharing: PresetEntry?
 
     /// What a name is being typed for.
     private enum Naming: Equatable {
@@ -68,8 +71,28 @@ struct PresetList: View {
     }
 
     var body: some View {
+        Group {
+            if let sharing {
+                PresetSharePage(entry: sharing, catalogue: controller.catalogue) {
+                    withAnimation { self.sharing = nil }
+                }
+            } else {
+                list
+            }
+        }
+        #if DEBUG
+            .task {
+                guard let id = DrawerLaunch.presetToShare(), let presets,
+                    let entry = PresetEditing.entries(presets).first(where: { $0.id == id })
+                else { return }
+                sharing = entry
+            }
+        #endif
+    }
+
+    private var list: some View {
         let presets = presets
-        List {
+        return List {
             if let presets {
                 Section {
                     ForEach(PresetEditing.entries(presets)) { entry in
@@ -168,6 +191,12 @@ struct PresetList: View {
         .accessibilityAddTraits(entry.id == presets.active ? .isSelected : [])
         .accessibilityIdentifier("map-preset-\(entry.id)")
         .contextMenu { actions(entry, presets: presets) }
+        .swipeActions(edge: .leading) {
+            if let share = shareWord {
+                Button(share, systemImage: "square.and.arrow.up") { sharing = entry }
+                    .tint(Palette.accent)
+            }
+        }
         .swipeActions(edge: .trailing) {
             if !entry.builtIn || entry.edited {
                 Button(entry.builtIn ? "Restore" : "Delete", role: .destructive) {
@@ -185,6 +214,10 @@ struct PresetList: View {
         Button("Save the layers on the map here", systemImage: "square.and.arrow.down") {
             edit { _ = PresetEditing.save(name: entry.id, presets: presets, in: &$0) }
         }
+        if let share = shareWord {
+            Button(share, systemImage: "square.and.arrow.up") { sharing = entry }
+                .accessibilityIdentifier("map-preset-share-\(entry.id)")
+        }
         if !entry.builtIn {
             Button("Rename", systemImage: "pencil") { startRename(entry) }
             Button("Delete", systemImage: "trash", role: .destructive) { deleting = entry }
@@ -193,6 +226,11 @@ struct PresetList: View {
                 delete(entry)
             }
         }
+    }
+
+    /// The core's word for sharing a preset.
+    private var shareWord: String? {
+        PresetSharing.words(settingsJSON: store.settingsJSON)?.share
     }
 
     private func startRename(_ entry: PresetEntry) {
