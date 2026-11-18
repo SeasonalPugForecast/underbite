@@ -842,6 +842,28 @@ keys! {
     MapBreakTemperature => ("{change} per {distance}", "{change} per {distance}"),
     /// A chlorophyll break's strength as a ratio of concentrations: `{ratio}` ("1.3"), `{distance}`.
     MapBreakChlorophyll => ("×{ratio} per {distance}", "×{ratio} per {distance}"),
+    /// The breaks' threshold control: its title (before the threshold, "1.4 °F per mi") and
+    /// how a screen reader names it.
+    MapBreaksThreshold => ("Breaks from", "Breaks from"),
+    MapBreaksThresholdLabel => ("Break threshold", "Break threshold"),
+    /// In place of breaks when the view's grid is too coarse for them.
+    MapBreaksZoomIn => ("Zoom in to see breaks", "Zoom in and Luna will find the edges"),
+    /// While the grid the breaks are found in is still coming.
+    MapBreaksLoading => ("Finding breaks…", "Luna's looking for edges…"),
+    /// The grid has values but no change as sharp as the threshold.
+    MapBreaksNone => ("No breaks this sharp in view", "No edges this sharp in view"),
+    /// Clouds hid most of the day's grid: `{date}`.
+    MapBreaksFewClear => (
+        "Few clear cells on {date}. An earlier day may show more.",
+        "Few clear cells on {date}: mostly clouds. Try an earlier day.",
+    ),
+    /// A breaks layer whose grid layer is not on the map: `{layer}` (its title).
+    MapBreaksNeedsSource => (
+        "Show {layer} to see its breaks",
+        "Turn on {layer} and Luna will find its edges",
+    ),
+    /// The grid the breaks were found in: `{layer}` (its title), `{date}`.
+    MapBreaksFrom => ("From {layer}, {date}", "From {layer}, {date}"),
     /// What a charted structure point is.
     MapStructureWreck => ("Wreck", "Wreck"),
     MapStructureObstruction => ("Obstruction", "Obstruction"),
@@ -3212,6 +3234,73 @@ pub fn break_strength(f: &Formatter, kind: BreakKind, per_km: f64) -> String {
     }
 }
 
+/// The thresholds a temperature breaks control offers, in the user's temperature unit per the
+/// user's distance unit: tenths where thresholds are usually set, coarser above.
+const SST_THRESHOLD_STEPS: [f64; 13] = [
+    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0,
+];
+
+/// The thresholds a chlorophyll breaks control offers, as ratios of concentrations across one
+/// distance unit of the user's.
+const CHLOROPHYLL_THRESHOLD_STEPS: [f64; 10] =
+    [1.02, 1.03, 1.05, 1.07, 1.1, 1.15, 1.2, 1.3, 1.5, 2.0];
+
+/// The round thresholds a breaks control offers, weakest first: round numbers in the user's units
+/// ("0.5 °F per mi", "×1.10 per km"), each as the canonical gradient to store (°C per km, or log10
+/// units per km) and its label, which reads as [`break_strength`] writes a break.
+pub fn break_threshold_stops(f: &Formatter, kind: BreakKind) -> Vec<(f64, String)> {
+    let km_per_unit = distance_to_metres(f.units.distance, 1.0) / 1_000.0;
+    let per_km = |per_unit: f64| per_unit / km_per_unit;
+    let canonical: Vec<f64> = match kind {
+        BreakKind::Sst => {
+            let t = f.units.temperature;
+            SST_THRESHOLD_STEPS
+                .iter()
+                .map(|&step| {
+                    let change = t.to_canonical(step as f32) - t.to_canonical(0.0);
+                    per_km(f64::from(change))
+                })
+                .collect()
+        }
+        BreakKind::Chlorophyll => CHLOROPHYLL_THRESHOLD_STEPS
+            .iter()
+            .map(|&ratio| per_km(ratio.log10()))
+            .collect(),
+    };
+    canonical
+        .into_iter()
+        .map(|v| (v, break_strength(f, kind, v)))
+        .collect()
+}
+
+/// Which grid a breaks layer's lines were found in, for its legend: "From Sea surface
+/// temperature, Nov 16". `source_title` is the grid layer's title; `t` the grid's time.
+pub fn breaks_from(f: &Formatter, source_title: &str, t: UnixTime) -> String {
+    f.strings.fmt(
+        Key::MapBreaksFrom,
+        &[
+            ("layer", source_title),
+            ("date", &map_time(f, t, DateMode::Daily)),
+        ],
+    )
+}
+
+/// What a breaks layer says when clouds hid most of its grid: "Few clear cells on Nov 16. An
+/// earlier day may show more."
+pub fn breaks_few_clear(f: &Formatter, t: UnixTime) -> String {
+    f.strings.fmt(
+        Key::MapBreaksFewClear,
+        &[("date", &map_time(f, t, DateMode::Daily))],
+    )
+}
+
+/// What a breaks layer says while its grid layer is not on the map: "Show Sea surface
+/// temperature to see its breaks".
+pub fn breaks_needs_source(f: &Formatter, source_title: &str) -> String {
+    f.strings
+        .fmt(Key::MapBreaksNeedsSource, &[("layer", source_title)])
+}
+
 /// A charted structure point's title: "Wreck", "Obstruction", "Rock", "Fish haven".
 pub fn structure_title(f: &Formatter, kind: StructureKind, fish_haven: bool) -> &'static str {
     f.strings.get(match (kind, fish_haven) {
@@ -4095,6 +4184,90 @@ mod tests {
                 source: None,
             };
             assert_eq!(depth_reading(&us, &bed), "bed elevation -10 ft (NAVD 88)");
+        }
+
+        #[test]
+        fn break_thresholds_are_round_in_the_users_units_and_read_as_breaks_do() {
+            let (us, si) = (formatter(false), formatter(true));
+            let labels = |f: &Formatter, kind| -> Vec<String> {
+                break_threshold_stops(f, kind)
+                    .into_iter()
+                    .map(|(_, l)| l)
+                    .collect()
+            };
+            let si_sst = labels(&si, BreakKind::Sst);
+            assert_eq!(si_sst.first().map(String::as_str), Some("0.1 °C per km"));
+            assert!(si_sst.contains(&"0.5 °C per km".to_owned()));
+            assert_eq!(si_sst.last().map(String::as_str), Some("3.0 °C per km"));
+            let us_sst = labels(&us, BreakKind::Sst);
+            assert_eq!(us_sst[0], "0.1 °F per mi");
+            assert!(us_sst.contains(&"1.5 °F per mi".to_owned()));
+            assert_eq!(
+                labels(&si, BreakKind::Chlorophyll)[..3],
+                ["×1.02 per km", "×1.03 per km", "×1.05 per km"]
+            );
+            assert_eq!(
+                labels(&us, BreakKind::Chlorophyll)
+                    .last()
+                    .map(String::as_str),
+                Some("×2.0 per mi")
+            );
+            for f in [&us, &si] {
+                for kind in [BreakKind::Sst, BreakKind::Chlorophyll] {
+                    let stops = break_threshold_stops(f, kind);
+                    assert!(stops.len() >= 10);
+                    // Weakest first, each labelled as a break of that strength reads.
+                    assert!(stops.windows(2).all(|w| w[0].0 < w[1].0));
+                    for (value, label) in &stops {
+                        assert!(*value > 0.0);
+                        assert_eq!(&break_strength(f, kind, *value), label);
+                    }
+                }
+            }
+            // The canonical values: 1.5 °F per mile is 0.518 °C per km; ×1.1 per km is
+            // log10(1.1) per km.
+            let us_value = break_threshold_stops(&us, BreakKind::Sst)
+                .into_iter()
+                .find(|(_, l)| l == "1.5 °F per mi")
+                .unwrap()
+                .0;
+            assert!(
+                (us_value - 1.5 / 1.8 / 1.609_344).abs() < 1e-4,
+                "{us_value}"
+            );
+            let si_value = break_threshold_stops(&si, BreakKind::Chlorophyll)
+                .into_iter()
+                .find(|(_, l)| l == "×1.10 per km")
+                .unwrap()
+                .0;
+            assert!((si_value - 1.1f64.log10()).abs() < 1e-9, "{si_value}");
+            // The defaults lie within the stops.
+            for (f, kind, default) in [
+                (&us, BreakKind::Sst, 0.5),
+                (&si, BreakKind::Chlorophyll, 0.0375),
+            ] {
+                let stops = break_threshold_stops(f, kind);
+                assert!(stops[0].0 < default && default < stops[stops.len() - 1].0);
+            }
+        }
+
+        #[test]
+        fn breaks_say_where_they_were_found_and_why_there_are_none() {
+            let us = formatter(false);
+            // 2026-11-16 09:00 UTC.
+            let t = UnixTime(1_794_819_600);
+            assert_eq!(
+                breaks_from(&us, "Sea surface temperature", t),
+                "From Sea surface temperature, Nov 16"
+            );
+            assert_eq!(
+                breaks_few_clear(&us, t),
+                "Few clear cells on Nov 16. An earlier day may show more."
+            );
+            assert_eq!(
+                breaks_needs_source(&us, "Chlorophyll"),
+                "Show Chlorophyll to see its breaks"
+            );
         }
 
         #[test]

@@ -8,6 +8,10 @@
 //! Depths from the NCEI elevation model are always *approximate depth*: metres relative to the
 //! source model's vertical datum, never chart datum, never compared with charted soundings or tide
 //! heights. Charted depths of structure points (`VALSOU`) are never shown.
+//!
+//! Breaks are found in the grid another layer already shows ([`GridStore::breaks`] for the
+//! catalogue's `sst-breaks` and `chlorophyll-breaks`), with their words, legends and threshold
+//! stops ([`breaks_words`], [`break_threshold_stops`]).
 
 use std::collections::BTreeMap;
 
@@ -15,11 +19,11 @@ use std::sync::Arc;
 
 use underbite_config::schema::Config;
 use underbite_core::map::breaks::{self, BreakKind, BreakOptions};
-use underbite_core::map::catalogue::{FeatureKind, LayerKind};
+use underbite_core::map::catalogue::{self, BreakLayer, FeatureKind, Layer, LayerKind};
 use underbite_core::map::contours::{self, LabelAnchor, MAX_LEVELS};
 use underbite_core::map::dem::{self, DemSourceInfo, SHORE_M, WaterBody};
 use underbite_core::map::enc::StructureKind;
-use underbite_core::map::grid::Grid;
+use underbite_core::map::grid::{self, Grid};
 use underbite_core::map::render::{self, DEPTH, Ramp};
 use underbite_core::map::tiles::{MAX_ZOOM, TILE_PX};
 use underbite_core::map::{Bbox, GeoPoint, GridHost, Polyline, TileKey};
@@ -27,7 +31,8 @@ use underbite_core::time::UnixTime;
 use underbite_core::units::HeightUnit;
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{
-    Key, MapQuantity, SafetyKey, break_strength, contour_interval_text, depth_band_text,
+    Key, MapQuantity, SafetyKey, break_strength, break_threshold_stops as threshold_stops,
+    breaks_few_clear, breaks_from, breaks_needs_source, contour_interval_text, depth_band_text,
     depth_datums_line, depth_label, reef_depths, structure_category, structure_surveyed,
     structure_title,
 };
@@ -91,6 +96,14 @@ const BAND_MAX_M: f64 = 100.0;
 /// for chlorophyll.
 const SST_SPACING: f64 = 0.5;
 const CHLOROPHYLL_SPACING: f64 = 0.1;
+
+/// Below this share of a chlorophyll grid's cells in view holding a value, clouds hid most of the
+/// day: [`BreaksState::FewClearCells`]. Land counts as missing too, so the share is low.
+pub const FEW_CLEAR_SHARE: f64 = 0.2;
+
+/// How many times the threshold a break must be to be drawn at full weight
+/// ([`BreakLine::emphasis`] 1).
+const FULL_EMPHASIS_TIMES: f64 = 4.0;
 
 // ---------------------------------------------------------------------------------------------
 // Elevation blocks in the store
@@ -502,13 +515,51 @@ impl GridStore {
         };
         let area = view_box(west, south, east, north)?;
         let (config, _) = load(&settings_json)?;
-        let shared = self.lock().selected(l.id, Some(area));
-        let grids: Vec<Grid> = shared
-            .iter()
-            .filter_map(|g| g.first().map(|g| Grid::clone(g)))
-            .collect();
+        let grids = self.held(l.id, area);
         let f = formatter(&config, "UTC");
         break_lines_of(&grids, kind, area, &config, &f)
+    }
+
+    /// The breaks a breaks layer (`sst-breaks` or `chlorophyll-breaks`) draws in a view at
+    /// `zoom`, found in the blocks the store holds for its grid layer's view (the dataset and
+    /// time [`GridStore::grid_requests`] last asked for: no request of their own), with what to
+    /// say about them. They are found at the stride the view's blocks are fetched at; while none
+    /// of those is held, at the finest stride held. A view whose blocks are coarser than a
+    /// stride of four draws none ([`BreaksState::ZoomIn`]). Ask again when the zoom, the
+    /// threshold or the grid layer's date changes, and when its blocks arrive. Thinned, at most
+    /// [`MAX_BREAK_VERTICES`] vertices, strongest first.
+    #[allow(clippy::too_many_arguments)] // a view is four edges and a zoom
+    #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+    pub fn breaks(
+        &self,
+        layer: String,
+        west: f64,
+        south: f64,
+        east: f64,
+        north: f64,
+        zoom: f64,
+        settings_json: String,
+    ) -> Result<BreakSet, MapError> {
+        let (b, source) = breaks_layer(&layer)?;
+        let area = view_box(west, south, east, north)?;
+        if !zoom.is_finite() {
+            return Err(invalid("the zoom is not a number"));
+        }
+        let (config, _) = load(&settings_json)?;
+        let f = formatter(&config, "UTC");
+        let grids = self.held(source.id, area);
+        Ok(break_set(&grids, b, source, area, zoom, &config, &f))
+    }
+}
+
+impl GridStore {
+    /// The first grid of each block the store holds for `layer`'s view that overlaps `area`.
+    fn held(&self, layer: &str, area: Bbox) -> Vec<Grid> {
+        let shared = self.lock().selected(layer, Some(area));
+        shared
+            .iter()
+            .filter_map(|g| g.first().map(|g| Grid::clone(g)))
+            .collect()
     }
 }
 
@@ -702,6 +753,45 @@ pub struct BreakLine {
     pub points: Vec<MapPoint>,
     /// The strength in the user's units: "1.4 °F per mi", "×1.1 per km".
     pub strength_text: String,
+    /// The strength: the mean change per kilometre along the line, in °C for temperature and in
+    /// log10 units of the concentration for chlorophyll.
+    pub value: f64,
+    /// How the line is weighted against the settings' threshold, for its width: 0 at the
+    /// threshold, 1 at four times it or more, between them by the ratio's logarithm.
+    pub emphasis: f64,
+}
+
+/// What a breaks layer's lines came to in a view.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, uniffi::Enum)]
+pub enum BreaksState {
+    /// The lines are the breaks in view.
+    Drawn,
+    /// The grid has values in view but no change as sharp as the threshold.
+    NoBreaks,
+    /// Clouds hid most of the day's grid in view: the few lines found are drawn, and an earlier
+    /// day may show more.
+    FewClearCells,
+    /// The view's blocks are too coarse for breaks: zoom in.
+    ZoomIn,
+    /// The store holds none of the grid layer's blocks for the view yet.
+    Waiting,
+}
+
+/// The breaks of a layer in a view and what to say about them.
+#[derive(Clone, Debug, PartialEq, uniffi::Record)]
+pub struct BreakSet {
+    /// Strongest first.
+    pub lines: Vec<BreakLine>,
+    pub state: BreaksState,
+    /// What to say beside or in place of the lines: "Zoom in to see breaks", "Finding breaks…",
+    /// "No breaks this sharp in view", "Few clear cells on Nov 16. An earlier day may show
+    /// more."; none while breaks are drawn.
+    pub state_text: Option<String>,
+    /// Which grid the lines were found in: "From Sea surface temperature, Nov 16"; none
+    /// without one.
+    pub from_text: Option<String>,
+    /// The time the grid describes, Unix seconds; none without one.
+    pub time: Option<i64>,
 }
 
 /// The stride a block was fetched at, from its spacing against the dataset's own.
@@ -730,6 +820,22 @@ fn field_span(grid: &Grid, kind: BreakKind) -> Option<f64> {
     (low <= high).then_some(high - low)
 }
 
+/// The settings' threshold for a kind of break, canonical per km.
+fn threshold_of(config: &Config, kind: BreakKind) -> f64 {
+    f64::from(match kind {
+        BreakKind::Sst => config.map.breaks.sst_c_per_km,
+        BreakKind::Chlorophyll => config.map.breaks.chlorophyll_log10_per_km,
+    })
+}
+
+/// A line's weight against the threshold: 0 at it, 1 at [`FULL_EMPHASIS_TIMES`] it or more.
+fn emphasis(value: f64, threshold: f64) -> f64 {
+    if !(value.is_finite() && threshold.is_finite() && threshold > 0.0) {
+        return 0.0;
+    }
+    ((value / threshold).log2() / FULL_EMPHASIS_TIMES.log2()).clamp(0.0, 1.0)
+}
+
 fn break_lines_of(
     grids: &[Grid],
     kind: BreakKind,
@@ -749,25 +855,34 @@ fn break_lines_of(
         .cloned()
         .collect();
     let grid = Grid::merge(&same).map_err(|e| invalid(e.to_string()))?;
-    let Some(span) = field_span(&grid, kind) else {
-        return Ok(Vec::new());
+    Ok(lines_in(&grid, kind, area, threshold_of(config, kind), f))
+}
+
+/// The breaks of a merged grid that reach into `area`, thinned, strongest first, at most
+/// [`MAX_BREAK_VERTICES`] vertices.
+fn lines_in(
+    grid: &Grid,
+    kind: BreakKind,
+    area: Bbox,
+    threshold: f64,
+    f: &Formatter,
+) -> Vec<BreakLine> {
+    let Some(span) = field_span(grid, kind) else {
+        return Vec::new();
     };
-    let (threshold, default_spacing) = match kind {
-        BreakKind::Sst => (config.map.breaks.sst_c_per_km, SST_SPACING),
-        BreakKind::Chlorophyll => (
-            config.map.breaks.chlorophyll_log10_per_km,
-            CHLOROPHYLL_SPACING,
-        ),
+    let default_spacing = match kind {
+        BreakKind::Sst => SST_SPACING,
+        BreakKind::Chlorophyll => CHLOROPHYLL_SPACING,
     };
     // Few enough levels for `contours::levels`, whatever the field's range.
     let spacing = default_spacing.max(span / (MAX_LEVELS as f64 / 2.0));
-    let options = BreakOptions::new(kind, f64::from(threshold), spacing);
+    let options = BreakOptions::new(kind, threshold, spacing);
     let cell_m = grid
         .lats
         .windows(2)
         .next()
         .map_or(1_000.0, |w| (w[1] - w[0]).abs() * 111_000.0);
-    let mut pieces: Vec<Polyline> = breaks::breaks_with(&grid, kind, &options)
+    let mut pieces: Vec<Polyline> = breaks::breaks_with(grid, kind, &options)
         .into_iter()
         .filter(|p| {
             p.points.iter().any(|q| {
@@ -789,9 +904,248 @@ fn break_lines_of(
         out.push(BreakLine {
             points: points_of(&piece),
             strength_text: break_strength(f, kind, piece.value),
+            value: piece.value,
+            emphasis: emphasis(piece.value, threshold),
         });
     }
-    Ok(out)
+    out
+}
+
+/// How a breaks layer finds its breaks, and the grid layer it finds them in.
+fn breaks_layer(id: &str) -> Result<(BreakLayer, &'static Layer), MapError> {
+    let l = layer(id)?;
+    let b = *l
+        .breaks()
+        .ok_or_else(|| invalid(format!("`{id}` is not a breaks layer")))?;
+    let source = layer(b.source)?;
+    if source.grid().is_none() {
+        return Err(invalid(format!("`{}` has no grid", source.id)));
+    }
+    Ok((b, source))
+}
+
+/// The share of the cells of `grids` inside `area` that hold a value, over the blocks held only
+/// (a block not fetched yet is not cloud); none without a cell in view.
+fn clear_share(grids: &[Grid], area: Bbox) -> Option<f64> {
+    let (mut clear, mut all) = (0usize, 0usize);
+    for g in grids {
+        let width = g.lons.len();
+        for (i, lat) in g.lats.iter().enumerate() {
+            if !(area.south..=area.north).contains(lat) {
+                continue;
+            }
+            for (j, lon) in g.lons.iter().enumerate() {
+                if !(area.west..=area.east).contains(lon) {
+                    continue;
+                }
+                all += 1;
+                if g.values.get(i * width + j).is_some_and(|v| v.is_finite()) {
+                    clear += 1;
+                }
+            }
+        }
+    }
+    (all > 0).then(|| clear as f64 / all as f64)
+}
+
+/// The breaks of breaks layer `b` in `area` at `zoom`, from the blocks held for its grid layer
+/// `source`.
+fn break_set(
+    grids: &[Grid],
+    b: BreakLayer,
+    source: &Layer,
+    area: Bbox,
+    zoom: f64,
+    config: &Config,
+    f: &Formatter,
+) -> BreakSet {
+    let s = f.strings;
+    let empty = |state: BreaksState, key: Key| BreakSet {
+        lines: Vec::new(),
+        state,
+        state_text: Some(s.get(key).to_owned()),
+        from_text: None,
+        time: None,
+    };
+    let native = grids.first().map_or_else(
+        || source.grid().map_or(0.0, |g| g.primary.native_step_deg),
+        |g| g.source.native_step_deg,
+    );
+    let view_stride = f64::from(grid::stride_for_zoom(native, zoom));
+    if view_stride > MAX_BREAK_STRIDE {
+        return empty(BreaksState::ZoomIn, Key::MapBreaksZoomIn);
+    }
+    // The blocks at the view's stride, else the finest held that is fine enough.
+    let near = |g: &Grid, stride: f64| (stride_of(g) - stride).abs() < 0.5;
+    let stride = if grids.iter().any(|g| near(g, view_stride)) {
+        Some(view_stride)
+    } else {
+        grids
+            .iter()
+            .map(stride_of)
+            .filter(|&st| st <= MAX_BREAK_STRIDE)
+            .min_by(f64::total_cmp)
+    };
+    let at_stride: Vec<&Grid> = stride.map_or_else(Vec::new, |st| {
+        grids.iter().filter(|g| near(g, st)).collect()
+    });
+    // Blocks of one time only, the newest: the source's newest day may have changed between two
+    // blocks.
+    let Some(time) = at_stride.iter().map(|g| g.time).max() else {
+        return empty(BreaksState::Waiting, Key::MapBreaksLoading);
+    };
+    let same: Vec<Grid> = at_stride
+        .into_iter()
+        .filter(|g| g.time == time)
+        .cloned()
+        .collect();
+    let Ok(merged) = Grid::merge(&same) else {
+        return empty(BreaksState::Waiting, Key::MapBreaksLoading);
+    };
+    let lines = lines_in(&merged, b.kind, area, threshold_of(config, b.kind), f);
+    let cloudy = b.kind == BreakKind::Chlorophyll
+        && clear_share(&same, area).is_some_and(|share| share < FEW_CLEAR_SHARE);
+    let (state, state_text) = if cloudy {
+        (BreaksState::FewClearCells, Some(breaks_few_clear(f, time)))
+    } else if lines.is_empty() {
+        (
+            BreaksState::NoBreaks,
+            Some(s.get(Key::MapBreaksNone).to_owned()),
+        )
+    } else {
+        (BreaksState::Drawn, None)
+    };
+    let source_title = s.layer_title(source.id).unwrap_or(source.id);
+    BreakSet {
+        lines,
+        state,
+        state_text,
+        from_text: Some(breaks_from(f, source_title, time)),
+        time: Some(time.0),
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Breaks layers: words, legends and the threshold's stops
+// ---------------------------------------------------------------------------------------------
+
+/// One weight of a breaks legend: a line drawn at `emphasis` and the strength it stands for.
+#[derive(Clone, Debug, PartialEq, uniffi::Record)]
+pub struct BreakLegendStop {
+    /// As [`BreakLine::emphasis`]: 0 at the threshold, 1 at four times it.
+    pub emphasis: f64,
+    /// The strength in the user's units: "1.4 °F per mi".
+    pub label: String,
+}
+
+/// One breaks layer as its drawer section and legend show it.
+#[derive(Clone, Debug, PartialEq, uniffi::Record)]
+pub struct BreakLayerWords {
+    /// The breaks layer's id: `sst-breaks`.
+    pub id: String,
+    /// The grid layer the breaks are found in: `sst`.
+    pub source: String,
+    /// "SST breaks".
+    pub title: String,
+    /// The grid layer's title: "Sea surface temperature".
+    pub source_title: String,
+    /// The settings' threshold, canonical (°C per km, or log10 units per km), to place the
+    /// control among [`break_threshold_stops`].
+    pub threshold: f64,
+    /// The settings' threshold in the user's units: "1.4 °F per mi".
+    pub threshold_text: String,
+    /// In place of breaks while the grid layer is not on the map: "Show Sea surface temperature
+    /// to see its breaks".
+    pub needs_source: String,
+    /// "Where the temperature changes fastest; heavier lines change faster".
+    pub legend_caption: String,
+    /// Lines at the threshold, twice it and four times it, lightest first.
+    pub legend: Vec<BreakLegendStop>,
+    /// The breaks layer's credit, which names the grid it is found in (safety text).
+    pub credit: String,
+}
+
+/// The words of the breaks layers' controls and states, in the settings' voice and units.
+#[derive(Clone, Debug, PartialEq, uniffi::Record)]
+pub struct BreaksWords {
+    /// The threshold control's title, before the threshold: "Breaks from".
+    pub threshold_title: String,
+    /// The control as a screen reader names it: "Break threshold".
+    pub threshold_label: String,
+    /// In place of breaks when the view is too wide for them: "Zoom in to see breaks".
+    pub zoom_in: String,
+    /// While the grid is still coming: "Finding breaks…".
+    pub loading: String,
+    /// "Not for navigation." (safety text).
+    pub notice: String,
+    /// Each breaks layer of the catalogue, in drawer order.
+    pub layers: Vec<BreakLayerWords>,
+}
+
+/// The emphases a breaks legend shows, as multiples of the threshold.
+const LEGEND_TIMES: [f64; 3] = [1.0, 2.0, FULL_EMPHASIS_TIMES];
+
+fn break_layer_words(l: &Layer, b: BreakLayer, config: &Config, f: &Formatter) -> BreakLayerWords {
+    let s = f.strings;
+    let source_title = s.layer_title(b.source).unwrap_or(b.source);
+    let threshold = threshold_of(config, b.kind);
+    BreakLayerWords {
+        id: l.id.to_owned(),
+        source: b.source.to_owned(),
+        title: s.layer_title(l.id).unwrap_or(l.id).to_owned(),
+        source_title: source_title.to_owned(),
+        threshold,
+        threshold_text: break_strength(f, b.kind, threshold),
+        needs_source: breaks_needs_source(f, source_title),
+        legend_caption: s.layer_legend(l.id).unwrap_or_default().to_owned(),
+        legend: LEGEND_TIMES
+            .iter()
+            .map(|times| BreakLegendStop {
+                emphasis: emphasis(threshold * times, threshold),
+                label: break_strength(f, b.kind, threshold * times),
+            })
+            .collect(),
+        credit: s.layer_credit(l.id).unwrap_or_default().to_owned(),
+    }
+}
+
+/// The words of the breaks layers' threshold control and states, and each breaks layer's title,
+/// threshold, legend and credit, in the settings' voice and units.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn breaks_words(settings_json: String) -> Result<BreaksWords, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, "UTC");
+    let s = f.strings;
+    Ok(BreaksWords {
+        threshold_title: s.get(Key::MapBreaksThreshold).to_owned(),
+        threshold_label: s.get(Key::MapBreaksThresholdLabel).to_owned(),
+        zoom_in: s.get(Key::MapBreaksZoomIn).to_owned(),
+        loading: s.get(Key::MapBreaksLoading).to_owned(),
+        notice: s.safety(SafetyKey::NotForNavigation).to_owned(),
+        layers: catalogue::drawer_order()
+            .filter_map(|l| l.breaks().map(|b| break_layer_words(l, *b, &config, &f)))
+            .collect(),
+    })
+}
+
+/// Round thresholds for a breaks layer's control, weakest first, in the user's units: tenths of
+/// a degree per mile or kilometre for temperature ("1.5 °F per mi"), ratios of concentrations
+/// for chlorophyll ("×1.10 per km"). Each has the value to store in `map.breaks` (canonical: °C
+/// per km for `sst-breaks`, log10 units per km for `chlorophyll-breaks`) and its label.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn break_threshold_stops(
+    layer: String,
+    settings_json: String,
+) -> Result<Vec<DisplayStop>, MapError> {
+    let (b, _) = breaks_layer(&layer)?;
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, "UTC");
+    Ok(threshold_stops(&f, b.kind)
+        .into_iter()
+        .map(|(value, label)| DisplayStop { value, label })
+        .collect())
 }
 
 // ---------------------------------------------------------------------------------------------

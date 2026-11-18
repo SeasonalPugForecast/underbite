@@ -7,14 +7,15 @@ use std::sync::Arc;
 
 use serde_json::{Value, json};
 use underbite_ffi::depth::{
-    DEPTH_LAYER, StructureBand, StructureLayers, StructureType, depth_band_stops, depth_layer_info,
-    depth_words, gebco_capabilities_request, gebco_credit, parse_reefs, parse_state_contours,
+    BreakSet, BreaksState, DEPTH_LAYER, StructureBand, StructureLayers, StructureType,
+    break_threshold_stops, breaks_words, depth_band_stops, depth_layer_info, depth_words,
+    gebco_capabilities_request, gebco_credit, parse_reefs, parse_state_contours,
     parse_structure_layers, parse_structure_points, reefs_request, state_contour_request,
     structure_band, structure_layers_request, structure_points_request,
 };
 use underbite_ffi::fetch::HostResponse;
 use underbite_ffi::map::{
-    GridStore, LayerDraw, MAX_STORE_BLOCKS, MAX_STORE_VALUES, MapError, map_catalogue,
+    GridStore, LayerDates, LayerDraw, MAX_STORE_BLOCKS, MAX_STORE_VALUES, MapError, map_catalogue,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -804,6 +805,272 @@ fn breaks_need_a_layer_that_has_them_and_blocks_near_the_grids_own_resolution() 
             .break_lines("sst".into(), -74.2, 40.0, -73.0, 40.8, imperial())
             .unwrap()
             .is_empty()
+    );
+}
+
+// ---------------------------------------------------------------------------------------------
+// Breaks layers
+// ---------------------------------------------------------------------------------------------
+
+fn breaks_of(store: &GridStore, layer: &str, zoom: f64, settings: String) -> BreakSet {
+    store
+        .breaks(layer.into(), -74.0, 40.0, -73.5, 40.5, zoom, settings)
+        .unwrap()
+}
+
+#[test]
+fn a_breaks_layer_finds_its_breaks_in_the_blocks_held_for_its_grid_layer() {
+    let store = store_with_front();
+    let set = breaks_of(&store, "sst-breaks", 12.0, imperial());
+    assert_eq!(set.state, BreaksState::Drawn);
+    assert_eq!(set.state_text, None);
+    assert_eq!(
+        set.from_text.as_deref(),
+        Some("From Sea surface temperature, Nov 16")
+    );
+    assert_eq!(set.time, Some(1_794_819_600));
+    // The same lines the grid layer's own breaks call finds, with their strength and weight.
+    let same = store
+        .break_lines("sst".into(), -74.0, 40.0, -73.5, 40.5, imperial())
+        .unwrap();
+    assert_eq!(set.lines, same);
+    assert!(!set.lines.is_empty());
+    for line in &set.lines {
+        assert!(line.value >= 0.5, "{}", line.value);
+        assert!((0.0..=1.0).contains(&line.emphasis), "{}", line.emphasis);
+        assert!(line.strength_text.ends_with(" °F per mi"));
+    }
+    assert!(set.lines.windows(2).all(|w| w[0].value >= w[1].value));
+    // The front is several times the threshold: drawn heavy.
+    let strongest = &set.lines[0];
+    let expected = (strongest.value / 0.5).log2() / 2.0;
+    assert!((strongest.emphasis - expected.min(1.0)).abs() < 1e-9);
+    assert!(strongest.emphasis > 0.5, "{}", strongest.emphasis);
+
+    // A threshold above the front's strength: values, but no breaks.
+    let stiff = settings(|v| v["map"]["breaks"]["sst_c_per_km"] = json!(50.0));
+    let none = breaks_of(&store, "sst-breaks", 12.0, stiff);
+    assert_eq!(none.state, BreaksState::NoBreaks);
+    assert!(none.lines.is_empty());
+    assert_eq!(
+        none.state_text.as_deref(),
+        Some("No breaks this sharp in view")
+    );
+    assert!(none.from_text.is_some());
+
+    // At zoom 7 the view's blocks would be at a stride of three: until they come, the finer
+    // blocks held serve.
+    assert_eq!(breaks_of(&store, "sst-breaks", 7.0, imperial()).lines, same);
+    // At zoom 6 they would be at a stride of seven: too coarse for breaks.
+    let wide = breaks_of(&store, "sst-breaks", 6.0, imperial());
+    assert_eq!(wide.state, BreaksState::ZoomIn);
+    assert!(wide.lines.is_empty() && wide.from_text.is_none());
+    assert_eq!(wide.state_text.as_deref(), Some("Zoom in to see breaks"));
+    // Nothing held for the grid layer yet.
+    let waiting = breaks_of(&GridStore::new(), "sst-breaks", 12.0, imperial());
+    assert_eq!(waiting.state, BreaksState::Waiting);
+    assert_eq!(waiting.state_text.as_deref(), Some("Finding breaks…"));
+    assert_eq!(waiting.time, None);
+}
+
+#[test]
+fn breaks_calls_take_only_breaks_layers_and_a_view() {
+    let store = store_with_front();
+    let ask = |layer: &str, west: f64, zoom: f64, json: String| {
+        store.breaks(layer.into(), west, 40.0, -73.5, 40.5, zoom, json)
+    };
+    assert!(ask("sst", -74.0, 12.0, imperial()).is_err());
+    assert!(ask("depth-contours", -74.0, 12.0, imperial()).is_err());
+    assert!(ask("nope", -74.0, 12.0, imperial()).is_err());
+    assert!(ask("sst-breaks", -73.0, 12.0, imperial()).is_err());
+    assert!(ask("sst-breaks", -74.0, f64::NAN, imperial()).is_err());
+    assert!(ask("sst-breaks", -74.0, 12.0, "{".into()).is_err());
+    assert!(break_threshold_stops("sst".into(), imperial()).is_err());
+    assert!(break_threshold_stops("sst-breaks".into(), "{".into()).is_err());
+    assert!(breaks_words("{".into()).is_err());
+}
+
+/// A VIIRS chlorophyll block (0.0375 degrees, stride 1) over 40.0 to 40.5 N and 74.0 to 73.5 W:
+/// 0.5 mg m⁻³ to the west and 4 to the east of a front across 73.75 W, a smooth step over 0.15
+/// degrees, in the shape ERDDAP answers. `clear` says which cells the clouds left.
+fn chlorophyll_block(clear: impl Fn(i32, i32) -> bool) -> Vec<u8> {
+    let template: Value = serde_json::from_slice(&fixture(
+        "erddap/noaacwn20viirschladaily-chla-subset-2026-11-04.json",
+    ))
+    .unwrap();
+    let mut rows = Vec::new();
+    // ERDDAP lists the VIIRS rows north first.
+    for i in (0..=13).rev() {
+        let lat = 40.0 + 0.018_75 + f64::from(i) * 0.0375;
+        for j in 0..=13 {
+            let lon = -74.0 + 0.018_75 + f64::from(j) * 0.0375;
+            let t = ((lon + 73.825) / 0.15).clamp(0.0, 1.0);
+            let log = 0.5f64.log10() + 8f64.log10() * t * t * (3.0 - 2.0 * t);
+            let value = if clear(i, j) {
+                json!((10f64.powf(log) * 1e4).round() / 1e4)
+            } else {
+                Value::Null
+            };
+            rows.push(json!(["2026-11-04T12:00:00Z", 0, lat, lon, value]));
+        }
+    }
+    let mut v = template;
+    v["table"]["rows"] = Value::Array(rows);
+    v.to_string().into_bytes()
+}
+
+fn store_with_chlorophyll(body: &[u8]) -> Arc<GridStore> {
+    let store = GridStore::new();
+    let requests = store
+        .grid_requests(
+            "chlorophyll".into(),
+            None,
+            None,
+            -74.0,
+            40.0,
+            -73.5,
+            40.5,
+            10.0,
+            NOW,
+        )
+        .unwrap();
+    assert_eq!(requests.len(), 1);
+    store
+        .add_grid(requests[0].key.clone(), json_response(body), NOW)
+        .unwrap();
+    store
+}
+
+#[test]
+fn chlorophyll_breaks_say_when_clouds_hid_most_of_the_day() {
+    let clear = store_with_chlorophyll(&chlorophyll_block(|_, _| true));
+    let set = breaks_of(&clear, "chlorophyll-breaks", 10.0, metric());
+    assert_eq!(set.state, BreaksState::Drawn, "{:?}", set.state_text);
+    assert!(!set.lines.is_empty());
+    assert!(
+        set.lines
+            .iter()
+            .all(|l| l.strength_text.ends_with(" per km") && l.strength_text.starts_with('×'))
+    );
+    assert_eq!(set.from_text.as_deref(), Some("From Chlorophyll, Nov 4"));
+
+    // One cell in eight clear: few clear cells, and the day is named.
+    let cloudy = store_with_chlorophyll(&chlorophyll_block(|i, j| (i + j) % 8 == 0));
+    let set = breaks_of(&cloudy, "chlorophyll-breaks", 10.0, metric());
+    assert_eq!(set.state, BreaksState::FewClearCells);
+    assert_eq!(
+        set.state_text.as_deref(),
+        Some("Few clear cells on Nov 4. An earlier day may show more.")
+    );
+    assert!(set.lines.is_empty());
+    // Temperature is a gap-free analysis: its breaks never blame clouds.
+    let land = store_with_front();
+    assert_ne!(
+        breaks_of(&land, "sst-breaks", 12.0, metric()).state,
+        BreaksState::FewClearCells
+    );
+}
+
+#[test]
+fn breaks_words_carry_the_threshold_legend_and_credit_in_the_users_units() {
+    let words = breaks_words(imperial()).unwrap();
+    assert_eq!(words.threshold_title, "Breaks from");
+    assert_eq!(words.threshold_label, "Break threshold");
+    assert_eq!(words.zoom_in, "Zoom in to see breaks");
+    assert_eq!(words.loading, "Finding breaks…");
+    assert_eq!(words.notice, "Not for navigation.");
+    let ids: Vec<_> = words.layers.iter().map(|l| l.id.as_str()).collect();
+    assert_eq!(ids, ["sst-breaks", "chlorophyll-breaks"]);
+    let sst = &words.layers[0];
+    assert_eq!(sst.source, "sst");
+    assert_eq!(sst.title, "SST breaks");
+    assert_eq!(sst.source_title, "Sea surface temperature");
+    assert!((sst.threshold - 0.5).abs() < 1e-6);
+    assert_eq!(sst.threshold_text, "1.4 °F per mi");
+    assert_eq!(
+        sst.needs_source,
+        "Show Sea surface temperature to see its breaks"
+    );
+    assert!(sst.legend_caption.contains("heavier lines"));
+    let emphases: Vec<f64> = sst.legend.iter().map(|s| s.emphasis).collect();
+    assert_eq!(emphases, [0.0, 0.5, 1.0]);
+    let labels: Vec<&str> = sst.legend.iter().map(|s| s.label.as_str()).collect();
+    assert_eq!(labels, ["1.4 °F per mi", "2.9 °F per mi", "5.8 °F per mi"]);
+    // The credit is the catalogue's, which names the grid the breaks are found in.
+    let catalogue = map_catalogue(imperial()).unwrap();
+    for l in &words.layers {
+        let info = catalogue.iter().find(|i| i.id == l.id).unwrap();
+        assert_eq!(info.credit, l.credit);
+        assert_eq!(info.title, l.title);
+        assert_eq!(
+            info.legend_caption.as_deref(),
+            Some(l.legend_caption.as_str())
+        );
+    }
+    assert!(sst.credit.contains("NASA JPL MUR") && sst.credit.contains("Not for navigation."));
+
+    let metric = breaks_words(metric()).unwrap();
+    assert_eq!(metric.layers[0].threshold_text, "0.5 °C per km");
+    assert_eq!(metric.layers[1].threshold_text, "×1.09 per km");
+    assert_eq!(metric.layers[1].source_title, "Chlorophyll");
+    // A threshold the user set is the one shown.
+    let set = settings(|v| v["map"]["breaks"]["chlorophyll_log10_per_km"] = json!(0.05));
+    assert_eq!(
+        breaks_words(set).unwrap().layers[1].threshold_text,
+        "×1.20 per mi"
+    );
+    // Luna words the states her way; the notice stays plain.
+    let luna = breaks_words(default_settings_json()).unwrap();
+    assert_ne!(luna.zoom_in, words.zoom_in);
+    assert_eq!(luna.notice, words.notice);
+    assert_eq!(luna.layers[0].credit, sst.credit);
+}
+
+#[test]
+fn break_threshold_stops_are_round_in_the_users_units_and_store_canonical_values() {
+    let us = break_threshold_stops("sst-breaks".into(), imperial()).unwrap();
+    assert!(us.iter().all(|s| s.label.ends_with(" °F per mi")));
+    assert!(us.windows(2).all(|w| w[0].value < w[1].value));
+    let stop = us.iter().find(|s| s.label == "1.5 °F per mi").unwrap();
+    assert!((stop.value - 0.517_799).abs() < 1e-4, "{}", stop.value);
+    let si = break_threshold_stops("sst-breaks".into(), metric()).unwrap();
+    let half = si.iter().find(|s| s.label == "0.5 °C per km").unwrap();
+    assert!((half.value - 0.5).abs() < 1e-6);
+    let chl = break_threshold_stops("chlorophyll-breaks".into(), metric()).unwrap();
+    assert!(
+        chl.iter()
+            .all(|s| s.label.starts_with('×') && s.label.ends_with(" per km"))
+    );
+    let ten = chl.iter().find(|s| s.label == "×1.10 per km").unwrap();
+    assert!((ten.value - 1.1f64.log10()).abs() < 1e-9);
+    // Every value is one the settings accept.
+    for s in us.iter().chain(&si).chain(&chl) {
+        assert!(s.value > 0.0 && s.value.is_finite());
+    }
+}
+
+#[test]
+fn the_catalogue_lists_the_breaks_layers_in_the_water_group() {
+    let layers = map_catalogue(imperial()).unwrap();
+    for (id, min_zoom) in [("sst-breaks", 7), ("chlorophyll-breaks", 5)] {
+        let l = layers.iter().find(|l| l.id == id).unwrap();
+        assert_eq!(l.group, "water", "{id}");
+        assert_eq!(l.draw, LayerDraw::Breaks, "{id}");
+        assert_eq!(l.dates, LayerDates::Undated, "{id}");
+        assert!(l.available && !l.shown, "{id}");
+        assert_eq!(l.notice.as_deref(), Some("Not for navigation."), "{id}");
+        assert!(l.legend.is_empty() && l.ramp.is_none(), "{id}");
+        assert!(l.datasets.is_empty(), "{id}");
+        assert_eq!(l.min_zoom, Some(min_zoom), "{id}");
+    }
+    let water: Vec<_> = layers
+        .iter()
+        .filter(|l| l.group == "water")
+        .map(|l| l.id.as_str())
+        .collect();
+    assert_eq!(
+        &water[water.len() - 2..],
+        ["sst-breaks", "chlorophyll-breaks"]
     );
 }
 

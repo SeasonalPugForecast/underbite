@@ -294,7 +294,8 @@ fn map_depth_and_offline_words_are_translated_in_the_pseudo_locale() {
     use crate::map::dem::{ApproxDepth, DepthReading};
     use crate::map::enc::StructureKind;
     use crate::view::strings::{
-        MapQuantity, break_strength, contour_interval_text, depth_band_text, depth_datums_line,
+        MapQuantity, break_strength, break_threshold_stops, breaks_few_clear, breaks_from,
+        breaks_needs_source, contour_interval_text, depth_band_text, depth_datums_line,
         depth_label, depth_reading, map_current, map_measure, map_time, map_value, reef_depths,
         structure_category, structure_title,
     };
@@ -331,6 +332,25 @@ fn map_depth_and_offline_words_are_translated_in_the_pseudo_locale() {
             depth_datums_line(&f, &[]),
             break_strength(&f, BreakKind::Sst, 0.5),
             break_strength(&f, BreakKind::Chlorophyll, 0.0375),
+            break_threshold_stops(&f, BreakKind::Sst)[4].1.clone(),
+            break_threshold_stops(&f, BreakKind::Chlorophyll)[4]
+                .1
+                .clone(),
+            breaks_from(
+                &f,
+                f.strings.layer_title("sst").unwrap_or_default(),
+                input.now,
+            ),
+            breaks_few_clear(&f, input.now),
+            breaks_needs_source(&f, f.strings.layer_title("chlorophyll").unwrap_or_default()),
+            f.strings
+                .layer_title("sst-breaks")
+                .unwrap_or_default()
+                .to_owned(),
+            f.strings
+                .layer_legend("chlorophyll-breaks")
+                .unwrap_or_default()
+                .to_owned(),
             structure_title(&f, StructureKind::Wreck, false).to_owned(),
             structure_category(&f, "dangerous wreck", true),
             reef_depths(&f, Some(6.1), Some(21.3)).unwrap_or_default(),
