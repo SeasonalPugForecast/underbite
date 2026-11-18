@@ -444,13 +444,40 @@ fn depth_words_the_legend_and_the_band_stops_follow_the_settings() {
     assert_eq!(info.legend.last().unwrap().label, "328.1 ft");
     let metres = depth_layer_info(metric()).unwrap();
     assert_eq!(metres.legend.last().unwrap().label, "100 m");
+}
 
+#[test]
+fn the_band_stops_are_fine_where_a_band_is_set_in_either_unit() {
+    let labels = |stops: &[underbite_ffi::settings::DisplayStop]| -> Vec<String> {
+        stops.iter().map(|s| s.label.clone()).collect()
+    };
     let feet = depth_band_stops(imperial()).unwrap();
-    assert!(feet.len() >= 3);
-    assert!(feet.iter().all(|s| s.label.ends_with(" ft")));
+    assert_eq!(
+        labels(&feet),
+        [
+            "0 ft", "5 ft", "10 ft", "15 ft", "20 ft", "25 ft", "30 ft", "40 ft", "50 ft", "75 ft",
+            "100 ft", "150 ft", "200 ft", "250 ft", "300 ft"
+        ]
+    );
+    // A 15–25 ft band can be set, and it is stored in metres.
+    let at = |label: &str| feet.iter().find(|s| s.label == label).unwrap().value;
+    assert!((at("15 ft") - 4.572).abs() < 1e-4);
+    assert!((at("25 ft") - 7.62).abs() < 1e-4);
     let m = depth_band_stops(metric()).unwrap();
-    assert!(m.iter().all(|s| s.label.ends_with(" m")));
-    assert_eq!(m.first().unwrap().value, 0.0);
+    assert_eq!(
+        labels(&m),
+        [
+            "0 m", "1 m", "2 m", "3 m", "4 m", "5 m", "6 m", "8 m", "10 m", "15 m", "20 m", "25 m",
+            "30 m", "40 m", "50 m", "75 m", "100 m"
+        ]
+    );
+    for stops in [&feet, &m] {
+        assert_eq!(stops.first().unwrap().value, 0.0);
+        assert!(stops.windows(2).all(|w| w[0].value < w[1].value));
+        // Within the depth ramp's range.
+        assert!(stops.last().unwrap().value <= 100.0 + 1e-3);
+    }
+    assert!(depth_band_stops("{".into()).is_err());
 }
 
 #[test]

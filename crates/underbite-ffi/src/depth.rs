@@ -24,6 +24,7 @@ use underbite_core::map::render::{self, DEPTH, Ramp};
 use underbite_core::map::tiles::{MAX_ZOOM, TILE_PX};
 use underbite_core::map::{Bbox, GeoPoint, GridHost, Polyline, TileKey};
 use underbite_core::time::UnixTime;
+use underbite_core::units::HeightUnit;
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{
     Key, MapQuantity, SafetyKey, break_strength, contour_interval_text, depth_band_text,
@@ -39,7 +40,7 @@ use crate::map::{
     DemId, GridRequest, GridStore, LegendStop, MapColour, MapError, MapPoint, formatter, get,
     invalid, layer, node_name, tile_key,
 };
-use crate::settings::{DisplayStop, display_stops, load};
+use crate::settings::{DisplayStop, load};
 
 // ---------------------------------------------------------------------------------------------
 // Limits
@@ -836,17 +837,40 @@ pub fn depth_words(settings_json: String) -> Result<DepthWords, MapError> {
     })
 }
 
-/// Round stops for the depth band's slider, from the surface to 100 m, in the user's depth unit:
-/// the value to store (canonical metres) and its label.
+/// The depth band's stops in feet, shallow to deep: five-foot steps to 30 ft, where a band is
+/// usually set ("15–25 ft"), then coarser, within the depth ramp's 100 m (328 ft).
+const BAND_STOPS_FT: [f32; 15] = [
+    0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 40.0, 50.0, 75.0, 100.0, 150.0, 200.0, 250.0, 300.0,
+];
+
+/// The depth band's stops in metres, shallow to deep: one-metre steps to 6 m, then coarser, to
+/// the depth ramp's 100 m.
+const BAND_STOPS_M: [f32; 17] = [
+    0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 15.0, 20.0, 25.0, 30.0, 40.0, 50.0, 75.0, 100.0,
+];
+
+/// Round stops for the depth band's slider, from the surface to 100 m, in the user's depth unit,
+/// shallow to deep: fine where a band is usually set (every 5 ft to 30 ft, every metre to 6 m),
+/// coarser below. Each has the value to store (canonical metres) and its label ("15 ft").
 #[uniffi::export]
 #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
 pub fn depth_band_stops(settings_json: String) -> Result<Vec<DisplayStop>, MapError> {
-    Ok(display_stops(
-        "depth".to_owned(),
-        0.0,
-        BAND_MAX_M,
-        settings_json,
-    )?)
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, "UTC");
+    let unit = f.units.height;
+    let stops: &[f32] = match unit {
+        HeightUnit::Ft => &BAND_STOPS_FT,
+        HeightUnit::M => &BAND_STOPS_M,
+    };
+    Ok(stops
+        .iter()
+        .map(|&v| f64::from(unit.to_canonical(v)))
+        .filter(|&m| m <= BAND_MAX_M + 1e-3)
+        .map(|value| DisplayStop {
+            value,
+            label: depth_label(&f, value),
+        })
+        .collect())
 }
 
 // ---------------------------------------------------------------------------------------------
