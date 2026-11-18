@@ -101,6 +101,11 @@ expression: json_schema()
             "null"
           ]
         },
+        "show_name": {
+          "default": true,
+          "description": "Whether notifications name the place: the rule's own name, the spot or trip and the\nstation. Without it they say \"your spot\" or \"your trip\". They never carry coordinates.",
+          "type": "boolean"
+        },
         "target": {
           "$ref": "#/$defs/AlertTarget"
         }

@@ -29,6 +29,10 @@ pub struct AlertRule {
     /// Hours in the target's time zone when a notification waits.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub quiet_hours: Option<QuietHours>,
+    /// Whether notifications name the place: the rule's own name, the spot or trip and the
+    /// station. Without it they say "your spot" or "your trip". They never carry coordinates.
+    #[serde(default = "yes")]
+    pub show_name: bool,
 }
 
 impl AlertRule {
@@ -163,6 +167,7 @@ mod tests {
             all_of,
             repeat_after_hours: None,
             quiet_hours: None,
+            show_name: true,
         }
     }
 
@@ -170,6 +175,7 @@ mod tests {
     fn every_kind_round_trips_through_json() {
         let r = AlertRule {
             repeat_after_hours: Some(12),
+            show_name: false,
             quiet_hours: Some(QuietHours {
                 start_minute: 22 * 60,
                 end_minute: 7 * 60,
@@ -210,21 +216,24 @@ mod tests {
             json!({ "kind": "window_starts", "within_minutes": 30 })
         );
         assert_eq!(v["quiet_hours"]["start_minute"], 1320);
+        assert_eq!(v["show_name"], false);
         let back: AlertRule = serde_json::from_value(v).unwrap();
         assert_eq!(back, r);
     }
 
     #[test]
-    fn enabled_defaults_to_true_and_options_to_none() {
+    fn enabled_and_show_name_default_to_true_and_options_to_none() {
         let r: AlertRule = serde_json::from_value(json!({
             "id": "r", "name": "Gale", "target": { "kind": "spot", "id": "battery" },
             "all_of": [{ "kind": "marine_alert", "event": "Gale Warning" }]
         }))
         .unwrap();
-        assert!(r.enabled);
+        assert!(r.enabled && r.show_name);
         assert_eq!((r.repeat_after_hours, r.quiet_hours), (None, None));
         let v = serde_json::to_value(&r).unwrap();
         assert!(v.get("repeat_after_hours").is_none() && v.get("quiet_hours").is_none());
+        // Always written, so a file says what its notifications show.
+        assert_eq!(v["show_name"], true);
     }
 
     #[test]

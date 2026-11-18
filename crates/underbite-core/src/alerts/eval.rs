@@ -1308,6 +1308,7 @@ mod tests {
             all_of,
             repeat_after_hours: None,
             quiet_hours: None,
+            show_name: true,
         }
     }
 

@@ -96,15 +96,18 @@ final class SettingsTests: XCTestCase {
                 ],
                 "repeat_after_hours": 12,
                 "quiet_hours": ["start_minute": 1320, "end_minute": 420],
+                "show_name": false,
             ],
             [
                 "id": "trip-go", "name": "Trip on", "enabled": true,
                 "target": ["kind": "trip", "id": "trip-1"], "all_of": [["kind": "trip_go"]],
+                "show_name": true,
             ],
             [
                 "id": "warm-box", "name": "Warm water", "enabled": true,
                 "target": ["kind": "box", "south": 39.5, "west": -72.5, "north": 40.5, "east": -71.5],
                 "all_of": [["kind": "measurement", "metric": "sea_surface_temp", "above": 20.0]],
+                "show_name": true,
             ],
         ]
         let full = try Fixtures.string(doc)
@@ -128,6 +131,26 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(settings.alerts[0].quietHours?.startMinute, 1320)
         XCTAssertNil(settings.alerts[1].repeatAfterHours)
         XCTAssertEqual(settings.alerts[2].target.north, 40.5)
+        XCTAssertEqual(settings.alerts.map(\.showName), [false, true, true])
+    }
+
+    func testARuleWithoutShowNameNamesItsPlace() throws {
+        var doc = try XCTUnwrap(Fixtures.object(Fixtures.text("sample-settings")) as? [String: Any])
+        doc["alerts"] = [
+            [
+                "id": "gale", "name": "Gale", "enabled": true,
+                "target": ["kind": "spot", "id": "battery"],
+                "all_of": [["kind": "marine_alert", "event": "Gale Warning"]],
+            ]
+        ]
+        let settings = try Settings(json: Fixtures.string(doc))
+        XCTAssertEqual(settings.alerts.map(\.showName), [true])
+        // The core writes it, and so does Swift.
+        let core = try XCTUnwrap(
+            Fixtures.object(migrateSettings(json: Fixtures.string(doc)).json) as? [String: Any])
+        let rules = try XCTUnwrap(core["alerts"] as? [[String: Any]])
+        XCTAssertEqual(rules[0]["show_name"] as? Bool, true)
+        try Fixtures.assertSameJSON(settings.json(), migrateSettings(json: Fixtures.string(doc)).json)
     }
 
     func testSettingsWithoutAlertsDecode() throws {

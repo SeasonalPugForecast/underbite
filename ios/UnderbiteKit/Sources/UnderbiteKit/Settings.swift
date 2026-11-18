@@ -75,6 +75,21 @@ extension Settings {
     }
 }
 
+extension Settings.AlertRule {
+    /// Rules written before `show_name` existed name their place.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        enabled = try c.decode(Bool.self, forKey: .enabled)
+        target = try c.decode(Settings.AlertTarget.self, forKey: .target)
+        allOf = try c.decode([Settings.AlertCondition].self, forKey: .allOf)
+        repeatAfterHours = try c.decodeIfPresent(Int.self, forKey: .repeatAfterHours)
+        quietHours = try c.decodeIfPresent(Settings.QuietHours.self, forKey: .quietHours)
+        showName = try c.decodeIfPresent(Bool.self, forKey: .showName) ?? true
+    }
+}
+
 extension Settings {
     /// The unit for each kind of value. `waterTemp`, `height`, `speed`, `discharge`, `pressure`
     /// and `distance` always have one; the others, when `nil`, follow the group they derive from
@@ -282,6 +297,9 @@ extension Settings {
         /// stops holding.
         public var repeatAfterHours: Int?
         public var quietHours: QuietHours?
+        /// Whether notifications name the place (the rule, spot, trip and station); without it
+        /// they say "your spot" or "your trip".
+        public var showName: Bool
     }
 
     /// What a rule watches, by `kind`: `spot` and `trip` carry `id`; `box` carries `south`,
