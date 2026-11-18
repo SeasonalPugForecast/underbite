@@ -1113,6 +1113,11 @@ keys! {
         "No conditions were saved with this catch.",
         "No conditions were saved with this catch.",
     ),
+    /// In the editor, when the spot's data holds nothing near the catch's time.
+    LogConditionsUnavailable => (
+        "Conditions are not available for that time",
+        "Conditions are not available for that time",
+    ),
     LogLure => ("Lure", "Lure"),
     LogMethod => ("Method", "Method"),
     LogNotes => ("Notes", "Notes"),

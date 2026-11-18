@@ -6,7 +6,8 @@ use underbite_ffi::log::{
     CatchFilter, CatchInput, CatchPoint, FateId, LogError, PlaceName, catch_cells,
     catch_detail_view, catch_list_view, catch_points, check_length_text, check_weight_text,
     fate_options, fish_units_info, insights_json, log_attach_conditions, log_delete, log_editor,
-    log_export_csv, log_export_gpx, log_export_words, log_load, log_merge, log_new, log_save,
+    log_editor_words, log_export_csv, log_export_gpx, log_export_words, log_load, log_merge,
+    log_new, log_save,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -255,11 +256,26 @@ fn conditions_come_from_the_snapshot_and_show_in_the_detail_with_their_sources()
     assert_ne!(lines.len(), 0);
     assert!(lines.iter().all(|l| l["footnote"].is_string()));
 
-    // A snapshot far from the catch time holds nothing near it: unchanged.
+    // A snapshot far from the catch time holds nothing near it: unchanged, and the editor says
+    // so in its own words, not those of a catch saved without conditions.
     let far =
         log_attach_conditions(book.clone(), "c1".into(), json.clone(), Some(0), 2_000).unwrap();
     assert!(!far.changed);
     assert_eq!(far.book, book);
+    for settings in [us(), metric_plain()] {
+        let words = log_editor_words(settings).unwrap();
+        assert_eq!(
+            words.conditions_unavailable,
+            "Conditions are not available for that time"
+        );
+    }
+    let saved_without: Value =
+        serde_json::from_str(&catch_detail_view(book.clone(), "c1".into(), us(), vec![]).unwrap())
+            .unwrap();
+    let shown = saved_without.to_string();
+    assert!(shown.contains("No conditions were saved with this catch."));
+    assert!(!shown.contains("not available for that time"));
+    assert!(log_editor_words("{".into()).is_err());
 
     assert!(matches!(
         log_attach_conditions(book.clone(), "zz".into(), json, None, 1).unwrap_err(),

@@ -547,6 +547,26 @@ pub fn log_attach_conditions(
     })
 }
 
+/// The editor's words, in the user's voice.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct LogEditorWords {
+    /// When [`log_attach_conditions`] finds nothing near the catch's time (`changed` false):
+    /// "Conditions are not available for that time". A saved catch without conditions says
+    /// otherwise, in its detail.
+    pub conditions_unavailable: String,
+}
+
+/// The words of the catch editor in the user's voice.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn log_editor_words(settings_json: String) -> Result<LogEditorWords, LogError> {
+    let (config, _) = load(&settings_json)?;
+    let s = Strings::new(config.presentation.voice);
+    Ok(LogEditorWords {
+        conditions_unavailable: s.get(Key::LogConditionsUnavailable).to_owned(),
+    })
+}
+
 /// A log after a deletion.
 #[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
 pub struct LogDeleted {
