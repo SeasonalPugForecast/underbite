@@ -1,4 +1,4 @@
-//! Working offline across the FFI: pack plans and their requests, tide and current tables, and the cached station metadata that lets a fetch compute tides without signal.
+//! Working offline across the FFI: packs (made, planned, requested and worded for their screens), tide and current tables, and the cached station metadata that lets a fetch compute tides without signal.
 //!
 //! A pack is planned by the core ([`underbite_core::map::pack`]); the plan stays on the Rust side
 //! behind a [`PackPlanHandle`] and is read a page at a time, each item as a [`HostRequest`] the
@@ -18,15 +18,18 @@ use underbite_core::astro::tide::TideHarmonics;
 use underbite_core::datum::{Height, VerticalDatum};
 use underbite_core::map::catalogue::{self, DateMode};
 use underbite_core::map::pack::{
-    self, ItemKind, MeasuredSizes, Pack, PackItem, PackPlan, TimeAxes,
+    self, DEFAULT_LAST_DAYS, DatePolicy, ItemKind, MAX_DAYS, MeasuredSizes, Pack, PackDraft,
+    PackItem, PackPlan, PlanError, TimeAxes, ZoomReach,
 };
-use underbite_core::map::{Bbox, GridHost};
+use underbite_core::map::{Bbox, GridHost, LayerId};
 use underbite_core::model::{CurrentKind, TideSeries};
 use underbite_core::offline::tables::{CurrentStation, TideStation, current_table, tide_table};
 use underbite_core::provenance::{Provenance, Quality, Relation, SourceId, ValueKind};
 use underbite_core::time::{LocalDate, UnixTime, local_date, local_date_bounds, parse_date, zone};
 use underbite_core::view::format::{Formatter, Phase};
-use underbite_core::view::strings::{Key, SafetyKey, Strings, map_time, source_name};
+use underbite_core::view::strings::{
+    Key, SafetyKey, Strings, map_time, pack_refreshed, source_name,
+};
 use underbite_providers::coops::mdapi;
 use underbite_providers::erddap::{self, GridTime};
 use underbite_providers::ncei_dem;
@@ -96,6 +99,9 @@ pub struct PackPlanInfo {
     pub time_text: String,
     /// Both in one line: "48.3 MB, about 12 min".
     pub summary_text: String,
+    /// What it downloads, leaving out kinds it has none of: "2,340 tiles · 12 grid blocks ·
+    /// 1 depth area"; "Nothing to download" for an empty plan.
+    pub counts_text: String,
     /// Whether the estimate is over the settings' offline limit.
     pub over_budget: bool,
     /// What to tell the user when it is: "About 1.7 GB: more than your 1.5 GB offline limit."
@@ -124,8 +130,7 @@ pub fn plan_pack(
 ) -> Result<PackPlanInfo, MapError> {
     let (config, _) = load(&settings_json)?;
     let strings = Strings::new(config.presentation.voice);
-    let pack: Pack = serde_json::from_str(&pack_json)
-        .map_err(|e| invalid(format!("the pack could not be read: {e}")))?;
+    let pack = read_pack(&pack_json)?;
     let measured: MeasuredSizes = measured_sizes.into_iter().collect();
     let axes: TimeAxes = time_axes
         .into_iter()
@@ -168,6 +173,11 @@ pub fn plan_pack(
         summary_text: strings.fmt(
             Key::PackSummary,
             &[("size", &size_text), ("time", &time_text)],
+        ),
+        counts_text: strings.pack_counts(
+            plan.tile_count as u64,
+            plan.grid_count as u64,
+            plan.dem_count as u64,
         ),
         size_text,
         time_text,
@@ -315,6 +325,309 @@ pub fn pack_requests(plan: Arc<PackPlanHandle>, from: u64, count: u32) -> Vec<Pa
     let from = usize::try_from(from).unwrap_or(usize::MAX);
     let count = usize::try_from(count.min(MAX_PAGE_ITEMS)).unwrap_or(0);
     page(plan.plan.items(from, count))
+}
+
+// ---------------------------------------------------------------------------------------------
+// Pack screens
+// ---------------------------------------------------------------------------------------------
+
+/// Which days a pack holds for dated layers.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Enum)]
+pub enum PackDatePolicy {
+    /// The newest data only.
+    Latest,
+    /// The last `days` UTC days, newest first: 1 to [`PackWords::max_days`].
+    LastDays { days: u32 },
+    /// These days, `YYYY-MM-DD`: 1 to [`PackWords::max_days`] of them.
+    Days { dates: Vec<String> },
+}
+
+impl PackDatePolicy {
+    /// The core's policy; a day that cannot be read is an error in words.
+    fn to_core(&self, strings: Strings) -> Result<DatePolicy, MapError> {
+        Ok(match self {
+            Self::Latest => DatePolicy::Latest,
+            Self::LastDays { days } => DatePolicy::LastDays(*days),
+            Self::Days { dates } => DatePolicy::Days(
+                dates
+                    .iter()
+                    .map(|d| parse_date(d.trim()))
+                    .collect::<Result<_, _>>()
+                    .map_err(|_| invalid(strings.pack_error(&PlanError::InvalidDates)))?,
+            ),
+        })
+    }
+
+    fn from_core(dates: &DatePolicy) -> Self {
+        match dates {
+            DatePolicy::Latest => Self::Latest,
+            DatePolicy::LastDays(days) => Self::LastDays { days: *days },
+            DatePolicy::Days(days) => Self::Days {
+                dates: days.iter().copied().map(date_text).collect(),
+            },
+        }
+    }
+}
+
+/// The words of a pack download's states.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PackStatusWords {
+    /// "Downloading"
+    pub downloading: String,
+    /// "Paused"
+    pub paused: String,
+    /// "Waiting for Wi-Fi": queued while on cellular data or in Low Data Mode.
+    pub waiting_for_wifi: String,
+    /// "Downloaded"
+    pub done: String,
+    /// "Download failed"
+    pub failed: String,
+    /// "Cancelled"
+    pub cancelled: String,
+    /// "Not downloaded yet"
+    pub not_downloaded: String,
+}
+
+/// A choice of zoom levels for a new pack.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PackZoomPreset {
+    /// The shallowest zoom.
+    pub min_zoom: u8,
+    /// The deepest zoom.
+    pub max_zoom: u8,
+    /// The deepest zoom in plain words: "Up to zoom 14: channels and docks".
+    pub title: String,
+    /// What it suits: "A harbour, an estuary or a river reach: channel edges, docks and
+    /// bridges."
+    pub detail: String,
+}
+
+/// A choice of days for a new pack.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PackDateOption {
+    /// The policy it stands for: `LastDays` at its starting count, `Days` with none chosen.
+    pub dates: PackDatePolicy,
+    /// "Newest only", "Last 3 days", "Chosen days".
+    pub title: String,
+    /// What it means: "Only the days you pick, up to 31."
+    pub detail: String,
+}
+
+/// The fixed words and choices of the packs screens.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PackWords {
+    /// "Wi-Fi only"
+    pub wifi_only_title: String,
+    /// "Downloads wait while the phone is on cellular data or in Low Data Mode."
+    pub wifi_only_detail: String,
+    /// How packs refresh in the background, without a promise of when.
+    pub background_refresh_note: String,
+    /// That Apple's base map is not kept offline and what stands in for it.
+    pub base_map_note: String,
+    /// "Not for navigation.": a pack holds charts and depth.
+    pub notice: String,
+    /// The download states.
+    pub status: PackStatusWords,
+    /// The zoom choices, from the widest to the closest.
+    pub zoom_presets: Vec<PackZoomPreset>,
+    /// The index in `zoom_presets` a new pack starts at.
+    pub default_zoom_preset: u32,
+    /// The day choices: newest only (the default), the last days, chosen days.
+    pub date_options: Vec<PackDateOption>,
+    /// The most days `LastDays` or `Days` may name.
+    pub max_days: u32,
+}
+
+/// The fixed words and choices of the packs screens, in the settings' voice.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn pack_words(settings_json: String) -> Result<PackWords, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let s = Strings::new(config.presentation.voice);
+    let text = |key| s.get(key).to_owned();
+    let zoom_presets = ZoomReach::ALL
+        .iter()
+        .map(|&reach| {
+            let (min_zoom, max_zoom) = reach.zooms();
+            PackZoomPreset {
+                min_zoom,
+                max_zoom,
+                title: s.pack_zoom_title(reach),
+                detail: s.pack_zoom_detail(reach).to_owned(),
+            }
+        })
+        .collect();
+    let default_zoom_preset = ZoomReach::ALL
+        .iter()
+        .position(|&r| r == ZoomReach::DEFAULT)
+        .unwrap_or(0) as u32;
+    let date_options = [
+        DatePolicy::Latest,
+        DatePolicy::LastDays(DEFAULT_LAST_DAYS),
+        DatePolicy::Days(Vec::new()),
+    ]
+    .iter()
+    .map(|dates| PackDateOption {
+        dates: PackDatePolicy::from_core(dates),
+        title: s.pack_dates_title(dates),
+        detail: s.pack_dates_detail(dates),
+    })
+    .collect();
+    Ok(PackWords {
+        wifi_only_title: text(Key::PackWifiOnly),
+        wifi_only_detail: text(Key::PackWifiOnlyDetail),
+        background_refresh_note: text(Key::PackBackgroundRefresh),
+        base_map_note: text(Key::PackBaseMapNote),
+        notice: s.safety(SafetyKey::NotForNavigation).to_owned(),
+        status: PackStatusWords {
+            downloading: text(Key::PackStatusDownloading),
+            paused: text(Key::PackStatusPaused),
+            waiting_for_wifi: text(Key::PackWaitingForWifi),
+            done: text(Key::PackStatusDone),
+            failed: text(Key::PackStatusFailed),
+            cancelled: text(Key::PackStatusCancelled),
+            not_downloaded: text(Key::PackStatusNotDownloaded),
+        },
+        zoom_presets,
+        default_zoom_preset,
+        date_options,
+        max_days: MAX_DAYS as u32,
+    })
+}
+
+/// Which days a policy holds, in words: "Newest only", "Last 5 days", "4 chosen days" (for a
+/// stepper or a summary). A day that cannot be read is an error in words.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn pack_dates_text(dates: PackDatePolicy, settings_json: String) -> Result<String, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let s = Strings::new(config.presentation.voice);
+    Ok(s.pack_dates(&dates.to_core(s)?))
+}
+
+/// A stored pack in the list.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PackRow {
+    /// What the pack holds on the phone: "48.3 MB".
+    pub size_text: String,
+    /// "Refreshed Nov 17", "Refreshed 2:40 PM" (today in the zone) or "Not downloaded yet".
+    pub refreshed_text: String,
+    /// Which days it holds: "Newest only", "Last 3 days", "4 chosen days".
+    pub dates_text: String,
+    /// Whether it needs a refresh: a pack of the newest data a day after its last refresh,
+    /// any pack a week after. A pack never downloaded is not stale.
+    pub stale: bool,
+    /// Why, when it is: "Needs a refresh: more than a day old".
+    pub stale_text: Option<String>,
+}
+
+/// The row of the stored pack `pack_json` that holds `stored_bytes` on the phone, at `now` in
+/// `time_zone`.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn pack_row(
+    pack_json: String,
+    stored_bytes: u64,
+    now: i64,
+    settings_json: String,
+    time_zone: String,
+) -> Result<PackRow, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, &time_zone);
+    let pack = read_pack(&pack_json)?;
+    let now = UnixTime(now);
+    let stale = pack.staleness(now);
+    Ok(PackRow {
+        size_text: f.strings.pack_size(stored_bytes),
+        refreshed_text: pack_refreshed(&f, pack.refreshed_at, now),
+        dates_text: f.strings.pack_dates(&pack.dates),
+        stale: stale.is_some(),
+        stale_text: stale.map(|why| f.strings.pack_stale(why).to_owned()),
+    })
+}
+
+/// A download's progress: `done` items handled of `total`, `failed` of them failed, `bytes`
+/// stored. "312 of 1,024 · 3 failed · 3.1 MB": the count always, the failures only when there
+/// are some, the bytes only once some are stored.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn pack_progress_text(
+    done: u64,
+    total: u64,
+    failed: u64,
+    bytes: u64,
+    settings_json: String,
+) -> Result<String, MapError> {
+    let (config, _) = load(&settings_json)?;
+    Ok(Strings::new(config.presentation.voice).pack_progress(done, total, failed, bytes))
+}
+
+/// A box in degrees. `west` east of `east` crosses the antimeridian.
+#[derive(Clone, Copy, Debug, PartialEq, uniffi::Record)]
+pub struct PackBox {
+    pub west: f64,
+    pub south: f64,
+    pub east: f64,
+    pub north: f64,
+}
+
+/// A new pack, created at `now` and not yet downloaded, as the JSON [`plan_pack`] and
+/// [`pack_row`] read and the app stores. `id` is the app's (a UUID): letters, digits, `-` and
+/// `_`, up to 64. The name is trimmed; layers and spots lose their repeats. A pack that cannot
+/// be made (no name, a box off the world or without area, zooms reversed or deeper than the
+/// catalogue's chart, days not valid) is an error in words.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+#[allow(clippy::too_many_arguments)] // the pack's fields
+pub fn pack_new(
+    id: String,
+    name: String,
+    area: PackBox,
+    min_zoom: u8,
+    max_zoom: u8,
+    layers: Vec<String>,
+    dates: PackDatePolicy,
+    spot_ids: Vec<String>,
+    settings_json: String,
+    now: i64,
+) -> Result<String, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let strings = Strings::new(config.presentation.voice);
+    let pack = PackDraft {
+        id,
+        name,
+        bbox: Bbox {
+            west: area.west,
+            south: area.south,
+            east: area.east,
+            north: area.north,
+        },
+        min_zoom,
+        max_zoom,
+        layers: layers.into_iter().map(LayerId::new).collect(),
+        dates: dates.to_core(strings)?,
+        spots: spot_ids,
+    }
+    .create(UnixTime(now))
+    .map_err(|e| invalid(strings.pack_error(&e)))?;
+    write_pack(&pack)
+}
+
+/// The stored pack `pack_json` with its last refresh at `now`, after a download completed.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn pack_mark_refreshed(pack_json: String, now: i64) -> Result<String, MapError> {
+    let mut pack = read_pack(&pack_json)?;
+    pack.mark_refreshed(UnixTime(now));
+    write_pack(&pack)
+}
+
+fn read_pack(json: &str) -> Result<Pack, MapError> {
+    serde_json::from_str(json).map_err(|e| invalid(format!("the pack could not be read: {e}")))
+}
+
+fn write_pack(pack: &Pack) -> Result<String, MapError> {
+    serde_json::to_string(pack).map_err(|e| invalid(format!("the pack could not be written: {e}")))
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -690,5 +1003,231 @@ mod tests {
         };
         let view = tide_view(&config, "UTC", &empty);
         assert_eq!(view.datum_text.as_deref(), Some("above MLLW"));
+    }
+
+    fn settings() -> String {
+        crate::settings::default_settings_json()
+    }
+
+    /// 2026-11-17T19:40Z, 2:40 PM in New York.
+    const REFRESHED: i64 = 1_794_944_400;
+
+    fn harbour_box() -> PackBox {
+        PackBox {
+            west: -74.1,
+            south: 40.6,
+            east: -73.95,
+            north: 40.75,
+        }
+    }
+
+    fn new_pack(dates: PackDatePolicy) -> Result<String, MapError> {
+        pack_new(
+            "3F2504E0-4F89-11D3-9A0C-0305E82C3301".into(),
+            " Harbour ".into(),
+            harbour_box(),
+            10,
+            14,
+            vec!["noaa-chart".into(), "depth-dem".into(), "noaa-chart".into()],
+            dates,
+            vec!["battery".into()],
+            settings(),
+            REFRESHED,
+        )
+    }
+
+    fn message(e: MapError) -> String {
+        match e {
+            MapError::Invalid { message } => message,
+            other => panic!("{other:?}"),
+        }
+    }
+
+    #[test]
+    fn pack_words_hold_the_fixed_sentences_and_choices() {
+        let w = pack_words(settings()).unwrap();
+        assert_eq!(w.wifi_only_title, "Wi-Fi only");
+        assert!(w.wifi_only_detail.contains("Low Data Mode"));
+        assert!(w.background_refresh_note.contains("iOS decides when"));
+        assert!(w.base_map_note.contains("NOAA chart"));
+        assert_eq!(w.notice, "Not for navigation.");
+        assert_eq!(w.status.waiting_for_wifi, "Waiting for Wi-Fi");
+        assert_eq!(w.status.not_downloaded, "Not downloaded yet");
+        let zooms: Vec<_> = w
+            .zoom_presets
+            .iter()
+            .map(|p| (p.min_zoom, p.max_zoom))
+            .collect();
+        assert_eq!(zooms, [(6, 10), (8, 12), (10, 14), (12, 16)]);
+        let start = &w.zoom_presets[w.default_zoom_preset as usize];
+        assert_eq!(start.title, "Up to zoom 14: channels and docks");
+        let titles: Vec<_> = w.date_options.iter().map(|o| o.title.as_str()).collect();
+        assert_eq!(titles, ["Newest only", "Last 3 days", "Chosen days"]);
+        assert_eq!(
+            w.date_options[1].dates,
+            PackDatePolicy::LastDays { days: 3 }
+        );
+        assert_eq!(
+            w.date_options[2].dates,
+            PackDatePolicy::Days { dates: vec![] }
+        );
+        assert_eq!(w.max_days, 31);
+    }
+
+    #[test]
+    fn a_new_pack_is_stored_json_the_planner_reads() {
+        let json = new_pack(PackDatePolicy::Latest).unwrap();
+        let pack: Pack = serde_json::from_str(&json).unwrap();
+        assert_eq!(pack.name, "Harbour");
+        assert_eq!(pack.layers.len(), 2);
+        assert_eq!(pack.spots, ["battery"]);
+        assert_eq!(pack.refreshed_at, None);
+        let info = plan_pack(json, settings(), HashMap::new(), HashMap::new(), REFRESHED).unwrap();
+        assert!(info.tile_count > 0 && info.dem_count > 0 && info.grid_count == 0);
+        assert_eq!(
+            info.counts_text,
+            Strings::new(underbite_core::view::Voice::Plain).pack_counts(
+                info.tile_count,
+                0,
+                info.dem_count
+            )
+        );
+        assert!(
+            info.counts_text.contains(" tiles · "),
+            "{}",
+            info.counts_text
+        );
+        assert!(
+            info.counts_text.contains("depth area"),
+            "{}",
+            info.counts_text
+        );
+    }
+
+    #[test]
+    fn chosen_days_are_read_and_bad_ones_refused_in_words() {
+        let json = new_pack(PackDatePolicy::Days {
+            dates: vec!["2026-11-21".into(), " 2026-11-20".into()],
+        })
+        .unwrap();
+        let pack: Pack = serde_json::from_str(&json).unwrap();
+        assert_eq!(
+            PackDatePolicy::from_core(&pack.dates),
+            PackDatePolicy::Days {
+                dates: vec!["2026-11-20".into(), "2026-11-21".into()]
+            }
+        );
+        let bad = new_pack(PackDatePolicy::Days {
+            dates: vec!["Nov 20".into()],
+        });
+        assert_eq!(message(bad.unwrap_err()), "The days are not valid.");
+        let none = new_pack(PackDatePolicy::LastDays { days: 0 });
+        assert_eq!(message(none.unwrap_err()), "The days are not valid.");
+    }
+
+    #[test]
+    fn a_bad_pack_is_refused_in_words() {
+        let with = |name: &str, area: PackBox, max_zoom: u8| {
+            pack_new(
+                "p1".into(),
+                name.into(),
+                area,
+                10,
+                max_zoom,
+                vec![],
+                PackDatePolicy::Latest,
+                vec![],
+                settings(),
+                REFRESHED,
+            )
+            .map_err(message)
+        };
+        let flat = PackBox {
+            north: 40.6,
+            ..harbour_box()
+        };
+        assert_eq!(
+            with("Harbour", flat, 14).unwrap_err(),
+            "The area is not valid."
+        );
+        assert_eq!(
+            with("Harbour", harbour_box(), 21).unwrap_err(),
+            "The zoom range is not valid."
+        );
+        assert_eq!(
+            with("  ", harbour_box(), 14).unwrap_err(),
+            "Give the pack a name."
+        );
+        assert!(with("Harbour", harbour_box(), 20).is_ok());
+    }
+
+    #[test]
+    fn a_pack_row_reads_its_refresh_and_staleness() {
+        let row = |json: &str, now: i64| {
+            pack_row(
+                json.to_owned(),
+                48_260_000,
+                now,
+                settings(),
+                "America/New_York".into(),
+            )
+            .unwrap()
+        };
+        let latest = new_pack(PackDatePolicy::Latest).unwrap();
+        let fresh = row(&latest, REFRESHED);
+        assert_eq!(fresh.refreshed_text, "Not downloaded yet");
+        assert_eq!((fresh.stale, fresh.stale_text), (false, None));
+        assert_eq!(fresh.size_text, "48.3 MB");
+        assert_eq!(fresh.dates_text, "Newest only");
+
+        let refreshed = pack_mark_refreshed(latest, REFRESHED).unwrap();
+        let today = row(&refreshed, REFRESHED + 3_600);
+        assert_eq!(today.refreshed_text, "Refreshed 2:40 PM");
+        assert!(!today.stale);
+        let later = row(&refreshed, REFRESHED + 2 * 86_400);
+        assert_eq!(later.refreshed_text, "Refreshed Nov 17");
+        assert!(later.stale);
+        assert_eq!(
+            later.stale_text.as_deref(),
+            Some("Needs a refresh: more than a day old")
+        );
+
+        let days = new_pack(PackDatePolicy::LastDays { days: 3 }).unwrap();
+        let days = pack_mark_refreshed(days, REFRESHED).unwrap();
+        assert!(!row(&days, REFRESHED + 2 * 86_400).stale);
+        let old = row(&days, REFRESHED + 8 * 86_400);
+        assert_eq!(old.dates_text, "Last 3 days");
+        assert_eq!(
+            old.stale_text.as_deref(),
+            Some("Needs a refresh: more than a week old")
+        );
+        assert!(pack_mark_refreshed("{".into(), REFRESHED).is_err());
+        assert!(pack_row("{}".into(), 0, REFRESHED, settings(), "UTC".into()).is_err());
+    }
+
+    #[test]
+    fn progress_and_dates_read_plainly() {
+        assert_eq!(
+            pack_progress_text(312, 1_024, 3, 3_100_000, settings()).unwrap(),
+            "312 of 1,024 · 3 failed · 3.1 MB"
+        );
+        assert_eq!(
+            pack_progress_text(0, 1_024, 0, 0, settings()).unwrap(),
+            "0 of 1,024"
+        );
+        assert_eq!(
+            pack_dates_text(PackDatePolicy::LastDays { days: 5 }, settings()).unwrap(),
+            "Last 5 days"
+        );
+        assert_eq!(
+            pack_dates_text(
+                PackDatePolicy::Days {
+                    dates: vec!["2026-11-20".into()]
+                },
+                settings()
+            )
+            .unwrap(),
+            "1 chosen day"
+        );
     }
 }
