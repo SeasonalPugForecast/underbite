@@ -4,7 +4,8 @@ import UnderbiteKit
 /// Shares a trip as a `.underbite` file, from the trip's toolbar: first how much of each place's
 /// location the file holds (about 1 km unless changed), then the system's share sheet. A
 /// popover anchored to the button on a regular width, a sheet on a compact one. The file is
-/// made by the core; it never holds the catch log or photos.
+/// made by the core; it never holds the catch log or photos. Files sent before are removed
+/// when a share starts.
 struct TripShareButton: View {
     @Environment(SpotStore.self) private var spots
     /// The trip's JSON, as the trip store keeps it.
@@ -13,7 +14,10 @@ struct TripShareButton: View {
     @State private var choosing = false
 
     var body: some View {
-        Button("Share", systemImage: "square.and.arrow.up") { choosing = true }
+        Button("Share", systemImage: "square.and.arrow.up") {
+            UnderbiteFile.sweep()
+            choosing = true
+        }
             .popover(isPresented: $choosing) {
                 ShareFuzzChoice(tripJSON: tripJSON, settingsJSON: spots.settingsJSON)
                     .frame(idealWidth: 380)

@@ -57,6 +57,29 @@ final class ShareFileTests: XCTestCase {
         XCTAssertEqual(text["kind"] as? String, "trip")
     }
 
+    func testFilesSentBeforeAreSweptAwayAndExportsAtLaunch() throws {
+        let file = try UnderbiteFile.trip(tripJSON, fuzz: .exact)
+        let a = try file.write(in: directory)
+        let b = try file.write(in: directory)
+        let manager = FileManager.default
+        let export = directory.appending(
+            path: CatchStore.exportPrefix + "left", directoryHint: .isDirectory)
+        let other = directory.appending(path: "other", directoryHint: .isDirectory)
+        for folder in [export, other] {
+            try manager.createDirectory(at: folder, withIntermediateDirectories: true)
+        }
+
+        UnderbiteFile.sweep(in: directory)
+        XCTAssertFalse(manager.fileExists(atPath: a.deletingLastPathComponent().path))
+        XCTAssertFalse(manager.fileExists(atPath: b.deletingLastPathComponent().path))
+        XCTAssertTrue(manager.fileExists(atPath: export.path), "an export may still be shown")
+        XCTAssertTrue(manager.fileExists(atPath: other.path), "not the app's")
+
+        UnderbiteFile.sweep(in: directory, exports: true)
+        XCTAssertFalse(manager.fileExists(atPath: export.path))
+        XCTAssertTrue(manager.fileExists(atPath: other.path))
+    }
+
     func testFileNamesHoldNoCharacterAFileNameCannot() {
         XCTAssertEqual(
             UnderbiteFile.fileName(for: "Bay/Harbor: day 1"), "Bay-Harbor- day 1.underbite")

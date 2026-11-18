@@ -220,6 +220,9 @@ final class CatchStore {
 
     // MARK: - Export
 
+    /// The start of the name of each export's temporary folder.
+    nonisolated static let exportPrefix = "underbite-export-"
+
     /// The files the log can be exported as.
     enum ExportFormat: String, CaseIterable, Sendable {
         case csv, gpx
@@ -234,7 +237,7 @@ final class CatchStore {
             case .gpx: try logExportGpx(book: book)
             }
         let folder = FileManager.default.temporaryDirectory.appending(
-            path: "underbite-export-\(UUID().uuidString)", directoryHint: .isDirectory)
+            path: Self.exportPrefix + UUID().uuidString, directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let file = folder.appending(path: "catches.\(format.rawValue)", directoryHint: .notDirectory)
         do {
@@ -249,7 +252,7 @@ final class CatchStore {
     /// Removes an export `exportFile` made, with its folder.
     nonisolated static func discardExport(_ file: URL) {
         let folder = file.deletingLastPathComponent()
-        guard folder.lastPathComponent.hasPrefix("underbite-export-") else {
+        guard folder.lastPathComponent.hasPrefix(exportPrefix) else {
             try? FileManager.default.removeItem(at: file)
             return
         }

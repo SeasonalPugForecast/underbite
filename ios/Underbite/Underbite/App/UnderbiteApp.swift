@@ -6,6 +6,11 @@ struct UnderbiteApp: App {
     @State private var store = UnderbiteApp.makeStore()
     @Environment(\.scenePhase) private var phase
 
+    init() {
+        // Files shared or exported before may hold exact positions: none outlives a launch.
+        UnderbiteFile.sweep(exports: true)
+    }
+
     var body: some Scene {
         WindowGroup {
             RootTabs()

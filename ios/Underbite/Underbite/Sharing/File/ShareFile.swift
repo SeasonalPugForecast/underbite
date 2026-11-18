@@ -20,6 +20,8 @@ nonisolated struct UnderbiteFile: Transferable, Equatable, Sendable {
 
     /// The file's extension.
     static let pathExtension = "underbite"
+    /// The start of the name of each sent file's folder.
+    static let folderPrefix = "underbite-sent-"
 
     static var transferRepresentation: some TransferRepresentation {
         FileRepresentation(exportedContentType: .underbiteFile) { file in
@@ -28,14 +30,30 @@ nonisolated struct UnderbiteFile: Transferable, Equatable, Sendable {
     }
 
     /// Writes the file into a folder of its own under `directory`, so two files with one name
-    /// never meet, and returns its URL. The file is left there: the share sheet may read it
-    /// after it is dismissed, and the system clears the temporary directory.
+    /// never meet, and returns its URL. The file is left there, as the share sheet may read it
+    /// after it is dismissed; `sweep` removes it when the next share starts or at the next
+    /// launch, since it may hold a place's exact position.
     func write(in directory: URL = .temporaryDirectory) throws -> URL {
-        let folder = directory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        let folder = directory.appending(
+            path: Self.folderPrefix + UUID().uuidString, directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let url = folder.appending(path: fileName, directoryHint: .notDirectory)
         try data.write(to: url, options: .atomic)
         return url
+    }
+
+    /// Removes the folders of files sent before from `directory`, and with `exports` those of
+    /// catch log exports left behind too (`CatchStore.exportFile`): when a share starts, and at
+    /// launch with the exports.
+    static func sweep(in directory: URL = .temporaryDirectory, exports: Bool = false) {
+        let manager = FileManager.default
+        guard let names = try? manager.contentsOfDirectory(atPath: directory.path) else { return }
+        for name in names {
+            let sent = name.hasPrefix(folderPrefix)
+            let exported = exports && name.hasPrefix(CatchStore.exportPrefix)
+            guard sent || exported else { continue }
+            try? manager.removeItem(at: directory.appending(path: name, directoryHint: .isDirectory))
+        }
     }
 
     /// The file of the trip `tripJSON` (the core's `Trip`), its places reduced to `fuzz` by the
