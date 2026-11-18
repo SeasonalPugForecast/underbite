@@ -917,7 +917,12 @@ fn parse_range(
             } else if r.low < min - 0.05 || r.high > max + 0.05 {
                 Err(EditError::OutOfRange)
             } else {
-                Ok(Some(r))
+                // A bound typed in another unit comes back a hair beyond it; keep it inside, as
+                // the profile checks it.
+                Ok(Some(Range {
+                    low: r.low.clamp(min, max),
+                    high: r.high.clamp(min, max),
+                }))
             }
         }
         _ => Err(EditError::BothEnds),
@@ -1260,6 +1265,30 @@ pub(in crate::view) mod tests {
         assert_eq!(e.water, Some(WaterKind::Both));
         assert_eq!(f.units.temperature, TempUnit::F);
         assert_eq!(f.units.height, HeightUnit::Ft);
+    }
+
+    #[test]
+    fn a_temperature_a_hair_past_its_bound_saves_at_the_bound_and_shares() {
+        use crate::share::{Document, ProfileShare, encode};
+        let f = formatter(metric(), Voice::Plain);
+        let bass = id("micropterus-dolomieu");
+        let mut edits = ProfileEdits::default();
+        apply_edit(
+            edits.edit(&bass),
+            Field::PreferredTemp,
+            &["10".into(), "45.04".into()],
+            &f,
+        )
+        .unwrap();
+        assert_eq!(
+            edits.species[&bass].preferred_temp_c,
+            Some(Range {
+                low: 10.0,
+                high: 45.0
+            })
+        );
+        let share = ProfileShare::from_catalogue(&catalogue(), &bass, &edits).unwrap();
+        assert!(encode(&Document::Profile(share)).is_ok());
     }
 
     #[test]
