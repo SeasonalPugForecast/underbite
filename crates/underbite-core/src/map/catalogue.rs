@@ -257,6 +257,10 @@ pub enum LayerKind {
     /// Sea surface temperature or chlorophyll breaks, drawn on the device as lines from the grid
     /// blocks the store holds for another layer's view.
     Breaks(BreakLayer),
+    /// The models' low-pressure tracks and NHC's active hurricanes with their forecast cones,
+    /// drawn on the device from the storm outlook for the view's centre (`underbite-ffi`'s storm
+    /// calls): not tiles and not a gridded dataset.
+    Storms,
     /// A layer with no data source yet.
     Unsourced,
 }
@@ -573,6 +577,16 @@ const fn breaks_layer(
     l
 }
 
+/// The storm layer: model low tracks and NHC hurricanes over a region thousands of kilometres
+/// wide, so it has no zoom limit and no date (its time steps are its own). The tracks and the
+/// cone are forecasts, not for navigation.
+const fn storms_layer(id: &'static str) -> Layer {
+    let mut l = overlay(id, Group::Weather, LayerKind::Storms);
+    l.not_for_navigation = true;
+    l.default_opacity = 1.0;
+    l
+}
+
 /// The shallowest zoom access is looked up at: a phone's view there (about 0.44 by 0.27 degrees
 /// at New York Harbor) is within the access lookup's widest span of half a degree.
 const ACCESS_MIN_ZOOM: u8 = 11;
@@ -623,7 +637,7 @@ pub const BASES: [Layer; 4] = [
 ];
 
 /// The overlay layers in drawer order.
-pub const LAYERS: [Layer; 41] = [
+pub const LAYERS: [Layer; 42] = [
     {
         let mut l = overlay(
             "gebco-relief",
@@ -853,6 +867,7 @@ pub const LAYERS: [Layer; 41] = [
         "chlorophyll",
         CHLOROPHYLL_BREAKS_MIN_ZOOM,
     ),
+    storms_layer("storms"),
 ];
 
 /// The layer or base with an id.
@@ -1000,7 +1015,7 @@ mod tests {
     /// The ids of the overlays as the configuration lists them (`KNOWN_LAYERS`), in drawer order.
     /// The configuration crate cannot be a dependency here, so it checks its own list against this
     /// one.
-    const OVERLAY_IDS: [&str; 41] = [
+    const OVERLAY_IDS: [&str; 42] = [
         "gebco-relief",
         "sst",
         "sst-imagery",
@@ -1042,6 +1057,7 @@ mod tests {
         "depth-contours",
         "sst-breaks",
         "chlorophyll-breaks",
+        "storms",
     ];
     const BASE_IDS: [&str; 4] = [
         "apple-standard",
@@ -1088,6 +1104,7 @@ mod tests {
             "depth-contours",
             "sst-breaks",
             "chlorophyll-breaks",
+            "storms",
         ] {
             assert!(find(id).unwrap().not_for_navigation, "{id}");
         }
@@ -1745,6 +1762,33 @@ mod tests {
             .map(|l| l.id)
             .collect();
         assert_eq!(water.last(), Some(&"chlorophyll-breaks"));
+    }
+
+    #[test]
+    fn the_storms_layer_is_drawn_on_the_device_in_the_weather_group() {
+        let l = layer("storms");
+        assert_eq!(l.group, Group::Weather);
+        assert_eq!(l.kind, LayerKind::Storms);
+        assert!(l.not_for_navigation);
+        assert_eq!(l.availability, Availability::Available);
+        // Its time steps are its own; no date control and no zoom limit.
+        assert_eq!(l.date_mode, DateMode::None);
+        assert_eq!((l.min_zoom, l.max_zoom), (None, None));
+        assert!(!l.on_request());
+        assert_eq!(l.tile_service(), None);
+        assert_eq!(l.tile_url(tile(4, 4, 6), None, 0), None);
+        assert!(l.grid().is_none() && l.breaks().is_none() && l.ramp.is_none());
+        let weather: Vec<_> = drawer_order()
+            .filter(|l| l.group == Group::Weather)
+            .map(|l| l.id)
+            .collect();
+        assert_eq!(weather, ["radar", "wind", "pressure", "waves", "storms"]);
+        // No preset shows it: it asks Open-Meteo and NHC, so it is switched on by hand.
+        assert!(
+            PRESETS
+                .iter()
+                .all(|p| p.layers.iter().all(|pl| pl.id != "storms"))
+        );
     }
 
     #[test]

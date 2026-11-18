@@ -772,6 +772,7 @@ keys! {
     MapLayerDepthContours => ("Depth contours", "Depth contours"),
     MapLayerSstBreaks => ("SST breaks", "SST breaks"),
     MapLayerChlorophyllBreaks => ("Chlorophyll breaks", "Chlorophyll breaks"),
+    MapLayerStorms => ("Storms", "Storms"),
     /// Legend captions of the colour ramps.
     MapLegendColdToWarm => ("Cold to warm", "Cold to warm"),
     MapLegendClearToGreen => ("Clear to green water", "Clear to green water"),
@@ -1920,6 +1921,8 @@ safety_keys! {
     /// The breaks layers, found on the device in another layer's grid.
     MapCreditSstBreaks => "SST breaks: found on this device in NASA JPL MUR (MEaSUREs) SST, via NOAA CoastWatch ERDDAP. Not for navigation.",
     MapCreditChlorophyllBreaks => "Chlorophyll breaks: found on this device in NOAA CoastWatch / NOAA STAR VIIRS ocean colour. Not for navigation.",
+    /// The storms layer: model lows and NHC's hurricanes.
+    MapCreditStorms => "Storms: model lows from ECMWF, NOAA GFS, ECCC GEM and DWD ICON via Open-Meteo.com (CC BY 4.0); hurricanes, forecast tracks and the forecast cone from the NOAA National Hurricane Center. Not for navigation.",
     /// Legend captions that say what a depth or chart layer shows.
     MapLegendGebco => "Offshore depth where the chart has none",
     MapLegendContoursIn => "Depth below the lake surface at survey",
@@ -1966,6 +1969,7 @@ safety_keys! {
     MapReferenceBathymetry => "Heights are metres relative to a vertical datum that depends on the source model (NAVD 88 or EGM 2008), not chart datum. They are shown as approximate depth and are never compared with charted soundings or tide heights.",
     MapLegendBathymetry => "Approximate depth below the surface",
     MapLegendDepthContours => "Lines of equal approximate depth below the surface",
+    MapLegendStorms => "Each model's low-pressure tracks as bands; NHC's hurricane tracks with NHC's forecast cone",
     /// Why a charted wreck, obstruction or rock shows no depth.
     MapStructureDepthNotShown => "Charted depth not shown: the service states neither its unit nor its datum.",
     // Station pins
@@ -2818,6 +2822,7 @@ impl Strings {
             "depth-contours" => Key::MapLayerDepthContours,
             "sst-breaks" => Key::MapLayerSstBreaks,
             "chlorophyll-breaks" => Key::MapLayerChlorophyllBreaks,
+            "storms" => Key::MapLayerStorms,
             _ => return None,
         }))
     }
@@ -2858,6 +2863,7 @@ impl Strings {
             "catch-heat" => SafetyKey::MapLegendCatchHeat,
             "depth-shading" => SafetyKey::MapLegendBathymetry,
             "depth-contours" => SafetyKey::MapLegendDepthContours,
+            "storms" => SafetyKey::MapLegendStorms,
             _ => return None,
         }))
     }
@@ -2907,6 +2913,7 @@ impl Strings {
             "depth-shading" | "depth-contours" => SafetyKey::MapCreditBathymetry,
             "sst-breaks" => SafetyKey::MapCreditSstBreaks,
             "chlorophyll-breaks" => SafetyKey::MapCreditChlorophyllBreaks,
+            "storms" => SafetyKey::MapCreditStorms,
             _ => return None,
         }))
     }
@@ -4029,6 +4036,25 @@ mod tests {
                 assert_eq!(plain.layer_reference(id), luna.layer_reference(id), "{id}");
                 assert_eq!(plain.layer_licence(id), None, "{id}");
             }
+        }
+
+        #[test]
+        fn the_storms_layer_credits_the_models_and_nhc_and_says_not_for_navigation() {
+            let [plain, luna] = both();
+            assert_eq!(plain.layer_title("storms"), Some("Storms"));
+            let credit = plain.layer_credit("storms").unwrap();
+            assert_eq!(Some(credit), luna.layer_credit("storms"));
+            for name in ["Open-Meteo.com", "CC BY 4.0", "National Hurricane Center"] {
+                assert!(credit.contains(name), "{name}");
+            }
+            assert!(credit.ends_with("Not for navigation."));
+            assert!(find("storms").unwrap().not_for_navigation);
+            let legend = plain.layer_legend("storms").unwrap();
+            assert_eq!(Some(legend), luna.layer_legend("storms"));
+            assert!(legend.contains("NHC's forecast cone"));
+            assert_eq!(plain.layer_reference("storms"), None);
+            assert_eq!(plain.layer_acknowledgements("storms"), Vec::<&str>::new());
+            assert_eq!(MapQuantity::of_layer("storms"), None);
         }
 
         #[test]

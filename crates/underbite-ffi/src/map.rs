@@ -204,6 +204,10 @@ pub enum LayerDraw {
     /// the blocks the store holds for that layer's view: drawn while that layer is on the map,
     /// with no request of their own.
     Breaks,
+    /// Model low tracks and NHC hurricanes with their forecast cones, drawn on the device from
+    /// the storm outlook for the view's centre (`fetch_storm_layer`, `storm_layer_view`). Not
+    /// tiles from a service and not a gridded dataset.
+    Storms,
     /// Listed, without a source yet.
     Unsourced,
 }
@@ -324,6 +328,7 @@ const fn draw(kind: &LayerKind) -> LayerDraw {
         LayerKind::Mine(_) => LayerDraw::Mine,
         LayerKind::Depth(_) => LayerDraw::Depth,
         LayerKind::Breaks(_) => LayerDraw::Breaks,
+        LayerKind::Storms => LayerDraw::Storms,
         LayerKind::Unsourced => LayerDraw::Unsourced,
     }
 }

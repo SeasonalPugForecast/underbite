@@ -873,6 +873,10 @@ expression: json_schema()
             {
               "id": "chlorophyll-breaks",
               "shown": false
+            },
+            {
+              "id": "storms",
+              "shown": false
             }
           ],
           "description": "The overlay layers in drawing order, first at the bottom.",
@@ -1827,6 +1831,10 @@ expression: json_schema()
           },
           {
             "id": "chlorophyll-breaks",
+            "shown": false
+          },
+          {
+            "id": "storms",
             "shown": false
           }
         ],

@@ -221,6 +221,10 @@
       {
         "id": "chlorophyll-breaks",
         "shown": false
+      },
+      {
+        "id": "storms",
+        "shown": false
       }
     ],
     "offline_max_mb": 1500,
