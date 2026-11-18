@@ -75,6 +75,30 @@ expression: schemas
         ],
         "type": "string"
       },
+      "LayerId": {
+        "description": "The stable id of a map layer, such as `sst` or `radar`.\n\nA string newtype rather than an enum, like [`SourceId`](crate::provenance::SourceId): a layer\nadded later needs no contract change, and an id this version does not know survives decoding so\nthat migration can drop it with a note.",
+        "type": "string"
+      },
+      "LayersShare": {
+        "description": "The `kind: \"layers\"` payload: a map layer preset, its name and its layers in drawing order,\nfirst at the bottom.",
+        "properties": {
+          "layers": {
+            "default": [],
+            "items": {
+              "$ref": "#/$defs/SharedLayer"
+            },
+            "type": "array"
+          },
+          "name": {
+            "description": "The preset's name as the sender sees it.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
       "Licence": {
         "description": "Under which terms a value may be used and shown.",
         "oneOf": [
@@ -160,6 +184,57 @@ expression: schemas
         "required": [
           "low",
           "high"
+        ],
+        "type": "object"
+      },
+      "SharedLayer": {
+        "description": "One layer of a shared map preset: its state as the map settings keep it in a preset.",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/LayerId"
+          },
+          "opacity": {
+            "description": "0 (clear) to 1 (solid); none means the layer's own.",
+            "format": "float",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ramp": {
+            "description": "The colour ramp by id; none means the layer's own.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "range": {
+            "description": "The value range the ramp spans, low and high, in canonical units; none means the layer's\nown.",
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "format": "float",
+                "type": "number"
+              },
+              {
+                "format": "float",
+                "type": "number"
+              }
+            ],
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "shown": {
+            "default": false,
+            "description": "Whether the preset shows the layer.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id"
         ],
         "type": "object"
       },
@@ -872,6 +947,16 @@ expression: schemas
       },
       "kind": {
         "$ref": "#/$defs/Kind"
+      },
+      "layers": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/LayersShare"
+          },
+          {
+            "type": "null"
+          }
+        ]
       },
       "profile": {
         "anyOf": [

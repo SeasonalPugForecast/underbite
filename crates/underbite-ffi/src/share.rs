@@ -328,7 +328,7 @@ pub fn read_file(bytes: Vec<u8>, settings_json: String) -> Result<SharedFile, Sh
         }),
         // A species profile is read by `species::species_read_file`.
         Document::Profile(_) => Err(cannot_open(strings, "profile".to_owned())),
-        Document::Unsupported { kind } => Err(cannot_open(strings, kind)),
+        Document::Layers { .. } => Err(cannot_open(strings, "layers".to_owned())),
     }
 }
 

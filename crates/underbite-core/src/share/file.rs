@@ -1,11 +1,14 @@
 //! The `.underbite` document: envelope, payloads, encoding, decoding and fuzz.
 //!
 //! A file is JSON: `{"format":"underbite","v":1,"kind":"trip"|"spot"|"layers"|"profile", <kind>: {…}}`.
-//! One file type carries every kind, so the OS registers a single document type. `trip`, `spot`
-//! and `profile` are defined here; `layers` is reserved and decodes as [`Document::Unsupported`]
-//! until its payload exists. Fields this build does not know are ignored within a known version,
-//! except inside a species profile, whose types refuse fields they do not know.
-//! A file never carries keys, the catch log or photos.
+//! One file type carries every kind, so the OS registers a single document type. Fields this build
+//! does not know are ignored within a known version, except inside a species profile, whose types
+//! refuse fields they do not know. A file never carries keys, the catch log or photos.
+//!
+//! A shared map layer preset (`layers`) is a name and layer states in drawing order: no places,
+//! keys or dates. Reading one leaves out the layers this build does not have and says which
+//! ([`Document::Layers`]); a receiver who has not opted in to Copernicus Marine gets that
+//! source's layers switched off ([`LayersShare::hide_copernicus`]).
 //!
 //! A shared species profile carries every value with its source and licence (a `FishBase` value
 //! keeps its link, record reference and CC BY-NC citation) and the sender's edits apart from the
@@ -17,6 +20,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 
+use crate::map::{LayerId, catalogue};
 use crate::species::catalogue::Catalogue;
 use crate::species::profile::{
     Field, Layer, Licence, ProfileEdits, SourceRef, SpeciesEdit, SpeciesProfile,
@@ -47,6 +51,117 @@ pub struct ProfileShare {
     /// The sender's own values, laid over `species` when shown; absent when there are none.
     #[serde(default, skip_serializing_if = "SpeciesEdit::is_empty")]
     pub edits: SpeciesEdit,
+}
+
+/// One layer of a shared map preset: its state as the map settings keep it in a preset.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct SharedLayer {
+    pub id: LayerId,
+    /// Whether the preset shows the layer.
+    #[serde(default)]
+    pub shown: bool,
+    /// 0 (clear) to 1 (solid); none means the layer's own.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "decimal_opacity"
+    )]
+    pub opacity: Option<f32>,
+    /// The colour ramp by id; none means the layer's own.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ramp: Option<String>,
+    /// The value range the ramp spans, low and high, in canonical units; none means the layer's
+    /// own.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "decimal_range"
+    )]
+    pub range: Option<(f32, f32)>,
+}
+
+/// `x` as the `f64` of its shortest decimal form, so that a file says 0.7 where a widening
+/// conversion would say 0.699999988079071.
+fn decimal(x: f32) -> f64 {
+    x.to_string().parse().unwrap_or_else(|_| f64::from(x))
+}
+
+#[allow(clippy::ref_option, clippy::trivially_copy_pass_by_ref)] // serde's `serialize_with` form
+fn decimal_opacity<S: serde::Serializer>(o: &Option<f32>, s: S) -> Result<S::Ok, S::Error> {
+    o.map(decimal).serialize(s)
+}
+
+#[allow(clippy::ref_option, clippy::trivially_copy_pass_by_ref)] // serde's `serialize_with` form
+fn decimal_range<S: serde::Serializer>(r: &Option<(f32, f32)>, s: S) -> Result<S::Ok, S::Error> {
+    r.map(|(low, high)| (decimal(low), decimal(high)))
+        .serialize(s)
+}
+
+/// The `kind: "layers"` payload: a map layer preset, its name and its layers in drawing order,
+/// first at the bottom.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct LayersShare {
+    /// The preset's name as the sender sees it.
+    pub name: String,
+    #[serde(default)]
+    pub layers: Vec<SharedLayer>,
+}
+
+/// The start of the id of every map layer Copernicus Marine serves: those layers need the
+/// user's opt-in to that source.
+pub const COPERNICUS_LAYER_PREFIX: &str = "copernicus-";
+
+impl LayersShare {
+    /// Switches off every shown layer that needs the Copernicus Marine opt-in, for a receiver
+    /// who has not opted in, and returns their ids. The layers stay in the preset, hidden.
+    pub fn hide_copernicus(&mut self) -> Vec<LayerId> {
+        let mut hidden = Vec::new();
+        for layer in &mut self.layers {
+            if layer.shown && layer.id.as_str().starts_with(COPERNICUS_LAYER_PREFIX) {
+                layer.shown = false;
+                hidden.push(layer.id.clone());
+            }
+        }
+        hidden
+    }
+
+    /// Keeps the first state of each layer `known` accepts and returns the ids of the others,
+    /// each once, in file order.
+    fn keep_known(&mut self, known: impl Fn(&str) -> bool) -> Vec<LayerId> {
+        let mut left_out: Vec<LayerId> = Vec::new();
+        let mut kept: Vec<SharedLayer> = Vec::with_capacity(self.layers.len());
+        for layer in self.layers.drain(..) {
+            if !known(layer.id.as_str()) {
+                if !left_out.contains(&layer.id) {
+                    left_out.push(layer.id);
+                }
+            } else if !kept.iter().any(|k| k.id == layer.id) {
+                kept.push(layer);
+            }
+        }
+        self.layers = kept;
+        left_out
+    }
+
+    /// Checks what a file may carry: a name, and only opacities and ranges the map can use.
+    fn validate(&self) -> Result<(), ShareError> {
+        let usable = self.layers.iter().all(|l| {
+            !l.id.as_str().trim().is_empty()
+                && l.opacity
+                    .is_none_or(|o| o.is_finite() && (0.0..=1.0).contains(&o))
+                && l.range
+                    .is_none_or(|(low, high)| low.is_finite() && high.is_finite() && low < high)
+        });
+        if self.name.trim().is_empty() || !usable {
+            return Err(ShareError::Unreadable);
+        }
+        Ok(())
+    }
+}
+
+/// Whether this build's map has an overlay with this id.
+fn is_known_layer(id: &str) -> bool {
+    catalogue::LAYERS.iter().any(|l| l.id == id)
 }
 
 /// What importing a shared profile does to this device's edits of the same species.
@@ -230,8 +345,13 @@ pub enum Document {
     Spot(SpotShare),
     /// `kind: "profile"`.
     Profile(ProfileShare),
-    /// A kind this build reserves but cannot read yet (`layers`). It cannot be encoded.
-    Unsupported { kind: String },
+    /// `kind: "layers"`: a map layer preset.
+    Layers {
+        share: LayersShare,
+        /// The layer ids [`decode`] left out because this build does not have them, each once,
+        /// in file order. [`encode`] ignores it.
+        left_out: Vec<LayerId>,
+    },
 }
 
 /// Why a file cannot be used.
@@ -277,8 +397,9 @@ impl From<PlaceProblem> for ShareError {
 ///
 /// # Errors
 /// [`ShareError`]: too large, not JSON or not this format, a newer `v`, an unknown `kind`, a
-/// payload that does not parse, a trip whose dates or places do not validate, or a profile with
-/// a value that has no source or cannot be right.
+/// payload that does not parse, a trip whose dates or places do not validate, a profile with
+/// a value that has no source or cannot be right, or a layer preset without a name or with an
+/// opacity or range the map cannot use.
 pub fn decode(bytes: &[u8]) -> Result<Document, ShareError> {
     if bytes.len() > MAX_BYTES {
         return Err(ShareError::TooLarge);
@@ -315,7 +436,12 @@ pub fn decode(bytes: &[u8]) -> Result<Document, ShareError> {
             share.validate()?;
             Ok(Document::Profile(share))
         }
-        "layers" => Ok(Document::Unsupported { kind }),
+        "layers" => {
+            let mut share: LayersShare = payload(&mut file, "layers")?;
+            share.validate()?;
+            let left_out = share.keep_known(is_known_layer);
+            Ok(Document::Layers { share, left_out })
+        }
         _ => Err(ShareError::Unreadable),
     }
 }
@@ -332,8 +458,8 @@ fn payload<T: serde::de::DeserializeOwned>(
 /// bytes.
 ///
 /// # Errors
-/// The same validation errors as [`decode`], [`ShareError::TooLarge`] when the output would exceed
-/// [`MAX_BYTES`], and [`ShareError::Unreadable`] for [`Document::Unsupported`].
+/// The same validation errors as [`decode`], and [`ShareError::TooLarge`] when the output would
+/// exceed [`MAX_BYTES`].
 pub fn encode(doc: &Document) -> Result<String, ShareError> {
     let file = match doc {
         Document::Trip(trip) => {
@@ -348,7 +474,10 @@ pub fn encode(doc: &Document) -> Result<String, ShareError> {
             share.validate()?;
             json!({"format": FORMAT, "v": VERSION, "kind": "profile", "profile": share})
         }
-        Document::Unsupported { .. } => return Err(ShareError::Unreadable),
+        Document::Layers { share, .. } => {
+            share.validate()?;
+            json!({"format": FORMAT, "v": VERSION, "kind": "layers", "layers": share})
+        }
     };
     let text = serde_json::to_string_pretty(&file).map_err(|_| ShareError::Unreadable)?;
     if text.len() > MAX_BYTES {
@@ -363,8 +492,7 @@ pub fn encode(doc: &Document) -> Result<String, ShareError> {
 /// A place never gets more precise: asking for a level at or above what a place already carries
 /// leaves it alone. The level is recorded on the place so the receiver can say "approximate
 /// location". `Exact` changes nothing; `Rounded1Km` rounds to 0.01 degrees; `AreaOnly` drops the
-/// coordinates and keeps name, area and region. A profile and [`Document::Unsupported`] have no
-/// places.
+/// coordinates and keeps name, area and region. A profile and a layer preset have no places.
 pub fn fuzz(doc: &mut Document, level: Fuzz) {
     match doc {
         Document::Trip(trip) => {
@@ -373,7 +501,7 @@ pub fn fuzz(doc: &mut Document, level: Fuzz) {
             }
         }
         Document::Spot(spot) => fuzz_place(&mut spot.place, level),
-        Document::Profile(_) | Document::Unsupported { .. } => {}
+        Document::Profile(_) | Document::Layers { .. } => {}
     }
 }
 
@@ -585,22 +713,13 @@ mod tests {
     }
 
     #[test]
-    fn reserved_kinds_decode_as_unsupported() {
+    fn payloads_that_do_not_parse_are_unreadable() {
         let text = r#"{"format":"underbite","v":1,"kind":"layers","layers":{"x":1}}"#;
-        assert_eq!(
-            decode(text.as_bytes()),
-            Ok(Document::Unsupported {
-                kind: "layers".into()
-            })
-        );
+        assert_eq!(decode(text.as_bytes()), Err(ShareError::Unreadable));
+        let text = r#"{"format":"underbite","v":1,"kind":"layers"}"#;
+        assert_eq!(decode(text.as_bytes()), Err(ShareError::Unreadable));
         let text = r#"{"format":"underbite","v":1,"kind":"profile","profile":{"x":1}}"#;
         assert_eq!(decode(text.as_bytes()), Err(ShareError::Unreadable));
-        assert_eq!(
-            encode(&Document::Unsupported {
-                kind: "layers".into()
-            }),
-            Err(ShareError::Unreadable)
-        );
     }
 
     #[test]
@@ -696,10 +815,9 @@ mod tests {
         fuzz(&mut s, Fuzz::AreaOnly);
         let Document::Spot(s) = &s else { panic!() };
         assert_eq!(s.place.fuzz, Fuzz::AreaOnly);
-        let mut u = Document::Unsupported {
-            kind: "layers".into(),
-        };
-        fuzz(&mut u, Fuzz::AreaOnly);
+        let mut l = layers();
+        fuzz(&mut l, Fuzz::AreaOnly);
+        assert_eq!(l, layers(), "a preset has no places");
     }
 
     #[test]
@@ -722,6 +840,7 @@ mod tests {
             trip: Option<Trip>,
             spot: Option<SpotShare>,
             profile: Option<ProfileShare>,
+            layers: Option<LayersShare>,
         }
         #[derive(JsonSchema)]
         #[serde(rename_all = "snake_case")]
@@ -744,6 +863,207 @@ mod tests {
         insta::assert_snapshot!("trip_file", encode(&Document::Trip(t)).unwrap());
         insta::assert_snapshot!("spot_file", encode(&spot()).unwrap());
         insta::assert_snapshot!("profile_file", encode(&profile()).unwrap());
+        insta::assert_snapshot!("layers_file", encode(&layers()).unwrap());
+    }
+
+    // -- map layer presets ------------------------------------------------------------------
+
+    fn layer(id: &str, shown: bool) -> SharedLayer {
+        SharedLayer {
+            id: LayerId::new(id),
+            shown,
+            opacity: None,
+            ramp: None,
+            range: None,
+        }
+    }
+
+    /// "Inshore flats" as a sender saved it: clarity at 70 % on a set range, then the stations.
+    fn inshore_flats() -> LayersShare {
+        LayersShare {
+            name: "Inshore flats".into(),
+            layers: vec![
+                layer("radar", false),
+                SharedLayer {
+                    opacity: Some(0.7),
+                    ramp: Some("turbidity".into()),
+                    range: Some((0.05, 1.5)),
+                    ..layer("clarity", true)
+                },
+                layer("tide-stations", true),
+                layer("current-stations", true),
+                layer("spots", true),
+            ],
+        }
+    }
+
+    fn layers() -> Document {
+        Document::Layers {
+            share: inshore_flats(),
+            left_out: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn a_layer_preset_round_trips_in_order_with_every_state() {
+        let doc = layers();
+        let text = encode(&doc).unwrap();
+        assert_eq!(decode(text.as_bytes()), Ok(doc.clone()));
+        assert_eq!(encode(&doc).unwrap(), text, "deterministic");
+        let v = encoded(&doc);
+        assert_eq!(v["kind"], "layers");
+        assert_eq!(v["layers"]["name"], "Inshore flats");
+        let ids: Vec<&str> = v["layers"]["layers"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|l| l["id"].as_str().unwrap())
+            .collect();
+        assert_eq!(
+            ids,
+            [
+                "radar",
+                "clarity",
+                "tide-stations",
+                "current-stations",
+                "spots"
+            ]
+        );
+        let clarity = &v["layers"]["layers"][1];
+        assert_eq!(clarity["opacity"], json!(0.7));
+        assert_eq!(clarity["ramp"], "turbidity");
+        assert_eq!(clarity["range"], json!([0.05, 1.5]));
+        // A layer's own opacity, ramp and range are left unsaid.
+        assert_eq!(
+            v["layers"]["layers"][0],
+            json!({"id": "radar", "shown": false})
+        );
+    }
+
+    #[test]
+    fn a_layer_preset_holds_no_place_key_or_date() {
+        let text = encode(&layers()).unwrap();
+        let v: Value = serde_json::from_str(&text).unwrap();
+        let mut keys: Vec<&str> = v["layers"]
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect();
+        keys.sort_unstable();
+        assert_eq!(keys, ["layers", "name"]);
+        for word in [
+            "latitude",
+            "longitude",
+            "api_key",
+            "token",
+            "date",
+            "modified",
+        ] {
+            assert!(!text.contains(word), "{word}");
+        }
+    }
+
+    #[test]
+    fn layers_this_build_lacks_are_left_out_and_named() {
+        let mut v = encoded(&layers());
+        let list = v["layers"]["layers"].as_array_mut().unwrap();
+        list.insert(
+            1,
+            json!({"id": "glow-worms", "shown": true, "opacity": 0.4}),
+        );
+        list.push(json!({"id": "apple-satellite", "shown": true}));
+        list.push(json!({"id": "glow-worms", "shown": false}));
+        list.push(json!({"id": "spots", "shown": false}));
+        let Ok(Document::Layers { share, left_out }) = decode(v.to_string().as_bytes()) else {
+            panic!()
+        };
+        // The base map is not an overlay; each id is named once, in file order.
+        assert_eq!(
+            left_out,
+            [LayerId::new("glow-worms"), LayerId::new("apple-satellite")]
+        );
+        // The rest keep their order and states; a layer listed twice keeps its first state.
+        assert_eq!(share, inshore_flats());
+        let note = crate::view::strings::Strings::new(crate::view::Voice::Plain)
+            .layers_left_out(&left_out)
+            .unwrap();
+        assert!(note.contains("glow-worms, apple-satellite"), "{note}");
+    }
+
+    #[test]
+    fn a_newer_layer_preset_needs_a_newer_version() {
+        let mut v = encoded(&layers());
+        v["v"] = (VERSION + 1).into();
+        v["layers"] = json!({"layout": "anything a later version writes"});
+        assert_eq!(
+            decode(v.to_string().as_bytes()),
+            Err(ShareError::NeedsNewerVersion)
+        );
+    }
+
+    #[test]
+    fn unknown_fields_in_a_layer_preset_are_ignored() {
+        let mut v = encoded(&layers());
+        v["layers"]["colour"] = "teal".into();
+        v["layers"]["layers"][1]["glow"] = 3.into();
+        assert_eq!(decode(v.to_string().as_bytes()), Ok(layers()));
+    }
+
+    #[test]
+    fn a_layer_preset_the_map_cannot_use_is_unreadable() {
+        let good = encoded(&layers());
+        let with = |f: &dyn Fn(&mut Value)| {
+            let mut v = good.clone();
+            f(&mut v);
+            decode(v.to_string().as_bytes())
+        };
+        assert!(with(&|_| {}).is_ok());
+        let bad: [&dyn Fn(&mut Value); 9] = [
+            &|v| v["layers"]["name"] = "  ".into(),
+            &|v| {
+                v["layers"].as_object_mut().unwrap().remove("name");
+            },
+            &|v| v["layers"]["layers"][1]["opacity"] = 1.5.into(),
+            &|v| v["layers"]["layers"][1]["opacity"] = (-0.1).into(),
+            &|v| v["layers"]["layers"][1]["range"] = json!([2.0, 1.0]),
+            &|v| v["layers"]["layers"][1]["range"] = json!([1.0]),
+            &|v| v["layers"]["layers"][1]["id"] = "".into(),
+            &|v| v["layers"]["layers"][1]["shown"] = "yes".into(),
+            &|v| v["layers"]["layers"] = json!({"clarity": true}),
+        ];
+        for (i, f) in bad.into_iter().enumerate() {
+            assert_eq!(with(f), Err(ShareError::Unreadable), "{i}");
+        }
+        // A preset that shows nothing is still a preset.
+        assert!(with(&|v| v["layers"]["layers"] = json!([])).is_ok());
+        let mut share = inshore_flats();
+        share.layers[1].opacity = Some(f32::NAN);
+        assert_eq!(
+            encode(&Document::Layers {
+                share,
+                left_out: Vec::new()
+            }),
+            Err(ShareError::Unreadable)
+        );
+    }
+
+    #[test]
+    fn copernicus_layers_are_switched_off_and_kept() {
+        let mut share = inshore_flats();
+        share.layers.push(layer("copernicus-currents", true));
+        share.layers.push(layer("copernicus-sst", false));
+        let hidden = share.hide_copernicus();
+        assert_eq!(hidden, [LayerId::new("copernicus-currents")]);
+        assert_eq!(share.layers.len(), 7, "kept, hidden");
+        assert!(
+            share
+                .layers
+                .iter()
+                .all(|l| !l.id.as_str().starts_with("copernicus-") || !l.shown)
+        );
+        assert!(share.layers[2].shown, "other layers are untouched");
+        assert_eq!(share.hide_copernicus(), [], "nothing left to switch off");
     }
 
     // -- profiles ---------------------------------------------------------------------------

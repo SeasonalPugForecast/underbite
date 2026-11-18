@@ -14,6 +14,7 @@ use whether_core::time::Weekday;
 use crate::alerts::AlertMetric;
 use crate::datum::VerticalDatum;
 use crate::discover::hydro::{WaterTypeReason, WaterbodyKind};
+use crate::map::LayerId;
 use crate::map::breaks::BreakKind;
 use crate::map::catalogue::{DateMode, Group, UnavailableReason};
 use crate::map::dem::{ApproxDepth, DepthReading};
@@ -1495,6 +1496,42 @@ keys! {
     ),
     ReceiveKindProfile => ("species profile", "species profile"),
     ReceiveKindLayers => ("map layers", "map layers"),
+    /// Sharing a map layer preset: the action.
+    PresetShare => ("Share", "Share"),
+    /// What a map layer preset's file holds.
+    PresetShareDetail => (
+        "The file holds the preset's layers, their order, opacity and colour ranges. No places, keys or dates.",
+        "The file holds the preset's layers, their order, opacity and colour ranges. No places, keys or dates.",
+    ),
+    PresetShareFile => ("Share the file", "Share the file"),
+    PresetCancel => ("Cancel", "Cancel"),
+    PresetDone => ("Done", "Done"),
+    /// The heading of a received map layer preset's preview.
+    ReceivePreset => ("Map preset to add", "Map preset to add"),
+    /// A received preset has the name of one of this device's: `{name}`.
+    ReceivePresetExists => (
+        "You already have a preset named {name}.",
+        "You already have a preset named {name}.",
+    ),
+    ReceivePresetRename => ("Add under another name", "Add under another name"),
+    ReceivePresetNameTitle => ("Name the preset", "Name the preset"),
+    ReceivePresetNameDetail => (
+        "A name none of your presets has.",
+        "A name none of your presets has.",
+    ),
+    ReceivePresetNameField => ("Name", "Name"),
+    ReceivePresetAdded => ("Added to your map presets.", "Luna tucked it in with your map presets."),
+    /// Layers a received preset names that this version does not have: `{layers}`, their ids.
+    ReceiveLayersLeftOut => (
+        "Left out, as this version of the app does not have them: {layers}.",
+        "Left out, as this version of the app does not have them: {layers}.",
+    ),
+    /// Layers of a received preset switched off until the Copernicus Marine opt-in is on:
+    /// `{layers}`, their titles.
+    ReceiveLayersOptIn => (
+        "Off until you turn on Copernicus Marine in Sources: {layers}.",
+        "Off until you turn on Copernicus Marine in Sources: {layers}.",
+    ),
     TripProblemTimeZone => (
         "Unknown time zone: no days for this place",
         "Unknown time zone: no days for this place",
@@ -2925,6 +2962,25 @@ impl Strings {
         }))
     }
 
+    /// The note on a received map layer preset's layers that this version does not have, by id;
+    /// `None` when there are none.
+    pub fn layers_left_out(self, ids: &[LayerId]) -> Option<String> {
+        let ids: Vec<&str> = ids.iter().map(LayerId::as_str).collect();
+        (!ids.is_empty())
+            .then(|| self.fmt(Key::ReceiveLayersLeftOut, &[("layers", &ids.join(", "))]))
+    }
+
+    /// The note on a received map layer preset's layers switched off until the Copernicus Marine
+    /// opt-in is on, by title (by id for a layer with no title); `None` when there are none.
+    pub fn layers_need_opt_in(self, ids: &[LayerId]) -> Option<String> {
+        let titles: Vec<&str> = ids
+            .iter()
+            .map(|id| self.layer_title(id.as_str()).unwrap_or(id.as_str()))
+            .collect();
+        (!titles.is_empty())
+            .then(|| self.fmt(Key::ReceiveLayersOptIn, &[("layers", &titles.join(", "))]))
+    }
+
     /// Why a layer cannot be turned on, shown in place of its switch.
     pub fn unavailable_reason(self, reason: UnavailableReason) -> &'static str {
         match reason {
@@ -4342,6 +4398,32 @@ mod tests {
             assert_eq!(
                 Strings::new(Voice::Luna).unavailable_reason(reason),
                 "Luna hasn't found a source yet"
+            );
+        }
+
+        #[test]
+        fn a_received_presets_notes_name_its_layers() {
+            let s = Strings::new(Voice::Plain);
+            assert_eq!(s.layers_left_out(&[]), None);
+            assert_eq!(s.layers_need_opt_in(&[]), None);
+            assert_eq!(
+                s.layers_left_out(&[LayerId::new("glow-worms"), LayerId::new("sea-ice")])
+                    .as_deref(),
+                Some(
+                    "Left out, as this version of the app does not have them: glow-worms, sea-ice."
+                )
+            );
+            // A layer with a title is named by it; one without, by its id.
+            assert_eq!(
+                s.layers_need_opt_in(&[LayerId::new("sst"), LayerId::new("copernicus-thetao")])
+                    .as_deref(),
+                Some(
+                    format!(
+                        "Off until you turn on Copernicus Marine in Sources: {}, copernicus-thetao.",
+                        s.layer_title("sst").unwrap()
+                    )
+                    .as_str()
+                )
             );
         }
     }

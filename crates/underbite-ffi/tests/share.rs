@@ -132,7 +132,9 @@ fn files_that_cannot_be_used_say_why_in_the_cores_words() {
             message: "This file needs a newer version of the app.".into()
         })
     );
-    let layers = json!({"format": "underbite", "v": 1, "kind": "layers", "layers": {}}).to_string();
+    let layers = json!({"format": "underbite", "v": 1, "kind": "layers",
+        "layers": {"name": "Surf", "layers": []}})
+    .to_string();
     match read_file(layers.into_bytes(), default_settings_json()) {
         Err(ShareError::Unsupported { kind, message }) => {
             assert_eq!(kind, "layers");

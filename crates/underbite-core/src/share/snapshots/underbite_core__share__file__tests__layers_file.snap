@@ -1,0 +1,40 @@
+---
+source: crates/underbite-core/src/share/file.rs
+expression: encode(&layers()).unwrap()
+---
+{
+  "format": "underbite",
+  "kind": "layers",
+  "layers": {
+    "layers": [
+      {
+        "id": "radar",
+        "shown": false
+      },
+      {
+        "id": "clarity",
+        "opacity": 0.7,
+        "ramp": "turbidity",
+        "range": [
+          0.05,
+          1.5
+        ],
+        "shown": true
+      },
+      {
+        "id": "tide-stations",
+        "shown": true
+      },
+      {
+        "id": "current-stations",
+        "shown": true
+      },
+      {
+        "id": "spots",
+        "shown": true
+      }
+    ],
+    "name": "Inshore flats"
+  },
+  "v": 1
+}
