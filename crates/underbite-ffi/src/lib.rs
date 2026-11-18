@@ -9,6 +9,7 @@ pub mod import;
 pub mod log;
 pub mod map;
 pub mod map_stations;
+pub mod nearby;
 pub mod offline;
 pub mod settings;
 pub mod share;
