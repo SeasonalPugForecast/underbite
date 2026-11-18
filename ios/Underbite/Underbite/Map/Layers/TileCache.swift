@@ -4,6 +4,10 @@ import ImageIO
 import UnderbiteKit
 import UniformTypeIdentifiers
 
+#if canImport(UIKit)
+    import UIKit
+#endif
+
 /// A fetched tile's place in the cache: the layer, the day asked for and the tile fetched (for an
 /// over-zoomed map tile, its ancestor at the layer's deepest zoom, which every map tile under it
 /// shares).
@@ -20,50 +24,94 @@ nonisolated struct TileCacheKey: Hashable, Sendable {
 }
 
 /// Fetched tiles in memory, by ``TileCacheKey``, as whether's radar tile cache: thread-safe,
-/// bounded by size and emptied by the system under memory pressure. A tile is fresh for the
-/// lifetime it was stored with; once stale it is still kept as the fallback for a failed fetch
-/// (the chart service fails now and then) until the cache drops it. Failed responses are never
-/// stored.
+/// bounded by size (the least recently used tile goes first) and emptied on a memory warning. A
+/// tile is fresh for the lifetime it was stored with; once stale it is still kept as the fallback
+/// for a failed fetch (the chart service fails now and then) until the bound drops it. Failed
+/// responses are never stored. Nothing is dropped except by those two rules, so what was stored
+/// is what is read.
 nonisolated final class TileMemoryCache: @unchecked Sendable {
-    private final class Entry {
+    private struct Entry {
         let data: Data
         let expires: Date
-        init(data: Data, expires: Date) {
-            self.data = data
-            self.expires = expires
+        var used: UInt64
+    }
+
+    private let lock = NSLock()
+    private var tiles: [String: Entry] = [:]
+    private var bytes = 0
+    private var clock: UInt64 = 0
+    private let costLimit: Int
+    private let notifications: NotificationCenter
+    private var warning: NSObjectProtocol?
+
+    /// The notification that empties the cache: the system's memory warning on iOS.
+    static var memoryWarning: Notification.Name {
+        #if canImport(UIKit)
+            UIApplication.didReceiveMemoryWarningNotification
+        #else
+            Notification.Name("TileMemoryCache.memoryWarning")
+        #endif
+    }
+
+    init(
+        costLimit: Int = 48 << 20, notifications: NotificationCenter = .default,
+        emptiedBy warning: Notification.Name = TileMemoryCache.memoryWarning
+    ) {
+        self.costLimit = costLimit
+        self.notifications = notifications
+        self.warning = notifications.addObserver(forName: warning, object: nil, queue: nil) {
+            [weak self] _ in self?.removeAll()
         }
     }
 
-    private let tiles = NSCache<NSString, Entry>()
-
-    init(costLimit: Int = 48 << 20) {
-        tiles.totalCostLimit = costLimit
+    deinit {
+        if let warning { notifications.removeObserver(warning) }
     }
 
     /// The tile for `key` while it is fresh at `now`.
     func fresh(_ key: TileCacheKey, now: Date) -> Data? {
-        guard let entry = tiles.object(forKey: key.text as NSString), now < entry.expires else {
-            return nil
-        }
+        guard let entry = touch(key.text), now < entry.expires else { return nil }
         return entry.data
     }
 
     /// The tile for `key`, fresh or not: what a failed fetch falls back to.
     func any(_ key: TileCacheKey) -> Data? {
-        tiles.object(forKey: key.text as NSString)?.data
+        touch(key.text)?.data
     }
 
     /// Keeps `data` for `key`, fresh for `lifetime` seconds from `now`; a lifetime of zero or
     /// less, or an empty body, keeps nothing.
     func store(_ data: Data, for key: TileCacheKey, lifetime: TimeInterval, now: Date) {
         guard lifetime > 0, !data.isEmpty else { return }
-        tiles.setObject(
-            Entry(data: data, expires: now.addingTimeInterval(lifetime)),
-            forKey: key.text as NSString, cost: data.count)
+        lock.lock()
+        defer { lock.unlock() }
+        if let old = tiles[key.text] { bytes -= old.data.count }
+        clock += 1
+        tiles[key.text] = Entry(
+            data: data, expires: now.addingTimeInterval(lifetime), used: clock)
+        bytes += data.count
+        while bytes > costLimit, let oldest = tiles.min(by: { $0.value.used < $1.value.used }) {
+            bytes -= oldest.value.data.count
+            tiles[oldest.key] = nil
+        }
     }
 
     func removeAll() {
-        tiles.removeAllObjects()
+        lock.lock()
+        defer { lock.unlock() }
+        tiles.removeAll()
+        bytes = 0
+    }
+
+    /// The entry for `text`, marked as just used.
+    private func touch(_ text: String) -> Entry? {
+        lock.lock()
+        defer { lock.unlock() }
+        guard var entry = tiles[text] else { return nil }
+        clock += 1
+        entry.used = clock
+        tiles[text] = entry
+        return entry
     }
 }
 

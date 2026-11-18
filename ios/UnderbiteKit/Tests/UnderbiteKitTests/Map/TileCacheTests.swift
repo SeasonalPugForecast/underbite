@@ -92,6 +92,34 @@ final class TileCacheTests: XCTestCase {
         XCTAssertNil(cache.any(key))
     }
 
+    func testTheLeastRecentlyUsedTileGoesFirstWhenTheCacheIsFull() {
+        let cache = TileMemoryCache(costLimit: 10)
+        func key(_ x: UInt32) -> TileCacheKey {
+            TileCacheKey(layer: "radar", date: nil, z: 7, x: x, y: 0)
+        }
+        cache.store(Data(repeating: 1, count: 4), for: key(1), lifetime: 60, now: t0)
+        cache.store(Data(repeating: 2, count: 4), for: key(2), lifetime: 60, now: t0)
+        // Reading the first makes the second the oldest.
+        XCTAssertNotNil(cache.any(key(1)))
+        cache.store(Data(repeating: 3, count: 4), for: key(3), lifetime: 60, now: t0)
+        XCTAssertNotNil(cache.any(key(1)))
+        XCTAssertNil(cache.any(key(2)))
+        XCTAssertNotNil(cache.any(key(3)))
+        // A tile bigger than the whole cache is not kept.
+        cache.store(Data(repeating: 4, count: 11), for: key(4), lifetime: 60, now: t0)
+        XCTAssertNil(cache.any(key(4)))
+    }
+
+    func testAMemoryWarningEmptiesTheCache() {
+        let center = NotificationCenter()
+        let cache = TileMemoryCache(notifications: center)
+        let key = TileCacheKey(layer: "radar", date: nil, z: 7, x: 36, y: 48)
+        cache.store(Data([1]), for: key, lifetime: 300, now: t0)
+        XCTAssertNotNil(cache.any(key))
+        center.post(name: TileMemoryCache.memoryWarning, object: nil)
+        XCTAssertNil(cache.any(key))
+    }
+
     func testVerdictsOnResponses() {
         XCTAssertEqual(TileDecision(.image), .keep)
         XCTAssertEqual(TileDecision(.noData), .nothing)
