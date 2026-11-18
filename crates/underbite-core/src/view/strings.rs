@@ -1292,6 +1292,9 @@ safety_keys! {
     CreditMarineModels => "Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean)",
     LicencePublicDomain => "Public domain",
     LicenceCcBy4 => "CC BY 4.0",
+    /// Beside regulation and licence links: the app links to the official pages and states no
+    /// rule itself.
+    RegulationsDisclaimer => "Fishing regulations change during the year. Underbite does not state limits, seasons or licence rules; open the official page and check it before you fish.",
 }
 
 impl SafetyKey {

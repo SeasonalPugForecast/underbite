@@ -8,11 +8,12 @@ use std::sync::OnceLock;
 
 use serde::Deserialize;
 
+use crate::view::strings::SafetyKey;
+
 /// Text shown beside regulation links: the app links to the official pages and states no limit itself.
-/// Safety-adjacent wording, never in Luna's voice. Intended for a `SafetyKey` once the view takes it.
-pub const REGULATIONS_DISCLAIMER: &str = "Fishing regulations change during the year. \
-Underbite does not state limits, seasons or licence rules; open the official page and check it \
-before you fish.";
+/// It is the view's safety text [`SafetyKey::RegulationsDisclaimer`], never in Luna's voice;
+/// displays take it from the view, which also translates it.
+pub const REGULATIONS_DISCLAIMER: &str = SafetyKey::RegulationsDisclaimer.text();
 
 /// The water a link is wanted for. The Great Lakes count as fresh water.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -522,5 +523,20 @@ mod tests {
         let both = links_for_regions(&["US-NY", "CA-ON"], Water::Fresh, "en");
         assert!(both.iter().any(|l| l.url.contains("dec.ny.gov")));
         assert!(both.iter().any(|l| l.url.contains("ontario.ca")));
+    }
+
+    #[test]
+    fn the_disclaimer_is_the_views_safety_text_in_every_voice() {
+        use crate::view::Voice;
+        use crate::view::strings::Strings;
+        for voice in [Voice::Luna, Voice::Plain] {
+            let s = Strings::new(voice);
+            assert_eq!(
+                s.safety(SafetyKey::RegulationsDisclaimer),
+                REGULATIONS_DISCLAIMER
+            );
+        }
+        assert!(REGULATIONS_DISCLAIMER.contains("official page"));
+        assert!(!REGULATIONS_DISCLAIMER.contains("Luna"));
     }
 }
