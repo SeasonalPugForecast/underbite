@@ -1,1 +1,960 @@
-{ "species": [] }
+{
+  "species": [
+    {
+      "id": "morone-saxatilis",
+      "scientific_name": {
+        "value": "Morone saxatilis",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/353",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 353 (author: (Walbaum, 1792))",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Striped bass"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/353",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 353 (author: (Walbaum, 1792)), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/353",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 353 (flags Fresh/Brack/Saltwater = 1/1/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 16.0,
+          "high": 25.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/353",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 21.0 C, TempPreferred 20.0 C); a modelled value from Cheung et al. 2013. FishBase's own modelled estimate (estimate.TempPrefMin/Mean/Max) differs: 1.0/9.3/23.5 C; the stock row is used."
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 8.0,
+          "high": 25.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/353",
+          "licence": "cc_by_nc4",
+          "reference": "Van Den Avyle and Evans 1990 (FishBase ref. 47172: Temperature selection by striped bass in a Gulf of Mexico coastal river system.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase temperature range of the species-in-general stock (TempMin to TempMax); the table does not say whether it is a tolerance or an occurrence range."
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 14.0,
+          "high": 25.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/353",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Crossman 1973 (FishBase ref. 1998: Freshwater fishes of Canada.); Hart 1973 (FishBase ref. 6885: Pacific fishes of Canada.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Envelope over 2 FishBase spawning record(s): lowest low to highest high; a record with one end only counts for both ends."
+        }
+      }
+    },
+    {
+      "id": "pomatomus-saltatrix",
+      "scientific_name": {
+        "value": "Pomatomus saltatrix",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/364",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 364 (author: (Linnaeus, 1766))",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Bluefish"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/364",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 364 (author: (Linnaeus, 1766)), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "salt",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/364",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 364 (flags Fresh/Brack/Saltwater = 0/1/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 25.0,
+          "high": 28.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/364",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 27.0 C, TempPreferred 26.0 C); a modelled value from Cheung et al. 2013. FishBase's own modelled estimate (estimate.TempPrefMin/Mean/Max) differs: 8.4/21.1/27.5 C; the stock row is used."
+        }
+      },
+      "depth_m": {
+        "value": {
+          "spring": {
+            "low": 0.0,
+            "high": 200.0
+          },
+          "summer": {
+            "low": 0.0,
+            "high": 200.0
+          },
+          "autumn": {
+            "low": 0.0,
+            "high": 200.0
+          },
+          "winter": {
+            "low": 0.0,
+            "high": 200.0
+          }
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/364",
+          "licence": "cc_by_nc4",
+          "reference": "FAO-FIGIS 2005 (FishBase ref. 54708: A world overview of species of interest to fisheries. Chapter: Pomatomus saltatrix.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase depth range (one range for the species, no seasonal split; the same range is given for every season)."
+        }
+      }
+    },
+    {
+      "id": "paralichthys-dentatus",
+      "scientific_name": {
+        "value": "Paralichthys dentatus",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1338",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1338 (author: (Linnaeus, 1766))",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Summer flounder"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1338",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1338 (author: (Linnaeus, 1766)), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "salt",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1338",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1338 (flags Fresh/Brack/Saltwater = 0/1/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 12.0,
+          "high": 20.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1338",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 15.0 C, TempPreferred 13.0 C); a modelled value from Cheung et al. 2013. FishBase's own modelled estimate (estimate.TempPrefMin/Mean/Max) differs: 9.1/19.1/24.4 C; the stock row is used."
+        }
+      },
+      "depth_m": {
+        "value": {
+          "spring": {
+            "low": 10.0,
+            "high": 183.0
+          },
+          "summer": {
+            "low": 10.0,
+            "high": 183.0
+          },
+          "autumn": {
+            "low": 10.0,
+            "high": 183.0
+          },
+          "winter": {
+            "low": 10.0,
+            "high": 183.0
+          }
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1338",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Scott 1988 (FishBase ref. 5951: Atlantic fishes of Canada.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase depth range (one range for the species, no seasonal split; the same range is given for every season)."
+        }
+      }
+    },
+    {
+      "id": "centropristis-striata",
+      "scientific_name": {
+        "value": "Centropristis striata",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/361",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 361 (author: (Linnaeus, 1758))",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Black seabass"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/361",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 361 (author: (Linnaeus, 1758)), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "salt",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/361",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 361 (flags Fresh/Brack/Saltwater = 0/0/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 14.0,
+          "high": 23.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/361",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 19.0 C, TempPreferred 19.0 C); a modelled value from Cheung et al. 2013. FishBase's own modelled estimate (estimate.TempPrefMin/Mean/Max) differs: 10.8/23.6/24.9 C; the stock row is used."
+        }
+      }
+    },
+    {
+      "id": "sciaenops-ocellatus",
+      "scientific_name": {
+        "value": "Sciaenops ocellatus",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1191",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1191 (author: (Linnaeus, 1766))",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Red drum"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1191",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1191 (author: (Linnaeus, 1766)), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "salt",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1191",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1191 (flags Fresh/Brack/Saltwater = 0/1/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 24.0,
+          "high": 28.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1191",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 26.0 C, TempPreferred 25.0 C); a modelled value from Cheung et al. 2013."
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 15.0,
+          "high": 26.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1191",
+          "licence": "cc_by_nc4",
+          "reference": "Ern et al. 2016 (FishBase ref. 127841: Oxygen dependence of upper thermal limits in fishes.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase temperature range of the species-in-general stock (TempMin to TempMax); the table does not say whether it is a tolerance or an occurrence range."
+        }
+      }
+    },
+    {
+      "id": "cynoscion-nebulosus",
+      "scientific_name": {
+        "value": "Cynoscion nebulosus",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/405",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 405 (author: (Cuvier, 1830))",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Spotted weakfish"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/405",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 405 (author: (Cuvier, 1830)), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "salt",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/405",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 405 (flags Fresh/Brack/Saltwater = 0/1/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 20.0,
+          "high": 26.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/405",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 23.0 C, TempPreferred 23.0 C); a modelled value from Cheung et al. 2013."
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 20.0,
+          "high": 32.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/405",
+          "licence": "cc_by_nc4",
+          "reference": "Nieland, Thomas and Wilson 2002 (FishBase ref. 48540: Age, growth, and reproduction of spotted seatrout in Barataria bay, Louisiana.); Roumillat and Brouwer 2004 (FishBase ref. 53507: Reproductive dynamics of female spotted seatrout (<i>Cynoscion nebulosus</i>) in South Carolina.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Envelope over 2 FishBase spawning record(s): lowest low to highest high; a record with one end only counts for both ends."
+        }
+      }
+    },
+    {
+      "id": "centropomus-undecimalis",
+      "scientific_name": {
+        "value": "Centropomus undecimalis",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/345",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 345 (author: (Bloch, 1792))",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Common snook"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/345",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 345 (author: (Bloch, 1792)), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/345",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 345 (flags Fresh/Brack/Saltwater = 1/1/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 27.0,
+          "high": 27.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/345",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 27.0 C, TempPreferred 27.0 C); a modelled value from Cheung et al. 2013."
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 25.0,
+          "high": 31.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/345",
+          "licence": "cc_by_nc4",
+          "reference": "Bussing 1998 (FishBase ref. 36880: Peces de las aguas continentales de Costa Rica [Freshwater fishes of Costa Rica]. 2nd Ed.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase temperature range of the species-in-general stock (TempMin to TempMax); the table does not say whether it is a tolerance or an occurrence range."
+        }
+      }
+    },
+    {
+      "id": "megalops-atlanticus",
+      "scientific_name": {
+        "value": "Megalops atlanticus",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1079",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1079 (author: Valenciennes, 1847)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Tarpon"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1079",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1079 (author: Valenciennes, 1847), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1079",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1079 (flags Fresh/Brack/Saltwater = 1/1/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 25.0,
+          "high": 27.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1079",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 26.0 C, TempPreferred 26.0 C); a modelled value from Cheung et al. 2013."
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 10.0,
+          "high": 40.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1079",
+          "licence": "cc_by_nc4",
+          "reference": "Adams et al. 2013 (FishBase ref. 93687: Global conservation status and research needs for tarpons (Megalopidae), ladyfishes (Elopidae) and bonefishes (Albulidae).)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase temperature range of the species-in-general stock (TempMin to TempMax); the table does not say whether it is a tolerance or an occurrence range. South Carolina DNR (marine species page, read 2026-11-17) says tarpon may be cold stunned and die in water below 50 F, which is 10.0 C (exact), the same as the low end here."
+        }
+      },
+      "depth_m": {
+        "value": {
+          "spring": {
+            "low": 0.0,
+            "high": 40.0
+          },
+          "summer": {
+            "low": 0.0,
+            "high": 40.0
+          },
+          "autumn": {
+            "low": 0.0,
+            "high": 40.0
+          },
+          "winter": {
+            "low": 0.0,
+            "high": 40.0
+          }
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/1079",
+          "licence": "cc_by_nc4",
+          "reference": "Whitehead and Vergara 1978 (FishBase ref. 3789: Megalopidae.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase depth range (one range for the species, no seasonal split; the same range is given for every season)."
+        }
+      }
+    },
+    {
+      "id": "coryphaena-hippurus",
+      "scientific_name": {
+        "value": "Coryphaena hippurus",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/6",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 6 (author: Linnaeus, 1758)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Common dolphinfish"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/6",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 6 (author: Linnaeus, 1758), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "salt",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/6",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 6 (flags Fresh/Brack/Saltwater = 0/1/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 26.0,
+          "high": 28.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/6",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 27.0 C, TempPreferred 28.0 C); a modelled value from Cheung et al. 2013."
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 21.0,
+          "high": 30.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/6",
+          "licence": "cc_by_nc4",
+          "reference": "Palko, Beardsley and Richards 1982 (FishBase ref. 26: Synopsis of the biological data on dolphin-fishes, <i>Coryphaena hippurus</i> Linnaeus and <i>Coryphaena equiselis</i> Linnaeus.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase temperature range of the species-in-general stock (TempMin to TempMax); the table does not say whether it is a tolerance or an occurrence range."
+        }
+      },
+      "depth_m": {
+        "value": {
+          "spring": {
+            "low": 0.0,
+            "high": 85.0
+          },
+          "summer": {
+            "low": 0.0,
+            "high": 85.0
+          },
+          "autumn": {
+            "low": 0.0,
+            "high": 85.0
+          },
+          "winter": {
+            "low": 0.0,
+            "high": 85.0
+          }
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/6",
+          "licence": "cc_by_nc4",
+          "reference": "Uyeno et al. 1983 (FishBase ref. 13608: Fishes trawled off Suriname and French Guiana.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase depth range (one range for the species, no seasonal split; the same range is given for every season)."
+        }
+      }
+    },
+    {
+      "id": "thunnus-thynnus",
+      "scientific_name": {
+        "value": "Thunnus thynnus",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/147",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 147 (author: (Linnaeus, 1758))",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Atlantic bluefin tuna"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/147",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 147 (author: (Linnaeus, 1758)), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "salt",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/147",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 147 (flags Fresh/Brack/Saltwater = 0/1/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 19.0,
+          "high": 27.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/147",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 24.0 C, TempPreferred 26.0 C); a modelled value from Cheung et al. 2013. FishBase's own modelled estimate (estimate.TempPrefMin/Mean/Max) differs: 7.5/12.6/24.7 C; the stock row is used."
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 3.0,
+          "high": 30.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/147",
+          "licence": "cc_by_nc4",
+          "reference": "Block et al. 2001 (FishBase ref. 88796: Migratory movements, depth preferences, and thermal biology of Atlantic bluefin tuna.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase temperature range of the species-in-general stock (TempMin to TempMax); the table does not say whether it is a tolerance or an occurrence range."
+        }
+      },
+      "depth_m": {
+        "value": {
+          "spring": {
+            "low": 0.0,
+            "high": 985.0
+          },
+          "summer": {
+            "low": 0.0,
+            "high": 985.0
+          },
+          "autumn": {
+            "low": 0.0,
+            "high": 985.0
+          },
+          "winter": {
+            "low": 0.0,
+            "high": 985.0
+          }
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/147",
+          "licence": "cc_by_nc4",
+          "reference": "Florida Museum of Natural History 2005 (FishBase ref. 55291: Biological profiles: bluefin tuna.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase depth range (one range for the species, no seasonal split; the same range is given for every season)."
+        }
+      }
+    },
+    {
+      "id": "thunnus-albacares",
+      "scientific_name": {
+        "value": "Thunnus albacares",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/143",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 143 (author: (Bonnaterre, 1788))",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Yellowfin tuna"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/143",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 143 (author: (Bonnaterre, 1788)), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "salt",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/143",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 143 (flags Fresh/Brack/Saltwater = 0/1/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 24.0,
+          "high": 28.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/143",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 26.0 C, TempPreferred 28.0 C); a modelled value from Cheung et al. 2013."
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 15.0,
+          "high": 31.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/143",
+          "licence": "cc_by_nc4",
+          "reference": "Collette and Nauen 1983 (FishBase ref. 168: FAO Species Catalogue. Vol. 2. Scombrids of the world. An annotated and illustrated catalogue of tunas, mackerels, bonitos and related species known to date.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase temperature range of the species-in-general stock (TempMin to TempMax); the table does not say whether it is a tolerance or an occurrence range."
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 25.0,
+          "high": 26.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/143",
+          "licence": "cc_by_nc4",
+          "reference": "Kailola et al. 1993 (FishBase ref. 6390: Australian fisheries resources.); Wild 1994 (FishBase ref. 57670: A review of the biology and fisheries for yellowfin tuna, <i>Thunnus albacares</i>, in the eastern Pacific Ocean.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Envelope over 2 FishBase spawning record(s): lowest low to highest high; a record with one end only counts for both ends."
+        }
+      },
+      "depth_m": {
+        "value": {
+          "spring": {
+            "low": 1.0,
+            "high": 250.0
+          },
+          "summer": {
+            "low": 1.0,
+            "high": 250.0
+          },
+          "autumn": {
+            "low": 1.0,
+            "high": 250.0
+          },
+          "winter": {
+            "low": 1.0,
+            "high": 250.0
+          }
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/143",
+          "licence": "cc_by_nc4",
+          "reference": "Kailola et al. 1993 (FishBase ref. 6390: Australian fisheries resources.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase common depth range (one range for the species, no seasonal split; the same range is given for every season)."
+        }
+      }
+    },
+    {
+      "id": "thunnus-atlanticus",
+      "scientific_name": {
+        "value": "Thunnus atlanticus",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/144",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 144 (author: (Lesson, 1831))",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Blackfin tuna"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/144",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 144 (author: (Lesson, 1831)), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "salt",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/144",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 144 (flags Fresh/Brack/Saltwater = 0/0/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 26.0,
+          "high": 28.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/144",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 27.0 C, TempPreferred 26.0 C); a modelled value from Cheung et al. 2013. FishBase's own modelled estimate (estimate.TempPrefMin/Mean/Max) differs: 10.0/14.4/20.5 C; the stock row is used."
+        }
+      }
+    },
+    {
+      "id": "katsuwonus-pelamis",
+      "scientific_name": {
+        "value": "Katsuwonus pelamis",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/107",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 107 (author: (Linnaeus, 1758))",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "common_names": {
+        "value": [
+          "Skipjack tuna"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/107",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 107 (author: (Linnaeus, 1758)), English name",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "water": {
+        "value": "salt",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/107",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 107 (flags Fresh/Brack/Saltwater = 0/0/1; both when freshwater and a saltwater or brackish flag are set)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0."
+        }
+      },
+      "preferred_temp_c": {
+        "value": {
+          "low": 24.0,
+          "high": 27.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/107",
+          "licence": "cc_by_nc4",
+          "reference": "Cheung, Watson and Pauly 2013 (FishBase ref. 107945: Signature of ocean warming in global fisheries catch.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. Range is the 25th to 75th percentile of FishBase's preferred temperature (median 26.0 C, TempPreferred 27.0 C); a modelled value from Cheung et al. 2013."
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 14.7,
+          "high": 30.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/107",
+          "licence": "cc_by_nc4",
+          "reference": "Collette and Nauen 1983 (FishBase ref. 168: FAO Species Catalogue. Vol. 2. Scombrids of the world. An annotated and illustrated catalogue of tunas, mackerels, bonitos and related species known to date.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase temperature range of the species-in-general stock (TempMin to TempMax); the table does not say whether it is a tolerance or an occurrence range."
+        }
+      },
+      "depth_m": {
+        "value": {
+          "spring": {
+            "low": 0.0,
+            "high": 260.0
+          },
+          "summer": {
+            "low": 0.0,
+            "high": 260.0
+          },
+          "autumn": {
+            "low": 0.0,
+            "high": 260.0
+          },
+          "winter": {
+            "low": 0.0,
+            "high": 260.0
+          }
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/107",
+          "licence": "cc_by_nc4",
+          "reference": "Collette 1995 (FishBase ref. 9340: Scombridae. Atunes, bacoretas, bonitos, caballas, estorninos, melva, etc.)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026). Data: fb/v26.06, CC BY-NC 4.0. FishBase depth range (one range for the species, no seasonal split; the same range is given for every season). NOAA Fisheries (species page atlantic-skipjack-tuna, read 2026-11-17) says skipjack are found to depths of 850 feet (259.1 m, 850 x 0.3048) by day; it gives no shallow end, so FishBase stays."
+        }
+      }
+    }
+  ]
+}

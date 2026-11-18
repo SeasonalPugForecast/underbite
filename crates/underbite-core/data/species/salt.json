@@ -1,1 +1,366 @@
-{ "species": [] }
+{
+  "species": [
+    {
+      "id": "morone-saxatilis",
+      "scientific_name": {
+        "value": "Morone saxatilis",
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/atlantic-striped-bass",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Striped bass",
+          "Striper",
+          "Rockfish",
+          "Linesider",
+          "Bass"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/atlantic-striped-bass",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/atlantic-striped-bass",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "habitat": {
+        "value": [
+          "ocean",
+          "coastal estuaries",
+          "rivers",
+          "fresh and brackish spawning water"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/atlantic-striped-bass",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      }
+    },
+    {
+      "id": "pomatomus-saltatrix",
+      "scientific_name": {
+        "value": "Pomatomus saltatrix",
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/bluefish",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Bluefish",
+          "Tailor",
+          "Snapper",
+          "Baby blues",
+          "Choppers",
+          "Elfs"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/bluefish",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "habitat": {
+        "value": [
+          "inshore and offshore waters",
+          "sandy ocean bottom",
+          "mud, silt or clay bottom",
+          "vegetated areas"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/bluefish",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      }
+    },
+    {
+      "id": "paralichthys-dentatus",
+      "scientific_name": {
+        "value": "Paralichthys dentatus",
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/summer-flounder",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Summer flounder",
+          "Fluke",
+          "Flounder",
+          "Northern fluke",
+          "Hirame"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/summer-flounder",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "habitat": {
+        "value": [
+          "sandy bottom",
+          "marsh creeks",
+          "seagrass beds",
+          "sand flats",
+          "estuaries and coastal lagoons"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/summer-flounder",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      }
+    },
+    {
+      "id": "centropristis-striata",
+      "scientific_name": {
+        "value": "Centropristis striata",
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/black-sea-bass",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Black sea bass",
+          "Sea bass",
+          "Blackfish",
+          "Rock bass",
+          "Black bass",
+          "Tallywag"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/black-sea-bass",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "habitat": {
+        "value": [
+          "reefs",
+          "wrecks",
+          "oyster beds"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/black-sea-bass",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      }
+    },
+    {
+      "id": "sciaenops-ocellatus",
+      "scientific_name": {
+        "value": "Sciaenops ocellatus",
+        "source": {
+          "name": "South Carolina Department of Natural Resources",
+          "url": "https://www.dnr.sc.gov/marine/species/reddrum.html",
+          "licence": "published",
+          "reference": "SCDNR marine species page, read 2026-11-17"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Red drum",
+          "Redfish"
+        ],
+        "source": {
+          "name": "Florida Fish and Wildlife Conservation Commission",
+          "url": "https://myfwc.com/fishing/saltwater/recreational/red-drum/",
+          "licence": "published",
+          "reference": "FWC recreational saltwater page, read 2026-11-17"
+        }
+      },
+      "habitat": {
+        "value": [
+          "nearshore and inshore bottom",
+          "sandy or sandy-mud bottom",
+          "shallow tidal creeks",
+          "salt marshes"
+        ],
+        "source": {
+          "name": "South Carolina Department of Natural Resources",
+          "url": "https://www.dnr.sc.gov/marine/species/reddrum.html",
+          "licence": "published",
+          "reference": "SCDNR marine species page, read 2026-11-17"
+        }
+      }
+    },
+    {
+      "id": "cynoscion-nebulosus",
+      "scientific_name": {
+        "value": "Cynoscion nebulosus",
+        "source": {
+          "name": "South Carolina Department of Natural Resources",
+          "url": "https://www.dnr.sc.gov/marine/species/spottedseatrout.html",
+          "licence": "published",
+          "reference": "SCDNR marine species page, read 2026-11-17"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Spotted seatrout"
+        ],
+        "source": {
+          "name": "South Carolina Department of Natural Resources",
+          "url": "https://www.dnr.sc.gov/marine/species/spottedseatrout.html",
+          "licence": "published",
+          "reference": "SCDNR marine species page, read 2026-11-17"
+        }
+      },
+      "habitat": {
+        "value": [
+          "estuaries and rivers",
+          "shallow coastal bays and sounds",
+          "salt marsh edges",
+          "grass beds"
+        ],
+        "source": {
+          "name": "South Carolina Department of Natural Resources",
+          "url": "https://www.dnr.sc.gov/marine/species/spottedseatrout.html",
+          "licence": "published",
+          "reference": "SCDNR marine species page, read 2026-11-17"
+        }
+      }
+    },
+    {
+      "id": "megalops-atlanticus",
+      "scientific_name": {
+        "value": "Megalops atlanticus",
+        "source": {
+          "name": "South Carolina Department of Natural Resources",
+          "url": "https://www.dnr.sc.gov/marine/species/tarpon.html",
+          "licence": "published",
+          "reference": "SCDNR marine species page, read 2026-11-17"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Tarpon"
+        ],
+        "source": {
+          "name": "South Carolina Department of Natural Resources",
+          "url": "https://www.dnr.sc.gov/marine/species/tarpon.html",
+          "licence": "published",
+          "reference": "SCDNR marine species page, read 2026-11-17"
+        }
+      },
+      "habitat": {
+        "value": [
+          "bays, sounds and estuaries",
+          "salt marshes",
+          "upper reaches of coastal rivers",
+          "freshwater impoundments"
+        ],
+        "source": {
+          "name": "South Carolina Department of Natural Resources",
+          "url": "https://www.dnr.sc.gov/marine/species/tarpon.html",
+          "licence": "published",
+          "reference": "SCDNR marine species page, read 2026-11-17"
+        }
+      }
+    },
+    {
+      "id": "thunnus-albacares",
+      "scientific_name": {
+        "value": "Thunnus albacares",
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/atlantic-yellowfin-tuna",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Yellowfin tuna",
+          "Ahi"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/atlantic-yellowfin-tuna",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "habitat": {
+        "value": [
+          "near the surface of tropical and subtropical oceans"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/atlantic-yellowfin-tuna",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      }
+    },
+    {
+      "id": "katsuwonus-pelamis",
+      "scientific_name": {
+        "value": "Katsuwonus pelamis",
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/atlantic-skipjack-tuna",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Skipjack tuna",
+          "Ocean bonito",
+          "Lesser tuna",
+          "Aku"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/atlantic-skipjack-tuna",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      },
+      "habitat": {
+        "value": [
+          "open ocean",
+          "nearshore waters",
+          "floating objects",
+          "oceanographic features"
+        ],
+        "source": {
+          "name": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/atlantic-skipjack-tuna",
+          "licence": "public_domain",
+          "reference": "NOAA Fisheries species page, read 2026-11-17"
+        }
+      }
+    }
+  ]
+}
