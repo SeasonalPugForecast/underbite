@@ -1037,6 +1037,126 @@ keys! {
     LogSolunarOutside => ("Outside the periods", "Outside the periods"),
     /// A temperature bin: `{from}`, `{to}`, `{unit}`.
     LogRange => ("{from}–{to} {unit}", "{from}–{to} {unit}"),
+    // -- species: the card, the profile page and the season view ---------------------------
+    SpeciesStageUnknown => ("Stage unknown", "Stage unknown"),
+    SpeciesStageTooCold => ("Too cold", "Too cold"),
+    SpeciesStagePreSpawn => ("Pre-spawn", "Pre-spawn"),
+    SpeciesStageSpawning => ("Spawning", "Spawning"),
+    SpeciesStageActive => ("In its preferred range", "In its preferred range"),
+    SpeciesStagePostSpawn => ("Post-spawn or summer", "Post-spawn or summer"),
+    SpeciesStageHeatStress => ("Heat stress", "Heat stress"),
+    /// `{value}`: the water temperature now.
+    SpeciesWaterNow => ("water {value}", "water {value}"),
+    /// `{range}`.
+    SpeciesSpawnUsually => ("spawn usually {range}", "spawn usually {range}"),
+    /// `{range}`.
+    SpeciesPrefers => ("prefers {range}", "prefers {range}"),
+    /// `{limit}`.
+    SpeciesStressedAbove => ("stressed above {limit}", "stressed above {limit}"),
+    /// `{first}`, `{second}`: two details of a stage.
+    SpeciesJoin => ("{first}, {second}", "{first}, {second}"),
+    /// `{species}`, `{stage}`, `{details}`.
+    SpeciesLine => ("{species} · {stage} · {details}", "{species} · {stage} · {details}"),
+    /// `{species}`, `{stage}`: a line with nothing more to say.
+    SpeciesLineBare => ("{species} · {stage}", "{species} · {stage}"),
+    SpeciesNoWater => ("no water temperature reading here", "no water temperature reading here"),
+    SpeciesNoRanges => (
+        "the profile gives no spawning or preferred temperature",
+        "the profile gives no spawning or preferred temperature",
+    ),
+    /// `{from}`, `{to}`, `{unit}`.
+    SpeciesRange => ("{from}–{to} {unit}", "{from}–{to} {unit}"),
+    SpeciesRowStage => ("Stage", "Stage"),
+    SpeciesRowWater => ("Water temperature", "Water temperature"),
+    SpeciesRowHeatLimit => ("Heat limit", "Heat limit"),
+    /// The heat limit's basis: the user's trout-stress setting.
+    SpeciesHeatTroutSetting => ("your trout-stress setting", "your trout-stress setting"),
+    /// `{limit}`, `{basis}`.
+    SpeciesHeatLimitValue => ("{limit} ({basis})", "{limit} ({basis})"),
+    SpeciesFieldScientific => ("Scientific name", "Scientific name"),
+    SpeciesFieldCommonNames => ("Common names", "Common names"),
+    SpeciesFieldAlias => ("Also called", "Also called"),
+    SpeciesFieldWater => ("Water", "Water"),
+    SpeciesFieldPreferred => ("Preferred temperature", "Preferred temperature"),
+    SpeciesFieldTolerated => ("Tolerated temperature", "Tolerated temperature"),
+    SpeciesFieldSpawn => ("Spawning temperature", "Spawning temperature"),
+    SpeciesFieldDepth => ("Depth", "Depth"),
+    SpeciesFieldHabitat => ("Habitat", "Habitat"),
+    SpeciesFieldFlow => ("Tide and current", "Tide and current"),
+    SpeciesFieldLight => ("Light", "Light"),
+    SpeciesFieldLures => ("Lures and baits", "Lures and baits"),
+    SpeciesFieldRegions => ("Regions", "Regions"),
+    SpeciesWaterFresh => ("Fresh water", "Fresh water"),
+    SpeciesWaterSalt => ("Salt water", "Salt water"),
+    SpeciesWaterBoth => ("Fresh and salt water", "Fresh and salt water"),
+    SpeciesSeasonSpring => ("Spring", "Spring"),
+    SpeciesSeasonSummer => ("Summer", "Summer"),
+    SpeciesSeasonAutumn => ("Autumn", "Autumn"),
+    SpeciesSeasonWinter => ("Winter", "Winter"),
+    /// `{season}`, `{range}`.
+    SpeciesDepthSeason => ("{season}: {range}", "{season}: {range}"),
+    /// `{range}`: the same depth in every season.
+    SpeciesDepthAllYear => ("{range}, all year", "{range}, all year"),
+    SpeciesFlowIncoming => ("Incoming tide", "Incoming tide"),
+    SpeciesFlowOutgoing => ("Outgoing tide", "Outgoing tide"),
+    SpeciesFlowSlackHigh => ("Slack at high water", "Slack at high water"),
+    SpeciesFlowSlackLow => ("Slack at low water", "Slack at low water"),
+    SpeciesFlowMoving => ("Moving water", "Moving water"),
+    SpeciesFlowSlack => ("Slack water", "Slack water"),
+    SpeciesLightDawn => ("Dawn", "Dawn"),
+    SpeciesLightDay => ("Day", "Day"),
+    SpeciesLightDusk => ("Dusk", "Dusk"),
+    SpeciesLightNight => ("Night", "Night"),
+    SpeciesLightOvercast => ("Overcast", "Overcast"),
+    SpeciesNotKnown => ("No source gives this", "No source gives this"),
+    /// The source of a value the user typed.
+    SpeciesYourEdit => ("Your edit", "Your edit"),
+    /// The source of a value the sender of a shared profile typed.
+    SpeciesSenderEdit => ("Edited by the sender", "Edited by the sender"),
+    SpeciesSeasonNowTitle => ("Now, from the water temperature", "Now, from the water temperature"),
+    SpeciesSeasonTypicalTitle => ("Typical months", "Typical months"),
+    SpeciesSeasonLegalTitle => ("Regulations", "Regulations"),
+    SpeciesInputProfile => ("the profile", "the profile"),
+    /// `{first}`, `{last}` (years), `{kind}` (a history kind).
+    SpeciesInputWaterYears => (
+        "water temperature {first}–{last}, {kind}",
+        "water temperature {first}–{last}, {kind}",
+    ),
+    /// `{n}` years, `{kind}`.
+    SpeciesInputWaterCount => (
+        "water temperature, {n} years, {kind}",
+        "water temperature, {n} years, {kind}",
+    ),
+    SpeciesInputObservations => ("observations", "observations"),
+    /// `{inputs}`: what a month drew on.
+    SpeciesTypicalFrom => ("From {inputs}", "From {inputs}"),
+    SpeciesTypicalNothing => ("Nothing to go on", "Nothing to go on"),
+    SpeciesTypicalNoNormals => (
+        "No typical water temperatures for this place yet, so the months cannot be placed.",
+        "No typical water temperatures for this place yet, so the months cannot be placed.",
+    ),
+    /// `{n}` observations in a month.
+    SpeciesObservations => ("{n} observed", "{n} observed"),
+    SpeciesLegalNoRegion => (
+        "Set the spot's region to see the official regulation pages.",
+        "Set the spot's region to see the official regulation pages.",
+    ),
+    /// `{region}`: an ISO 3166-2 code.
+    SpeciesLegalNoLinks => (
+        "No official pages are listed for {region}.",
+        "No official pages are listed for {region}.",
+    ),
+    SpeciesLegalNotes => ("Your notes", "Your notes"),
+    /// `{example}`: a number in the locale.
+    SpeciesEditNumber => ("Enter a number, such as {example}.", "Enter a number, such as {example}."),
+    SpeciesEditBackwards => (
+        "The first number must not be above the second.",
+        "The first number must not be above the second.",
+    ),
+    SpeciesEditOutOfRange => ("That is outside what any fish lives in.", "That is outside what any fish lives in."),
+    SpeciesEditEmpty => ("Enter at least one.", "Enter at least one."),
+    SpeciesEditChoice => ("Pick one of the choices.", "Pick one of the choices."),
+    SpeciesEditBothEnds => ("Enter both ends of the range.", "Enter both ends of the range."),
     // -- unit symbols -----------------------------------------------------------------------
     UnitFahrenheit => ("°F", "°F"),
     UnitCelsius => ("°C", "°C"),
@@ -1544,6 +1664,12 @@ safety_keys! {
     RegChecked => "{agency}, link checked {date}",
     RegUnconfirmed => "{agency}, link not confirmed when checked {date}",
     RegulationsDisclaimer => "Fishing regulations change during the year. Underbite does not state limits, seasons or licence rules; open the official page and check it before you fish.",
+    /// The licences of species profile values.
+    LicenceCcByNc4 => "CC BY-NC 4.0",
+    LicencePublished => "Cited from published work",
+    LicenceUserEdited => "Typed in, not from a source",
+    /// Beside a profile with `FishBase` values, at home and in a shared file.
+    SpeciesFishBaseNotice => "Values licensed CC BY-NC come from FishBase (www.fishbase.org) and may be used only non-commercially, with their citation.",
 }
 
 impl SafetyKey {

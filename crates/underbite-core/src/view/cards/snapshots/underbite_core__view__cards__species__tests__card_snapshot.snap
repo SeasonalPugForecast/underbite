@@ -1,0 +1,127 @@
+---
+source: crates/underbite-core/src/view/cards/species.rs
+expression: c
+---
+{
+  "chrome": {
+    "id": "species",
+    "title": "Species",
+    "footnote": "Water 55 °F · Croton River at New Croton Dam · 1.5 mi · just now",
+    "credits": [
+      {
+        "source": "FishBase",
+        "text": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)",
+        "link": "https://www.fishbase.se/summary/Micropterus-dolomieu.html",
+        "licence": "CC BY-NC 4.0"
+      },
+      {
+        "source": "FishBase",
+        "text": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)",
+        "link": "https://www.fishbase.se/summary/Salmo-trutta.html",
+        "licence": "CC BY-NC 4.0"
+      },
+      {
+        "source": "USGS",
+        "text": "U.S. Geological Survey",
+        "link": "https://www.usgs.gov",
+        "licence": null
+      }
+    ],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [
+      {
+        "kind": "text_only",
+        "text": "Values licensed CC BY-NC come from FishBase (www.fishbase.org) and may be used only non-commercially, with their citation."
+      }
+    ],
+    "accessibility": "Species: Smallmouth bass · Spawning · water 55 °F, spawn usually 55–72 °F. Brown trout · Stage unknown · water 55 °F, the profile gives no spawning or preferred temperature"
+  },
+  "compact": {
+    "headline": {
+      "value": 55.4,
+      "text": "55",
+      "unit": "°F"
+    },
+    "lines": [
+      "Smallmouth bass · Spawning · water 55 °F, spawn usually 55–72 °F",
+      "Brown trout · Stage unknown · water 55 °F, the profile gives no spawning or preferred temperature"
+    ],
+    "spark": []
+  },
+  "full": {
+    "water": {
+      "value": 55.4,
+      "text": "55",
+      "unit": "°F"
+    },
+    "species": [
+      {
+        "id": "micropterus-dolomieu",
+        "name": "Smallmouth bass",
+        "stage": "spawning",
+        "stage_label": "Spawning",
+        "text": "Smallmouth bass · Spawning · water 55 °F, spawn usually 55–72 °F",
+        "caution": null,
+        "edited": false
+      },
+      {
+        "id": "salmo-trutta",
+        "name": "Brown trout",
+        "stage": "unknown",
+        "stage_label": "Stage unknown",
+        "text": "Brown trout · Stage unknown · water 55 °F, the profile gives no spawning or preferred temperature",
+        "caution": null,
+        "edited": false
+      }
+    ],
+    "sections": [
+      {
+        "title": "Smallmouth bass",
+        "rows": [
+          {
+            "label": "Stage",
+            "value": "Spawning",
+            "detail": null
+          },
+          {
+            "label": "Water temperature",
+            "value": "55 °F",
+            "detail": null
+          },
+          {
+            "label": "Spawning temperature",
+            "value": "55–72 °F",
+            "detail": "FishBase"
+          },
+          {
+            "label": "Heat limit",
+            "value": "85 °F (FishBase)",
+            "detail": null
+          }
+        ]
+      },
+      {
+        "title": "Brown trout",
+        "rows": [
+          {
+            "label": "Stage",
+            "value": "Stage unknown",
+            "detail": null
+          },
+          {
+            "label": "Water temperature",
+            "value": "55 °F",
+            "detail": null
+          },
+          {
+            "label": "Heat limit",
+            "value": "68 °F (your trout-stress setting)",
+            "detail": null
+          }
+        ]
+      }
+    ]
+  }
+}

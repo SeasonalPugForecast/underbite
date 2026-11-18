@@ -1,0 +1,182 @@
+---
+source: crates/underbite-core/src/view/species.rs
+expression: "season_view(&p, &SeasonInput\n{\n    water_c: Some(16.0), trend: Some(TrendDirection::Rising), normals:\n    &normals, region: Some(\"US-NY\"), trout_stress_c: Some(20.0),\n    ..SeasonInput::default()\n}, &f, EditedBy::You,)"
+---
+{
+  "id": "micropterus-dolomieu",
+  "name": "Smallmouth bass",
+  "now": {
+    "title": "Now, from the water temperature",
+    "stage": "spawning",
+    "stage_label": "Spawning",
+    "text": "water 61 °F, spawn usually 59–64 °F",
+    "caution": null,
+    "rows": [
+      {
+        "label": "Water temperature",
+        "value": "61 °F",
+        "detail": null
+      },
+      {
+        "label": "Spawning temperature",
+        "value": "59–64 °F",
+        "detail": "Your edit"
+      },
+      {
+        "label": "Tolerated temperature",
+        "value": "47–85 °F",
+        "detail": "FishBase"
+      }
+    ],
+    "credits": [
+      {
+        "source": "Your edit",
+        "text": "Your edit",
+        "link": null,
+        "licence": "Typed in, not from a source"
+      },
+      {
+        "source": "FishBase",
+        "text": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)",
+        "link": "https://www.fishbase.se/summary/Micropterus-dolomieu.html",
+        "licence": "CC BY-NC 4.0"
+      }
+    ]
+  },
+  "typical": {
+    "title": "Typical months",
+    "months": [
+      {
+        "month": 1,
+        "label": "Jan",
+        "stage": "too_cold",
+        "stage_label": "Too cold",
+        "water": "36 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      },
+      {
+        "month": 2,
+        "label": "Feb",
+        "stage": "pre_spawn",
+        "stage_label": "Pre-spawn",
+        "water": "37 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      },
+      {
+        "month": 3,
+        "label": "Mar",
+        "stage": "pre_spawn",
+        "stage_label": "Pre-spawn",
+        "water": "41 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      },
+      {
+        "month": 4,
+        "label": "Apr",
+        "stage": "pre_spawn",
+        "stage_label": "Pre-spawn",
+        "water": "49 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      },
+      {
+        "month": 5,
+        "label": "May",
+        "stage": "spawning",
+        "stage_label": "Spawning",
+        "water": "59 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      },
+      {
+        "month": 6,
+        "label": "Jun",
+        "stage": "post_spawn_or_summer",
+        "stage_label": "Post-spawn or summer",
+        "water": "68 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      },
+      {
+        "month": 7,
+        "label": "Jul",
+        "stage": "post_spawn_or_summer",
+        "stage_label": "Post-spawn or summer",
+        "water": "73 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      },
+      {
+        "month": 8,
+        "label": "Aug",
+        "stage": "post_spawn_or_summer",
+        "stage_label": "Post-spawn or summer",
+        "water": "73 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      },
+      {
+        "month": 9,
+        "label": "Sep",
+        "stage": "post_spawn_or_summer",
+        "stage_label": "Post-spawn or summer",
+        "water": "65 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      },
+      {
+        "month": 10,
+        "label": "Oct",
+        "stage": "too_cold",
+        "stage_label": "Too cold",
+        "water": "55 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      },
+      {
+        "month": 11,
+        "label": "Nov",
+        "stage": "too_cold",
+        "stage_label": "Too cold",
+        "water": "46 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      },
+      {
+        "month": 12,
+        "label": "Dec",
+        "stage": "too_cold",
+        "stage_label": "Too cold",
+        "water": "38 °F",
+        "observations": null,
+        "basis": "From the profile, water temperature 1991–2020, station records"
+      }
+    ],
+    "note": null
+  },
+  "legal": {
+    "title": "Regulations",
+    "region": "US-NY",
+    "links": [
+      {
+        "kind": "freshwater",
+        "title": "Freshwater regulations",
+        "detail": "New York State Department of Environmental Conservation, link checked 2026-11-16",
+        "link": "https://dec.ny.gov/things-to-do/freshwater-fishing"
+      },
+      {
+        "kind": "licence",
+        "title": "Fishing licence",
+        "detail": "New York State Department of Environmental Conservation, link checked 2026-11-16",
+        "link": "https://dec.ny.gov/regulatory/permits-licenses"
+      }
+    ],
+    "empty": null,
+    "notes_title": "Your notes",
+    "notes": null,
+    "disclaimer": "Fishing regulations change during the year. Underbite does not state limits, seasons or licence rules; open the official page and check it before you fish."
+  }
+}

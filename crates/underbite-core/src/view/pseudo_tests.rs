@@ -8,10 +8,11 @@ use std::collections::BTreeSet;
 
 use serde_json::Value;
 
+use crate::species::profile::SpeciesProfile;
 use crate::view::cards::flow::fixtures::{croton_input, metric, us};
 use crate::view::format::Formatter;
 use crate::view::locale::Locale;
-use crate::view::{CardId, SpotView, ViewInput, Voice, build_view};
+use crate::view::{CardId, SpotView, ViewInput, Voice, build_view_with_species};
 
 /// The inputs of the card tests: between them every card, a timeline and both unit systems.
 fn inputs() -> Vec<(&'static str, ViewInput)> {
@@ -65,7 +66,30 @@ fn inputs() -> Vec<(&'static str, ViewInput)> {
         ),
         ("stocking", cards::stocking::tests::with_events(us())),
         ("timeline", crate::view::timeline::tests::input()),
+        (
+            "species",
+            cards::water_temp::tests::river(metric(), Voice::Plain, 21.0, 22.0),
+        ),
     ]
+}
+
+/// What species profiles say, as written: names, sources, citations and free text, longest first.
+pub(in crate::view) fn profile_texts(profiles: &[SpeciesProfile]) -> Vec<String> {
+    let mut found = Vec::new();
+    for p in profiles {
+        strings(&serde_json::to_value(p).unwrap(), "", &mut found);
+    }
+    let mut texts: BTreeSet<String> = found
+        .into_iter()
+        .filter(|(path, s)| field(path) != "licence" && !identifier(s))
+        .map(|(_, s)| s)
+        .collect();
+    texts.insert("FishBase".to_owned());
+    // A licence's version is part of its name.
+    texts.insert(crate::view::packs::pseudo("CC BY-NC 4.0"));
+    let mut texts: Vec<String> = texts.into_iter().filter(|t| t.len() > 1).collect();
+    texts.sort_by_key(|t| std::cmp::Reverse(t.len()));
+    texts
 }
 
 /// The last field name of a path: "title" of ".cards[0].chrome.title".
@@ -209,13 +233,16 @@ fn the_check_finds_english_words_and_decimal_points() {
 fn every_card_and_the_timeline_are_translated_in_the_pseudo_locale() {
     let mut problems = Vec::new();
     let mut cards = BTreeSet::new();
+    let species = crate::view::cards::species::tests::chosen();
     for (name, mut input) in inputs() {
-        let data = data_texts(&input);
+        let mut data = data_texts(&input);
+        data.extend(profile_texts(&species));
+        data.sort_by_key(|t| std::cmp::Reverse(t.len()));
         input.locale = Locale::PSEUDO;
         input.card_order = CardId::ALL.to_vec();
         for voice in [Voice::Luna, Voice::Plain] {
             input.voice = voice;
-            let view = build_view(&input);
+            let view = build_view_with_species(&input, &species);
             cards.extend(view.cards.iter().map(|c| c.chrome().id));
             let json = serde_json::to_value(&view).unwrap();
             problems.extend(
@@ -226,11 +253,8 @@ fn every_card_and_the_timeline_are_translated_in_the_pseudo_locale() {
         }
     }
     assert!(problems.is_empty(), "{}", problems.join("\n"));
-    // Every card the view builds was built at least once.
-    let built: BTreeSet<CardId> = CardId::ALL
-        .into_iter()
-        .filter(|id| !matches!(id, CardId::Species))
-        .collect();
+    // Every card was built at least once.
+    let built: BTreeSet<CardId> = CardId::ALL.into_iter().collect();
     assert_eq!(cards, built);
 }
 
@@ -449,6 +473,104 @@ fn the_log_views_are_translated_in_the_pseudo_locale() {
                     .filter(|(path, s)| {
                         !matches!(field(path), "key" | "id") && !ids.contains(s.as_str())
                     })
+                    .filter_map(|(path, s)| {
+                        untranslated(&s, &data)
+                            .map(|rest| format!("({voice:?}){path}: {s:?} ({rest:?})"))
+                    }),
+            );
+        }
+    }
+    assert!(problems.is_empty(), "{}", problems.join("\n"));
+}
+
+#[test]
+fn the_species_views_are_translated_in_the_pseudo_locale() {
+    use crate::species::profile::Field;
+    use crate::species::seasons::MonthObservations;
+    use crate::view::species::{
+        EditError, EditedBy, ProfilePage, SeasonInput, SeasonView, SpeciesRow, edit_choices,
+        profile_page, season_view, species_list, tests as sp,
+    };
+    use crate::view::strings::Strings;
+    let mut ids = BTreeSet::new();
+    for schema in [
+        schemars::schema_for!(SpeciesRow),
+        schemars::schema_for!(ProfilePage),
+        schemars::schema_for!(SeasonView),
+    ] {
+        identifiers(&serde_json::to_value(schema).unwrap(), &mut ids);
+    }
+    let catalogue = sp::catalogue();
+    let (bass, edits) = sp::edited_bass();
+    let all: Vec<SpeciesProfile> = catalogue.iter().cloned().collect();
+    // What the profiles, the agencies and the angler wrote: shown as written.
+    let mut data = profile_texts(&all);
+    data.extend(profile_texts(std::slice::from_ref(&bass)));
+    data.extend(
+        crate::regulations::all_links("US-NY")
+            .into_iter()
+            .map(|l| l.label),
+    );
+    data.push("Check the Croton special rules.".to_owned());
+    data.sort_by_key(|t| std::cmp::Reverse(t.len()));
+    let normals = sp::croton_normals();
+    let obs = [MonthObservations {
+        month: 5,
+        count: 12,
+    }];
+    let trout = catalogue.get(&sp::id("salmo-trutta")).unwrap();
+    let mut problems = Vec::new();
+    for units in [us(), metric()] {
+        for voice in [Voice::Luna, Voice::Plain] {
+            let f = sp::formatter(units, voice).with_locale(Locale::PSEUDO);
+            let words = Strings::localized(voice, Locale::PSEUDO);
+            let input = SeasonInput {
+                water_c: Some(21.5),
+                trend: Some(crate::view::TrendDirection::Rising),
+                normals: &normals,
+                observations: &obs,
+                region: Some("US-NY"),
+                notes: "Check the Croton special rules.",
+                trout_stress_c: Some(20.0),
+            };
+            let mut found = Vec::new();
+            for view in [
+                serde_json::to_value(species_list(&catalogue, &edits, words)),
+                serde_json::to_value(profile_page(&bass, &f, EditedBy::You)),
+                serde_json::to_value(profile_page(&bass, &f, EditedBy::Sender)),
+                serde_json::to_value(season_view(&bass, &input, &f, EditedBy::You)),
+                serde_json::to_value(season_view(trout, &input, &f, EditedBy::You)),
+                serde_json::to_value(season_view(
+                    trout,
+                    &SeasonInput::default(),
+                    &f,
+                    EditedBy::You,
+                )),
+                serde_json::to_value(edit_choices(Field::Light, words)),
+                serde_json::to_value(edit_choices(Field::Flow, words)),
+                serde_json::to_value(edit_choices(Field::Water, words)),
+            ] {
+                strings(&view.unwrap(), "", &mut found);
+            }
+            for e in [
+                EditError::NotANumber,
+                EditError::BothEnds,
+                EditError::Backwards,
+                EditError::OutOfRange,
+                EditError::Empty,
+                EditError::NotAChoice,
+            ] {
+                found.push(("error".to_owned(), e.text(words)));
+            }
+            problems.extend(
+                found
+                    .into_iter()
+                    // Links, ids, region codes and the editor's raw values are not text.
+                    .filter(|(path, s)| {
+                        !matches!(field(path), "link" | "id" | "region")
+                            && !ids.contains(s.as_str())
+                    })
+                    .filter(|(path, _)| !path.contains(".edit["))
                     .filter_map(|(path, s)| {
                         untranslated(&s, &data)
                             .map(|rest| format!("({voice:?}){path}: {s:?} ({rest:?})"))

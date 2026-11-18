@@ -1,0 +1,640 @@
+---
+source: crates/underbite-core/src/view/species.rs
+expression: "serde_json::json!({\n    \"SpeciesRow\": schemars::schema_for!(SpeciesRow), \"ProfilePage\":\n    schemars::schema_for!(ProfilePage), \"SeasonView\":\n    schemars::schema_for!(SeasonView), \"EditChoice\":\n    schemars::schema_for!(EditChoice),\n})"
+---
+{
+  "EditChoice": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "One choice of a picker field.",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "label"
+    ],
+    "title": "EditChoice",
+    "type": "object"
+  },
+  "ProfilePage": {
+    "$defs": {
+      "CreditVm": {
+        "description": "The credit a source is owed.",
+        "properties": {
+          "licence": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "link": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "description": "The source's name as displayed.",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "text"
+        ],
+        "type": "object"
+      },
+      "Field": {
+        "description": "Which part of a profile.",
+        "enum": [
+          "common_names",
+          "water",
+          "preferred_temp",
+          "tolerated_temp",
+          "spawn_temp",
+          "depth",
+          "habitat",
+          "flow",
+          "light",
+          "lures",
+          "regions"
+        ],
+        "type": "string"
+      },
+      "Licence": {
+        "description": "Under which terms a value may be used and shown.",
+        "oneOf": [
+          {
+            "const": "public_domain",
+            "description": "Work of a government agency, free of copyright.",
+            "type": "string"
+          },
+          {
+            "const": "cc_by4",
+            "description": "Creative Commons Attribution 4.0.",
+            "type": "string"
+          },
+          {
+            "const": "cc_by_nc4",
+            "description": "Creative Commons Attribution-NonCommercial 4.0 (`FishBase`).",
+            "type": "string"
+          },
+          {
+            "const": "published",
+            "description": "A published paper or page whose own terms apply; the value is a cited fact.",
+            "type": "string"
+          },
+          {
+            "const": "user_edited",
+            "description": "Typed in by the user.",
+            "type": "string"
+          }
+        ]
+      },
+      "ProfileFieldVm": {
+        "description": "One field of the profile page.",
+        "properties": {
+          "edit": {
+            "description": "What the editor pre-fills, in the form [`apply_edit`] reads; empty for fields that\ncannot be edited.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "edited": {
+            "description": "The value is an edit, not the catalogue's.",
+            "type": "boolean"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Field"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The field the editor changes; `None` for the scientific name and the other names, which\ncannot be edited."
+          },
+          "label": {
+            "type": "string"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/SourceVm"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`None` when no source gives the field."
+          },
+          "value": {
+            "description": "The value in the user's units, or \"No source gives this\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "value",
+          "edited",
+          "edit"
+        ],
+        "type": "object"
+      },
+      "SourceVm": {
+        "description": "Where a value came from, ready to show.",
+        "properties": {
+          "citation": {
+            "description": "The citation the source asks for.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "licence": {
+            "$ref": "#/$defs/Licence"
+          },
+          "licence_label": {
+            "description": "\"CC BY-NC 4.0\".",
+            "type": "string"
+          },
+          "link": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "description": "\"`FishBase`\", \"NOAA Fisheries\", or \"Your edit\".",
+            "type": "string"
+          },
+          "reference": {
+            "description": "The record's own reference.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "licence",
+          "licence_label"
+        ],
+        "type": "object"
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "A species profile, every value with its source.",
+    "properties": {
+      "credits": {
+        "description": "Every source of the page once, with its licence.",
+        "items": {
+          "$ref": "#/$defs/CreditVm"
+        },
+        "type": "array"
+      },
+      "edited": {
+        "description": "Any field is edited.",
+        "type": "boolean"
+      },
+      "fields": {
+        "items": {
+          "$ref": "#/$defs/ProfileFieldVm"
+        },
+        "type": "array"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "notices": {
+        "description": "The CC BY-NC notice when any value is from `FishBase`.",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "scientific_name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "scientific_name",
+      "fields",
+      "edited",
+      "credits",
+      "notices"
+    ],
+    "title": "ProfilePage",
+    "type": "object"
+  },
+  "SeasonView": {
+    "$defs": {
+      "CreditVm": {
+        "description": "The credit a source is owed.",
+        "properties": {
+          "licence": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "link": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "description": "The source's name as displayed.",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "text"
+        ],
+        "type": "object"
+      },
+      "LegalKind": {
+        "description": "What a regulation link leads to.",
+        "enum": [
+          "freshwater",
+          "saltwater",
+          "licence",
+          "federal"
+        ],
+        "type": "string"
+      },
+      "LegalLinkVm": {
+        "description": "An official page.",
+        "properties": {
+          "detail": {
+            "description": "\"NYSDEC, link checked 2026-11-10\".",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/$defs/LegalKind"
+          },
+          "link": {
+            "type": "string"
+          },
+          "title": {
+            "description": "\"Freshwater regulations\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "title",
+          "detail",
+          "link"
+        ],
+        "type": "object"
+      },
+      "Row": {
+        "properties": {
+          "detail": {
+            "description": "A second, smaller line.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "value"
+        ],
+        "type": "object"
+      },
+      "SeasonLegal": {
+        "description": "The legal season: links and the user's notes only, with the disclaimer.",
+        "properties": {
+          "disclaimer": {
+            "description": "The regulations disclaimer: always shown.",
+            "type": "string"
+          },
+          "empty": {
+            "description": "Why there are no links.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "links": {
+            "items": {
+              "$ref": "#/$defs/LegalLinkVm"
+            },
+            "type": "array"
+          },
+          "notes": {
+            "description": "The user's notes, as typed.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes_title": {
+            "type": "string"
+          },
+          "region": {
+            "description": "The region the links are for (`US-NY`).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "links",
+          "notes_title",
+          "disclaimer"
+        ],
+        "type": "object"
+      },
+      "SeasonNow": {
+        "description": "The biological season: where the water puts the species now.",
+        "properties": {
+          "caution": {
+            "description": "The trout-stress safety text, when it applies.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "credits": {
+            "items": {
+              "$ref": "#/$defs/CreditVm"
+            },
+            "type": "array"
+          },
+          "rows": {
+            "description": "Water, the profile's ranges and the heat limit.",
+            "items": {
+              "$ref": "#/$defs/Row"
+            },
+            "type": "array"
+          },
+          "stage": {
+            "$ref": "#/$defs/Stage"
+          },
+          "stage_label": {
+            "type": "string"
+          },
+          "text": {
+            "description": "\"water 58 °F, spawn usually 60–65 °F\".",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "stage",
+          "stage_label",
+          "text",
+          "rows",
+          "credits"
+        ],
+        "type": "object"
+      },
+      "SeasonTypical": {
+        "description": "The typical season: a strip of twelve months, January first.",
+        "properties": {
+          "months": {
+            "items": {
+              "$ref": "#/$defs/TypicalMonthVm"
+            },
+            "type": "array"
+          },
+          "note": {
+            "description": "Says so when no month has a typical water temperature.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "months"
+        ],
+        "type": "object"
+      },
+      "Stage": {
+        "description": "Where the water temperature puts a species in its year.",
+        "oneOf": [
+          {
+            "const": "unknown",
+            "description": "No temperature, or the profile has no range to compare it with.",
+            "type": "string"
+          },
+          {
+            "const": "too_cold",
+            "description": "Below the preferred range (or, with no preferred range, below spawning and not warming).",
+            "type": "string"
+          },
+          {
+            "const": "pre_spawn",
+            "description": "Warming towards the spawning range.",
+            "type": "string"
+          },
+          {
+            "const": "spawning",
+            "description": "Inside the spawning range.",
+            "type": "string"
+          },
+          {
+            "const": "active",
+            "description": "In the preferred range, with no spawning signal.",
+            "type": "string"
+          },
+          {
+            "const": "post_spawn_or_summer",
+            "description": "Above the spawning (or preferred) range and below the heat limit.",
+            "type": "string"
+          },
+          {
+            "const": "heat_stress",
+            "description": "Above the heat limit.",
+            "type": "string"
+          }
+        ]
+      },
+      "TypicalMonthVm": {
+        "description": "One month of the typical strip.",
+        "properties": {
+          "basis": {
+            "description": "\"From the profile, water temperature 1991–2020, station records\".",
+            "type": "string"
+          },
+          "label": {
+            "description": "\"Apr\".",
+            "type": "string"
+          },
+          "month": {
+            "description": "1 to 12.",
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "observations": {
+            "description": "\"12 observed\".",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stage": {
+            "$ref": "#/$defs/Stage"
+          },
+          "stage_label": {
+            "type": "string"
+          },
+          "water": {
+            "description": "The month's typical water temperature.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "month",
+          "label",
+          "stage",
+          "stage_label",
+          "basis"
+        ],
+        "type": "object"
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "The three seasons of one species, kept apart.",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "legal": {
+        "$ref": "#/$defs/SeasonLegal"
+      },
+      "name": {
+        "type": "string"
+      },
+      "now": {
+        "$ref": "#/$defs/SeasonNow"
+      },
+      "typical": {
+        "$ref": "#/$defs/SeasonTypical"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "now",
+      "typical",
+      "legal"
+    ],
+    "title": "SeasonView",
+    "type": "object"
+  },
+  "SpeciesRow": {
+    "$defs": {
+      "WaterKind": {
+        "description": "What kind of water a species lives in.",
+        "oneOf": [
+          {
+            "enum": [
+              "fresh",
+              "salt"
+            ],
+            "type": "string"
+          },
+          {
+            "const": "both",
+            "description": "Both, such as the striped bass or the steelhead.",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "One species of the catalogue.",
+    "properties": {
+      "edited": {
+        "description": "The user has edited the profile.",
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "description": "\"Smallmouth bass\".",
+        "type": "string"
+      },
+      "scientific_name": {
+        "description": "\"Micropterus dolomieu\".",
+        "type": "string"
+      },
+      "water": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/WaterKind"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "water_label": {
+        "description": "\"Fresh water\".",
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "scientific_name",
+      "edited"
+    ],
+    "title": "SpeciesRow",
+    "type": "object"
+  }
+}

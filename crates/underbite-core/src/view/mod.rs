@@ -25,6 +25,7 @@ use serde::{Deserialize, Serialize};
 use whether_core::presentation::TimeFormat;
 
 use crate::model::{Measurement, SpotSnapshot, WaterType};
+use crate::species::profile::SpeciesProfile;
 use crate::time::UnixTime;
 use crate::trip::TripLimits;
 use crate::trip::windows::WindowParams;
@@ -34,9 +35,9 @@ use locale::Locale;
 use cards::{
     alerts::AlertsCard, bloom::BloomCard, clarity::ClarityCard, current::CurrentCard,
     flow::FlowCard, go_no_go::GoNoGoCard, marine_forecast::MarineForecastCard, now::NowCard,
-    pressure::PressureCard, solunar::SolunarCard, sources::SourcesCard, stocking::StockingCard,
-    storm_ahead::StormAheadCard, sun_moon::SunMoonCard, tide::TideCard, water_temp::WaterTempCard,
-    waves::WavesCard, wind::WindCard, windows::WindowsCard,
+    pressure::PressureCard, solunar::SolunarCard, sources::SourcesCard, species::SpeciesCard,
+    stocking::StockingCard, storm_ahead::StormAheadCard, sun_moon::SunMoonCard, tide::TideCard,
+    water_temp::WaterTempCard, waves::WavesCard, wind::WindCard, windows::WindowsCard,
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -262,6 +263,7 @@ pub enum Card {
     GoNoGo(GoNoGoCard),
     MarineForecast(MarineForecastCard),
     Stocking(StockingCard),
+    Species(SpeciesCard),
     StormAhead(StormAheadCard),
     Alerts(AlertsCard),
     Sources(SourcesCard),
@@ -287,6 +289,7 @@ impl Card {
             Self::GoNoGo(c) => &c.chrome,
             Self::MarineForecast(c) => &c.chrome,
             Self::Stocking(c) => &c.chrome,
+            Self::Species(c) => &c.chrome,
             Self::StormAhead(c) => &c.chrome,
             Self::Alerts(c) => &c.chrome,
             Self::Sources(c) => &c.chrome,
@@ -581,9 +584,15 @@ pub struct TimelineVm {
 // Build
 // ---------------------------------------------------------------------------------------------
 
-/// Builds the page: each card in the user's order, skipping cards with nothing to show and the
-/// species card, which a later phase adds.
+/// Builds the page: each card in the user's order, skipping cards with nothing to show. No
+/// species are chosen, so the species card is left out; see [`build_view_with_species`].
 pub fn build_view(input: &ViewInput) -> SpotView {
+    build_view_with_species(input, &[])
+}
+
+/// Builds the page with the species card for `species`: the chosen profiles with the user's
+/// edits laid over them, in the user's order. With none the card is left out.
+pub fn build_view_with_species(input: &ViewInput, species: &[SpeciesProfile]) -> SpotView {
     let snapshot = &input.snapshot;
     let cards = input
         .card_order
@@ -610,7 +619,7 @@ pub fn build_view(input: &ViewInput) -> SpotView {
             CardId::Stocking => cards::stocking::build(input).map(Card::Stocking),
             CardId::Windows => cards::windows::build(input).map(Card::Windows),
             CardId::GoNoGo => cards::go_no_go::build(input).map(Card::GoNoGo),
-            CardId::Species => None,
+            CardId::Species => cards::species::build(input, species).map(Card::Species),
         })
         .collect();
     let f = format::Formatter::for_input(input);

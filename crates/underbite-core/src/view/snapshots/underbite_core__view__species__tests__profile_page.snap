@@ -1,0 +1,219 @@
+---
+source: crates/underbite-core/src/view/species.rs
+expression: "profile_page(&p, &f, EditedBy::You)"
+---
+{
+  "id": "micropterus-dolomieu",
+  "name": "Smallmouth bass",
+  "scientific_name": "Micropterus dolomieu",
+  "fields": [
+    {
+      "field": null,
+      "label": "Scientific name",
+      "value": "Micropterus dolomieu",
+      "source": {
+        "name": "U.S. Fish & Wildlife Service",
+        "licence": "published",
+        "licence_label": "Cited from published work",
+        "link": "https://www.fws.gov/species/smallmouth-bass-micropterus-dolomieu",
+        "reference": "Species profile page",
+        "citation": null
+      },
+      "edited": false,
+      "edit": []
+    },
+    {
+      "field": "common_names",
+      "label": "Common names",
+      "value": "Smallmouth bass",
+      "source": {
+        "name": "U.S. Fish & Wildlife Service",
+        "licence": "published",
+        "licence_label": "Cited from published work",
+        "link": "https://www.fws.gov/species/smallmouth-bass-micropterus-dolomieu",
+        "reference": "Species profile page",
+        "citation": null
+      },
+      "edited": false,
+      "edit": [
+        "Smallmouth bass"
+      ]
+    },
+    {
+      "field": null,
+      "label": "Also called",
+      "value": "Smallmouth bass",
+      "source": {
+        "name": "FishBase",
+        "licence": "cc_by_nc4",
+        "licence_label": "CC BY-NC 4.0",
+        "link": "https://www.fishbase.se/summary/Micropterus-dolomieu.html",
+        "reference": "FishBase species record, SpecCode 3382, v26.06",
+        "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+      },
+      "edited": false,
+      "edit": []
+    },
+    {
+      "field": "water",
+      "label": "Water",
+      "value": "Fresh water",
+      "source": {
+        "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+        "licence": "public_domain",
+        "licence_label": "Public domain",
+        "link": "https://nas.er.usgs.gov/api/v2/species/396",
+        "reference": null,
+        "citation": null
+      },
+      "edited": false,
+      "edit": [
+        "fresh"
+      ]
+    },
+    {
+      "field": "preferred_temp",
+      "label": "Preferred temperature",
+      "value": "No source gives this",
+      "source": null,
+      "edited": false,
+      "edit": [
+        "",
+        ""
+      ]
+    },
+    {
+      "field": "tolerated_temp",
+      "label": "Tolerated temperature",
+      "value": "47–85 °F",
+      "source": {
+        "name": "FishBase",
+        "licence": "cc_by_nc4",
+        "licence_label": "CC BY-NC 4.0",
+        "link": "https://www.fishbase.se/summary/Micropterus-dolomieu.html",
+        "reference": "Scott and Crossman 1973 (Ref. 1998); stock row 'species in general'",
+        "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+      },
+      "edited": false,
+      "edit": [
+        "47",
+        "85"
+      ]
+    },
+    {
+      "field": "spawn_temp",
+      "label": "Spawning temperature",
+      "value": "59–64 °F",
+      "source": {
+        "name": "Your edit",
+        "licence": "user_edited",
+        "licence_label": "Typed in, not from a source",
+        "link": null,
+        "reference": null,
+        "citation": null
+      },
+      "edited": true,
+      "edit": [
+        "59",
+        "64"
+      ]
+    },
+    {
+      "field": "depth",
+      "label": "Depth",
+      "value": "No source gives this",
+      "source": null,
+      "edited": false,
+      "edit": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "field": "habitat",
+      "label": "Habitat",
+      "value": "No source gives this",
+      "source": null,
+      "edited": false,
+      "edit": []
+    },
+    {
+      "field": "flow",
+      "label": "Tide and current",
+      "value": "No source gives this",
+      "source": null,
+      "edited": false,
+      "edit": []
+    },
+    {
+      "field": "light",
+      "label": "Light",
+      "value": "No source gives this",
+      "source": null,
+      "edited": false,
+      "edit": []
+    },
+    {
+      "field": "lures",
+      "label": "Lures and baits",
+      "value": "Tube jig, Ned rig",
+      "source": {
+        "name": "Your edit",
+        "licence": "user_edited",
+        "licence_label": "Typed in, not from a source",
+        "link": null,
+        "reference": null,
+        "citation": null
+      },
+      "edited": true,
+      "edit": [
+        "Tube jig",
+        "Ned rig"
+      ]
+    },
+    {
+      "field": "regions",
+      "label": "Regions",
+      "value": "No source gives this",
+      "source": null,
+      "edited": false,
+      "edit": []
+    }
+  ],
+  "edited": true,
+  "credits": [
+    {
+      "source": "U.S. Fish & Wildlife Service",
+      "text": "Species profile page",
+      "link": "https://www.fws.gov/species/smallmouth-bass-micropterus-dolomieu",
+      "licence": "Cited from published work"
+    },
+    {
+      "source": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+      "text": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+      "link": "https://nas.er.usgs.gov/api/v2/species/396",
+      "licence": "Public domain"
+    },
+    {
+      "source": "FishBase",
+      "text": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)",
+      "link": "https://www.fishbase.se/summary/Micropterus-dolomieu.html",
+      "licence": "CC BY-NC 4.0"
+    },
+    {
+      "source": "Your edit",
+      "text": "Your edit",
+      "link": null,
+      "licence": "Typed in, not from a source"
+    }
+  ],
+  "notices": [
+    "Values licensed CC BY-NC come from FishBase (www.fishbase.org) and may be used only non-commercially, with their citation."
+  ]
+}

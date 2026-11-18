@@ -488,6 +488,19 @@ expression: schema
           "properties": {
             "card": {
               "type": "string",
+              "const": "species"
+            }
+          },
+          "$ref": "#/$defs/SpeciesCard",
+          "required": [
+            "card"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "card": {
+              "type": "string",
               "const": "storm_ahead"
             }
           },
@@ -2483,6 +2496,103 @@ expression: schema
         "errors"
       ]
     },
+    "SpeciesCard": {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/CardChrome"
+        },
+        "compact": {
+          "$ref": "#/$defs/Compact"
+        },
+        "full": {
+          "$ref": "#/$defs/SpeciesFull"
+        }
+      },
+      "required": [
+        "chrome",
+        "compact",
+        "full"
+      ]
+    },
+    "SpeciesFull": {
+      "type": "object",
+      "properties": {
+        "sections": {
+          "description": "One per species: stage, water, the profile's ranges and the heat limit.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        },
+        "species": {
+          "description": "In the order the species were chosen.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SpeciesNowVm"
+          }
+        },
+        "water": {
+          "description": "The water temperature the stages are read against; `None` when the spot has none.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "species",
+        "sections"
+      ]
+    },
+    "SpeciesNowVm": {
+      "description": "One species against the water now.",
+      "type": "object",
+      "properties": {
+        "caution": {
+          "description": "Safety text when the water is above the trout-stress threshold.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "edited": {
+          "description": "A range behind the stage is the user's own edit.",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "The species id (`micropterus-dolomieu`).",
+          "type": "string"
+        },
+        "name": {
+          "description": "The name shown: \"Smallmouth bass\".",
+          "type": "string"
+        },
+        "stage": {
+          "$ref": "#/$defs/Stage"
+        },
+        "stage_label": {
+          "description": "\"Pre-spawn\".",
+          "type": "string"
+        },
+        "text": {
+          "description": "\"Smallmouth bass · Pre-spawn · water 58 °F, spawn usually 54–72 °F\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "stage",
+        "stage_label",
+        "text",
+        "edited"
+      ]
+    },
     "SpotHeader": {
       "type": "object",
       "properties": {
@@ -2523,6 +2633,46 @@ expression: schema
       },
       "required": [
         "text"
+      ]
+    },
+    "Stage": {
+      "description": "Where the water temperature puts a species in its year.",
+      "oneOf": [
+        {
+          "description": "No temperature, or the profile has no range to compare it with.",
+          "type": "string",
+          "const": "unknown"
+        },
+        {
+          "description": "Below the preferred range (or, with no preferred range, below spawning and not warming).",
+          "type": "string",
+          "const": "too_cold"
+        },
+        {
+          "description": "Warming towards the spawning range.",
+          "type": "string",
+          "const": "pre_spawn"
+        },
+        {
+          "description": "Inside the spawning range.",
+          "type": "string",
+          "const": "spawning"
+        },
+        {
+          "description": "In the preferred range, with no spawning signal.",
+          "type": "string",
+          "const": "active"
+        },
+        {
+          "description": "Above the spawning (or preferred) range and below the heat limit.",
+          "type": "string",
+          "const": "post_spawn_or_summer"
+        },
+        {
+          "description": "Above the heat limit.",
+          "type": "string",
+          "const": "heat_stress"
+        }
       ]
     },
     "StationUseVm": {
