@@ -3,8 +3,8 @@
 use serde_json::{Value, json};
 use underbite_ffi::settings::default_settings_json;
 use underbite_ffi::share::{
-    ShareError, ShareFuzz, SharedKind, TripChange, fuzz_trip, merge_trips, read_file, share_words,
-    spot_file, trip_file,
+    ShareError, ShareFuzz, SharedKind, TripChange, decode_layer_preset, encode_layer_preset,
+    fuzz_trip, merge_trips, preset_share_words, read_file, share_words, spot_file, trip_file,
 };
 use underbite_ffi::view::SpotInfo;
 
@@ -132,6 +132,7 @@ fn files_that_cannot_be_used_say_why_in_the_cores_words() {
             message: "This file needs a newer version of the app.".into()
         })
     );
+    // A preset is read by its own call: `read_file` names its kind.
     let layers = json!({"format": "underbite", "v": 1, "kind": "layers",
         "layers": {"name": "Surf", "layers": []}})
     .to_string();
@@ -142,6 +143,11 @@ fn files_that_cannot_be_used_say_why_in_the_cores_words() {
         }
         other => panic!("{other:?}"),
     }
+    let no_name = json!({"format": "underbite", "v": 1, "kind": "layers", "layers": {}});
+    assert!(matches!(
+        read_file(no_name.to_string().into_bytes(), default_settings_json()),
+        Err(ShareError::Unreadable { .. })
+    ));
     assert!(matches!(
         read_file(b"hello".to_vec(), default_settings_json()),
         Err(ShareError::Unreadable { .. })
@@ -246,4 +252,119 @@ fn the_share_words_offer_three_precisions_with_about_a_kilometre_first() {
     assert!(w.fuzz.iter().all(|c| !c.detail.is_empty()));
     assert_eq!(w.trip_exists, "This trip is already on this device.");
     assert!(share_words("{".to_owned()).is_err());
+}
+
+// -- map layer presets ----------------------------------------------------------------------
+
+/// "Inshore flats" as the settings keep a preset's layers: clarity at 70 % on a set range, the
+/// stations and spots on, radar off.
+fn inshore_layers() -> Value {
+    json!([
+        {"id": "radar", "shown": false},
+        {"id": "clarity", "shown": true, "opacity": 0.7, "ramp": "turbidity", "range": [0.05, 1.5]},
+        {"id": "tide-stations", "shown": true},
+        {"id": "current-stations", "shown": true},
+        {"id": "spots", "shown": true}
+    ])
+}
+
+fn settings_with(path: &[&str], value: Value) -> String {
+    let mut v: Value = serde_json::from_str(&default_settings_json()).unwrap();
+    let mut at = &mut v;
+    for key in path {
+        at = &mut at[*key];
+    }
+    *at = value;
+    v.to_string()
+}
+
+#[test]
+fn a_preset_round_trips_in_the_settings_form() {
+    let file = encode_layer_preset(" Inshore flats ".into(), inshore_layers().to_string()).unwrap();
+    let v: Value = serde_json::from_str(&file).unwrap();
+    assert_eq!(v["kind"], "layers");
+    assert_eq!(v["layers"]["name"], "Inshore flats");
+    for word in ["latitude", "longitude", "api_key", "token", "modified"] {
+        assert!(!file.contains(word), "{word}");
+    }
+    let read = decode_layer_preset(file.into_bytes(), default_settings_json()).unwrap();
+    assert_eq!(read.name, "Inshore flats");
+    let layers: Value = serde_json::from_str(&read.layers_json).unwrap();
+    assert_eq!(layers, inshore_layers());
+    assert_eq!(read.left_out, Vec::<String>::new());
+    assert_eq!(read.switched_off, Vec::<String>::new());
+    assert_eq!(read.notes, Vec::<String>::new());
+    // The layers are those of the settings: a preset with them validates.
+    let settings = settings_with(
+        &["map", "presets"],
+        json!([{"name": read.name, "layers": layers}]),
+    );
+    let issues = underbite_ffi::settings::validate_settings(settings);
+    assert!(
+        issues
+            .iter()
+            .all(|i| i.severity != underbite_ffi::settings::IssueSeverity::Error),
+        "{issues:?}"
+    );
+}
+
+#[test]
+fn a_received_preset_leaves_out_unknown_layers_and_says_which() {
+    let mut layers = inshore_layers();
+    layers
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"id": "glow-worms", "shown": true}));
+    let file = encode_layer_preset("Night flats".into(), layers.to_string()).unwrap();
+    let read = decode_layer_preset(file.into_bytes(), default_settings_json()).unwrap();
+    assert_eq!(read.left_out, ["glow-worms"]);
+    assert_eq!(
+        read.notes,
+        ["Left out, as this version of the app does not have them: glow-worms."]
+    );
+    let back: Value = serde_json::from_str(&read.layers_json).unwrap();
+    assert_eq!(back, inshore_layers());
+}
+
+#[test]
+fn a_preset_file_that_cannot_be_used_says_why() {
+    let trip = trip_file(trip().to_string(), ShareFuzz::Exact).unwrap();
+    assert!(matches!(
+        decode_layer_preset(trip.into_bytes(), default_settings_json()),
+        Err(ShareError::Unreadable { .. })
+    ));
+    let newer = json!({"format": "underbite", "v": 2, "kind": "layers", "layers": {"name": "x"}});
+    assert!(matches!(
+        decode_layer_preset(newer.to_string().into_bytes(), default_settings_json()),
+        Err(ShareError::NeedsNewerVersion { .. })
+    ));
+    assert!(matches!(
+        encode_layer_preset(" ".into(), "[]".into()),
+        Err(ShareError::Unreadable { .. })
+    ));
+    assert!(matches!(
+        encode_layer_preset("Surf".into(), r#"[{"id": "sst", "glow": 1}]"#.into()),
+        Err(ShareError::Invalid { .. })
+    ));
+    assert!(matches!(
+        encode_layer_preset("Surf".into(), r#"[{"id": "sst", "opacity": 2.0}]"#.into()),
+        Err(ShareError::Unreadable { .. })
+    ));
+}
+
+#[test]
+fn the_preset_words_are_the_cores() {
+    let w = preset_share_words(default_settings_json()).unwrap();
+    assert_eq!(w.receive_heading, "Map preset to add");
+    assert!(
+        w.share_detail.contains("No places, keys or dates"),
+        "{}",
+        w.share_detail
+    );
+    assert_eq!(w.replace, "Replace mine");
+    assert!(w.added.contains("Luna"), "{}", w.added);
+    let plain =
+        preset_share_words(settings_with(&["presentation", "voice"], json!("plain"))).unwrap();
+    assert_eq!(plain.added, "Added to your map presets.");
+    assert!(preset_share_words("{".to_owned()).is_err());
 }

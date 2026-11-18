@@ -5,10 +5,16 @@
 //! the core writes (pretty JSON with sorted keys, at most 1,000,000 bytes). Location fuzz is
 //! deterministic and only ever coarsens a place: a file made at "about 1 km" from a trip that
 //! was itself received at "area only" stays at "area only".
+//!
+//! A map layer preset crosses as its name and the JSON of its layer states as the settings keep
+//! them in `[[map.presets]]`, so the app reads and writes presets in its one stored form.
 
+use underbite_config::map::LayerState;
 use underbite_core::model::WaterType;
 use underbite_core::share::merge::{Change, merge};
-use underbite_core::share::{Document, ShareError as Problem, SpotShare, decode, encode, fuzz};
+use underbite_core::share::{
+    Document, LayersShare, ShareError as Problem, SharedLayer, SpotShare, decode, encode, fuzz,
+};
 use underbite_core::time::LocalDate;
 use underbite_core::trip::{Fuzz, Trip, TripLimits, TripPlace};
 use underbite_core::view::strings::{Key, Strings};
@@ -145,7 +151,8 @@ pub enum ShareError {
         /// The core's text.
         message: String,
     },
-    /// A kind this version knows of but cannot open yet (`layers`, `profile`).
+    /// A kind [`read_file`] does not open: a species profile (`species_read_file`) or a map
+    /// layer preset (`decode_layer_preset`).
     #[error("{message}")]
     Unsupported {
         /// The file's kind.
@@ -300,8 +307,9 @@ pub struct SharedFile {
     pub approximate: Option<String>,
 }
 
-/// Reads a `.underbite` file. Every error carries the core's text to show; a kind this version
-/// cannot open yet is [`ShareError::Unsupported`].
+/// Reads a `.underbite` file. Every error carries the core's text to show; a species profile
+/// or a map layer preset is [`ShareError::Unsupported`] with its kind, to be read by its own
+/// call.
 #[uniffi::export]
 #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
 pub fn read_file(bytes: Vec<u8>, settings_json: String) -> Result<SharedFile, ShareError> {
@@ -328,11 +336,12 @@ pub fn read_file(bytes: Vec<u8>, settings_json: String) -> Result<SharedFile, Sh
         }),
         // A species profile is read by `species::species_read_file`.
         Document::Profile(_) => Err(cannot_open(strings, "profile".to_owned())),
+        // A map layer preset is read by `decode_layer_preset`.
         Document::Layers { .. } => Err(cannot_open(strings, "layers".to_owned())),
     }
 }
 
-/// The error for a file of a kind this version cannot open yet, in the table's words.
+/// The error for a file of a kind [`read_file`] does not open, in the table's words.
 fn cannot_open(strings: Strings, kind: String) -> ShareError {
     let words = match kind.as_str() {
         "layers" => strings.get(Key::ReceiveKindLayers),
@@ -356,6 +365,159 @@ fn spot_info(place: &TripPlace) -> Option<SpotInfo> {
             _ => String::new(),
         },
         time_zone: place.time_zone.clone(),
+    })
+}
+
+// ---------------------------------------------------------------------------------------------
+// Map layer presets
+// ---------------------------------------------------------------------------------------------
+
+/// The words of sharing and receiving a map layer preset, in the user's voice.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PresetShareWords {
+    /// The action that shares a preset.
+    pub share: String,
+    /// What the file holds, and that it holds no places, keys or dates.
+    pub share_detail: String,
+    /// The button that hands the file to the system's share sheet.
+    pub share_file: String,
+    pub cancel: String,
+    pub done: String,
+    /// The heading of a received preset's preview.
+    pub receive_heading: String,
+    /// This device has a preset with the received one's name.
+    pub exists: String,
+    pub add: String,
+    /// Add the received preset under a name the user types.
+    pub rename: String,
+    /// Put the received preset in place of this device's one of that name.
+    pub replace: String,
+    /// The title, line and field of the name to add a preset under.
+    pub name_title: String,
+    pub name_detail: String,
+    pub name_field: String,
+    /// Said once the preset is added.
+    pub added: String,
+}
+
+/// The words of sharing and receiving map layer presets.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn preset_share_words(settings_json: String) -> Result<PresetShareWords, ShareError> {
+    let (config, _) = load(&settings_json).map_err(|e| invalid("settings", &e))?;
+    let s = Strings::new(config.presentation.voice);
+    let w = |key| s.get(key).to_owned();
+    Ok(PresetShareWords {
+        share: w(Key::PresetShare),
+        share_detail: w(Key::PresetShareDetail),
+        share_file: w(Key::PresetShareFile),
+        cancel: w(Key::PresetCancel),
+        done: w(Key::PresetDone),
+        receive_heading: w(Key::ReceivePreset),
+        exists: w(Key::ReceivePresetExists),
+        add: w(Key::ReceiveAdd),
+        rename: w(Key::ReceivePresetRename),
+        replace: w(Key::ReceiveReplace),
+        name_title: w(Key::ReceivePresetNameTitle),
+        name_detail: w(Key::ReceivePresetNameDetail),
+        name_field: w(Key::ReceivePresetNameField),
+        added: w(Key::ReceivePresetAdded),
+    })
+}
+
+/// The `.underbite` file of a map layer preset: its `name` and `layers_json`, the JSON array of
+/// its layer states as the settings keep them in `[[map.presets]]` (`id`, `shown` and, where
+/// set, `opacity`, `ramp` and `range`), in drawing order. Nothing else goes in the file.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn encode_layer_preset(name: String, layers_json: String) -> Result<String, ShareError> {
+    let states: Vec<LayerState> =
+        serde_json::from_str(&layers_json).map_err(|e| invalid("layers", &e))?;
+    let share = LayersShare {
+        name: name.trim().to_owned(),
+        layers: states
+            .into_iter()
+            .map(|s| SharedLayer {
+                id: s.id,
+                shown: s.shown,
+                opacity: s.opacity,
+                ramp: s.ramp,
+                range: s.range,
+            })
+            .collect(),
+    };
+    Ok(encode(&Document::Layers {
+        share,
+        left_out: Vec::new(),
+    })?)
+}
+
+/// A map layer preset as read from a file, ready to be added to the settings' presets.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct SharedPreset {
+    /// The preset's name as the sender saw it.
+    pub name: String,
+    /// Its layer states as the settings keep them in `[[map.presets]]`, in drawing order: the
+    /// layers this version does not have left out, the Copernicus Marine ones switched off
+    /// unless the settings opt in to that source.
+    pub layers_json: String,
+    /// The ids of the layers left out.
+    pub left_out: Vec<String>,
+    /// The ids of the layers switched off.
+    pub switched_off: Vec<String>,
+    /// What the preview says of those, in the settings' voice: none, one or two sentences.
+    pub notes: Vec<String>,
+}
+
+/// Reads a map layer preset file for its preview. Every error carries the core's text to show;
+/// another kind of file is [`ShareError::Unreadable`] (read those with [`read_file`]).
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn decode_layer_preset(
+    bytes: Vec<u8>,
+    settings_json: String,
+) -> Result<SharedPreset, ShareError> {
+    let (config, _) = load(&settings_json).map_err(|e| invalid("settings", &e))?;
+    let Document::Layers {
+        mut share,
+        left_out,
+    } = decode(&bytes)?
+    else {
+        return Err(Problem::Unreadable.into());
+    };
+    let switched_off = if config.providers.copernicus.enabled {
+        Vec::new()
+    } else {
+        share.hide_copernicus()
+    };
+    let strings = Strings::new(config.presentation.voice);
+    let notes = [
+        strings.layers_left_out(&left_out),
+        strings.layers_need_opt_in(&switched_off),
+    ]
+    .into_iter()
+    .flatten()
+    .collect();
+    let states: Vec<LayerState> = share
+        .layers
+        .into_iter()
+        .map(|l| LayerState {
+            id: l.id,
+            shown: l.shown,
+            opacity: l.opacity,
+            ramp: l.ramp,
+            range: l.range,
+        })
+        .collect();
+    let ids = |list: &[underbite_core::map::LayerId]| {
+        list.iter().map(|id| id.as_str().to_owned()).collect()
+    };
+    Ok(SharedPreset {
+        name: share.name.trim().to_owned(),
+        layers_json: to_json("layers", &states)?,
+        left_out: ids(&left_out),
+        switched_off: ids(&switched_off),
+        notes,
     })
 }
 
