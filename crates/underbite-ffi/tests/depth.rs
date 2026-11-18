@@ -388,6 +388,52 @@ fn the_inspector_row_says_approximate_depth_and_names_the_datum() {
     );
 }
 
+#[test]
+fn the_legend_names_the_datums_of_the_models_found_in_the_view() {
+    let store = GridStore::new();
+    let (west, south, east, north) = (-74.2, 40.0, -73.0, 40.8);
+    // Nothing asked yet: the datum depends on the model.
+    let before = store
+        .depth_datums(west, south, east, north, imperial())
+        .unwrap();
+    assert!(before.datums.is_empty());
+    assert_eq!(
+        before.text,
+        depth_layer_info(imperial()).unwrap().depth_reference
+    );
+
+    sources(&store, &imperial());
+    let found = store
+        .depth_datums(west, south, east, north, imperial())
+        .unwrap();
+    // CUDEM (1/9″, NAVD 88), the Coastal Relief Model (1″, EGM 2008), ETOPO (15″, none
+    // stated); the mosaic's overviews state no cell size and are left out.
+    assert_eq!(found.datums, ["NAVD 88", "EGM 2008", "datum not stated"]);
+    assert_eq!(
+        found.text,
+        "Vertical datums of the elevation models here: NAVD 88, EGM 2008, datum not stated. \
+         Depths are approximate, not chart datum."
+    );
+    // The same in Luna's voice: safety text.
+    let luna = store
+        .depth_datums(west, south, east, north, default_settings_json())
+        .unwrap();
+    assert_eq!(luna, found);
+    // A view elsewhere has no place looked at.
+    assert!(
+        store
+            .depth_datums(-71.0, 41.0, -70.5, 41.5, imperial())
+            .unwrap()
+            .datums
+            .is_empty()
+    );
+    assert!(
+        store
+            .depth_datums(east, south, west, north, imperial())
+            .is_err()
+    );
+}
+
 /// The Web Mercator tile of zoom `z` holding a point.
 fn tile_of(z: u8, lat: f64, lon: f64) -> (u32, u32) {
     let n = f64::from(1u32 << z);

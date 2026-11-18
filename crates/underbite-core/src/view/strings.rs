@@ -1883,6 +1883,9 @@ safety_keys! {
     MapDepthBed => "bed elevation {height} ({datum})",
     MapDepthBedModel => "bed elevation {height} ({datum}, {model})",
     MapDepthDatumUnknown => "datum not stated",
+    /// Under the depth legend: `{datums}`, the datums of the elevation models found in the view
+    /// ("NAVD 88, EGM 2008, datum not stated").
+    MapDepthDatums => "Vertical datums of the elevation models here: {datums}. Depths are approximate, not chart datum.",
     MapDepthModelCrm => "Coastal Relief Model",
     MapDepthModelCudem => "CUDEM",
     MapDepthModelEtopo => "ETOPO 2022",
@@ -3037,6 +3040,21 @@ pub fn depth_band_text(f: &Formatter, band_m: Option<(f64, f64)>) -> String {
     }
 }
 
+/// What the depths in a view are measured from, for the depth legend (safety text): the vertical
+/// datums of the elevation models found there, as the service names them ("NAVD 88, EGM 2008,
+/// datum not stated"); with none found, the general statement that the datum depends on the
+/// model and is not chart datum.
+pub fn depth_datums_line(f: &Formatter, datums: &[String]) -> String {
+    if datums.is_empty() {
+        return f
+            .strings
+            .safety(SafetyKey::MapReferenceBathymetry)
+            .to_owned();
+    }
+    f.strings
+        .safety_fmt(SafetyKey::MapDepthDatums, &[("datums", &datums.join(", "))])
+}
+
 /// The contour interval under the contours' switch: "Every 10 ft".
 pub fn contour_interval_text(f: &Formatter, interval_m: f64) -> String {
     f.strings.fmt(
@@ -3971,6 +3989,19 @@ mod tests {
             assert_eq!(depth_band_text(&si, Some((f64::NAN, 3.0))), "Off");
             assert_eq!(contour_interval_text(&us, 3.048), "Every 10 ft");
             assert_eq!(contour_interval_text(&si, 5.0), "Every 5 m");
+        }
+
+        #[test]
+        fn the_depth_legend_names_the_datums_found_or_says_they_vary() {
+            let us = formatter(false);
+            let found = ["NAVD 88".to_owned(), "EGM 2008".to_owned()];
+            assert_eq!(
+                depth_datums_line(&us, &found),
+                "Vertical datums of the elevation models here: NAVD 88, EGM 2008. Depths are approximate, not chart datum."
+            );
+            let none = depth_datums_line(&us, &[]);
+            assert!(none.contains("depends on the source model"), "{none}");
+            assert!(none.contains("not chart datum"), "{none}");
         }
 
         #[test]

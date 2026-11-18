@@ -294,8 +294,8 @@ fn map_depth_and_offline_words_are_translated_in_the_pseudo_locale() {
     use crate::map::dem::{ApproxDepth, DepthReading};
     use crate::map::enc::StructureKind;
     use crate::view::strings::{
-        MapQuantity, break_strength, contour_interval_text, depth_band_text, depth_label,
-        depth_reading, map_current, map_measure, map_time, map_value, reef_depths,
+        MapQuantity, break_strength, contour_interval_text, depth_band_text, depth_datums_line,
+        depth_label, depth_reading, map_current, map_measure, map_time, map_value, reef_depths,
         structure_category, structure_title,
     };
     let input = crate::view::tests::sample_input();
@@ -327,6 +327,8 @@ fn map_depth_and_offline_words_are_translated_in_the_pseudo_locale() {
             depth_band_text(&f, Some((4.572, 7.62))),
             depth_band_text(&f, None),
             contour_interval_text(&f, 3.048),
+            depth_datums_line(&f, &["NAVD 88".to_owned()]),
+            depth_datums_line(&f, &[]),
             break_strength(&f, BreakKind::Sst, 0.5),
             break_strength(&f, BreakKind::Chlorophyll, 0.0375),
             structure_title(&f, StructureKind::Wreck, false).to_owned(),
@@ -335,7 +337,7 @@ fn map_depth_and_offline_words_are_translated_in_the_pseudo_locale() {
             f.strings.pack_size(48_260_000),
             f.strings.pack_duration(4_800),
         ];
-        let data = ["dangerous wreck".to_owned()];
+        let data = ["dangerous wreck".to_owned(), "NAVD 88".to_owned()];
         let english: Vec<String> = texts
             .iter()
             .filter_map(|t| untranslated(t, &data).map(|rest| format!("{t:?} ({rest:?})")))

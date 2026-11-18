@@ -1217,6 +1217,20 @@ impl Blocks {
         self.dem_sources.push((at, sources));
     }
 
+    /// The models found at each remembered place inside `area` or within
+    /// [`DEM_SOURCE_REACH_DEG`] of it, the earliest looked at first.
+    pub(crate) fn dem_sources_in(&self, area: Bbox) -> Vec<&[DemSourceInfo]> {
+        let reach = DEM_SOURCE_REACH_DEG;
+        self.dem_sources
+            .iter()
+            .filter(|(p, _)| {
+                (area.west - reach..=area.east + reach).contains(&p.lon)
+                    && (area.south - reach..=area.north + reach).contains(&p.lat)
+            })
+            .map(|(_, sources)| sources.as_slice())
+            .collect()
+    }
+
     /// The models found at the nearest remembered place within [`DEM_SOURCE_REACH_DEG`] of `at`.
     fn dem_sources_near(&self, at: GeoPoint) -> Vec<DemSourceInfo> {
         let miss = |p: &GeoPoint| (p.lat - at.lat).abs().max((p.lon - at.lon).abs());

@@ -28,7 +28,8 @@ use underbite_core::units::HeightUnit;
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{
     Key, MapQuantity, SafetyKey, break_strength, contour_interval_text, depth_band_text,
-    depth_label, reef_depths, structure_category, structure_surveyed, structure_title,
+    depth_datums_line, depth_label, reef_depths, structure_category, structure_surveyed,
+    structure_title,
 };
 use underbite_providers::encdirect::{self, EncBand, EncError};
 use underbite_providers::ncei_dem::{self, DemCrs, DemError};
@@ -354,6 +355,51 @@ impl GridStore {
         Ok(())
     }
 
+    /// What the depths in a view (`west`, `south`, `east`, `north` in degrees) are measured
+    /// from, for the depth legend: the vertical datums of the elevation models found at the
+    /// places inside it (or within about two kilometres) that [`GridStore::add_dem_sources`]
+    /// was given, finest model first, each once. Ask [`GridStore::dem_sources_request`] for the
+    /// view's centre to have one. A place's every model is named, not only its finest: which
+    /// model the mosaic draws depends on the cell size asked for. Without a place in the view
+    /// the list is empty and the line says the datum depends on the model.
+    #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+    pub fn depth_datums(
+        &self,
+        west: f64,
+        south: f64,
+        east: f64,
+        north: f64,
+        settings_json: String,
+    ) -> Result<DepthDatums, MapError> {
+        let area = view_box(west, south, east, north)?;
+        let (config, _) = load(&settings_json)?;
+        let f = formatter(&config, "UTC");
+        let unknown = f.strings.safety(SafetyKey::MapDepthDatumUnknown);
+        // Each model with a cell size (the mosaic's overviews have none), finest first.
+        let mut models: Vec<(f64, String)> = self
+            .lock()
+            .dem_sources_in(area)
+            .into_iter()
+            .flatten()
+            .filter_map(|s| {
+                let cell = s.cell_arcsec.filter(|c| c.is_finite())?;
+                let datum = s.vertical_datum.as_deref().unwrap_or(unknown);
+                Some((cell, datum.to_owned()))
+            })
+            .collect();
+        models.sort_by(|a, b| a.0.total_cmp(&b.0).then_with(|| a.1.cmp(&b.1)));
+        let mut datums: Vec<String> = Vec::new();
+        for (_, datum) in models {
+            if !datums.contains(&datum) {
+                datums.push(datum);
+            }
+        }
+        Ok(DepthDatums {
+            text: depth_datums_line(&f, &datums),
+            datums,
+        })
+    }
+
     /// A 256-pixel PNG of the depth shading of tile `z`/`x`/`y` from the elevation block the store
     /// holds: water coloured by depth with the settings' depth ramp, the depth band highlighted,
     /// land and shore transparent; none when the store has no elevation tile there. Depths are
@@ -464,6 +510,18 @@ impl GridStore {
         let f = formatter(&config, "UTC");
         break_lines_of(&grids, kind, area, &config, &f)
     }
+}
+
+/// What the depths in a view are measured from.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct DepthDatums {
+    /// The vertical datums as the service names them ("NAVD 88", "EGM 2008"), finest model
+    /// first, each once; "datum not stated" for a model that states none. Empty where no model
+    /// list is known for the view.
+    pub datums: Vec<String>,
+    /// The line for the depth legend (safety text): the datums found, or that the datum depends
+    /// on the model; never chart datum.
+    pub text: String,
 }
 
 /// The area of `grid` inside `area`, square degrees, for choosing the block that fills a view.
