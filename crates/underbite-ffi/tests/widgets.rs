@@ -178,6 +178,12 @@ fn parse(json: &str) -> Value {
     serde_json::from_str(json).expect("payload json")
 }
 
+fn resource(name: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../ios/UnderbiteKit/Tests/UnderbiteKitTests/Resources")
+        .join(name)
+}
+
 /// Whether a payload carries a spot's coordinates.
 fn has_coordinates(json: &str) -> bool {
     ["40.7033", "74.017", "41.2257", "73.8618"]
@@ -368,5 +374,64 @@ mod widgets {
         );
         assert_eq!(next_trip(vec![over], now()), None);
         assert_eq!(next_trip(Vec::new(), now()), None);
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // The app's samples
+    // -----------------------------------------------------------------------------------------
+
+    /// The payloads the app's tests decode and store: The Battery's and the Croton's widgets, a
+    /// trip over both and its day's Live Activity. `UNDERBITE_WRITE_SAMPLES=1 cargo test -p
+    /// underbite-ffi widgets` rewrites them.
+    #[test]
+    fn widget_samples_are_current() {
+        let battery_json = snapshot("battery", battery());
+        let croton_json = snapshot("croton", croton());
+        let places = || {
+            vec![
+                place("battery", Some(battery_json.clone())),
+                place("croton", Some(croton_json.clone())),
+            ]
+        };
+        let t = trip(
+            "harbor",
+            &[&battery(), &croton()],
+            "2026-11-08",
+            "2026-11-10",
+        );
+        let settings = default_settings_json;
+        let samples = [
+            (
+                "sample-widget-battery.json",
+                spot_widget(battery(), battery_json.clone(), settings(), now()),
+            ),
+            (
+                "sample-widget-croton.json",
+                spot_widget(croton(), croton_json.clone(), settings(), now()),
+            ),
+            (
+                "sample-widget-trip.json",
+                trip_widget(t.clone(), places(), settings(), now()),
+            ),
+            (
+                "sample-trip-activity.json",
+                trip_activity(t, places(), settings(), now()),
+            ),
+        ];
+        for (name, made) in samples {
+            let made = made.expect("sample");
+            assert!(!has_coordinates(&made), "{name}");
+            let json = serde_json::to_string_pretty(&parse(&made)).unwrap() + "\n";
+            let path = resource(name);
+            if std::env::var_os("UNDERBITE_WRITE_SAMPLES").is_some() {
+                std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+                std::fs::write(&path, &json).unwrap();
+            }
+            let kept = std::fs::read_to_string(&path).unwrap_or_default();
+            assert!(
+                kept == json,
+                "{name}: run `UNDERBITE_WRITE_SAMPLES=1 cargo test -p underbite-ffi widgets`"
+            );
+        }
     }
 }

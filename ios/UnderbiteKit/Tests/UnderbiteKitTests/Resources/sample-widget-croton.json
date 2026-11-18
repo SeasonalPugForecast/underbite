@@ -1,0 +1,825 @@
+{
+  "entries": [
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794139200,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794142800,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794146400,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794150000,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794153600,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794157200,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794160800,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794164400,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794168000,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794171600,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794175200,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794178800,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": {
+            "card": {
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8",
+              "credit": "USGS",
+              "headline": {
+                "text": "12.4",
+                "unit": "cfs",
+                "value": 12.4
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY, 0.2 mi"
+              ],
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "River flow"
+            },
+            "normal": "Normal",
+            "trend": {
+              "direction": "falling",
+              "text": "Falling 0.5 cfs in 14 h"
+            }
+          },
+          "snack": {
+            "accessibility": "Snack times: No snack times in this period.",
+            "credit": "Computed on device",
+            "headline": {
+              "text": "",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "notices": [],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": null
+        }
+      ],
+      "t": 1794182400,
+      "trip": null
+    }
+  ],
+  "generated_at": 1794139200,
+  "id": "croton",
+  "name": "Croton River",
+  "places": [
+    {
+      "flow_spark": [
+        147.00002,
+        138.0,
+        125.0,
+        120.0,
+        120.0,
+        120.0,
+        121.99999,
+        117.0,
+        110.0,
+        97.0,
+        79.40001,
+        65.9,
+        56.9,
+        50.2,
+        39.6,
+        33.5,
+        28.2,
+        25.8,
+        24.2,
+        23.500002,
+        20.7,
+        18.8,
+        17.6,
+        15.9,
+        15.399999,
+        14.9,
+        13.4,
+        12.9,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.0,
+        12.4,
+        12.4,
+        12.0,
+        12.4,
+        12.0,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.4,
+        12.9,
+        12.9,
+        12.4
+      ],
+      "id": "croton",
+      "name": "Croton River",
+      "tide_chart": null
+    }
+  ],
+  "subject": "spot"
+}

@@ -1,0 +1,1506 @@
+{
+  "entries": [
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Snack time now, until 7:45 AM. Incoming tide, Current strength, Low light, Solunar. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "now",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Snack time now, until 7:45 AM",
+              "Incoming tide, Current strength, Low light, Solunar"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Slack. Next high 7:07 AM, 5.6 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "5.6",
+                "unit": "ft MLLW",
+                "value": 5.610236
+              },
+              "lines": [
+                "Slack · High 7:07 AM",
+                "5.6 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794214800,
+            "stage": "high_slack",
+            "start_t": 1794128400
+          }
+        }
+      ],
+      "t": 1794139200,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Next snack time 4:00 to 5:15 PM. Current strength, Low light, Solunar. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "4:00 PM",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Next snack time 4:00 to 5:15 PM",
+              "Current strength, Low light, Solunar"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Falling. Next low 1:34 PM, 0.0 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "5.3",
+                "unit": "ft MLLW",
+                "value": 5.3248034
+              },
+              "lines": [
+                "Falling · Low 1:34 PM",
+                "0.0 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794218400,
+            "stage": "falling",
+            "start_t": 1794132000
+          }
+        }
+      ],
+      "t": 1794142800,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Next snack time 4:00 to 5:15 PM. Current strength, Low light, Solunar. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "4:00 PM",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Next snack time 4:00 to 5:15 PM",
+              "Current strength, Low light, Solunar"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Falling. Next low 1:34 PM, 0.0 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "4.4",
+                "unit": "ft MLLW",
+                "value": 4.4127297
+              },
+              "lines": [
+                "Falling · Low 1:34 PM",
+                "0.0 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794222000,
+            "stage": "falling",
+            "start_t": 1794135600
+          }
+        }
+      ],
+      "t": 1794146400,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Next snack time 4:00 to 5:15 PM. Current strength, Low light, Solunar. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "4:00 PM",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Next snack time 4:00 to 5:15 PM",
+              "Current strength, Low light, Solunar"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Falling. Next low 1:34 PM, 0.0 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "3.2",
+                "unit": "ft MLLW",
+                "value": 3.2020998
+              },
+              "lines": [
+                "Falling · Low 1:34 PM",
+                "0.0 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794225600,
+            "stage": "falling",
+            "start_t": 1794139200
+          }
+        }
+      ],
+      "t": 1794150000,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Next snack time 4:00 to 5:15 PM. Current strength, Low light, Solunar. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "4:00 PM",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Next snack time 4:00 to 5:15 PM",
+              "Current strength, Low light, Solunar"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Falling. Next low 1:34 PM, 0.0 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "2.0",
+                "unit": "ft MLLW",
+                "value": 2.007874
+              },
+              "lines": [
+                "Falling · Low 1:34 PM",
+                "0.0 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794229200,
+            "stage": "falling",
+            "start_t": 1794142800
+          }
+        }
+      ],
+      "t": 1794153600,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Next snack time 4:00 to 5:15 PM. Current strength, Low light, Solunar. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "4:00 PM",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Next snack time 4:00 to 5:15 PM",
+              "Current strength, Low light, Solunar"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Falling. Next low 1:34 PM, 0.0 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "0.9",
+                "unit": "ft MLLW",
+                "value": 0.9317586
+              },
+              "lines": [
+                "Falling · Low 1:34 PM",
+                "0.0 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794232800,
+            "stage": "falling",
+            "start_t": 1794146400
+          }
+        }
+      ],
+      "t": 1794157200,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Next snack time 4:00 to 5:15 PM. Current strength, Low light, Solunar. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "4:00 PM",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Next snack time 4:00 to 5:15 PM",
+              "Current strength, Low light, Solunar"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Falling. Next low 1:34 PM, 0.0 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "0.2",
+                "unit": "ft MLLW",
+                "value": 0.17716536
+              },
+              "lines": [
+                "Falling · Low 1:34 PM",
+                "0.0 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794236400,
+            "stage": "falling",
+            "start_t": 1794150000
+          }
+        }
+      ],
+      "t": 1794160800,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Next snack time 4:00 to 5:15 PM. Current strength, Low light, Solunar. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "4:00 PM",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Next snack time 4:00 to 5:15 PM",
+              "Current strength, Low light, Solunar"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Rising. Next high 7:27 PM, 4.7 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "0.1",
+                "unit": "ft MLLW",
+                "value": 0.11811023
+              },
+              "lines": [
+                "Rising · High 7:27 PM",
+                "4.7 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794240000,
+            "stage": "rising",
+            "start_t": 1794153600
+          }
+        }
+      ],
+      "t": 1794164400,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Next snack time 4:00 to 5:15 PM. Current strength, Low light, Solunar. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "4:00 PM",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Next snack time 4:00 to 5:15 PM",
+              "Current strength, Low light, Solunar"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Rising. Next high 7:27 PM, 4.7 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "0.9",
+                "unit": "ft MLLW",
+                "value": 0.85301834
+              },
+              "lines": [
+                "Rising · High 7:27 PM",
+                "4.7 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794243600,
+            "stage": "rising",
+            "start_t": 1794157200
+          }
+        }
+      ],
+      "t": 1794168000,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Snack time now, until 5:15 PM. Current strength, Low light, Solunar. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "now",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Snack time now, until 5:15 PM",
+              "Current strength, Low light, Solunar"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Rising. Next high 7:27 PM, 4.7 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "2.0",
+                "unit": "ft MLLW",
+                "value": 2.0209973
+              },
+              "lines": [
+                "Rising · High 7:27 PM",
+                "4.7 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794247200,
+            "stage": "rising",
+            "start_t": 1794160800
+          }
+        }
+      ],
+      "t": 1794171600,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Snack time now, until 5:15 PM. Current strength, Low light, Solunar. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "now",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Snack time now, until 5:15 PM",
+              "Current strength, Low light, Solunar"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Rising. Next high 7:27 PM, 4.7 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "3.2",
+                "unit": "ft MLLW",
+                "value": 3.1824148
+              },
+              "lines": [
+                "Rising · High 7:27 PM",
+                "4.7 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794250800,
+            "stage": "rising",
+            "start_t": 1794164400
+          }
+        }
+      ],
+      "t": 1794175200,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Next snack time 6:30 to 7:30 PM. Incoming tide, Current strength. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "6:30 PM",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Next snack time 6:30 to 7:30 PM",
+              "Incoming tide, Current strength"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Rising. Next high 7:27 PM, 4.7 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "4.1",
+                "unit": "ft MLLW",
+                "value": 4.1108923
+              },
+              "lines": [
+                "Rising · High 7:27 PM",
+                "4.7 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794254400,
+            "stage": "rising",
+            "start_t": 1794168000
+          }
+        }
+      ],
+      "t": 1794178800,
+      "trip": null
+    },
+    {
+      "places": [
+        {
+          "flow": null,
+          "snack": {
+            "accessibility": "Snack times: Snack time now, until 7:30 PM. Incoming tide, Current strength. A traditional cue, not a promise.",
+            "credit": "Computed on device · NOAA CO-OPS",
+            "headline": {
+              "text": "now",
+              "unit": "",
+              "value": null
+            },
+            "lines": [
+              "Snack time now, until 7:30 PM",
+              "Incoming tide, Current strength"
+            ],
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "title": "Snack times"
+          },
+          "tide": {
+            "card": {
+              "accessibility": "Rising. Next high 7:27 PM, 4.7 ft above MLLW.",
+              "credit": "NOAA CO-OPS",
+              "headline": {
+                "text": "4.6",
+                "unit": "ft MLLW",
+                "value": 4.6358266
+              },
+              "lines": [
+                "Rising · High 7:27 PM",
+                "4.7 ft MLLW"
+              ],
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "title": "Tide"
+            },
+            "end_t": 1794258000,
+            "stage": "rising",
+            "start_t": 1794171600
+          }
+        }
+      ],
+      "t": 1794182400,
+      "trip": null
+    }
+  ],
+  "generated_at": 1794139200,
+  "id": "battery",
+  "name": "The Battery",
+  "places": [
+    {
+      "flow_spark": [],
+      "id": "battery",
+      "name": "The Battery",
+      "tide_chart": {
+        "accessibility": "Tide: High 5.6 ft at 7:07 AM, Low 0.0 ft at 1:34 PM, High 4.7 ft at 7:27 PM, Low 0.2 ft at 1:40 AM, High 5.6 ft at 7:44 AM, Low 0.0 ft at 2:18 PM.",
+        "bands": [
+          {
+            "end_t": 1794137669,
+            "kind": "night",
+            "label": "Night",
+            "start_t": 1794128400
+          },
+          {
+            "end_t": 1794224141,
+            "kind": "night",
+            "label": "Night",
+            "start_t": 1794174313
+          }
+        ],
+        "markers": [
+          {
+            "kind": "sunrise",
+            "label": "Sunrise 6:34 AM",
+            "t": 1794137669,
+            "value": null
+          },
+          {
+            "kind": "high",
+            "label": "High 5.6 ft",
+            "t": 1794139620,
+            "value": 5.613517
+          },
+          {
+            "kind": "low",
+            "label": "Low 0.0 ft",
+            "t": 1794162840,
+            "value": 0.03937008
+          },
+          {
+            "kind": "sunset",
+            "label": "Sunset 4:45 PM",
+            "t": 1794174313,
+            "value": null
+          },
+          {
+            "kind": "high",
+            "label": "High 4.7 ft",
+            "t": 1794184020,
+            "value": 4.698163
+          },
+          {
+            "kind": "low",
+            "label": "Low 0.2 ft",
+            "t": 1794206400,
+            "value": 0.17388451
+          },
+          {
+            "kind": "sunrise",
+            "label": "Sunrise 6:35 AM",
+            "t": 1794224141,
+            "value": null
+          },
+          {
+            "kind": "high",
+            "label": "High 5.6 ft",
+            "t": 1794228240,
+            "value": 5.5839896
+          },
+          {
+            "kind": "low",
+            "label": "Low 0.0 ft",
+            "t": 1794251880,
+            "value": 0.04265092
+          }
+        ],
+        "now_t": 1794139200,
+        "rules": [],
+        "series": [
+          {
+            "label": "Predicted",
+            "points": [
+              {
+                "label": "3.0 ft",
+                "major": true,
+                "t": 1794128400,
+                "value": 3.0216537
+              },
+              {
+                "label": "3.7 ft",
+                "major": false,
+                "t": 1794130200,
+                "value": 3.6778216
+              },
+              {
+                "label": "4.3 ft",
+                "major": true,
+                "t": 1794132000,
+                "value": 4.2749343
+              },
+              {
+                "label": "4.8 ft",
+                "major": false,
+                "t": 1794133800,
+                "value": 4.790026
+              },
+              {
+                "label": "5.2 ft",
+                "major": true,
+                "t": 1794135600,
+                "value": 5.203412
+              },
+              {
+                "label": "5.5 ft",
+                "major": false,
+                "t": 1794137400,
+                "value": 5.485564
+              },
+              {
+                "label": "5.6 ft",
+                "major": true,
+                "t": 1794139200,
+                "value": 5.610236
+              },
+              {
+                "label": "5.6 ft",
+                "major": false,
+                "t": 1794141000,
+                "value": 5.5577426
+              },
+              {
+                "label": "5.3 ft",
+                "major": true,
+                "t": 1794142800,
+                "value": 5.3248034
+              },
+              {
+                "label": "4.9 ft",
+                "major": false,
+                "t": 1794144600,
+                "value": 4.9311023
+              },
+              {
+                "label": "4.4 ft",
+                "major": true,
+                "t": 1794146400,
+                "value": 4.4127297
+              },
+              {
+                "label": "3.8 ft",
+                "major": false,
+                "t": 1794148200,
+                "value": 3.8188977
+              },
+              {
+                "label": "3.2 ft",
+                "major": true,
+                "t": 1794150000,
+                "value": 3.2020998
+              },
+              {
+                "label": "2.6 ft",
+                "major": false,
+                "t": 1794151800,
+                "value": 2.5918636
+              },
+              {
+                "label": "2.0 ft",
+                "major": true,
+                "t": 1794153600,
+                "value": 2.007874
+              },
+              {
+                "label": "1.4 ft",
+                "major": false,
+                "t": 1794155400,
+                "value": 1.4468504
+              },
+              {
+                "label": "0.9 ft",
+                "major": true,
+                "t": 1794157200,
+                "value": 0.9317586
+              },
+              {
+                "label": "0.5 ft",
+                "major": false,
+                "t": 1794159000,
+                "value": 0.49212602
+              },
+              {
+                "label": "0.2 ft",
+                "major": true,
+                "t": 1794160800,
+                "value": 0.17716536
+              },
+              {
+                "label": "0.0 ft",
+                "major": false,
+                "t": 1794162600,
+                "value": 0.03937008
+              },
+              {
+                "label": "0.1 ft",
+                "major": true,
+                "t": 1794164400,
+                "value": 0.11811023
+              },
+              {
+                "label": "0.4 ft",
+                "major": false,
+                "t": 1794166200,
+                "value": 0.40026248
+              },
+              {
+                "label": "0.9 ft",
+                "major": true,
+                "t": 1794168000,
+                "value": 0.85301834
+              },
+              {
+                "label": "1.4 ft",
+                "major": false,
+                "t": 1794169800,
+                "value": 1.414042
+              },
+              {
+                "label": "2.0 ft",
+                "major": true,
+                "t": 1794171600,
+                "value": 2.0209973
+              },
+              {
+                "label": "2.6 ft",
+                "major": false,
+                "t": 1794173400,
+                "value": 2.621391
+              },
+              {
+                "label": "3.2 ft",
+                "major": true,
+                "t": 1794175200,
+                "value": 3.1824148
+              },
+              {
+                "label": "3.7 ft",
+                "major": false,
+                "t": 1794177000,
+                "value": 3.6876638
+              },
+              {
+                "label": "4.1 ft",
+                "major": true,
+                "t": 1794178800,
+                "value": 4.1108923
+              },
+              {
+                "label": "4.4 ft",
+                "major": false,
+                "t": 1794180600,
+                "value": 4.4356956
+              },
+              {
+                "label": "4.6 ft",
+                "major": true,
+                "t": 1794182400,
+                "value": 4.6358266
+              },
+              {
+                "label": "4.7 ft",
+                "major": false,
+                "t": 1794184200,
+                "value": 4.694882
+              },
+              {
+                "label": "4.6 ft",
+                "major": true,
+                "t": 1794186000,
+                "value": 4.596457
+              },
+              {
+                "label": "4.3 ft",
+                "major": false,
+                "t": 1794187800,
+                "value": 4.343832
+              },
+              {
+                "label": "4.0 ft",
+                "major": true,
+                "t": 1794189600,
+                "value": 3.9501312
+              },
+              {
+                "label": "3.5 ft",
+                "major": false,
+                "t": 1794191400,
+                "value": 3.4612858
+              },
+              {
+                "label": "2.9 ft",
+                "major": true,
+                "t": 1794193200,
+                "value": 2.92979
+              },
+              {
+                "label": "2.4 ft",
+                "major": false,
+                "t": 1794195000,
+                "value": 2.395013
+              },
+              {
+                "label": "1.9 ft",
+                "major": true,
+                "t": 1794196800,
+                "value": 1.8897637
+              },
+              {
+                "label": "1.4 ft",
+                "major": false,
+                "t": 1794198600,
+                "value": 1.4206036
+              },
+              {
+                "label": "1.0 ft",
+                "major": true,
+                "t": 1794200400,
+                "value": 0.9940945
+              },
+              {
+                "label": "0.6 ft",
+                "major": false,
+                "t": 1794202200,
+                "value": 0.62007874
+              },
+              {
+                "label": "0.3 ft",
+                "major": true,
+                "t": 1794204000,
+                "value": 0.33464566
+              },
+              {
+                "label": "0.2 ft",
+                "major": false,
+                "t": 1794205800,
+                "value": 0.18372704
+              },
+              {
+                "label": "0.2 ft",
+                "major": true,
+                "t": 1794207600,
+                "value": 0.21981628
+              },
+              {
+                "label": "0.5 ft",
+                "major": false,
+                "t": 1794209400,
+                "value": 0.4658793
+              },
+              {
+                "label": "0.9 ft",
+                "major": true,
+                "t": 1794211200,
+                "value": 0.9120735
+              },
+              {
+                "label": "1.5 ft",
+                "major": false,
+                "t": 1794213000,
+                "value": 1.5124671
+              },
+              {
+                "label": "2.2 ft",
+                "major": true,
+                "t": 1794214800,
+                "value": 2.194882
+              },
+              {
+                "label": "2.9 ft",
+                "major": false,
+                "t": 1794216600,
+                "value": 2.8969817
+              },
+              {
+                "label": "3.6 ft",
+                "major": true,
+                "t": 1794218400,
+                "value": 3.5728345
+              },
+              {
+                "label": "4.2 ft",
+                "major": false,
+                "t": 1794220200,
+                "value": 4.17979
+              },
+              {
+                "label": "4.7 ft",
+                "major": true,
+                "t": 1794222000,
+                "value": 4.7014437
+              },
+              {
+                "label": "5.1 ft",
+                "major": false,
+                "t": 1794223800,
+                "value": 5.11811
+              },
+              {
+                "label": "5.4 ft",
+                "major": true,
+                "t": 1794225600,
+                "value": 5.413386
+              },
+              {
+                "label": "5.6 ft",
+                "major": false,
+                "t": 1794227400,
+                "value": 5.5643044
+              },
+              {
+                "label": "5.6 ft",
+                "major": true,
+                "t": 1794229200,
+                "value": 5.5577426
+              },
+              {
+                "label": "5.4 ft",
+                "major": false,
+                "t": 1794231000,
+                "value": 5.3805776
+              },
+              {
+                "label": "5.0 ft",
+                "major": true,
+                "t": 1794232800,
+                "value": 5.03937
+              },
+              {
+                "label": "4.6 ft",
+                "major": false,
+                "t": 1794234600,
+                "value": 4.5603676
+              },
+              {
+                "label": "4.0 ft",
+                "major": true,
+                "t": 1794236400,
+                "value": 3.9829395
+              },
+              {
+                "label": "3.4 ft",
+                "major": false,
+                "t": 1794238200,
+                "value": 3.3661418
+              },
+              {
+                "label": "2.7 ft",
+                "major": true,
+                "t": 1794240000,
+                "value": 2.7493439
+              },
+              {
+                "label": "2.2 ft",
+                "major": false,
+                "t": 1794241800,
+                "value": 2.1620734
+              },
+              {
+                "label": "1.6 ft",
+                "major": true,
+                "t": 1794243600,
+                "value": 1.6141733
+              },
+              {
+                "label": "1.1 ft",
+                "major": false,
+                "t": 1794245400,
+                "value": 1.105643
+              },
+              {
+                "label": "0.7 ft",
+                "major": true,
+                "t": 1794247200,
+                "value": 0.65288717
+              },
+              {
+                "label": "0.3 ft",
+                "major": false,
+                "t": 1794249000,
+                "value": 0.2952756
+              },
+              {
+                "label": "0.1 ft",
+                "major": true,
+                "t": 1794250800,
+                "value": 0.082021
+              },
+              {
+                "label": "0.1 ft",
+                "major": false,
+                "t": 1794252600,
+                "value": 0.059055116
+              },
+              {
+                "label": "0.2 ft",
+                "major": true,
+                "t": 1794254400,
+                "value": 0.24934383
+              },
+              {
+                "label": "0.6 ft",
+                "major": false,
+                "t": 1794256200,
+                "value": 0.63648295
+              },
+              {
+                "label": "1.2 ft",
+                "major": true,
+                "t": 1794258000,
+                "value": 1.1646981
+              }
+            ],
+            "role": "predicted",
+            "style": "line"
+          }
+        ],
+        "title": "Tide",
+        "unit": "ft",
+        "x_ticks": [
+          {
+            "label": "4 AM",
+            "major": false,
+            "t": 1794128400
+          },
+          {
+            "label": "5 AM",
+            "major": false,
+            "t": 1794132000
+          },
+          {
+            "label": "6 AM",
+            "major": true,
+            "t": 1794135600
+          },
+          {
+            "label": "7 AM",
+            "major": false,
+            "t": 1794139200
+          },
+          {
+            "label": "8 AM",
+            "major": false,
+            "t": 1794142800
+          },
+          {
+            "label": "9 AM",
+            "major": true,
+            "t": 1794146400
+          },
+          {
+            "label": "10 AM",
+            "major": false,
+            "t": 1794150000
+          },
+          {
+            "label": "11 AM",
+            "major": false,
+            "t": 1794153600
+          },
+          {
+            "label": "12 PM",
+            "major": true,
+            "t": 1794157200
+          },
+          {
+            "label": "1 PM",
+            "major": false,
+            "t": 1794160800
+          },
+          {
+            "label": "2 PM",
+            "major": false,
+            "t": 1794164400
+          },
+          {
+            "label": "3 PM",
+            "major": true,
+            "t": 1794168000
+          },
+          {
+            "label": "4 PM",
+            "major": false,
+            "t": 1794171600
+          },
+          {
+            "label": "5 PM",
+            "major": false,
+            "t": 1794175200
+          },
+          {
+            "label": "6 PM",
+            "major": true,
+            "t": 1794178800
+          },
+          {
+            "label": "7 PM",
+            "major": false,
+            "t": 1794182400
+          },
+          {
+            "label": "8 PM",
+            "major": false,
+            "t": 1794186000
+          },
+          {
+            "label": "9 PM",
+            "major": true,
+            "t": 1794189600
+          },
+          {
+            "label": "10 PM",
+            "major": false,
+            "t": 1794193200
+          },
+          {
+            "label": "11 PM",
+            "major": false,
+            "t": 1794196800
+          },
+          {
+            "label": "12 AM",
+            "major": true,
+            "t": 1794200400
+          },
+          {
+            "label": "1 AM",
+            "major": false,
+            "t": 1794204000
+          },
+          {
+            "label": "2 AM",
+            "major": false,
+            "t": 1794207600
+          },
+          {
+            "label": "3 AM",
+            "major": true,
+            "t": 1794211200
+          },
+          {
+            "label": "4 AM",
+            "major": false,
+            "t": 1794214800
+          },
+          {
+            "label": "5 AM",
+            "major": false,
+            "t": 1794218400
+          },
+          {
+            "label": "6 AM",
+            "major": true,
+            "t": 1794222000
+          },
+          {
+            "label": "7 AM",
+            "major": false,
+            "t": 1794225600
+          },
+          {
+            "label": "8 AM",
+            "major": false,
+            "t": 1794229200
+          },
+          {
+            "label": "9 AM",
+            "major": true,
+            "t": 1794232800
+          },
+          {
+            "label": "10 AM",
+            "major": false,
+            "t": 1794236400
+          },
+          {
+            "label": "11 AM",
+            "major": false,
+            "t": 1794240000
+          },
+          {
+            "label": "12 PM",
+            "major": true,
+            "t": 1794243600
+          },
+          {
+            "label": "1 PM",
+            "major": false,
+            "t": 1794247200
+          },
+          {
+            "label": "2 PM",
+            "major": false,
+            "t": 1794250800
+          },
+          {
+            "label": "3 PM",
+            "major": true,
+            "t": 1794254400
+          },
+          {
+            "label": "4 PM",
+            "major": false,
+            "t": 1794258000
+          }
+        ]
+      }
+    }
+  ],
+  "subject": "spot"
+}

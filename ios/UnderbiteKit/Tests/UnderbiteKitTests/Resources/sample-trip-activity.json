@@ -1,0 +1,31 @@
+{
+  "accessibility": "Harbor weekend, The Battery. High 5.6 ft MLLW at 7:07 AM. Slack at 10:41 AM. Sunset at 4:45 PM. Not for navigation.",
+  "credit": "NOAA CO-OPS · Computed on device",
+  "ends_at": 1794174313,
+  "generated_at": 1794139200,
+  "next_tide_change": {
+    "at": 1794139620,
+    "label": "High tide in",
+    "text": "High 5.6 ft MLLW at 7:07 AM"
+  },
+  "notices": [
+    {
+      "kind": "not_for_navigation",
+      "text": "Not for navigation."
+    }
+  ],
+  "place": "The Battery",
+  "slack": {
+    "at": 1794152460,
+    "label": "Slack in",
+    "text": "Slack at 10:41 AM"
+  },
+  "stale": "Out of date: open the app to update the times",
+  "stale_at": 1794139620,
+  "sunset": {
+    "at": 1794174313,
+    "label": "Sunset in",
+    "text": "Sunset at 4:45 PM"
+  },
+  "title": "Harbor weekend"
+}
