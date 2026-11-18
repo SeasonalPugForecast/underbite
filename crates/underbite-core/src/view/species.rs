@@ -138,6 +138,23 @@ fn source_vm(s: Strings, src: &SourceRef, by: EditedBy) -> SourceVm {
     }
 }
 
+/// The label of an editable field: "Spawning temperature".
+pub fn field_label(field: Field, s: Strings) -> &'static str {
+    s.get(match field {
+        Field::CommonNames => Key::SpeciesFieldCommonNames,
+        Field::Water => Key::SpeciesFieldWater,
+        Field::PreferredTemp => Key::SpeciesFieldPreferred,
+        Field::ToleratedTemp => Key::SpeciesFieldTolerated,
+        Field::SpawnTemp => Key::SpeciesFieldSpawn,
+        Field::Depth => Key::SpeciesFieldDepth,
+        Field::Habitat => Key::SpeciesFieldHabitat,
+        Field::Flow => Key::SpeciesFieldFlow,
+        Field::Light => Key::SpeciesFieldLight,
+        Field::Lures => Key::SpeciesFieldLures,
+        Field::Regions => Key::SpeciesFieldRegions,
+    })
+}
+
 fn water_label(s: Strings, w: WaterKind) -> &'static str {
     s.get(match w {
         WaterKind::Fresh => Key::SpeciesWaterFresh,
@@ -1141,6 +1158,7 @@ pub(in crate::view) mod tests {
             .find(|x| x.field == Some(Field::SpawnTemp))
             .unwrap();
         assert_eq!(spawn.value, "59–64 °F");
+        assert_eq!(field_label(Field::SpawnTemp, f.strings), spawn.label);
         assert_eq!(spawn.edit, vec!["59", "64"]);
         let tolerated = page
             .fields
