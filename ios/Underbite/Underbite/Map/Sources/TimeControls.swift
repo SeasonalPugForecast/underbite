@@ -18,6 +18,8 @@ struct TimeControls: View {
     }
 
     var body: some View {
+        // The layers drawn from the device's store say so above the controls.
+        LayerBadges(controller: controller)
         if let module, let top = DateControl.topmost(controller.plan) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(top.layer.info.title)
