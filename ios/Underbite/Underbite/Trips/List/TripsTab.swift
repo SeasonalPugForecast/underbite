@@ -31,7 +31,7 @@ struct TripsTab: View {
         } detail: {
             NavigationStack {
                 if let id = selection, trips.trip(id) != nil {
-                    TripSummaryView(trips: trips, tripID: id) { sheet = .edit(id) }
+                    TripGridView(trips: trips, tripID: id) { sheet = .edit(id) }.id(id)
                 } else {
                     ContentUnavailableView(
                         "Choose a trip", systemImage: "calendar",
