@@ -21,12 +21,14 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
         case trip(json: String, listing: TripListing)
         /// A spot: the place and, when it has coordinates, the spot to add.
         case spot(ReceivedPlace)
+        /// A species profile: the sender's page and what importing its edits would do.
+        case profile(ReceivedProfile)
         /// A file that cannot be used, with the core's text saying why.
         case problem(String)
     }
 
     let id = UUID()
-    /// "Trip to add", "Spot to add"; none for a file that cannot be used.
+    /// "Trip to add", "Spot to add", a profile's species; none for a file that cannot be used.
     var heading: String?
     var content: Content
     /// "Approximate location" when a place was shared rounded or by area only.
@@ -44,9 +46,11 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
 
     /// Reads the file at `url` (from Files, Mail or AirDrop) and decodes it. A URL another app
     /// lends is security-scoped: access is asked for while reading and given back after. The
-    /// copy the system puts in the app's `Documents/Inbox` is removed once read.
+    /// copy the system puts in the app's `Documents/Inbox` is removed once read. `edits` are the
+    /// user's species edits, which a profile's preview compares with the sender's.
     static func open(
-        _ url: URL, settingsJSON: String, now: Int64, inbox: URL? = defaultInbox
+        _ url: URL, settingsJSON: String, now: Int64, edits: String = "",
+        inbox: URL? = defaultInbox
     ) -> ReceivedFile {
         let data: Data
         do {
@@ -57,7 +61,7 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
         if let inbox, url.standardizedFileURL.path.hasPrefix(inbox.standardizedFileURL.path + "/") {
             try? FileManager.default.removeItem(at: url)
         }
-        return read(data, settingsJSON: settingsJSON, now: now)
+        return read(data, settingsJSON: settingsJSON, now: now, edits: edits)
     }
 
     /// Where the system copies a document it opens in the app.
@@ -76,13 +80,18 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
         return try handle.read(upToCount: limit) ?? Data()
     }
 
-    /// Decodes `data` with the core: a trip or a spot to preview, or the core's text on why it
-    /// cannot be used (a newer version's file, a kind this build cannot open yet).
-    static func read(_ data: Data, settingsJSON: String, now: Int64) -> ReceivedFile {
+    /// Decodes `data` with the core: a trip, a spot or a species profile to preview (the
+    /// profile against the user's species `edits`), or the core's text on why it cannot be used
+    /// (a newer version's file, a kind this build cannot open yet).
+    static func read(_ data: Data, settingsJSON: String, now: Int64, edits: String = "")
+        -> ReceivedFile
+    {
         let words = ShareText.words(settingsJSON: settingsJSON)
         let shared: SharedFile
         do {
             shared = try readFile(bytes: data, settingsJson: settingsJSON)
+        } catch ShareError.Unsupported(let kind, _) where kind == "profile" {
+            return readProfile(data, settingsJSON: settingsJSON, edits: edits)
         } catch {
             return ReceivedFile(heading: nil, content: .problem(message(of: error)))
         }
@@ -103,6 +112,19 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
                 settingsJSON: settingsJSON)
             return ReceivedFile(
                 heading: words?.receiveSpot, content: .spot(place), approximate: shared.approximate)
+        }
+    }
+
+    /// A species profile file, read by the core's species calls.
+    private static func readProfile(_ data: Data, settingsJSON: String, edits: String)
+        -> ReceivedFile
+    {
+        do {
+            let shared = try speciesReadFile(bytes: data, edits: edits, settingsJson: settingsJSON)
+            return ReceivedFile(
+                heading: shared.name, content: .profile(ReceivedProfile(data: data, shared: shared)))
+        } catch {
+            return ReceivedFile(heading: nil, content: .problem(message(of: error)))
         }
     }
 
@@ -131,7 +153,8 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
         case .spot(let place):
             guard let spot = place.spot else { return [] }
             return spots.contains { $0.id == spot.id } ? [.addCopy] : [.add]
-        case .problem:
+        case .profile, .problem:
+            // A profile's edits are imported by its own preview.
             return []
         }
     }
@@ -196,6 +219,15 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
         let mine = Self.tripID(json).flatMap { trips.trip($0)?.json }
         return try trips.save(Self.tripToSave(json, choice: choice, mine: mine))
     }
+}
+
+/// A received species profile: the file, to import its edits, and the core's reading of it.
+nonisolated struct ReceivedProfile: Equatable, Sendable {
+    var data: Data
+    var shared: SharedProfile
+
+    /// The sender's profile page, their edits marked, with every source and licence.
+    var page: SpeciesProfilePage? { SpeciesProfilePage.decode(shared.pageJson) }
 }
 
 /// A received spot as its preview shows it.

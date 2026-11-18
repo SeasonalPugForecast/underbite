@@ -3,7 +3,8 @@ import UnderbiteKit
 
 extension View {
     /// Opens the `.underbite` files the app is handed (from Files, Mail, Messages or AirDrop):
-    /// the core decodes each and a sheet previews it, to add the trip or spot or leave it.
+    /// the core decodes each and a sheet previews it, to add the trip or spot, import a
+    /// species profile's edits, or leave it.
     func receivesSharedFiles() -> some View {
         modifier(ReceivesSharedFiles())
     }
@@ -25,7 +26,8 @@ private struct ReceivesSharedFiles: ViewModifier {
                     url.pathExtension.lowercased() == UnderbiteFile.pathExtension
                 else { return }
                 received = ReceivedFile.open(
-                    url, settingsJSON: spots.settingsJSON, now: Self.now)
+                    url, settingsJSON: spots.settingsJSON, now: Self.now,
+                    edits: SpeciesEditsStore.shared.edits)
             }
             .sheet(item: $received) { file in
                 ReceivedFileSheet(file: file, trips: .shared)
@@ -72,11 +74,16 @@ struct ReceivedFileSheet: View {
                         TripPreview(listing: listing, approximate: file.approximate)
                     case .spot(let place):
                         SpotPreview(place: place, approximate: file.approximate)
+                    case .profile(let profile):
+                        // Says itself once its edits are imported.
+                        ReceivedProfileView(profile: profile, imported: $added)
                     case .problem(let message):
                         Label(message, systemImage: "exclamationmark.triangle")
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    if added, let words {
+                    if isProfile {
+                        EmptyView()
+                    } else if added, let words {
                         Label(words.added, systemImage: "checkmark.circle.fill")
                             .font(.headline)
                             .foregroundStyle(Palette.accent)
@@ -141,6 +148,11 @@ struct ReceivedFileSheet: View {
 
     private var isTrip: Bool {
         if case .trip = file.content { return true }
+        return false
+    }
+
+    private var isProfile: Bool {
+        if case .profile = file.content { return true }
         return false
     }
 
