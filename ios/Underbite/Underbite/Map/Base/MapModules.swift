@@ -4,6 +4,7 @@ enum MapModules {
     static func make(controller: MapController) -> [any MapModule] {
         [
             InspectorModule(controller: controller),
+            DepthModule(controller: controller),
             SourcesModule(controller: controller),
             RecordsModule(controller: controller),
             StationsModule(controller: controller),
