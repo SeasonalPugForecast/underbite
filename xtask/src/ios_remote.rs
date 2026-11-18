@@ -800,7 +800,9 @@ fn shot_devices(remote: &Remote) -> [(&'static str, &str); 2] {
 }
 
 /// On the Mac: runs the app in each simulator and takes a light screenshot of every
-/// shot, and a dark one of those that ask for it, into `.screens/<iphone|ipad>/`.
+/// shot, and a dark one of those that ask for it, into `.screens/<iphone|ipad>/`. The app
+/// is removed before it is installed, so a run never starts from data an earlier build
+/// left behind (a lane's simulators are clones that carry the base devices' app data).
 fn shots(remote: &Remote, list: &[Shot]) -> String {
     let app = format!("{DERIVED}/Build/Products/Debug-iphonesimulator/{APP}");
     let mut steps = vec![format!("rm -rf {SCREENS}")];
@@ -810,6 +812,7 @@ fn shots(remote: &Remote, list: &[Shot]) -> String {
         steps.push(format!(
             "mkdir -p {dir}; xcrun simctl boot {sim} 2>/dev/null || true; \
              xcrun simctl bootstatus {sim} -b >/dev/null; xcrun simctl ui {sim} appearance light; \
+             xcrun simctl uninstall {sim} {BUNDLE_ID} 2>/dev/null || true; \
              xcrun simctl install {sim} {app}"
         ));
         for (i, shot) in list.iter().enumerate() {
@@ -1779,6 +1782,14 @@ mod tests {
         ] {
             assert!(
                 line.contains(&format!("xcrun simctl install {sim} ")),
+                "{line}"
+            );
+            // Each run starts from a fresh install, not from an earlier build's data.
+            let uninstall = format!("xcrun simctl uninstall {sim} dev.savery.underbite");
+            let install = format!("xcrun simctl install {sim} ");
+            assert!(
+                line.find(&uninstall)
+                    .is_some_and(|u| line.find(&install).is_some_and(|i| u < i)),
                 "{line}"
             );
             assert!(
