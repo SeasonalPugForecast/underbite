@@ -49,7 +49,7 @@ private struct MapScreen: View {
     @Bindable var controller: MapController
     @Environment(SpotStore.self) private var store
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @State private var showsLayers = false
+    @State private var showsLayers = DrawerLaunch.opens
 
     /// The room MapKit's own logo and legal link take at the bottom of the map.
     private static let appleLegalHeight: CGFloat = 34
