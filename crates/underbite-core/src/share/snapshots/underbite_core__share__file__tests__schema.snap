@@ -35,8 +35,8 @@ expression: schemas
             "type": "string"
           },
           {
-            "const": "rounded1_km",
-            "description": "Rounded to 0.01 degrees, about a kilometre.",
+            "const": "rounded_1km",
+            "description": "Rounded to 0.01 degrees, about a kilometre. Written `rounded_1km`; the earlier spelling\n`rounded1_km` is still read.",
             "type": "string"
           },
           {
@@ -357,8 +357,8 @@ expression: schemas
         "type": "string"
       },
       {
-        "const": "rounded1_km",
-        "description": "Rounded to 0.01 degrees, about a kilometre.",
+        "const": "rounded_1km",
+        "description": "Rounded to 0.01 degrees, about a kilometre. Written `rounded_1km`; the earlier spelling\n`rounded1_km` is still read.",
         "type": "string"
       },
       {

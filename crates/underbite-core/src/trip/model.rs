@@ -105,7 +105,9 @@ pub enum Fuzz {
     /// The coordinates as saved.
     #[default]
     Exact,
-    /// Rounded to 0.01 degrees, about a kilometre.
+    /// Rounded to 0.01 degrees, about a kilometre. Written `rounded_1km`; the earlier spelling
+    /// `rounded1_km` is still read.
+    #[serde(rename = "rounded_1km", alias = "rounded1_km")]
     Rounded1Km,
     /// No coordinates; the area and region only.
     AreaOnly,
@@ -320,6 +322,16 @@ pub(crate) mod date_string {
 
 #[cfg(test)]
 pub(crate) mod tests {
+
+    #[test]
+    fn the_rounded_level_is_written_rounded_1km_and_the_old_spelling_still_reads() {
+        assert_eq!(
+            serde_json::to_string(&Fuzz::Rounded1Km).unwrap(),
+            "\"rounded_1km\""
+        );
+        let old: Fuzz = serde_json::from_str("\"rounded1_km\"").unwrap();
+        assert_eq!(old, Fuzz::Rounded1Km);
+    }
     use super::*;
 
     fn date(year: i32, month: u8, day: u8) -> LocalDate {
