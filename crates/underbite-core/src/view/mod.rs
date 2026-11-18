@@ -5,6 +5,7 @@
 //! where a chart needs them, already in display units. The public types avoid generics, tuples
 //! and maps so they cross the foreign-function bridge as plain records and enums.
 
+pub mod alerts;
 pub mod cards;
 pub mod chart;
 pub mod format;
