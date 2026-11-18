@@ -993,6 +993,9 @@ keys! {
         "Log a catch and Luna keeps the conditions beside it. The sashimi plate is waiting.",
     ),
     LogConditionsTitle => ("Conditions", "Conditions"),
+    LogExportTitle => ("Export the log", "Export the log"),
+    LogExportCsv => ("Spreadsheet (CSV)", "Spreadsheet (CSV)"),
+    LogExportGpx => ("Waypoints (GPX)", "Waypoints (GPX)"),
     LogNoConditions => (
         "No conditions were saved with this catch.",
         "No conditions were saved with this catch.",
@@ -1852,6 +1855,8 @@ safety_keys! {
     /// `{agency}`, `{date}` (`YYYY-MM-DD`).
     RegChecked => "{agency}, link checked {date}",
     RegUnconfirmed => "{agency}, link not confirmed when checked {date}",
+    /// Before the catch log is shared as a file.
+    LogExportWarning => "This file holds the exact place of every catch. Share it only with people you trust with those places.",
     RegulationsDisclaimer => "Fishing regulations change during the year. Underbite does not state limits, seasons or licence rules; open the official page and check it before you fish.",
     /// The licences of species profile values.
     LicenceCcByNc4 => "CC BY-NC 4.0",

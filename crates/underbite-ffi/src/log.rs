@@ -24,7 +24,7 @@ use underbite_core::view::log::{
     edit_pounds_ounces, edit_weight, fish_units, insights_view, parse_length, parse_pounds_ounces,
     parse_weight,
 };
-use underbite_core::view::strings::{Key, Strings};
+use underbite_core::view::strings::{Key, SafetyKey, Strings};
 
 use crate::map::formatter;
 use crate::settings::{SettingsError, load};
@@ -734,6 +734,30 @@ pub fn catch_cells(
 // ---------------------------------------------------------------------------------------------
 // Export
 // ---------------------------------------------------------------------------------------------
+
+/// The words of the log's export: its title, the two formats and the warning shown before the
+/// file is shared (plain in every voice: the file holds exact places).
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct ExportWords {
+    pub title: String,
+    pub csv: String,
+    pub gpx: String,
+    pub warning: String,
+}
+
+/// The words of the log's export in the user's voice.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn log_export_words(settings_json: String) -> Result<ExportWords, LogError> {
+    let (config, _) = load(&settings_json)?;
+    let s = Strings::new(config.presentation.voice);
+    Ok(ExportWords {
+        title: s.get(Key::LogExportTitle).to_owned(),
+        csv: s.get(Key::LogExportCsv).to_owned(),
+        gpx: s.get(Key::LogExportGpx).to_owned(),
+        warning: s.safety(SafetyKey::LogExportWarning).to_owned(),
+    })
+}
 
 /// The catches as CSV text, for the user to save or share. Made only when asked for.
 #[uniffi::export]

@@ -6,7 +6,7 @@ use underbite_ffi::log::{
     CatchFilter, CatchInput, FateId, LogError, PlaceName, catch_cells, catch_detail_view,
     catch_list_view, check_length_text, check_weight_text, fate_options, fish_units_info,
     insights_json, log_attach_conditions, log_delete, log_editor, log_export_csv, log_export_gpx,
-    log_load, log_merge, log_new, log_save,
+    log_export_words, log_load, log_merge, log_new, log_save,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -385,4 +385,15 @@ fn exports_are_made_on_request_from_live_catches_only() {
     let gpx = log_export_gpx(book).unwrap();
     assert!(gpx.contains("<gpx"));
     assert_eq!(gpx.matches("<wpt").count(), 1);
+}
+
+#[test]
+fn the_export_warns_of_exact_places_in_the_same_words_in_both_voices() {
+    let luna = log_export_words(us()).unwrap();
+    let plain = log_export_words(metric_plain()).unwrap();
+    assert_eq!(luna.warning, plain.warning);
+    assert!(luna.warning.contains("exact place"));
+    assert_eq!(luna.csv, "Spreadsheet (CSV)");
+    assert_eq!(luna.gpx, "Waypoints (GPX)");
+    assert!(log_export_words("{".to_owned()).is_err());
 }
