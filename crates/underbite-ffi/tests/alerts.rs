@@ -12,7 +12,7 @@ use underbite_core::model::snapshot::testdata::sample_snapshot;
 use underbite_core::time::parse_rfc3339;
 use underbite_ffi::alerts::{
     AlertError, AlertGridResponse, AlertRuleState, AlertSpotData, AlertStep, AlertTargetKind,
-    NamedPlace, alert_metrics, alert_rules, alert_threshold_text, describe_alert_rule,
+    NamedPlace, alert_metrics, alert_rules, alert_texts, alert_threshold_text, describe_alert_rule,
     evaluate_alerts, fetch_alert_spot, parse_alert_threshold, plan_alerts, put_alert_rule,
     remove_alert_rule, set_alert_rule_enabled,
 };
@@ -253,6 +253,15 @@ mod alerts {
     // -----------------------------------------------------------------------------------------
     // Editing
     // -----------------------------------------------------------------------------------------
+
+    #[test]
+    fn the_rules_screen_says_that_ios_decides_when_checks_run() {
+        let t = alert_texts(default_settings_json()).unwrap();
+        assert!(t.background_timing.contains("when iOS allows it"));
+        assert_eq!(t.check_now, "Check now");
+        assert!(t.notifications_off.contains("Notifications are off"));
+        assert!(alert_texts("{".to_owned()).is_err());
+    }
 
     #[test]
     fn rules_are_saved_listed_turned_off_and_removed_through_the_settings() {

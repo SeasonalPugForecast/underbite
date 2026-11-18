@@ -42,6 +42,7 @@ use underbite_core::view::alerts::{
 };
 use underbite_core::view::cards::alerts::RuleStateKind;
 use underbite_core::view::format::Formatter;
+use underbite_core::view::strings::Key;
 use underbite_fetch::store;
 use underbite_providers::erddap::{self, GridTime};
 
@@ -424,6 +425,38 @@ pub struct AlertMetricInfo {
     pub unit: String,
     /// Whether a box rule can watch it (sea surface temperature and chlorophyll).
     pub in_boxes: bool,
+}
+
+/// The fixed words of the alert rules screen.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct AlertTexts {
+    /// That iOS decides when background checks run.
+    pub background_timing: String,
+    /// Notifications are turned off for the app.
+    pub notifications_off: String,
+    /// The link to the app's notification settings.
+    pub open_settings: String,
+    pub check_now: String,
+    pub checking: String,
+    /// A check found no rule met.
+    pub checked_nothing: String,
+}
+
+/// The fixed words of the alert rules screen in the settings' voice.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn alert_texts(settings_json: String) -> Result<AlertTexts, AlertError> {
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, "UTC");
+    let s = f.strings;
+    Ok(AlertTexts {
+        background_timing: s.get(Key::AlertBackgroundTiming).to_owned(),
+        notifications_off: s.get(Key::AlertNotificationsOff).to_owned(),
+        open_settings: s.get(Key::AlertOpenSettings).to_owned(),
+        check_now: s.get(Key::AlertCheckNow).to_owned(),
+        checking: s.get(Key::AlertChecking).to_owned(),
+        checked_nothing: s.get(Key::AlertCheckedNothing).to_owned(),
+    })
 }
 
 /// Every metric a measurement condition can watch, with its title and the unit thresholds are

@@ -1606,6 +1606,19 @@ keys! {
     /// `{time}`.
     AlertRuleChecked => ("Checked {time}", "Checked {time}"),
     AlertRulesTitle => ("Your alert rules", "Your alert rules"),
+    /// Under the alert rules: iOS, not the app, decides when background checks run.
+    AlertBackgroundTiming => (
+        "Rules are checked in the background when iOS allows it, which can be hours apart. Check now to look at once.",
+        "Rules are checked in the background when iOS allows it, which can be hours apart. Check now to look at once.",
+    ),
+    AlertNotificationsOff => (
+        "Notifications are off for Underbite, so rules that are met cannot tell you.",
+        "Notifications are off for Underbite, so rules that are met cannot tell you.",
+    ),
+    AlertOpenSettings => ("Turn on in Settings", "Turn on in Settings"),
+    AlertCheckNow => ("Check now", "Check now"),
+    AlertChecking => ("Checking…", "Checking…"),
+    AlertCheckedNothing => ("No rule is met right now.", "No rule is met right now."),
     /// `{met}`, `{count}`.
     AlertRulesMet => ("Rules met: {met} of {count}", "Rules met: {met} of {count}"),
     /// One rule for `VoiceOver`: `{name}`, `{state}`.
