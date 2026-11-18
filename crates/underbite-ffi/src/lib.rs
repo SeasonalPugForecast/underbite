@@ -11,4 +11,6 @@ pub mod map;
 pub mod map_stations;
 pub mod offline;
 pub mod settings;
+pub mod share;
+pub mod trip;
 pub mod view;

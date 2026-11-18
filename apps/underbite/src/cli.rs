@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use clap::{ArgAction, Args, Parser, Subcommand};
 
-use crate::commands::{record, spot, stations, tides};
+use crate::commands::{record, spot, stations, tides, trip};
 
 /// Conditions for a fishing spot from free data sources.
 #[derive(Debug, Parser)]
@@ -42,6 +42,8 @@ pub(crate) enum Cmd {
     Stations(stations::Args),
     /// Show tide predictions for a station.
     Tides(tides::Args),
+    /// Plan a trip: each day at each place, with what every value is based on.
+    Trip(trip::Args),
     /// Record provider responses as test fixtures (live; run by hand).
     Record(record::Args),
 }

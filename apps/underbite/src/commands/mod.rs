@@ -4,3 +4,4 @@ pub(crate) mod record;
 pub(crate) mod spot;
 pub(crate) mod stations;
 pub(crate) mod tides;
+pub(crate) mod trip;

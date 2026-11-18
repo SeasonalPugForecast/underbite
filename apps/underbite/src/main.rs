@@ -17,6 +17,7 @@ fn run(cli: &Cli) -> anyhow::Result<ExitCode> {
         Cmd::Spot(args) => commands::spot::run(args, &cli.global),
         Cmd::Stations(args) => commands::stations::run(args, &cli.global),
         Cmd::Tides(args) => commands::tides::run(args, &cli.global),
+        Cmd::Trip(args) => commands::trip::run(args, &cli.global),
         Cmd::Record(args) => commands::record::run(args, &cli.global),
     }
 }
