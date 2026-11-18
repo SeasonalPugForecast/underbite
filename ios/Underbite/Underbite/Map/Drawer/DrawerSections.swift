@@ -9,8 +9,8 @@ nonisolated struct DrawerGroup: Equatable, Sendable, Identifiable {
     let title: String
     /// Base maps, one of which is chosen.
     let isBase: Bool
-    /// The group's layers: base maps in catalogue order, overlays in drawing order (first at the
-    /// bottom).
+    /// The group's layers: base maps in catalogue order, overlays as a layer list shows them, the
+    /// one drawn on top first.
     var layers: [LayerInfo]
 }
 
@@ -18,9 +18,9 @@ nonisolated struct DrawerGroup: Equatable, Sendable, Identifiable {
 /// within a group, and what the battery-friendly mode lets on. Nothing here touches SwiftUI, so
 /// the rules are tested on their own.
 nonisolated enum DrawerSections {
-    /// The catalogue's groups in its order (the base maps first), each overlay group in the
-    /// drawing order of `settings.layers`; a layer the settings do not list yet goes on top, in
-    /// catalogue order, as the map draws it.
+    /// The catalogue's groups in its order (the base maps first), each overlay group topmost
+    /// first in the drawing order of `settings.layers` (first at the bottom); a layer the
+    /// settings do not list yet is drawn on top, in catalogue order, as the map draws it.
     static func groups(catalogue: [LayerInfo], settings: Settings.MapSettings) -> [DrawerGroup] {
         let position = Dictionary(
             settings.layers.enumerated().map { ($0.element.id, $0.offset) },
@@ -43,16 +43,16 @@ nonisolated enum DrawerSections {
             out[i].layers.sort {
                 let a = position[$0.id] ?? settings.layers.count + (catalogueIndex[$0.id] ?? 0)
                 let b = position[$1.id] ?? settings.layers.count + (catalogueIndex[$1.id] ?? 0)
-                return a < b
+                return a > b
             }
         }
         return out
     }
 
     /// Moves layers within one group, as a list's `onMove` reports it: `ids` is the group's
-    /// layers as listed. The other layers keep their places in `map.layers`; the group's layers
-    /// take the places the group had, in the new order. A layer of the group the settings do not
-    /// list yet is added, hidden.
+    /// layers as listed (topmost first). The other layers keep their places in `map.layers`; the
+    /// group's layers take the places the group had, in the new order (the first listed is drawn
+    /// on top). A layer of the group the settings do not list yet is added, hidden.
     static func move(
         ids: [String], fromOffsets source: IndexSet, toOffset destination: Int,
         in map: inout Settings.MapSettings
@@ -69,7 +69,8 @@ nonisolated enum DrawerSections {
         for place in places where states[map.layers[place].id] == nil {
             states[map.layers[place].id] = map.layers[place]
         }
-        let ordered = moved.compactMap { states[$0] }
+        // `map.layers` is bottom first.
+        let ordered = moved.reversed().compactMap { states[$0] }
         guard ordered.count == places.count else { return }
         for (place, state) in zip(places, ordered) {
             map.layers[place] = state

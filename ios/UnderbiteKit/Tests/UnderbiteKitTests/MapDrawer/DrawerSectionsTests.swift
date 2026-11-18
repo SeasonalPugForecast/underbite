@@ -45,16 +45,18 @@ final class DrawerSectionsTests: XCTestCase {
         XCTAssertTrue(order.contains("water"))
     }
 
-    func testAGroupIsListedInTheSettingsDrawingOrder() throws {
+    func testAGroupIsListedTopmostFirst() throws {
         var settings = try settings()
         let water = try XCTUnwrap(try groups(settings).first { $0.id == "water" })
-        XCTAssertEqual(water.layers.first?.id, "sst")
-        // SST moved to the top of the drawing order is listed last in its group.
+        let drawn = settings.map.layers.map(\.id).filter { id in water.layers.contains { $0.id == id } }
+        XCTAssertEqual(water.layers.map(\.id), drawn.reversed())
+        XCTAssertEqual(water.layers.last?.id, "sst")
+        // SST moved to the top of the drawing order is listed first in its group.
         let sst = try XCTUnwrap(settings.map.layers.first { $0.id == "sst" })
         settings.map.layers.removeAll { $0.id == "sst" }
         settings.map.layers.append(sst)
         let moved = try XCTUnwrap(try groups(settings).first { $0.id == "water" })
-        XCTAssertEqual(moved.layers.last?.id, "sst")
+        XCTAssertEqual(moved.layers.first?.id, "sst")
         XCTAssertEqual(moved.layers.count, water.layers.count)
     }
 
@@ -63,11 +65,11 @@ final class DrawerSectionsTests: XCTestCase {
         let water = try XCTUnwrap(try groups(settings).first { $0.id == "water" })
         let ids = water.layers.map(\.id)
         var map = settings.map
-        // The first water layer moves to the end of its group.
+        // The first water layer listed (the topmost) moves to the end of the list: the bottom.
         DrawerSections.move(ids: ids, fromOffsets: [0], toOffset: ids.count, in: &map)
         let group = Set(ids)
-        XCTAssertEqual(
-            map.layers.filter { group.contains($0.id) }.map(\.id), Array(ids.dropFirst()) + [ids[0]])
+        let listed = Array(ids.dropFirst()) + [ids[0]]
+        XCTAssertEqual(map.layers.filter { group.contains($0.id) }.map(\.id), listed.reversed())
         // Every other layer keeps its index, and the moved one its state.
         for (i, layer) in settings.map.layers.enumerated() where !group.contains(layer.id) {
             XCTAssertEqual(map.layers[i], layer)
@@ -78,7 +80,7 @@ final class DrawerSectionsTests: XCTestCase {
         // The drawer lists the new order.
         var changed = settings
         changed.map = map
-        XCTAssertEqual(try groups(changed).first { $0.id == "water" }?.layers.map(\.id), map.layers.filter { group.contains($0.id) }.map(\.id))
+        XCTAssertEqual(try groups(changed).first { $0.id == "water" }?.layers.map(\.id), listed)
     }
 
     func testMovesMeanWhatAListsOnMoveMeans() {
@@ -103,12 +105,12 @@ final class DrawerSectionsTests: XCTestCase {
         var settings = try settings()
         let ids = try XCTUnwrap(try groups(settings).first { $0.id == "water" }).layers.map(\.id)
         settings.map.layers.removeAll { $0.id == "clarity" }
-        // The drawer still lists it (on top), and a move gives it a place.
+        // The drawer still lists it (drawn on top, so first), and a move gives it a place.
         let listed = try XCTUnwrap(try groups(settings).first { $0.id == "water" }).layers.map(\.id)
-        XCTAssertEqual(listed.last, "clarity")
+        XCTAssertEqual(listed.first, "clarity")
         XCTAssertEqual(Set(listed), Set(ids))
         var map = settings.map
-        DrawerSections.move(ids: listed, fromOffsets: [listed.count - 1], toOffset: 0, in: &map)
+        DrawerSections.move(ids: listed, fromOffsets: [0], toOffset: listed.count, in: &map)
         let clarity = try XCTUnwrap(map.layers.first { $0.id == "clarity" })
         XCTAssertFalse(clarity.shown)
         XCTAssertNil(clarity.opacity)

@@ -1,13 +1,14 @@
 import SwiftUI
 import UnderbiteKit
 
-/// The drawer's pages.
+/// The drawer's pages besides the layers.
 enum DrawerPage: Hashable {
     case presets
 }
 
 /// The preset row at the top of the drawer: the active preset's name, opening the presets.
 struct PresetLink: View {
+    let open: () -> Void
     @Environment(SpotStore.self) private var store
 
     private var active: String? {
@@ -16,9 +17,16 @@ struct PresetLink: View {
     }
 
     var body: some View {
-        NavigationLink(value: DrawerPage.presets) {
-            LabeledContent("Preset") {
-                if let active { Text(active) }
+        Button(action: open) {
+            HStack(spacing: 8) {
+                LabeledContent("Preset") {
+                    if let active { Text(active) }
+                }
+                .foregroundStyle(Color.primary)
+                Image(systemName: "chevron.forward")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.readableSecondary)
+                    .accessibilityHidden(true)
             }
         }
         .accessibilityIdentifier("map-presets")
@@ -30,6 +38,8 @@ struct PresetLink: View {
 /// the built-in presets and the user's own as typed.
 struct PresetList: View {
     let controller: MapController
+    /// Back to the layers.
+    let back: () -> Void
     @Environment(SpotStore.self) private var store
     @State private var naming: Naming?
     @State private var name = ""
@@ -85,8 +95,9 @@ struct PresetList: View {
                 }
             }
         }
-        .navigationTitle("Presets")
-        .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            DrawerHeader(title: "Presets", back: back)
+        }
         .alert(
             naming == .new ? "New preset" : "Rename preset",
             isPresented: Binding(get: { naming != nil }, set: { if !$0 { naming = nil } })

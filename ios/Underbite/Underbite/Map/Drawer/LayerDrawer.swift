@@ -12,11 +12,13 @@ struct LayerDrawer: View {
     @State private var expanded: Set<String> = []
     @State private var started = false
     @State private var editMode: EditMode = .inactive
-    @State private var path: [DrawerPage]
+    /// The page shown instead of the layers (the presets). The drawer swaps its pages itself: a
+    /// navigation stack inside the sheet the inspector becomes on the iPhone shows nothing.
+    @State private var page: DrawerPage?
 
     init(controller: MapController) {
         self.controller = controller
-        _path = State(initialValue: DrawerLaunch.showsPresets ? [.presets] : [])
+        _page = State(initialValue: DrawerLaunch.showsPresets ? .presets : nil)
     }
 
     /// The map settings the map draws with (the launch's overrides included).
@@ -32,76 +34,81 @@ struct LayerDrawer: View {
     private var editing: Bool { editMode.isEditing }
 
     var body: some View {
-        NavigationStack(path: $path) {
-            List {
-                let groups = groups
-                if !editing {
-                    Section {
-                        PresetLink()
-                    }
-                }
-                ForEach(groups) { group in
-                    Section(isExpanded: expansion(group.id)) {
-                        if group.isBase {
-                            ForEach(group.layers, id: \.id) { layer in
-                                BaseRow(layer: layer) { controller.setBase(layer.id) }
-                            }
-                        } else {
-                            ForEach(group.layers, id: \.id) { layer in
-                                if editing {
-                                    Text(layer.title)
-                                } else {
-                                    LayerRow(layer: layer, controller: controller)
-                                }
-                            }
-                            .onMove { source, destination in
-                                let ids = group.layers.map(\.id)
-                                edit {
-                                    DrawerSections.move(
-                                        ids: ids, fromOffsets: source, toOffset: destination,
-                                        in: &$0)
-                                }
-                            }
-                        }
-                    } header: {
-                        Text(group.title)
-                    }
-                    ForEach(modules(after: group, in: groups)) { $0.view }
-                }
-                ForEach(modules(after: nil, in: groups)) { $0.view }
-                if !editing {
-                    BatterySection(
-                        mode: drawnSettings?.batteryMode ?? "auto", on: controller.battery
-                    ) { mode in
-                        edit { $0.batteryMode = mode }
-                    }
-                }
-            }
-            .listStyle(.sidebar)
-            .environment(\.editMode, $editMode)
-            .navigationTitle("Layers")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(for: DrawerPage.self) { page in
-                switch page {
-                case .presets: PresetList(controller: controller)
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(editing ? "Done" : "Reorder") {
-                        withAnimation { editMode = editing ? .inactive : .active }
-                    }
-                    .accessibilityIdentifier("map-drawer-reorder")
-                }
+        Group {
+            switch page {
+            case .presets:
+                PresetList(controller: controller) { withAnimation { page = nil } }
+            case nil:
+                layers
             }
         }
         .onAppear {
             guard !started else { return }
             started = true
-            // The groups with a layer on open, the base maps, and the one a launch asks for.
-            expanded = Set(
-                groups.filter { $0.isBase || $0.layers.contains(where: \.shown) }.map(\.id))
-            if let group = DrawerLaunch.group { expanded.insert(group) }
+            // The groups with a layer on open and the base maps; a launch opens the one it names.
+            if let group = DrawerLaunch.group {
+                expanded = [group]
+            } else {
+                expanded = Set(
+                    groups.filter { $0.isBase || $0.layers.contains(where: \.shown) }.map(\.id))
+            }
+        }
+    }
+
+    private var layers: some View {
+        List {
+            let groups = groups
+            if !editing {
+                Section {
+                    PresetLink { withAnimation { page = .presets } }
+                }
+            }
+            ForEach(groups) { group in
+                Section(isExpanded: expansion(group.id)) {
+                    if group.isBase {
+                        ForEach(group.layers, id: \.id) { layer in
+                            BaseRow(layer: layer) { controller.setBase(layer.id) }
+                        }
+                    } else {
+                        ForEach(group.layers, id: \.id) { layer in
+                            if editing {
+                                Text(layer.title)
+                            } else {
+                                LayerRow(layer: layer, controller: controller)
+                            }
+                        }
+                        .onMove { source, destination in
+                            let ids = group.layers.map(\.id)
+                            edit {
+                                DrawerSections.move(
+                                    ids: ids, fromOffsets: source, toOffset: destination,
+                                    in: &$0)
+                            }
+                        }
+                    }
+                } header: {
+                    Text(group.title)
+                }
+                ForEach(modules(after: group, in: groups)) { $0.view }
+            }
+            ForEach(modules(after: nil, in: groups)) { $0.view }
+            if !editing {
+                BatterySection(
+                    mode: drawnSettings?.batteryMode ?? "auto", on: controller.battery
+                ) { mode in
+                    edit { $0.batteryMode = mode }
+                }
+            }
+        }
+        .listStyle(.sidebar)
+        .environment(\.editMode, $editMode)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            DrawerHeader(title: "Layers") {
+                Button(editing ? "Done" : "Reorder") {
+                    withAnimation { editMode = editing ? .inactive : .active }
+                }
+                .accessibilityIdentifier("map-drawer-reorder")
+            }
         }
     }
 
@@ -141,6 +148,43 @@ extension SpotStore {
         change(&settings.map)
         guard settings.map != before, let json = try? settings.json() else { return }
         try? updateSettings(json)
+    }
+}
+
+/// The title of a drawer page, with a way back to the layers and a control on the right.
+struct DrawerHeader<Trailing: View>: View {
+    let title: String
+    var back: (() -> Void)?
+    @ViewBuilder var trailing: () -> Trailing
+
+    var body: some View {
+        ZStack {
+            Text(title)
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+            HStack {
+                if let back {
+                    Button(action: back) {
+                        Image(systemName: "chevron.backward")
+                            .font(.body.weight(.semibold))
+                            .frame(minWidth: 44, minHeight: 44)
+                    }
+                    .accessibilityLabel("Layers")
+                    .accessibilityIdentifier("map-drawer-back")
+                }
+                Spacer()
+                trailing()
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 12)
+        .padding(.bottom, 4)
+    }
+}
+
+extension DrawerHeader where Trailing == EmptyView {
+    init(title: String, back: (() -> Void)? = nil) {
+        self.init(title: title, back: back, trailing: { EmptyView() })
     }
 }
 
