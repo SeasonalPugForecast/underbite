@@ -160,6 +160,7 @@ private struct SpotList: View {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
                     Button("Add a spot", systemImage: "mappin.and.ellipse") { sheet = .add }
+                    ImportMenuItem()
                     Button("New area", systemImage: "folder.badge.plus") { asksForArea = true }
                     if !store.areas.isEmpty {
                         Button("Arrange areas", systemImage: "folder") { sheet = .areas }

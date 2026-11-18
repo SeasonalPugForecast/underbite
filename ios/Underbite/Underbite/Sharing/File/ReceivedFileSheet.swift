@@ -13,10 +13,14 @@ extension View {
 private struct ReceivesSharedFiles: ViewModifier {
     @Environment(SpotStore.self) private var spots
     @State private var received: ReceivedFile?
+    @State private var importer = ImportInbox()
 
     func body(content: Content) -> some View {
         content
+            .receivesImports(importer)
             .onOpenURL { url in
+                // Waypoints and tracks (GPX, KML, KMZ, CSV) go to the import preview.
+                if ImportInbox.accepts(url) { return importer.open(url, store: spots) }
                 guard url.isFileURL,
                     url.pathExtension.lowercased() == UnderbiteFile.pathExtension
                 else { return }
