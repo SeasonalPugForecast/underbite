@@ -1073,6 +1073,8 @@ keys! {
     RecordLinkNas => ("Record at USGS NAS", "Record at USGS NAS"),
     /// `{source}`: the source's name, for a source without its own words.
     RecordLink => ("Record at {source}", "Record at {source}"),
+    /// A USGS NAS record: the species was found outside its native range.
+    RecordIntroduced => ("Introduced species", "Introduced species"),
     // -- the catch log --------------------------------------------------------------------
     LogReleased => ("Released", "Released"),
     /// Luna's fun tag; the plain voice says "Kept".

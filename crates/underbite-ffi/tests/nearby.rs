@@ -444,6 +444,7 @@ mod nearby {
                 _ => "Record on GBIF",
             };
             assert_eq!(pin.link_title.as_deref(), Some(link_title));
+            assert!(!pin.introduced && pin.introduced_label.is_none());
             let text = format!("{pin:?}").to_lowercase();
             for personal in ["user", "login", "recordedby", "rightsholder", "observer"] {
                 assert!(!text.contains(personal), "{personal} in {text}");
@@ -566,6 +567,8 @@ mod nearby {
         assert_eq!(pin.licence, "Public domain");
         assert!(pin.link.is_some());
         assert_eq!(pin.link_title.as_deref(), Some("Record at USGS NAS"));
+        assert!(done.records.iter().all(|p| p.introduced));
+        assert_eq!(pin.introduced_label.as_deref(), Some("Introduced species"));
         assert!(
             pin.credit
                 .contains("Nonindigenous Aquatic Species Database")
@@ -769,5 +772,26 @@ mod nearby {
         assert_eq!(w.finding_records, "Looking for species records\u{2026}");
         assert_eq!(w.find_blooms, "Show beach bloom forecasts here");
         assert_eq!(w.finding_blooms, "Looking for beach forecasts\u{2026}");
+        // The same words the plans refuse a wide view with.
+        let wide = area(-79.8, 40.5, -71.8, 45.0);
+        let refused = |e: NearbyError| match e {
+            NearbyError::ZoomIn { message } => message,
+            other @ NearbyError::Invalid { .. } => panic!("{other:?}"),
+        };
+        assert_eq!(
+            w.zoom_in_access,
+            refused(plan_access(wide, false, String::new(), settings(), now()).unwrap_err())
+        );
+        assert_eq!(
+            w.zoom_in_records,
+            refused(
+                plan_records(wide, striped_bass(&[]), String::new(), settings(), now())
+                    .unwrap_err()
+            )
+        );
+        assert_eq!(
+            w.zoom_in_stocking,
+            refused(plan_stocking(wide, settings(), now()).unwrap_err())
+        );
     }
 }

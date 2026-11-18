@@ -29,7 +29,8 @@ final class RecordsTests: XCTestCase {
         RecordPin(
             id: id, source: source, sourceName: source, taxon: "Morone saxatilis",
             commonName: "Striped Bass", title: "Striped Bass", lat: lat, lon: lon, radiusM: radius,
-            obscured: obscured,
+            obscured: obscured, introduced: source == "nas",
+            introducedLabel: source == "nas" ? "Introduced species" : nil,
             seen: "Seen Nov 1 2026", position: nil, licence: "CC0",
             licenceUrl: nil, link: nil, linkTitle: nil, credit: "GBIF.org", creditUrl: nil,
             photo: nil, accessibility: "Striped Bass")

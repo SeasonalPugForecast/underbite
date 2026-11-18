@@ -246,6 +246,10 @@ pub struct RecordPin {
     pub radius_m: Option<f64>,
     /// The source blurred the position on purpose.
     pub obscured: bool,
+    /// The record is of a species outside its native range: every USGS NAS record.
+    pub introduced: bool,
+    /// "Introduced species" for an introduced record, else `None`.
+    pub introduced_label: Option<String>,
     /// "Seen Nov 3 2026", "Date not recorded".
     pub seen: String,
     /// "Position good to 98 ft", "Position blurred by the source, within 17 mi".
@@ -362,6 +366,13 @@ pub struct NearbyWords {
     pub finding_records: String,
     pub find_blooms: String,
     pub finding_blooms: String,
+    /// In place of a lookup that is off while the view is wider than its limit, the words its
+    /// plan refuses with ([`NearbyError::ZoomIn`]): "Zoom in to look for ramps, piers and
+    /// public land", "Zoom in to look for species records", "Zoom in to look for stocked
+    /// waters".
+    pub zoom_in_access: String,
+    pub zoom_in_records: String,
+    pub zoom_in_stocking: String,
 }
 
 /// The words of the lookup buttons.
@@ -381,6 +392,9 @@ pub fn nearby_words(settings_json: String) -> Result<NearbyWords, NearbyError> {
         finding_records: w(Key::NearbyFindingRecords),
         find_blooms: w(Key::NearbyFindBlooms),
         finding_blooms: w(Key::NearbyFindingBlooms),
+        zoom_in_access: w(Key::NearbyZoomInAccess),
+        zoom_in_records: w(Key::NearbyZoomInRecords),
+        zoom_in_stocking: w(Key::NearbyZoomInStocking),
     })
 }
 
@@ -1872,6 +1886,7 @@ fn record_pin(
     let seen = record_seen(f, record.observed_on);
     let source_name = f.strings.source_name(&record.source);
     let link = web_url(record.url.as_deref());
+    let introduced = record.source == SourceId::USGS_NAS;
     let photo = record.photo.as_ref().and_then(|p| {
         let words = licence_words(f, Licence::classify(p.licence.as_deref()?)?);
         Some(RecordPhoto {
@@ -1898,6 +1913,8 @@ fn record_pin(
             .filter(|m| m.is_finite() && *m >= 0.0)
             .map(f64::from),
         obscured: record.obscured,
+        introduced,
+        introduced_label: introduced.then(|| f.strings.get(Key::RecordIntroduced).to_owned()),
         position: record_position(f, record.obscured, record.uncertainty_m),
         seen,
         licence: licence_words(f, licence),
