@@ -70,6 +70,65 @@ expression: schema
         "weather"
       ]
     },
+    "AlertRuleVm": {
+      "description": "One alert rule: its name, its conditions in the user's units and its state.",
+      "type": "object",
+      "properties": {
+        "checked": {
+          "description": "\"Checked 6:10 AM\"; `None` before the first check and when off.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "description": "The user's name for it.",
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/RuleStateKind"
+        },
+        "state_label": {
+          "description": "\"Met since 6:10 AM\", \"River flow: couldn't check, data 5 h old\".",
+          "type": "string"
+        },
+        "summary": {
+          "description": "\"River flow under 800 cfs · Water temperature under 66 °F\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "summary",
+        "state",
+        "state_label"
+      ]
+    },
+    "AlertRulesVm": {
+      "description": "The rules section of the full form.",
+      "type": "object",
+      "properties": {
+        "rules": {
+          "description": "In the order the caller gave them.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AlertRuleVm"
+          }
+        },
+        "title": {
+          "description": "\"Your alert rules\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "rules"
+      ]
+    },
     "AlertSeverity": {
       "description": "NWS alert severity.",
       "type": "string",
@@ -190,6 +249,17 @@ expression: schema
           "items": {
             "$ref": "#/$defs/AlertVm"
           }
+        },
+        "rules": {
+          "description": "The spot's alert rules and what their last check found; `None` when it has none.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AlertRulesVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -2268,6 +2338,47 @@ expression: schema
         "flood_category",
         "user_range",
         "threshold"
+      ]
+    },
+    "RuleStateKind": {
+      "description": "How a rule's last check came out, for its styling; the words are in `state_label`.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "not_met"
+          ]
+        },
+        {
+          "description": "Every condition holds.",
+          "type": "string",
+          "const": "met"
+        },
+        {
+          "description": "A condition's data was too old or too far, or its source failed.",
+          "type": "string",
+          "const": "unchecked"
+        },
+        {
+          "description": "A condition had no data.",
+          "type": "string",
+          "const": "no_data"
+        },
+        {
+          "description": "Its spot or trip was deleted.",
+          "type": "string",
+          "const": "orphaned"
+        },
+        {
+          "description": "Not checked since it was made.",
+          "type": "string",
+          "const": "not_checked"
+        },
+        {
+          "description": "Turned off.",
+          "type": "string",
+          "const": "off"
+        }
       ]
     },
     "Section": {

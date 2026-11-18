@@ -171,6 +171,8 @@ pub fn view_input(config: &Config, snapshot: SpotSnapshot, now: UnixTime) -> Vie
         },
         windows: window_params(&config.windows),
         trip_limits: config.limits.first().map(trip_limits),
+        // The rules' states live with the app, not in the configuration.
+        alert_rules: Vec::new(),
     }
 }
 

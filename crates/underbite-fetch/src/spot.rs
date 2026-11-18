@@ -246,6 +246,7 @@ mod tests {
             solunar: underbite_core::view::SolunarSettings { show: true },
             windows: underbite_core::trip::windows::WindowParams::default(),
             trip_limits: None,
+            alert_rules: Vec::new(),
         };
         underbite_core::view::cards::sources::build(&input).expect("sources card")
     }

@@ -189,7 +189,8 @@ expression: json
               "ANZ345"
             ]
           }
-        ]
+        ],
+        "rules": null
       }
     },
     {

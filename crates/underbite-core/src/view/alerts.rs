@@ -12,14 +12,24 @@ use schemars::JsonSchema;
 use serde::Serialize;
 
 use crate::alerts::{
-    AlertEvent, AlertMetric, AlertRule, AlertTarget, Condition, EventKind, Finding, FindingReason,
+    AlertEvent, AlertMetric, AlertRule, AlertTarget, CheckProblem, Condition, EventKind, Finding,
+    FindingReason, RuleState, RuleStatus,
 };
+use crate::model::Measurement;
 use crate::time::UnixTime;
 use crate::units::{DischargeUnit, HeightUnit, PressureUnit, pressure_from_hpa, pressure_to_hpa};
-use crate::view::Voice;
-use crate::view::cards::alerts::span;
+use crate::view::cards::alerts::{AlertRuleVm, RuleStateKind, span};
 use crate::view::format::Formatter;
 use crate::view::strings::{Key, MapQuantity, SafetyKey, Strings, map_value};
+use crate::view::{CardId, Voice};
+
+/// One of the spot's alert rules with what its last check found, for the alerts card.
+#[derive(Clone, Debug, PartialEq)]
+pub struct RuleInput {
+    pub rule: AlertRule,
+    /// The last check's state; `None` before the first check. A disabled rule has none.
+    pub state: Option<RuleState>,
+}
 
 /// The names of the user's saved spots and trips, by id: what notifications and the editor call
 /// them.
@@ -400,6 +410,113 @@ pub(in crate::view) fn when_from(f: &Formatter, t: UnixTime, now: UnixTime) -> S
     } else {
         f.strings
             .fmt(Key::AlertDayTime, &[("date", &date), ("time", &time)])
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Rule states on the alerts card
+// ---------------------------------------------------------------------------------------------
+
+/// What a condition is about, as a rule's state names it: "River flow", "Marine alerts".
+fn condition_subject(s: Strings, condition: Option<&Condition>) -> &'static str {
+    match condition {
+        Some(Condition::Measurement { metric, .. }) => s.alert_metric(*metric),
+        Some(Condition::MarineAlert { .. }) => s.measurement(Measurement::MarineAlerts),
+        Some(Condition::TripGo {}) => s.card_title(CardId::GoNoGo),
+        Some(Condition::WindowStarts { .. }) => s.card_title(CardId::Windows),
+        Some(Condition::StormAhead {}) => s.card_title(CardId::StormAhead),
+        None => s.get(Key::AlertRuleACondition),
+    }
+}
+
+/// An age without "ago", rounded down: "45 min", "5 h", "2 d".
+fn age_span(f: &Formatter, seconds: i64) -> String {
+    let s = seconds.max(0);
+    let (key, n) = if s < 3_600 {
+        (Key::DurationMinutes, s / 60)
+    } else if s < 86_400 {
+        (Key::DurationHours, s / 3_600)
+    } else {
+        (Key::DurationDays, s / 86_400)
+    };
+    f.strings.fmt(key, &[("n", &n.to_string())])
+}
+
+/// A rule's state in words: "Met since 6:10 AM", "River flow: couldn't check, data 5 h old".
+fn state_words(f: &Formatter, input: &RuleInput, now: UnixTime) -> (RuleStateKind, String) {
+    let s = f.strings;
+    let rule = &input.rule;
+    let Some(state) = input.state.as_ref().filter(|_| rule.enabled) else {
+        return if rule.enabled {
+            (
+                RuleStateKind::NotChecked,
+                s.get(Key::AlertRuleNotChecked).to_owned(),
+            )
+        } else {
+            (RuleStateKind::Off, s.get(Key::AlertRuleOff).to_owned())
+        };
+    };
+    let what = |i: usize| condition_subject(s, rule.all_of.get(i));
+    match state.status {
+        RuleStatus::Met => (
+            RuleStateKind::Met,
+            state.met_since.map_or_else(
+                || s.get(Key::AlertRuleMet).to_owned(),
+                |t| s.fmt(Key::AlertRuleMetSince, &[("time", &when_from(f, t, now))]),
+            ),
+        ),
+        RuleStatus::NotMet => (
+            RuleStateKind::NotMet,
+            s.get(Key::AlertRuleNotMet).to_owned(),
+        ),
+        RuleStatus::Unchecked { condition, problem } => {
+            let what = what(condition);
+            let text = match problem {
+                CheckProblem::Stale { age_s, .. } => s.fmt(
+                    Key::AlertRuleStale,
+                    &[("what", what), ("age", &age_span(f, age_s))],
+                ),
+                CheckProblem::Far { distance_m, .. } => s.fmt(
+                    Key::AlertRuleFar,
+                    &[
+                        ("what", what),
+                        ("distance", &f.distance(Some(distance_m)).full()),
+                    ],
+                ),
+                CheckProblem::SourceFailed => s.fmt(Key::AlertRuleFailed, &[("what", what)]),
+            };
+            (RuleStateKind::Unchecked, text)
+        }
+        RuleStatus::NoData { condition } => (
+            RuleStateKind::NoData,
+            s.fmt(Key::AlertRuleNoData, &[("what", what(condition))]),
+        ),
+        RuleStatus::Orphaned => (
+            RuleStateKind::Orphaned,
+            s.get(Key::AlertRuleOrphaned).to_owned(),
+        ),
+    }
+}
+
+/// A rule's row on the alerts card: its name, its conditions in the user's units and what its
+/// last check found, at `now`. The card is on the device, so the rule's name is shown whatever
+/// `show_name` says.
+pub fn rule_row(f: &Formatter, input: &RuleInput, now: UnixTime) -> AlertRuleVm {
+    let rule = &input.rule;
+    let (state, state_label) = state_words(f, input, now);
+    let checked = input.state.as_ref().filter(|_| rule.enabled).map(|st| {
+        f.strings.fmt(
+            Key::AlertRuleChecked,
+            &[("time", &when_from(f, st.checked_at, now))],
+        )
+    });
+    AlertRuleVm {
+        id: rule.id.clone(),
+        name: rule.name.clone(),
+        summary: conditions_summary(f, rule),
+        state,
+        state_label,
+        checked,
     }
 }
 

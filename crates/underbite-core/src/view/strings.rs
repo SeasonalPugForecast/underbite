@@ -1507,6 +1507,43 @@ keys! {
     ),
     /// `{range}`: "10:00 PM to 7:00 AM".
     AlertRuleQuiet => ("Quiet hours {range}", "Quiet hours {range}"),
+    /// A rule's state on the alerts card. `{time}`.
+    AlertRuleMetSince => ("Met since {time}", "Met since {time}"),
+    AlertRuleMet => ("Met", "Met"),
+    AlertRuleNotMet => ("Not met", "Not met"),
+    /// `{what}`: what could not be checked; `{age}`: "5 h".
+    AlertRuleStale => (
+        "{what}: couldn't check, data {age} old",
+        "{what}: couldn't check, data {age} old",
+    ),
+    /// `{what}`, `{distance}`.
+    AlertRuleFar => (
+        "{what}: couldn't check, the station is {distance} away",
+        "{what}: couldn't check, the station is {distance} away",
+    ),
+    /// `{what}`.
+    AlertRuleFailed => (
+        "{what}: couldn't check, the source didn't answer",
+        "{what}: couldn't check, the source didn't answer",
+    ),
+    /// `{what}`.
+    AlertRuleNoData => ("{what}: no data", "{what}: no data"),
+    /// What could not be checked when the rule no longer has that condition.
+    AlertRuleACondition => ("A condition", "A condition"),
+    AlertRuleOrphaned => ("Its spot or trip was deleted", "Its spot or trip was deleted"),
+    AlertRuleNotChecked => ("Not checked yet", "Not checked yet"),
+    AlertRuleOff => ("Off", "Off"),
+    /// `{time}`.
+    AlertRuleChecked => ("Checked {time}", "Checked {time}"),
+    AlertRulesTitle => ("Your alert rules", "Your alert rules"),
+    /// `{met}`, `{count}`.
+    AlertRulesMet => ("Rules met: {met} of {count}", "Rules met: {met} of {count}"),
+    /// One rule for `VoiceOver`: `{name}`, `{state}`.
+    AlertRuleAcc => ("{name}: {state}", "{name}: {state}"),
+    /// `{rules}`: the rules met; `{list}`: each rule.
+    AlertRulesAcc => ("{rules}. {list}.", "{rules}. {list}."),
+    /// The alerts card with rules and no alert in effect: `{title}`, `{rules}`.
+    AlertsRulesOnlyAcc => ("{title}. {rules}", "{title}. {rules}"),
     /// A threshold field's errors. `{example}`: "12.5".
     AlertThresholdNumber => (
         "Enter a number, such as {example}",

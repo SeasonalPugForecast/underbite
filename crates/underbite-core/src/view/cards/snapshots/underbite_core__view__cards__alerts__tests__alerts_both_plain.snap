@@ -93,6 +93,7 @@ expression: card
           "ANZ345"
         ]
       }
-    ]
+    ],
+    "rules": null
   }
 }

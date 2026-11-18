@@ -54,6 +54,7 @@ expression: card
           "GMZ275"
         ]
       }
-    ]
+    ],
+    "rules": null
   }
 }

@@ -8,6 +8,7 @@ use whether_core::scales::Level;
 use crate::model::{AlertSeverity, MarineAlert};
 use crate::provenance::SourceId;
 use crate::time::UnixTime;
+use crate::view::alerts::rule_row;
 use crate::view::format::Formatter;
 use crate::view::strings::{Key, SafetyKey};
 use crate::view::{CardChrome, CardId, CardState, Compact, CreditVm, Quantity, ViewInput};
@@ -53,6 +54,51 @@ pub struct AlertVm {
 pub struct AlertsFull {
     /// Marine and weather alerts de-duplicated, most severe first.
     pub alerts: Vec<AlertVm>,
+    /// The spot's alert rules and what their last check found; `None` when it has none.
+    pub rules: Option<AlertRulesVm>,
+}
+
+/// The rules section of the full form.
+#[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
+pub struct AlertRulesVm {
+    /// "Your alert rules".
+    pub title: String,
+    /// In the order the caller gave them.
+    pub rules: Vec<AlertRuleVm>,
+}
+
+/// How a rule's last check came out, for its styling; the words are in `state_label`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum RuleStateKind {
+    /// Every condition holds.
+    Met,
+    NotMet,
+    /// A condition's data was too old or too far, or its source failed.
+    Unchecked,
+    /// A condition had no data.
+    NoData,
+    /// Its spot or trip was deleted.
+    Orphaned,
+    /// Not checked since it was made.
+    NotChecked,
+    /// Turned off.
+    Off,
+}
+
+/// One alert rule: its name, its conditions in the user's units and its state.
+#[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
+pub struct AlertRuleVm {
+    pub id: String,
+    /// The user's name for it.
+    pub name: String,
+    /// "River flow under 800 cfs · Water temperature under 66 °F".
+    pub summary: String,
+    pub state: RuleStateKind,
+    /// "Met since 6:10 AM", "River flow: couldn't check, data 5 h old".
+    pub state_label: String,
+    /// "Checked 6:10 AM"; `None` before the first check and when off.
+    pub checked: Option<String>,
 }
 
 /// One alert on its way to the card, with what de-duplication compares.
@@ -218,7 +264,8 @@ pub fn build(input: &ViewInput) -> Option<AlertsCard> {
             None => entries.push(entry),
         }
     }
-    if entries.is_empty() {
+    let rules = rules_section(&f, input);
+    if entries.is_empty() && rules.is_none() {
         return None;
     }
     // Most severe first, then the newest onset.
@@ -228,7 +275,12 @@ pub fn build(input: &ViewInput) -> Option<AlertsCard> {
             .then(b.onset.cmp(&a.onset))
     });
     let alerts: Vec<AlertVm> = entries.into_iter().map(|e| e.vm).collect();
-    let top = &alerts[0];
+    let title = f.strings.card_title(CardId::Alerts).to_owned();
+    let Some(top) = alerts.first() else {
+        // Without alerts the card is built only for its rules.
+        let rules = rules?;
+        return Some(rules_only_card(&f, title, rules));
+    };
 
     let mut credits = Vec::new();
     if !snapshot.marine.marine_alerts.is_empty() {
@@ -256,10 +308,9 @@ pub fn build(input: &ViewInput) -> Option<AlertsCard> {
         });
     }
 
-    let title = f.strings.card_title(CardId::Alerts).to_owned();
     let count = alerts.len();
     let events: Vec<&str> = alerts.iter().map(|a| a.event.as_str()).collect();
-    let accessibility = f.strings.fmt(
+    let mut accessibility = f.strings.fmt(
         Key::AlertsAcc,
         &[
             ("title", &title),
@@ -267,6 +318,10 @@ pub fn build(input: &ViewInput) -> Option<AlertsCard> {
             ("events", &events.join(", ")),
         ],
     );
+    if let Some(rules) = &rules {
+        accessibility.push(' ');
+        accessibility.push_str(&rules_accessibility(&f, rules));
+    }
     let lines = [
         top.ends
             .as_ref()
@@ -299,8 +354,104 @@ pub fn build(input: &ViewInput) -> Option<AlertsCard> {
             lines,
             spark: Vec::new(),
         },
-        full: AlertsFull { alerts },
+        full: AlertsFull { alerts, rules },
     })
+}
+
+/// The spot's rules with their states, when it has any.
+fn rules_section(f: &Formatter, input: &ViewInput) -> Option<AlertRulesVm> {
+    (!input.alert_rules.is_empty()).then(|| AlertRulesVm {
+        title: f.strings.get(Key::AlertRulesTitle).to_owned(),
+        rules: input
+            .alert_rules
+            .iter()
+            .map(|r| rule_row(f, r, input.now))
+            .collect(),
+    })
+}
+
+/// "Rules met: 1 of 2".
+fn rules_met(f: &Formatter, rules: &AlertRulesVm) -> (usize, String) {
+    let met = rules
+        .rules
+        .iter()
+        .filter(|r| r.state == RuleStateKind::Met)
+        .count();
+    let text = f.strings.fmt(
+        Key::AlertRulesMet,
+        &[
+            ("met", &met.to_string()),
+            ("count", &rules.rules.len().to_string()),
+        ],
+    );
+    (met, text)
+}
+
+/// What `VoiceOver` reads for the rules: how many are met, then each with its state.
+fn rules_accessibility(f: &Formatter, rules: &AlertRulesVm) -> String {
+    let (_, met) = rules_met(f, rules);
+    let list: Vec<String> = rules
+        .rules
+        .iter()
+        .map(|r| {
+            f.strings.fmt(
+                Key::AlertRuleAcc,
+                &[("name", &r.name), ("state", &r.state_label)],
+            )
+        })
+        .collect();
+    f.strings.fmt(
+        Key::AlertRulesAcc,
+        &[("rules", &met), ("list", &list.join(". "))],
+    )
+}
+
+/// The card with rules and no alert in effect: the headline counts the rules met, the lines
+/// name the first one met. It claims nothing about alerts.
+fn rules_only_card(f: &Formatter, title: String, rules: AlertRulesVm) -> AlertsCard {
+    let (met, headline) = rules_met(f, &rules);
+    let first_met = rules.rules.iter().find(|r| r.state == RuleStateKind::Met);
+    let lines = [
+        first_met.map(|r| r.name.clone()),
+        (met > 1).then(|| {
+            f.strings
+                .fmt(Key::MoreCount, &[("n", &(met - 1).to_string())])
+        }),
+    ]
+    .into_iter()
+    .flatten()
+    .collect();
+    let accessibility = f.strings.fmt(
+        Key::AlertsRulesOnlyAcc,
+        &[
+            ("title", &title),
+            ("rules", &rules_accessibility(f, &rules)),
+        ],
+    );
+    AlertsCard {
+        chrome: CardChrome {
+            id: CardId::Alerts,
+            title,
+            footnote: None,
+            credits: Vec::new(),
+            state: CardState::Fresh,
+            notices: Vec::new(),
+            accessibility,
+        },
+        compact: Compact {
+            headline: Quantity {
+                value: None,
+                text: headline,
+                unit: String::new(),
+            },
+            lines,
+            spark: Vec::new(),
+        },
+        full: AlertsFull {
+            alerts: Vec::new(),
+            rules: Some(rules),
+        },
+    }
 }
 
 #[cfg(test)]
@@ -554,5 +705,231 @@ pub(in crate::view) mod tests {
         let plain = build(&marine_input(Voice::Plain)).unwrap();
         assert_eq!(luna.full, plain.full);
         assert!(!format!("{:?}", luna.chrome).contains("Luna"));
+    }
+
+    // -- the rules section --------------------------------------------------------------------
+
+    use crate::alerts::{AlertMetric, AlertRule, CheckProblem, Condition, RuleState, RuleStatus};
+    use crate::view::alerts::RuleInput;
+    use crate::view::alerts::tests::{COOL_C, CROTON_LOW_M3S, below, croton_rule, rule, spot};
+    use crate::view::cards::flow::fixtures::{metric, us};
+    use std::collections::BTreeMap;
+
+    fn state(status: RuleStatus, met_since: Option<&str>) -> RuleState {
+        RuleState {
+            status,
+            checked_at: at("2026-11-08T14:10:00Z"),
+            met_since: met_since.map(at),
+            notified_at: None,
+            pending: None,
+            marine: BTreeMap::new(),
+        }
+    }
+
+    fn named(name: &str, all_of: Vec<Condition>) -> AlertRule {
+        AlertRule {
+            name: name.into(),
+            ..rule(
+                &name.to_lowercase().replace(' ', "-"),
+                spot("battery"),
+                all_of,
+            )
+        }
+    }
+
+    /// The Battery's rules in every state a check can leave.
+    pub(in crate::view) fn battery_rules() -> Vec<RuleInput> {
+        let advisory = || Condition::MarineAlert {
+            event: "Small Craft Advisory".into(),
+        };
+        let gusts = || below(AlertMetric::Gusts, 9.0);
+        let water = || below(AlertMetric::WaterTemperature, COOL_C);
+        let with = |rule: AlertRule, state: RuleState| RuleInput {
+            rule,
+            state: Some(state),
+        };
+        vec![
+            with(
+                named("Harbor advisory", vec![advisory()]),
+                state(RuleStatus::Met, Some("2026-11-08T11:10:00Z")),
+            ),
+            with(
+                named("Calm and cool", vec![gusts(), water()]),
+                state(RuleStatus::Met, Some("2026-11-07T22:40:00Z")),
+            ),
+            with(
+                named("Light wind", vec![gusts()]),
+                state(
+                    RuleStatus::Unchecked {
+                        condition: 0,
+                        problem: CheckProblem::Stale {
+                            age_s: 5 * 3_600 + 600,
+                            limit_s: 3 * 3_600,
+                        },
+                    },
+                    None,
+                ),
+            ),
+            with(
+                named("Cool water", vec![water()]),
+                state(
+                    RuleStatus::Unchecked {
+                        condition: 0,
+                        problem: CheckProblem::Far {
+                            distance_m: 41_000.0,
+                            limit_m: 25_000.0,
+                        },
+                    },
+                    None,
+                ),
+            ),
+            with(
+                named("Advisory and calm", vec![advisory(), gusts()]),
+                state(
+                    RuleStatus::Unchecked {
+                        condition: 0,
+                        problem: CheckProblem::SourceFailed,
+                    },
+                    None,
+                ),
+            ),
+            with(
+                named("Low tide", vec![below(AlertMetric::TideHeight, 0.2)]),
+                state(RuleStatus::NoData { condition: 0 }, None),
+            ),
+            with(
+                named("Storms", vec![Condition::StormAhead {}]),
+                state(RuleStatus::NotMet, None),
+            ),
+            with(croton_rule(), state(RuleStatus::Orphaned, None)),
+            RuleInput {
+                rule: named(
+                    "New rule",
+                    vec![Condition::WindowStarts { within_minutes: 30 }],
+                ),
+                state: None,
+            },
+            with(
+                AlertRule {
+                    enabled: false,
+                    ..named(
+                        "Old rule",
+                        vec![below(AlertMetric::Discharge, CROTON_LOW_M3S)],
+                    )
+                },
+                state(RuleStatus::Met, Some("2026-11-01T10:00:00Z")),
+            ),
+        ]
+    }
+
+    #[test]
+    fn the_rules_section_shows_each_rules_state() {
+        let mut input = marine_input(Voice::Plain);
+        input.alert_rules = battery_rules();
+        let card = build(&input).unwrap();
+        // The alerts are as before.
+        assert_eq!(
+            card.full.alerts,
+            build(&marine_input(Voice::Plain)).unwrap().full.alerts
+        );
+        let rules = card.full.rules.as_ref().unwrap();
+        assert_eq!(rules.title, "Your alert rules");
+        let states: Vec<(RuleStateKind, &str)> = rules
+            .rules
+            .iter()
+            .map(|r| (r.state, r.state_label.as_str()))
+            .collect();
+        assert_eq!(
+            states,
+            [
+                (RuleStateKind::Met, "Met since 6:10 AM"),
+                (RuleStateKind::Met, "Met since Nov 7, 5:40 PM"),
+                (
+                    RuleStateKind::Unchecked,
+                    "Gusts: couldn't check, data 5 h old"
+                ),
+                (
+                    RuleStateKind::Unchecked,
+                    "Water temperature: couldn't check, the station is 25 mi away"
+                ),
+                (
+                    RuleStateKind::Unchecked,
+                    "Marine alerts: couldn't check, the source didn't answer"
+                ),
+                (RuleStateKind::NoData, "Tide height: no data"),
+                (RuleStateKind::NotMet, "Not met"),
+                (RuleStateKind::Orphaned, "Its spot or trip was deleted"),
+                (RuleStateKind::NotChecked, "Not checked yet"),
+                (RuleStateKind::Off, "Off"),
+            ]
+        );
+        assert_eq!(rules.rules[0].checked.as_deref(), Some("Checked 9:10 AM"));
+        assert_eq!(rules.rules[8].checked, None);
+        assert_eq!(rules.rules[9].checked, None);
+        assert_eq!(
+            rules.rules[1].summary,
+            "Gusts under 20 mph · Water temperature under 66 °F"
+        );
+        // The compact form still leads with the alert in effect.
+        assert_eq!(card.compact.headline.text, "Small Craft Advisory");
+        assert!(
+            card.chrome
+                .accessibility
+                .contains("Rules met: 2 of 10. Harbor advisory: Met since 6:10 AM."),
+            "{}",
+            card.chrome.accessibility
+        );
+        let mut all = BTreeMap::new();
+        for (units, u) in [("us", us()), ("metric", metric())] {
+            for voice in [Voice::Luna, Voice::Plain] {
+                let mut input = marine_input(voice);
+                input.units = u;
+                input.alert_rules = battery_rules();
+                all.insert(
+                    format!("{units} {voice:?}"),
+                    build(&input).unwrap().full.rules,
+                );
+            }
+        }
+        insta::assert_json_snapshot!("alerts_rules_section", all);
+    }
+
+    #[test]
+    fn rules_without_an_alert_in_effect_still_make_the_card() {
+        let mut input = marine_input(Voice::Luna);
+        input.snapshot.marine.marine_alerts = Vec::new();
+        assert!(build(&input).is_none());
+        input.alert_rules = battery_rules();
+        let card = build(&input).unwrap();
+        assert_eq!(card.full.alerts, Vec::<AlertVm>::new());
+        assert_eq!(card.chrome.credits, Vec::<CreditVm>::new());
+        assert_eq!(card.compact.headline.text, "Rules met: 2 of 10");
+        assert_eq!(card.compact.lines, ["Harbor advisory", "1 more"]);
+        assert!(
+            card.chrome
+                .accessibility
+                .starts_with("Alerts. Rules met: 2 of 10.")
+        );
+        insta::assert_json_snapshot!("alerts_rules_only_luna", card);
+    }
+
+    #[test]
+    fn the_advisory_and_the_rules_safety_words_are_the_same_in_both_voices() {
+        let card = |voice| {
+            let mut input = marine_input(voice);
+            input.alert_rules = battery_rules();
+            build(&input).unwrap()
+        };
+        let (luna, plain) = (card(Voice::Luna), card(Voice::Plain));
+        assert_eq!(luna.full.alerts, plain.full.alerts);
+        let summary =
+            |c: &AlertsCard, i: usize| c.full.rules.as_ref().unwrap().rules[i].summary.clone();
+        // The advisory and the storm conditions.
+        assert_eq!(summary(&luna, 0), "Small Craft Advisory in effect");
+        assert_eq!(summary(&luna, 0), summary(&plain, 0));
+        assert_eq!(summary(&luna, 6), summary(&plain, 6));
+        // A fishing window follows the voice.
+        assert_eq!(summary(&plain, 8), "A fishing window within 30 min");
+        assert_eq!(summary(&luna, 8), "A snack time within 30 min");
     }
 }

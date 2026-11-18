@@ -1,0 +1,117 @@
+---
+source: crates/underbite-core/src/view/cards/alerts.rs
+expression: card
+---
+{
+  "chrome": {
+    "id": "alerts",
+    "title": "Alerts",
+    "footnote": null,
+    "credits": [],
+    "state": {
+      "state": "fresh"
+    },
+    "notices": [],
+    "accessibility": "Alerts. Rules met: 2 of 10. Harbor advisory: Met since 6:10 AM. Calm and cool: Met since Nov 7, 5:40 PM. Light wind: Gusts: couldn't check, data 5 h old. Cool water: Water temperature: couldn't check, the station is 25 mi away. Advisory and calm: Marine alerts: couldn't check, the source didn't answer. Low tide: Tide height: no data. Storms: Not met. Croton low and cool: Its spot or trip was deleted. New rule: Not checked yet. Old rule: Off."
+  },
+  "compact": {
+    "headline": {
+      "value": null,
+      "text": "Rules met: 2 of 10",
+      "unit": ""
+    },
+    "lines": [
+      "Harbor advisory",
+      "1 more"
+    ],
+    "spark": []
+  },
+  "full": {
+    "alerts": [],
+    "rules": {
+      "title": "Your alert rules",
+      "rules": [
+        {
+          "id": "harbor-advisory",
+          "name": "Harbor advisory",
+          "summary": "Small Craft Advisory in effect",
+          "state": "met",
+          "state_label": "Met since 6:10 AM",
+          "checked": "Checked 9:10 AM"
+        },
+        {
+          "id": "calm-and-cool",
+          "name": "Calm and cool",
+          "summary": "Gusts under 20 mph · Water temperature under 66 °F",
+          "state": "met",
+          "state_label": "Met since Nov 7, 5:40 PM",
+          "checked": "Checked 9:10 AM"
+        },
+        {
+          "id": "light-wind",
+          "name": "Light wind",
+          "summary": "Gusts under 20 mph",
+          "state": "unchecked",
+          "state_label": "Gusts: couldn't check, data 5 h old",
+          "checked": "Checked 9:10 AM"
+        },
+        {
+          "id": "cool-water",
+          "name": "Cool water",
+          "summary": "Water temperature under 66 °F",
+          "state": "unchecked",
+          "state_label": "Water temperature: couldn't check, the station is 25 mi away",
+          "checked": "Checked 9:10 AM"
+        },
+        {
+          "id": "advisory-and-calm",
+          "name": "Advisory and calm",
+          "summary": "Small Craft Advisory in effect · Gusts under 20 mph",
+          "state": "unchecked",
+          "state_label": "Marine alerts: couldn't check, the source didn't answer",
+          "checked": "Checked 9:10 AM"
+        },
+        {
+          "id": "low-tide",
+          "name": "Low tide",
+          "summary": "Tide height under 0.7 ft",
+          "state": "no_data",
+          "state_label": "Tide height: no data",
+          "checked": "Checked 9:10 AM"
+        },
+        {
+          "id": "storms",
+          "name": "Storms",
+          "summary": "A significant storm or a hurricane forecast cone",
+          "state": "not_met",
+          "state_label": "Not met",
+          "checked": "Checked 9:10 AM"
+        },
+        {
+          "id": "croton-low",
+          "name": "Croton low and cool",
+          "summary": "River flow under 800 cfs · Water temperature under 66 °F",
+          "state": "orphaned",
+          "state_label": "Its spot or trip was deleted",
+          "checked": "Checked 9:10 AM"
+        },
+        {
+          "id": "new-rule",
+          "name": "New rule",
+          "summary": "A snack time within 30 min",
+          "state": "not_checked",
+          "state_label": "Not checked yet",
+          "checked": null
+        },
+        {
+          "id": "old-rule",
+          "name": "Old rule",
+          "summary": "River flow under 800 cfs",
+          "state": "off",
+          "state_label": "Off",
+          "checked": null
+        }
+      ]
+    }
+  }
+}

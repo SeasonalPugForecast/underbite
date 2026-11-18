@@ -54,6 +54,12 @@ fn inputs() -> Vec<(&'static str, ViewInput)> {
             cards::marine_forecast::tests::input(20, Voice::Plain),
         ),
         ("alerts", cards::alerts::tests::marine_input(Voice::Luna)),
+        ("alert rules", {
+            let mut input = cards::alerts::tests::marine_input(Voice::Plain);
+            input.units = metric();
+            input.alert_rules = cards::alerts::tests::battery_rules();
+            input
+        }),
         ("waves", cards::waves::tests::buoy_input()),
         ("reservoir", cards::flow::tests::reservoir_input()),
         (
@@ -175,6 +181,15 @@ fn data_texts(input: &ViewInput) -> Vec<String> {
     // The name of the user's limits profile is theirs.
     if let Some(limits) = &input.trip_limits {
         texts.insert(limits.name.clone());
+    }
+    // So are the names of their alert rules, and the alert events they watch for are the NWS's.
+    for r in &input.alert_rules {
+        texts.insert(r.rule.name.clone());
+        for c in &r.rule.all_of {
+            if let crate::alerts::Condition::MarineAlert { event } = c {
+                texts.insert(event.clone());
+            }
+        }
     }
     // A licence's version is part of its name, not a number to write in the locale.
     texts.insert(crate::view::packs::pseudo("CC BY 4.0"));

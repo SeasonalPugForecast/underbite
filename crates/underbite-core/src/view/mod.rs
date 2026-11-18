@@ -136,6 +136,9 @@ pub struct ViewInput {
     /// The limits the go/no-go card judges against (the configuration's first `[[limits]]`
     /// profile); the card is not built without them.
     pub trip_limits: Option<TripLimits>,
+    /// The alert rules that watch this spot, with their last states, for the alerts card's
+    /// rules section; empty shows none.
+    pub alert_rules: Vec<alerts::RuleInput>,
 }
 
 impl ViewInput {
@@ -688,6 +691,7 @@ mod tests {
                 no_lightning: true,
                 ..TripLimits::default()
             }),
+            alert_rules: Vec::new(),
         }
     }
 
