@@ -204,6 +204,41 @@ fn an_edit_keeps_the_creation_time_and_the_conditions_and_supersedes_the_old_rec
 }
 
 #[test]
+fn an_edit_that_moves_the_catch_drops_the_conditions_of_the_old_time_and_place() {
+    let snap = serde_json::to_string(&sample_snapshot()).unwrap();
+    let book = saved(&log_new(), input("c1"), &us(), 1_000);
+    let book = log_attach_conditions(book, "c1".into(), snap.clone(), None, 1_001)
+        .unwrap()
+        .book;
+    let conditions = |book: &[u8]| {
+        let doc: Value = serde_json::from_slice(book).unwrap();
+        doc["entries"][0]["conditions"].clone()
+    };
+    assert!(conditions(&book).is_object());
+
+    // A later time, with no snapshot for it: the old conditions go.
+    let mut later = input("c1");
+    later.caught_at += 6 * 3_600;
+    assert!(conditions(&saved(&book, later, &us(), 2_000)).is_null());
+
+    // Another place, likewise.
+    let mut elsewhere = input("c1");
+    elsewhere.latitude = 40.9;
+    let moved = saved(&book, elsewhere, &us(), 2_000);
+    assert!(conditions(&moved).is_null());
+
+    // With a snapshot for the new time and place, the app attaches its conditions again.
+    let attached = log_attach_conditions(moved, "c1".into(), snap, None, 2_001).unwrap();
+    assert!(attached.changed);
+    assert!(conditions(&attached.book).is_object());
+
+    // An edit that keeps the time and place keeps them.
+    let mut notes = input("c1");
+    notes.notes = Some("on the drop".into());
+    assert!(conditions(&saved(&book, notes, &us(), 2_000)).is_object());
+}
+
+#[test]
 fn conditions_come_from_the_snapshot_and_show_in_the_detail_with_their_sources() {
     let snap = sample_snapshot();
     let json = serde_json::to_string(&snap).unwrap();

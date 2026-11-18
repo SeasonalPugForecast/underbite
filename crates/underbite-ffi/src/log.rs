@@ -429,8 +429,10 @@ pub fn log_editor(
     })
 }
 
-/// Saves the editor's fields as catch `input.id`: a new catch, or the edit of an existing one
-/// (which keeps its creation time and its conditions). Sizes are read in the user's units.
+/// Saves the editor's fields as catch `input.id`: a new catch, or the edit of an existing one,
+/// which keeps its creation time and its conditions. An edit that moves the catch's time or
+/// position drops the conditions it had, which were for the old time and place: attach new ones
+/// with [`log_attach_conditions`] when a snapshot is at hand. Sizes are read in the user's units.
 #[uniffi::export]
 #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
 pub fn log_save(
@@ -496,7 +498,10 @@ pub fn log_save(
         entry.created_at = old.created_at;
         // An edit always supersedes the record it edits, even on a clock that ran backwards.
         entry.modified_at = UnixTime(now.0.max(old.modified_at.0.saturating_add(1)));
-        if !old.deleted {
+        let moved = old.caught_at != entry.caught_at
+            || old.location.latitude.to_bits() != entry.location.latitude.to_bits()
+            || old.location.longitude.to_bits() != entry.location.longitude.to_bits();
+        if !old.deleted && !moved {
             entry.conditions = old.conditions;
         }
     }
