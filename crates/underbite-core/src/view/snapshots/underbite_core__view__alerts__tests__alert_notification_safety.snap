@@ -1,0 +1,26 @@
+---
+source: crates/underbite-core/src/view/alerts.rs
+expression: all
+---
+{
+  "AlertExtended": {
+    "title": "Harbor advisory",
+    "body": "The Battery: Small Craft Advisory, extended, Nov 8, 1:48 AM – Nov 9, 6:00 PM"
+  },
+  "AlertInForce": {
+    "title": "Harbor advisory",
+    "body": "The Battery: Small Craft Advisory, still in effect, Nov 8, 1:48 AM – Nov 9, 6:00 PM"
+  },
+  "AlertNew": {
+    "title": "Harbor advisory",
+    "body": "The Battery: Small Craft Advisory in effect, Nov 8, 1:48 AM – Nov 9, 6:00 PM"
+  },
+  "AlertStronger": {
+    "title": "Harbor advisory",
+    "body": "The Battery: Small Craft Advisory, now more severe, Nov 8, 1:48 AM – Nov 9, 6:00 PM"
+  },
+  "storm": {
+    "title": "Storms at the Battery",
+    "body": "The Battery: a significant storm is forecast, Nov 9, 1:00 PM – Nov 10, 7:00 AM\nThe Battery: in the forecast cone of Hurricane Melissa, Nov 9, 7:00 PM – Nov 11, 1:00 AM"
+  }
+}

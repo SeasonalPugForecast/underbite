@@ -580,3 +580,60 @@ fn the_species_views_are_translated_in_the_pseudo_locale() {
     }
     assert!(problems.is_empty(), "{}", problems.join("\n"));
 }
+
+#[test]
+fn the_alert_words_are_translated_in_the_pseudo_locale() {
+    use crate::alerts::AlertMetric;
+    use crate::view::alerts::{
+        ThresholdError, describe_rule, edit_threshold, notification, tests as al,
+    };
+    // What the user and the sources wrote: shown as written.
+    let names = al::names();
+    let mut data: Vec<String> = names
+        .spots
+        .values()
+        .chain(names.trips.values())
+        .cloned()
+        .collect();
+    data.extend(
+        [
+            "Croton R at New Croton Dam",
+            "Small Craft Advisory",
+            "Hurricane Melissa",
+        ]
+        .map(str::to_owned),
+    );
+    let events = al::events();
+    data.extend(events.iter().map(|(_, rule)| rule.name.clone()));
+    data.sort_by_key(|t| std::cmp::Reverse(t.len()));
+    let mut problems = Vec::new();
+    for units in [us(), metric()] {
+        for voice in [Voice::Luna, Voice::Plain] {
+            let f = al::formatter(units, voice).with_locale(Locale::PSEUDO);
+            let mut texts = Vec::new();
+            for (event, rule) in &events {
+                for show_name in [true, false] {
+                    let rule = crate::alerts::AlertRule {
+                        show_name,
+                        ..rule.clone()
+                    };
+                    let n = notification(&f, event, &rule, &names);
+                    texts.extend([n.title, n.body]);
+                }
+                let d = describe_rule(&f, rule, &names);
+                texts.extend(d.conditions);
+                texts.extend([d.target, d.summary]);
+                texts.extend(d.repeat.into_iter().chain(d.quiet));
+            }
+            for metric in AlertMetric::ALL {
+                texts.push(ThresholdError::NotANumber.text(&f, metric));
+                texts.push(ThresholdError::OutOfRange.text(&f, metric));
+                texts.push(edit_threshold(&f, metric, 1.25));
+            }
+            problems.extend(texts.iter().filter_map(|t| {
+                untranslated(t, &data).map(|rest| format!("({voice:?}) {t:?} ({rest:?})"))
+            }));
+        }
+    }
+    assert!(problems.is_empty(), "{}", problems.join("\n"));
+}

@@ -11,6 +11,7 @@
 
 use whether_core::time::Weekday;
 
+use crate::alerts::AlertMetric;
 use crate::datum::VerticalDatum;
 use crate::discover::hydro::{WaterTypeReason, WaterbodyKind};
 use crate::map::breaks::BreakKind;
@@ -1422,6 +1423,100 @@ keys! {
     GearAuger => ("Auger", "Auger"),
     GearSpud => ("Spud bar to test the ice", "Spud bar to test the ice"),
     GearSnacks => ("Water and snacks", "Snacks (Luna insists)"),
+    // -- alert rules, their states and their notifications ----------------------------------
+    AlertMetricDischarge => ("River flow", "River flow"),
+    AlertMetricGageHeight => ("Gage height", "Gage height"),
+    AlertMetricWaterTemperature => ("Water temperature", "Water temperature"),
+    AlertMetricSeaSurfaceTemp => ("Sea surface temperature", "Sea surface temperature"),
+    AlertMetricWaveHeight => ("Wave height", "Wave height"),
+    AlertMetricWind => ("Wind", "Wind"),
+    AlertMetricGusts => ("Gusts", "Gusts"),
+    AlertMetricPressureTrend => ("Pressure change in 3 h", "Pressure change in 3 h"),
+    AlertMetricTideHeight => ("Tide height", "Tide height"),
+    AlertMetricChlorophyll => ("Chlorophyll", "Chlorophyll"),
+    /// A notification's title when the rule does not show names, by target.
+    AlertNameSpot => ("Alert for your spot", "Alert for your spot"),
+    AlertNameTrip => ("Alert for your trip", "Alert for your trip"),
+    AlertNameArea => ("Alert for your area", "Alert for your area"),
+    /// A place a notification does not name, by target.
+    AlertPlaceSpot => ("Your spot", "Your spot"),
+    AlertPlaceTrip => ("Your trip", "Your trip"),
+    AlertPlaceArea => ("Your area", "Your area"),
+    /// `{rule}`: the rule's name, or a title above.
+    AlertNotifyRepeat => ("{rule}: still met", "{rule}: still met"),
+    AlertNotifyUpdate => ("{rule}: update", "{rule}: update"),
+    /// `{place}`: a station, source or place; `{what}`: what is measured; `{value}`,
+    /// `{threshold}`: "780 cfs", "800 cfs".
+    AlertNotifyBelow => (
+        "{place}: {what} {value}, under your {threshold}",
+        "{place}: {what} {value}, under your {threshold}",
+    ),
+    AlertNotifyAbove => (
+        "{place}: {what} {value}, over your {threshold}",
+        "{place}: {what} {value}, over your {threshold}",
+    ),
+    /// `{low}`, `{high}`: the rule's range.
+    AlertNotifyBetween => (
+        "{place}: {what} {value}, between your {low} and {high}",
+        "{place}: {what} {value}, between your {low} and {high}",
+    ),
+    AlertNotifyValue => ("{place}: {what} {value}", "{place}: {what} {value}"),
+    /// A finding the rule, edited since, no longer describes. `{place}`.
+    AlertNotifyMet => ("{place}: your rule is met", "{place}: your rule is met"),
+    /// `{place}`, `{range}`: "6:10 to 8:10 AM".
+    AlertNotifyWindow => (
+        "{place}: fishing window {range}",
+        "{place}: snack time {range}",
+    ),
+    /// `{place}`, `{time}`: when the window ends.
+    AlertNotifyWindowNow => (
+        "{place}: fishing window now, until {time}",
+        "{place}: snack time now, until {time}",
+    ),
+    /// `{place}`, `{day}`: "Nov 14".
+    AlertNotifyTripGo => ("{place}: {day} looks good", "{place}: Luna approves of {day}"),
+    /// A time on another day than today. `{date}`, `{time}`.
+    AlertDayTime => ("{date}, {time}", "{date}, {time}"),
+    /// A rule's conditions for the editor. `{what}`, `{threshold}`.
+    AlertRuleBelow => ("{what} under {threshold}", "{what} under {threshold}"),
+    AlertRuleAbove => ("{what} over {threshold}", "{what} over {threshold}"),
+    /// `{what}`, `{low}`, `{high}`.
+    AlertRuleBetween => (
+        "{what} between {low} and {high}",
+        "{what} between {low} and {high}",
+    ),
+    /// `{what}`.
+    AlertRuleNoThreshold => ("{what}, no threshold set", "{what}, no threshold set"),
+    AlertRuleTripGo => ("A go day on the trip", "A day Luna approves of on the trip"),
+    /// `{duration}`: "30 min".
+    AlertRuleWindow => (
+        "A fishing window within {duration}",
+        "A snack time within {duration}",
+    ),
+    /// Two conditions, or one and the rest. `{a}`, `{b}`.
+    AlertRuleJoin => ("{a} · {b}", "{a} · {b}"),
+    AlertRuleNoConditions => ("No conditions", "No conditions"),
+    /// What a rule watches, when the editor cannot name it.
+    AlertTargetSpotGone => ("A deleted spot", "A deleted spot"),
+    AlertTargetTripGone => ("A deleted trip", "A deleted trip"),
+    AlertTargetBox => ("An area on the map", "An area on the map"),
+    /// `{duration}`: "12 h".
+    AlertRuleRepeat => (
+        "Again every {duration} while met",
+        "Again every {duration} while met",
+    ),
+    /// `{range}`: "10:00 PM to 7:00 AM".
+    AlertRuleQuiet => ("Quiet hours {range}", "Quiet hours {range}"),
+    /// A threshold field's errors. `{example}`: "12.5".
+    AlertThresholdNumber => (
+        "Enter a number, such as {example}",
+        "Enter a number, such as {example}",
+    ),
+    /// `{min}`, `{max}`.
+    AlertThresholdRange => (
+        "Enter a value from {min} to {max}",
+        "Enter a value from {min} to {max}",
+    ),
 }
 
 /// Declares [`SafetyKey`], its list and its table in one place.
@@ -1739,6 +1834,23 @@ safety_keys! {
     AccessClosed => "Closed to the public, as the source records it",
     AccessUnknown => "Access not recorded",
     AccessNotPermission => "Access is shown as the source records it, not as permission to fish, launch or park. Check posted rules and the regulations.",
+    /// Notifications of marine alerts, storms and hurricanes. `{place}`: a place or "Your
+    /// spot"; `{alert}`: the alert's event name as issued.
+    AlertNotifyNew => "{place}: {alert} in effect",
+    AlertNotifyStronger => "{place}: {alert}, now more severe",
+    AlertNotifyExtended => "{place}: {alert}, extended",
+    AlertNotifyInForce => "{place}: {alert}, still in effect",
+    /// `{place}`.
+    AlertNotifyStorm => "{place}: a significant storm is forecast",
+    /// `{place}`, `{storm}`: the cyclone's name as issued.
+    AlertNotifyHurricane => "{place}: in the forecast cone of {storm}",
+    /// The cyclone's name when the source gave none.
+    AlertNameCyclone => "a tropical cyclone",
+    /// `{text}`: a notification line above; `{span}`: when, as on the alerts card.
+    AlertNotifySpan => "{text}, {span}",
+    /// A rule's safety conditions for the editor. `{alert}`: the event name it watches.
+    AlertRuleMarine => "{alert} in effect",
+    AlertRuleStorm => "A significant storm or a hurricane forecast cone",
 }
 
 impl SafetyKey {
@@ -2187,6 +2299,22 @@ impl Strings {
             Measurement::FlowForecast => Key::MeasFlowForecast,
             Measurement::ObservedWind => Key::MeasWind,
             Measurement::ObservedPressure => Key::MeasPressure,
+        })
+    }
+
+    /// What an alert rule measures: "River flow", "Gusts", ...
+    pub fn alert_metric(self, m: AlertMetric) -> &'static str {
+        self.get(match m {
+            AlertMetric::Discharge => Key::AlertMetricDischarge,
+            AlertMetric::GageHeight => Key::AlertMetricGageHeight,
+            AlertMetric::WaterTemperature => Key::AlertMetricWaterTemperature,
+            AlertMetric::SeaSurfaceTemp => Key::AlertMetricSeaSurfaceTemp,
+            AlertMetric::WaveHeight => Key::AlertMetricWaveHeight,
+            AlertMetric::Wind => Key::AlertMetricWind,
+            AlertMetric::Gusts => Key::AlertMetricGusts,
+            AlertMetric::PressureTrend => Key::AlertMetricPressureTrend,
+            AlertMetric::TideHeight => Key::AlertMetricTideHeight,
+            AlertMetric::Chlorophyll => Key::AlertMetricChlorophyll,
         })
     }
 

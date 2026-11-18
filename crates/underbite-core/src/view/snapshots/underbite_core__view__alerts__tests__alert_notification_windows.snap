@@ -1,0 +1,26 @@
+---
+source: crates/underbite-core/src/view/alerts.rs
+expression: all
+---
+{
+  "box": {
+    "title": "Warm water off the Hudson Canyon: still met",
+    "body": "Your area: Sea surface temperature 71 °F, over your 68 °F"
+  },
+  "started false Luna": {
+    "title": "Weekend bite",
+    "body": "Harbor weekend: Luna approves of Nov 14\nHarbor weekend: snack time 6:10 to 8:10 AM"
+  },
+  "started false Plain": {
+    "title": "Weekend bite",
+    "body": "Harbor weekend: Nov 14 looks good\nHarbor weekend: fishing window 6:10 to 8:10 AM"
+  },
+  "started true Luna": {
+    "title": "Weekend bite",
+    "body": "Harbor weekend: Luna approves of Nov 14\nHarbor weekend: snack time now, until 8:10 AM"
+  },
+  "started true Plain": {
+    "title": "Weekend bite",
+    "body": "Harbor weekend: Nov 14 looks good\nHarbor weekend: fishing window now, until 8:10 AM"
+  }
+}

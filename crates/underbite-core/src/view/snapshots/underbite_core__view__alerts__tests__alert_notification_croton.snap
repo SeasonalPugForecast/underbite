@@ -1,0 +1,22 @@
+---
+source: crates/underbite-core/src/view/alerts.rs
+expression: all
+---
+{
+  "metric Luna": {
+    "title": "Croton low and cool",
+    "body": "Croton R at New Croton Dam: River flow 22 m³/s, under your 23 m³/s\nCroton R at New Croton Dam: Water temperature 16.5 °C, under your 18.9 °C"
+  },
+  "metric Plain": {
+    "title": "Croton low and cool",
+    "body": "Croton R at New Croton Dam: River flow 22 m³/s, under your 23 m³/s\nCroton R at New Croton Dam: Water temperature 16.5 °C, under your 18.9 °C"
+  },
+  "us Luna": {
+    "title": "Croton low and cool",
+    "body": "Croton R at New Croton Dam: River flow 780 cfs, under your 800 cfs\nCroton R at New Croton Dam: Water temperature 62 °F, under your 66 °F"
+  },
+  "us Plain": {
+    "title": "Croton low and cool",
+    "body": "Croton R at New Croton Dam: River flow 780 cfs, under your 800 cfs\nCroton R at New Croton Dam: Water temperature 62 °F, under your 66 °F"
+  }
+}

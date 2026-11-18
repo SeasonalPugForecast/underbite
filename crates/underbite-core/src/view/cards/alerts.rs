@@ -120,7 +120,11 @@ fn when(f: &Formatter, t: UnixTime) -> String {
 
 /// When an alert is in effect, from its onset to its end (else its expiry): safety text, the
 /// same in every voice. A bare end reads "Until …", never as a start.
-fn span(f: &Formatter, onset: Option<UnixTime>, end: Option<UnixTime>) -> Option<String> {
+pub(in crate::view) fn span(
+    f: &Formatter,
+    onset: Option<UnixTime>,
+    end: Option<UnixTime>,
+) -> Option<String> {
     let s = f.strings;
     match (onset.map(|t| when(f, t)), end.map(|t| when(f, t))) {
         (Some(start), Some(end)) => {

@@ -1,0 +1,70 @@
+---
+source: crates/underbite-core/src/view/alerts.rs
+expression: all
+---
+{
+  "metric Luna": {
+    "target": "Harbor weekend",
+    "conditions": [
+      "River flow under 23 m³/s",
+      "Water temperature between 10.0 °C and 18.9 °C",
+      "Pressure change in 3 h under -2.0 hPa",
+      "Gusts over 36 km/h",
+      "Small Craft Advisory in effect",
+      "A day Luna approves of on the trip",
+      "A snack time within 30 min",
+      "A significant storm or a hurricane forecast cone"
+    ],
+    "summary": "River flow under 23 m³/s · Water temperature between 10.0 °C and 18.9 °C · Pressure change in 3 h under -2.0 hPa · Gusts over 36 km/h · Small Craft Advisory in effect · A day Luna approves of on the trip · A snack time within 30 min · A significant storm or a hurricane forecast cone",
+    "repeat": "Again every 12 h while met",
+    "quiet": "Quiet hours 10:00 PM to 7:00 AM"
+  },
+  "metric Plain": {
+    "target": "Harbor weekend",
+    "conditions": [
+      "River flow under 23 m³/s",
+      "Water temperature between 10.0 °C and 18.9 °C",
+      "Pressure change in 3 h under -2.0 hPa",
+      "Gusts over 36 km/h",
+      "Small Craft Advisory in effect",
+      "A go day on the trip",
+      "A fishing window within 30 min",
+      "A significant storm or a hurricane forecast cone"
+    ],
+    "summary": "River flow under 23 m³/s · Water temperature between 10.0 °C and 18.9 °C · Pressure change in 3 h under -2.0 hPa · Gusts over 36 km/h · Small Craft Advisory in effect · A go day on the trip · A fishing window within 30 min · A significant storm or a hurricane forecast cone",
+    "repeat": "Again every 12 h while met",
+    "quiet": "Quiet hours 10:00 PM to 7:00 AM"
+  },
+  "us Luna": {
+    "target": "Harbor weekend",
+    "conditions": [
+      "River flow under 800 cfs",
+      "Water temperature between 50 °F and 66 °F",
+      "Pressure change in 3 h under -0.06 inHg",
+      "Gusts over 22 mph",
+      "Small Craft Advisory in effect",
+      "A day Luna approves of on the trip",
+      "A snack time within 30 min",
+      "A significant storm or a hurricane forecast cone"
+    ],
+    "summary": "River flow under 800 cfs · Water temperature between 50 °F and 66 °F · Pressure change in 3 h under -0.06 inHg · Gusts over 22 mph · Small Craft Advisory in effect · A day Luna approves of on the trip · A snack time within 30 min · A significant storm or a hurricane forecast cone",
+    "repeat": "Again every 12 h while met",
+    "quiet": "Quiet hours 10:00 PM to 7:00 AM"
+  },
+  "us Plain": {
+    "target": "Harbor weekend",
+    "conditions": [
+      "River flow under 800 cfs",
+      "Water temperature between 50 °F and 66 °F",
+      "Pressure change in 3 h under -0.06 inHg",
+      "Gusts over 22 mph",
+      "Small Craft Advisory in effect",
+      "A go day on the trip",
+      "A fishing window within 30 min",
+      "A significant storm or a hurricane forecast cone"
+    ],
+    "summary": "River flow under 800 cfs · Water temperature between 50 °F and 66 °F · Pressure change in 3 h under -0.06 inHg · Gusts over 22 mph · Small Craft Advisory in effect · A go day on the trip · A fishing window within 30 min · A significant storm or a hurricane forecast cone",
+    "repeat": "Again every 12 h while met",
+    "quiet": "Quiet hours 10:00 PM to 7:00 AM"
+  }
+}
