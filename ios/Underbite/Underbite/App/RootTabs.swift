@@ -43,6 +43,9 @@ struct RootTabs: View {
         }
         // Buttons and links in a blue that small text can be read in, the welcome's too.
         .tint(Palette.accent)
+        #if DEBUG
+            .widgetGalleryOnLaunch()
+        #endif
     }
 }
 
