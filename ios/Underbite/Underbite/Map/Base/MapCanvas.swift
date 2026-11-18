@@ -6,9 +6,12 @@ import UnderbiteKit
 /// the layers the map draws itself in the settings' order (tiles and rendered grids as tile
 /// overlays, arrows as one overlay per layer), each at its opacity, and the modules' overlays and
 /// annotations above them. It reports the region once the map settles and taps the map itself
-/// does not use (a double tap still zooms).
+/// does not use (a double tap still zooms). With a ``MapLocator`` it shows the phone's position
+/// (MapKit's own dot, drawn on this device) once location access is given, and follows it when
+/// asked.
 struct MapCanvas: UIViewRepresentable {
     let controller: MapController
+    var locator: MapLocator?
 
     func makeCoordinator() -> Coordinator { Coordinator(controller: controller) }
 
@@ -51,6 +54,7 @@ struct MapCanvas: UIViewRepresentable {
         let moduleRevision = controller.moduleRevision
         context.coordinator.sync(
             map, plan: plan, revisions: revisions, moduleRevision: moduleRevision)
+        context.coordinator.syncPosition(map, locator: locator, state: locator?.state)
     }
 
     final class Coordinator: NSObject, MKMapViewDelegate, UIGestureRecognizerDelegate {
@@ -75,6 +79,10 @@ struct MapCanvas: UIViewRepresentable {
         private var moduleAnnotations: [ObjectIdentifier: [ObjectIdentifier: any MKAnnotation]] =
             [:]
         private var askedModules: (revision: Int, plan: MapPlan)?
+        private weak var locator: MapLocator?
+        #if DEBUG
+            private var simulated: SimulatedPosition?
+        #endif
 
         init(controller: MapController) {
             self.controller = controller
@@ -102,6 +110,52 @@ struct MapCanvas: UIViewRepresentable {
                 askedModules = (moduleRevision, plan)
                 syncModules(map)
             }
+        }
+
+        // MARK: - The phone's position
+
+        /// Shows the position while access is given and follows it while the locator asks.
+        func syncPosition(_ map: MKMapView, locator: MapLocator?, state: LocateState?) {
+            self.locator = locator
+            guard let state else { return }
+            #if DEBUG
+                if let at = locator?.simulated {
+                    showSimulated(at, following: state.following, on: map)
+                    return
+                }
+            #endif
+            if map.showsUserLocation != state.showsPosition {
+                map.showsUserLocation = state.showsPosition
+            }
+            let mode: MKUserTrackingMode = state.showsPosition && state.following ? .follow : .none
+            if map.userTrackingMode != mode {
+                map.setUserTrackingMode(mode, animated: true)
+            }
+        }
+
+        #if DEBUG
+            /// The fixed position of `-fakeLocation`: a dot like MapKit's in its circle; following
+            /// centres the map on it once.
+            private func showSimulated(
+                _ at: CLLocationCoordinate2D, following: Bool, on map: MKMapView
+            ) {
+                if simulated == nil {
+                    let position = SimulatedPosition(at)
+                    simulated = position
+                    map.addOverlay(position.accuracy, level: .aboveLabels)
+                    map.addAnnotation(position)
+                }
+                guard following else { return }
+                map.setCenter(at, animated: true)
+                // After this view update, not during it.
+                let locator = self.locator
+                Task { @MainActor in locator?.mapStoppedFollowing() }
+            }
+        #endif
+
+        func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
+            // Moving the map by hand stops following.
+            if mode == .none { locator?.mapStoppedFollowing() }
         }
 
         // MARK: - Base map
@@ -299,6 +353,11 @@ struct MapCanvas: UIViewRepresentable {
                 renderers[ObjectIdentifier(overlay)] = renderer
                 return renderer
             }
+            #if DEBUG
+                if let circle = overlay as? MKCircle, circle === simulated?.accuracy {
+                    return SimulatedPosition.renderer(for: circle)
+                }
+            #endif
             for module in controller.modules {
                 if let renderer = module.renderer(for: overlay) { return renderer }
             }
@@ -306,6 +365,14 @@ struct MapCanvas: UIViewRepresentable {
         }
 
         func mapView(_ mapView: MKMapView, viewFor annotation: any MKAnnotation) -> MKAnnotationView? {
+            // MapKit's own view for the phone's position.
+            if annotation is MKUserLocation { return nil }
+            #if DEBUG
+                if annotation is SimulatedPosition {
+                    return SimulatedPositionView(
+                        annotation: annotation, reuseIdentifier: SimulatedPosition.reuse)
+                }
+            #endif
             for module in controller.modules {
                 if let view = module.annotationView(for: annotation, on: mapView) { return view }
             }

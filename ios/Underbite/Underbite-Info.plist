@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- Merged into the generated Info.plist (the rest is in the target's build settings).
-     Location is "when in use" only: no background location. The one background mode is
-     background fetch, for the alert checks (the app-refresh task dev.savery.underbite.refresh);
+     Location is "when in use" only: no background location. On the map, approximate access can
+     be made precise for the session from the locate button (purpose key MapPosition). The one
+     background mode is background fetch, for the alert checks (the app-refresh task
+     dev.savery.underbite.refresh);
      a trip day shows as a Live Activity.
      A trip or a spot is sent as a .underbite file (JSON with a "kind"), which the app exports
      and opens. GPX, KML, KMZ and CSV files open in the importer: GPX (as Xcode declares it),
@@ -12,6 +14,11 @@
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Finds the water and the stations near you when you ask. Your exact location stays on this device: data services only see it rounded, to about a kilometre or more.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>MapPosition</key>
+		<string>Show exactly where you are on the map. Your position stays on this device.</string>
+	</dict>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>

@@ -4,17 +4,19 @@ import SwiftUI
 import UnderbiteKit
 
 /// The map section: Apple's map with the layers the settings show, their credits and legend, the
-/// core's "Not for navigation." notice always in view, and the layer drawer. On the iPhone the map
-/// fills the screen with its controls over it and the drawer comes up as a sheet; on a wide iPad
-/// the drawer is a side panel beside the map, which keeps taking gestures.
+/// core's "Not for navigation." notice always in view, the layer drawer, and the phone's position
+/// with its locate button. On the iPhone the map fills the screen with its controls over it and
+/// the drawer comes up as a sheet; on a wide iPad the drawer is a side panel beside the map, which
+/// keeps taking gestures.
 struct MapTab: View {
     @Environment(SpotStore.self) private var store
     @State private var controller: MapController?
+    @State private var locator: MapLocator?
 
     var body: some View {
         Group {
-            if let controller {
-                MapScreen(controller: controller)
+            if let controller, let locator {
+                MapScreen(controller: controller, locator: locator)
             } else {
                 Color.clear
             }
@@ -31,6 +33,7 @@ struct MapTab: View {
             made.writeSettings = { [weak settings] json in try? settings?.updateSettings(json) }
             made.apply(settingsJSON: store.settingsJSON)
             controller = made
+            locator = MapLocator()
         }
         .onChange(of: store.settingsJSON) { _, json in
             controller?.apply(settingsJSON: json)
@@ -47,9 +50,11 @@ struct MapTab: View {
 /// The map and what is laid over it.
 private struct MapScreen: View {
     @Bindable var controller: MapController
+    @Bindable var locator: MapLocator
     @Environment(SpotStore.self) private var store
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var showsLayers = DrawerLaunch.opens
+    @Environment(\.openURL) private var openURL
 
     /// The room MapKit's own logo and legal link take at the bottom of the map.
     private static let appleLegalHeight: CGFloat = 34
@@ -60,7 +65,7 @@ private struct MapScreen: View {
     }
 
     var body: some View {
-        MapCanvas(controller: controller)
+        MapCanvas(controller: controller, locator: locator)
             .ignoresSafeArea()
             .safeAreaInset(edge: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
@@ -68,16 +73,19 @@ private struct MapScreen: View {
                         NavigationNotice(text: notice)
                             .frame(maxWidth: .infinity)
                     }
-                    Button {
-                        showsLayers.toggle()
-                    } label: {
-                        Image(systemName: "square.3.layers.3d")
-                            .font(.title3)
-                            .frame(width: 48, height: 48)
+                    HStack(spacing: 8) {
+                        Button {
+                            showsLayers.toggle()
+                        } label: {
+                            Image(systemName: "square.3.layers.3d")
+                                .font(.title3)
+                                .frame(width: 48, height: 48)
+                        }
+                        .buttonStyle(.glass)
+                        .accessibilityLabel("Layers")
+                        .accessibilityIdentifier("map-layers")
+                        LocateButton(locator: locator)
                     }
-                    .buttonStyle(.glass)
-                    .accessibilityLabel("Layers")
-                    .accessibilityIdentifier("map-layers")
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
@@ -115,5 +123,36 @@ private struct MapScreen: View {
             .overlay {
                 InspectorSheet(controller: controller)
             }
+            .alert(
+                CurrentLocation.Failure.denied.errorDescription ?? "",
+                isPresented: $locator.explainsRefused
+            ) {
+                if let settings = URL(string: UIApplication.openSettingsURLString) {
+                    Button("Open Settings") { openURL(settings) }
+                }
+                Button("OK", role: .cancel) {}
+            }
+    }
+}
+
+/// The locate button: the first tap asks for location access ("when in use"), then the map
+/// centres on the phone's position and follows it; a tap while following stops. With approximate
+/// access it asks once for precise location.
+private struct LocateButton: View {
+    let locator: MapLocator
+
+    var body: some View {
+        Button {
+            locator.tap()
+        } label: {
+            Image(systemName: locator.state.symbol)
+                .font(.title3)
+                .frame(width: 48, height: 48)
+                .contentTransition(.symbolEffect(.replace))
+        }
+        .buttonStyle(.glass)
+        .accessibilityLabel("My location")
+        .accessibilityValue(locator.state.accessibilityValue)
+        .accessibilityIdentifier("map-locate")
     }
 }
