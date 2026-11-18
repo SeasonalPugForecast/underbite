@@ -72,13 +72,13 @@ struct TripGridView: View {
             }
         }
         .refreshable {
-            if let trip { await page.refresh(trip, spots: spots, all: true) }
+            if let trip { await page.refresh(trip, trips: trips, spots: spots, all: true) }
         }
         .task(id: buildKey) {
             if let trip { await page.build(trip, spots: spots) }
         }
         .task(id: tripID) {
-            if let trip { await page.refresh(trip, spots: spots, all: false) }
+            if let trip { await page.refresh(trip, trips: trips, spots: spots, all: false) }
         }
         #if DEBUG
             .task(id: page.view?.days.count) {

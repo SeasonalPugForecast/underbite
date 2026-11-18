@@ -118,8 +118,9 @@ final class TripPage {
     /// Fetches what the trip needs, then builds it again. The spots of its places are fetched
     /// through the spot store: every one when `all` (pulling to refresh), else those whose
     /// data is older than the refresh interval allows. Then the core plans the rest from their
-    /// snapshots, and the page sends its requests one at a time.
-    func refresh(_ trip: SavedTrip, spots: SpotStore, all: Bool) async {
+    /// snapshots, and the page sends its requests one at a time. Cancelling the task stops
+    /// the requests; what came back is kept only while `trips` still holds the trip.
+    func refresh(_ trip: SavedTrip, trips: TripStore, spots: SpotStore, all: Bool) async {
         refreshing = true
         defer { refreshing = false }
         let saved = Self.placeKeys(trip, now: clock()).filter { spots.spot($0) != nil }
@@ -132,12 +133,13 @@ final class TripPage {
                 saved.map { ($0, spots.cache($0).lastSuccess) }, now: clock(), after: after)
         }
         if !due.isEmpty { await spots.refresh(only: due) }
-        await fetchPlanned(trip, spots: spots)
+        await fetchPlanned(trip, trips: trips, spots: spots)
         await build(trip, spots: spots)
     }
 
-    /// Sends the requests the core plans for `trip` and keeps what they gave.
-    private func fetchPlanned(_ trip: SavedTrip, spots: SpotStore) async {
+    /// Sends the requests the core plans for `trip` and keeps what they gave, unless the trip
+    /// was deleted meanwhile.
+    private func fetchPlanned(_ trip: SavedTrip, trips: TripStore, spots: SpotStore) async {
         let now = clock()
         let keys = Self.placeKeys(trip, now: now)
         let snapshots = snapshots(keys, spots: spots)
@@ -145,7 +147,7 @@ final class TripPage {
         let secrets = self.keys()
         let send = self.send
         let held = data
-        let fetched = await Task.detached(priority: .userInitiated) { () -> TripData? in
+        let work = Task.detached(priority: .userInitiated) { () -> TripData? in
             func makePlan(fresh: Set<String>) throws -> TripPlan {
                 try planTrip(
                     tripJson: trip.json,
@@ -172,7 +174,14 @@ final class TripPage {
             var next = held
             next.merge(plan.results(responses: responses))
             return next
-        }.value
-        if let fetched, fetched != held { data = fetched }
+        }
+        // The requests go out off the main actor; a page that closes cancels them.
+        let fetched = await withTaskCancellationHandler {
+            await work.value
+        } onCancel: {
+            work.cancel()
+        }
+        guard let fetched, fetched != held, trips.trip(trip.id) != nil else { return }
+        data = fetched
     }
 }
