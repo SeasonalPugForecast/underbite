@@ -1663,6 +1663,12 @@ safety_keys! {
     /// An app file that could not be read and could not be moved: it stays where it was.
     FileLeftSpots => "Your spots could not be read. The file was left as it was and is never saved over, so changes to spots are not saved.",
     FileLeftSettings => "Your settings could not be read. The file was left as it was and is never saved over, so changes to settings are not saved.",
+    /// `{name}`.
+    FileKeptTrips => "Your trips could not be read. The file was kept as {name} and the list starts empty; nothing is saved over the kept file.",
+    /// `{name}`.
+    FileKeptLog => "Your catch log could not be read. The file was kept as {name} and a new log started; nothing is saved over the kept file.",
+    FileLeftTrips => "Your trips could not be read. The file was left as it was and is never saved over, so no trip can be added.",
+    FileLeftLog => "Your catch log could not be read. The file was left as it was and is never saved over, so no catch can be logged.",
     /// How serious an alert is, as the alert source grades it.
     SeverityExtreme => "Extreme",
     SeveritySevere => "Severe",
@@ -1963,6 +1969,10 @@ pub enum AppFile {
     Spots,
     /// The settings.
     Settings,
+    /// The trips.
+    Trips,
+    /// The catch log.
+    Log,
 }
 
 /// The table, bound to a voice and a locale.
@@ -2336,8 +2346,16 @@ impl Strings {
             (AppFile::Settings, Some(name)) => {
                 self.safety_fmt(SafetyKey::FileKeptSettings, &[("name", name)])
             }
+            (AppFile::Trips, Some(name)) => {
+                self.safety_fmt(SafetyKey::FileKeptTrips, &[("name", name)])
+            }
+            (AppFile::Log, Some(name)) => {
+                self.safety_fmt(SafetyKey::FileKeptLog, &[("name", name)])
+            }
             (AppFile::Spots, None) => self.safety(SafetyKey::FileLeftSpots).to_owned(),
             (AppFile::Settings, None) => self.safety(SafetyKey::FileLeftSettings).to_owned(),
+            (AppFile::Trips, None) => self.safety(SafetyKey::FileLeftTrips).to_owned(),
+            (AppFile::Log, None) => self.safety(SafetyKey::FileLeftLog).to_owned(),
         }
     }
 
@@ -3260,6 +3278,22 @@ mod tests {
             assert!(
                 s.file_problem(AppFile::Settings, None)
                     .contains("changes to settings are not saved")
+            );
+            assert!(
+                s.file_problem(AppFile::Trips, Some("trips.json.bad"))
+                    .contains("kept as trips.json.bad")
+            );
+            assert!(
+                s.file_problem(AppFile::Trips, None)
+                    .contains("no trip can be added")
+            );
+            assert!(
+                s.file_problem(AppFile::Log, Some("catches.json.bad"))
+                    .contains("Your catch log could not be read")
+            );
+            assert!(
+                s.file_problem(AppFile::Log, None)
+                    .contains("no catch can be logged")
             );
         }
     }
