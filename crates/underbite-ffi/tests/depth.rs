@@ -13,7 +13,9 @@ use underbite_ffi::depth::{
     structure_band, structure_layers_request, structure_points_request,
 };
 use underbite_ffi::fetch::HostResponse;
-use underbite_ffi::map::{GridStore, MAX_STORE_BLOCKS, MAX_STORE_VALUES, MapError, map_catalogue};
+use underbite_ffi::map::{
+    GridStore, LayerDraw, MAX_STORE_BLOCKS, MAX_STORE_VALUES, MapError, map_catalogue,
+};
 use underbite_ffi::settings::default_settings_json;
 
 const NOW: i64 = 1_794_000_000;
@@ -449,6 +451,63 @@ fn depth_words_the_legend_and_the_band_stops_follow_the_settings() {
     let m = depth_band_stops(metric()).unwrap();
     assert!(m.iter().all(|s| s.label.ends_with(" m")));
     assert_eq!(m.first().unwrap().value, 0.0);
+}
+
+/// A phone-sized view (390 by 844 points) at `zoom` around The Battery.
+fn phone_view(zoom: u8) -> (f64, f64, f64, f64) {
+    let (lat, lon): (f64, f64) = (40.70, -74.02);
+    let deg_per_pt = 360.0 / (256.0 * f64::from(zoom).exp2());
+    let half_w = 390.0 / 2.0 * deg_per_pt;
+    let half_h = 844.0 / 2.0 * deg_per_pt * lat.to_radians().cos();
+    (lon - half_w, lat - half_h, lon + half_w, lat + half_h)
+}
+
+#[test]
+fn the_catalogue_lists_the_depth_layers_drawn_from_the_elevation_store() {
+    let layers = map_catalogue(imperial()).unwrap();
+    let by_id = |id: &str| layers.iter().find(|l| l.id == id).unwrap();
+    let info = depth_layer_info(imperial()).unwrap();
+    for id in ["depth-shading", "depth-contours"] {
+        let l = by_id(id);
+        assert_eq!(l.group, "depth", "{id}");
+        assert_eq!(l.draw, LayerDraw::Depth, "{id}");
+        assert!(l.available && !l.shown, "{id}");
+        assert_eq!(l.credit, info.credit, "{id}");
+        assert_eq!(l.notice.as_deref(), Some("Not for navigation."), "{id}");
+        assert_eq!(
+            l.depth_reference.as_deref(),
+            Some(info.depth_reference.as_str())
+        );
+        assert_eq!(l.min_zoom, Some(8), "{id}");
+        assert!(l.datasets.is_empty(), "{id}");
+        // A phone's view at the layer's shallowest zoom fits one elevation area; one zoom out
+        // is too wide.
+        let store = GridStore::new();
+        let ask = |zoom: u8| {
+            let (west, south, east, north) = phone_view(zoom);
+            store.dem_area_request(west, south, east, north, f64::from(zoom))
+        };
+        assert!(ask(8).unwrap().is_some());
+        assert!(ask(7).is_err());
+    }
+    let shading = by_id("depth-shading");
+    assert_eq!(shading.title, info.title);
+    assert_eq!(
+        shading.legend_caption.as_deref(),
+        Some(info.legend_caption.as_str())
+    );
+    assert_eq!(shading.ramp.as_deref(), Some("depth"));
+    assert_eq!(shading.legend, info.legend);
+    let contours = by_id("depth-contours");
+    assert_eq!(contours.title, "Depth contours");
+    assert!(contours.legend.is_empty() && contours.ramp.is_none());
+
+    // The shading follows the depth section's ramp, as its tiles do.
+    let thermal = settings(|v| v["map"]["depth"]["ramp"] = json!("thermal"));
+    let layers = map_catalogue(thermal.clone()).unwrap();
+    let shading = layers.iter().find(|l| l.id == "depth-shading").unwrap();
+    assert_eq!(shading.ramp.as_deref(), Some("thermal"));
+    assert_eq!(shading.legend, depth_layer_info(thermal).unwrap().legend);
 }
 
 #[test]

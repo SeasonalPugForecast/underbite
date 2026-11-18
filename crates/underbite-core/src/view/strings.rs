@@ -768,6 +768,7 @@ keys! {
     MapLayerCatches => ("My catches", "My catches"),
     MapLayerTracks => ("My tracks", "My tracks"),
     MapLayerCatchHeat => ("Catch heat map", "Catch heat map"),
+    MapLayerDepthContours => ("Depth contours", "Depth contours"),
     /// Legend captions of the colour ramps.
     MapLegendColdToWarm => ("Cold to warm", "Cold to warm"),
     MapLegendClearToGreen => ("Clear to green water", "Clear to green water"),
@@ -1867,6 +1868,7 @@ safety_keys! {
     MapCreditBathymetry => "Bathymetry: NOAA NCEI (DEM global mosaic, Coastal Relief Model, CUDEM). Not for navigation.",
     MapReferenceBathymetry => "Heights are metres relative to a vertical datum that depends on the source model (NAVD 88 or EGM 2008), not chart datum. They are shown as approximate depth and are never compared with charted soundings or tide heights.",
     MapLegendBathymetry => "Approximate depth below the surface",
+    MapLegendDepthContours => "Lines of equal approximate depth below the surface",
     /// Why a charted wreck, obstruction or rock shows no depth.
     MapStructureDepthNotShown => "Charted depth not shown: the service states neither its unit nor its datum.",
     // Station pins
@@ -2715,6 +2717,8 @@ impl Strings {
             "catches" => Key::MapLayerCatches,
             "tracks" => Key::MapLayerTracks,
             "catch-heat" => Key::MapLayerCatchHeat,
+            "depth-shading" => Key::MapDepthTitle,
+            "depth-contours" => Key::MapLayerDepthContours,
             _ => return None,
         }))
     }
@@ -2751,6 +2755,8 @@ impl Strings {
             "species-records" => SafetyKey::MapLegendSpeciesRecords,
             "hab-beaches" => SafetyKey::MapLegendHabBeaches,
             "catch-heat" => SafetyKey::MapLegendCatchHeat,
+            "depth-shading" => SafetyKey::MapLegendBathymetry,
+            "depth-contours" => SafetyKey::MapLegendDepthContours,
             _ => return None,
         }))
     }
@@ -2797,6 +2803,7 @@ impl Strings {
             "catches" => SafetyKey::MapCreditCatches,
             "tracks" => SafetyKey::MapCreditTracks,
             "catch-heat" => SafetyKey::MapCreditCatchHeat,
+            "depth-shading" | "depth-contours" => SafetyKey::MapCreditBathymetry,
             _ => return None,
         }))
     }
@@ -2822,6 +2829,7 @@ impl Strings {
             "lake-contours-in" => SafetyKey::MapReferenceContoursIn,
             "lake-contours-mn" => SafetyKey::MapReferenceContoursMn,
             "artificial-reefs-ny" => SafetyKey::MapReferenceReefsNy,
+            "depth-shading" | "depth-contours" => SafetyKey::MapReferenceBathymetry,
             _ => return None,
         }))
     }
@@ -3766,6 +3774,25 @@ mod tests {
             for id in ["hab-beaches", "public-land", "catch-heat"] {
                 assert_eq!(luna.layer_legend(id), s.layer_legend(id), "{id}");
                 assert!(!legend(id).contains("Luna"), "{id}");
+            }
+        }
+
+        #[test]
+        fn the_elevation_depth_layers_credit_ncei_and_say_approximate_depth() {
+            let [plain, luna] = both();
+            assert_eq!(plain.layer_title("depth-shading"), Some("Water depth"));
+            assert_eq!(plain.layer_title("depth-contours"), Some("Depth contours"));
+            for id in ["depth-shading", "depth-contours"] {
+                let credit = plain.layer_credit(id).unwrap();
+                assert_eq!(credit, plain.safety(SafetyKey::MapCreditBathymetry), "{id}");
+                assert!(credit.contains("NOAA NCEI") && credit.contains("Not for navigation"));
+                assert!(find(id).unwrap().not_for_navigation, "{id}");
+                let reference = plain.layer_reference(id).unwrap();
+                assert!(reference.contains("not chart datum"), "{id}");
+                assert!(plain.layer_legend(id).unwrap().contains("pproximate depth"));
+                assert_eq!(plain.layer_legend(id), luna.layer_legend(id), "{id}");
+                assert_eq!(plain.layer_reference(id), luna.layer_reference(id), "{id}");
+                assert_eq!(plain.layer_licence(id), None, "{id}");
             }
         }
 

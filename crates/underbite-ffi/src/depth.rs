@@ -20,7 +20,7 @@ use underbite_core::map::contours::{self, LabelAnchor, MAX_LEVELS};
 use underbite_core::map::dem::{self, DemSourceInfo, SHORE_M, WaterBody};
 use underbite_core::map::enc::StructureKind;
 use underbite_core::map::grid::Grid;
-use underbite_core::map::render::{self, DEPTH};
+use underbite_core::map::render::{self, DEPTH, Ramp};
 use underbite_core::map::tiles::{MAX_ZOOM, TILE_PX};
 use underbite_core::map::{Bbox, GeoPoint, GridHost, Polyline, TileKey};
 use underbite_core::time::UnixTime;
@@ -723,13 +723,9 @@ pub struct DepthLayerInfo {
     pub legend: Vec<LegendStop>,
 }
 
-/// The depth shading's words, credit, notice and legend for the settings' ramp and units.
-#[uniffi::export]
-#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
-pub fn depth_layer_info(settings_json: String) -> Result<DepthLayerInfo, MapError> {
-    let (config, _) = load(&settings_json)?;
-    let f = formatter(&config, "UTC");
-    let s = f.strings;
+/// The ramp the depth shading is drawn with (the settings' depth ramp, else the layer's own) and
+/// its legend bar over the ramp's own range, shallow to deep, labelled in the user's depth unit.
+pub(crate) fn depth_legend(config: &Config, f: &Formatter) -> (&'static Ramp, Vec<LegendStop>) {
     let ramp = config
         .map
         .depth
@@ -742,9 +738,20 @@ pub fn depth_layer_info(settings_json: String) -> Result<DepthLayerInfo, MapErro
         .map(|stop| LegendStop {
             fraction: stop.fraction,
             colour: MapColour::from(stop.colour),
-            label: depth_label(&f, stop.value),
+            label: depth_label(f, stop.value),
         })
         .collect();
+    (ramp, legend)
+}
+
+/// The depth shading's words, credit, notice and legend for the settings' ramp and units.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn depth_layer_info(settings_json: String) -> Result<DepthLayerInfo, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, "UTC");
+    let s = f.strings;
+    let (ramp, legend) = depth_legend(&config, &f);
     Ok(DepthLayerInfo {
         id: DEPTH_LAYER.to_owned(),
         title: s.get(Key::MapDepthTitle).to_owned(),

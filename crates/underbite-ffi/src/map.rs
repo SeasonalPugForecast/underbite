@@ -11,8 +11,8 @@ use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 
 use underbite_config::schema::Config;
 use underbite_core::map::catalogue::{
-    self, AppleBase, DateMode, GridDraw, GridLayer, GridSpec, Group, Layer, LayerKind, PRESETS,
-    resolve_preset,
+    self, AppleBase, DateMode, DepthKind, GridDraw, GridLayer, GridSpec, Group, Layer, LayerKind,
+    PRESETS, resolve_preset,
 };
 use underbite_core::map::dem::{self, DemSourceInfo, WaterBody};
 use underbite_core::map::grid::{self, Block, Grid};
@@ -32,7 +32,7 @@ use underbite_providers::erddap::{self, ErddapError, ErddapPacer, FIRST_PAUSE_S,
 use underbite_providers::request::Response;
 use whether_providers::radar;
 
-use crate::depth::DEPTH_LAYER;
+use crate::depth::{DEPTH_LAYER, depth_legend};
 use crate::fetch::{HostMethod, HostRequest, HostResponse, fetched};
 use crate::settings::{SettingsError, load};
 
@@ -195,6 +195,11 @@ pub enum LayerDraw {
     Nearby,
     /// The user's catches, tracks or catch heat map, drawn on the device from what it keeps.
     Mine,
+    /// Approximate depth from the NCEI elevation model, drawn on the device from the elevation
+    /// area the store holds for the view ([`GridStore::dem_area_request`]): the shading with
+    /// [`GridStore::render_depth_tile`], the contours with [`GridStore::contour_lines`]. Not
+    /// tiles from a service and not a gridded dataset.
+    Depth,
     /// Listed, without a source yet.
     Unsourced,
 }
@@ -313,6 +318,7 @@ const fn draw(kind: &LayerKind) -> LayerDraw {
         LayerKind::EncPoints => LayerDraw::EncPoints,
         LayerKind::Nearby(_) => LayerDraw::Nearby,
         LayerKind::Mine(_) => LayerDraw::Mine,
+        LayerKind::Depth(_) => LayerDraw::Depth,
         LayerKind::Unsourced => LayerDraw::Unsourced,
     }
 }
@@ -475,6 +481,16 @@ fn layer_info(l: &Layer, config: &Config, f: &Formatter) -> LayerInfo {
     let stored_ramp = state
         .and_then(|st| st.ramp.as_deref())
         .filter(|id| render::ramp(id).is_some());
+    // The depth shading is drawn with the depth section's ramp, over the ramp's own range.
+    let (ramp, legend) = if l.kind == LayerKind::Depth(DepthKind::Shading) {
+        let (ramp, legend) = depth_legend(config, f);
+        (Some(ramp.id), legend)
+    } else {
+        (
+            stored_ramp.or(l.ramp),
+            legend_of(l, f, stored_ramp, state.and_then(|st| st.range)),
+        )
+    };
     let (available, unavailable_text) = match l.availability {
         catalogue::Availability::Available => (true, None),
         catalogue::Availability::Unavailable { reason } => {
@@ -508,9 +524,9 @@ fn layer_info(l: &Layer, config: &Config, f: &Formatter) -> LayerInfo {
             .filter(|o| (0.0..=1.0).contains(o))
             .unwrap_or(l.default_opacity),
         default_opacity: l.default_opacity,
-        ramp: stored_ramp.or(l.ramp).map(str::to_owned),
+        ramp: ramp.map(str::to_owned),
         legend_caption: s.layer_legend(l.id).map(str::to_owned),
-        legend: legend_of(l, f, stored_ramp, state.and_then(|st| st.range)),
+        legend,
         depth_reference: s.layer_reference(l.id).map(str::to_owned),
         terms: s.layer_licence(l.id).map(str::to_owned),
         datasets: l

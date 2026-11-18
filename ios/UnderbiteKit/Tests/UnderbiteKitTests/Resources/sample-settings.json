@@ -205,6 +205,14 @@
       {
         "id": "catch-heat",
         "shown": false
+      },
+      {
+        "id": "depth-shading",
+        "shown": false
+      },
+      {
+        "id": "depth-contours",
+        "shown": false
       }
     ],
     "offline_max_mb": 1500,

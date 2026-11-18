@@ -537,7 +537,7 @@ mod tests {
     }
 
     #[test]
-    fn a_layer_list_from_before_the_access_and_own_layers_gets_them_hidden_at_the_top() {
+    fn a_layer_list_from_before_the_access_own_and_depth_layers_gets_them_hidden_at_the_top() {
         let added = [
             "public-land",
             "access-points",
@@ -547,6 +547,8 @@ mod tests {
             "catches",
             "tracks",
             "catch-heat",
+            "depth-shading",
+            "depth-contours",
         ];
         let old: Vec<_> = KNOWN_LAYERS
             .iter()
@@ -566,6 +568,25 @@ mod tests {
                 .iter()
                 .any(|l| l.id.as_str() == "spots" && l.shown)
         );
+        assert_eq!(c.validate(), []);
+    }
+
+    #[test]
+    fn a_layer_list_from_before_the_depth_layers_gets_them_hidden_at_the_end() {
+        let old: Vec<_> = KNOWN_LAYERS
+            .iter()
+            .filter(|id| !id.starts_with("depth-"))
+            .map(|id| json!({ "id": id, "shown": *id == "gebco-relief" }))
+            .collect();
+        assert_eq!(old.len(), KNOWN_LAYERS.len() - 2);
+        let mut d = json!({ "map": { "layers": old } });
+        assert_eq!(prepare(&mut d), Ok(vec![]));
+        let c: crate::schema::Config = serde_json::from_value(d).unwrap();
+        let tail: Vec<_> = c.map.layers[KNOWN_LAYERS.len() - 2..]
+            .iter()
+            .map(|l| (l.id.as_str(), l.shown))
+            .collect();
+        assert_eq!(tail, [("depth-shading", false), ("depth-contours", false)]);
         assert_eq!(c.validate(), []);
     }
 

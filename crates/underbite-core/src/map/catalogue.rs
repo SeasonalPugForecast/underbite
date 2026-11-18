@@ -198,6 +198,15 @@ pub enum MineKind {
     CatchHeat,
 }
 
+/// What a depth layer draws from the NCEI elevation model.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DepthKind {
+    /// Water shaded by approximate depth, with the depth band highlighted.
+    Shading,
+    /// Lines of equal approximate depth at the settings' interval, labelled in the user's unit.
+    Contours,
+}
+
 /// A state agency's vector layer: the state, what it holds and where it has data. What the
 /// source says about its depths and its terms is worded in the view, by layer id.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -227,6 +236,10 @@ pub enum LayerKind {
     Nearby(NearbyKind),
     /// Lines or points a state agency publishes, drawn on the device.
     Features(FeatureLayer),
+    /// Approximate depth from the NCEI elevation model, drawn on the device from the elevation
+    /// areas the map's grid store holds (`underbite-ffi`'s depth calls): one area per view serves
+    /// both the shading and the contours.
+    Depth(DepthKind),
     /// Wrecks, obstructions and rocks from NOAA ENC Direct to GIS, drawn on the device from points
     /// the core reads by box (`underbite_providers::encdirect`); the band is chosen by zoom.
     EncPoints,
@@ -491,6 +504,26 @@ const fn enc_picture(id: &'static str, group: Group, enc: EncGroup) -> Layer {
     l
 }
 
+/// The shallowest zoom the depth layers are drawn at: a phone's view there (about 2.1 by 3.5
+/// degrees at New York Harbor) fits in one elevation area, which spans at most five degrees; one
+/// zoom out it does not.
+const DEPTH_MIN_ZOOM: u8 = 8;
+
+/// A depth layer drawn from the elevation model.
+const fn depth_layer(id: &'static str, kind: DepthKind) -> Layer {
+    let mut l = overlay(id, Group::Depth, LayerKind::Depth(kind));
+    l.min_zoom = Some(DEPTH_MIN_ZOOM);
+    l.not_for_navigation = true;
+    match kind {
+        DepthKind::Shading => {
+            l.ramp = Some("depth");
+            l.default_opacity = 0.8;
+        }
+        DepthKind::Contours => l.default_opacity = 0.9,
+    }
+    l
+}
+
 /// The shallowest zoom access is looked up at: a phone's view there (about 0.44 by 0.27 degrees
 /// at New York Harbor) is within the access lookup's widest span of half a degree.
 const ACCESS_MIN_ZOOM: u8 = 11;
@@ -541,7 +574,7 @@ pub const BASES: [Layer; 4] = [
 ];
 
 /// The overlay layers in drawer order.
-pub const LAYERS: [Layer; 37] = [
+pub const LAYERS: [Layer; 39] = [
     {
         let mut l = overlay(
             "gebco-relief",
@@ -762,6 +795,8 @@ pub const LAYERS: [Layer; 37] = [
         l.default_opacity = 0.7;
         l
     },
+    depth_layer("depth-shading", DepthKind::Shading),
+    depth_layer("depth-contours", DepthKind::Contours),
 ];
 
 /// The layer or base with an id.
@@ -831,6 +866,7 @@ pub const PRESETS: [Preset; 6] = [
             on("chlorophyll"),
             on("hf-radar-currents"),
             on("gebco-relief"),
+            on("depth-contours"),
             on("buoys"),
             on("spots"),
         ],
@@ -907,7 +943,7 @@ mod tests {
     /// The ids of the overlays as the configuration lists them (`KNOWN_LAYERS`), in drawer order.
     /// The configuration crate cannot be a dependency here, so it checks its own list against this
     /// one.
-    const OVERLAY_IDS: [&str; 37] = [
+    const OVERLAY_IDS: [&str; 39] = [
         "gebco-relief",
         "sst",
         "sst-imagery",
@@ -945,6 +981,8 @@ mod tests {
         "catches",
         "tracks",
         "catch-heat",
+        "depth-shading",
+        "depth-contours",
     ];
     const BASE_IDS: [&str; 4] = [
         "apple-standard",
@@ -987,6 +1025,8 @@ mod tests {
             "gebco-relief",
             "hf-radar-currents",
             "current-stations",
+            "depth-shading",
+            "depth-contours",
         ] {
             assert!(find(id).unwrap().not_for_navigation, "{id}");
         }
@@ -1526,6 +1566,73 @@ mod tests {
             }
             let stocked = p.layers.iter().any(|pl| pl.id == "stocking-points");
             assert_eq!(stocked, p.id == "trout-stream", "{}", p.id);
+        }
+    }
+
+    #[test]
+    fn depth_layers_are_drawn_on_the_device_from_a_zoom_where_a_view_fits_one_area() {
+        for (id, kind) in [
+            ("depth-shading", DepthKind::Shading),
+            ("depth-contours", DepthKind::Contours),
+        ] {
+            let l = layer(id);
+            assert_eq!(l.group, Group::Depth, "{id}");
+            assert_eq!(l.kind, LayerKind::Depth(kind), "{id}");
+            assert!(l.not_for_navigation, "{id}");
+            assert_eq!(l.availability, Availability::Available, "{id}");
+            assert_eq!(l.date_mode, DateMode::None, "{id}");
+            assert_eq!(l.max_zoom, None, "{id}");
+            assert!(!l.on_request(), "{id}");
+            // Neither tiles from a service nor a gridded dataset: the map's plan leaves them be.
+            assert_eq!(l.tile_service(), None, "{id}");
+            assert_eq!(l.tile_url(tile(12, 1206, 1539), None, 0), None, "{id}");
+            assert!(l.grid().is_none(), "{id}");
+            // The widest elevation area the depth calls take is five degrees a side.
+            let min = l.min_zoom.unwrap();
+            let view = harbor_view(f64::from(min));
+            assert!(
+                (view.east - view.west).max(view.north - view.south) <= 5.0,
+                "{id}"
+            );
+            let wider = harbor_view(f64::from(min - 1));
+            assert!(
+                (wider.east - wider.west).max(wider.north - wider.south) > 5.0,
+                "{id}"
+            );
+        }
+        assert_eq!(layer("depth-shading").ramp, Some("depth"));
+        assert_eq!(
+            layer("depth-shading").default_range(),
+            Some(RampRange::linear(0.0, 100.0))
+        );
+        assert_eq!(layer("depth-contours").ramp, None);
+        let depth: Vec<_> = drawer_order()
+            .filter(|l| l.group == Group::Depth)
+            .map(|l| l.id)
+            .collect();
+        assert_eq!(
+            depth,
+            [
+                "gebco-relief",
+                "lake-contours-in",
+                "lake-contours-mn",
+                "enc-depths",
+                "depth-shading",
+                "depth-contours"
+            ]
+        );
+    }
+
+    #[test]
+    fn only_the_offshore_preset_shows_depth_and_then_only_its_contours() {
+        for p in &PRESETS {
+            assert!(
+                p.layers.iter().all(|pl| pl.id != "depth-shading"),
+                "{}",
+                p.id
+            );
+            let contours = p.layers.iter().any(|pl| pl.id == "depth-contours");
+            assert_eq!(contours, p.id == "offshore-pelagics", "{}", p.id);
         }
     }
 
