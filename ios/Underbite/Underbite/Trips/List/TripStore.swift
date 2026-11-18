@@ -233,12 +233,13 @@ final class TripStore {
         return id
     }
 
-    /// Deletes the trip `id`.
+    /// Deletes the trip `id` and what its page kept (`TripData`).
     func remove(_ id: String) {
         guard trips.contains(where: { $0.id == id }) else { return }
         trips.removeAll { $0.id == id }
         listings.removeAll { $0.id == id }
         changed()
+        files.remove(TripData.fileName(id))
     }
 
     private func changed() {

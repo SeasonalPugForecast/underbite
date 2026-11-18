@@ -87,6 +87,18 @@ final class TripStoreTests: XCTestCase {
         XCTAssertEqual(store().trips.map(\.id), [b])
     }
 
+    func testDeletingATripRemovesWhatItsPageKept() throws {
+        let s = store()
+        let a = try s.save(trip("A", "2027-02-01", "2027-02-03"))
+        let b = try s.save(trip("B", "2027-02-05", "2027-02-06"))
+        let kept = TripData(histories: ["place": "{}"])
+        kept.write(a, files: files)
+        kept.write(b, files: files)
+        s.remove(a)
+        XCTAssertFalse(files.exists(TripData.fileName(a)))
+        XCTAssertEqual(TripData.read(b, files: files), kept, "another trip's data stays")
+    }
+
     func testUpcomingTripsComeSoonestFirstAndPastOnesLatestFirst() async throws {
         let s = store()
         let longAgo = try s.save(trip("Long ago", "2026-12-01", "2026-12-03"))
