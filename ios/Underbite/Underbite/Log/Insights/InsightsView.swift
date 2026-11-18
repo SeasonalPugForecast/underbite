@@ -66,17 +66,26 @@ struct InsightsView: View {
             ContentUnavailableView(
                 "What worked", systemImage: "chart.bar.xaxis", description: Text(empty))
         } else {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    InsightsFilterBar(choices: choices, filter: $filter)
-                    header(page)
-                    grid(page.arranged)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        InsightsFilterBar(choices: choices, filter: $filter)
+                        header(page)
+                        grid(page.arranged)
+                    }
+                    .padding()
+                    .frame(maxWidth: sizeClass == .regular ? 1_000 : .infinity)
+                    .frame(maxWidth: .infinity)
                 }
-                .padding()
-                .frame(maxWidth: sizeClass == .regular ? 1_000 : .infinity)
-                .frame(maxWidth: .infinity)
+                .background(Color(.systemGroupedBackground))
+                #if DEBUG
+                    .task(id: page.sections.map(\.id)) {
+                        guard let kind = InsightsLaunch.scrollTarget(in: page) else { return }
+                        try? await Task.sleep(for: .milliseconds(300))
+                        proxy.scrollTo(kind, anchor: .bottom)
+                    }
+                #endif
             }
-            .background(Color(.systemGroupedBackground))
         }
     }
 
@@ -106,7 +115,7 @@ struct InsightsView: View {
         return Grid(alignment: .topLeading, horizontalSpacing: 14, verticalSpacing: 14) {
             ForEach(InsightsPage.rows(sections, columns: columns), id: \.first?.id) { row in
                 GridRow {
-                    ForEach(row) { section in InsightChart(section: section) }
+                    ForEach(row) { section in InsightChart(section: section).id(section.id) }
                     if row.count < columns {
                         Color.clear.gridCellUnsizedAxes([.horizontal, .vertical])
                     }
@@ -122,21 +131,36 @@ private struct InsightsFilterBar: View {
     @Binding var filter: InsightsFilter
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 10) { pickers }
-                VStack(alignment: .leading, spacing: 4) { pickers }
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                pickers
+                days
+                Spacer(minLength: 0)
+                reset
             }
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 16) { days }
-                VStack(alignment: .leading, spacing: 4) { days }
-            }
-            if filter.isActive {
-                Button("Count all catches", systemImage: "xmark.circle") {
-                    filter = InsightsFilter()
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 10) {
+                    pickers
+                    Spacer(minLength: 0)
+                    reset
                 }
-                .font(.subheadline)
+                HStack(spacing: 16) { days }
             }
+            VStack(alignment: .leading, spacing: 2) {
+                pickers
+                days
+                reset
+            }
+        }
+    }
+
+    /// Clears every filter; shown only while one is set.
+    @ViewBuilder private var reset: some View {
+        if filter.isActive {
+            Button("Count all catches", systemImage: "xmark.circle") {
+                filter = InsightsFilter()
+            }
+            .labelStyle(.iconOnly)
         }
     }
 
@@ -204,10 +228,20 @@ private struct DayToggle: View {
 }
 
 #if DEBUG
-    /// Launch argument of the screenshot runs: `-whatWorked <species id>` counts that species
-    /// the first time the page opens.
+    /// Launch arguments of the screenshot runs: `-whatWorked <species id>` counts that species
+    /// the first time the page opens, and `-insightsScroll <kind>` scrolls once so that
+    /// condition's card ends at the bottom of the screen.
     enum InsightsLaunch {
         private static var applied = false
+        private static var scrolled = false
+
+        static func scrollTarget(in page: InsightsPage) -> String? {
+            guard !scrolled, let kind = LaunchArguments.value(after: "-insightsScroll"),
+                page.sections.contains(where: { $0.id == kind && $0.charted })
+            else { return nil }
+            scrolled = true
+            return kind
+        }
 
         static func species() -> String? {
             guard !applied else { return nil }

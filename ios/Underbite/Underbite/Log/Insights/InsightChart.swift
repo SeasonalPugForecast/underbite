@@ -48,39 +48,50 @@ struct InsightChart: View {
         }
     }
 
-    /// Horizontal bars, one row per value in the core's order, labelled with the core's words.
+    /// Horizontal bars, one row per value in the core's order (the data's order), each on a
+    /// faint full-length track with the core's label above it. Both axes are hidden: the labels
+    /// are the core's words drawn as annotations, and the length has no scale to read.
     private var bars: some View {
-        let keys = section.bars.map(\.key)
-        let labels = Dictionary(
-            section.bars.map { ($0.key, $0.label) }, uniquingKeysWith: { first, _ in first })
-        return Chart(section.bars) { bar in
+        Chart(section.bars) { bar in
+            BarMark(
+                x: .value("Share", 1.0),
+                y: .value("Value", bar.key),
+                height: .fixed(Self.bar),
+                stacking: .unstacked
+            )
+            .foregroundStyle(Palette.tertiaryText.opacity(0.12))
+            .cornerRadius(Self.bar / 2, style: .continuous)
+            .annotation(position: .top, alignment: .leading, spacing: 3) {
+                Text(bar.label)
+                    .font(.caption)
+                    .foregroundStyle(bar.peak ? Color.primary : Palette.secondaryText)
+                    .fontWeight(bar.peak ? .semibold : .regular)
+                    .lineLimit(1)
+            }
+            .accessibilityHidden(true)
             BarMark(
                 x: .value("Share", bar.fraction),
                 y: .value("Value", bar.key),
-                height: .ratio(0.7)
+                height: .fixed(Self.bar),
+                stacking: .unstacked
             )
-            .foregroundStyle(bar.peak ? Palette.accent : Palette.tertiaryText.opacity(0.55))
-            .cornerRadius(3, style: .continuous)
+            .foregroundStyle(bar.peak ? Palette.accent : Palette.tertiaryText.opacity(0.6))
+            .cornerRadius(Self.bar / 2, style: .continuous)
             .accessibilityLabel(Text(bar.spoken))
             .accessibilityValue(Text(verbatim: ""))
         }
         .chartXScale(domain: 0...1)
-        .chartYScale(domain: keys)
         .chartXAxis(.hidden)
-        .chartYAxis {
-            AxisMarks(position: .leading, values: keys) { value in
-                AxisValueLabel {
-                    if let key = value.as(String.self), let label = labels[key] {
-                        Text(label)
-                            .font(.caption)
-                            .foregroundStyle(.readableSecondary)
-                    }
-                }
-            }
-        }
-        // The labels stop growing at the largest standard size so the bars keep their room;
+        .chartYAxis(.hidden)
+        // The labels stop growing at the largest standard size so the rows keep their height;
         // the sentence and VoiceOver carry every value at any size.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
-        .frame(height: CGFloat(section.bars.count) * 19 + 6)
+        .frame(height: CGFloat(section.bars.count) * Self.row)
+        // Room for the first row's label, which is drawn above its band.
+        .padding(.top, 12)
     }
+
+    /// The height of a bar, and of a row: the bar with its label above.
+    private static let bar: CGFloat = 8
+    private static let row: CGFloat = 30
 }

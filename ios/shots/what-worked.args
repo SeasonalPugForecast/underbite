@@ -1,2 +1,2 @@
--seed -seedCatches many -tab log -whatWorked morone-saxatilis
+-seed -seedCatches many -tab log -whatWorked morone-saxatilis -insightsScroll water_temperature
 wait 12
