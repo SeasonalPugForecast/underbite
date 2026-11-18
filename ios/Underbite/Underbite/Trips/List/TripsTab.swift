@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 /// What the Trips screen has open over it.
@@ -19,11 +20,14 @@ private enum TripsSheet: Identifiable {
 struct TripsTab: View {
     @Environment(SpotStore.self) private var spots
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.scenePhase) private var phase
     var trips: TripStore = .shared
     @State private var selection: String?
     @State private var columns: NavigationSplitViewVisibility = .all
     @State private var compactColumn: NavigationSplitViewColumn = .sidebar
     @State private var sheet: TripsSheet?
+    /// The phone's date, `YYYY-MM-DD`: a trip's status and today's day follow it.
+    @State private var today = TripDates.day(of: Date())
 
     var body: some View {
         NavigationSplitView(columnVisibility: $columns, preferredCompactColumn: $compactColumn) {
@@ -31,7 +35,8 @@ struct TripsTab: View {
         } detail: {
             NavigationStack {
                 if let id = selection, trips.trip(id) != nil {
-                    TripGridView(trips: trips, tripID: id) { sheet = .edit(id) }.id(id)
+                    TripGridView(trips: trips, tripID: id, today: today) { sheet = .edit(id) }
+                        .id(id)
                 } else {
                     ContentUnavailableView(
                         "Choose a trip", systemImage: "calendar",
@@ -41,8 +46,18 @@ struct TripsTab: View {
         }
         .navigationSplitViewStyle(.balanced)
         // The listings follow the trips, the settings (units, voice) and the day.
-        .task(id: "\(trips.revision) \(spots.settingsJSON.hashValue)") {
+        .task(id: "\(trips.revision) \(spots.settingsJSON.hashValue) \(today)") {
             await trips.rebuild(settingsJSON: spots.settingsJSON)
+        }
+        // A new day, while the app is open or while it was away.
+        .onReceive(
+            NotificationCenter.default.publisher(for: .NSCalendarDayChanged)
+                .receive(on: RunLoop.main)
+        ) { _ in
+            today = TripDates.day(of: Date())
+        }
+        .onChange(of: phase) { _, phase in
+            if phase == .active { today = TripDates.day(of: Date()) }
         }
         .onAppear {
             if sizeClass == .regular, selection == nil { selection = firstShown }

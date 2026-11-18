@@ -11,6 +11,8 @@ struct TripGridView: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     let trips: TripStore
     let tripID: String
+    /// The phone's date, `YYYY-MM-DD`; a new day builds the page again.
+    let today: String
     let edit: () -> Void
 
     @State private var page: TripPage
@@ -20,21 +22,22 @@ struct TripGridView: View {
     @ScaledMetric(relativeTo: .subheadline) private var minimumColumn: CGFloat = 220
     private let spacing: CGFloat = 12
 
-    init(trips: TripStore, tripID: String, edit: @escaping () -> Void) {
+    init(trips: TripStore, tripID: String, today: String, edit: @escaping () -> Void) {
         self.trips = trips
         self.tripID = tripID
+        self.today = today
         self.edit = edit
         _page = State(initialValue: TripPage(tripID: tripID))
     }
 
     private var trip: SavedTrip? { trips.trip(tripID) }
 
-    /// What the page is built from: the trip, the settings and each place's last fetch.
+    /// What the page is built from: the trip, the settings, each place's last fetch and the day.
     private var buildKey: String {
         let fetched = (trips.listing(tripID)?.places ?? []).map { place in
             "\(place.key)=\(spots.listing(for: place.key)?.status.lastSuccess ?? 0)"
         }
-        return [trip?.json ?? "", spots.settingsJSON, fetched.joined(separator: ",")]
+        return [trip?.json ?? "", spots.settingsJSON, fetched.joined(separator: ","), today]
             .joined(separator: "\n")
     }
 
