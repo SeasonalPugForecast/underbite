@@ -22,7 +22,8 @@ struct CatchEditorView: View {
     @State private var loadError: String?
     @State private var units: FishUnitsInfo?
     @State private var fates: [FateOption] = []
-    @State private var species: [SpeciesChoice] = []
+    /// The catalogue with the user's edits, for the species picker.
+    @State private var species: [SpeciesListRow] = []
     @State private var lengthProblem: String?
     @State private var weightProblem: String?
     @State private var preview: CatchConditionsPreview?
@@ -158,8 +159,9 @@ struct CatchEditorView: View {
     private var fishSection: some View {
         Section {
             NavigationLink {
-                SpeciesChoiceView(
-                    choices: species, species: $draft.species, text: $draft.speciesText)
+                SpeciesPicker(
+                    rows: species, ids: speciesBinding, allowsMany: false,
+                    other: $draft.speciesText)
             } label: {
                 LabeledContent("Species") {
                     Text(speciesName ?? "None").foregroundStyle(.readableSecondary)
@@ -291,6 +293,15 @@ struct CatchEditorView: View {
         return typed.isEmpty ? nil : typed
     }
 
+    /// The catch's species as the picker's ids: one catalogue id or none.
+    private var speciesBinding: Binding<[String]> {
+        Binding {
+            draft.species.map { [$0] } ?? []
+        } set: { ids in
+            draft.species = ids.first
+        }
+    }
+
     private var fateBinding: Binding<FateId> {
         Binding {
             draft.shownFate(fates.map(\.id))
@@ -340,7 +351,7 @@ struct CatchEditorView: View {
         let settings = spots.settingsJSON
         units = try? fishUnitsInfo(settingsJson: settings)
         fates = (try? fateOptions(settingsJson: settings)) ?? []
-        species = SpeciesChoice.catalogue(settingsJSON: settings)
+        species = SpeciesCatalogue.rows(edits: SpeciesEditsStore.shared.edits, settingsJSON: settings)
         if let catchID {
             do {
                 let input = try logEditor(book: catches.book, id: catchID, settingsJson: settings)
@@ -424,84 +435,6 @@ struct CatchEditorView: View {
         } catch {
             saveError = CatchStore.message(error)
         }
-    }
-}
-
-/// The catalogue's species to choose from, searched by common or scientific name, or a species
-/// typed in for one that is not there.
-private struct SpeciesChoiceView: View {
-    @Environment(\.dismiss) private var dismiss
-    let choices: [SpeciesChoice]
-    @Binding var species: String?
-    @Binding var text: String
-    @State private var search = ""
-
-    var body: some View {
-        let typed = search.trimmingCharacters(in: .whitespacesAndNewlines)
-        let shown = SpeciesChoice.matching(search, in: choices)
-        List {
-            if !typed.isEmpty, !shown.contains(where: { $0.name.caseInsensitiveCompare(typed) == .orderedSame }) {
-                Section {
-                    Button {
-                        choose(nil, typed: typed)
-                    } label: {
-                        Label("Use “\(typed)”", systemImage: "character.cursor.ibeam")
-                    }
-                } footer: {
-                    Text("For a species that is not in the list.")
-                }
-            }
-            if species == nil, !text.isEmpty, typed.isEmpty {
-                Section {
-                    row(text, detail: nil, chosen: true) { choose(nil, typed: text) }
-                }
-            }
-            Section {
-                if typed.isEmpty {
-                    row("None", detail: nil, chosen: species == nil && text.isEmpty) {
-                        choose(nil, typed: "")
-                    }
-                }
-                ForEach(shown) { choice in
-                    row(choice.name, detail: choice.scientificName, chosen: species == choice.id) {
-                        choose(choice.id, typed: "")
-                    }
-                }
-            }
-        }
-        .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always))
-        .navigationTitle("Species")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private func row(_ name: String, detail: String?, chosen: Bool, action: @escaping () -> Void)
-        -> some View
-    {
-        Button(action: action) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(name).foregroundStyle(Color.primary)
-                    if let detail {
-                        Text(detail).font(.caption).italic().foregroundStyle(.readableSecondary)
-                    }
-                }
-                Spacer()
-                if chosen {
-                    Image(systemName: "checkmark")
-                        .foregroundStyle(Palette.accent)
-                        .accessibilityHidden(true)
-                }
-            }
-            .contentShape(Rectangle())
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(chosen ? .isSelected : [])
-    }
-
-    private func choose(_ id: String?, typed: String) {
-        species = id
-        text = typed
-        dismiss()
     }
 }
 

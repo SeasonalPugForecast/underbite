@@ -18,6 +18,8 @@ struct TripEditorView: View {
     /// The core's words for the draft's days ("Nov 8 to Nov 10", "Starts in 3 days").
     @State private var preview: TripListing?
     @State private var saveError: String?
+    /// The catalogue with the user's edits, for the species picker.
+    @State private var speciesRows: [SpeciesListRow] = []
 
     var body: some View {
         let json = draft.json(spots: spots.spots, areas: spots.areas, settingsJSON: spots.settingsJSON)
@@ -29,16 +31,7 @@ struct TripEditorView: View {
             }
             places
             dates(problem: problem)
-            Section {
-                TextField("Species", text: $draft.species, prompt: Text("Morone saxatilis"))
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .onSubmit { tidySpecies() }
-            } header: {
-                Text("Species")
-            } footer: {
-                Text("Scientific names, separated by commas.")
-            }
+            speciesSection
             Section("How you fish") {
                 Picker("Method", selection: $draft.method) {
                     ForEach(TripDraft.methods, id: \.self) { method in
@@ -121,6 +114,48 @@ struct TripEditorView: View {
         }
     }
 
+    /// The species of the trip as the catalogue names them, and the picker that changes them.
+    private var speciesSection: some View {
+        let chosen = speciesIDs
+        return Section {
+            ForEach(chosen, id: \.self) { id in
+                if let row = speciesRows.first(where: { $0.id == id }) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(row.name)
+                        Text(row.scientificName)
+                            .font(.caption).italic()
+                            .foregroundStyle(.readableSecondary)
+                    }
+                    .accessibilityElement(children: .combine)
+                } else {
+                    Text(id)
+                }
+            }
+            .onDelete { offsets in
+                var ids = chosen
+                ids.remove(atOffsets: offsets)
+                speciesIDs = ids
+            }
+            NavigationLink {
+                SpeciesPicker(rows: speciesRows, ids: speciesBinding, allowsMany: true)
+            } label: {
+                Text(chosen.isEmpty ? "Choose species" : "Change species")
+            }
+        } header: {
+            Text("Species")
+        }
+    }
+
+    /// The trip's species ids.
+    private var speciesIDs: [String] {
+        get { TripDraft.speciesIDs(draft.species) }
+        nonmutating set { draft.species = newValue.joined(separator: ", ") }
+    }
+
+    private var speciesBinding: Binding<[String]> {
+        Binding { speciesIDs } set: { speciesIDs = $0 }
+    }
+
     private func dates(problem: String?) -> some View {
         Section {
             DatePicker("First day", selection: day(\.first), displayedComponents: .date)
@@ -187,17 +222,14 @@ struct TripEditorView: View {
     private func load() {
         guard !loaded else { return }
         loaded = true
+        speciesRows = SpeciesCatalogue.rows(
+            edits: SpeciesEditsStore.shared.edits, settingsJSON: spots.settingsJSON)
         if let tripID, let trip = trips.trip(tripID) {
             draft = TripDraft(json: trip.json)
         } else {
             draft = TripDraft(
                 first: TripDates.day(of: Date()), places: spots.activeID.map { [$0] } ?? [])
         }
-    }
-
-    /// The species as the ids the trip keeps.
-    private func tidySpecies() {
-        draft.species = TripDraft.speciesIDs(draft.species).joined(separator: ", ")
     }
 
     private func save() {
