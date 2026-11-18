@@ -1,0 +1,2 @@
+-seed -tab map -mapLayers chlorophyll -mapAt 39.6,-72.0,4.7 -mapDates clear
+wait 150
