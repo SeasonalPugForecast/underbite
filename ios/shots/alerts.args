@@ -1,0 +1,2 @@
+-seed -seedAlerts -tab settings -settings alerts
+wait 12

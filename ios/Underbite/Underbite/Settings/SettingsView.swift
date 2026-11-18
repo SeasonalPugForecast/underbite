@@ -3,7 +3,7 @@ import UnderbiteKit
 
 /// A page of the Settings root.
 enum SettingsDestination: Hashable {
-    case sources, keys, species, cards, about, attribution, acknowledgements
+    case sources, keys, species, alerts, cards, about, attribution, acknowledgements
     case preference(PreferencePageID)
 
     /// The page `-settings <name>` asks for, in debug builds only (screenshots). `-preferences
@@ -15,6 +15,7 @@ enum SettingsDestination: Hashable {
             case "sources": return .sources
             case "keys": return .keys
             case "species": return .species
+            case "alerts": return .alerts
             case "cards": return .cards
             case "about": return .about
             case "attribution": return .attribution
@@ -66,12 +67,14 @@ struct SettingsView: View {
         .onChange(of: selection) { _, chosen in
             compactColumn = chosen == nil ? .sidebar : .detail
         }
-        // The species list and a profile side by side need the whole width. Set once the
-        // split view has laid out its columns, which it otherwise does over this.
+        // The species list and a profile, or the alert rules and a rule's editor, side by side
+        // need the whole width. Set once the split view has laid out its columns, which it
+        // otherwise does over this.
         .task(id: selection) {
             guard sizeClass == .regular else { return }
             await Task.yield()
-            let wanted: NavigationSplitViewVisibility = selection == .species ? .detailOnly : .all
+            let wide = selection == .species || selection == .alerts
+            let wanted: NavigationSplitViewVisibility = wide ? .detailOnly : .all
             if columns != wanted {
                 withAnimation { columns = wanted }
             }
@@ -92,6 +95,7 @@ struct SettingsView: View {
                 Label("Sources", systemImage: "list.number").tag(SettingsDestination.sources)
                 Label("Keys and accounts", systemImage: "key").tag(SettingsDestination.keys)
                 Label("Species", systemImage: "fish").tag(SettingsDestination.species)
+                Label("Alerts", systemImage: "bell").tag(SettingsDestination.alerts)
             } header: {
                 Text("Data").foregroundStyle(.readableSecondary)
             }
@@ -146,6 +150,7 @@ struct SettingsView: View {
         case .sources: SourcesView()
         case .keys: KeysView()
         case .species: SpeciesBrowser()
+        case .alerts: AlertRulesPage()
         case .cards: CustomizeView()
         case .about: AboutView()
         case .attribution: AttributionView()

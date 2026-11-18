@@ -10,14 +10,20 @@
 
         static var wanted: Bool { ProcessInfo.processInfo.arguments.contains("-seedAlerts") }
 
-        /// The rule `-alertRule` asks to open.
-        static var requestedRule: String? {
+        /// The rule `-alertRule` asks to open, the first time it is asked for: coming back to
+        /// the list does not open it again.
+        @MainActor
+        static func requestedRule() -> String? {
+            guard !opened else { return nil }
             let all = ProcessInfo.processInfo.arguments
             guard let index = all.firstIndex(of: "-alertRule"), index + 1 < all.count else {
                 return nil
             }
+            opened = true
             return all[index + 1]
         }
+
+        @MainActor private static var opened = false
 
         /// 800 cfs and 66 °F in the core's canonical units (m³/s, °C).
         static let flow = 800 * 0.028316846592
