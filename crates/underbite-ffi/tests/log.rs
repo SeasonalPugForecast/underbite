@@ -3,10 +3,10 @@
 use serde_json::{Value, json};
 use underbite_core::model::snapshot::testdata::sample_snapshot;
 use underbite_ffi::log::{
-    CatchFilter, CatchInput, FateId, LogError, PlaceName, catch_cells, catch_detail_view,
-    catch_list_view, check_length_text, check_weight_text, fate_options, fish_units_info,
-    insights_json, log_attach_conditions, log_delete, log_editor, log_export_csv, log_export_gpx,
-    log_export_words, log_load, log_merge, log_new, log_save,
+    CatchFilter, CatchInput, CatchPoint, FateId, LogError, PlaceName, catch_cells,
+    catch_detail_view, catch_list_view, catch_points, check_length_text, check_weight_text,
+    fate_options, fish_units_info, insights_json, log_attach_conditions, log_delete, log_editor,
+    log_export_csv, log_export_gpx, log_export_words, log_load, log_merge, log_new, log_save,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -367,6 +367,40 @@ fn insights_and_the_heat_map_follow_the_filter() {
         )
         .unwrap_err(),
         LogError::Field { .. }
+    ));
+}
+
+#[test]
+fn the_map_pins_live_catches_where_they_were_made() {
+    let mut north = input("c2");
+    north.latitude = 40.9;
+    north.longitude = -73.9;
+    let book = saved(
+        &saved(&saved(&log_new(), input("c1"), &us(), 1), north, &us(), 1),
+        input("c3"),
+        &us(),
+        1,
+    );
+    let book = log_delete(book, "c3".into(), 9).unwrap().book;
+    assert_eq!(
+        catch_points(book).unwrap(),
+        [
+            CatchPoint {
+                id: "c1".into(),
+                latitude: 40.7033,
+                longitude: -74.017,
+            },
+            CatchPoint {
+                id: "c2".into(),
+                latitude: 40.9,
+                longitude: -73.9,
+            },
+        ]
+    );
+    assert_eq!(catch_points(log_new()).unwrap(), []);
+    assert!(matches!(
+        catch_points(b"nope".to_vec()).unwrap_err(),
+        LogError::Book { .. }
     ));
 }
 

@@ -731,6 +731,33 @@ pub fn catch_cells(
         .collect())
 }
 
+/// A catch as the map pins it.
+#[derive(Clone, Debug, PartialEq, uniffi::Record)]
+pub struct CatchPoint {
+    /// The catch's id, for [`catch_detail_view`] and [`log_editor`].
+    pub id: String,
+    /// Degrees north.
+    pub latitude: f64,
+    /// Degrees east.
+    pub longitude: f64,
+}
+
+/// Where each catch was made, for the map's pins: the catches that are not deleted, in the
+/// log's stable order. Deleted catches keep no position and are left out.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn catch_points(book: Vec<u8>) -> Result<Vec<CatchPoint>, LogError> {
+    let book = open(&book)?;
+    Ok(book
+        .live()
+        .map(|e| CatchPoint {
+            id: e.id.clone(),
+            latitude: e.location.latitude,
+            longitude: e.location.longitude,
+        })
+        .collect())
+}
+
 // ---------------------------------------------------------------------------------------------
 // Export
 // ---------------------------------------------------------------------------------------------
