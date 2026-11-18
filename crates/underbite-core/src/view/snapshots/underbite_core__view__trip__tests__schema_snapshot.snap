@@ -1,0 +1,716 @@
+---
+source: crates/underbite-core/src/view/trip.rs
+expression: schema
+---
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TripView",
+  "description": "A trip as shown: its places, its days and its checklist.",
+  "type": "object",
+  "properties": {
+    "attribution": {
+      "description": "Every source a cell rests on.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/CreditVm"
+      }
+    },
+    "checklist": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ChecklistRow"
+      }
+    },
+    "compact": {
+      "description": "The widget form.",
+      "$ref": "#/$defs/TripCompact"
+    },
+    "dates": {
+      "description": "\"Nov 8 to Nov 10\"",
+      "type": "string"
+    },
+    "days": {
+      "description": "One per date, first to last.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/TripDayRow"
+      }
+    },
+    "first": {
+      "description": "The first day, `YYYY-MM-DD`, for ordering trips.",
+      "type": "string"
+    },
+    "is_past": {
+      "description": "The last day is over at every place.",
+      "type": "boolean"
+    },
+    "is_upcoming": {
+      "description": "The first day has not begun at any place.",
+      "type": "boolean"
+    },
+    "notes": {
+      "description": "The trip's notes, as the user wrote them.",
+      "type": "string"
+    },
+    "notices": {
+      "description": "Not for navigation, approximate tides, the traditional cue: safety text.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Notice"
+      }
+    },
+    "places": {
+      "description": "The columns of the grid, in the trip's order.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/TripPlaceColumn"
+      }
+    },
+    "status": {
+      "description": "\"Starts in 3 days\", \"Under way\", \"This trip is over\".",
+      "type": "string"
+    },
+    "title": {
+      "description": "The trip's name.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "dates",
+    "first",
+    "status",
+    "is_past",
+    "is_upcoming",
+    "places",
+    "days",
+    "checklist",
+    "attribution",
+    "notices",
+    "notes",
+    "compact"
+  ],
+  "$defs": {
+    "CellBasis": {
+      "description": "What a cell rests on.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "certain",
+            "forecast",
+            "unavailable"
+          ]
+        },
+        {
+          "description": "Past years' values for these dates: history, never a forecast.",
+          "type": "string",
+          "const": "typical"
+        }
+      ]
+    },
+    "Check": {
+      "description": "What was checked.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "wind",
+            "gust",
+            "waves",
+            "air_temperature",
+            "visibility",
+            "small_craft_advisory",
+            "lightning"
+          ]
+        },
+        {
+          "description": "The forecast itself: its end, or its absence.",
+          "type": "string",
+          "const": "forecast"
+        },
+        {
+          "description": "Tidal current speed.",
+          "type": "string",
+          "const": "current"
+        },
+        {
+          "description": "River discharge against the user's ranges.",
+          "type": "string",
+          "const": "flow"
+        },
+        {
+          "description": "A gale-class marine warning (gale, storm, hurricane-force wind, hazardous seas, special\nmarine warning).",
+          "type": "string",
+          "const": "marine_warning"
+        },
+        {
+          "description": "A significant storm in the forecast models.",
+          "type": "string",
+          "const": "storm_ahead"
+        },
+        {
+          "description": "An NHC forecast cone over the spot.",
+          "type": "string",
+          "const": "hurricane"
+        }
+      ]
+    },
+    "ChecklistKind": {
+      "description": "What a checklist row is.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "offline_pack",
+            "sharing"
+          ]
+        },
+        {
+          "description": "An official licence page.",
+          "type": "string",
+          "const": "licence"
+        },
+        {
+          "description": "An official regulations page.",
+          "type": "string",
+          "const": "regulations"
+        },
+        {
+          "description": "The safety text beside the links.",
+          "type": "string",
+          "const": "disclaimer"
+        },
+        {
+          "description": "One of the trip's own items.",
+          "type": "string",
+          "const": "item"
+        },
+        {
+          "description": "The method's gear template.",
+          "type": "string",
+          "const": "gear"
+        }
+      ]
+    },
+    "ChecklistRow": {
+      "description": "One line of the checklist.",
+      "type": "object",
+      "properties": {
+        "detail": {
+          "description": "\"NYSDEC, link checked 2026-11-10\"",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "done": {
+          "description": "Ticked or not, for the trip's items and the offline pack; absent where it does not apply.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "Stable across builds: the item's id, the link, or a fixed name.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ChecklistKind"
+        },
+        "link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "text"
+      ]
+    },
+    "CreditVm": {
+      "description": "The credit a source is owed.",
+      "type": "object",
+      "properties": {
+        "licence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "description": "The source's name as displayed.",
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "text"
+      ]
+    },
+    "Factor": {
+      "description": "A thing that can line up into a window.",
+      "type": "string",
+      "enum": [
+        "tide_stage",
+        "current_strength",
+        "low_light",
+        "solunar",
+        "pressure_falling",
+        "water_temp",
+        "flow_in_range"
+      ]
+    },
+    "GoNoGoReasonVm": {
+      "type": "object",
+      "properties": {
+        "check": {
+          "$ref": "#/$defs/Check"
+        },
+        "kind": {
+          "$ref": "#/$defs/ReasonKind"
+        },
+        "link": {
+          "description": "The official page for a hurricane.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "description": "The reason with its numbers; the whole sentence, as in the summary.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "check",
+        "kind",
+        "text"
+      ]
+    },
+    "Notice": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/NoticeKind"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ]
+    },
+    "NoticeKind": {
+      "description": "The fixed notices. Their text is plain and never in Luna's voice: there is no voice field.",
+      "type": "string",
+      "enum": [
+        "not_for_navigation",
+        "modelled",
+        "provisional",
+        "approximate",
+        "traditional_cue",
+        "text_only"
+      ]
+    },
+    "ReasonKind": {
+      "description": "How a check came out.",
+      "oneOf": [
+        {
+          "description": "The limit is exceeded, or the condition is present.",
+          "type": "string",
+          "const": "fails"
+        },
+        {
+          "description": "Within 10 % of the limit.",
+          "type": "string",
+          "const": "marginal"
+        },
+        {
+          "description": "The value that decides the check is missing.",
+          "type": "string",
+          "const": "no_data"
+        },
+        {
+          "description": "The time is past the end of the forecast.",
+          "type": "string",
+          "const": "outside_forecast"
+        },
+        {
+          "description": "The time is already over.",
+          "type": "string",
+          "const": "past"
+        }
+      ]
+    },
+    "TripCell": {
+      "description": "One measurement of one place on one day.",
+      "type": "object",
+      "properties": {
+        "accessibility": {
+          "description": "Label, basis, value and lines; the plain meaning first.",
+          "type": "string"
+        },
+        "basis": {
+          "$ref": "#/$defs/CellBasis"
+        },
+        "basis_label": {
+          "description": "\"certain\", \"forecast, issued Nov 8, 9:30 AM\", \"typical for these dates, 1991–2020,\nstation records\", \"unavailable: outside the forecast\".",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/TripCellKind"
+        },
+        "label": {
+          "description": "\"Tide\", \"River flow\", \"Snack times\".",
+          "type": "string"
+        },
+        "lines": {
+          "description": "The details: every high and low, the range against the user's, past years' spread.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source": {
+          "description": "The source's name, where there is one.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "description": "The short value for the grid: \"Go\", \"706 cfs\", \"Low 1:59 AM\"; \"—\" when unavailable.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "label",
+        "value",
+        "lines",
+        "basis",
+        "basis_label",
+        "accessibility"
+      ]
+    },
+    "TripCellKind": {
+      "description": "What a cell shows.",
+      "type": "string",
+      "enum": [
+        "verdict",
+        "windows",
+        "tides",
+        "flow",
+        "water_temp",
+        "sun",
+        "moon",
+        "solunar"
+      ]
+    },
+    "TripCompact": {
+      "description": "The \"next trip: go/no-go\" form for widgets.",
+      "type": "object",
+      "properties": {
+        "accessibility": {
+          "description": "The plain meaning first.",
+          "type": "string"
+        },
+        "headline": {
+          "description": "\"Go\", \"No-go\", or \"No verdict yet\".",
+          "type": "string"
+        },
+        "line": {
+          "description": "\"Sun Nov 8 at The Battery: Luna approves.\"",
+          "type": "string"
+        },
+        "storm": {
+          "description": "A storm ahead or a hurricane cone on that day.",
+          "type": "boolean"
+        },
+        "title": {
+          "description": "\"Next trip: Hudson weekend\"",
+          "type": "string"
+        },
+        "verdict": {
+          "description": "The worst verdict of the first day not over, across places; absent when no place has one.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Verdict"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "when": {
+          "description": "The trip's status: \"Starts in 3 days\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "when",
+        "headline",
+        "line",
+        "storm",
+        "accessibility"
+      ]
+    },
+    "TripDayRow": {
+      "description": "One date across the trip's places.",
+      "type": "object",
+      "properties": {
+        "accessibility": {
+          "description": "The whole row as one sentence, the plain meaning first.",
+          "type": "string"
+        },
+        "date": {
+          "description": "`YYYY-MM-DD`",
+          "type": "string"
+        },
+        "label": {
+          "description": "\"Sun Nov 8\"",
+          "type": "string"
+        },
+        "places": {
+          "description": "One per column, in the same order; absent where the place has no such day.",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/TripPlaceDay"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "date",
+        "label",
+        "places",
+        "accessibility"
+      ]
+    },
+    "TripPlaceColumn": {
+      "description": "One place, the header of its column.",
+      "type": "object",
+      "properties": {
+        "approximate": {
+          "description": "\"Approximate location\" when the place was shared rounded or by area only.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "area": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "description": "The place's key in the grid: the host's spot id.",
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "problem": {
+          "description": "Why the place has no days.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "water_type_label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "name",
+        "water_type_label"
+      ]
+    },
+    "TripPlaceDay": {
+      "description": "One place on one date.",
+      "type": "object",
+      "properties": {
+        "accessibility": {
+          "description": "The place's day as one sentence, the plain meaning first.",
+          "type": "string"
+        },
+        "cells": {
+          "description": "One per [`TripCellKind`], in its order.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TripCell"
+          }
+        },
+        "is_past": {
+          "description": "The day is over in the place's zone.",
+          "type": "boolean"
+        },
+        "is_today": {
+          "description": "The day is today in the place's zone.",
+          "type": "boolean"
+        },
+        "place": {
+          "description": "The column's key.",
+          "type": "string"
+        },
+        "reasons": {
+          "description": "The verdict's reasons, storms first; safety reasons carry their links.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GoNoGoReasonVm"
+          }
+        },
+        "storm": {
+          "description": "A storm ahead or a hurricane cone over the place on this day.",
+          "type": "boolean"
+        },
+        "verdict": {
+          "description": "For colouring; absent when the day has no verdict.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Verdict"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "windows": {
+          "description": "The day's fishing windows with their factors.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WindowVm"
+          }
+        }
+      },
+      "required": [
+        "place",
+        "is_past",
+        "is_today",
+        "storm",
+        "cells",
+        "reasons",
+        "windows",
+        "accessibility"
+      ]
+    },
+    "Verdict": {
+      "description": "The overall result for a day or an hour.",
+      "oneOf": [
+        {
+          "description": "Every checked limit is met with room to spare.",
+          "type": "string",
+          "const": "go"
+        },
+        {
+          "description": "Nothing fails, but a value is within 10 % of a limit.",
+          "type": "string",
+          "const": "marginal"
+        },
+        {
+          "description": "A hard limit is exceeded or a safety condition applies.",
+          "type": "string",
+          "const": "no_go"
+        },
+        {
+          "description": "Something that decides it is missing, or the time is outside the forecast.",
+          "type": "string",
+          "const": "unknown"
+        }
+      ]
+    },
+    "WindowFactorVm": {
+      "type": "object",
+      "properties": {
+        "detail": {
+          "description": "\"1 h before the High at 6:52 AM\"",
+          "type": "string"
+        },
+        "factor": {
+          "$ref": "#/$defs/Factor"
+        },
+        "label": {
+          "description": "\"Incoming tide\"",
+          "type": "string"
+        }
+      },
+      "required": [
+        "factor",
+        "label",
+        "detail"
+      ]
+    },
+    "WindowVm": {
+      "type": "object",
+      "properties": {
+        "end_t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "factors": {
+          "description": "The factors that matched, with their numbers.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WindowFactorVm"
+          }
+        },
+        "no_data": {
+          "description": "Enabled factors that had no data in the window, by name.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "no_data_text": {
+          "description": "\"No data: water temperature, river flow\"; none when every enabled factor had data.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "range": {
+          "description": "\"6:10 to 8:00 AM\"",
+          "type": "string"
+        },
+        "start_t": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "start_t",
+        "end_t",
+        "range",
+        "factors",
+        "no_data"
+      ]
+    }
+  }
+}

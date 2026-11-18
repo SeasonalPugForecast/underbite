@@ -1004,6 +1004,123 @@ keys! {
     OrdinalNd => ("{n}nd", "{n}nd"),
     OrdinalRd => ("{n}rd", "{n}rd"),
     OrdinalTh => ("{n}th", "{n}th"),
+    // -- the trip view --------------------------------------------------------------------
+    /// What a trip cell rests on. Astronomy and harmonic tides hold for any date.
+    TripBasisCertain => ("certain", "certain"),
+    /// `{when}`: the issue date and time.
+    TripBasisForecast => ("forecast, issued {when}", "forecast, issued {when}"),
+    /// Past years' values: `{first}`, `{last}` (years), `{kind}` (a history kind below).
+    TripBasisTypical => (
+        "typical for these dates, {first}–{last}, {kind}",
+        "typical for these dates, {first}–{last}, {kind}",
+    ),
+    /// Past years' values when the source gives only a count: `{n}`, `{kind}`.
+    TripBasisTypicalCount => (
+        "typical for these dates, {n} years, {kind}",
+        "typical for these dates, {n} years, {kind}",
+    ),
+    /// `{reason}`: one of the reasons below.
+    TripBasisUnavailable => ("unavailable: {reason}", "unavailable: {reason}"),
+    TripHistoryStation => ("station records", "station records"),
+    TripHistoryReanalysis => ("reanalysis", "reanalysis"),
+    TripHistoryModel => ("model archive", "model archive"),
+    TripWhyNoLocation => ("no location for this place", "no location for this place"),
+    TripWhyNoSource => ("no source here", "no source here"),
+    TripWhyNoForecast => ("no forecast yet", "no forecast yet"),
+    TripWhyBeyondForecast => ("outside the forecast", "outside the forecast"),
+    TripWhyNoHistory => ("no history for these dates", "no history for these dates"),
+    TripWhyPast => ("this day is over", "this day is over"),
+    TripWhyDisabled => ("turned off in settings", "turned off in settings"),
+    TripWhyNoCoverage => (
+        "no tide predictions for this day",
+        "no tide predictions for this day",
+    ),
+    /// An instant: `{date}`, `{time}`.
+    TripDateTime => ("{date}, {time}", "{date}, {time}"),
+    /// `{n}`: windows after the first.
+    TripMoreWindows => ("{n} more", "{n} more"),
+    TripWindowsCertainOnly => (
+        "From tide, light and solunar only",
+        "From tide, light and solunar only",
+    ),
+    /// A high or low: `{kind}`, `{time}`.
+    TripTideEvent => ("{kind} {time}", "{kind} {time}"),
+    /// `{kind}`, `{time}`, `{height}` (with its unit and datum).
+    TripTideEventHeight => ("{kind} {time}, {height}", "{kind} {time}, {height}"),
+    TripFlowInBest => ("In your best range", "In your best range"),
+    TripFlowAboveBest => ("Above your best range", "Above your best range"),
+    TripFlowBelowBest => ("Below your best range", "Below your best range"),
+    TripFlowBlownOut => ("Above your blown-out level", "Blown out"),
+    TripWadeable => ("Wadeable", "Wadeable"),
+    TripNotWadeable => ("Above your wadeable level", "Too high to wade"),
+    /// The 10th to 90th percentile of past years: `{low}`, `{high}` (with units).
+    TripMostYears => ("Most years {low} to {high}", "Most years {low} to {high}"),
+    TripTempBelow => (
+        "Below the species' preferred range",
+        "Colder than the fish like it",
+    ),
+    TripTempWithin => (
+        "In the species' preferred range",
+        "Just how the fish like it",
+    ),
+    TripTempAbove => (
+        "Above the species' preferred range",
+        "Warmer than the fish like it",
+    ),
+    /// `{percent}`: the lit fraction.
+    TripMoonLit => ("{percent} lit", "{percent} lit"),
+    /// A solunar period: `{label}`, `{range}`.
+    TripSolunarPeriod => ("{label} {range}", "{label} {range}"),
+    /// What `VoiceOver` reads for a cell: `{label}`, `{basis}`, `{value}`.
+    TripCellAcc => ("{label}, {basis}: {value}", "{label}, {basis}: {value}"),
+    /// A cell with nothing to show: `{label}`, `{basis}`.
+    TripCellAccNone => ("{label}, {basis}", "{label}, {basis}"),
+    /// A place on a day: `{place}`, `{day}`, `{cells}`.
+    TripPlaceDayAcc => ("{place}, {day}: {cells}", "{place}, {day}: {cells}"),
+    TripApproximateLocation => ("Approximate location", "Approximate location"),
+    TripProblemTimeZone => (
+        "Unknown time zone: no days for this place",
+        "Unknown time zone: no days for this place",
+    ),
+    TripProblemDates => (
+        "The trip's dates cannot be used",
+        "The trip's dates cannot be used",
+    ),
+    /// `{n}`: days until the first day.
+    TripStartsInDays => ("Starts in {n} days", "{n} days to go"),
+    TripStartsTomorrow => ("Starts tomorrow", "Starts tomorrow"),
+    TripUnderWay => ("Under way", "Under way"),
+    TripOver => ("This trip is over", "This trip is over"),
+    /// The widget's next trip: `{name}`.
+    TripNext => ("Next trip: {name}", "Next trip: {name}"),
+    TripNoVerdict => ("No verdict yet", "Luna's waiting for the forecast"),
+    /// `{day}`, `{place}`, `{summary}`.
+    TripCompactLine => ("{day} at {place}: {summary}", "{day} at {place}: {summary}"),
+    TripOfflineNone => ("Offline pack: not downloaded", "Offline pack: not downloaded"),
+    /// `{size}`, `{date}`.
+    TripOfflineReady => ("Offline pack: {size}, saved {date}", "Offline pack: {size}, saved {date}"),
+    TripNotShared => ("Not shared", "Not shared"),
+    TripSharedReadOnly => ("Shared live, read-only", "Shared live, read-only"),
+    TripSharedEditable => ("Shared live, others can edit", "Shared live, others can edit"),
+    /// The gear template of each method.
+    GearRodsTackle => ("Rods, reels and tackle", "Rods, reels and tackle"),
+    GearPfd => ("Life jacket", "Life jacket"),
+    GearWhistle => ("Whistle", "Whistle"),
+    GearVhf => ("VHF radio", "VHF radio"),
+    GearAnchor => ("Anchor and line", "Anchor and line"),
+    GearPaddleLeash => ("Paddle and leash", "Paddle and leash"),
+    GearDryBag => ("Dry bag for phone and keys", "Dry bag for phone and keys"),
+    GearLight => ("Headlamp or navigation light", "Headlamp or navigation light"),
+    GearPliers => ("Pliers and line cutter", "Pliers and line cutter"),
+    GearRainJacket => ("Rain jacket", "Rain jacket"),
+    GearWaders => ("Waders and wading belt", "Waders and wading belt"),
+    GearWadingBoots => ("Wading boots", "Wading boots"),
+    GearWadingStaff => ("Wading staff", "Wading staff"),
+    GearIcePicks => ("Ice picks", "Ice picks"),
+    GearIceCleats => ("Ice cleats", "Ice cleats"),
+    GearAuger => ("Auger", "Auger"),
+    GearSpud => ("Spud bar to test the ice", "Spud bar to test the ice"),
+    GearSnacks => ("Water and snacks", "Snacks (Luna insists)"),
 }
 
 /// Declares [`SafetyKey`], its list and its table in one place.
@@ -1294,6 +1411,14 @@ safety_keys! {
     LicenceCcBy4 => "CC BY 4.0",
     /// Beside regulation and licence links: the app links to the official pages and states no
     /// rule itself.
+    /// The trip checklist's regulation and licence links.
+    RegFreshwater => "Freshwater regulations",
+    RegSaltwater => "Saltwater regulations",
+    RegFederal => "Federal waters regulations",
+    RegLicence => "Fishing licence",
+    /// `{agency}`, `{date}` (`YYYY-MM-DD`).
+    RegChecked => "{agency}, link checked {date}",
+    RegUnconfirmed => "{agency}, link not confirmed when checked {date}",
     RegulationsDisclaimer => "Fishing regulations change during the year. Underbite does not state limits, seasons or licence rules; open the official page and check it before you fish.",
 }
 

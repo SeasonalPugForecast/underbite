@@ -1,0 +1,107 @@
+---
+source: crates/underbite-core/src/view/trip.rs
+expression: render(&v)
+---
+Hudson weekend | Jan 7 to Jan 9 | 60 days to go | past false upcoming true
+column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuary | None | None
+2027-01-07 Thu Jan 7
+  spot-battery past false today false verdict None storm false
+    Luna's verdict = — [unavailable: outside the forecast]
+    Snack times = 7:00 to 7:45 AM [certain]
+      Incoming tide, Low light, Solunar
+      From tide, light and solunar only
+    Tide = Low 1:31 AM, 0.2 ft MLLW [certain] (NOAA CO-OPS harmonics)
+      Low 1:31 AM, 0.2 ft MLLW
+      High 7:40 AM, 4.8 ft MLLW
+      Low 2:15 PM, -0.2 ft MLLW
+      High 8:08 PM, 3.9 ft MLLW
+    River flow = — [unavailable: no source here]
+    Water temperature = 53 °F [typical for these dates, 2016–2025, reanalysis] (Open-Meteo Marine)
+      Colder than the fish like it
+      Most years 49 °F to 58 °F
+    Sun = 7:20 AM to 4:44 PM [certain]
+    Moon = New moon [certain]
+      0% lit
+    Solunar = Small nibble 6:57 to 7:57 AM [certain]
+      Big nibble 10:32 PM to 12:32 AM
+      Small nibble 6:57 to 7:57 AM
+      Big nibble 10:57 AM to 12:57 PM
+      Small nibble 4:00 to 5:00 PM
+      Big nibble 11:21 PM to 1:21 AM
+    windows 1
+  acc The Battery, Thu Jan 7: Go or no go, unavailable: outside the forecast; Fishing windows, certain: 7:00 to 7:45 AM. Incoming tide, Low light, Solunar. From tide, light and solunar only; Tide, certain: Low 1:31 AM, 0.2 ft MLLW. High 7:40 AM, 4.8 ft MLLW. Low 2:15 PM, -0.2 ft MLLW. High 8:08 PM, 3.9 ft MLLW; River flow, unavailable: no source here; Water temperature, typical for these dates, 2016–2025, reanalysis: 53 °F. Below the species' preferred range. Most years 49 °F to 58 °F; Sun, certain: 7:20 AM to 4:44 PM; Moon, certain: New moon. 0% lit; Solunar, certain: Minor 6:57 to 7:57 AM. Major 10:32 PM to 12:32 AM. Minor 6:57 to 7:57 AM. Major 10:57 AM to 12:57 PM. Minor 4:00 to 5:00 PM. Major 11:21 PM to 1:21 AM
+2027-01-08 Fri Jan 8
+  spot-battery past false today false verdict None storm false
+    Luna's verdict = — [unavailable: outside the forecast]
+    Snack times = 7:00 to 8:30 AM [certain]
+      Incoming tide, Low light, Solunar
+      From tide, light and solunar only
+    Tide = Low 2:13 AM, 0.2 ft MLLW [certain] (NOAA CO-OPS harmonics)
+      Low 2:13 AM, 0.2 ft MLLW
+      High 8:17 AM, 4.8 ft MLLW
+      Low 2:53 PM, -0.3 ft MLLW
+      High 8:47 PM, 3.9 ft MLLW
+    River flow = — [unavailable: no source here]
+    Water temperature = 53 °F [typical for these dates, 2016–2025, reanalysis] (Open-Meteo Marine)
+      Colder than the fish like it
+      Most years 49 °F to 58 °F
+    Sun = 7:19 AM to 4:45 PM [certain]
+    Moon = Waxing crescent [certain]
+      1% lit
+    Solunar = Small nibble 7:33 to 8:33 AM [certain]
+      Big nibble 11:21 PM to 1:21 AM
+      Small nibble 7:33 to 8:33 AM
+      Big nibble 11:45 AM to 1:45 PM
+      Small nibble 5:02 to 6:02 PM
+    windows 1
+  acc The Battery, Fri Jan 8: Go or no go, unavailable: outside the forecast; Fishing windows, certain: 7:00 to 8:30 AM. Incoming tide, Low light, Solunar. From tide, light and solunar only; Tide, certain: Low 2:13 AM, 0.2 ft MLLW. High 8:17 AM, 4.8 ft MLLW. Low 2:53 PM, -0.3 ft MLLW. High 8:47 PM, 3.9 ft MLLW; River flow, unavailable: no source here; Water temperature, typical for these dates, 2016–2025, reanalysis: 53 °F. Below the species' preferred range. Most years 49 °F to 58 °F; Sun, certain: 7:19 AM to 4:45 PM; Moon, certain: Waxing crescent. 1% lit; Solunar, certain: Minor 7:33 to 8:33 AM. Major 11:21 PM to 1:21 AM. Minor 7:33 to 8:33 AM. Major 11:45 AM to 1:45 PM. Minor 5:02 to 6:02 PM
+2027-01-09 Sat Jan 9
+  spot-battery past false today false verdict None storm false
+    Luna's verdict = — [unavailable: outside the forecast]
+    Snack times = 7:00 to 8:30 AM [certain]
+      Incoming tide, Low light, Solunar
+      From tide, light and solunar only
+    Tide = Low 2:52 AM, 0.2 ft MLLW [certain] (NOAA CO-OPS harmonics)
+      Low 2:52 AM, 0.2 ft MLLW
+      High 8:53 AM, 4.7 ft MLLW
+      Low 3:30 PM, -0.3 ft MLLW
+      High 9:24 PM, 3.9 ft MLLW
+    River flow = — [unavailable: no source here]
+    Water temperature = 53 °F [typical for these dates, 2016–2025, reanalysis] (Open-Meteo Marine)
+      Colder than the fish like it
+      Most years 49 °F to 58 °F
+    Sun = 7:19 AM to 4:46 PM [certain]
+    Moon = Waxing crescent [certain]
+      3% lit
+    Solunar = Big nibble 12:08 to 2:08 AM [certain]
+      Big nibble 12:08 to 2:08 AM
+      Small nibble 8:03 to 9:03 AM
+      Big nibble 12:30 to 2:30 PM
+      Small nibble 6:05 to 7:05 PM
+    windows 1
+  acc The Battery, Sat Jan 9: Go or no go, unavailable: outside the forecast; Fishing windows, certain: 7:00 to 8:30 AM. Incoming tide, Low light, Solunar. From tide, light and solunar only; Tide, certain: Low 2:52 AM, 0.2 ft MLLW. High 8:53 AM, 4.7 ft MLLW. Low 3:30 PM, -0.3 ft MLLW. High 9:24 PM, 3.9 ft MLLW; River flow, unavailable: no source here; Water temperature, typical for these dates, 2016–2025, reanalysis: 53 °F. Below the species' preferred range. Most years 49 °F to 58 °F; Sun, certain: 7:19 AM to 4:46 PM; Moon, certain: Waxing crescent. 3% lit; Solunar, certain: Major 12:08 to 2:08 AM. Minor 8:03 to 9:03 AM. Major 12:30 to 2:30 PM. Minor 6:05 to 7:05 PM
+check Regulations https://dec.ny.gov/things-to-do/saltwater-fishing | Saltwater regulations | Some("New York State Department of Environmental Conservation, link checked 2026-11-16") | None
+check Licence https://dec.ny.gov/regulatory/permits-licenses | Fishing licence | Some("New York State Department of Environmental Conservation, link checked 2026-11-16") | None
+check Regulations https://www.fisheries.noaa.gov/new-england-mid-atlantic/recreational-fishing/recreational-fishing-regulations-species | Federal waters regulations | Some("NOAA Fisheries Greater Atlantic, link checked 2026-11-16") | None
+check Regulations https://www.fisheries.noaa.gov/atlantic-highly-migratory-species/atlantic-highly-migratory-species-fishery-compliance-guides | Federal waters regulations | Some("NOAA Fisheries Atlantic Highly Migratory Species, link checked 2026-11-16") | None
+check Disclaimer regulations-disclaimer | Fishing regulations change during the year. Underbite does not state limits, seasons or licence rules; open the official page and check it before you fish. | None | None
+check Item c1 | Bucktails | None | Some(true)
+check Gear gear-life-jacket | Life jacket | None | None
+check Gear gear-whistle | Whistle | None | None
+check Gear gear-paddle | Paddle and leash | None | None
+check Gear gear-dry-bag | Dry bag for phone and keys | None | None
+check Gear gear-light | Headlamp or navigation light | None | None
+check Gear gear-tackle | Rods, reels and tackle | None | None
+check Gear gear-pliers | Pliers and line cutter | None | None
+check Gear gear-snacks | Snacks (Luna insists) | None | None
+check OfflinePack offline-pack | Offline pack: 48.3 MB, saved Nov 7 | None | Some(true)
+check Sharing sharing | Shared live, read-only | None | None
+credit Computed on device: Sun and moon positions from astronomical algorithms
+credit NOAA CO-OPS: NOAA CO-OPS
+credit NOAA CO-OPS harmonics: Computed from NOAA harmonic constants
+credit Open-Meteo Marine: Weather data by Open-Meteo.com
+credit Open-Meteo model providers: Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean)
+notice NotForNavigation: Not for navigation.
+notice TraditionalCue: A traditional cue, not a promise.
+compact Next trip: Hudson weekend | 60 days to go | Luna's waiting for the forecast | Thu Jan 7 at The Battery: unavailable: outside the forecast
+compact acc Next trip: Hudson weekend. 60 days to go. No verdict yet. Thu Jan 7 at The Battery: unavailable: outside the forecast. Luna's waiting for the forecast

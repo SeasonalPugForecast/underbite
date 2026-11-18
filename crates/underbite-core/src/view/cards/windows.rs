@@ -257,7 +257,7 @@ fn factor_name(f: &Formatter, factor: Factor) -> &'static str {
     }
 }
 
-fn window_vm(f: &Formatter, w: &FishingWindow) -> WindowVm {
+pub(in crate::view) fn window_vm(f: &Formatter, w: &FishingWindow) -> WindowVm {
     let no_data_text = (!w.no_data.is_empty()).then(|| {
         let names: Vec<String> = w
             .no_data

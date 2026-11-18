@@ -265,7 +265,7 @@ fn verdict_label(f: &Formatter, verdict: Verdict) -> &'static str {
     }
 }
 
-fn day_vm(f: &Formatter, day: &DayVerdict) -> GoNoGoDayVm {
+pub(in crate::view) fn day_vm(f: &Formatter, day: &DayVerdict) -> GoNoGoDayVm {
     GoNoGoDayVm {
         date: day_label(f, day.day),
         verdict: day.verdict,

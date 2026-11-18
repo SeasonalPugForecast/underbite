@@ -300,3 +300,70 @@ fn map_depth_and_offline_words_are_translated_in_the_pseudo_locale() {
         assert!(english.is_empty(), "{}", english.join("\n"));
     }
 }
+
+#[test]
+fn the_trip_view_is_translated_in_the_pseudo_locale() {
+    use crate::view::trip::{TripView, tests as trip};
+    type Build = fn(&ViewInput) -> trip::Built;
+    let schema = serde_json::to_value(schemars::schema_for!(TripView)).unwrap();
+    let mut ids = BTreeSet::new();
+    identifiers(&schema, &mut ids);
+    let builds: [(&str, Build); 3] = [
+        ("two places", trip::two_places),
+        ("beyond the forecast", trip::beyond_the_forecast),
+        ("battery", trip::battery_three_days),
+    ];
+    let mut problems = Vec::new();
+    for (name, build) in builds {
+        for units in [us(), metric()] {
+            for voice in [Voice::Luna, Voice::Plain] {
+                let mut input = trip::view_input();
+                input.units = units;
+                input.voice = voice;
+                let built = build(&input);
+                // What the data says: the snapshots, the trip's own words, the agencies' names.
+                let mut data: BTreeSet<String> = BTreeSet::new();
+                for place in built.inputs.values() {
+                    if let Some(snapshot) = &place.snapshot {
+                        let mut each = input.clone();
+                        each.snapshot = snapshot.clone();
+                        data.extend(data_texts(&each));
+                    }
+                }
+                let t = &built.trip;
+                data.extend([t.name.clone(), t.notes.clone()]);
+                data.extend(t.checklist.iter().map(|c| c.text.clone()));
+                for place in &t.places {
+                    data.insert(place.name.clone());
+                    data.extend(place.area.clone());
+                    if let Some(region) = &place.region {
+                        data.extend(
+                            crate::regulations::all_links(region)
+                                .into_iter()
+                                .map(|l| l.label),
+                        );
+                    }
+                }
+                let mut data: Vec<String> = data.into_iter().filter(|t| t.len() > 1).collect();
+                data.sort_by_key(|t| std::cmp::Reverse(t.len()));
+                input.locale = Locale::PSEUDO;
+                let json = serde_json::to_value(built.view(&input)).unwrap();
+                let mut found = Vec::new();
+                strings(&json, "", &mut found);
+                problems.extend(
+                    found
+                        .into_iter()
+                        .filter(|(path, s)| {
+                            !matches!(field(path), "link" | "key" | "id" | "place")
+                                && !ids.contains(s.as_str())
+                        })
+                        .filter_map(|(path, s)| {
+                            untranslated(&s, &data)
+                                .map(|rest| format!("{name} ({voice:?}){path}: {s:?} ({rest:?})"))
+                        }),
+                );
+            }
+        }
+    }
+    assert!(problems.is_empty(), "{}", problems.join("\n"));
+}
