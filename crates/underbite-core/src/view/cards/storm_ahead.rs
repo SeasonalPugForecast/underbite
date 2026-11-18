@@ -15,15 +15,14 @@ use whether_core::storm::analysis::{
 use whether_core::storm::hurricane::hurricane_window;
 use whether_core::storm::{Agreement, Hurricane, StormOutlook};
 use whether_core::time::Weekday;
-use whether_core::units::{Mps, WindUnit};
 
 use crate::model::SpotSnapshot;
 use crate::time::UnixTime;
-use crate::units::{HeightUnit, SpeedUnit};
+use crate::units::HeightUnit;
 use crate::view::cards::sun_moon::day_label;
 use crate::view::chart::Zoned;
 use crate::view::format::Formatter;
-use crate::view::strings::{Key, SafetyKey};
+use crate::view::strings::{Key, SafetyKey, advisory_wind, hurricane_movement, hurricane_name};
 use crate::view::{
     CardChrome, CardId, CardState, Compact, CreditVm, NoticeKind, Quantity, Row, Section, ViewInput,
 };
@@ -212,25 +211,6 @@ fn rough(a: &Amounts, q: &Quantity, snow: bool) -> Quantity {
     };
     let extra = u8::from(!snow && a.imperial);
     a.f.quantity(value, u8::from(value < 1.0) + extra, &q.unit)
-}
-
-/// A speed in knots in the user's wind unit.
-fn knots(f: &Formatter, kt: Option<f32>) -> Quantity {
-    f.wind_speed(
-        kt.and_then(|kt| Mps::from_unit(kt, WindUnit::Knots))
-            .map(|m| m.0),
-    )
-}
-
-/// A sustained wind as NHC's advisories give it: rounded to the nearest 5 in knots, mph and km/h.
-fn advisory_wind(f: &Formatter, kt: Option<u16>) -> Quantity {
-    let wind = knots(f, kt.map(f32::from));
-    match wind.value {
-        Some(v) if f.units.wind_speed != SpeedUnit::Ms => {
-            f.quantity((v / 5.0).round() * 5.0, 0, &wind.unit)
-        }
-        _ => wind,
-    }
 }
 
 // -- time -------------------------------------------------------------------------------------
@@ -497,37 +477,6 @@ fn severity(h: &Hurricane) -> StormSeverity {
     }
 }
 
-/// "Hurricane Josephine", "Tropical Storm Josephine".
-fn kind_name(f: &Formatter, h: &Hurricane) -> String {
-    let kind = match h.classification.as_str() {
-        "HU" => SafetyKey::HurricaneHurricane,
-        "TS" => SafetyKey::HurricaneTropicalStorm,
-        "TD" => SafetyKey::HurricaneTropicalDepression,
-        "STS" => SafetyKey::HurricaneSubtropicalStorm,
-        "STD" => SafetyKey::HurricaneSubtropicalDepression,
-        "PTC" => SafetyKey::HurricanePostTropical,
-        "PC" => SafetyKey::HurricanePotentialTropical,
-        "TY" => SafetyKey::HurricaneTyphoon,
-        _ => SafetyKey::HurricaneCyclone,
-    };
-    f.strings.safety_fmt(kind, &[("name", &h.name)])
-}
-
-/// "NE at 13 mph", "Stationary" below 1 kt, or the missing placeholder.
-fn movement(f: &Formatter, h: &Hurricane) -> String {
-    match (h.movement_deg, h.movement_kt) {
-        (_, Some(kt)) if kt < 1.0 => f.strings.safety(SafetyKey::StormStationary).to_owned(),
-        (Some(deg), Some(kt)) => f.strings.safety_fmt(
-            SafetyKey::StormMovement,
-            &[
-                ("direction", f.strings.compass(deg)),
-                ("speed", &knots(f, Some(kt)).full()),
-            ],
-        ),
-        _ => f.strings.get(Key::Missing).to_owned(),
-    }
-}
-
 fn hurricane_vm(
     f: &Formatter,
     z: &Zoned,
@@ -535,11 +484,11 @@ fn hurricane_vm(
     window: (UnixTime, UnixTime),
     now: UnixTime,
 ) -> HurricaneAheadVm {
-    let name = kind_name(f, h);
+    let name = hurricane_name(f, &h.classification, &h.name);
     let category = category(h);
     let wind = advisory_wind(f, h.wind_kt);
     let pressure = f.pressure(h.pressure_hpa);
-    let movement = movement(f, h);
+    let movement = hurricane_movement(f, h.movement_deg, h.movement_kt);
     let advisory_day = f.strings.weekday(z.local(h.advisory_time).weekday);
     let reaches = if window.0 <= now {
         f.strings.safety(SafetyKey::StormInCone).to_owned()
@@ -805,7 +754,7 @@ pub fn build(input: &ViewInput) -> Option<StormAheadCard> {
 pub(in crate::view) mod tests {
     use super::*;
     use crate::model::StormWatch;
-    use crate::units::{DistanceUnit, PressureUnit, TempUnit};
+    use crate::units::{DistanceUnit, PressureUnit, SpeedUnit, TempUnit};
     use crate::view::tests::sample_input;
     use crate::view::{DisplayUnits, Voice};
     use whether_core::storm::testdata::{self, STORM_NOW};
