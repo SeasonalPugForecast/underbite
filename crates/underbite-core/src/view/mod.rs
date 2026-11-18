@@ -140,6 +140,9 @@ pub struct ViewInput {
     /// The alert rules that watch this spot, with their last states, for the alerts card's
     /// rules section; empty shows none.
     pub alert_rules: Vec<alerts::RuleInput>,
+    /// The followed species' profiles, the user's edits laid over them, in the user's order:
+    /// what the species card shows. Empty leaves the card out.
+    pub species: Vec<SpeciesProfile>,
 }
 
 impl ViewInput {
@@ -589,14 +592,15 @@ pub struct TimelineVm {
 // Build
 // ---------------------------------------------------------------------------------------------
 
-/// Builds the page: each card in the user's order, skipping cards with nothing to show. No
-/// species are chosen, so the species card is left out; see [`build_view_with_species`].
+/// Builds the page: each card in the user's order, skipping cards with nothing to show. The
+/// species card shows the input's followed species, and is left out when there are none.
 pub fn build_view(input: &ViewInput) -> SpotView {
-    build_view_with_species(input, &[])
+    build_view_with_species(input, &input.species)
 }
 
-/// Builds the page with the species card for `species`: the chosen profiles with the user's
-/// edits laid over them, in the user's order. With none the card is left out.
+/// Builds the page with the species card for `species` in place of the input's: the chosen
+/// profiles with the user's edits laid over them, in the user's order. With none the card is
+/// left out.
 pub fn build_view_with_species(input: &ViewInput, species: &[SpeciesProfile]) -> SpotView {
     let snapshot = &input.snapshot;
     let cards = input
@@ -693,6 +697,7 @@ mod tests {
                 ..TripLimits::default()
             }),
             alert_rules: Vec::new(),
+            species: Vec::new(),
         }
     }
 
@@ -728,6 +733,30 @@ mod tests {
         expected.retain(|id| order.contains(id));
         assert_eq!(order, expected);
         insta::assert_json_snapshot!("spot_view_header_from_sample", view.header);
+    }
+
+    #[test]
+    fn the_followed_species_build_the_species_card_where_it_is_ordered() {
+        let mut input = sample_input();
+        input.card_order = vec![CardId::Now, CardId::Species, CardId::Sources];
+        let ids =
+            |view: &SpotView| -> Vec<CardId> { view.cards.iter().map(|c| c.chrome().id).collect() };
+        // Nothing followed: no card.
+        assert!(!ids(&build_view(&input)).contains(&CardId::Species));
+
+        input.species = cards::species::tests::chosen();
+        let view = build_view(&input);
+        assert_eq!(ids(&view)[1], CardId::Species);
+        let Some(Card::Species(card)) = view.cards.get(1) else {
+            panic!("{:?}", ids(&view));
+        };
+        let followed: Vec<&str> = card.full.species.iter().map(|s| s.id.as_str()).collect();
+        assert_eq!(followed, ["micropterus-dolomieu", "salmo-trutta"]);
+        assert_eq!(view, build_view_with_species(&input, &input.species));
+
+        // Followed, but not in the order: no card.
+        input.card_order.retain(|id| *id != CardId::Species);
+        assert!(!ids(&build_view(&input)).contains(&CardId::Species));
     }
 
     #[test]

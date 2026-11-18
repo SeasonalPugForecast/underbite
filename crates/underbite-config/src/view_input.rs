@@ -3,6 +3,7 @@
 
 use underbite_core::model::{Measurement, SpotSnapshot};
 use underbite_core::provenance::SourceId;
+use underbite_core::species::profile::ProfileEdits;
 use underbite_core::time::UnixTime;
 use underbite_core::trip::TripLimits;
 use underbite_core::trip::windows::{FactorWeights, TideRule, WindowParams};
@@ -149,8 +150,9 @@ pub fn trip_limits(profile: &LimitsProfile) -> TripLimits {
 
 /// What `build_view` takes, from the configuration: the cards of the spot's water type in the
 /// user's order, units, voice and clock, the limits, the river ranges of the spot's gauge, the
-/// thresholds, the fishing-window settings and the first go/no-go profile (the card is left out
-/// when there is none).
+/// thresholds, the fishing-window settings, the first go/no-go profile (the card is left out
+/// when there is none) and the followed species with the catalogue's values. A caller that
+/// keeps the user's profile edits replaces `species` with `config.species.profiles(&edits)`.
 pub fn view_input(config: &Config, snapshot: SpotSnapshot, now: UnixTime) -> ViewInput {
     let river_ranges = river_ranges(&config.rivers, &snapshot);
     ViewInput {
@@ -173,6 +175,7 @@ pub fn view_input(config: &Config, snapshot: SpotSnapshot, now: UnixTime) -> Vie
         trip_limits: config.limits.first().map(trip_limits),
         // The rules' states live with the app, not in the configuration.
         alert_rules: Vec::new(),
+        species: config.species.profiles(&ProfileEdits::default()),
     }
 }
 
@@ -180,6 +183,8 @@ pub fn view_input(config: &Config, snapshot: SpotSnapshot, now: UnixTime) -> Vie
 mod tests {
     use super::*;
     use underbite_core::model::snapshot::testdata::sample_snapshot;
+    use underbite_core::trip::SpeciesId;
+    use underbite_core::view::{Card, CardId, build_view};
 
     fn range(site: &str, wadeable: f64) -> RiverRange {
         RiverRange {
@@ -261,6 +266,33 @@ mod tests {
         assert_eq!(input.voice, config.presentation.voice);
         assert_eq!(input.limits, measurement_limits(&config.sources));
         assert!(input.river_ranges.is_none());
+    }
+
+    #[test]
+    fn the_followed_species_reach_the_view_in_order() {
+        let mut config = Config::default();
+        assert_eq!(
+            view_input(&config, sample_snapshot(), UnixTime(0)).species,
+            []
+        );
+        config.species.followed = ["salmo-trutta", "micropterus-dolomieu"]
+            .map(|id| SpeciesId::new(id).unwrap())
+            .to_vec();
+        config.cards.order.push(CardId::Species);
+        let input = view_input(&config, sample_snapshot(), UnixTime(0));
+        let ids: Vec<_> = input.species.iter().map(|p| p.id.as_str()).collect();
+        assert_eq!(ids, ["salmo-trutta", "micropterus-dolomieu"]);
+        assert_eq!(
+            input.species,
+            config.species.profiles(&ProfileEdits::default())
+        );
+        let view = build_view(&input);
+        let Some(Card::Species(card)) =
+            view.cards.iter().find(|c| c.chrome().id == CardId::Species)
+        else {
+            panic!("no species card");
+        };
+        assert_eq!(card.full.species[0].id, "salmo-trutta");
     }
 
     #[test]

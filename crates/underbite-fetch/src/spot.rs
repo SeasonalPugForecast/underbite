@@ -259,6 +259,7 @@ mod tests {
             windows: underbite_core::trip::windows::WindowParams::default(),
             trip_limits: None,
             alert_rules: Vec::new(),
+            species: Vec::new(),
         };
         underbite_core::view::cards::sources::build(&input).expect("sources card")
     }
