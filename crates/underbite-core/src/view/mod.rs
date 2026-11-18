@@ -20,6 +20,7 @@ pub mod stations;
 pub mod strings;
 pub mod timeline;
 pub mod trip;
+pub mod widget;
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
