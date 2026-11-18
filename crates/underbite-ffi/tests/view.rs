@@ -37,7 +37,7 @@ fn snapshot_json() -> String {
 }
 
 fn page(settings: &str, spots: Vec<SpotEntry>, now: i64) -> Value {
-    let json = view_model(spots, 0, settings.into(), now).unwrap();
+    let json = view_model(spots, 0, settings.into(), now, None, Vec::new()).unwrap();
     serde_json::from_str(&json).unwrap()
 }
 
@@ -119,7 +119,7 @@ fn an_unreadable_snapshot_empties_its_page_only_and_says_why() {
     other.spot.name = "Pier 1".into();
     let mut bad = entry(Some("{".into()), Some(at));
     bad.error = Some("offline".into());
-    let json = view_model(vec![other, bad], 1, doc.to_string(), at).unwrap();
+    let json = view_model(vec![other, bad], 1, doc.to_string(), at, None, Vec::new()).unwrap();
     let p: Value = serde_json::from_str(&json).unwrap();
     // Both spots are listed; the shown one has no page, and its status gives the reason.
     assert_eq!(p["spots"].as_array().unwrap().len(), 2);
@@ -137,7 +137,15 @@ fn an_unreadable_snapshot_empties_its_page_only_and_says_why() {
 }
 
 fn page_at(spots: Vec<SpotEntry>, active: u32, now: i64) -> Value {
-    let json = view_model(spots, active, default_settings_json(), now).unwrap();
+    let json = view_model(
+        spots,
+        active,
+        default_settings_json(),
+        now,
+        None,
+        Vec::new(),
+    )
+    .unwrap();
     serde_json::from_str(&json).unwrap()
 }
 
@@ -181,12 +189,20 @@ fn the_active_spot_is_the_one_shown_and_a_rename_shows_at_once() {
     let mut renamed = entry(Some(snapshot_json()), Some(at));
     renamed.spot.name = "Pier 1".into();
     let spots = vec![entry(None, None), renamed];
-    let json = view_model(spots, 1, default_settings_json(), at).unwrap();
+    let json = view_model(spots, 1, default_settings_json(), at, None, Vec::new()).unwrap();
     let p: Value = serde_json::from_str(&json).unwrap();
     assert_eq!(p["active"], 1);
     assert_eq!(p["view"]["header"]["name"], "Pier 1");
     // Past the end of the list there is nothing to show.
-    let json = view_model(vec![entry(None, None)], 5, default_settings_json(), at).unwrap();
+    let json = view_model(
+        vec![entry(None, None)],
+        5,
+        default_settings_json(),
+        at,
+        None,
+        Vec::new(),
+    )
+    .unwrap();
     let p: Value = serde_json::from_str(&json).unwrap();
     assert_eq!(p["view"], Value::Null);
 }
@@ -194,11 +210,18 @@ fn the_active_spot_is_the_one_shown_and_a_rename_shows_at_once() {
 #[test]
 fn bad_input_is_an_error_not_a_panic() {
     let at = fetched();
-    let bad_settings = view_model(Vec::new(), 0, "{\"units\":3}".into(), at);
+    let bad_settings = view_model(Vec::new(), 0, "{\"units\":3}".into(), at, None, Vec::new());
     assert!(matches!(bad_settings, Err(ViewError::Settings { .. })));
     let mut bad_type = entry(None, None);
     bad_type.spot.water_type = "swamp".into();
-    let r = view_model(vec![bad_type], 0, default_settings_json(), at);
+    let r = view_model(
+        vec![bad_type],
+        0,
+        default_settings_json(),
+        at,
+        None,
+        Vec::new(),
+    );
     assert!(matches!(r, Err(ViewError::Invalid { .. })));
 }
 

@@ -143,13 +143,20 @@ fn with_spot(mut snapshot: SpotSnapshot, info: &SpotInfo) -> Result<SpotSnapshot
 /// The page of the active spot and the list of all, as JSON: the core's `SpotView` for
 /// `active` (cards in compact and full form, the day timeline and the notices) with every value
 /// formatted for the settings' units, clock and voice, and for each spot its name and status.
-#[uniffi::export]
+///
+/// The alerts card lists the active spot's alert rules and those of the trips in `trips_json`
+/// (their JSON) that include it, each with what its last check found in `alert_state` (the
+/// bytes `evaluate_alerts` last returned). Unreadable state or trips leave the rules unchecked
+/// or out; the page still shows.
+#[uniffi::export(default(alert_state = None, trips_json = []))]
 #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
 pub fn view_model(
     spots: Vec<SpotEntry>,
     active: u32,
     settings_json: String,
     now: i64,
+    alert_state: Option<Vec<u8>>,
+    trips_json: Vec<String>,
 ) -> Result<String, ViewError> {
     let (config, _) = load(&settings_json)?;
     let now = UnixTime(now);
@@ -164,11 +171,16 @@ pub fn view_model(
             snapshot_json: Some(json),
             ..
         }) => match serde_json::from_str::<SpotSnapshot>(json) {
-            Ok(snapshot) => Some(build_view(&view_input(
-                &config,
-                with_spot(snapshot, spot)?,
-                now,
-            ))),
+            Ok(snapshot) => {
+                let mut input = view_input(&config, with_spot(snapshot, spot)?, now);
+                input.alert_rules = crate::alerts::view_rules(
+                    &config,
+                    &spot.id,
+                    &trips_json,
+                    alert_state.as_deref(),
+                );
+                Some(build_view(&input))
+            }
             Err(e) => {
                 unreadable =
                     Some(strings.fmt(Key::SnapshotUnreadable, &[("reason", &e.to_string())]));
