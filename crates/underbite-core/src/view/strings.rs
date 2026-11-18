@@ -10,6 +10,7 @@
 //! are templates with `{name}` placeholders, never pieces glued in English word order.
 
 use whether_core::time::Weekday;
+use whether_core::units::{Mps, WindUnit};
 
 use crate::alerts::AlertMetric;
 use crate::datum::VerticalDatum;
@@ -28,6 +29,8 @@ use crate::model::{
 use crate::provenance::{Relation, SourceId, UsgsSiteType};
 use crate::time::{LocalDate, UnixTime, UtcOffset};
 use crate::units::{DischargeUnit, DistanceUnit, HeightUnit, PressureUnit, SpeedUnit, TempUnit};
+use crate::view::Quantity;
+use crate::view::chart::Zoned;
 use crate::view::format::{Formatter, distance_to_metres};
 use crate::view::locale::{DateOrder, Language, Locale};
 use crate::view::{CardId, NoticeKind, Voice};
@@ -1871,6 +1874,37 @@ safety_keys! {
     StormSectionSafety => "Safety",
     StormForecastsChange => "Forecasts change",
     StormForecastsChangeText => "Storm forecasts change from one run to the next and can be wrong about where a storm goes. Check the National Weather Service and the National Hurricane Center, and follow local officials, before you go on or near the water.",
+    /// The storms map layer. `{n}`: whole days of model data.
+    StormLayerNone => "No storm in the next {n} days near the map's centre.",
+    /// `{pressure}` "1004 hPa", `{when}` "Tue night", `{model}` "GFS".
+    StormLayerLowest => "Lowest pressure: {pressure} {when} ({model}).",
+    /// `{window}`: "Sat night – Mon night".
+    StormLayerEvent => "A storm passes near the map's centre · {window}",
+    /// A model's low at the chosen time: "ECMWF 978 hPa", and as read aloud.
+    StormLayerLow => "{model} {pressure}",
+    StormLayerLowSpoken => "{model} low, {pressure}",
+    /// A time step of the storms layer: `{time}` "Sun 7 PM", `{hours}` "72".
+    StormLayerStepNow => "{time} · now",
+    StormLayerStepAhead => "{time} · +{hours} h",
+    /// A model's legend row: `{model}` "ECMWF", `{hour}` the run's UTC hour, "12".
+    StormLayerModelRun => "{model} lows · {hour}Z run",
+    StormLayerModel => "{model} lows",
+    StormLayerStormBand => "Wider band: the low that brings the storm near the map's centre",
+    StormLayerOfficial => "NHC's official forecast track",
+    StormLayerObserved => "Observed track",
+    /// `{model}`: "GFS", "UKMET", "Consensus".
+    StormLayerGuidance => "{model} guidance track",
+    StormLayerConsensus => "Consensus",
+    /// `{season}`: the year of NHC's cone sizes the cone is drawn from.
+    StormLayerCone => "NHC's forecast cone, drawn from NHC's {season} cone sizes: where the centre may go. It is not the storm's size, and not where its impacts reach.",
+    StormLayerConeLink => "How NHC's forecast cone is made",
+    StormLayerAdvisoryLink => "NHC advisory",
+    /// A point of NHC's official track as read aloud.
+    StormLayerForecastSpoken => "{storm}, official forecast, {time}, {wind}",
+    StormLayerHurricaneSpoken => "{storm}, {strength}",
+    StormLayerPartial => "Some storm data could not be loaded; what is shown may be incomplete.",
+    StormLayerFailed => "The storm outlook could not be loaded. Try again later.",
+    StormLayerLoading => "Loading the storm outlook…",
     // -- the map: credits, depth references and terms ---------------------------------------
     MapCreditApple => "Map data: Apple Maps",
     /// The NOAA chart and the Chart Display pictures.
@@ -3412,6 +3446,154 @@ pub fn reef_depths(f: &Formatter, min_m: Option<f64>, max_m: Option<f64>) -> Opt
         (None, None) => return None,
     };
     Some(f.strings.fmt(Key::MapReefDepth, &[("range", &range)]))
+}
+
+// -- the storms layer -------------------------------------------------------------------------
+
+/// When `t` falls in `zone` (the zone the formatter writes times in): "Fri 2 AM", "Fri 14:00".
+pub fn storm_day_time(f: &Formatter, zone: &str, t: UnixTime) -> String {
+    let day = Zoned::new(zone).local(t).weekday;
+    format!("{} {}", f.strings.weekday(day), f.hour_label(t))
+}
+
+/// The day and the part of it a forecaster names for `t`: morning (06-12), afternoon (12-18) or
+/// night (18-06, named after its evening).
+fn storm_part(z: &Zoned, t: UnixTime) -> (Weekday, SafetyKey) {
+    let local = z.local(t);
+    match local.hour {
+        0..=5 => (
+            z.local(UnixTime(t.0 - 6 * 3_600)).weekday,
+            SafetyKey::StormPartNight,
+        ),
+        6..=11 => (local.weekday, SafetyKey::StormPartMorning),
+        12..=17 => (local.weekday, SafetyKey::StormPartAfternoon),
+        _ => (local.weekday, SafetyKey::StormPartNight),
+    }
+}
+
+/// When a storm passes, in parts of days in `zone`: "Sun afternoon", "Sun morning – Sun night",
+/// or for a day or more "Sat night – Mon" (the end's part is kept when it is a night).
+pub fn storm_span(f: &Formatter, zone: &str, start: UnixTime, end: UnixTime) -> String {
+    let z = Zoned::new(zone);
+    let part = |(day, key): (Weekday, SafetyKey)| {
+        f.strings
+            .safety_fmt(key, &[("day", f.strings.weekday(day))])
+    };
+    let last = UnixTime((end.0 - 1).max(start.0));
+    let (first_part, last_part) = (storm_part(&z, start), storm_part(&z, last));
+    let from = part(first_part);
+    if first_part == last_part {
+        return from;
+    }
+    let to = if end.0 - start.0 >= 86_400 && last_part.1 != SafetyKey::StormPartNight {
+        f.strings.weekday(last_part.0).to_owned()
+    } else {
+        part(last_part)
+    };
+    format!("{from} – {to}")
+}
+
+/// A time step of the storms layer: "Sun 7 PM · now" for the step at or before `now`, else
+/// "Sun 7 PM · +72 h" (hours ahead of `now`, rounded).
+pub fn storm_step(f: &Formatter, zone: &str, t: UnixTime, now: UnixTime) -> String {
+    let time = storm_day_time(f, zone, t);
+    if t <= now {
+        return f
+            .strings
+            .safety_fmt(SafetyKey::StormLayerStepNow, &[("time", &time)]);
+    }
+    let hours = (t.0 - now.0 + 1_800) / 3_600;
+    f.strings.safety_fmt(
+        SafetyKey::StormLayerStepAhead,
+        &[("time", &time), ("hours", &hours.to_string())],
+    )
+}
+
+/// A tropical cyclone's kind and name by NHC's classification: "Hurricane Josephine",
+/// "Tropical Storm Josephine", "Post-Tropical Cyclone Josephine".
+pub fn hurricane_name(f: &Formatter, classification: &str, name: &str) -> String {
+    let kind = match classification {
+        "HU" => SafetyKey::HurricaneHurricane,
+        "TS" => SafetyKey::HurricaneTropicalStorm,
+        "TD" => SafetyKey::HurricaneTropicalDepression,
+        "STS" => SafetyKey::HurricaneSubtropicalStorm,
+        "STD" => SafetyKey::HurricaneSubtropicalDepression,
+        "PTC" => SafetyKey::HurricanePostTropical,
+        "PC" => SafetyKey::HurricanePotentialTropical,
+        "TY" => SafetyKey::HurricaneTyphoon,
+        _ => SafetyKey::HurricaneCyclone,
+    };
+    f.strings.safety_fmt(kind, &[("name", name)])
+}
+
+/// A speed in knots in the user's wind unit.
+pub fn storm_knots(f: &Formatter, kt: Option<f32>) -> Quantity {
+    f.wind_speed(
+        kt.and_then(|kt| Mps::from_unit(kt, WindUnit::Knots))
+            .map(|m| m.0),
+    )
+}
+
+/// A sustained wind as NHC's advisories give it, in the user's wind unit: rounded to the nearest
+/// 5 in knots, mph and km/h.
+pub fn advisory_wind(f: &Formatter, kt: Option<u16>) -> Quantity {
+    let wind = storm_knots(f, kt.map(f32::from));
+    match wind.value {
+        Some(v) if f.units.wind_speed != SpeedUnit::Ms => {
+            f.quantity((v / 5.0).round() * 5.0, 0, &wind.unit)
+        }
+        _ => wind,
+    }
+}
+
+/// Where and how fast a cyclone moves: "NE at 13 mph", "Stationary" below 1 kt, or the missing
+/// placeholder.
+pub fn hurricane_movement(f: &Formatter, degrees: Option<f32>, kt: Option<f32>) -> String {
+    match (degrees, kt) {
+        (_, Some(kt)) if kt < 1.0 => f.strings.safety(SafetyKey::StormStationary).to_owned(),
+        (Some(deg), Some(kt)) => f.strings.safety_fmt(
+            SafetyKey::StormMovement,
+            &[
+                ("direction", f.strings.compass(deg)),
+                ("speed", &storm_knots(f, Some(kt)).full()),
+            ],
+        ),
+        _ => f.strings.get(Key::Missing).to_owned(),
+    }
+}
+
+/// When an advisory was issued, in `zone`: "Advisory Thu 5:00 PM".
+pub fn storm_advisory(f: &Formatter, zone: &str, t: UnixTime) -> String {
+    let day = Zoned::new(zone).local(t).weekday;
+    f.strings.safety_fmt(
+        SafetyKey::StormAdvisory,
+        &[("day", f.strings.weekday(day)), ("time", &f.clock(t))],
+    )
+}
+
+/// A model's legend row: "ECMWF lows · 12Z run", or "ECMWF lows" when the run is not known.
+pub fn storm_model_run(f: &Formatter, model: &str, run_init: Option<UnixTime>) -> String {
+    match run_init {
+        Some(init) => {
+            let hour = init.to_local(UtcOffset(0)).hour;
+            f.strings.safety_fmt(
+                SafetyKey::StormLayerModelRun,
+                &[("model", model), ("hour", &format!("{hour:02}"))],
+            )
+        }
+        None => f
+            .strings
+            .safety_fmt(SafetyKey::StormLayerModel, &[("model", model)]),
+    }
+}
+
+/// What NHC's forecast cone is, for the cone's legend: drawn from the yearly cone sizes of
+/// `season`, where the centre may go and not the storm's size or where its impacts reach.
+pub fn storm_cone_note(f: &Formatter, season: u16) -> String {
+    f.strings.safety_fmt(
+        SafetyKey::StormLayerCone,
+        &[("season", &season.to_string())],
+    )
 }
 
 /// Every kind of water, in the order a picker lists them.
