@@ -25,8 +25,8 @@ use underbite_core::map::{Bbox, GeoPoint, GridHost, TileKey, tiles};
 use underbite_core::time::{LocalDate, UnixTime, UtcOffset, parse_date};
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{
-    Key, MapQuantity, SafetyKey, Strings, depth_reading, map_current, map_measure, map_time,
-    map_value,
+    Key, MapQuantity, SafetyKey, Strings, depth_reading, map_current, map_measure, map_point,
+    map_time, map_value,
 };
 use underbite_providers::erddap::{self, ErddapError, ErddapPacer, FIRST_PAUSE_S, GridTime};
 use underbite_providers::request::Response;
@@ -1793,9 +1793,9 @@ impl MapPoint {
 pub struct MeasureText {
     /// The great-circle distance in the user's unit: "2.4 mi".
     pub distance: String,
-    /// The initial bearing from the first point, true: "NE 45°".
+    /// The initial bearing from the first point: "NE 45° true".
     pub bearing: String,
-    /// Both: "2.4 mi at NE 45°".
+    /// Both: "2.4 mi at NE 45° true".
     pub line: String,
     /// "Not for navigation." (safety text): measuring is for planning.
     pub notice: String,
@@ -1819,6 +1819,28 @@ pub fn measure(
         bearing,
         line,
         notice: f.strings.safety(SafetyKey::NotForNavigation).to_owned(),
+    })
+}
+
+/// The words of the map's point inspector.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PointWords {
+    /// The point: "40.7033° N, 74.0170° W".
+    pub point: String,
+    /// The row of a picture layer, which has no value at a point.
+    pub imagery_only: String,
+}
+
+/// The words of a tapped point, in the settings' locale.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn point_words(point: MapPoint, settings_json: String) -> Result<PointWords, MapError> {
+    let p = point.geo()?;
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, "UTC");
+    Ok(PointWords {
+        point: map_point(f.strings, p.lat, p.lon),
+        imagery_only: f.strings.get(Key::MapImageryOnly).to_owned(),
     })
 }
 

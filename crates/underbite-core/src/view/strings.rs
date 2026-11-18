@@ -780,6 +780,16 @@ keys! {
     MapDateTime => ("{date}, {time}", "{date}, {time}"),
     /// A measured line: `{distance}`, `{bearing}`.
     MapMeasure => ("{distance} at {bearing}", "{distance} at {bearing}"),
+    /// A bearing from true north: `{bearing}` ("NE 45°").
+    MapBearingTrue => ("{bearing} true", "{bearing} true"),
+    /// A point: `{lat}`, `{lon}` (unsigned degrees), `{ns}`, `{ew}` (hemisphere letters).
+    MapPoint => ("{lat}° {ns}, {lon}° {ew}", "{lat}° {ns}, {lon}° {ew}"),
+    MapNorth => ("N", "N"),
+    MapSouth => ("S", "S"),
+    MapEast => ("E", "E"),
+    MapWest => ("W", "W"),
+    /// The inspector's row for a picture layer, which has no value at a point.
+    MapImageryOnly => ("Imagery only: no value at a point", "Imagery only: no value at a point"),
     // Depth on the map
     /// The depth shading's title in the layer drawer.
     MapDepthTitle => ("Water depth", "Water depth"),
@@ -2843,15 +2853,43 @@ pub fn map_time(f: &Formatter, t: UnixTime, mode: DateMode) -> String {
 }
 
 /// A measured line as the user reads it: the distance ("2.4 mi"), the bearing from the start
-/// ("NE 45°", degrees clockwise from true north) and both in one line ("2.4 mi at NE 45°").
+/// ("NE 45° true", degrees clockwise from true north) and both in one line
+/// ("2.4 mi at NE 45° true").
 pub fn map_measure(f: &Formatter, metres: f64, bearing_deg: f64) -> (String, String, String) {
     let distance = f.distance(Some(metres as f32)).full();
-    let bearing = f.direction(Some(bearing_deg as f32));
+    let compass = f.direction(Some(bearing_deg as f32));
+    let bearing = f.strings.fmt(Key::MapBearingTrue, &[("bearing", &compass)]);
     let line = f.strings.fmt(
         Key::MapMeasure,
         &[("distance", &distance), ("bearing", &bearing)],
     );
     (distance, bearing, line)
+}
+
+/// A point as the user reads it, to four decimals (about 10 m) in the locale's decimal mark:
+/// "40.7033° N, 74.0170° W".
+pub fn map_point(s: Strings, lat: f64, lon: f64) -> String {
+    let (ns, ew) = (
+        if lat < 0.0 {
+            Key::MapSouth
+        } else {
+            Key::MapNorth
+        },
+        if lon < 0.0 {
+            Key::MapWest
+        } else {
+            Key::MapEast
+        },
+    );
+    s.fmt(
+        Key::MapPoint,
+        &[
+            ("lat", &s.grouped(lat.abs() as f32, 4)),
+            ("ns", s.get(ns)),
+            ("lon", &s.grouped(lon.abs() as f32, 4)),
+            ("ew", s.get(ew)),
+        ],
+    )
 }
 
 /// A depth in the user's height unit for a map label: "33 ft", "10 m", "6.1 m" (a decimal only
@@ -3816,8 +3854,8 @@ mod tests {
             assert_eq!(map_time(&us, t, DateMode::Hourly), "Nov 7, 4:00 AM");
             let (distance, bearing, line) = map_measure(&us, 3_862.4, 90.0);
             assert_eq!(distance, "2.4 mi");
-            assert_eq!(bearing, "E 90°");
-            assert_eq!(line, "2.4 mi at E 90°");
+            assert_eq!(bearing, "E 90° true");
+            assert_eq!(line, "2.4 mi at E 90° true");
             let (km, _, _) = map_measure(&formatter(true), 3_862.4, 0.0);
             assert_eq!(km, "3.9 km");
         }

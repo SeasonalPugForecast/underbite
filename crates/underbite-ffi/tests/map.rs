@@ -10,9 +10,9 @@ use underbite_ffi::map::{
     GridPacer, GridStore, LayerDates, LayerDraw, MAX_REQUESTS_PER_VIEW, MAX_STORE_BLOCKS,
     MAX_STORE_VALUES, MapError, MapPoint, OVERVIEW_MIN_MISSING, TileOutcome, ValueRange,
     classify_tile, gibs_default_date, grid_block_is_fresh, map_catalogue, map_fitted_caption,
-    map_legend, map_presets, map_range, map_tile_size, measure, parse_time_axis, previous_date,
-    radar_covers, radar_frame_request, radar_frames, radar_latest_valid, radar_meta_request,
-    tile_request, time_axis_request,
+    map_legend, map_presets, map_range, map_tile_size, measure, parse_time_axis, point_words,
+    previous_date, radar_covers, radar_frame_request, radar_frames, radar_latest_valid,
+    radar_meta_request, tile_request, time_axis_request,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -892,8 +892,8 @@ fn a_measure_is_worded_in_the_users_units_with_its_notice() {
     };
     let us = measure(battery, sandy_hook, plain()).unwrap();
     assert_eq!(us.distance, "16 mi");
-    assert_eq!(us.bearing, "S 179°");
-    assert_eq!(us.line, "16 mi at S 179°");
+    assert_eq!(us.bearing, "S 179° true");
+    assert_eq!(us.line, "16 mi at S 179° true");
     assert_eq!(us.notice, "Not for navigation.");
     let si = measure(battery, sandy_hook, metric()).unwrap();
     assert_eq!(si.distance, "26 km");
@@ -993,4 +993,33 @@ fn the_visible_range_fits_the_held_block_and_the_legend_follows_it() {
         None
     );
     assert!(map_legend(set, "sst".into(), Some(fitted)).is_ok());
+}
+
+#[test]
+fn a_point_is_worded_to_four_decimals_with_its_hemispheres() {
+    let battery = MapPoint {
+        lat: 40.7033,
+        lon: -74.017,
+    };
+    let w = point_words(battery, plain()).unwrap();
+    assert_eq!(w.point, "40.7033° N, 74.0170° W");
+    assert_eq!(w.imagery_only, "Imagery only: no value at a point");
+    let south = MapPoint {
+        lat: -33.8568,
+        lon: 151.2153,
+    };
+    assert_eq!(
+        point_words(south, plain()).unwrap().point,
+        "33.8568° S, 151.2153° E"
+    );
+    assert!(
+        point_words(
+            MapPoint {
+                lat: 91.0,
+                lon: 0.0
+            },
+            plain()
+        )
+        .is_err()
+    );
 }
