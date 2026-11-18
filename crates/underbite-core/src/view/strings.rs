@@ -971,6 +971,16 @@ keys! {
     NearbyBusy => ("{source} is busy; try again later", "{source} is busy; try again later"),
     /// `{source}`.
     NearbyFailed => ("{source} could not be reached", "{source} could not be reached"),
+    /// `{source}`, `{age}`: "3 d ago".
+    NearbyCached => ("{source} places saved on this phone {age}", "{source} places saved on this phone {age}"),
+    NearbyFindAccess => ("Find ramps and piers here", "Find ramps and piers here"),
+    NearbyFindingAccess => ("Looking for ramps and piers…", "Looking for ramps and piers…"),
+    NearbyFindRecords => ("Find species records here", "Find species records here"),
+    NearbyFindingRecords => ("Looking for species records…", "Looking for species records…"),
+    NearbyFindBlooms => ("Show beach bloom forecasts here", "Show beach bloom forecasts here"),
+    NearbyFindingBlooms => ("Looking for beach forecasts…", "Looking for beach forecasts…"),
+    NearbyBloomsGulfOnly => ("The beach bloom forecast covers the Gulf coast of Florida and Texas only", "The beach bloom forecast covers the Gulf coast of Florida and Texas only"),
+    NearbyBloomsNone => ("No forecast beaches in this view", "No forecast beaches in this view"),
     AccessKindRamp => ("Boat ramp", "Boat ramp"),
     AccessKindPier => ("Pier", "Pier"),
     AccessKindFishingSpot => ("Fishing spot", "Fishing spot"),

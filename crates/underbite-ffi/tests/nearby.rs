@@ -12,7 +12,8 @@ mod nearby {
     use underbite_ffi::fetch::{Header, HostResponse};
     use underbite_ffi::nearby::{
         AccessShape, NearbyArea, NearbyError, NearbyPlan, NearbyRequest, NearbyResponse,
-        NearbyResults, RecordsQuery, nearby_limits, plan_access, plan_records, plan_stocking,
+        NearbyResults, RecordsQuery, nearby_limits, nearby_words, plan_access, plan_blooms,
+        plan_records, plan_stocking,
     };
     use underbite_ffi::settings::default_settings_json;
 
@@ -99,6 +100,7 @@ mod nearby {
     // ---------------------------------------------------------------------------------------------
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn access_asks_padus_and_overpass_then_answers_overpass_from_the_kept_state() {
         let plan = plan_access(battery(), false, String::new(), settings(), now()).expect("plan");
         let requests = plan.requests();
@@ -193,6 +195,23 @@ mod nearby {
         assert_eq!(
             cached.access.iter().filter(|p| p.kind == "ramp").count(),
             ramps.len()
+        );
+        assert!(
+            cached
+                .notices
+                .iter()
+                .any(|n| n == "OpenStreetMap places saved on this phone 1 h ago"),
+            "{:?}",
+            cached.notices
+        );
+        // Cells that were just fetched are not marked.
+        assert!(
+            !results
+                .notices
+                .iter()
+                .any(|n| n.contains("saved on this phone")),
+            "{:?}",
+            results.notices
         );
     }
 
@@ -631,5 +650,117 @@ mod nearby {
         let results = sea.results();
         assert!(results.stocking.is_empty() && results.credits.is_empty());
         assert_eq!(results.notices, ["No recent stocking reported nearby"]);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Beach bloom forecasts and the words
+    // ---------------------------------------------------------------------------------------------
+
+    fn zip_response() -> HostResponse {
+        let mut r = response(
+            200,
+            &fixture("hab/noaa-hab-gulf-rif-currentmodelrun-2026-11-17.zip"),
+        );
+        r.content_type = Some("application/octet-stream".into());
+        r
+    }
+
+    /// Clearwater Beach and the beaches around it.
+    fn clearwater() -> NearbyArea {
+        area(-83.1, 27.8, -82.6, 28.2)
+    }
+
+    #[test]
+    fn blooms_list_the_beaches_in_the_view_with_the_credit_and_the_advice() {
+        let at = parse_rfc3339("2026-11-17T09:00:00Z").expect("time").0;
+        let plan = plan_blooms(clearwater(), settings(), at).expect("plan");
+        let requests = plan.requests();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0].source, "noaa-hab");
+        assert!(
+            requests[0]
+                .request
+                .url
+                .ends_with("RIFv2_currentmodelrun.zip")
+        );
+        assert_eq!(requests[0].request.max_age_s, Some(3_600));
+        // The region-wide file is asked for without the view.
+        assert!(!requests[0].request.url.contains("27."));
+        let results = round(&plan, at, |_| Some(zip_response()));
+        assert!(plan.requests().is_empty());
+        let pin = results
+            .blooms
+            .iter()
+            .find(|p| p.name == "Clearwater Beach")
+            .expect("Clearwater Beach");
+        assert_eq!(pin.level, "very_low");
+        assert_eq!(pin.level_label, "Very low");
+        assert!(
+            pin.detail.starts_with("Respiratory irritation: very low"),
+            "{}",
+            pin.detail
+        );
+        assert!(pin.forecast_for.contains("Nov 17"), "{}", pin.forecast_for);
+        assert!(
+            pin.link
+                .as_deref()
+                .is_some_and(|l| l.starts_with("https://"))
+        );
+        assert!(
+            results
+                .blooms
+                .iter()
+                .all(|p| (27.8..=28.2).contains(&p.lat))
+        );
+        assert!(results.credits.iter().any(|c| {
+            c.source == "noaa-hab"
+                && c.text
+                    .contains("NOAA National Centers for Coastal Ocean Science")
+        }));
+        assert!(
+            results
+                .notes
+                .iter()
+                .any(|n| n.contains("make people and dogs sick"))
+        );
+        assert!(results.state_json.is_none());
+    }
+
+    #[test]
+    fn blooms_outside_the_gulf_ask_for_nothing_and_say_so() {
+        let plan = plan_blooms(harbor(), settings(), now()).expect("plan");
+        assert!(plan.requests().is_empty());
+        let results = plan.results();
+        assert!(results.blooms.is_empty() && results.credits.is_empty());
+        assert_eq!(
+            results.notices,
+            ["The beach bloom forecast covers the Gulf coast of Florida and Texas only"]
+        );
+    }
+
+    #[test]
+    fn blooms_in_a_view_without_beaches_or_with_an_old_run_say_so() {
+        let at = parse_rfc3339("2026-11-17T09:00:00Z").expect("time").0;
+        let plan = plan_blooms(area(-87.0, 29.0, -86.5, 29.5), settings(), at).expect("plan");
+        let results = round(&plan, at, |_| Some(zip_response()));
+        assert!(results.blooms.is_empty());
+        assert_eq!(results.notices, ["No forecast beaches in this view"]);
+
+        let old = parse_rfc3339("2026-11-20T09:00:00Z").expect("time").0;
+        let plan = plan_blooms(clearwater(), settings(), old).expect("plan");
+        let results = round(&plan, old, |_| Some(zip_response()));
+        assert!(results.blooms.is_empty());
+        assert_eq!(results.notices, ["No recent bloom forecast"]);
+    }
+
+    #[test]
+    fn the_lookup_buttons_have_their_words() {
+        let w = nearby_words(settings()).expect("words");
+        assert_eq!(w.find_access, "Find ramps and piers here");
+        assert_eq!(w.finding_access, "Looking for ramps and piers\u{2026}");
+        assert_eq!(w.find_records, "Find species records here");
+        assert_eq!(w.finding_records, "Looking for species records\u{2026}");
+        assert_eq!(w.find_blooms, "Show beach bloom forecasts here");
+        assert_eq!(w.finding_blooms, "Looking for beach forecasts\u{2026}");
     }
 }

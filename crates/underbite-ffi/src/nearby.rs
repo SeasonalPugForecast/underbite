@@ -39,7 +39,8 @@ use underbite_core::model::nearby::{
     AccessFeature, AccessGeometry, AccessKind, AccessLevel, SpeciesRecord,
 };
 use underbite_core::model::{
-    SourceError as ModelSourceError, SourceErrorKind, Spot, SpotSnapshot, StockingEvent, WaterType,
+    HabLevel, SourceError as ModelSourceError, SourceErrorKind, Spot, SpotSnapshot, StockingEvent,
+    WaterType,
 };
 use underbite_core::provenance::{Attribution, SourceId};
 use underbite_core::time::{LocalDate, UnixTime, UtcOffset};
@@ -47,7 +48,8 @@ use underbite_core::view::cards::stocking::{self, StockingCard};
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{Key, SafetyKey, record_position, record_seen};
 use underbite_providers::access::{overpass, padus};
-use underbite_providers::request::{MAX_COORDINATE_DECIMALS, Response};
+use underbite_providers::blooms::hab;
+use underbite_providers::request::{Coordinates, MAX_COORDINATE_DECIMALS, Response};
 use underbite_providers::species::{Licence, gbif, inat, nas, without_inaturalist_duplicates};
 use underbite_providers::stocking::catalogue::{
     Catalogue, Kind as WaterKind, Placed, canonical_county, canonical_waterbody,
@@ -299,12 +301,37 @@ pub struct NearbyCredit {
     pub licence: Option<String>,
 }
 
+/// A beach the Gulf respiratory irritation forecast lists, in the view.
+#[derive(Clone, Debug, PartialEq, uniffi::Record)]
+pub struct BloomPin {
+    /// Stable for the beach: source, name and place.
+    pub id: String,
+    /// The beach's name as NOAA writes it.
+    pub name: String,
+    pub lat: f64,
+    pub lon: f64,
+    /// `very_low`, `low`, `moderate`, `high` or `unknown`.
+    pub level: String,
+    /// The level in words ("Low"), as the bloom card words it.
+    pub level_label: String,
+    /// The bloom card's words: the level, with the confidence when the source gives one.
+    pub detail: String,
+    /// When the forecast is valid ("Nov 17, 3:00 AM"), in the beach's own time zone.
+    pub forecast_for: String,
+    /// The region's forecast page.
+    pub link: Option<String>,
+    /// What a screen reader says for the pin.
+    pub accessibility: String,
+}
+
 /// What a plan has found so far.
 #[derive(Clone, Debug, PartialEq, uniffi::Record)]
 pub struct NearbyResults {
     pub access: Vec<AccessPin>,
     pub records: Vec<RecordPin>,
     pub stocking: Vec<StockingPin>,
+    /// Beach bloom forecasts ([`plan_blooms`]).
+    pub blooms: Vec<BloomPin>,
     /// Every source the pins come from.
     pub credits: Vec<NearbyCredit>,
     /// What happened, in words: "OpenStreetMap is busy; try again later", "Zoom in to look
@@ -320,6 +347,37 @@ pub struct NearbyResults {
     /// The lookup state to keep and pass to the next plan; `None` when the plan keeps none
     /// (stocking).
     pub state_json: Option<String>,
+}
+
+/// The words of the buttons that start the lookups, in the settings' voice.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct NearbyWords {
+    pub find_access: String,
+    pub finding_access: String,
+    pub find_records: String,
+    pub finding_records: String,
+    pub find_blooms: String,
+    pub finding_blooms: String,
+}
+
+/// The words of the lookup buttons.
+///
+/// # Errors
+/// [`NearbyError::Invalid`] for unreadable settings.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn nearby_words(settings_json: String) -> Result<NearbyWords, NearbyError> {
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, "UTC");
+    let w = |key| f.strings.get(key).to_owned();
+    Ok(NearbyWords {
+        find_access: w(Key::NearbyFindAccess),
+        finding_access: w(Key::NearbyFindingAccess),
+        find_records: w(Key::NearbyFindRecords),
+        finding_records: w(Key::NearbyFindingRecords),
+        find_blooms: w(Key::NearbyFindBlooms),
+        finding_blooms: w(Key::NearbyFindingBlooms),
+    })
 }
 
 /// The limits the plans keep, for the app's own caching and messages.
@@ -601,6 +659,7 @@ enum Want {
         dataset: Dataset,
         points: Vec<usize>,
     },
+    Blooms,
 }
 
 #[derive(Clone, Debug)]
@@ -639,6 +698,9 @@ struct Inner {
     nas: Vec<nas::NasRecord>,
     nas_query: Option<nas::NasQuery>,
     points: Vec<Point>,
+    blooms: Vec<hab::HabBeach>,
+    /// When the oldest Overpass cell answered from the state was fetched.
+    cached_oldest: Option<i64>,
     used: BTreeSet<SourceId>,
     notices: Vec<String>,
     notes: Vec<String>,
@@ -705,6 +767,8 @@ impl Inner {
             nas: Vec::new(),
             nas_query: None,
             points: Vec::new(),
+            blooms: Vec::new(),
+            cached_oldest: None,
             used: BTreeSet::new(),
             notices: Vec::new(),
             notes: Vec::new(),
@@ -892,6 +956,11 @@ fn plan_overpass(inner: &mut Inner, cells: &[overpass::AreaKey], include_parking
             let key = overpass::CacheKey { area, kind };
             if let Some(cell) = inner.state.overpass_cache.get(&key.id()).cloned() {
                 inner.used.insert(SourceId::OVERPASS);
+                inner.cached_oldest = Some(
+                    inner
+                        .cached_oldest
+                        .map_or(cell.fetched_at, |t| t.min(cell.fetched_at)),
+                );
                 inner.access.extend(cell.features);
                 if cell.truncated {
                     inner.notice(Key::NearbyMoreThanShown, &SourceId::OVERPASS);
@@ -1196,6 +1265,51 @@ pub fn plan_stocking(
 }
 
 // ---------------------------------------------------------------------------------------------
+// Beach bloom forecasts
+// ---------------------------------------------------------------------------------------------
+
+/// Plans the Gulf respiratory irritation forecast for the beaches in the view at Unix time
+/// `now`. It is a plan of its own rather than a part of the others: it needs no species, state
+/// or paging, and its one request is the same region-wide file for every view, so the view is
+/// applied to the answer and no coordinate leaves the phone. A view outside the Florida and
+/// Texas forecast area gets no request and a notice that the forecast covers the Gulf only.
+/// The answer may be reused for an hour (the provider's age).
+///
+/// # Errors
+/// [`NearbyError::Invalid`] for a view out of range or unreadable settings.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn plan_blooms(
+    area: NearbyArea,
+    settings_json: String,
+    now: i64,
+) -> Result<Arc<NearbyPlan>, NearbyError> {
+    let (config, _) = load(&settings_json)?;
+    let area = Area::new(area)?;
+    let mut inner = Inner::new(config, area, NearbyState::default(), false, UnixTime(now));
+    let covered = inner
+        .area
+        .parts()
+        .iter()
+        .any(|b| hab::overlaps_gulf_area(b.south, b.west, b.north, b.east));
+    if covered {
+        inner.push(
+            SourceId::NOAA_HAB,
+            "noaa-hab",
+            0,
+            Want::Blooms,
+            get(hab::GULF_ZIP_URL.to_owned(), None, hab::MAX_AGE_S),
+        );
+    } else {
+        let text = inner.f.strings.get(Key::NearbyBloomsGulfOnly).to_owned();
+        push_unique(&mut inner.notices, text);
+    }
+    Ok(Arc::new(NearbyPlan {
+        inner: Mutex::new(inner),
+    }))
+}
+
+// ---------------------------------------------------------------------------------------------
 // Reading the answers
 // ---------------------------------------------------------------------------------------------
 
@@ -1238,6 +1352,7 @@ impl Inner {
                     Want::Stocking { dataset, points } => {
                         self.read_stocking(&response, *dataset, points);
                     }
+                    Want::Blooms => self.read_blooms(&response),
                     Want::Overpass { .. } => {}
                 }
             }
@@ -1478,6 +1593,39 @@ impl Inner {
         }
     }
 
+    fn read_blooms(&mut self, response: &Response<'_>) {
+        let source = SourceId::NOAA_HAB;
+        if !(200..300).contains(&response.status) {
+            self.failed(
+                &source,
+                kind_of_status(response.status),
+                format!("HTTP {}", response.status),
+            );
+            return;
+        }
+        let area = self.area.clone();
+        match hab::parse_gulf_beaches(response.body, self.now, |lat, lon| area.contains(lat, lon)) {
+            Ok(beaches) => {
+                if beaches.is_empty() {
+                    let text = self.f.strings.get(Key::NearbyBloomsNone).to_owned();
+                    push_unique(&mut self.notices, text);
+                }
+                self.blooms = beaches;
+            }
+            Err(underbite_providers::source::SourceError::Stale { .. }) => {
+                // An old run is never shown as "no bloom".
+                let text = self
+                    .f
+                    .strings
+                    .safety(SafetyKey::BloomNoRecentForecast)
+                    .to_owned();
+                push_unique(&mut self.notices, text.clone());
+                self.issue(&source, SourceErrorKind::Other, text);
+            }
+            Err(e) => self.failed(&source, SourceErrorKind::Parse, e.to_string()),
+        }
+    }
+
     fn read_stocking(&mut self, response: &Response<'_>, dataset: Dataset, points: &[usize]) {
         if !(200..300).contains(&response.status) {
             self.failed(
@@ -1521,6 +1669,78 @@ impl Inner {
 // ---------------------------------------------------------------------------------------------
 // The results
 // ---------------------------------------------------------------------------------------------
+
+const fn hab_code(level: HabLevel) -> &'static str {
+    match level {
+        HabLevel::VeryLow => "very_low",
+        HabLevel::Low => "low",
+        HabLevel::Moderate => "moderate",
+        HabLevel::High => "high",
+        HabLevel::Unknown => "unknown",
+    }
+}
+
+const fn hab_key(level: HabLevel) -> SafetyKey {
+    match level {
+        HabLevel::VeryLow => SafetyKey::BloomLevelVeryLow,
+        HabLevel::Low => SafetyKey::BloomLevelLow,
+        HabLevel::Moderate => SafetyKey::BloomLevelModerate,
+        HabLevel::High => SafetyKey::BloomLevelHigh,
+        HabLevel::Unknown => SafetyKey::BloomLevelUnknown,
+    }
+}
+
+/// The pin of a beach: its words are the bloom card's.
+fn bloom_pin(config: &Config, beach: &hab::HabBeach) -> BloomPin {
+    // The forecast's times are the beach's own: Central west of 85 degrees West, else Eastern.
+    let zone = if beach.longitude < -85.0 {
+        "America/Chicago"
+    } else {
+        "America/New_York"
+    };
+    let f = formatter(config, zone);
+    let s = f.strings;
+    let word = s.safety(hab_key(beach.level));
+    let mut label = word.to_owned();
+    if let Some(first) = label.get_mut(..1) {
+        first.make_ascii_uppercase();
+    }
+    let mut detail = format!("{}: {word}", s.get(Key::BloomRowLevel));
+    if let Some(c) = beach.confidence {
+        let value = s.safety_fmt(SafetyKey::BloomConfidence, &[("value", &s.number(c, 1))]);
+        detail = format!("{detail}; {}: {value}", s.get(Key::BloomRowConfidence));
+    }
+    let forecast_for = format!("{}, {}", f.date_of(beach.valid_at), f.clock(beach.valid_at));
+    let link = hab::links_near(Coordinates {
+        latitude: beach.latitude,
+        longitude: beach.longitude,
+    })
+    .into_iter()
+    .next()
+    .map(|l| l.url);
+    BloomPin {
+        id: format!(
+            "{}:{}:{:.3}:{:.3}",
+            SourceId::NOAA_HAB.as_str(),
+            beach.location,
+            beach.latitude,
+            beach.longitude
+        ),
+        accessibility: format!(
+            "{}. {detail}. {}: {forecast_for}",
+            beach.location,
+            s.get(Key::BloomRowValid)
+        ),
+        name: beach.location.clone(),
+        lat: beach.latitude,
+        lon: beach.longitude,
+        level: hab_code(beach.level).to_owned(),
+        level_label: label,
+        detail,
+        forecast_for,
+        link,
+    }
+}
 
 const fn kind_code(kind: AccessKind) -> &'static str {
     match kind {
@@ -1728,6 +1948,7 @@ impl Inner {
             .collect()
     }
 
+    #[allow(clippy::too_many_lines)]
     fn results(&self) -> NearbyResults {
         let f = &self.f;
         let mut access: Vec<AccessPin> = Vec::new();
@@ -1799,6 +2020,29 @@ impl Inner {
             })
             .collect();
 
+        let blooms: Vec<BloomPin> = self
+            .blooms
+            .iter()
+            .map(|b| bloom_pin(&self.config, b))
+            .collect();
+        let mut notes = self.notes.clone();
+        if !blooms.is_empty() {
+            push_unique(
+                &mut notes,
+                f.strings.safety(SafetyKey::BloomAdvisory).to_owned(),
+            );
+        }
+        let mut notices = self.notices.clone();
+        if let Some(fetched) = self.cached_oldest {
+            let age = f.age(self.now.0 - fetched);
+            let name = self.name(&SourceId::OVERPASS);
+            push_unique(
+                &mut notices,
+                f.strings
+                    .fmt(Key::NearbyCached, &[("source", &name), ("age", &age)]),
+            );
+        }
+
         let state_json = self.stateful.then(|| {
             let mut state = self.state.clone();
             state.prune(self.now);
@@ -1810,9 +2054,10 @@ impl Inner {
             access,
             records,
             stocking,
+            blooms,
             credits: self.credits(),
-            notices: self.notices.clone(),
-            notes: self.notes.clone(),
+            notices,
+            notes,
             issues: self.issues.iter().map(SourceIssue::from).collect(),
             more: self.more,
             state_json,
@@ -1846,6 +2091,7 @@ fn credit_of(source: &SourceId, accessed: LocalDate) -> Option<(Attribution, Opt
             Some(SafetyKey::LicencePublicDomain),
         ),
         "ny-dec-stocking" => (socrata_ny::attribution(), None),
+        "noaa-hab" => (hab::attribution(), Some(SafetyKey::LicencePublicDomain)),
         _ => return None,
     })
 }
