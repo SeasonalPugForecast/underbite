@@ -175,6 +175,7 @@ private struct CatchListColumn: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Log a catch", systemImage: "plus") { editor = .new }
+                    .disabled(!catches.canSave)
             }
             if !rows.isEmpty {
                 ToolbarItem(placement: .primaryAction) {
@@ -201,11 +202,7 @@ private struct CatchListColumn: View {
 
     private var unreadableNotice: some View {
         Label {
-            Text(
-                catches.keptAs.map {
-                    "The saved log could not be read. It was kept as \($0) and a new log started."
-                } ?? "The saved log could not be read. It is left as it was and nothing is saved over it."
-            )
+            Text(fileProblemText(file: .log, keptAs: catches.keptAs))
             .fixedSize(horizontal: false, vertical: true)
         } icon: {
             Image(systemName: "exclamationmark.triangle.fill")
