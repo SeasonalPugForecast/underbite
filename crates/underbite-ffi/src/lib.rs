@@ -3,6 +3,7 @@
 
 uniffi::setup_scaffolding!();
 
+pub mod alerts;
 pub mod depth;
 pub mod fetch;
 pub mod import;
@@ -16,3 +17,4 @@ pub mod share;
 pub mod species;
 pub mod trip;
 pub mod view;
+pub mod widgets;
