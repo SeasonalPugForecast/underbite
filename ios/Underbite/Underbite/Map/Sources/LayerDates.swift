@@ -114,9 +114,14 @@ nonisolated enum GridTimes {
     /// How far back an hourly layer's slider reaches.
     static let hourlySpan: Int64 = 86_400
 
+    /// How long an axis of a layer with `dates` is kept before it is asked for again.
+    static func axisAge(_ dates: LayerDates) -> Int64 {
+        dates == .hourly ? hourlyAxisAge : dailyAxisAge
+    }
+
     /// Whether an axis fetched at `fetched` is to be asked for again at `now`.
     static func isStale(fetched: Int64, now: Int64, dates: LayerDates) -> Bool {
-        let age = dates == .hourly ? hourlyAxisAge : dailyAxisAge
+        let age = axisAge(dates)
         return now < fetched || now - fetched >= age
     }
 

@@ -59,6 +59,8 @@ final class SourcesModule: MapModule {
     @ObservationIgnored private var holdsRadar = false
     @ObservationIgnored private var syncDue = false
     @ObservationIgnored private var pickerDays: (newest: MapDate, days: [MapDate])?
+    /// The settings the store's bound was last taken from.
+    @ObservationIgnored private var boundFrom: String?
     /// Screenshots (debug builds): `-mapDates clear` looks for the last clear day of the topmost
     /// grid layer once its time axis is in.
     @ObservationIgnored private var launchClearDay =
@@ -125,6 +127,7 @@ final class SourcesModule: MapModule {
         syncDue = false
         guard let controller else { return }
         let now = clock()
+        boundStore(controller.settingsJSON)
         // Every satellite layer opens on the default day, shown or not, so a layer switched on
         // asks for that day from its first tile. A new UTC day moves a day not picked.
         let opening = gibsDefaultDate(now: now)
@@ -151,6 +154,18 @@ final class SourcesModule: MapModule {
             findClearDay(top.layer)
         }
         syncRadar(now: now)
+    }
+
+    /// Bounds the device's store to the settings' `map.offline_max_mb` when the settings change.
+    private func boundStore(_ json: String) {
+        guard json != boundFrom, let megabytes = try? Settings(json: json).map.offlineMaxMb
+        else { return }
+        boundFrom = json
+        let bytes = OfflineRules.limitBytes(megabytes: megabytes)
+        Task.detached(priority: .utility) {
+            await MapOffline.prepare()
+            try? await MapOffline.store.setLimit(bytes: bytes)
+        }
     }
 
     /// Follows the tile reports: a satellite day without pictures steps back.

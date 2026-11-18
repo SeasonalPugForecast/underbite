@@ -32,8 +32,17 @@ nonisolated struct TileCacheKey: Hashable, Sendable {
 nonisolated final class TileMemoryCache: @unchecked Sendable {
     private struct Entry {
         let data: Data
+        let fetched: Date
         let expires: Date
         var used: UInt64
+    }
+
+    /// A tile kept: its body and when it was fetched.
+    struct Kept: Equatable, Sendable {
+        let data: Data
+        let fetchedAt: Date
+        /// Whether it was past its lifetime when it was read.
+        let isStale: Bool
     }
 
     private let lock = NSLock()
@@ -79,16 +88,28 @@ nonisolated final class TileMemoryCache: @unchecked Sendable {
         touch(key.text)?.data
     }
 
+    /// The tile for `key`, fresh or not, with when it was fetched and whether it is stale at
+    /// `now`.
+    func kept(_ key: TileCacheKey, now: Date) -> Kept? {
+        guard let entry = touch(key.text) else { return nil }
+        return Kept(data: entry.data, fetchedAt: entry.fetched, isStale: now >= entry.expires)
+    }
+
     /// Keeps `data` for `key`, fresh for `lifetime` seconds from `now`; a lifetime of zero or
-    /// less, or an empty body, keeps nothing.
-    func store(_ data: Data, for key: TileCacheKey, lifetime: TimeInterval, now: Date) {
+    /// less, or an empty body, keeps nothing. `fetchedAt` is when it was fetched, `now` unless
+    /// it was read from the device's store.
+    func store(
+        _ data: Data, for key: TileCacheKey, lifetime: TimeInterval, now: Date,
+        fetchedAt: Date? = nil
+    ) {
         guard lifetime > 0, !data.isEmpty else { return }
         lock.lock()
         defer { lock.unlock() }
         if let old = tiles[key.text] { bytes -= old.data.count }
         clock += 1
         tiles[key.text] = Entry(
-            data: data, expires: now.addingTimeInterval(lifetime), used: clock)
+            data: data, fetched: fetchedAt ?? now, expires: now.addingTimeInterval(lifetime),
+            used: clock)
         bytes += data.count
         while bytes > costLimit, let oldest = tiles.min(by: { $0.value.used < $1.value.used }) {
             bytes -= oldest.value.data.count

@@ -75,8 +75,13 @@ final class SourcesFetchTests: XCTestCase {
 
     private func settingsJSON() throws -> String { try Settings.defaults().json() }
 
+    /// The device's store, empty for each test and shared by its launches.
+    private let scratch = ScratchStore()
+
     private func axes(_ host: ListHost, _ clock: Seconds) -> TimeAxes {
-        TimeAxes(host: host, clock: { clock.read() }, pause: { _ in })
+        TimeAxes(
+            host: host, store: scratch.store, offline: { false }, clock: { clock.read() },
+            pause: { _ in })
     }
 
     func testAnAxisIsAskedForOnceADayAndLabelledByTheCore() async throws {

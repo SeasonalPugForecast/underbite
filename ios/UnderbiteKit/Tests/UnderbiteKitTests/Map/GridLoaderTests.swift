@@ -14,7 +14,7 @@ private final class ScriptedHost: FetchHost, @unchecked Sendable {
 
     func send(request: HostRequest) async throws -> HostResponse {
         lock.withLock { asked.append(request.url) }
-        return GridBlockCache.response(String(decoding: murTable(), as: UTF8.self))
+        return GridBlockCache.response(murTable())
     }
 
     func load(namespace: String, key: String) -> String? {
@@ -56,8 +56,29 @@ final class GridLoaderTests: XCTestCase {
             east: region.east, north: region.north, zoom: region.zoom, now: now)
     }
 
+    /// The device's store, empty for each test and shared by its launches.
+    private let scratch = ScratchStore()
+
     private func loader(_ host: ScriptedHost, _ store: GridStore) -> GridLoader {
-        GridLoader(host: host, store: store, clock: { now })
+        GridLoader(
+            host: host, store: store, clock: { now },
+            cache: GridBlockCache(store: scratch.store), offline: { false },
+            status: MapOfflineStatus())
+    }
+
+    /// When each of `keys` kept in the device's store was fetched.
+    private func fetchTimes(_ keys: [String]) async throws -> [Int64?] {
+        var times: [Int64?] = []
+        for key in keys {
+            times.append(try await scratch.store.times(of: .blob(key))?.fetchedAt)
+        }
+        return times
+    }
+
+    private func save(_ cache: GridBlockCache, _ key: String, at: Int64) async {
+        await cache.save(
+            key, body: murTable(), contentType: "application/json", fetchedAt: at,
+            lifetime: 10_800)
     }
 
     func testAColdLoadAsksForTheOverviewFirstAndKeepsEveryBlock() async throws {
@@ -73,9 +94,8 @@ final class GridLoaderTests: XCTestCase {
         XCTAssertEqual(host.urls, expected.map(\.request.url))
         XCTAssertEqual(store.blockCount(), 7)
         XCTAssertEqual(landed.count, 7)
-        let kept = await grids.cache.snapshot
-        XCTAssertEqual(Set(kept.entries.keys), Set(expected.map(\.key)))
-        XCTAssertTrue(kept.entries.values.allSatisfy { $0.fetchedAt == now })
+        let kept = try await fetchTimes(expected.map(\.key))
+        XCTAssertEqual(kept, expected.map { _ in now })
     }
 
     func testAWarmLoadDrawsFromTheDeviceAndFetchesNothing() async throws {
@@ -99,9 +119,9 @@ final class GridLoaderTests: XCTestCase {
         let expected = try requests(GridStore())
         let fine = Array(expected[1...])
         // Three of the six fine blocks are kept, fetched a minute ago; no overview is.
-        let cache = GridBlockCache(host: host)
+        let cache = GridBlockCache(store: scratch.store)
         for request in fine[..<3] {
-            await cache.save(request.key, body: murTable(), fetchedAt: now - 60)
+            await save(cache, request.key, at: now - 60)
         }
         let store = GridStore()
         await loader(host, store).load(try layers(), in: region)?.value
@@ -109,22 +129,22 @@ final class GridLoaderTests: XCTestCase {
         XCTAssertEqual(Set(host.urls), Set(fine[3...].map(\.request.url)))
         XCTAssertEqual(host.urls.count, 3)
         XCTAssertEqual(store.blockCount(), 6)
-        let kept = GridBlockIndex.stored(host.load(namespace: "grid", key: "index"))
-        XCTAssertEqual(Set(kept.entries.keys), Set(fine.map(\.key)))
+        let kept = try await fetchTimes(fine.map(\.key))
+        XCTAssertEqual(kept, [now - 60, now - 60, now - 60, now, now, now])
     }
 
     func testStaleKeptBlocksAreFetchedAgain() async throws {
         let host = ScriptedHost()
         let expected = try requests(GridStore())
-        let cache = GridBlockCache(host: host)
+        let cache = GridBlockCache(store: scratch.store)
         for request in expected {
-            await cache.save(request.key, body: murTable(), fetchedAt: now - 4 * 3_600)
+            await save(cache, request.key, at: now - 4 * 3_600)
         }
         let store = GridStore()
         let grids = loader(host, store)
         await grids.load(try layers(), in: region)?.value
         XCTAssertEqual(host.urls, expected.map(\.request.url))
-        let kept = await grids.cache.snapshot
-        XCTAssertTrue(kept.entries.values.allSatisfy { $0.fetchedAt == now })
+        let kept = try await fetchTimes(expected.map(\.key))
+        XCTAssertEqual(kept, expected.map { _ in now })
     }
 }

@@ -52,9 +52,13 @@ private func response(
 /// over-zoom cut and one fetch per ancestor.
 final class TileLoaderTests: XCTestCase {
     private let png = TilePictures.quarters()
+    /// The device's store, empty for each test.
+    private let scratch = ScratchStore()
 
     private func loader(_ host: ScriptedHost, clock: TestClock = TestClock()) -> TileLoader {
-        TileLoader(host: host, clock: { clock.read() }, pause: { _ in })
+        TileLoader(
+            host: host, store: scratch.store, status: MapOfflineStatus(), offline: { false },
+            clock: { clock.read() }, pause: { _ in })
     }
 
     func testAChartTileIsFetchedOnceAndThenServedFromMemory() async throws {
