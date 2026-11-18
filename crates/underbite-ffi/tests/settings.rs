@@ -263,6 +263,10 @@ fn the_card_catalogue_follows_the_users_order_and_voice() {
     assert_eq!(cards.len(), 20);
     // No source fills the bloom card yet.
     assert!(!cards.iter().find(|c| c.id == "bloom").unwrap().available);
+    // No setting chooses species yet, so the page cannot show the species card.
+    let species = cards.iter().find(|c| c.id == "species").unwrap();
+    assert!(!species.available);
+    assert_eq!(species.title, "Species");
     assert_eq!(cards[0].id, "now");
     assert!(cards.iter().take_while(|c| c.shown).count() >= 5);
     let windows = cards.iter().find(|c| c.id == "windows").unwrap();
