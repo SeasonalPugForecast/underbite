@@ -1,10 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- Merged into the generated Info.plist (the rest is in the target's build settings).
-     Location is "when in use" only: no background location, no background modes yet. -->
+     Location is "when in use" only: no background location, no background modes yet.
+     A trip or a spot is sent as a .underbite file (JSON with a "kind"), which the app exports
+     and opens. -->
 <plist version="1.0">
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Finds the water and the stations near you when you ask. Your exact location stays on this device: data services only see it rounded, to about a kilometre or more.</string>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>dev.savery.underbite.file</string>
+			<key>UTTypeDescription</key>
+			<string>Underbite file</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>underbite</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Underbite file</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>dev.savery.underbite.file</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
