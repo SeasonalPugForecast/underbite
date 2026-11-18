@@ -878,6 +878,19 @@ keys! {
     MapStructureCategory => ("As charted: {category}", "As charted: {category}"),
     /// When a chart object was surveyed: `{date}` ("2019", "2019-03", "2019-03-14").
     MapStructureSurveyed => ("Surveyed {date}", "Surveyed {date}"),
+    /// The structure points' states: fetching, failed, and a view too wide for them.
+    MapStructureLoading => ("Loading wrecks and obstructions…", "Loading wrecks and obstructions…"),
+    MapStructureFailed => (
+        "Wrecks and obstructions could not be loaded",
+        "Wrecks and obstructions could not be loaded",
+    ),
+    MapStructureZoomIn => (
+        "Zoom in to see wrecks and obstructions",
+        "Zoom in to see wrecks and obstructions",
+    ),
+    /// The title of a list of structure points that share a place on the map: `{n}`.
+    MapStructureGroupOne => ("{n} charted feature", "{n} charted feature"),
+    MapStructureGroupMany => ("{n} charted features", "{n} charted features"),
     /// A reef site's charted depths: `{range}` ("20–70 ft").
     MapReefDepth => ("Depth {range}", "Depth {range}"),
     // Station pins
@@ -3431,6 +3444,18 @@ pub fn structure_title(f: &Formatter, kind: StructureKind, fish_haven: bool) -> 
     })
 }
 
+/// The title of a list of structure points that share a place on the map: "3 charted features".
+pub fn structure_group_title(f: &Formatter, count: u32) -> String {
+    let key = if count == 1 {
+        Key::MapStructureGroupOne
+    } else {
+        Key::MapStructureGroupMany
+    };
+    #[allow(clippy::cast_precision_loss)] // a count of map points is far below 2^24
+    let n = f.strings.grouped(count as f32, 0);
+    f.strings.fmt(key, &[("n", &n)])
+}
+
 /// The chart's own category of a point, as charted: "As charted: dangerous wreck". The service
 /// cuts long categories, so one that may be cut ends in an ellipsis.
 pub fn structure_category(f: &Formatter, category: &str, may_be_cut: bool) -> String {
@@ -4594,6 +4619,9 @@ mod tests {
                 "As charted: dangerous wreck"
             );
             assert!(structure_category(&us, "x", true).ends_with('…'));
+            assert_eq!(structure_group_title(&us, 1), "1 charted feature");
+            assert_eq!(structure_group_title(&us, 3), "3 charted features");
+            assert_eq!(structure_group_title(&us, 1_200), "1,200 charted features");
             let date = |month, day| SourceDate {
                 year: 2019,
                 month,

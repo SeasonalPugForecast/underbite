@@ -33,8 +33,8 @@ use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{
     Key, MapQuantity, SafetyKey, break_strength, break_threshold_stops as threshold_stops,
     breaks_few_clear, breaks_from, breaks_needs_source, contour_interval_text, depth_band_text,
-    depth_datums_line, depth_label, reef_depths, structure_category, structure_surveyed,
-    structure_title,
+    depth_datums_line, depth_label, reef_depths, structure_category,
+    structure_group_title as group_title, structure_surveyed, structure_title,
 };
 use underbite_providers::encdirect::{self, EncBand, EncError};
 use underbite_providers::ncei_dem::{self, DemCrs, DemError};
@@ -1579,6 +1579,43 @@ pub fn parse_structure_points(
             })
             .collect(),
     })
+}
+
+/// The words of the structure points' states, in the settings' voice.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct StructureWords {
+    /// While the points for the view are fetched: "Loading wrecks and obstructions…".
+    pub loading: String,
+    /// When they could not be fetched.
+    pub failed: String,
+    /// In place of the points below the zoom of the coarsest band ([`structure_band`] is
+    /// `None`): "Zoom in to see wrecks and obstructions".
+    pub zoom_in: String,
+    /// "Not for navigation." (safety text).
+    pub notice: String,
+}
+
+/// The words of the structure points' states: loading, failed and too wide a view.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn structure_words(settings_json: String) -> Result<StructureWords, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let s = formatter(&config, "UTC").strings;
+    Ok(StructureWords {
+        loading: s.get(Key::MapStructureLoading).to_owned(),
+        failed: s.get(Key::MapStructureFailed).to_owned(),
+        zoom_in: s.get(Key::MapStructureZoomIn).to_owned(),
+        notice: s.safety(SafetyKey::NotForNavigation).to_owned(),
+    })
+}
+
+/// The title of the list of `count` structure points that share a place on the map:
+/// "3 charted features".
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn structure_group_title(count: u32, settings_json: String) -> Result<String, MapError> {
+    let (config, _) = load(&settings_json)?;
+    Ok(group_title(&formatter(&config, "UTC"), count))
 }
 
 const fn structure_slug(kind: StructureKind) -> &'static str {

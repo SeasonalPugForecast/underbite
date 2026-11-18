@@ -11,7 +11,8 @@ use underbite_ffi::depth::{
     break_threshold_stops, breaks_words, depth_band_stops, depth_layer_info, depth_words,
     gebco_capabilities_request, gebco_credit, parse_reefs, parse_state_contours,
     parse_structure_layers, parse_structure_points, reefs_request, state_contour_request,
-    structure_band, structure_layers_request, structure_points_request,
+    structure_band, structure_group_title, structure_layers_request, structure_points_request,
+    structure_words,
 };
 use underbite_ffi::fetch::HostResponse;
 use underbite_ffi::map::{
@@ -1202,6 +1203,24 @@ fn structure_points_are_worded_and_never_show_a_depth() {
     let none =
         parse_structure_points(StructureType::Wreck, json_response(&empty), 0, imperial()).unwrap();
     assert!(none.points.is_empty() && !none.more);
+}
+
+#[test]
+fn structure_states_and_groups_have_their_words() {
+    let w = structure_words(imperial()).unwrap();
+    assert_eq!(w.loading, "Loading wrecks and obstructions\u{2026}");
+    assert_eq!(w.failed, "Wrecks and obstructions could not be loaded");
+    assert_eq!(w.zoom_in, "Zoom in to see wrecks and obstructions");
+    assert_eq!(w.notice, "Not for navigation.");
+    assert_eq!(
+        structure_group_title(4, imperial()).unwrap(),
+        "4 charted features"
+    );
+    assert_eq!(
+        structure_group_title(1, metric()).unwrap(),
+        "1 charted feature"
+    );
+    assert!(structure_words("{".into()).is_err());
 }
 
 // ---------------------------------------------------------------------------------------------

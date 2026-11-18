@@ -478,11 +478,11 @@ fn storm_layer_words_are_translated_in_the_pseudo_locale() {
 }
 
 #[test]
-fn depth_and_breaks_words_are_translated_in_the_pseudo_locale() {
+fn depth_breaks_and_structure_words_are_translated_in_the_pseudo_locale() {
     use crate::map::breaks::BreakKind;
     use crate::view::strings::{
         Key, SafetyKey, break_strength, break_threshold_stops, contour_interval_text,
-        depth_band_text, depth_label,
+        depth_band_text, depth_label, structure_group_title,
     };
     let mut english = Vec::new();
     for units in [us(), metric()] {
@@ -500,6 +500,8 @@ fn depth_and_breaks_words_are_translated_in_the_pseudo_locale() {
                 contour_interval_text(&f, 0.5),
                 depth_band_text(&f, Some((1.5, 2.25))),
                 depth_band_text(&f, None),
+                structure_group_title(&f, 1),
+                structure_group_title(&f, 1_200),
             ];
             texts.extend([0.0, 2.5, 10.0, 55.5, 100.0].map(|m| depth_label(&f, m)));
             for id in [
@@ -538,6 +540,9 @@ fn depth_and_breaks_words_are_translated_in_the_pseudo_locale() {
                 Key::MapBreaksZoomIn,
                 Key::MapBreaksLoading,
                 Key::MapBreaksNone,
+                Key::MapStructureLoading,
+                Key::MapStructureFailed,
+                Key::MapStructureZoomIn,
             ] {
                 texts.push(s.get(key).to_owned());
             }
