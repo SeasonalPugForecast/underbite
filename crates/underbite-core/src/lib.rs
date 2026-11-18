@@ -18,6 +18,7 @@ pub mod provenance;
 pub mod regulations;
 pub mod series;
 pub mod share;
+pub mod species;
 pub mod time;
 pub mod trip;
 pub mod units;

@@ -5,6 +5,8 @@ uniffi::setup_scaffolding!();
 
 pub mod depth;
 pub mod fetch;
+pub mod import;
+pub mod log;
 pub mod map;
 pub mod map_stations;
 pub mod offline;
