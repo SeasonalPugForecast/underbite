@@ -1,0 +1,5 @@
+---
+source: crates/underbite-providers/src/species/gbif.rs
+expression: "occurrence_request(\"Morone saxatilis\", HARBOR, 0, 2).unwrap().url"
+---
+https://api.gbif.org/v1/occurrence/search?scientificName=Morone%20saxatilis&decimalLatitude=40.40,41.00&decimalLongitude=-74.40,-73.60&hasCoordinate=true&limit=2&offset=0

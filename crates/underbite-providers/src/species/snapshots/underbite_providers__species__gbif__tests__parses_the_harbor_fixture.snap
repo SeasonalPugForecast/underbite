@@ -1,0 +1,49 @@
+---
+source: crates/underbite-providers/src/species/gbif.rs
+expression: records
+---
+- source: gbif
+  id: "8000000001"
+  taxon: Morone saxatilis
+  latitude: 40.5
+  longitude: -74.4
+  uncertainty_m: 100
+  observed_on:
+    year: 2026
+    month: 10
+    day: 28
+  licence: "http://creativecommons.org/publicdomain/zero/1.0/legalcode"
+  url: "https://www.gbif.org/occurrence/8000000001"
+  photo:
+    url: "https://example.invalid/photos/9300001/original.jpg"
+    licence: "https://creativecommons.org/publicdomain/zero/1.0/"
+- source: gbif
+  id: "8000000002"
+  taxon: Morone saxatilis
+  latitude: 40.7
+  longitude: -73.9
+  uncertainty_m: 250
+  observed_on:
+    year: 2026
+    month: 10
+    day: 12
+  licence: "http://creativecommons.org/publicdomain/zero/1.0/legalcode"
+  url: "https://www.gbif.org/occurrence/8000000002"
+  photo:
+    url: "https://example.invalid/photos/9300002/original.jpg"
+    licence: "https://creativecommons.org/publicdomain/zero/1.0/"
+- source: gbif
+  id: "8000000003"
+  taxon: Morone saxatilis
+  latitude: 40.6
+  longitude: -74.1
+  uncertainty_m: 50
+  observed_on:
+    year: 2026
+    month: 10
+    day: 2
+  licence: "http://creativecommons.org/publicdomain/zero/1.0/legalcode"
+  url: "https://www.gbif.org/occurrence/8000000003"
+  photo:
+    url: "https://example.invalid/photos/9300003/original.jpg"
+    licence: "https://creativecommons.org/publicdomain/zero/1.0/"
