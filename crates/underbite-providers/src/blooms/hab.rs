@@ -29,7 +29,7 @@ use crate::source::{FetchContext, FragmentValue, Fragments, Source, SourceError,
 pub const MEASUREMENTS: [Measurement; 1] = [Measurement::Bloom];
 
 /// How long a response may be reused, seconds: the model runs a few times a day.
-const MAX_AGE_S: u32 = 3_600;
+pub const MAX_AGE_S: u32 = 3_600;
 
 /// The current model run as a zip. It has no key and no history.
 pub const GULF_ZIP_URL: &str = "https://nccospublicstor.blob.core.windows.net/hab-data/no_Explorer/rif_model/csv/RIFv2_currentmodelrun.zip";
@@ -344,6 +344,119 @@ pub fn parse_gulf_zip(
     })
 }
 
+/// Whether a box (south, west, north, east in degrees; `west <= east`) overlaps the Florida or
+/// Texas forecast area.
+pub fn overlaps_gulf_area(south: f64, west: f64, north: f64, east: f64) -> bool {
+    REGIONS
+        .iter()
+        .filter(|r| matches!(r.id, HabRegion::Florida | HabRegion::Texas))
+        .any(|r| {
+            let (s, w, n, e) = r.bounds;
+            south <= n && north >= s && west <= e && east >= w
+        })
+}
+
+/// One beach of the forecast, at the forecast hour nearest a given time.
+#[derive(Clone, Debug, PartialEq)]
+pub struct HabBeach {
+    /// The beach's name as the source writes it.
+    pub location: String,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub level: HabLevel,
+    /// The source's weighting, 0 to 1.
+    pub confidence: Option<f32>,
+    /// The time the forecast is valid for.
+    pub valid_at: UnixTime,
+    /// The model run's time, when the file gives it.
+    pub run_at: Option<UnixTime>,
+}
+
+/// Every beach of the zip for which `inside(latitude, longitude)` holds, each at the forecast
+/// hour nearest `now`, in name order. The file is region-wide, so the view is applied here and
+/// nothing about it need leave the device.
+///
+/// # Errors
+/// - [`SourceError::Stale`]: every forecast hour is more than four hours before `now`.
+/// - [`SourceError::Parse`]: not a zip, over the size limits, no forecast files, or a forecast
+///   file without the columns it needs.
+pub fn parse_gulf_beaches(
+    zip_bytes: &[u8],
+    now: UnixTime,
+    inside: impl Fn(f64, f64) -> bool,
+) -> Result<Vec<HabBeach>, SourceError> {
+    let files = forecast_files(zip_bytes)?;
+    if files.is_empty() {
+        return Err(SourceError::Parse("HAB zip has no forecast files".into()));
+    }
+    let mut best: std::collections::BTreeMap<(String, i64, i64), HabBeach> =
+        std::collections::BTreeMap::new();
+    let mut latest: Option<UnixTime> = None;
+    for (_, bytes) in &files {
+        let mut reader = csv::ReaderBuilder::new()
+            .flexible(true)
+            .trim(csv::Trim::All)
+            .from_reader(bytes.as_slice());
+        let headers = reader
+            .headers()
+            .map_err(|e| SourceError::Parse(format!("HAB forecast header: {e}")))?
+            .clone();
+        let need = |name: &str| {
+            column(&headers, name)
+                .ok_or_else(|| SourceError::Parse(format!("HAB forecast has no {name} column")))
+        };
+        let (forecast, wind_time) = (need("Forecast")?, need("Wind Time")?);
+        let (lat, lon, name) = (need("Lat")?, need("Lon")?, need("Location Name")?);
+        let confidence = column(&headers, "Confidence");
+        let run = column(&headers, "Model Run Time");
+        for record in reader.records() {
+            let Ok(record) = record else { continue };
+            let number = |i: usize| record.get(i).and_then(|s| s.parse::<f64>().ok());
+            let (Some(latitude), Some(longitude)) = (number(lat), number(lon)) else {
+                continue;
+            };
+            let Some(valid_at) = record.get(wind_time).and_then(parse_rfc3339) else {
+                continue;
+            };
+            if !(-90.0..=90.0).contains(&latitude) || !(-180.0..=180.0).contains(&longitude) {
+                continue;
+            }
+            latest = latest.max(Some(valid_at));
+            if !inside(latitude, longitude) {
+                continue;
+            }
+            let beach = HabBeach {
+                location: record.get(name).unwrap_or_default().to_string(),
+                latitude,
+                longitude,
+                level: level(record.get(forecast).unwrap_or_default()),
+                confidence: confidence
+                    .and_then(number)
+                    .filter(|c| c.is_finite())
+                    .map(|c| c.clamp(0.0, 1.0) as f32),
+                valid_at,
+                run_at: run.and_then(|i| record.get(i)).and_then(parse_rfc3339),
+            };
+            // Beaches are told apart by name and place (thousandths of a degree).
+            let key = (
+                beach.location.clone(),
+                (latitude * 1_000.0).round() as i64,
+                (longitude * 1_000.0).round() as i64,
+            );
+            let nearer = best
+                .get(&key)
+                .is_none_or(|b| (valid_at.0 - now.0).abs() < (b.valid_at.0 - now.0).abs());
+            if nearer {
+                best.insert(key, beach);
+            }
+        }
+    }
+    if let Some(latest) = latest.filter(|l| now.0 - l.0 > STALE_AFTER_S) {
+        return Err(SourceError::Stale { latest });
+    }
+    Ok(best.into_values().collect())
+}
+
 /// The NOAA Gulf respiratory irritation forecast as a source of a beach's bloom forecast. It holds
 /// no settings.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -528,6 +641,29 @@ mod tests {
         format!(
             "{level},0,Not Present,2026-11-16T16:25:00+00:00,18.0,67.5,Offshore,{wind_time},75.3,{lat},{lon},0.9,{name},2026-11-17T03:00:00-05:00,fwri_sftp\n"
         )
+    }
+
+    #[test]
+    fn every_beach_in_a_box_is_listed_at_the_nearest_hour() {
+        let now = at("2026-11-17T09:00:00Z");
+        let beaches = parse_gulf_beaches(&zip(), now, |lat, lon| {
+            (27.8..=28.2).contains(&lat) && (-83.0..=-82.6).contains(&lon)
+        })
+        .expect("beaches");
+        let clearwater: Vec<_> = beaches
+            .iter()
+            .filter(|b| b.location == "Clearwater Beach")
+            .collect();
+        assert_eq!(clearwater.len(), 1);
+        assert_eq!(clearwater[0].valid_at, at("2026-11-17T08:00:00Z"));
+        let none = parse_gulf_beaches(&zip(), now, |_, _| false).expect("empty");
+        assert_eq!(none.len(), 0);
+        assert!(matches!(
+            parse_gulf_beaches(&zip(), at("2026-11-20T00:00:00Z"), |_, _| true),
+            Err(SourceError::Stale { .. })
+        ));
+        assert!(overlaps_gulf_area(27.0, -83.0, 28.0, -82.0));
+        assert!(!overlaps_gulf_area(40.5, -74.3, 40.9, -73.8));
     }
 
     #[test]
