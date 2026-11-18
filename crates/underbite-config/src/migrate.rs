@@ -537,6 +537,39 @@ mod tests {
     }
 
     #[test]
+    fn a_layer_list_from_before_the_access_and_own_layers_gets_them_hidden_at_the_top() {
+        let added = [
+            "public-land",
+            "access-points",
+            "stocking-points",
+            "species-records",
+            "hab-beaches",
+            "catches",
+            "tracks",
+            "catch-heat",
+        ];
+        let old: Vec<_> = KNOWN_LAYERS
+            .iter()
+            .filter(|id| !added.contains(id))
+            .map(|id| json!({ "id": id, "shown": *id == "spots" }))
+            .collect();
+        assert_eq!(old.len(), 29);
+        let mut d = json!({ "map": { "layers": old } });
+        assert_eq!(prepare(&mut d), Ok(vec![]));
+        let c: crate::schema::Config = serde_json::from_value(d).unwrap();
+        let ids: Vec<_> = c.map.layers.iter().map(|l| l.id.as_str()).collect();
+        assert_eq!(ids, KNOWN_LAYERS);
+        assert!(c.map.layers[29..].iter().all(|l| !l.shown));
+        assert!(
+            c.map
+                .layers
+                .iter()
+                .any(|l| l.id.as_str() == "spots" && l.shown)
+        );
+        assert_eq!(c.validate(), []);
+    }
+
+    #[test]
     fn an_unknown_key_in_a_layer_entry_is_named_by_path() {
         let mut d = json!({ "map": { "layers": [{ "id": "sst", "glow": 1 }] } });
         assert_eq!(

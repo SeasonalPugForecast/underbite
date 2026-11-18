@@ -40,7 +40,7 @@ const NCDS_Z14: &str = "https://gis.charttools.noaa.gov/arcgis/rest/services/Mar
 #[test]
 fn the_catalogue_is_worded_with_credits_and_notices() {
     let layers = map_catalogue(plain()).unwrap();
-    assert_eq!(layers.len(), 33);
+    assert_eq!(layers.len(), 41);
     assert!(layers[..4].iter().all(|l| l.is_base));
     assert_eq!(layers[0].draw, LayerDraw::AppleStandard);
     assert!(layers[0].shown, "the default base map is shown");
@@ -87,6 +87,124 @@ fn the_catalogue_is_worded_with_credits_and_notices() {
             .contains("no datum")
     );
     assert!(reefs.terms.is_some());
+}
+
+#[test]
+fn lookup_and_own_layers_are_listed_hidden_in_their_groups() {
+    let layers = map_catalogue(plain()).unwrap();
+    let by_id = |id: &str| layers.iter().find(|l| l.id == id).unwrap();
+    let groups: Vec<&str> = layers.iter().fold(Vec::new(), |mut seen, l| {
+        if !seen.contains(&l.group.as_str()) {
+            seen.push(l.group.as_str());
+        }
+        seen
+    });
+    // Each group once, in the drawer's order.
+    assert_eq!(
+        groups,
+        [
+            "base",
+            "depth",
+            "structure",
+            "water",
+            "weather",
+            "stations",
+            "access",
+            "mine"
+        ]
+    );
+    let mut each_once = layers.iter().map(|l| l.group.as_str()).collect::<Vec<_>>();
+    each_once.dedup();
+    assert_eq!(each_once, groups);
+
+    for (id, group, title) in [
+        ("public-land", "access", "Public land"),
+        ("access-points", "access", "Ramps, piers and shore access"),
+        ("stocking-points", "access", "Stocked waters (New York)"),
+        ("species-records", "water", "Species records"),
+        (
+            "hab-beaches",
+            "water",
+            "Beach bloom forecast (Gulf of Mexico)",
+        ),
+    ] {
+        let l = by_id(id);
+        assert_eq!((l.group.as_str(), l.title.as_str()), (group, title), "{id}");
+        assert_eq!(l.draw, LayerDraw::Nearby, "{id}");
+        assert!(l.available && !l.shown, "{id}");
+        assert!(l.min_zoom.is_some() && l.max_zoom.is_none(), "{id}");
+        assert!(
+            l.legend.is_empty() && l.ramp.is_none() && l.notice.is_none(),
+            "{id}"
+        );
+        assert!(l.legend_caption.is_some(), "{id}");
+    }
+    assert_eq!(by_id("public-land").group_title, "Access and rules");
+    for (id, title) in [
+        ("catches", "My catches"),
+        ("tracks", "My tracks"),
+        ("catch-heat", "Catch heat map"),
+    ] {
+        let l = by_id(id);
+        assert_eq!(
+            (l.group.as_str(), l.title.as_str()),
+            ("mine", title),
+            "{id}"
+        );
+        assert_eq!(l.draw, LayerDraw::Mine, "{id}");
+        assert!(!l.shown, "{id}");
+    }
+    let nearby: Vec<_> = layers
+        .iter()
+        .filter(|l| l.draw == LayerDraw::Nearby)
+        .map(|l| l.id.as_str())
+        .collect();
+    assert_eq!(
+        nearby,
+        [
+            "species-records",
+            "hab-beaches",
+            "public-land",
+            "access-points",
+            "stocking-points"
+        ]
+    );
+}
+
+#[test]
+fn lookup_layers_carry_the_sources_credits_and_fit_the_lookups() {
+    use underbite_ffi::nearby::nearby_limits;
+    use underbite_providers::access::{overpass, padus};
+    use underbite_providers::blooms::hab;
+    use underbite_providers::stocking::socrata_ny;
+
+    let layers = map_catalogue(plain()).unwrap();
+    let by_id = |id: &str| layers.iter().find(|l| l.id == id).unwrap();
+    // The credits are the ones the lookups give with their results.
+    assert_eq!(by_id("public-land").credit, padus::PADUS_CREDIT);
+    assert_eq!(by_id("access-points").credit, overpass::OVERPASS_CREDIT);
+    assert_eq!(
+        by_id("stocking-points").credit,
+        socrata_ny::attribution().credit
+    );
+    assert_eq!(by_id("hab-beaches").credit, hab::attribution().credit);
+    assert!(by_id("catch-heat").credit.contains("never shared"));
+
+    // A phone's view at the minimum zoom is within the lookup's widest span.
+    let limits = nearby_limits();
+    let phone_lat_span =
+        |zoom: u8| 844.0 * 360.0 / (256.0 * f64::from(zoom).exp2()) * 40.7_f64.to_radians().cos();
+    for (id, widest) in [
+        ("public-land", limits.access_max_span_deg),
+        ("access-points", limits.access_max_span_deg),
+        ("stocking-points", limits.stocking_max_span_deg),
+        ("species-records", limits.records_max_span_deg),
+    ] {
+        assert!(
+            phone_lat_span(by_id(id).min_zoom.unwrap()) <= widest,
+            "{id}"
+        );
+    }
 }
 
 #[test]

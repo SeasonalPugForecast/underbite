@@ -712,6 +712,7 @@ keys! {
     MapGroupWater => ("Water", "Water"),
     MapGroupWeather => ("Weather", "Weather"),
     MapGroupStations => ("Stations", "Stations"),
+    MapGroupAccess => ("Access and rules", "Access and rules"),
     MapGroupMine => ("Mine", "Mine"),
     /// Layer titles, by the catalogue's layer ids.
     MapLayerAppleStandard => ("Standard", "Standard"),
@@ -756,6 +757,17 @@ keys! {
         "Wrecks and obstructions (ENC)",
         "Wrecks and obstructions (ENC)",
     ),
+    MapLayerPublicLand => ("Public land", "Public land"),
+    MapLayerAccessPoints => ("Ramps, piers and shore access", "Ramps, piers and shore access"),
+    MapLayerStockingPoints => ("Stocked waters (New York)", "Stocked waters (New York)"),
+    MapLayerSpeciesRecords => ("Species records", "Species records"),
+    MapLayerHabBeaches => (
+        "Beach bloom forecast (Gulf of Mexico)",
+        "Beach bloom forecast (Gulf of Mexico)",
+    ),
+    MapLayerCatches => ("My catches", "My catches"),
+    MapLayerTracks => ("My tracks", "My tracks"),
+    MapLayerCatchHeat => ("Catch heat map", "Catch heat map"),
     /// Legend captions of the colour ramps.
     MapLegendColdToWarm => ("Cold to warm", "Cold to warm"),
     MapLegendClearToGreen => ("Clear to green water", "Clear to green water"),
@@ -1771,6 +1783,18 @@ safety_keys! {
     MapCreditBuoys => "Buoys: NOAA National Data Buoy Center",
     MapCreditNwps => "River forecasts: NOAA National Water Prediction Service",
     MapCreditSpots => "Your saved spots, kept on this device",
+    /// As USGS asks for it (`underbite_providers::access::padus`).
+    MapCreditPadus => "U.S. Geological Survey (USGS) Gap Analysis Project (GAP), 2024, Protected Areas Database of the United States (PAD-US) 4.1, https://doi.org/10.5066/P96WBCHS",
+    MapCreditOsm => "\u{a9} OpenStreetMap contributors",
+    /// As the stocking lists are credited (`underbite_providers::stocking::socrata_ny`).
+    MapCreditNyDecStocking => "NYS DEC (stocking numbers are estimates)",
+    /// The record platforms; each record also shows its own licence and link.
+    MapCreditSpeciesRecords => "Records: GBIF.org, iNaturalist and the USGS Nonindigenous Aquatic Species Database. Each record shows its own licence.",
+    /// As the forecast is credited (`underbite_providers::blooms::hab`).
+    MapCreditHab => "NOAA National Centers for Coastal Ocean Science (NCCOS) Gulf of Mexico respiratory irritation forecast. Cell counts: Florida Fish and Wildlife Research Institute (FWRI), HABscope, Pinellas County and the Sanibel-Captiva Conservation Foundation; wind: NOAA Meteorological Development Laboratory's National Digital Forecast Database.",
+    MapCreditCatches => "Your catch log, kept on this device",
+    MapCreditTracks => "Your imported tracks, kept on this device",
+    MapCreditCatchHeat => "Drawn on this device from your catch log; never shared",
     MapCreditContoursIn => "Lake contours: Indiana DNR, Division of Fish and Wildlife. Not for navigation.",
     MapCreditContoursMn => "Lake contours: Minnesota Department of Natural Resources (MNDNR). Not for navigation.",
     MapCreditReefsNy => "Artificial reefs: New York State Department of Environmental Conservation. Not for navigation.",
@@ -1787,6 +1811,13 @@ safety_keys! {
     MapLegendEncSeabed => "Charted wrecks, obstructions and foul areas. Empty when zoomed out past about 1:137,000 where checked; the limit follows each chart's scale.",
     MapLegendEncSpecialAreas => "Charted restricted and caution areas. The zoom at which they appear is unverified. Rules are in the regulations, not here.",
     MapLegendEncStructurePoints => "Charted wrecks, obstructions and rocks with their category and survey date. No depth is shown: NOAA does not state its unit or datum.",
+    /// What the lookup layers show, and what they do not mean.
+    MapLegendPublicLand => "Public land as PAD-US records it. Not every area is reviewed locally; fishing may still be closed or need a licence.",
+    MapLegendAccessPoints => "Ramps, piers and shore access as OpenStreetMap contributors mapped them. A pin is not permission: check the access shown and local rules.",
+    MapLegendStockingPoints => "Waters New York stocked or plans to stock. Numbers are the agency's estimates.",
+    MapLegendSpeciesRecords => "Where a species was reported, not where it is now. A blurred record is drawn as an area.",
+    MapLegendHabBeaches => "A forecast of breathing irritation on the beach from red tide, not a measure of the water. Algal blooms can make people and dogs sick: follow local health advisories.",
+    MapLegendCatchHeat => "Where your logged catches cluster. Drawn on this device only and never shared.",
     /// What a state layer's depths are measured from, as the source states it. Never the DEM's
     /// "approximate depth": contours are below a lake surface, not a datum.
     MapReferenceContoursIn => "Feet below the lake surface; the contours of some lakes are adjusted to the lake's legal gauge level. Survey date per lake.",
@@ -2612,6 +2643,7 @@ impl Strings {
             Group::Water => Key::MapGroupWater,
             Group::Weather => Key::MapGroupWeather,
             Group::Stations => Key::MapGroupStations,
+            Group::Access => Key::MapGroupAccess,
             Group::Mine => Key::MapGroupMine,
         })
     }
@@ -2652,6 +2684,14 @@ impl Strings {
             "enc-seabed" => Key::MapLayerEncSeabed,
             "enc-special-areas" => Key::MapLayerEncSpecialAreas,
             "enc-structure-points" => Key::MapLayerEncStructurePoints,
+            "public-land" => Key::MapLayerPublicLand,
+            "access-points" => Key::MapLayerAccessPoints,
+            "stocking-points" => Key::MapLayerStockingPoints,
+            "species-records" => Key::MapLayerSpeciesRecords,
+            "hab-beaches" => Key::MapLayerHabBeaches,
+            "catches" => Key::MapLayerCatches,
+            "tracks" => Key::MapLayerTracks,
+            "catch-heat" => Key::MapLayerCatchHeat,
             _ => return None,
         }))
     }
@@ -2682,6 +2722,12 @@ impl Strings {
             "enc-seabed" => SafetyKey::MapLegendEncSeabed,
             "enc-special-areas" => SafetyKey::MapLegendEncSpecialAreas,
             "enc-structure-points" => SafetyKey::MapLegendEncStructurePoints,
+            "public-land" => SafetyKey::MapLegendPublicLand,
+            "access-points" => SafetyKey::MapLegendAccessPoints,
+            "stocking-points" => SafetyKey::MapLegendStockingPoints,
+            "species-records" => SafetyKey::MapLegendSpeciesRecords,
+            "hab-beaches" => SafetyKey::MapLegendHabBeaches,
+            "catch-heat" => SafetyKey::MapLegendCatchHeat,
             _ => return None,
         }))
     }
@@ -2720,6 +2766,14 @@ impl Strings {
             "lake-contours-in" => SafetyKey::MapCreditContoursIn,
             "lake-contours-mn" => SafetyKey::MapCreditContoursMn,
             "artificial-reefs-ny" => SafetyKey::MapCreditReefsNy,
+            "public-land" => SafetyKey::MapCreditPadus,
+            "access-points" => SafetyKey::MapCreditOsm,
+            "stocking-points" => SafetyKey::MapCreditNyDecStocking,
+            "species-records" => SafetyKey::MapCreditSpeciesRecords,
+            "hab-beaches" => SafetyKey::MapCreditHab,
+            "catches" => SafetyKey::MapCreditCatches,
+            "tracks" => SafetyKey::MapCreditTracks,
+            "catch-heat" => SafetyKey::MapCreditCatchHeat,
             _ => return None,
         }))
     }
@@ -2755,6 +2809,8 @@ impl Strings {
             "lake-contours-in" => SafetyKey::MapLicenceContoursIn,
             "lake-contours-mn" => SafetyKey::MapLicenceContoursMn,
             "artificial-reefs-ny" => SafetyKey::MapLicenceReefsNy,
+            "public-land" => SafetyKey::LicencePublicDomain,
+            "access-points" => SafetyKey::LicenceOdbl,
             _ => return None,
         }))
     }
@@ -3653,6 +3709,41 @@ mod tests {
             assert!(legend("enc-seabed").contains("1:137,000"));
             assert!(legend("enc-structure-points").contains("No depth is shown"));
             assert!(enc::SEABED.note.contains("Lower Bay"));
+        }
+
+        #[test]
+        fn lookup_and_own_layers_credit_their_sources_and_say_what_they_mean() {
+            let s = Strings::new(Voice::Plain);
+            let credit = |id: &str| s.layer_credit(id).unwrap();
+            let legend = |id: &str| s.layer_legend(id).unwrap();
+            assert_eq!(
+                s.map_group(crate::map::catalogue::Group::Access),
+                "Access and rules"
+            );
+            assert!(credit("public-land").contains("(PAD-US) 4.1"));
+            assert_eq!(credit("access-points"), "© OpenStreetMap contributors");
+            assert!(credit("stocking-points").starts_with("NYS DEC"));
+            for platform in ["GBIF.org", "iNaturalist", "Nonindigenous Aquatic Species"] {
+                assert!(credit("species-records").contains(platform), "{platform}");
+            }
+            assert!(credit("species-records").contains("licence"));
+            assert!(credit("hab-beaches").contains("(NCCOS)"));
+            for id in ["catches", "tracks"] {
+                assert!(credit(id).contains("kept on this device"), "{id}");
+            }
+            assert!(credit("catch-heat").contains("never shared"));
+            assert!(legend("catch-heat").contains("never shared"));
+            assert!(legend("hab-beaches").contains("follow local health advisories"));
+            assert!(legend("access-points").contains("not permission"));
+            assert!(legend("species-records").contains("not where it is now"));
+            assert_eq!(s.layer_licence("public-land"), Some("Public domain"));
+            assert_eq!(s.layer_licence("access-points"), Some("ODbL 1.0"));
+            assert_eq!(s.layer_legend("catches"), None);
+            let luna = Strings::new(Voice::Luna);
+            for id in ["hab-beaches", "public-land", "catch-heat"] {
+                assert_eq!(luna.layer_legend(id), s.layer_legend(id), "{id}");
+                assert!(!legend(id).contains("Luna"), "{id}");
+            }
         }
 
         #[test]

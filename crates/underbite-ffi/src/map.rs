@@ -189,6 +189,12 @@ pub enum LayerDraw {
     Features,
     /// Charted wrecks and obstructions as points.
     EncPoints,
+    /// Pins or polygons from a lookup around the view (such as `plan_access`, `plan_records`
+    /// and `plan_stocking`), asked only on the user's action (a "find here" button): switching
+    /// the layer on asks nothing by itself, and nothing is asked as the map moves.
+    Nearby,
+    /// The user's catches, tracks or catch heat map, drawn on the device from what it keeps.
+    Mine,
     /// Listed, without a source yet.
     Unsourced,
 }
@@ -233,7 +239,7 @@ pub struct LayerInfo {
     /// The id the settings use (`"sst"`).
     pub id: String,
     /// The drawer section's id: `base`, `depth`, `structure`, `water`, `weather`, `stations`,
-    /// `mine`.
+    /// `access`, `mine`.
     pub group: String,
     /// The section's title in the user's voice.
     pub group_title: String,
@@ -286,6 +292,7 @@ const fn group_id(group: Group) -> &'static str {
         Group::Water => "water",
         Group::Weather => "weather",
         Group::Stations => "stations",
+        Group::Access => "access",
         Group::Mine => "mine",
     }
 }
@@ -304,6 +311,8 @@ const fn draw(kind: &LayerKind) -> LayerDraw {
         LayerKind::Spots => LayerDraw::Spots,
         LayerKind::Features(_) => LayerDraw::Features,
         LayerKind::EncPoints => LayerDraw::EncPoints,
+        LayerKind::Nearby(_) => LayerDraw::Nearby,
+        LayerKind::Mine(_) => LayerDraw::Mine,
         LayerKind::Unsourced => LayerDraw::Unsourced,
     }
 }
@@ -511,16 +520,14 @@ fn layer_info(l: &Layer, config: &Config, f: &Formatter) -> LayerInfo {
     }
 }
 
-/// Every base map, then every overlay in drawer order, worded in the settings' voice and units,
-/// with what the settings show and how.
+/// Every base map, then every overlay in drawer order (group by group, each group once),
+/// worded in the settings' voice and units, with what the settings show and how.
 #[uniffi::export]
 #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
 pub fn map_catalogue(settings_json: String) -> Result<Vec<LayerInfo>, MapError> {
     let (config, _) = load(&settings_json)?;
     let f = formatter(&config, "UTC");
-    Ok(catalogue::BASES
-        .iter()
-        .chain(catalogue::LAYERS.iter())
+    Ok(catalogue::drawer_order()
         .map(|l| layer_info(l, &config, &f))
         .collect())
 }

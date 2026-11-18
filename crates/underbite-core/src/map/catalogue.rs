@@ -24,18 +24,22 @@ pub enum Group {
     Water,
     Weather,
     Stations,
+    /// Access and rules: public land, ramps, piers, shore access and stocked waters.
+    Access,
+    /// The user's own data: spots, catches, tracks.
     Mine,
 }
 
 impl Group {
     /// Every group, in drawer order.
-    pub const ALL: [Self; 7] = [
+    pub const ALL: [Self; 8] = [
         Self::Base,
         Self::Depth,
         Self::Structure,
         Self::Water,
         Self::Weather,
         Self::Stations,
+        Self::Access,
         Self::Mine,
     ];
 }
@@ -165,6 +169,35 @@ pub enum FeatureKind {
     ArtificialReefs,
 }
 
+/// What a lookup around the map's view finds. The app asks only when the user does (a "find
+/// here" button), never as the map moves: the sources are shared, rate-limited services.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum NearbyKind {
+    /// Public land as polygons (PAD-US).
+    PublicLand,
+    /// Boat ramps, piers and shore access as points (OpenStreetMap).
+    AccessPoints,
+    /// Stocked waters as points (NYS DEC).
+    Stocking,
+    /// Species records as points, or areas where the source blurs the position (GBIF,
+    /// iNaturalist, USGS NAS).
+    SpeciesRecords,
+    /// Bloom forecasts at beaches as points (NOAA NCCOS, Gulf of Mexico).
+    BloomBeaches,
+}
+
+/// The user's own data, drawn on the device from what the app keeps there. Nothing is fetched
+/// and nothing leaves the device.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MineKind {
+    /// Logged catches as points.
+    Catches,
+    /// Imported tracks as lines.
+    Tracks,
+    /// A heat map of the logged catches; never shared.
+    CatchHeat,
+}
+
 /// A state agency's vector layer: the state, what it holds and where it has data. What the
 /// source says about its depths and its terms is worded in the view, by layer id.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -188,6 +221,10 @@ pub enum LayerKind {
     Stations(StationKind),
     /// The user's saved spots.
     Spots,
+    /// The user's other data: catches, tracks and the catch heat map.
+    Mine(MineKind),
+    /// Pins or polygons from a lookup around the view, asked only on the user's action.
+    Nearby(NearbyKind),
     /// Lines or points a state agency publishes, drawn on the device.
     Features(FeatureLayer),
     /// Wrecks, obstructions and rocks from NOAA ENC Direct to GIS, drawn on the device from points
@@ -228,6 +265,12 @@ impl Layer {
     /// Whether the layer is a base map.
     pub fn is_base(&self) -> bool {
         self.group == Group::Base
+    }
+
+    /// Whether the layer's data is looked up only when the user asks (a "find here" button),
+    /// rather than as the map moves.
+    pub fn on_request(&self) -> bool {
+        matches!(self.kind, LayerKind::Nearby(_))
     }
 
     /// The layer's colour ramp, if it colours values.
@@ -448,6 +491,31 @@ const fn enc_picture(id: &'static str, group: Group, enc: EncGroup) -> Layer {
     l
 }
 
+/// The shallowest zoom access is looked up at: a phone's view there (about 0.44 by 0.27 degrees
+/// at New York Harbor) is within the access lookup's widest span of half a degree.
+const ACCESS_MIN_ZOOM: u8 = 11;
+/// The shallowest zoom species records and stocked waters are looked up at: a phone's view
+/// there (about 0.88 by 0.54 degrees) is within those lookups' widest span of one degree.
+const RECORDS_MIN_ZOOM: u8 = 10;
+/// The shallowest zoom the beach bloom forecasts are drawn at: a few dozen beaches along a
+/// coast.
+const BLOOM_MIN_ZOOM: u8 = 6;
+
+/// A layer filled by a lookup around the view, on the user's action.
+const fn nearby(id: &'static str, group: Group, kind: NearbyKind, min_zoom: u8) -> Layer {
+    let mut l = overlay(id, group, LayerKind::Nearby(kind));
+    l.min_zoom = Some(min_zoom);
+    l.default_opacity = 1.0;
+    l
+}
+
+/// A layer of the user's own data.
+const fn mine(id: &'static str, kind: MineKind) -> Layer {
+    let mut l = overlay(id, Group::Mine, LayerKind::Mine(kind));
+    l.default_opacity = 1.0;
+    l
+}
+
 const fn unsourced(id: &'static str) -> Layer {
     let mut l = overlay(id, Group::Weather, LayerKind::Unsourced);
     l.availability = NO_SOURCE;
@@ -473,7 +541,7 @@ pub const BASES: [Layer; 4] = [
 ];
 
 /// The overlay layers in drawer order.
-pub const LAYERS: [Layer; 29] = [
+pub const LAYERS: [Layer; 37] = [
     {
         let mut l = overlay(
             "gebco-relief",
@@ -652,6 +720,48 @@ pub const LAYERS: [Layer; 29] = [
         l.default_opacity = 0.9;
         l
     },
+    {
+        // Polygons over the base map: the water and the shoreline stay visible.
+        let mut l = nearby(
+            "public-land",
+            Group::Access,
+            NearbyKind::PublicLand,
+            ACCESS_MIN_ZOOM,
+        );
+        l.default_opacity = 0.5;
+        l
+    },
+    nearby(
+        "access-points",
+        Group::Access,
+        NearbyKind::AccessPoints,
+        ACCESS_MIN_ZOOM,
+    ),
+    nearby(
+        "stocking-points",
+        Group::Access,
+        NearbyKind::Stocking,
+        RECORDS_MIN_ZOOM,
+    ),
+    nearby(
+        "species-records",
+        Group::Water,
+        NearbyKind::SpeciesRecords,
+        RECORDS_MIN_ZOOM,
+    ),
+    nearby(
+        "hab-beaches",
+        Group::Water,
+        NearbyKind::BloomBeaches,
+        BLOOM_MIN_ZOOM,
+    ),
+    mine("catches", MineKind::Catches),
+    mine("tracks", MineKind::Tracks),
+    {
+        let mut l = mine("catch-heat", MineKind::CatchHeat);
+        l.default_opacity = 0.7;
+        l
+    },
 ];
 
 /// The layer or base with an id.
@@ -662,6 +772,17 @@ pub fn find(id: &str) -> Option<&'static Layer> {
 /// Every id in drawer order: the bases, then the overlays.
 pub fn ids() -> impl Iterator<Item = &'static str> {
     BASES.iter().chain(LAYERS.iter()).map(|l| l.id)
+}
+
+/// The bases, then the overlays group by group in [`Group::ALL`]'s order, each group's layers in
+/// [`LAYERS`]' order. Layers added later are appended to [`LAYERS`] (its order is the default
+/// drawing order the settings complete from), so a drawer lists by this instead.
+pub fn drawer_order() -> impl Iterator<Item = &'static Layer> {
+    BASES.iter().chain(
+        Group::ALL
+            .into_iter()
+            .flat_map(|g| LAYERS.iter().filter(move |l| l.group == g)),
+    )
 }
 
 /// How a preset shows one layer.
@@ -721,6 +842,7 @@ pub const PRESETS: [Preset; 6] = [
             on("usgs-gauges"),
             on("nwps-gauges"),
             on("radar"),
+            on("stocking-points"),
             on("spots"),
         ],
     },
@@ -785,7 +907,7 @@ mod tests {
     /// The ids of the overlays as the configuration lists them (`KNOWN_LAYERS`), in drawer order.
     /// The configuration crate cannot be a dependency here, so it checks its own list against this
     /// one.
-    const OVERLAY_IDS: [&str; 29] = [
+    const OVERLAY_IDS: [&str; 37] = [
         "gebco-relief",
         "sst",
         "sst-imagery",
@@ -815,6 +937,14 @@ mod tests {
         "enc-seabed",
         "enc-special-areas",
         "enc-structure-points",
+        "public-land",
+        "access-points",
+        "stocking-points",
+        "species-records",
+        "hab-beaches",
+        "catches",
+        "tracks",
+        "catch-heat",
     ];
     const BASE_IDS: [&str; 4] = [
         "apple-standard",
@@ -1259,9 +1389,143 @@ mod tests {
         );
         assert!(clarity.spec("jplMURSST41").is_none());
         assert!(find("radar").unwrap().grid().is_none());
-        assert_eq!(Group::ALL.len(), 7);
+        assert_eq!(Group::ALL.len(), 8);
         for l in BASES.iter().chain(LAYERS.iter()) {
             assert!(Group::ALL.contains(&l.group), "{}", l.id);
+        }
+    }
+
+    #[test]
+    fn lookups_and_own_data_are_drawn_on_the_device_in_their_groups() {
+        for (id, group, kind) in [
+            ("public-land", Group::Access, NearbyKind::PublicLand),
+            ("access-points", Group::Access, NearbyKind::AccessPoints),
+            ("stocking-points", Group::Access, NearbyKind::Stocking),
+            ("species-records", Group::Water, NearbyKind::SpeciesRecords),
+            ("hab-beaches", Group::Water, NearbyKind::BloomBeaches),
+        ] {
+            let l = layer(id);
+            assert_eq!(l.group, group, "{id}");
+            assert_eq!(l.kind, LayerKind::Nearby(kind), "{id}");
+            assert!(l.on_request(), "{id}");
+            assert!(l.min_zoom.is_some(), "{id}");
+            assert_eq!(l.availability, Availability::Available, "{id}");
+            assert_eq!(l.date_mode, DateMode::None, "{id}");
+        }
+        for (id, kind) in [
+            ("catches", MineKind::Catches),
+            ("tracks", MineKind::Tracks),
+            ("catch-heat", MineKind::CatchHeat),
+        ] {
+            let l = layer(id);
+            assert_eq!(l.group, Group::Mine, "{id}");
+            assert_eq!(l.kind, LayerKind::Mine(kind), "{id}");
+            assert!(!l.on_request(), "{id}");
+            assert_eq!(l.min_zoom, None, "{id}");
+        }
+        for l in BASES.iter().chain(LAYERS.iter()) {
+            if matches!(l.kind, LayerKind::Nearby(_) | LayerKind::Mine(_)) {
+                assert_eq!(l.tile_service(), None, "{}", l.id);
+                assert_eq!(l.tile_url(tile(12, 1206, 1539), None, 0), None, "{}", l.id);
+                assert!(l.grid().is_none() && l.ramp.is_none(), "{}", l.id);
+                assert!(!l.not_for_navigation, "{}", l.id);
+            }
+            assert_eq!(
+                l.on_request(),
+                matches!(l.kind, LayerKind::Nearby(_)),
+                "{}",
+                l.id
+            );
+        }
+        // The access group is drawn after the stations and before the user's own.
+        let at = |g: Group| Group::ALL.iter().position(|&x| x == g).unwrap();
+        assert_eq!(at(Group::Access), at(Group::Stations) + 1);
+        assert_eq!(at(Group::Mine), at(Group::Access) + 1);
+        assert_eq!(Group::ALL.last(), Some(&Group::Mine));
+    }
+
+    #[test]
+    fn the_drawer_lists_every_layer_once_group_by_group() {
+        let listed: Vec<&Layer> = drawer_order().collect();
+        assert_eq!(listed.len(), BASES.len() + LAYERS.len());
+        let mut ids: Vec<_> = listed.iter().map(|l| l.id).collect();
+        ids.sort_unstable();
+        let mut all: Vec<_> = super::ids().collect();
+        all.sort_unstable();
+        assert_eq!(ids, all);
+        // Each group comes once, in Group::ALL's order.
+        let mut groups: Vec<Group> = listed.iter().map(|l| l.group).collect();
+        groups.dedup();
+        let expected: Vec<Group> = Group::ALL
+            .into_iter()
+            .filter(|g| listed.iter().any(|l| l.group == *g))
+            .collect();
+        assert_eq!(groups, expected);
+        assert_eq!(expected, Group::ALL, "every group has a layer");
+        // Within a group, the catalogue's order.
+        let mine: Vec<_> = listed
+            .iter()
+            .filter(|l| l.group == Group::Mine)
+            .map(|l| l.id)
+            .collect();
+        assert_eq!(mine, ["spots", "catches", "tracks", "catch-heat"]);
+        let access: Vec<_> = listed
+            .iter()
+            .filter(|l| l.group == Group::Access)
+            .map(|l| l.id)
+            .collect();
+        assert_eq!(access, ["public-land", "access-points", "stocking-points"]);
+        let structure_first = listed.iter().position(|l| l.group == Group::Structure);
+        assert_eq!(
+            structure_first,
+            Some(
+                listed
+                    .iter()
+                    .rposition(|l| l.group == Group::Depth)
+                    .unwrap()
+                    + 1
+            )
+        );
+    }
+
+    #[test]
+    fn a_phone_view_at_a_lookup_layers_minimum_zoom_fits_the_lookup() {
+        // The widest views the lookups take: half a degree for access, one for the others.
+        for (id, widest) in [
+            ("public-land", 0.5),
+            ("access-points", 0.5),
+            ("stocking-points", 1.0),
+            ("species-records", 1.0),
+        ] {
+            let min = layer(id).min_zoom.unwrap();
+            let view = harbor_view(f64::from(min));
+            assert!(view.east - view.west <= widest, "{id}: {view:?}");
+            assert!(view.north - view.south <= widest, "{id}: {view:?}");
+            // One zoom out is too wide: the minimum is as shallow as it can be.
+            let wider = harbor_view(f64::from(min - 1));
+            assert!(
+                (wider.east - wider.west).max(wider.north - wider.south) > widest,
+                "{id}"
+            );
+        }
+    }
+
+    #[test]
+    fn lookups_and_own_data_are_hidden_in_the_presets_but_stocking_for_trout() {
+        for p in &PRESETS {
+            for id in [
+                "public-land",
+                "access-points",
+                "species-records",
+                "hab-beaches",
+                "catches",
+                "tracks",
+                "catch-heat",
+            ] {
+                assert!(p.layers.iter().all(|pl| pl.id != id), "{}: {id}", p.id);
+            }
+            let stocked = p.layers.iter().any(|pl| pl.id == "stocking-points");
+            assert_eq!(stocked, p.id == "trout-stream", "{}", p.id);
         }
     }
 

@@ -173,6 +173,38 @@
       {
         "id": "enc-structure-points",
         "shown": false
+      },
+      {
+        "id": "public-land",
+        "shown": false
+      },
+      {
+        "id": "access-points",
+        "shown": false
+      },
+      {
+        "id": "stocking-points",
+        "shown": false
+      },
+      {
+        "id": "species-records",
+        "shown": false
+      },
+      {
+        "id": "hab-beaches",
+        "shown": false
+      },
+      {
+        "id": "catches",
+        "shown": false
+      },
+      {
+        "id": "tracks",
+        "shown": false
+      },
+      {
+        "id": "catch-heat",
+        "shown": false
       }
     ],
     "offline_max_mb": 1500,
