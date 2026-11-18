@@ -8,7 +8,8 @@
 //! when the limits ask for it, a small-craft advisory or lightning, are hard no-gos whatever the
 //! other checks say. A check without data is `Unknown`, never `Go`: a day with an unknown hard
 //! check and no failure is `Unknown`. Hours past the end of the forecast are `Unknown`; history is
-//! never used.
+//! never used. Wave and tidal-current limits apply only on water that has waves or tides: a river
+//! or a pond is not held back by a wave limit no source could ever answer.
 //!
 //! Units of [`Reason::measured`] and [`Reason::limit`] by [`Check`]: wind, gusts and current in
 //! m/s, waves in metres, air temperature in °C, visibility in metres, flow in m³/s.
@@ -23,7 +24,7 @@ use whether_core::storm::analysis;
 use whether_core::storm::hurricane::hurricane_window;
 
 use super::model::TripLimits;
-use crate::model::{MarineAlert, Measurement, SpotSnapshot, WaveSample, Wind};
+use crate::model::{MarineAlert, Measurement, SpotSnapshot, WaterType, WaveSample, Wind};
 use crate::provenance::SourceId;
 use crate::series::{Sample, Series};
 use crate::time::{self, LocalDate, UnixTime};
@@ -469,12 +470,18 @@ impl Ctx<'_> {
             .collect()
     }
 
-    /// The checks that rest on the sea and the river, for the hour at `t`.
+    /// The checks that rest on the sea and the river, for the hour at `t`. Waves and tidal
+    /// currents are judged only on water that has them.
     fn water_checks(&self, t: UnixTime, out: &mut Vec<Reason>) {
-        if let Some(limit) = self.canon.wave_m {
+        let water = self.snap.spot.water_type;
+        if let Some(limit) = self.canon.wave_m
+            && has_waves(water)
+        {
             push_max(out, Check::Waves, self.wave_height(t), limit, t);
         }
-        if let Some(limit) = self.canon.current_ms {
+        if let Some(limit) = self.canon.current_ms
+            && has_tidal_current(water)
+        {
             push_max(out, Check::Current, self.current(t), limit, t);
         }
         if let Some(limit) = self.canon.flow_m3s {
@@ -594,6 +601,24 @@ impl Ctx<'_> {
             out.push(Reason::no_data(Check::SmallCraftAdvisory, t));
         }
     }
+}
+
+/// Whether `water` has waves to judge: salt water and the Great Lakes. Rivers, lakes, ponds
+/// and ice have no wave source, so a wave limit there could only ever be missing.
+const fn has_waves(water: WaterType) -> bool {
+    has_tidal_current(water) || matches!(water, WaterType::GreatLakes)
+}
+
+/// Whether `water` has tidal currents to judge: salt water only.
+const fn has_tidal_current(water: WaterType) -> bool {
+    matches!(
+        water,
+        WaterType::TidalRiverEstuary
+            | WaterType::BayInshore
+            | WaterType::Surf
+            | WaterType::Nearshore
+            | WaterType::Offshore
+    )
 }
 
 struct ObservedWind {
@@ -1414,6 +1439,42 @@ mod tests {
     }
 
     #[test]
+    fn waves_and_currents_are_not_asked_of_water_without_them() {
+        const NONE: [ReasonKind; 0] = [];
+        let limits = TripLimits {
+            max_current_kn: Some(2.0),
+            ..kayak()
+        };
+        for water in [
+            WaterType::RiverStream,
+            WaterType::LakeReservoir,
+            WaterType::Pond,
+            WaterType::Ice,
+        ] {
+            let mut snap = calm();
+            snap.spot.water_type = water;
+            let day = assess_day(&snap, date(2026, 11, 8), &limits, before_day());
+            assert_eq!(day.verdict, Verdict::Go, "{water:?}: {:?}", day.reasons);
+            assert_eq!(kinds(&day.reasons, Check::Waves), NONE, "{water:?}");
+            assert_eq!(kinds(&day.reasons, Check::Current), NONE, "{water:?}");
+        }
+
+        // The Great Lakes have waves but no tides.
+        let mut snap = calm();
+        snap.spot.water_type = WaterType::GreatLakes;
+        let day = assess_day(&snap, date(2026, 11, 8), &limits, before_day());
+        assert_eq!(day.verdict, Verdict::Unknown);
+        assert_eq!(kinds(&day.reasons, Check::Waves), [ReasonKind::NoData]);
+        assert_eq!(kinds(&day.reasons, Check::Current), NONE);
+
+        // Tidal water without wave or current data stays unknown.
+        let day = assess_day(&calm(), date(2026, 11, 8), &limits, before_day());
+        assert_eq!(day.verdict, Verdict::Unknown);
+        assert_eq!(kinds(&day.reasons, Check::Waves), [ReasonKind::NoData]);
+        assert_eq!(kinds(&day.reasons, Check::Current), [ReasonKind::NoData]);
+    }
+
+    #[test]
     fn current_speed_is_judged_from_the_tidal_curve() {
         use crate::model::{CurrentSeries, MarineConditions};
         let (start, _) = bounds(date(2026, 11, 8));
@@ -1569,6 +1630,26 @@ mod tests {
         let after = local_day(UnixTime(event.end.0 + 2 * 24 * HOUR));
         let clear = assess_day(&snap, after, &TripLimits::default(), now);
         assert!(clear.reasons.iter().all(|r| r.check != Check::StormAhead));
+    }
+
+    #[test]
+    fn a_storm_on_a_river_says_only_the_storm() {
+        let outlook = storm_data::noreaster();
+        let event = analysis::all_events(&outlook)
+            .into_iter()
+            .find(analysis::is_significant)
+            .unwrap();
+        let mut snap = storm_snapshot(outlook, Vec::new());
+        snap.spot.water_type = WaterType::RiverStream;
+        let mid = UnixTime(i64::midpoint(event.start.0, event.end.0));
+        let day = assess_day(&snap, local_day(mid), &kayak(), storm_data::STORM_NOW);
+        assert_eq!(day.verdict, Verdict::NoGo);
+        assert!(kinds(&day.reasons, Check::StormAhead).contains(&ReasonKind::Fails));
+        assert!(
+            day.reasons.iter().all(|r| r.kind != ReasonKind::NoData),
+            "{:?}",
+            day.reasons
+        );
     }
 
     #[test]
