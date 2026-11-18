@@ -1,14 +1,16 @@
 import SwiftUI
 import UnderbiteKit
 
-/// The depth band as a range slider: two ends that snap to the core's round stops (shallow on
-/// the left), the depths between them highlighted on the map. The labels are the stops' own, in
-/// the user's unit. Without a band both ends rest at the track's ends and the track is plain;
-/// moving either end sets one, and the clear button takes it away.
+/// The depth band as a range slider under its title and the band in the user's unit
+/// ("Highlight", "15–25 ft"): two ends that snap to the core's round stops (shallow on the
+/// left), the depths between them highlighted on the map. The labels are the stops' own and
+/// every word is the core's (`depth_words`). Without a band both ends rest at the track's ends
+/// and the track is plain; moving either end sets one, and the clear button takes it away.
 struct DepthBandControl: View {
     let stops: [DisplayStop]
     /// The band as positions in `stops`; none for no band.
     let band: ClosedRange<Int>?
+    let words: DepthWords
     let change: (ClosedRange<Int>?) -> Void
 
     /// The band while an end is being dragged.
@@ -25,6 +27,16 @@ struct DepthBandControl: View {
     var body: some View {
         if stops.count > 1 {
             VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(words.bandTitle)
+                    Spacer(minLength: 8)
+                    Text(words.bandText)
+                        .monospacedDigit()
+                        .foregroundStyle(
+                            band == nil ? AnyShapeStyle(.readableSecondary) : AnyShapeStyle(.primary))
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("map-depth-band-title")
                 HStack(spacing: 8) {
                     slider
                     if band != nil {
@@ -37,7 +49,7 @@ struct DepthBandControl: View {
                                 .frame(minWidth: 44, minHeight: 44)
                         }
                         .buttonStyle(.borderless)
-                        .accessibilityLabel("Clear")
+                        .accessibilityLabel(words.bandClearLabel)
                         .accessibilityIdentifier("map-depth-band-clear")
                     }
                 }
@@ -102,8 +114,8 @@ struct DepthBandControl: View {
                     }
             )
             .accessibilityElement()
-            .accessibilityLabel(shallow ? "Highlight from" : "Highlight to")
-            .accessibilityValue(stops[position].label)
+            .accessibilityLabel(shallow ? words.bandFromLabel : words.bandToLabel)
+            .accessibilityValue(band == nil ? words.bandOff : stops[position].label)
             .accessibilityAdjustableAction { direction in
                 let step = direction == .increment ? 1 : -1
                 change(
@@ -114,7 +126,7 @@ struct DepthBandControl: View {
     }
 
     /// The stops' labels under the track: every one while they fit, else the ends of the band
-    /// (or of the track).
+    /// ("from 15 ft", "to 25 ft"), or of the track without one.
     private var labels: some View {
         ViewThatFits(in: .horizontal) {
             HStack(spacing: 0) {
@@ -125,14 +137,29 @@ struct DepthBandControl: View {
                         .fixedSize()
                 }
             }
-            HStack {
-                let range = shown ?? resting
-                Text(stops[range.lowerBound].label)
-                Spacer(minLength: 6)
-                Text(stops[range.upperBound].label)
+            HStack(alignment: .firstTextBaseline) {
+                if let range = shown {
+                    endLabel(words.bandFrom, stops[range.lowerBound].label)
+                    Spacer(minLength: 6)
+                    endLabel(words.bandTo, stops[range.upperBound].label)
+                } else {
+                    Text(stops[resting.lowerBound].label)
+                    Spacer(minLength: 6)
+                    Text(stops[resting.upperBound].label)
+                }
             }
         }
         .font(.caption.monospacedDigit())
         .accessibilityHidden(true)
+    }
+
+    /// One end's word and depth, side by side.
+    private func endLabel(_ word: String, _ label: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Text(word)
+                .foregroundStyle(.readableSecondary)
+            Text(label)
+                .fontWeight(.semibold)
+        }
     }
 }

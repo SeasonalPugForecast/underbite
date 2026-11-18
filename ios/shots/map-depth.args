@@ -1,2 +1,2 @@
--seed -tab map -mapBase apple-standard -mapDepth depth-shading -mapDepthBand 30.48,60.96 -mapAt 40.47,-73.95,0.24 -mapDrawer none
+-seed -tab map -mapBase apple-standard -mapLayers depth-shading -mapDepthBand 4.572,7.62 -mapAt 40.47,-73.95,0.24 -mapDrawer none
 wait 60

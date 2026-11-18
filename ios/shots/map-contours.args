@@ -1,2 +1,2 @@
--seed -tab map -mapBase apple-standard -mapDepth depth-contours -mapAt 40.45,-73.96,0.12
+-seed -tab map -mapBase apple-standard -mapLayers depth-contours -mapAt 40.45,-73.96,0.12
 wait 60

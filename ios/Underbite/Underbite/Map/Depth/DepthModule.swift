@@ -10,15 +10,29 @@ import UnderbiteKit
 /// `contour_lines` for the area as one overlay with one renderer (``ContourOverlay``), drawn
 /// again when the interval or the units change.
 ///
+/// The module follows the catalogue's `depth-shading` and `depth-contours` as the drawer, the
+/// presets and the settings show them, at their opacity. Shallower than the layers' zoom, or in a
+/// view wider than one elevation area, nothing is fetched or drawn and the drawer says to zoom in.
+///
 /// Every value and word is the core's: the band's stops, the contour labels, the legend, the
-/// datum note, the credit and "Not for navigation." (`depth_layer_info`). The drawer's section
-/// holds the band control and the legend: the side panel on the iPad, the sheet on the iPhone.
+/// credit and "Not for navigation." (`depth_layer_info`), the controls' and states' words
+/// (`depth_words`) and the datums of the view (`depth_datums`). The drawer's section holds the
+/// state, the contour interval, the band control and the legend: the side panel on the iPad, the
+/// sheet on the iPhone.
 @MainActor
 @Observable
 final class DepthModule: MapModule {
     /// The shading's words, legend and credit for the settings drawn with; none while nothing
     /// of the module is shown.
     private(set) var info: DepthLayerInfo?
+    /// The words of the controls and the states for the settings drawn with.
+    private(set) var words: DepthWords?
+    /// What the depths in the view are measured from.
+    private(set) var datums: DepthDatums?
+    /// What the drawer says in place of depth, if anything.
+    private(set) var status: DepthStatus?
+    /// What of the module is shown, for the drawer.
+    private(set) var visible = DepthShown()
     /// Where the elevation for the view stands.
     private(set) var loading: DepthLoader.State = .idle
     /// The settings the module draws with: the map's, and the band a launch names.
@@ -26,6 +40,7 @@ final class DepthModule: MapModule {
 
     @ObservationIgnored private weak var controller: MapController?
     @ObservationIgnored private let loader: DepthLoader
+    @ObservationIgnored private let datumLoader: DepthDatumLoader
     @ObservationIgnored private var shown = DepthShown()
     @ObservationIgnored private var shading: DepthTileOverlay?
     @ObservationIgnored private var shadingRenderer: MKTileOverlayRenderer?
@@ -46,7 +61,9 @@ final class DepthModule: MapModule {
     ) {
         self.controller = controller
         loader = DepthLoader(host: host, store: controller.gridStore, clock: clock)
+        datumLoader = DepthDatumLoader(host: host, store: controller.gridStore)
         loader.onChange = { [weak self] state in self?.loaded(state) }
+        datumLoader.onChange = { [weak self] found in self?.datums = found }
         watchSettings()
     }
 
@@ -63,9 +80,10 @@ final class DepthModule: MapModule {
 
     func overlays(in context: MapModuleContext) -> [any MKOverlay] {
         // Asked while the map view updates: what follows from a change waits for it to end.
-        if DepthShown(context.layers, launched: DepthLaunch.layers) != shown {
+        if DepthShown(context.layers) != shown {
             Task { @MainActor [weak self] in self?.follow(context) }
         }
+        guard deepEnough else { return [] }
         var out: [any MKOverlay] = []
         if shown.shading, let shading {
             out += retired
@@ -92,28 +110,55 @@ final class DepthModule: MapModule {
     }
 
     func regionDidSettle(_ context: MapModuleContext) {
+        let wasDeep = deepEnough
+        if let region = context.region { self.region = region }
         follow(context)
-        guard let region = context.region else { return }
-        self.region = region
-        guard shown.any else { return }
+        // Past the layers' zoom the overlays come off, and back on the way in.
+        if deepEnough != wasDeep { controller?.moduleDidChange() }
+        loadForView()
+    }
+
+    /// Whether the view is deep enough for the layers shown; true before the map settles.
+    private var deepEnough: Bool {
+        guard let region else { return true }
+        return DepthStatus.deepEnough(zoom: region.zoom, minZoom: shown.minZoom)
+    }
+
+    /// Fetches what the view needs while something of the module is shown and the view is deep
+    /// enough for it.
+    private func loadForView() {
+        defer { refreshStatus() }
+        guard shown.any, let region, deepEnough else { return }
         loader.load(region)
+        datumLoader.load(region, settingsJSON: settingsJSON)
+    }
+
+    private func refreshStatus() {
+        let next =
+            shown.any
+            ? DepthStatus.of(zoom: region?.zoom, minZoom: shown.minZoom, loader: loader.state)
+            : nil
+        if next != status { status = next }
     }
 
     /// Follows what is shown and at what opacity.
     private func follow(_ context: MapModuleContext) {
-        let now = DepthShown(context.layers, launched: DepthLaunch.layers)
+        let now = DepthShown(context.layers)
         guard now != shown else { return }
         let was = shown
         shown = now
+        visible = now
         shadingRenderer?.alpha = CGFloat(now.shadingOpacity)
         contourRenderer?.alpha = CGFloat(now.contourOpacity)
         if now.any {
             refreshInfo()
-            if !was.any, let region { loader.load(region) }
+            if !was.any || was.minZoom != now.minZoom { loadForView() }
             if was.contours != now.contours || was.shading != now.shading { redraw() }
         } else {
             info = nil
+            words = nil
         }
+        refreshStatus()
     }
 
     // MARK: - Settings
@@ -134,21 +179,25 @@ final class DepthModule: MapModule {
     private func settingsChanged() {
         guard shown.any else { return }
         refreshInfo()
+        datumLoader.reword(settingsJSON: settingsJSON)
         redraw()
     }
 
-    /// The settings to draw with, the shading's words and legend.
+    /// The settings to draw with, the shading's legend and the words of the controls.
     private func refreshInfo() {
         let json = DepthLaunch.applied(to: controller?.settingsJSON ?? "")
         if json != settingsJSON { settingsJSON = json }
         let next = try? depthLayerInfo(settingsJson: json)
         if next != info { info = next }
+        let nextWords = try? depthWords(settingsJson: json)
+        if nextWords != words { words = nextWords }
     }
 
     // MARK: - Elevation
 
     private func loaded(_ state: DepthLoader.State) {
         loading = state
+        refreshStatus()
         redraw()
     }
 
@@ -238,43 +287,8 @@ final class DepthModule: MapModule {
     // MARK: - Drawer
 
     func drawerSection() -> AnyView? {
-        guard shown.any, info != nil else { return nil }
+        guard shown.any, info != nil, words != nil else { return nil }
         return AnyView(DepthSection(module: self))
-    }
-}
-
-/// What of the depth layers is shown, and at what opacity.
-nonisolated struct DepthShown: Equatable, Sendable {
-    /// The catalogue ids of the shading and the contours.
-    static let shadingID = "depth-shading"
-    static let contoursID = "depth-contours"
-    static let ids: Set<String> = [shadingID, contoursID]
-
-    var shading = false
-    var contours = false
-    var shadingOpacity = 1.0
-    var contourOpacity = 1.0
-
-    var any: Bool { shading || contours }
-
-    init() {}
-
-    /// From the module's layers on screen, and the ids a launch names.
-    init(_ layers: [LayerInfo], launched: Set<String> = []) {
-        for layer in layers {
-            switch layer.id {
-            case Self.shadingID:
-                shading = true
-                shadingOpacity = Double(layer.opacity)
-            case Self.contoursID:
-                contours = true
-                contourOpacity = Double(layer.opacity)
-            default:
-                break
-            }
-        }
-        if launched.contains(Self.shadingID) { shading = true }
-        if launched.contains(Self.contoursID) { contours = true }
     }
 }
 
@@ -315,19 +329,18 @@ nonisolated struct DepthDrawn: Equatable, Sendable {
     }
 }
 
-/// The depth module's launch arguments, read in debug builds only (screenshots): `-mapDepth
-/// <id,id>` shows the shading (`depth-shading`) and the contours (`depth-contours`), and
-/// `-mapDepthBand <shallow>,<deep>` (metres) highlights that band. Nothing is saved.
+/// The depth module's launch argument, read in debug builds only (screenshots):
+/// `-mapDepthBand <shallow>,<deep>` (metres) highlights that band for the launch; nothing is
+/// saved. The layers themselves are shown with the map's `-mapLayers`.
 enum DepthLaunch {
-    static var layers: Set<String> {
-        guard let list = LaunchArguments.value(after: "-mapDepth") else { return [] }
-        return Set(list.split(separator: ",").map { String($0) })
-    }
-
     static var band: [Double]? {
-        guard let text = LaunchArguments.value(after: "-mapDepthBand") else { return nil }
-        let values = text.split(separator: ",").compactMap { Double($0) }
-        return values.count == 2 ? values : nil
+        #if DEBUG
+            guard let text = LaunchArguments.value(after: "-mapDepthBand") else { return nil }
+            let values = text.split(separator: ",").compactMap { Double($0) }
+            return values.count == 2 ? values : nil
+        #else
+            return nil
+        #endif
     }
 
     /// `json` with the band a launch names.
