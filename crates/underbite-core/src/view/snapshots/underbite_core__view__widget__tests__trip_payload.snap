@@ -1,0 +1,924 @@
+---
+source: crates/underbite-core/src/view/widget.rs
+expression: first_entry(&p)
+---
+{
+  "subject": "trip",
+  "id": "trip-1",
+  "name": "Hudson weekend",
+  "generated_at": 1794142800,
+  "places": [
+    {
+      "id": "spot-battery",
+      "name": "The Battery",
+      "tide_chart": {
+        "title": "Tide",
+        "unit": "ft",
+        "x_ticks": [
+          {
+            "t": 1794132000,
+            "label": "5 AM",
+            "major": false
+          },
+          {
+            "t": 1794135600,
+            "label": "6 AM",
+            "major": true
+          },
+          {
+            "t": 1794139200,
+            "label": "7 AM",
+            "major": false
+          },
+          {
+            "t": 1794142800,
+            "label": "8 AM",
+            "major": false
+          },
+          {
+            "t": 1794146400,
+            "label": "9 AM",
+            "major": true
+          },
+          {
+            "t": 1794150000,
+            "label": "10 AM",
+            "major": false
+          },
+          {
+            "t": 1794153600,
+            "label": "11 AM",
+            "major": false
+          },
+          {
+            "t": 1794157200,
+            "label": "12 PM",
+            "major": true
+          },
+          {
+            "t": 1794160800,
+            "label": "1 PM",
+            "major": false
+          },
+          {
+            "t": 1794164400,
+            "label": "2 PM",
+            "major": false
+          },
+          {
+            "t": 1794168000,
+            "label": "3 PM",
+            "major": true
+          },
+          {
+            "t": 1794171600,
+            "label": "4 PM",
+            "major": false
+          },
+          {
+            "t": 1794175200,
+            "label": "5 PM",
+            "major": false
+          },
+          {
+            "t": 1794178800,
+            "label": "6 PM",
+            "major": true
+          },
+          {
+            "t": 1794182400,
+            "label": "7 PM",
+            "major": false
+          },
+          {
+            "t": 1794186000,
+            "label": "8 PM",
+            "major": false
+          },
+          {
+            "t": 1794189600,
+            "label": "9 PM",
+            "major": true
+          },
+          {
+            "t": 1794193200,
+            "label": "10 PM",
+            "major": false
+          },
+          {
+            "t": 1794196800,
+            "label": "11 PM",
+            "major": false
+          },
+          {
+            "t": 1794200400,
+            "label": "12 AM",
+            "major": true
+          },
+          {
+            "t": 1794204000,
+            "label": "1 AM",
+            "major": false
+          },
+          {
+            "t": 1794207600,
+            "label": "2 AM",
+            "major": false
+          },
+          {
+            "t": 1794211200,
+            "label": "3 AM",
+            "major": true
+          },
+          {
+            "t": 1794214800,
+            "label": "4 AM",
+            "major": false
+          },
+          {
+            "t": 1794218400,
+            "label": "5 AM",
+            "major": false
+          },
+          {
+            "t": 1794222000,
+            "label": "6 AM",
+            "major": true
+          },
+          {
+            "t": 1794225600,
+            "label": "7 AM",
+            "major": false
+          },
+          {
+            "t": 1794229200,
+            "label": "8 AM",
+            "major": false
+          },
+          {
+            "t": 1794232800,
+            "label": "9 AM",
+            "major": true
+          },
+          {
+            "t": 1794236400,
+            "label": "10 AM",
+            "major": false
+          },
+          {
+            "t": 1794240000,
+            "label": "11 AM",
+            "major": false
+          },
+          {
+            "t": 1794243600,
+            "label": "12 PM",
+            "major": true
+          },
+          {
+            "t": 1794247200,
+            "label": "1 PM",
+            "major": false
+          },
+          {
+            "t": 1794250800,
+            "label": "2 PM",
+            "major": false
+          },
+          {
+            "t": 1794254400,
+            "label": "3 PM",
+            "major": true
+          },
+          {
+            "t": 1794258000,
+            "label": "4 PM",
+            "major": false
+          },
+          {
+            "t": 1794261600,
+            "label": "5 PM",
+            "major": false
+          }
+        ],
+        "series": [
+          {
+            "label": "Predicted",
+            "role": "predicted",
+            "style": "line",
+            "points": [
+              {
+                "t": 1794132000,
+                "value": 4.277155,
+                "label": "4.3 ft",
+                "major": true
+              },
+              {
+                "t": 1794133800,
+                "value": 4.7933745,
+                "label": "4.8 ft",
+                "major": false
+              },
+              {
+                "t": 1794135600,
+                "value": 5.2057576,
+                "label": "5.2 ft",
+                "major": true
+              },
+              {
+                "t": 1794137400,
+                "value": 5.487539,
+                "label": "5.5 ft",
+                "major": false
+              },
+              {
+                "t": 1794139200,
+                "value": 5.61225,
+                "label": "5.6 ft",
+                "major": true
+              },
+              {
+                "t": 1794141000,
+                "value": 5.5606537,
+                "label": "5.6 ft",
+                "major": false
+              },
+              {
+                "t": 1794142800,
+                "value": 5.3288355,
+                "label": "5.3 ft",
+                "major": true
+              },
+              {
+                "t": 1794144600,
+                "value": 4.9341073,
+                "label": "4.9 ft",
+                "major": false
+              },
+              {
+                "t": 1794146400,
+                "value": 4.414769,
+                "label": "4.4 ft",
+                "major": true
+              },
+              {
+                "t": 1794148200,
+                "value": 3.8215294,
+                "label": "3.8 ft",
+                "major": false
+              },
+              {
+                "t": 1794150000,
+                "value": 3.2030141,
+                "label": "3.2 ft",
+                "major": true
+              },
+              {
+                "t": 1794151800,
+                "value": 2.5926867,
+                "label": "2.6 ft",
+                "major": false
+              },
+              {
+                "t": 1794153600,
+                "value": 2.00544,
+                "label": "2.0 ft",
+                "major": true
+              },
+              {
+                "t": 1794155400,
+                "value": 1.4469622,
+                "label": "1.4 ft",
+                "major": false
+              },
+              {
+                "t": 1794157200,
+                "value": 0.93037236,
+                "label": "0.9 ft",
+                "major": true
+              },
+              {
+                "t": 1794159000,
+                "value": 0.48865756,
+                "label": "0.5 ft",
+                "major": false
+              },
+              {
+                "t": 1794160800,
+                "value": 0.17310646,
+                "label": "0.2 ft",
+                "major": true
+              },
+              {
+                "t": 1794162600,
+                "value": 0.03678015,
+                "label": "0.0 ft",
+                "major": false
+              },
+              {
+                "t": 1794164400,
+                "value": 0.11205824,
+                "label": "0.1 ft",
+                "major": true
+              },
+              {
+                "t": 1794166200,
+                "value": 0.39534196,
+                "label": "0.4 ft",
+                "major": false
+              },
+              {
+                "t": 1794168000,
+                "value": 0.84731865,
+                "label": "0.8 ft",
+                "major": true
+              },
+              {
+                "t": 1794169800,
+                "value": 1.4074255,
+                "label": "1.4 ft",
+                "major": false
+              },
+              {
+                "t": 1794171600,
+                "value": 2.0132887,
+                "label": "2.0 ft",
+                "major": true
+              },
+              {
+                "t": 1794173400,
+                "value": 2.6148634,
+                "label": "2.6 ft",
+                "major": false
+              },
+              {
+                "t": 1794175200,
+                "value": 3.1782596,
+                "label": "3.2 ft",
+                "major": true
+              },
+              {
+                "t": 1794177000,
+                "value": 3.681084,
+                "label": "3.7 ft",
+                "major": false
+              },
+              {
+                "t": 1794178800,
+                "value": 4.1048827,
+                "label": "4.1 ft",
+                "major": true
+              },
+              {
+                "t": 1794180600,
+                "value": 4.4297075,
+                "label": "4.4 ft",
+                "major": false
+              },
+              {
+                "t": 1794182400,
+                "value": 4.63307,
+                "label": "4.6 ft",
+                "major": true
+              },
+              {
+                "t": 1794184200,
+                "value": 4.6932425,
+                "label": "4.7 ft",
+                "major": false
+              },
+              {
+                "t": 1794186000,
+                "value": 4.5957794,
+                "label": "4.6 ft",
+                "major": true
+              },
+              {
+                "t": 1794187800,
+                "value": 4.341191,
+                "label": "4.3 ft",
+                "major": false
+              },
+              {
+                "t": 1794189600,
+                "value": 3.9503033,
+                "label": "4.0 ft",
+                "major": true
+              },
+              {
+                "t": 1794191400,
+                "value": 3.4632425,
+                "label": "3.5 ft",
+                "major": false
+              },
+              {
+                "t": 1794193200,
+                "value": 2.930093,
+                "label": "2.9 ft",
+                "major": true
+              },
+              {
+                "t": 1794195000,
+                "value": 2.3962812,
+                "label": "2.4 ft",
+                "major": false
+              },
+              {
+                "t": 1794196800,
+                "value": 1.8904655,
+                "label": "1.9 ft",
+                "major": true
+              },
+              {
+                "t": 1794198600,
+                "value": 1.4229293,
+                "label": "1.4 ft",
+                "major": false
+              },
+              {
+                "t": 1794200400,
+                "value": 0.9965658,
+                "label": "1.0 ft",
+                "major": true
+              },
+              {
+                "t": 1794202200,
+                "value": 0.62382096,
+                "label": "0.6 ft",
+                "major": false
+              },
+              {
+                "t": 1794204000,
+                "value": 0.33778724,
+                "label": "0.3 ft",
+                "major": true
+              },
+              {
+                "t": 1794205800,
+                "value": 0.18846084,
+                "label": "0.2 ft",
+                "major": false
+              },
+              {
+                "t": 1794207600,
+                "value": 0.22464305,
+                "label": "0.2 ft",
+                "major": true
+              },
+              {
+                "t": 1794209400,
+                "value": 0.47156686,
+                "label": "0.5 ft",
+                "major": false
+              },
+              {
+                "t": 1794211200,
+                "value": 0.9172341,
+                "label": "0.9 ft",
+                "major": true
+              },
+              {
+                "t": 1794213000,
+                "value": 1.5147808,
+                "label": "1.5 ft",
+                "major": false
+              },
+              {
+                "t": 1794214800,
+                "value": 2.198296,
+                "label": "2.2 ft",
+                "major": true
+              },
+              {
+                "t": 1794216600,
+                "value": 2.9023883,
+                "label": "2.9 ft",
+                "major": false
+              },
+              {
+                "t": 1794218400,
+                "value": 3.5756454,
+                "label": "3.6 ft",
+                "major": true
+              },
+              {
+                "t": 1794220200,
+                "value": 4.1837792,
+                "label": "4.2 ft",
+                "major": false
+              },
+              {
+                "t": 1794222000,
+                "value": 4.704744,
+                "label": "4.7 ft",
+                "major": true
+              },
+              {
+                "t": 1794223800,
+                "value": 5.121303,
+                "label": "5.1 ft",
+                "major": false
+              },
+              {
+                "t": 1794225600,
+                "value": 5.415685,
+                "label": "5.4 ft",
+                "major": true
+              },
+              {
+                "t": 1794227400,
+                "value": 5.568406,
+                "label": "5.6 ft",
+                "major": false
+              },
+              {
+                "t": 1794229200,
+                "value": 5.5613785,
+                "label": "5.6 ft",
+                "major": true
+              },
+              {
+                "t": 1794231000,
+                "value": 5.384366,
+                "label": "5.4 ft",
+                "major": false
+              },
+              {
+                "t": 1794232800,
+                "value": 5.0426016,
+                "label": "5.0 ft",
+                "major": true
+              },
+              {
+                "t": 1794234600,
+                "value": 4.5617337,
+                "label": "4.6 ft",
+                "major": false
+              },
+              {
+                "t": 1794236400,
+                "value": 3.9858475,
+                "label": "4.0 ft",
+                "major": true
+              },
+              {
+                "t": 1794238200,
+                "value": 3.3670235,
+                "label": "3.4 ft",
+                "major": false
+              },
+              {
+                "t": 1794240000,
+                "value": 2.750316,
+                "label": "2.8 ft",
+                "major": true
+              },
+              {
+                "t": 1794241800,
+                "value": 2.1625245,
+                "label": "2.2 ft",
+                "major": false
+              },
+              {
+                "t": 1794243600,
+                "value": 1.6124475,
+                "label": "1.6 ft",
+                "major": true
+              },
+              {
+                "t": 1794245400,
+                "value": 1.1035352,
+                "label": "1.1 ft",
+                "major": false
+              },
+              {
+                "t": 1794247200,
+                "value": 0.6510621,
+                "label": "0.7 ft",
+                "major": true
+              },
+              {
+                "t": 1794249000,
+                "value": 0.29167452,
+                "label": "0.3 ft",
+                "major": false
+              },
+              {
+                "t": 1794250800,
+                "value": 0.07724355,
+                "label": "0.1 ft",
+                "major": true
+              },
+              {
+                "t": 1794252600,
+                "value": 0.055079333,
+                "label": "0.1 ft",
+                "major": false
+              },
+              {
+                "t": 1794254400,
+                "value": 0.24570128,
+                "label": "0.2 ft",
+                "major": true
+              },
+              {
+                "t": 1794256200,
+                "value": 0.6310493,
+                "label": "0.6 ft",
+                "major": false
+              },
+              {
+                "t": 1794258000,
+                "value": 1.1593068,
+                "label": "1.2 ft",
+                "major": true
+              },
+              {
+                "t": 1794259800,
+                "value": 1.7624485,
+                "label": "1.8 ft",
+                "major": false
+              },
+              {
+                "t": 1794261600,
+                "value": 2.3761783,
+                "label": "2.4 ft",
+                "major": true
+              }
+            ]
+          }
+        ],
+        "bands": [
+          {
+            "kind": "night",
+            "start_t": 1794132000,
+            "end_t": 1794137669,
+            "label": "Night"
+          },
+          {
+            "kind": "night",
+            "start_t": 1794174313,
+            "end_t": 1794224141,
+            "label": "Night"
+          },
+          {
+            "kind": "night",
+            "start_t": 1794260652,
+            "end_t": 1794261600,
+            "label": "Night"
+          }
+        ],
+        "rules": [],
+        "markers": [
+          {
+            "kind": "sunrise",
+            "t": 1794137669,
+            "value": null,
+            "label": "Sunrise 6:34 AM"
+          },
+          {
+            "kind": "high",
+            "t": 1794139560,
+            "value": 5.616455,
+            "label": "High 5.6 ft"
+          },
+          {
+            "kind": "low",
+            "t": 1794162900,
+            "value": 0.034223363,
+            "label": "Low 0.0 ft"
+          },
+          {
+            "kind": "sunset",
+            "t": 1794174313,
+            "value": null,
+            "label": "Sunset 4:45 PM"
+          },
+          {
+            "kind": "high",
+            "t": 1794184020,
+            "value": 4.694179,
+            "label": "High 4.7 ft"
+          },
+          {
+            "kind": "low",
+            "t": 1794206400,
+            "value": 0.17798254,
+            "label": "Low 0.2 ft"
+          },
+          {
+            "kind": "sunrise",
+            "t": 1794224141,
+            "value": null,
+            "label": "Sunrise 6:35 AM"
+          },
+          {
+            "kind": "high",
+            "t": 1794228240,
+            "value": 5.585905,
+            "label": "High 5.6 ft"
+          },
+          {
+            "kind": "low",
+            "t": 1794251880,
+            "value": 0.038739484,
+            "label": "Low 0.0 ft"
+          },
+          {
+            "kind": "sunset",
+            "t": 1794260652,
+            "value": null,
+            "label": "Sunset 4:44 PM"
+          }
+        ],
+        "now_t": 1794142800,
+        "accessibility": "Tide: High 5.6 ft at 7:06 AM, Low 0.0 ft at 1:35 PM, High 4.7 ft at 7:27 PM, Low 0.2 ft at 1:40 AM, High 5.6 ft at 7:44 AM, Low 0.0 ft at 2:18 PM."
+      },
+      "flow_spark": [
+        12.360133,
+        12.006987
+      ]
+    },
+    {
+      "id": "spot-croton",
+      "name": "Croton River",
+      "tide_chart": null,
+      "flow_spark": [
+        11.0,
+        11.058333,
+        11.116667,
+        11.175,
+        11.233334,
+        11.291667,
+        11.349999,
+        11.408334,
+        11.466667,
+        11.525,
+        11.583333,
+        11.641666,
+        11.7,
+        11.758333,
+        11.816667,
+        11.875,
+        11.933332,
+        11.991666,
+        12.05,
+        12.108334,
+        12.166666,
+        12.224999,
+        12.283333,
+        12.341665,
+        12.4
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "t": 1794142800,
+      "places": [
+        {
+          "tide": {
+            "card": {
+              "title": "Tide",
+              "headline": {
+                "value": 5.3288355,
+                "text": "5.3",
+                "unit": "ft MLLW"
+              },
+              "lines": [
+                "Falling · Low 1:35 PM",
+                "0.0 ft MLLW"
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "credit": "NOAA CO-OPS · NOAA CO-OPS harmonics",
+              "notices": [
+                {
+                  "kind": "not_for_navigation",
+                  "text": "Not for navigation."
+                }
+              ],
+              "accessibility": "Falling. Next low 1:35 PM, 0.0 ft above MLLW."
+            },
+            "stage": "falling",
+            "start_t": 1794132000,
+            "end_t": 1794218400
+          },
+          "flow": {
+            "card": {
+              "title": "River flow",
+              "headline": {
+                "value": 12.006987,
+                "text": "12.0",
+                "unit": "cfs"
+              },
+              "lines": [
+                "normal, 48th percentile for Nov 8",
+                "Outflow 38.8 cfs · 1 d ago"
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "credit": "USGS · NOAA NWPS · US Army Corps of Engineers",
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "accessibility": "River flow: 12.0 cfs, normal, 48th percentile for Nov 8. Outflow 38.8 cfs · 1 d ago"
+            },
+            "trend": null,
+            "normal": "Normal"
+          },
+          "snack": {
+            "title": "Snack times",
+            "headline": {
+              "value": null,
+              "text": "6:15 AM",
+              "unit": ""
+            },
+            "lines": [
+              "Next snack time 6:15 to 7:45 AM",
+              "Incoming tide, Low light, Solunar"
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "credit": "Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics",
+            "notices": [
+              {
+                "kind": "traditional_cue",
+                "text": "A traditional cue, not a promise."
+              }
+            ],
+            "accessibility": "Snack times: Next snack time 6:15 to 7:45 AM. Incoming tide, Low light, Solunar. A traditional cue, not a promise."
+          }
+        },
+        {
+          "tide": null,
+          "flow": {
+            "card": {
+              "title": "River flow",
+              "headline": {
+                "value": 12.4,
+                "text": "12.4",
+                "unit": "cfs"
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Best range (10.6 to 53.0 cfs)"
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "credit": "USGS",
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8. Best range (10.6 to 53.0 cfs)"
+            },
+            "trend": {
+              "direction": "rising",
+              "text": "Rising 0.7 cfs in 3 h"
+            },
+            "normal": "Normal"
+          },
+          "snack": {
+            "title": "Snack times",
+            "headline": {
+              "value": null,
+              "text": "",
+              "unit": ""
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "credit": "Computed on device",
+            "notices": [],
+            "accessibility": "Snack times: No snack times in this period."
+          }
+        }
+      ],
+      "trip": {
+        "compact": {
+          "title": "Next trip: Hudson weekend",
+          "when": "Under way",
+          "verdict": "no_go",
+          "headline": "No-go",
+          "line": "Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph",
+          "storm": false,
+          "accessibility": "Next trip: Hudson weekend. Under way. No-go. Sun Nov 8 at The Battery: No-go: gusts 25 mph over your 21 mph limit. Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph"
+        },
+        "credit": "Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS"
+      }
+    }
+  ]
+}

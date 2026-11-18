@@ -1,0 +1,776 @@
+---
+source: crates/underbite-core/src/view/widget.rs
+expression: "schemars::schema_for!(WidgetPayload)"
+---
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WidgetPayload",
+  "description": "Everything a widget reads for one spot or one trip, built ahead for the next hours.",
+  "type": "object",
+  "properties": {
+    "entries": {
+      "description": "The first at `generated_at`, then one on each local hour for 12 hours.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/WidgetEntry"
+      }
+    },
+    "generated_at": {
+      "description": "When the payload was built, unix seconds.",
+      "type": "integer",
+      "format": "int64"
+    },
+    "id": {
+      "description": "The spot's or the trip's id.",
+      "type": "string"
+    },
+    "name": {
+      "description": "The spot's or the trip's name.",
+      "type": "string"
+    },
+    "places": {
+      "description": "One for a spot; for a trip, its first two places with data.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/WidgetPlace"
+      }
+    },
+    "subject": {
+      "$ref": "#/$defs/WidgetSubject"
+    }
+  },
+  "required": [
+    "subject",
+    "id",
+    "name",
+    "generated_at",
+    "places",
+    "entries"
+  ],
+  "$defs": {
+    "BandKind": {
+      "type": "string",
+      "enum": [
+        "night",
+        "slack",
+        "solunar_major",
+        "solunar_minor",
+        "highlight"
+      ]
+    },
+    "CardState": {
+      "description": "Whether the card's value can be trusted as current and local.",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "string",
+              "const": "fresh"
+            }
+          },
+          "required": [
+            "state"
+          ]
+        },
+        {
+          "description": "Older than the user's age limit; greyed.",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string",
+              "const": "stale"
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ]
+        },
+        {
+          "description": "From a station beyond the user's distance limit; greyed.",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string",
+              "const": "far"
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string",
+              "const": "unavailable"
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ]
+        }
+      ]
+    },
+    "ChartBand": {
+      "type": "object",
+      "properties": {
+        "end_t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "kind": {
+          "$ref": "#/$defs/BandKind"
+        },
+        "label": {
+          "type": "string"
+        },
+        "start_t": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "kind",
+        "start_t",
+        "end_t",
+        "label"
+      ]
+    },
+    "ChartMarker": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/MarkerKind"
+        },
+        "label": {
+          "type": "string"
+        },
+        "t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "value": {
+          "description": "In display units, when the marker sits on the curve.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "float"
+        }
+      },
+      "required": [
+        "kind",
+        "t",
+        "label"
+      ]
+    },
+    "ChartPoint": {
+      "description": "One point: unix seconds, the value in display units, its label (\"3.4 ft\"), and whether a\nnarrow layout should keep its label.",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "major": {
+          "type": "boolean"
+        },
+        "t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "value": {
+          "type": "number",
+          "format": "float"
+        }
+      },
+      "required": [
+        "t",
+        "value",
+        "label",
+        "major"
+      ]
+    },
+    "ChartRule": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/RuleKind"
+        },
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "description": "In display units.",
+          "type": "number",
+          "format": "float"
+        }
+      },
+      "required": [
+        "kind",
+        "value",
+        "label"
+      ]
+    },
+    "ChartSeries": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartPoint"
+          }
+        },
+        "role": {
+          "$ref": "#/$defs/SeriesRole"
+        },
+        "style": {
+          "$ref": "#/$defs/SeriesStyle"
+        }
+      },
+      "required": [
+        "label",
+        "role",
+        "style",
+        "points"
+      ]
+    },
+    "ChartTick": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "major": {
+          "type": "boolean"
+        },
+        "t": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "t",
+        "label",
+        "major"
+      ]
+    },
+    "ChartVm": {
+      "description": "A chart carries every point with its label; narrow layouts thin them by `major`.",
+      "type": "object",
+      "properties": {
+        "accessibility": {
+          "description": "What `VoiceOver` reads: the shape and its extremes in words.",
+          "type": "string"
+        },
+        "bands": {
+          "description": "Shaded spans: night, slack water, solunar periods.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartBand"
+          }
+        },
+        "markers": {
+          "description": "Labelled events: highs and lows, now.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartMarker"
+          }
+        },
+        "now_t": {
+          "description": "Unix seconds of \"now\" when it falls inside the chart.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "rules": {
+          "description": "Horizontal lines: flood categories, the user's ranges.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartRule"
+          }
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartSeries"
+          }
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "description": "The y unit symbol, empty when mixed or unitless.",
+          "type": "string"
+        },
+        "x_ticks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChartTick"
+          }
+        }
+      },
+      "required": [
+        "title",
+        "unit",
+        "x_ticks",
+        "series",
+        "bands",
+        "rules",
+        "markers",
+        "accessibility"
+      ]
+    },
+    "MarkerKind": {
+      "type": "string",
+      "enum": [
+        "high",
+        "low",
+        "slack",
+        "sunrise",
+        "sunset",
+        "now"
+      ]
+    },
+    "Notice": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/NoticeKind"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ]
+    },
+    "NoticeKind": {
+      "description": "The fixed notices. Their text is plain and never in Luna's voice: there is no voice field.",
+      "type": "string",
+      "enum": [
+        "not_for_navigation",
+        "modelled",
+        "provisional",
+        "approximate",
+        "traditional_cue",
+        "text_only"
+      ]
+    },
+    "Quantity": {
+      "description": "A displayed value: the number in display units, its text and its unit symbol.",
+      "type": "object",
+      "properties": {
+        "text": {
+          "description": "The display text without the unit, or the missing placeholder.",
+          "type": "string"
+        },
+        "unit": {
+          "description": "The unit symbol, empty when unitless.",
+          "type": "string"
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "float"
+        }
+      },
+      "required": [
+        "text",
+        "unit"
+      ]
+    },
+    "RuleKind": {
+      "type": "string",
+      "enum": [
+        "flood_category",
+        "user_range",
+        "threshold"
+      ]
+    },
+    "SeriesRole": {
+      "type": "string",
+      "enum": [
+        "predicted",
+        "observed",
+        "forecast",
+        "modelled"
+      ]
+    },
+    "SeriesStyle": {
+      "type": "string",
+      "enum": [
+        "line",
+        "area",
+        "bars",
+        "dots"
+      ]
+    },
+    "TideStage": {
+      "type": "string",
+      "enum": [
+        "rising",
+        "falling",
+        "high_slack",
+        "low_slack",
+        "unknown"
+      ]
+    },
+    "TrendDirection": {
+      "type": "string",
+      "enum": [
+        "rising",
+        "falling",
+        "steady",
+        "unknown"
+      ]
+    },
+    "TrendVm": {
+      "type": "object",
+      "properties": {
+        "direction": {
+          "$ref": "#/$defs/TrendDirection"
+        },
+        "text": {
+          "description": "\"Rising 0.4 ft in 3 h\"",
+          "type": "string"
+        }
+      },
+      "required": [
+        "direction",
+        "text"
+      ]
+    },
+    "TripCompact": {
+      "description": "The \"next trip: go/no-go\" form for widgets.",
+      "type": "object",
+      "properties": {
+        "accessibility": {
+          "description": "The plain meaning first.",
+          "type": "string"
+        },
+        "headline": {
+          "description": "\"Go\", \"No-go\", or \"No verdict yet\".",
+          "type": "string"
+        },
+        "line": {
+          "description": "\"Sun Nov 8 at The Battery: Luna approves.\"",
+          "type": "string"
+        },
+        "storm": {
+          "description": "A storm ahead or a hurricane cone on that day.",
+          "type": "boolean"
+        },
+        "title": {
+          "description": "\"Next trip: Hudson weekend\"",
+          "type": "string"
+        },
+        "verdict": {
+          "description": "The worst verdict of the first day not over, across places; absent when no place has one.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Verdict"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "when": {
+          "description": "The trip's status: \"Starts in 3 days\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "when",
+        "headline",
+        "line",
+        "storm",
+        "accessibility"
+      ]
+    },
+    "Verdict": {
+      "description": "The overall result for a day or an hour.",
+      "oneOf": [
+        {
+          "description": "Every checked limit is met with room to spare.",
+          "type": "string",
+          "const": "go"
+        },
+        {
+          "description": "Nothing fails, but a value is within 10 % of a limit.",
+          "type": "string",
+          "const": "marginal"
+        },
+        {
+          "description": "A hard limit is exceeded or a safety condition applies.",
+          "type": "string",
+          "const": "no_go"
+        },
+        {
+          "description": "Something that decides it is missing, or the time is outside the forecast.",
+          "type": "string",
+          "const": "unknown"
+        }
+      ]
+    },
+    "WidgetCard": {
+      "description": "A card's compact form with what a widget must show beside it.",
+      "type": "object",
+      "properties": {
+        "accessibility": {
+          "type": "string"
+        },
+        "credit": {
+          "description": "The sources' names: \"NOAA CO-OPS\".",
+          "type": "string"
+        },
+        "headline": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "lines": {
+          "description": "At most two.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notices": {
+          "description": "\"Not for navigation.\" with tides; safety text.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Notice"
+          }
+        },
+        "state": {
+          "description": "Stale and far values are greyed with the reason.",
+          "$ref": "#/$defs/CardState"
+        },
+        "title": {
+          "description": "\"Tide\", \"River flow\", \"Snack times\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "headline",
+        "lines",
+        "state",
+        "credit",
+        "notices",
+        "accessibility"
+      ]
+    },
+    "WidgetEntry": {
+      "description": "What the widgets show from one instant on.",
+      "type": "object",
+      "properties": {
+        "places": {
+          "description": "One per place of the payload, in its order.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WidgetPlaceEntry"
+          }
+        },
+        "t": {
+          "description": "When the entry becomes current, unix seconds.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "trip": {
+          "description": "The trip's go/no-go; trip payloads only.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetTrip"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "t",
+        "places"
+      ]
+    },
+    "WidgetFlow": {
+      "type": "object",
+      "properties": {
+        "card": {
+          "$ref": "#/$defs/WidgetCard"
+        },
+        "normal": {
+          "description": "Against normal for the date, short: \"Normal\", \"Below normal\".",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trend": {
+          "description": "The direction for the arrow, and \"Rising 0.4 cfs in 3 h\".",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TrendVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "card"
+      ]
+    },
+    "WidgetPlace": {
+      "description": "What a place's entries share.",
+      "type": "object",
+      "properties": {
+        "flow_spark": {
+          "description": "A week of river flow (or stage) in display units, oldest first; empty without a gauge.",
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "id": {
+          "description": "The spot's id.",
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "tide_chart": {
+          "description": "The tide from 3 h before the first entry to 21 h after the last, every 30 min, with the\nhighs and lows labelled and night shaded; each entry says which part to show, and marks\nnow at its own `t` (the chart's `now_t` is the first entry's).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartVm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "flow_spark"
+      ]
+    },
+    "WidgetPlaceEntry": {
+      "description": "One place at an entry's instant; a part is absent when the place has no such data.",
+      "type": "object",
+      "properties": {
+        "flow": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFlow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "snack": {
+          "description": "The next fishing window: \"snack time\" in Luna's voice.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetCard"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tide": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetTide"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "WidgetSubject": {
+      "description": "What a payload is for.",
+      "type": "string",
+      "enum": [
+        "spot",
+        "trip"
+      ]
+    },
+    "WidgetTide": {
+      "type": "object",
+      "properties": {
+        "card": {
+          "$ref": "#/$defs/WidgetCard"
+        },
+        "end_t": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "stage": {
+          "description": "Rising, falling or slack, for the arrow.",
+          "$ref": "#/$defs/TideStage"
+        },
+        "start_t": {
+          "description": "The part of the place's `tide_chart` to show, unix seconds.",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "card",
+        "stage",
+        "start_t",
+        "end_t"
+      ]
+    },
+    "WidgetTrip": {
+      "description": "The next trip's go/no-go.",
+      "type": "object",
+      "properties": {
+        "compact": {
+          "$ref": "#/$defs/TripCompact"
+        },
+        "credit": {
+          "description": "The sources' names the trip rests on.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "compact",
+        "credit"
+      ]
+    }
+  }
+}

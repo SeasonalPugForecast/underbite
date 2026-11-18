@@ -1,0 +1,95 @@
+---
+source: crates/underbite-core/src/view/widget.rs
+expression: render(&p)
+---
++0:00
+  The Battery tide Falling 5.3 ft MLLW | Falling · Low 1:35 PM | 0.0 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 1 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++1:00
+  The Battery tide Falling 4.4 ft MLLW | Falling · Low 1:35 PM | 0.0 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 1 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++2:00
+  The Battery tide Falling 3.2 ft MLLW | Falling · Low 1:35 PM | 0.0 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 1 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++3:00
+  The Battery tide Falling 2.0 ft MLLW | Falling · Low 1:35 PM | 0.0 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 1 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++4:00
+  The Battery tide Falling 0.9 ft MLLW | Falling · Low 1:35 PM | 0.0 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 1 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++5:00
+  The Battery tide Falling 0.2 ft MLLW | Falling · Low 1:35 PM | 0.0 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 1 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++6:00
+  The Battery tide Rising 0.1 ft MLLW | Rising · High 7:27 PM | 4.7 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 1 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++7:00
+  The Battery tide Rising 0.8 ft MLLW | Rising · High 7:27 PM | 4.7 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 1 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++8:00
+  The Battery tide Rising 2.0 ft MLLW | Rising · High 7:27 PM | 4.7 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 1 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++9:00
+  The Battery tide Rising 3.2 ft MLLW | Rising · High 7:27 PM | 4.7 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 2 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++10:00
+  The Battery tide Rising 4.1 ft MLLW | Rising · High 7:27 PM | 4.7 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 2 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++11:00
+  The Battery tide Rising 4.6 ft MLLW | Rising · High 7:27 PM | 4.7 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 2 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS
++12:00
+  The Battery tide Falling 4.6 ft MLLW | Falling · Low 1:40 AM | 0.2 ft MLLW | NOAA CO-OPS · NOAA CO-OPS harmonics | shows -3..21 h
+  The Battery flow 12.0 cfs | normal, 48th percentile for Nov 8 | Outflow 38.8 cfs · 2 d ago | USGS · NOAA NWPS · US Army Corps of Engineers |  | Normal
+  The Battery snack 6:15 AM | Next snack time 6:15 to 7:45 AM | Incoming tide, Low light, Solunar | Computed on device · NOAA CO-OPS · NOAA CO-OPS harmonics
+  Croton River flow 12.4 cfs | normal, 45th percentile for Nov 8 | Best range (10.6 to 53.0 cfs) | USGS | Rising 0.7 cfs in 3 h | Normal
+  Croton River snack  | No snack times in this period. | Computed on device
+  trip Under way | No-go | Sun Nov 8 at The Battery: Luna's not impressed: gusts to 25 mph, your limit is 21 mph | Computed on device · Open-Meteo · NOAA CO-OPS · NOAA CO-OPS harmonics · Open-Meteo Marine · Open-Meteo model providers · USGS

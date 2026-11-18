@@ -1425,6 +1425,16 @@ keys! {
     TripNotShared => ("Not shared", "Not shared"),
     TripSharedReadOnly => ("Shared live, read-only", "Shared live, read-only"),
     TripSharedEditable => ("Shared live, others can edit", "Shared live, others can edit"),
+    /// The trip-day Live Activity: what stands beside the system's countdown timer.
+    ActivityHighIn => ("High tide in", "High tide in"),
+    ActivityLowIn => ("Low tide in", "Low tide in"),
+    ActivitySlackIn => ("Slack in", "Slack in"),
+    ActivitySunsetIn => ("Sunset in", "Sunset in"),
+    /// Once the activity's first time has passed without an update.
+    ActivityStale => (
+        "Out of date: open the app to update the times",
+        "Out of date: open the app to update the times",
+    ),
     /// The gear template of each method.
     GearRodsTackle => ("Rods, reels and tackle", "Rods, reels and tackle"),
     GearPfd => ("Life jacket", "Life jacket"),

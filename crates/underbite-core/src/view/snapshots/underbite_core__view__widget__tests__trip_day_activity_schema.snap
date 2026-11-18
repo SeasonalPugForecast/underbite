@@ -1,0 +1,150 @@
+---
+source: crates/underbite-core/src/view/widget.rs
+expression: "schemars::schema_for!(TripDayActivity)"
+---
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TripDayActivity",
+  "description": "The trip-day Live Activity's content at one place.",
+  "type": "object",
+  "properties": {
+    "accessibility": {
+      "type": "string"
+    },
+    "credit": {
+      "description": "The sources' names.",
+      "type": "string"
+    },
+    "ends_at": {
+      "description": "When to end the activity: today's sunset, else the end of the local day.",
+      "type": "integer",
+      "format": "int64"
+    },
+    "generated_at": {
+      "description": "When the content was built, unix seconds.",
+      "type": "integer",
+      "format": "int64"
+    },
+    "next_tide_change": {
+      "description": "The next high or low.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ActivityTarget"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "notices": {
+      "description": "\"Not for navigation.\" and any other tide or current notice; safety text.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Notice"
+      }
+    },
+    "place": {
+      "description": "The place the times are for: the trip's first with a tide, else its first with data.",
+      "type": "string"
+    },
+    "slack": {
+      "description": "The next slack water; current stations only.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ActivityTarget"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "stale": {
+      "description": "What to show once stale.",
+      "type": "string"
+    },
+    "stale_at": {
+      "description": "When the content goes out of date: the first target, else `ends_at`.",
+      "type": "integer",
+      "format": "int64"
+    },
+    "sunset": {
+      "description": "Today's sunset while it is ahead.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ActivityTarget"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "title": {
+      "description": "The trip's name.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "place",
+    "generated_at",
+    "stale_at",
+    "stale",
+    "ends_at",
+    "credit",
+    "notices",
+    "accessibility"
+  ],
+  "$defs": {
+    "ActivityTarget": {
+      "description": "A time the Live Activity counts down to, with its words.",
+      "type": "object",
+      "properties": {
+        "at": {
+          "description": "The instant the system timer counts down to, unix seconds.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "label": {
+          "description": "What stands beside the timer: \"High tide in\".",
+          "type": "string"
+        },
+        "text": {
+          "description": "The target in words, for the compact views and once stale: \"High 4.6 ft at 3:12 PM\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "at",
+        "label",
+        "text"
+      ]
+    },
+    "Notice": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/NoticeKind"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ]
+    },
+    "NoticeKind": {
+      "description": "The fixed notices. Their text is plain and never in Luna's voice: there is no voice field.",
+      "type": "string",
+      "enum": [
+        "not_for_navigation",
+        "modelled",
+        "provisional",
+        "approximate",
+        "traditional_cue",
+        "text_only"
+      ]
+    }
+  }
+}

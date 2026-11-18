@@ -1,0 +1,35 @@
+---
+source: crates/underbite-core/src/view/widget.rs
+expression: a
+---
+{
+  "title": "Hudson weekend",
+  "place": "The Battery",
+  "generated_at": 1794142800,
+  "next_tide_change": {
+    "at": 1794162840,
+    "label": "Low tide in",
+    "text": "Low 0.0 ft MLLW at 1:34 PM"
+  },
+  "slack": {
+    "at": 1794152460,
+    "label": "Slack in",
+    "text": "Slack at 10:41 AM"
+  },
+  "sunset": {
+    "at": 1794174313,
+    "label": "Sunset in",
+    "text": "Sunset at 4:45 PM"
+  },
+  "stale_at": 1794152460,
+  "stale": "Out of date: open the app to update the times",
+  "ends_at": 1794174313,
+  "credit": "NOAA CO-OPS · Computed on device",
+  "notices": [
+    {
+      "kind": "not_for_navigation",
+      "text": "Not for navigation."
+    }
+  ],
+  "accessibility": "Hudson weekend, The Battery. Low 0.0 ft MLLW at 1:34 PM. Slack at 10:41 AM. Sunset at 4:45 PM. Not for navigation."
+}

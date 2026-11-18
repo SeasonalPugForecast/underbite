@@ -1,0 +1,102 @@
+---
+source: crates/underbite-core/src/view/widget.rs
+expression: first_entry(&p)
+---
+{
+  "subject": "spot",
+  "id": "croton",
+  "name": "Croton River",
+  "generated_at": 1794000000,
+  "places": [
+    {
+      "id": "croton",
+      "name": "Croton River",
+      "tide_chart": null,
+      "flow_spark": [
+        11.0,
+        11.058333,
+        11.116667,
+        11.175,
+        11.233334,
+        11.291667,
+        11.349999,
+        11.408334,
+        11.466667,
+        11.525,
+        11.583333,
+        11.641666,
+        11.7,
+        11.758333,
+        11.816667,
+        11.875,
+        11.933332,
+        11.991666,
+        12.05,
+        12.108334,
+        12.166666,
+        12.224999,
+        12.283333,
+        12.341665,
+        12.4
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "t": 1794000000,
+      "places": [
+        {
+          "tide": null,
+          "flow": {
+            "card": {
+              "title": "River flow",
+              "headline": {
+                "value": 12.4,
+                "text": "12.4",
+                "unit": "cfs"
+              },
+              "lines": [
+                "normal, 45th percentile for Nov 8",
+                "Luna's watching Croton River at New Croton Dam, 1.5 mi"
+              ],
+              "state": {
+                "state": "fresh"
+              },
+              "credit": "USGS",
+              "notices": [
+                {
+                  "kind": "provisional",
+                  "text": "Provisional data, subject to revision."
+                }
+              ],
+              "accessibility": "River flow: 12.4 cfs, normal, 45th percentile for Nov 8"
+            },
+            "trend": {
+              "direction": "rising",
+              "text": "Rising 0.7 cfs in 3 h"
+            },
+            "normal": "Normal"
+          },
+          "snack": {
+            "title": "Snack times",
+            "headline": {
+              "value": null,
+              "text": "",
+              "unit": ""
+            },
+            "lines": [
+              "No snack times in this period."
+            ],
+            "state": {
+              "state": "fresh"
+            },
+            "credit": "Computed on device",
+            "notices": [],
+            "accessibility": "Snack times: No snack times in this period."
+          }
+        }
+      ],
+      "trip": null
+    }
+  ]
+}
