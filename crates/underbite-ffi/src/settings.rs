@@ -917,7 +917,8 @@ pub struct CardInfo {
     pub title: String,
     /// Whether the card shows for this water type.
     pub shown: bool,
-    /// Whether this version builds the card; the others are placeholders for later cards.
+    /// Whether the page can build the card: the species card only once the settings follow a
+    /// species, every other card always.
     pub available: bool,
 }
 
@@ -934,12 +935,14 @@ pub fn card_catalogue(
     let (config, _) = load(&settings_json)?;
     let strings = Strings::new(config.presentation.voice);
     let order = config.cards.order_for(water);
+    // The species card lists the followed species (ids the catalogue lacks were dropped on
+    // load); with none it has nothing to show.
+    let follows_species = !config.species.followed.is_empty();
     let info = |id: CardId, shown: bool| CardInfo {
         id: unit_id(id),
         title: strings.card_title(id).to_owned(),
         shown,
-        // No setting chooses species yet, so the page never builds the species card.
-        available: id != CardId::Species,
+        available: id != CardId::Species || follows_species,
     };
     let mut cards: Vec<CardInfo> = order.iter().map(|&id| info(id, true)).collect();
     cards.extend(

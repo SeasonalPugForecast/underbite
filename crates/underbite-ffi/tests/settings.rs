@@ -266,10 +266,21 @@ fn the_card_catalogue_follows_the_users_order_and_voice() {
     let card = |id: &str| cards.iter().find(|c| c.id == id).unwrap();
     assert!(card("stocking").available && card("stocking").shown);
     assert!(card("bloom").available && !card("bloom").shown);
-    // No setting chooses species yet, so the page cannot show the species card.
-    let species = cards.iter().find(|c| c.id == "species").unwrap();
-    assert!(!species.available);
+    // The species card waits until the settings follow a species; it is in no shipped order.
+    let species = card("species");
+    assert!(!species.available && !species.shown);
     assert_eq!(species.title, "Species");
+    let following = settings(|v| {
+        v["species"]["followed"] = json!(["micropterus-dolomieu", "salmo-trutta"]);
+        v["cards"]["order"] = json!(["now", "species", "flow"]);
+    });
+    let with_species = card_catalogue("river_stream".into(), following).unwrap();
+    let species = with_species.iter().find(|c| c.id == "species").unwrap();
+    assert!(species.available && species.shown);
+    // An id the catalogue lacks is dropped on load and follows nothing.
+    let unknown = settings(|v| v["species"]["followed"] = json!(["no-such-fish"]));
+    let cards = card_catalogue("river_stream".into(), unknown).unwrap();
+    assert!(!cards.iter().find(|c| c.id == "species").unwrap().available);
     assert_eq!(cards[0].id, "now");
     assert!(cards.iter().take_while(|c| c.shown).count() >= 5);
     let windows = cards.iter().find(|c| c.id == "windows").unwrap();
