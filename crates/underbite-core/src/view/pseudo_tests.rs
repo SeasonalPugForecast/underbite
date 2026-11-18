@@ -366,6 +366,226 @@ fn map_depth_and_offline_words_are_translated_in_the_pseudo_locale() {
     }
 }
 
+/// Texts that are not translated, among `texts`, leaving out what `data` says.
+fn english_texts(texts: &[String], data: &[String]) -> Vec<String> {
+    texts
+        .iter()
+        .filter_map(|t| untranslated(t, data).map(|rest| format!("{t:?} ({rest:?})")))
+        .collect()
+}
+
+#[test]
+fn storm_layer_words_are_translated_in_the_pseudo_locale() {
+    use crate::time::UnixTime;
+    use crate::view::strings::{
+        SafetyKey, advisory_wind, hurricane_movement, hurricane_name, storm_advisory,
+        storm_cone_note, storm_day_time, storm_knots, storm_model_run, storm_span, storm_step,
+    };
+    const HOUR: i64 = 3_600;
+    let now = crate::view::tests::sample_input().now;
+    let zone = "America/New_York";
+    let mut english = Vec::new();
+    for units in [us(), metric()] {
+        for voice in [Voice::Plain, Voice::Luna] {
+            let f = Formatter::new(
+                units,
+                voice,
+                whether_core::presentation::TimeFormat::H12,
+                zone,
+            )
+            .with_locale(Locale::PSEUDO);
+            let s = f.strings;
+            let ahead = UnixTime(now.0 + 30 * HOUR);
+            let mut texts = vec![
+                storm_day_time(&f, zone, ahead),
+                storm_span(&f, zone, ahead, UnixTime(ahead.0 + HOUR)),
+                storm_span(&f, zone, ahead, UnixTime(ahead.0 + 9 * HOUR)),
+                storm_span(&f, zone, ahead, UnixTime(ahead.0 + 50 * HOUR)),
+                storm_step(&f, zone, now, now),
+                storm_step(&f, zone, UnixTime(now.0 + 72 * HOUR), now),
+                advisory_wind(&f, Some(85)).full(),
+                advisory_wind(&f, None).full(),
+                storm_knots(&f, Some(12.5)).full(),
+                hurricane_movement(&f, Some(45.0), Some(13.0)),
+                hurricane_movement(&f, Some(45.0), Some(0.5)),
+                hurricane_movement(&f, None, None),
+                storm_advisory(&f, zone, now),
+                storm_model_run(&f, "ECMWF", Some(now)),
+                storm_model_run(&f, "ECMWF", None),
+                storm_cone_note(&f, 2026),
+                s.safety_fmt(
+                    SafetyKey::HurricaneCategory,
+                    &[
+                        ("name", &hurricane_name(&f, "HU", "Josephine")),
+                        ("category", "2"),
+                    ],
+                ),
+                s.safety_fmt(
+                    SafetyKey::StormStrength,
+                    &[
+                        ("wind", &advisory_wind(&f, Some(85)).full()),
+                        ("pressure", &f.pressure(Some(975.0)).full()),
+                        ("movement", &hurricane_movement(&f, Some(45.0), Some(13.0))),
+                    ],
+                ),
+                s.safety_fmt(SafetyKey::StormLayerNone, &[("n", "5")]),
+                s.safety_fmt(
+                    SafetyKey::StormLayerEvent,
+                    &[(
+                        "window",
+                        &storm_span(&f, zone, ahead, UnixTime(ahead.0 + HOUR)),
+                    )],
+                ),
+                s.safety_fmt(
+                    SafetyKey::StormLayerLowest,
+                    &[
+                        ("pressure", &f.pressure(Some(990.0)).full()),
+                        ("when", &storm_span(&f, zone, ahead, UnixTime(ahead.0 + 1))),
+                        ("model", "ECMWF"),
+                    ],
+                ),
+                s.safety_fmt(SafetyKey::StormLayerGuidance, &[("model", "HWRF")]),
+            ];
+            for classification in ["HU", "TS", "TD", "STS", "STD", "PTC", "PC", "TY", "XX"] {
+                texts.push(hurricane_name(&f, classification, "Josephine"));
+            }
+            for key in [
+                SafetyKey::StormLayerLoading,
+                SafetyKey::StormLayerFailed,
+                SafetyKey::StormLayerPartial,
+                SafetyKey::StormLayerStormBand,
+                SafetyKey::StormLayerOfficial,
+                SafetyKey::StormLayerObserved,
+                SafetyKey::StormLayerConsensus,
+                SafetyKey::StormLayerConeLink,
+                SafetyKey::StormLayerAdvisoryLink,
+                SafetyKey::StormForecastsChangeText,
+                SafetyKey::CreditOpenMeteoModels,
+                SafetyKey::CreditNhc,
+                SafetyKey::NotForNavigation,
+            ] {
+                texts.push(s.safety(key).to_owned());
+            }
+            let data = [
+                "Josephine".to_owned(),
+                "ECMWF".to_owned(),
+                "HWRF".to_owned(),
+            ];
+            english.extend(english_texts(&texts, &data));
+        }
+    }
+    assert!(english.is_empty(), "{}", english.join("\n"));
+}
+
+#[test]
+fn depth_and_breaks_words_are_translated_in_the_pseudo_locale() {
+    use crate::map::breaks::BreakKind;
+    use crate::view::strings::{
+        Key, SafetyKey, break_strength, break_threshold_stops, contour_interval_text,
+        depth_band_text, depth_label,
+    };
+    let mut english = Vec::new();
+    for units in [us(), metric()] {
+        for voice in [Voice::Plain, Voice::Luna] {
+            let f = Formatter::new(
+                units,
+                voice,
+                whether_core::presentation::TimeFormat::H12,
+                "America/New_York",
+            )
+            .with_locale(Locale::PSEUDO);
+            let s = f.strings;
+            let mut texts = vec![
+                contour_interval_text(&f, 3.048),
+                contour_interval_text(&f, 0.5),
+                depth_band_text(&f, Some((1.5, 2.25))),
+                depth_band_text(&f, None),
+            ];
+            texts.extend([0.0, 2.5, 10.0, 55.5, 100.0].map(|m| depth_label(&f, m)));
+            for id in [
+                "depth-shading",
+                "depth-contours",
+                "sst-breaks",
+                "chlorophyll-breaks",
+            ] {
+                texts.push(s.layer_title(id).unwrap().to_owned());
+                texts.push(s.layer_legend(id).unwrap().to_owned());
+                texts.push(s.layer_credit(id).unwrap().to_owned());
+            }
+            for kind in [BreakKind::Sst, BreakKind::Chlorophyll] {
+                for (_, label) in break_threshold_stops(&f, kind) {
+                    texts.push(label);
+                }
+            }
+            for per_km in [0.1, 0.25, 0.6, 1.25] {
+                texts.push(break_strength(&f, BreakKind::Sst, per_km));
+                texts.push(break_strength(&f, BreakKind::Chlorophyll, per_km / 10.0));
+            }
+            for key in [
+                Key::MapDepthTitle,
+                Key::MapDepthHighlight,
+                Key::MapDepthFrom,
+                Key::MapDepthTo,
+                Key::MapDepthOff,
+                Key::MapDepthHighlightFrom,
+                Key::MapDepthHighlightTo,
+                Key::MapDepthHighlightClear,
+                Key::MapDepthZoomIn,
+                Key::MapDepthLoading,
+                Key::MapDepthFailed,
+                Key::MapBreaksThreshold,
+                Key::MapBreaksThresholdLabel,
+                Key::MapBreaksZoomIn,
+                Key::MapBreaksLoading,
+                Key::MapBreaksNone,
+            ] {
+                texts.push(s.get(key).to_owned());
+            }
+            for key in [
+                SafetyKey::MapCreditBathymetry,
+                SafetyKey::MapReferenceBathymetry,
+                SafetyKey::MapLegendBathymetry,
+                SafetyKey::NotForNavigation,
+            ] {
+                texts.push(s.safety(key).to_owned());
+            }
+            english.extend(english_texts(&texts, &[]));
+        }
+    }
+    assert!(english.is_empty(), "{}", english.join("\n"));
+}
+
+#[test]
+fn preset_share_words_are_translated_in_the_pseudo_locale() {
+    use crate::view::strings::{Key, Strings};
+    let mut english = Vec::new();
+    for voice in [Voice::Plain, Voice::Luna] {
+        let s = Strings::localized(voice, Locale::PSEUDO);
+        let texts: Vec<String> = [
+            Key::PresetShare,
+            Key::PresetShareDetail,
+            Key::PresetShareFile,
+            Key::PresetCancel,
+            Key::PresetDone,
+            Key::ReceivePreset,
+            Key::ReceivePresetExists,
+            Key::ReceiveAdd,
+            Key::ReceivePresetRename,
+            Key::ReceiveReplace,
+            Key::ReceivePresetNameTitle,
+            Key::ReceivePresetNameDetail,
+            Key::ReceivePresetNameField,
+            Key::ReceivePresetAdded,
+        ]
+        .into_iter()
+        // The app fills in the received preset's name.
+        .map(|key| s.fmt(key, &[("name", "Stripers")]))
+        .collect();
+        english.extend(english_texts(&texts, &["Stripers".to_owned()]));
+    }
+    assert!(english.is_empty(), "{}", english.join("\n"));
+}
+
 #[test]
 fn the_trip_view_is_translated_in_the_pseudo_locale() {
     use crate::view::trip::{TripView, tests as trip};
