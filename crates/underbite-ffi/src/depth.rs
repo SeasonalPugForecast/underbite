@@ -369,20 +369,17 @@ impl GridStore {
         let key = tile_key(z, x, y)?;
         let (config, _) = load(&settings_json)?;
         let wanted = tile_bbox_of(key);
-        // The tile's own block when held, else the block covering most of it (an area fetched
-        // for contours shades too: one fetch serves both).
+        // The finest block that covers the whole tile, the tile's own on a tie, else the block
+        // covering most of it (an area fetched for contours shades too: one fetch serves both).
         let grid = {
             let blocks = self.lock().dem_blocks(Some(wanted));
-            let exact = blocks.iter().find(|(id, _)| {
-                matches!(id, DemId::Tile { z: bz, x: bx, y: by, .. } if (*bz, *bx, *by) == (z, x, y))
-            });
-            exact
-                .or_else(|| {
-                    blocks.iter().max_by(|(_, a), (_, b)| {
-                        coverage(a, wanted).total_cmp(&coverage(b, wanted))
-                    })
-                })
-                .map(|(_, grid)| Arc::clone(grid))
+            let own = DemId::Tile {
+                z,
+                x,
+                y,
+                px: ncei_dem::DEFAULT_TILE_PX,
+            };
+            best_block(&blocks, wanted, Some(own)).map(Arc::clone)
         };
         let Some(grid) = grid else {
             return Ok(None);
@@ -426,17 +423,12 @@ impl GridStore {
             return Err(invalid("the contour interval is not a positive number"));
         }
         // The lock is held only to find the grid; contouring works on a shared copy.
-        let best = self
-            .lock()
-            .dem_blocks(Some(area))
-            .into_iter()
-            .map(|(_, grid)| grid)
-            .max_by(|a, b| coverage(a, area).total_cmp(&coverage(b, area)));
-        let Some(grid) = best else {
+        let blocks = self.lock().dem_blocks(Some(area));
+        let Some(grid) = best_block(&blocks, area, None) else {
             return Ok(Vec::new());
         };
         let f = formatter(&config, "UTC");
-        Ok(contour_lines_of(&grid, area, zoom, interval, &f))
+        Ok(contour_lines_of(grid, area, zoom, interval, &f))
     }
 
     /// The breaks of a satellite layer (`sst` or `chlorophyll`) in a view: stretches of lines of
@@ -482,6 +474,49 @@ fn coverage(grid: &Grid, area: Bbox) -> f64 {
     let width = (e.east.min(area.east) - e.west.max(area.west)).max(0.0);
     let height = (e.north.min(area.north) - e.south.max(area.south)).max(0.0);
     width * height
+}
+
+/// The spacing of a block's columns, degrees of longitude: the same measure for an area (evenly
+/// spaced in degrees) and a Web Mercator tile (evenly spaced in longitude). A single column
+/// counts as the coarsest.
+fn cell_deg(grid: &Grid) -> f64 {
+    match grid.lons.as_slice() {
+        [first, .., last] => (last - first) / (grid.lons.len() - 1) as f64,
+        _ => f64::INFINITY,
+    }
+}
+
+/// The block to draw `area` from: of the blocks that cover all of it, the finest (`preferred`
+/// on a tie); without one, the block that covers most of it, the finer on a tie. Never the
+/// order the blocks are held in, unless two are alike in all of that.
+fn best_block(
+    blocks: &[(DemId, Arc<Grid>)],
+    area: Bbox,
+    preferred: Option<DemId>,
+) -> Option<&Arc<Grid>> {
+    let whole = (area.east - area.west) * (area.north - area.south);
+    // (covers all of it, how much of it, the cell, the preferred one)
+    let rank = |(id, grid): &(DemId, Arc<Grid>)| {
+        let covered = coverage(grid, area);
+        let all = covered >= whole * (1.0 - 1e-9);
+        (
+            all,
+            if all { whole } else { covered },
+            cell_deg(grid),
+            preferred == Some(*id),
+        )
+    };
+    blocks
+        .iter()
+        .map(|block| (rank(block), &block.1))
+        .max_by(|(a, _), (b, _)| {
+            a.0.cmp(&b.0)
+                .then(a.1.total_cmp(&b.1))
+                // A smaller cell ranks higher.
+                .then(b.2.total_cmp(&a.2))
+                .then(a.3.cmp(&b.3))
+        })
+        .map(|(_, grid)| grid)
 }
 
 fn tile_bbox_of(key: TileKey) -> Bbox {
@@ -1315,4 +1350,194 @@ pub fn parse_reefs(
             comments: r.comments.clone(),
         })
         .collect())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::settings::default_settings_json;
+
+    const NOW: UnixTime = UnixTime(1_794_000_000);
+
+    /// An elevation grid over `area` with cells of `cell` degrees, valued by `height(lat, lon)`
+    /// (metres, positive up).
+    fn grid(area: Bbox, cell: f64, height: impl Fn(f64, f64) -> f32) -> Grid {
+        let axis = |from: f64, to: f64| -> Vec<f64> {
+            let n = ((to - from) / cell).round() as usize;
+            (0..=n).map(|i| (i as f64).mul_add(cell, from)).collect()
+        };
+        let (lats, lons) = (axis(area.south, area.north), axis(area.west, area.east));
+        let values = lats
+            .iter()
+            .flat_map(|&lat| lons.iter().map(move |&lon| (lat, lon)))
+            .map(|(lat, lon)| height(lat, lon))
+            .collect();
+        let source = underbite_core::map::GridSource {
+            node: GridHost::NceiDem,
+            dataset: "DEM_global_mosaic".to_owned(),
+            variables: vec!["elevation".to_owned()],
+            altitude_axis: false,
+            native_step_deg: cell,
+        };
+        Grid::new(source, NOW, lats, lons, values, "m").unwrap()
+    }
+
+    fn area_id(area: Bbox, cell: f64) -> DemId {
+        DemId::Area {
+            west: micro(area.west),
+            south: micro(area.south),
+            east: micro(area.east),
+            north: micro(area.north),
+            cell: micro(cell),
+        }
+    }
+
+    /// Off the harbour: the blocks reach past the view on every side.
+    const BLOCK: Bbox = Bbox {
+        west: -74.3,
+        south: 40.3,
+        east: -73.7,
+        north: 40.9,
+    };
+    const VIEW: Bbox = Bbox {
+        west: -74.2,
+        south: 40.4,
+        east: -73.8,
+        north: 40.8,
+    };
+
+    /// Deepening to the south, 2 m to 62 m.
+    fn deepening_south(lat: f64, _lon: f64) -> f32 {
+        (40.9 - lat).mul_add(-100.0, -2.0) as f32
+    }
+
+    /// Deepening to the east: a different picture.
+    fn deepening_east(_lat: f64, lon: f64) -> f32 {
+        (lon + 74.3).mul_add(-50.0, -2.0) as f32
+    }
+
+    #[test]
+    fn the_finest_block_that_covers_the_view_is_chosen_whatever_the_order() {
+        let fine = Arc::new(grid(BLOCK, 0.002, deepening_south));
+        let coarse = Arc::new(grid(BLOCK, 0.05, deepening_east));
+        let chosen_cell = |blocks: &[(DemId, Arc<Grid>)]| {
+            best_block(blocks, VIEW, None).map(|g| (cell_deg(g) * 1e4).round() / 1e4)
+        };
+        let a = (area_id(BLOCK, 0.002), Arc::clone(&fine));
+        let b = (area_id(BLOCK, 0.05), Arc::clone(&coarse));
+        assert_eq!(chosen_cell(&[a.clone(), b.clone()]), Some(0.002));
+        assert_eq!(chosen_cell(&[b.clone(), a]), Some(0.002));
+
+        // A fine block over part of the view loses to a coarse one over all of it.
+        let corner = Bbox {
+            west: -74.3,
+            south: 40.3,
+            east: -74.0,
+            north: 40.6,
+        };
+        let part = (
+            area_id(corner, 0.001),
+            Arc::new(grid(corner, 0.001, deepening_south)),
+        );
+        assert_eq!(chosen_cell(&[part.clone(), b.clone()]), Some(0.05));
+        // Without a block over all of it, the one over most of it.
+        let most_of_it = Bbox {
+            west: -74.3,
+            south: 40.3,
+            east: -73.9,
+            north: 40.9,
+        };
+        let most = (
+            area_id(most_of_it, 0.05),
+            Arc::new(grid(most_of_it, 0.05, deepening_east)),
+        );
+        assert_eq!(chosen_cell(&[most, part]), Some(0.05));
+        assert_eq!(chosen_cell(&[]), None);
+
+        // Alike in cover and cell: the preferred block (a tile's own) wins.
+        let own = (
+            DemId::Tile {
+                z: 9,
+                x: 150,
+                y: 192,
+                px: 128,
+            },
+            Arc::new(grid(BLOCK, 0.05, deepening_south)),
+        );
+        let both = [own.clone(), b.clone()];
+        let pick = |preferred| best_block(&both, VIEW, Some(preferred));
+        assert!(Arc::ptr_eq(pick(own.0).unwrap(), &own.1));
+        assert!(Arc::ptr_eq(pick(b.0).unwrap(), &b.1));
+    }
+
+    /// A store holding a fine and a coarse block over the same box, under keys whose order puts
+    /// the coarse one last; and the fine grid.
+    fn store() -> (GridStore, Grid) {
+        let fine = grid(BLOCK, 0.002, deepening_south);
+        let store = GridStore::default();
+        {
+            let mut blocks = store.lock();
+            blocks
+                .insert_dem(area_id(BLOCK, 0.002), fine.clone(), NOW)
+                .unwrap();
+            blocks
+                .insert_dem(area_id(BLOCK, 0.05), grid(BLOCK, 0.05, deepening_east), NOW)
+                .unwrap();
+        }
+        assert!(area_id(BLOCK, 0.002) < area_id(BLOCK, 0.05));
+        (store, fine)
+    }
+
+    #[test]
+    fn depth_tiles_are_shaded_from_the_finest_block_that_covers_them() {
+        let (store, fine) = store();
+        // Zoom 10 inside the view.
+        let key = TileKey {
+            z: 10,
+            x: 301,
+            y: 385,
+        };
+        let tile = tile_bbox_of(key);
+        assert!(VIEW.west < tile.west && tile.east < VIEW.east, "{tile:?}");
+        assert!(
+            VIEW.south < tile.south && tile.north < VIEW.north,
+            "{tile:?}"
+        );
+        let drawn = store
+            .render_depth_tile(key.z, key.x, key.y, default_settings_json())
+            .unwrap()
+            .unwrap();
+        let expected =
+            dem::render_depth_tile(&fine, WaterBody::Sea, None, None, key, TILE_PX).unwrap();
+        assert!(drawn == expected, "the tile is the fine block's");
+    }
+
+    #[test]
+    fn contours_are_drawn_from_the_finest_block_that_covers_the_view() {
+        let (store, fine) = store();
+        let settings = default_settings_json();
+        let lines = store
+            .contour_lines(
+                VIEW.west,
+                VIEW.south,
+                VIEW.east,
+                VIEW.north,
+                10.0,
+                settings.clone(),
+            )
+            .unwrap();
+        let (config, _) = load(&settings).unwrap();
+        let f = formatter(&config, "UTC");
+        let interval = f64::from(config.map.depth.contour_interval_m);
+        let expected = contour_lines_of(&fine, VIEW, 10.0, interval, &f);
+        assert!(expected.len() > 1);
+        assert_eq!(lines, expected);
+        // The fine block deepens to the south: its contours run west to east.
+        let first = &lines[0].points;
+        let (a, b) = (first[0], first[first.len() - 1]);
+        assert!(
+            (a.lat - b.lat).abs() < 0.01 && (a.lon - b.lon).abs() > 0.1,
+            "{a:?} {b:?}"
+        );
+    }
 }
