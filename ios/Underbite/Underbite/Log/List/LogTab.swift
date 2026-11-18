@@ -58,7 +58,9 @@ struct LogTab: View {
         .onAppear {
             if sizeClass == .regular, selection == nil { selection = firstShown }
             #if DEBUG
-                LogLaunch.apply(open: { selection = .entry($0) }) {
+                LogLaunch.apply(
+                    open: { selection = .entry($0) }, insights: { selection = .insights }
+                ) {
                     editor = $0
                 }
             #endif
@@ -216,16 +218,22 @@ private struct CatchListColumn: View {
 
 #if DEBUG
     /// Launch arguments of the screenshot runs: `-editCatch <id>` opens that catch in the
-    /// editor, `-newCatch` opens the editor for a new catch. The editor comes up once the
-    /// catch's page has settled: a sheet asked for while the iPhone's stack is moving is lost.
+    /// editor, `-newCatch` opens the editor for a new catch, `-whatWorked` opens what worked.
+    /// The editor comes up once the catch's page has settled: a sheet asked for while the
+    /// iPhone's stack is moving is lost.
     enum LogLaunch {
         private static var applied = false
 
         static func apply(
-            open: (String) -> Void, edit: @escaping (CatchEditorSheet) -> Void
+            open: (String) -> Void, insights: () -> Void,
+            edit: @escaping (CatchEditorSheet) -> Void
         ) {
             guard !applied else { return }
             applied = true
+            if ProcessInfo.processInfo.arguments.contains("-whatWorked") {
+                insights()
+                return
+            }
             let sheet: CatchEditorSheet
             if let id = LaunchArguments.value(after: "-editCatch") {
                 open(id)
