@@ -1,0 +1,12 @@
+---
+source: crates/underbite-core/src/view/log.rs
+expression: "all_text(&insights_for(&book, &Filter::default(), us(), Voice::Plain))"
+---
+{
+  "total": 0,
+  "headline": "Catches counted: 0",
+  "empty": "Log some catches to see when your fish were caught.",
+  "too_few": null,
+  "notice": "Counts show when fish were caught, not when fishing is best: the log does not record the time spent fishing without a bite.",
+  "sections": []
+}

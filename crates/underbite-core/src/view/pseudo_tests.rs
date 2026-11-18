@@ -367,3 +367,94 @@ fn the_trip_view_is_translated_in_the_pseudo_locale() {
     }
     assert!(problems.is_empty(), "{}", problems.join("\n"));
 }
+
+#[test]
+fn the_log_views_are_translated_in_the_pseudo_locale() {
+    use crate::log::insights::{Filter, summarise};
+    use crate::view::log::{
+        CatchDetail, CatchList, InsightsView, ParseError, catch_detail, catch_list, insights_view,
+        tests as log,
+    };
+    use crate::view::strings::Strings;
+    let mut ids = BTreeSet::new();
+    for schema in [
+        schemars::schema_for!(CatchList),
+        schemars::schema_for!(CatchDetail),
+        schemars::schema_for!(InsightsView),
+    ] {
+        identifiers(&serde_json::to_value(schema).unwrap(), &mut ids);
+    }
+    // What the angler and the data wrote: shown as written.
+    let mut data: Vec<String> = [
+        "Striped bass",
+        "Hickory shad",
+        "Perch",
+        "The Battery",
+        "Lower Hudson",
+        "Hudson River entrance",
+        "Croton River",
+        "Bucktail jig",
+        "Casting from the seawall",
+        "Second fish of the morning",
+        "c1.jpg",
+    ]
+    .map(str::to_owned)
+    .to_vec();
+    data.sort_by_key(|t| std::cmp::Reverse(t.len()));
+    let catalogue = log::catalogue();
+    let mut book = log::bass_book();
+    book.upsert(log::full_entry());
+    book.upsert(log::bare_entry());
+    let filter = Filter::default();
+    let mut problems = Vec::new();
+    for units in [us(), metric()] {
+        for voice in [Voice::Luna, Voice::Plain] {
+            let f = log::formatter(units, voice).with_locale(Locale::PSEUDO);
+            let places = log::places();
+            let empty = crate::log::LogBook::new();
+            let mut found = Vec::new();
+            for view in [
+                serde_json::to_value(catch_detail(&log::full_entry(), &f, &catalogue, &places)),
+                serde_json::to_value(catch_detail(&log::bare_entry(), &f, &catalogue, &places)),
+                serde_json::to_value(catch_list(&book, &f, &catalogue, &places)),
+                serde_json::to_value(catch_list(&empty, &f, &catalogue, &places)),
+                serde_json::to_value(insights_view(
+                    &summarise(&book, &filter),
+                    &filter,
+                    &f,
+                    &catalogue,
+                )),
+                serde_json::to_value(insights_view(
+                    &summarise(&empty, &filter),
+                    &filter,
+                    &f,
+                    &catalogue,
+                )),
+            ] {
+                strings(&view.unwrap(), "", &mut found);
+            }
+            for e in [
+                ParseError::NotANumber,
+                ParseError::NotPositive,
+                ParseError::TooLarge,
+                ParseError::PoundsNotWhole,
+                ParseError::OuncesTooMany,
+            ] {
+                let words = Strings::localized(voice, Locale::PSEUDO);
+                found.push(("error".to_owned(), e.text(words)));
+            }
+            problems.extend(
+                found
+                    .into_iter()
+                    .filter(|(path, s)| {
+                        !matches!(field(path), "key" | "id") && !ids.contains(s.as_str())
+                    })
+                    .filter_map(|(path, s)| {
+                        untranslated(&s, &data)
+                            .map(|rest| format!("({voice:?}){path}: {s:?} ({rest:?})"))
+                    }),
+            );
+        }
+    }
+    assert!(problems.is_empty(), "{}", problems.join("\n"));
+}

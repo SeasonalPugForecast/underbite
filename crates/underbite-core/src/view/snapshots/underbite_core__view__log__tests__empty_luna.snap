@@ -1,0 +1,11 @@
+---
+source: crates/underbite-core/src/view/log.rs
+expression: all_text(&empty)
+---
+{
+  "rows": [],
+  "empty": {
+    "title": "Luna's plate is empty",
+    "body": "Log a catch and Luna keeps the conditions beside it. The sashimi plate is waiting."
+  }
+}

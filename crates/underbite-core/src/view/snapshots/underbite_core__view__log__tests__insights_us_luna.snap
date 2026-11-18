@@ -1,0 +1,499 @@
+---
+source: crates/underbite-core/src/view/log.rs
+expression: all_text(&v)
+---
+{
+  "total": 20,
+  "headline": "Catches counted: 20",
+  "empty": null,
+  "too_few": null,
+  "notice": "Counts show when fish were caught, not when fishing is best: the log does not record the time spent fishing without a bite.",
+  "sections": [
+    {
+      "kind": "tide_direction",
+      "title": "Tide direction",
+      "bars": [
+        {
+          "key": "rising",
+          "label": "Rising tide",
+          "count": 12,
+          "fraction": 1.0,
+          "peak": true,
+          "spoken": "Rising tide: 12 of 18"
+        },
+        {
+          "key": "falling",
+          "label": "Falling tide",
+          "count": 6,
+          "fraction": 0.5,
+          "peak": false,
+          "spoken": "Falling tide: 6 of 18"
+        }
+      ],
+      "sentence": "12 of 18 Striped bass catches: rising tide",
+      "too_few": null,
+      "unknown": "2 of 20 catches have no record of this."
+    },
+    {
+      "kind": "since_turn",
+      "title": "Time since the tide turned",
+      "bars": [
+        {
+          "key": "high-0",
+          "label": "0–1 h after high",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "0–1 h after high: 0 of 18"
+        },
+        {
+          "key": "high-1",
+          "label": "1–2 h after high",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "1–2 h after high: 0 of 18"
+        },
+        {
+          "key": "high-2",
+          "label": "2–3 h after high",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "2–3 h after high: 0 of 18"
+        },
+        {
+          "key": "high-3",
+          "label": "3–4 h after high",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "3–4 h after high: 0 of 18"
+        },
+        {
+          "key": "high-4",
+          "label": "4–5 h after high",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "4–5 h after high: 0 of 18"
+        },
+        {
+          "key": "high-5",
+          "label": "5–6 h after high",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "5–6 h after high: 0 of 18"
+        },
+        {
+          "key": "high-6",
+          "label": "6+ h after high",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "6+ h after high: 0 of 18"
+        },
+        {
+          "key": "low-0",
+          "label": "0–1 h after low",
+          "count": 5,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "0–1 h after low: 5 of 18"
+        },
+        {
+          "key": "low-1",
+          "label": "1–2 h after low",
+          "count": 5,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "1–2 h after low: 5 of 18"
+        },
+        {
+          "key": "low-2",
+          "label": "2–3 h after low",
+          "count": 4,
+          "fraction": 0.8,
+          "peak": false,
+          "spoken": "2–3 h after low: 4 of 18"
+        },
+        {
+          "key": "low-3",
+          "label": "3–4 h after low",
+          "count": 4,
+          "fraction": 0.8,
+          "peak": false,
+          "spoken": "3–4 h after low: 4 of 18"
+        },
+        {
+          "key": "low-4",
+          "label": "4–5 h after low",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "4–5 h after low: 0 of 18"
+        },
+        {
+          "key": "low-5",
+          "label": "5–6 h after low",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "5–6 h after low: 0 of 18"
+        },
+        {
+          "key": "low-6",
+          "label": "6+ h after low",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "6+ h after low: 0 of 18"
+        }
+      ],
+      "sentence": "No single value stands out: the catches are spread evenly.",
+      "too_few": null,
+      "unknown": "2 of 20 catches have no record of this."
+    },
+    {
+      "kind": "current",
+      "title": "Tidal current",
+      "bars": [],
+      "sentence": null,
+      "too_few": "Too few catches with this recorded to tell: 0 of the 10 needed.",
+      "unknown": null
+    },
+    {
+      "kind": "water_temperature",
+      "title": "Water temperature",
+      "bars": [
+        {
+          "key": "from-10",
+          "label": "50–54 °F",
+          "count": 6,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "50–54 °F: 6 of 18"
+        },
+        {
+          "key": "from-12",
+          "label": "54–57 °F",
+          "count": 6,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "54–57 °F: 6 of 18"
+        },
+        {
+          "key": "from-14",
+          "label": "57–61 °F",
+          "count": 6,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "57–61 °F: 6 of 18"
+        }
+      ],
+      "sentence": "No single value stands out: the catches are spread evenly.",
+      "too_few": null,
+      "unknown": "2 of 20 catches have no record of this."
+    },
+    {
+      "kind": "flow",
+      "title": "River flow",
+      "bars": [],
+      "sentence": null,
+      "too_few": "Too few catches with this recorded to tell: 0 of the 10 needed.",
+      "unknown": null
+    },
+    {
+      "kind": "pressure_trend",
+      "title": "Pressure trend",
+      "bars": [],
+      "sentence": null,
+      "too_few": "Too few catches with this recorded to tell: 0 of the 10 needed.",
+      "unknown": null
+    },
+    {
+      "kind": "moon_phase",
+      "title": "Moon",
+      "bars": [],
+      "sentence": null,
+      "too_few": "Too few catches with this recorded to tell: 0 of the 10 needed.",
+      "unknown": null
+    },
+    {
+      "kind": "solunar",
+      "title": "Solunar",
+      "bars": [
+        {
+          "key": "major",
+          "label": "Big nibble",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "Big nibble: 0 of 18"
+        },
+        {
+          "key": "minor",
+          "label": "Small nibble",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "Small nibble: 0 of 18"
+        },
+        {
+          "key": "outside",
+          "label": "Outside the periods",
+          "count": 18,
+          "fraction": 1.0,
+          "peak": true,
+          "spoken": "Outside the periods: 18 of 18"
+        }
+      ],
+      "sentence": "18 of 18 Striped bass catches: outside the periods",
+      "too_few": null,
+      "unknown": "2 of 20 catches have no record of this."
+    },
+    {
+      "kind": "light",
+      "title": "Light",
+      "bars": [
+        {
+          "key": "dawn",
+          "label": "Dawn",
+          "count": 6,
+          "fraction": 0.5,
+          "peak": false,
+          "spoken": "Dawn: 6 of 18"
+        },
+        {
+          "key": "day",
+          "label": "Day",
+          "count": 12,
+          "fraction": 1.0,
+          "peak": true,
+          "spoken": "Day: 12 of 18"
+        },
+        {
+          "key": "dusk",
+          "label": "Dusk",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "Dusk: 0 of 18"
+        },
+        {
+          "key": "night",
+          "label": "Night",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "Night: 0 of 18"
+        }
+      ],
+      "sentence": "12 of 18 Striped bass catches: day",
+      "too_few": null,
+      "unknown": "2 of 20 catches have no record of this."
+    },
+    {
+      "kind": "hour_of_day",
+      "title": "Hour of day",
+      "bars": [
+        {
+          "key": "hour-0",
+          "label": "12 AM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "12 AM: 1 of 20"
+        },
+        {
+          "key": "hour-1",
+          "label": "1 AM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "1 AM: 1 of 20"
+        },
+        {
+          "key": "hour-2",
+          "label": "2 AM",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "2 AM: 0 of 20"
+        },
+        {
+          "key": "hour-3",
+          "label": "3 AM",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "3 AM: 0 of 20"
+        },
+        {
+          "key": "hour-4",
+          "label": "4 AM",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "4 AM: 0 of 20"
+        },
+        {
+          "key": "hour-5",
+          "label": "5 AM",
+          "count": 0,
+          "fraction": 0.0,
+          "peak": false,
+          "spoken": "5 AM: 0 of 20"
+        },
+        {
+          "key": "hour-6",
+          "label": "6 AM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "6 AM: 1 of 20"
+        },
+        {
+          "key": "hour-7",
+          "label": "7 AM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "7 AM: 1 of 20"
+        },
+        {
+          "key": "hour-8",
+          "label": "8 AM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "8 AM: 1 of 20"
+        },
+        {
+          "key": "hour-9",
+          "label": "9 AM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "9 AM: 1 of 20"
+        },
+        {
+          "key": "hour-10",
+          "label": "10 AM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "10 AM: 1 of 20"
+        },
+        {
+          "key": "hour-11",
+          "label": "11 AM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "11 AM: 1 of 20"
+        },
+        {
+          "key": "hour-12",
+          "label": "12 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "12 PM: 1 of 20"
+        },
+        {
+          "key": "hour-13",
+          "label": "1 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "1 PM: 1 of 20"
+        },
+        {
+          "key": "hour-14",
+          "label": "2 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "2 PM: 1 of 20"
+        },
+        {
+          "key": "hour-15",
+          "label": "3 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "3 PM: 1 of 20"
+        },
+        {
+          "key": "hour-16",
+          "label": "4 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "4 PM: 1 of 20"
+        },
+        {
+          "key": "hour-17",
+          "label": "5 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "5 PM: 1 of 20"
+        },
+        {
+          "key": "hour-18",
+          "label": "6 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "6 PM: 1 of 20"
+        },
+        {
+          "key": "hour-19",
+          "label": "7 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "7 PM: 1 of 20"
+        },
+        {
+          "key": "hour-20",
+          "label": "8 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "8 PM: 1 of 20"
+        },
+        {
+          "key": "hour-21",
+          "label": "9 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "9 PM: 1 of 20"
+        },
+        {
+          "key": "hour-22",
+          "label": "10 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "10 PM: 1 of 20"
+        },
+        {
+          "key": "hour-23",
+          "label": "11 PM",
+          "count": 1,
+          "fraction": 1.0,
+          "peak": false,
+          "spoken": "11 PM: 1 of 20"
+        }
+      ],
+      "sentence": "No single value stands out: the catches are spread evenly.",
+      "too_few": null,
+      "unknown": null
+    }
+  ]
+}

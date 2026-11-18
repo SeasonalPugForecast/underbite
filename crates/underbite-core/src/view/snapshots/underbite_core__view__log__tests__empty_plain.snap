@@ -1,0 +1,11 @@
+---
+source: crates/underbite-core/src/view/log.rs
+expression: all_text(&plain)
+---
+{
+  "rows": [],
+  "empty": {
+    "title": "No catches yet",
+    "body": "Log a catch and the conditions at that moment are kept with it."
+  }
+}

@@ -1,0 +1,122 @@
+---
+source: crates/underbite-core/src/view/log.rs
+expression: "all_text(&catch_detail(&e, &formatter(us(), Voice::Luna), &c, &places()))"
+---
+{
+  "row": {
+    "id": "c1",
+    "species": "Striped bass",
+    "size": "28.5 in · 9.5 lb",
+    "when": "Nov 8 2026 · 6:10 AM",
+    "place": "The Battery",
+    "fate": "kept_for_sashimi",
+    "fate_label": "Kept for sashimi",
+    "has_conditions": true,
+    "summary": "Striped bass, 28.5 in · 9.5 lb, Nov 8 2026 · 6:10 AM, The Battery, Kept"
+  },
+  "details": [
+    {
+      "label": "Lure",
+      "value": "Bucktail jig"
+    },
+    {
+      "label": "Method",
+      "value": "Casting from the seawall"
+    },
+    {
+      "label": "Notes",
+      "value": "Second fish of the morning"
+    }
+  ],
+  "photos": [
+    "c1.jpg"
+  ],
+  "conditions_title": "Conditions",
+  "conditions": [
+    {
+      "kind": "tide",
+      "label": "Tide",
+      "value": "Rising tide, 2.5 h after low, 3.7 h before high",
+      "footnote": "NOAA CO-OPS · The Battery · 4 min before the catch"
+    },
+    {
+      "kind": "tide_height",
+      "label": "Tide height",
+      "value": "2.8 ft MLLW",
+      "footnote": "NOAA CO-OPS · The Battery · 4 min before the catch"
+    },
+    {
+      "kind": "current",
+      "label": "Tidal current",
+      "value": "1.4 kn, flood, toward NE 45°",
+      "footnote": "NOAA CO-OPS · Hudson River entrance · 30 min after the catch (a prediction)"
+    },
+    {
+      "kind": "flow",
+      "label": "River flow",
+      "value": "1,201 cfs, normal, 45th percentile for Nov 8",
+      "footnote": "USGS · Croton River · 10 min before the catch"
+    },
+    {
+      "kind": "gage_height",
+      "label": "Gage height",
+      "value": "3.9 ft NAVD88",
+      "footnote": "NOAA CO-OPS · Croton River · at the time of the catch"
+    },
+    {
+      "kind": "water_temperature",
+      "label": "Water temperature",
+      "value": "54 °F",
+      "footnote": "NOAA CO-OPS · The Battery · 6 min before the catch"
+    },
+    {
+      "kind": "turbidity",
+      "label": "Turbidity",
+      "value": "4.2 FNU",
+      "footnote": "NOAA CO-OPS · Croton River · 15 min before the catch"
+    },
+    {
+      "kind": "pressure",
+      "label": "Pressure",
+      "value": "30.05 inHg",
+      "footnote": "NOAA CO-OPS · The Battery · 6 min before the catch"
+    },
+    {
+      "kind": "pressure_trend",
+      "label": "Pressure trend",
+      "value": "Falling",
+      "footnote": "NOAA CO-OPS · The Battery · 6 min before the catch"
+    },
+    {
+      "kind": "wind",
+      "label": "Wind",
+      "value": "11 mph, gusts 18 mph, from SW 225°",
+      "footnote": "NOAA CO-OPS · 2 h before the catch"
+    },
+    {
+      "kind": "air_temperature",
+      "label": "Air temperature",
+      "value": "48 °F",
+      "footnote": "NOAA CO-OPS · 2 h before the catch"
+    },
+    {
+      "kind": "moon",
+      "label": "Moon",
+      "value": "Waxing crescent, 27% lit",
+      "footnote": "Computed on this device"
+    },
+    {
+      "kind": "solunar",
+      "label": "Solunar",
+      "value": "Big nibble, 5:40 to 7:40 AM",
+      "footnote": "Computed on this device"
+    },
+    {
+      "kind": "light",
+      "label": "Light",
+      "value": "Dawn",
+      "footnote": "Computed on this device"
+    }
+  ],
+  "no_conditions": null
+}

@@ -917,6 +917,126 @@ keys! {
     StockingPlannedWhen => ("planned: {when}", "planned: {when}"),
     /// `{species}`, `{details}`.
     StockingSummary => ("{species} · {details}", "{species} · {details}"),
+    // -- the catch log --------------------------------------------------------------------
+    LogReleased => ("Released", "Released"),
+    /// Luna's fun tag; the plain voice says "Kept".
+    LogKept => ("Kept", "Kept"),
+    LogKeptForSashimi => ("Kept", "Kept for sashimi"),
+    LogSpeciesUnknown => ("Unknown species", "Unknown species"),
+    /// `{date}`, `{year}`, `{time}`: in the catch's own time zone.
+    LogWhen => ("{date} {year} · {time}", "{date} {year} · {time}"),
+    LogSizeJoin => ("{length} · {weight}", "{length} · {weight}"),
+    /// The spoken line of a row: `{species}`, `{details}` (size, time, place and fate).
+    LogRowSummary => ("{species}, {details}", "{species}, {details}"),
+    LogJoin => ("{first}, {second}", "{first}, {second}"),
+    LogEmptyTitle => ("No catches yet", "Luna's plate is empty"),
+    LogEmptyBody => (
+        "Log a catch and the conditions at that moment are kept with it.",
+        "Log a catch and Luna keeps the conditions beside it. The sashimi plate is waiting.",
+    ),
+    LogConditionsTitle => ("Conditions", "Conditions"),
+    LogNoConditions => (
+        "No conditions were saved with this catch.",
+        "No conditions were saved with this catch.",
+    ),
+    LogLure => ("Lure", "Lure"),
+    LogMethod => ("Method", "Method"),
+    LogNotes => ("Notes", "Notes"),
+    LogLabelTideHeight => ("Tide height", "Tide height"),
+    LogLabelPressureTrend => ("Pressure trend", "Pressure trend"),
+    LogLabelAirTemperature => ("Air temperature", "Air temperature"),
+    LogLabelMoon => ("Moon", "Moon"),
+    LogLabelLight => ("Light", "Light"),
+    LogHigh => ("high", "high"),
+    LogLow => ("low", "low"),
+    /// `{direction}`, `{since}`, `{previous}`, `{to}`, `{next}`.
+    LogTideStage => (
+        "{direction}, {since} after {previous}, {to} before {next}",
+        "{direction}, {since} after {previous}, {to} before {next}",
+    ),
+    /// `{speed}`, `{set}`.
+    LogCurrentSet => ("{speed}, {set}", "{speed}, {set}"),
+    /// `{value}`, `{direction}`.
+    LogToward => ("{value}, toward {direction}", "{value}, toward {direction}"),
+    /// `{wind}`, `{gust}`.
+    LogWindGust => ("{wind}, gusts {gust}", "{wind}, gusts {gust}"),
+    /// `{wind}`, `{direction}`.
+    LogWindFrom => ("{wind}, from {direction}", "{wind}, from {direction}"),
+    /// `{flow}`, `{percentile}`.
+    LogFlowValue => ("{flow}, {percentile}", "{flow}, {percentile}"),
+    /// `{phase}`, `{lit}`.
+    LogMoonValue => ("{phase}, {lit} lit", "{phase}, {lit} lit"),
+    /// `{label}`, `{range}`.
+    LogSolunarPeriod => ("{label}, {range}", "{label}, {range}"),
+    LogLightDawn => ("Dawn", "Dawn"),
+    LogLightDay => ("Day", "Day"),
+    LogLightDusk => ("Dusk", "Dusk"),
+    LogLightNight => ("Night", "Night"),
+    LogComputed => ("Computed on this device", "Computed on this device"),
+    /// A condition's footnote: `{age}` is a duration such as "6 min".
+    LogAgeBefore => ("{age} before the catch", "{age} before the catch"),
+    LogAgeAfter => ("{age} after the catch (a prediction)", "{age} after the catch (a prediction)"),
+    LogAgeNow => ("at the time of the catch", "at the time of the catch"),
+    /// What the editor says about a number it cannot read; `{example}` is written in the locale.
+    LogParseNumber => ("Enter a number, such as {example}.", "Enter a number, such as {example}."),
+    LogParseNotPositive => ("Enter more than zero.", "Enter more than zero."),
+    LogParseTooLarge => ("That is too large to be a fish.", "That is too large to be a fish."),
+    LogParsePounds => ("Enter whole pounds, and the ounces in the other field.", "Enter whole pounds, and the ounces in the other field."),
+    LogParseOunces => ("Enter less than 16 ounces.", "Enter less than 16 ounces."),
+    // What worked.
+    LogInsightsTotal => ("Catches counted: {n}", "Catches counted: {n}"),
+    LogInsightsNote => (
+        "Counts show when fish were caught, not when fishing is best: the log does not record the time spent fishing without a bite.",
+        "Counts show when fish were caught, not when fishing is best: the log does not record the time spent fishing without a bite.",
+    ),
+    LogInsightsEmpty => (
+        "Log some catches to see when your fish were caught.",
+        "Luna has nothing to sniff at yet. Log a catch first.",
+    ),
+    /// `{n}` logged, `{min}` needed.
+    LogInsightsFew => (
+        "Too few catches to tell: {n} logged, {min} needed.",
+        "Too few catches to tell: {n} logged, {min} needed.",
+    ),
+    /// `{known}` catches with the condition recorded, `{min}` needed.
+    LogSectionFew => (
+        "Too few catches with this recorded to tell: {known} of the {min} needed.",
+        "Too few catches with this recorded to tell: {known} of the {min} needed.",
+    ),
+    /// `{unknown}` of `{total}` catches.
+    LogSectionUnknown => (
+        "{unknown} of {total} catches have no record of this.",
+        "{unknown} of {total} catches have no record of this.",
+    ),
+    /// `{n}` of `{known}`, `{subject}`, `{value}`.
+    LogSentence => ("{n} of {known} {subject}: {value}", "{n} of {known} {subject}: {value}"),
+    LogSubjectCatches => ("catches", "catches"),
+    /// `{species}`.
+    LogSubjectSpecies => ("{species} catches", "{species} catches"),
+    LogNoStandout => (
+        "No single value stands out: the catches are spread evenly.",
+        "No single value stands out: the catches are spread evenly.",
+    ),
+    /// `{label}`, `{n}`, `{known}`.
+    LogBarSpoken => ("{label}: {n} of {known}", "{label}: {n} of {known}"),
+    LogSectionTide => ("Tide direction", "Tide direction"),
+    LogSectionSinceTurn => ("Time since the tide turned", "Time since the tide turned"),
+    LogSectionHour => ("Hour of day", "Hour of day"),
+    LogTideRising => ("Rising tide", "Rising tide"),
+    LogTideFalling => ("Falling tide", "Falling tide"),
+    /// `{from}`, `{to}` hours and `{turn}` (high or low).
+    LogHoursAfter => ("{from}–{to} h after {turn}", "{from}–{to} h after {turn}"),
+    LogHoursAfterLast => ("{from}+ h after {turn}", "{from}+ h after {turn}"),
+    LogFlowUnder10 => ("Under the 10th percentile", "Under the 10th percentile"),
+    LogFlow10To25 => ("10th to 25th percentile", "10th to 25th percentile"),
+    LogFlow25To75 => ("25th to 75th percentile", "25th to 75th percentile"),
+    LogFlow75To90 => ("75th to 90th percentile", "75th to 90th percentile"),
+    LogFlowOver90 => ("Over the 90th percentile", "Over the 90th percentile"),
+    LogSolunarMajor => ("Major period", "Big nibble"),
+    LogSolunarMinor => ("Minor period", "Small nibble"),
+    LogSolunarOutside => ("Outside the periods", "Outside the periods"),
+    /// A temperature bin: `{from}`, `{to}`, `{unit}`.
+    LogRange => ("{from}–{to} {unit}", "{from}–{to} {unit}"),
     // -- unit symbols -----------------------------------------------------------------------
     UnitFahrenheit => ("°F", "°F"),
     UnitCelsius => ("°C", "°C"),
@@ -942,6 +1062,10 @@ keys! {
     UnitPerMetre => ("1/m", "1/m"),
     UnitInches => ("in", "in"),
     UnitCentimetres => ("cm", "cm"),
+    UnitPounds => ("lb", "lb"),
+    UnitOunces => ("oz", "oz"),
+    UnitKilograms => ("kg", "kg"),
+    UnitGrams => ("g", "g"),
     UnitMillimetres => ("mm", "mm"),
     /// A height's unit with its datum: `{unit}`, `{datum}`: "ft MLLW".
     UnitWithDatum => ("{unit} {datum}", "{unit} {datum}"),

@@ -1,0 +1,22 @@
+---
+source: crates/underbite-core/src/view/log.rs
+expression: all_text(&luna)
+---
+{
+  "row": {
+    "id": "c0",
+    "species": "Hickory shad",
+    "size": "1.0 lb",
+    "when": "Oct 4 2025 · 7:10 AM",
+    "place": "Lower Hudson",
+    "fate": "released",
+    "fate_label": "Released",
+    "has_conditions": false,
+    "summary": "Hickory shad, 1.0 lb, Oct 4 2025 · 7:10 AM, Lower Hudson, Released"
+  },
+  "details": [],
+  "photos": [],
+  "conditions_title": "Conditions",
+  "conditions": [],
+  "no_conditions": "No conditions were saved with this catch."
+}

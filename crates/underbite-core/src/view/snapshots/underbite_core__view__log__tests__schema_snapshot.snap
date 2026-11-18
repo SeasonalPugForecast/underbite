@@ -1,0 +1,495 @@
+---
+source: crates/underbite-core/src/view/log.rs
+expression: schema
+---
+{
+  "catch_detail": {
+    "$defs": {
+      "CatchFate": {
+        "description": "What became of the fish. The plain voice words [`Self::KeptForSashimi`] as \"Kept\".",
+        "enum": [
+          "released",
+          "kept",
+          "kept_for_sashimi"
+        ],
+        "type": "string"
+      },
+      "CatchRow": {
+        "description": "One catch in the list.",
+        "properties": {
+          "fate": {
+            "$ref": "#/$defs/CatchFate"
+          },
+          "fate_label": {
+            "description": "\"Released\", \"Kept\" or (in Luna's voice) \"Kept for sashimi\".",
+            "type": "string"
+          },
+          "has_conditions": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "place": {
+            "description": "The saved spot's name, else the area the catch was filed under; never coordinates.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "size": {
+            "description": "\"28.5 in · 9.5 lb\", whichever of the two is known; none when neither is.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "species": {
+            "description": "The catalogue's name, else the angler's own words, else \"Unknown species\".",
+            "type": "string"
+          },
+          "summary": {
+            "description": "The row in one plain line for `VoiceOver`.",
+            "type": "string"
+          },
+          "when": {
+            "description": "\"Nov 8 2026 · 6:10 AM\" in the catch's own time zone.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "species",
+          "when",
+          "fate",
+          "fate_label",
+          "has_conditions",
+          "summary"
+        ],
+        "type": "object"
+      },
+      "ConditionKind": {
+        "description": "The kinds of condition a catch's detail lists.",
+        "enum": [
+          "tide",
+          "tide_height",
+          "current",
+          "flow",
+          "gage_height",
+          "water_temperature",
+          "turbidity",
+          "pressure",
+          "pressure_trend",
+          "wind",
+          "air_temperature",
+          "moon",
+          "solunar",
+          "light"
+        ],
+        "type": "string"
+      },
+      "ConditionLine": {
+        "description": "One condition at the catch with where it came from.",
+        "properties": {
+          "footnote": {
+            "description": "The source, the station and how far the reading was from the catch, always plain:\n\"NOAA CO-OPS · The Battery · 6 min before the catch\".",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/$defs/ConditionKind"
+          },
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "label",
+          "value",
+          "footnote"
+        ],
+        "type": "object"
+      },
+      "DetailLine": {
+        "description": "A labelled text of the catch: lure, method, notes.",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "value"
+        ],
+        "type": "object"
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "One catch in full.",
+    "properties": {
+      "conditions": {
+        "items": {
+          "$ref": "#/$defs/ConditionLine"
+        },
+        "type": "array"
+      },
+      "conditions_title": {
+        "type": "string"
+      },
+      "details": {
+        "description": "Lure, method and notes, those that were filled in.",
+        "items": {
+          "$ref": "#/$defs/DetailLine"
+        },
+        "type": "array"
+      },
+      "no_conditions": {
+        "description": "Set when the catch has no conditions.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "photos": {
+        "description": "The names of the photos kept with the catch.",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "row": {
+        "$ref": "#/$defs/CatchRow"
+      }
+    },
+    "required": [
+      "row",
+      "details",
+      "photos",
+      "conditions_title",
+      "conditions"
+    ],
+    "title": "CatchDetail",
+    "type": "object"
+  },
+  "catch_list": {
+    "$defs": {
+      "CatchFate": {
+        "description": "What became of the fish. The plain voice words [`Self::KeptForSashimi`] as \"Kept\".",
+        "enum": [
+          "released",
+          "kept",
+          "kept_for_sashimi"
+        ],
+        "type": "string"
+      },
+      "CatchRow": {
+        "description": "One catch in the list.",
+        "properties": {
+          "fate": {
+            "$ref": "#/$defs/CatchFate"
+          },
+          "fate_label": {
+            "description": "\"Released\", \"Kept\" or (in Luna's voice) \"Kept for sashimi\".",
+            "type": "string"
+          },
+          "has_conditions": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "place": {
+            "description": "The saved spot's name, else the area the catch was filed under; never coordinates.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "size": {
+            "description": "\"28.5 in · 9.5 lb\", whichever of the two is known; none when neither is.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "species": {
+            "description": "The catalogue's name, else the angler's own words, else \"Unknown species\".",
+            "type": "string"
+          },
+          "summary": {
+            "description": "The row in one plain line for `VoiceOver`.",
+            "type": "string"
+          },
+          "when": {
+            "description": "\"Nov 8 2026 · 6:10 AM\" in the catch's own time zone.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "species",
+          "when",
+          "fate",
+          "fate_label",
+          "has_conditions",
+          "summary"
+        ],
+        "type": "object"
+      },
+      "EmptyState": {
+        "description": "A text that says what to do when there is nothing to list.",
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "body"
+        ],
+        "type": "object"
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "The log, newest catch first.",
+    "properties": {
+      "empty": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/EmptyState"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Set when there are no rows."
+      },
+      "rows": {
+        "items": {
+          "$ref": "#/$defs/CatchRow"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "rows"
+    ],
+    "title": "CatchList",
+    "type": "object"
+  },
+  "fish_units": {
+    "$defs": {
+      "LengthUnit": {
+        "description": "The unit a length is typed in.",
+        "enum": [
+          "inches",
+          "centimetres"
+        ],
+        "type": "string"
+      },
+      "WeightUnit": {
+        "description": "The unit a weight is typed in.",
+        "enum": [
+          "pounds",
+          "ounces",
+          "kilograms",
+          "grams"
+        ],
+        "type": "string"
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "The units fish are measured in: inches and pounds where the user reads heights in feet,\ncentimetres and kilograms where they read them in metres.",
+    "properties": {
+      "length": {
+        "$ref": "#/$defs/LengthUnit"
+      },
+      "weight": {
+        "$ref": "#/$defs/WeightUnit"
+      }
+    },
+    "required": [
+      "length",
+      "weight"
+    ],
+    "title": "FishUnits",
+    "type": "object"
+  },
+  "insights_view": {
+    "$defs": {
+      "InsightBar": {
+        "description": "One value of a condition and how many catches had it.",
+        "properties": {
+          "count": {
+            "format": "uint",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "fraction": {
+            "description": "The count against the largest bar of the section, 0 to 1, for drawing.",
+            "format": "float",
+            "type": "number"
+          },
+          "key": {
+            "description": "A stable id of the value: \"rising\", \"high-2\", \"from-10\", \"hour-6\".",
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "peak": {
+            "description": "The one value with more catches than any other.",
+            "type": "boolean"
+          },
+          "spoken": {
+            "description": "\"Rising tide: 12 of 20\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "count",
+          "fraction",
+          "peak",
+          "spoken"
+        ],
+        "type": "object"
+      },
+      "InsightKind": {
+        "description": "The conditions the catches are counted along.",
+        "enum": [
+          "tide_direction",
+          "since_turn",
+          "current",
+          "water_temperature",
+          "flow",
+          "pressure_trend",
+          "moon_phase",
+          "solunar",
+          "light",
+          "hour_of_day"
+        ],
+        "type": "string"
+      },
+      "InsightSection": {
+        "description": "The catches counted along one condition.",
+        "properties": {
+          "bars": {
+            "description": "Empty when too few catches have the condition recorded.",
+            "items": {
+              "$ref": "#/$defs/InsightBar"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "$ref": "#/$defs/InsightKind"
+          },
+          "sentence": {
+            "description": "\"12 of 20 striped bass catches: rising tide\". None when too few to tell.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "too_few": {
+            "description": "Says there are too few catches to tell.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unknown": {
+            "description": "Says how many catches have no record of the condition.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "title",
+          "bars"
+        ],
+        "type": "object"
+      }
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "What worked: sections of bars, and the notes that keep them honest.",
+    "properties": {
+      "empty": {
+        "description": "Set when there are no catches at all.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "headline": {
+        "description": "\"Catches counted: 20\".",
+        "type": "string"
+      },
+      "notice": {
+        "description": "Counts say when fish were caught, not when fishing is best.",
+        "type": "string"
+      },
+      "sections": {
+        "description": "Empty unless there are at least [`MIN_CATCHES_FOR_PATTERN`] catches.",
+        "items": {
+          "$ref": "#/$defs/InsightSection"
+        },
+        "type": "array"
+      },
+      "too_few": {
+        "description": "Set when there are some, but too few to tell anything.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "total": {
+        "format": "uint",
+        "minimum": 0,
+        "type": "integer"
+      }
+    },
+    "required": [
+      "total",
+      "headline",
+      "notice",
+      "sections"
+    ],
+    "title": "InsightsView",
+    "type": "object"
+  },
+  "pounds_ounces": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "The two fields of a weight in pounds and ounces.",
+    "properties": {
+      "ounces": {
+        "type": "string"
+      },
+      "pounds": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "pounds",
+      "ounces"
+    ],
+    "title": "PoundsOunces",
+    "type": "object"
+  }
+}
