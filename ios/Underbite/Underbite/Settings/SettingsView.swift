@@ -3,7 +3,7 @@ import UnderbiteKit
 
 /// A page of the Settings root.
 enum SettingsDestination: Hashable {
-    case sources, keys, cards, about, attribution, acknowledgements
+    case sources, keys, species, cards, about, attribution, acknowledgements
     case preference(PreferencePageID)
 
     /// The page `-settings <name>` asks for, in debug builds only (screenshots). `-preferences
@@ -14,6 +14,7 @@ enum SettingsDestination: Hashable {
             switch LaunchArguments.value(after: "-settings") {
             case "sources": return .sources
             case "keys": return .keys
+            case "species": return .species
             case "cards": return .cards
             case "about": return .about
             case "attribution": return .attribution
@@ -64,6 +65,10 @@ struct SettingsView: View {
         }
         .onChange(of: selection) { _, chosen in
             compactColumn = chosen == nil ? .sidebar : .detail
+            // The species list and a profile side by side need the whole width.
+            if sizeClass == .regular {
+                columns = chosen == .species ? .detailOnly : .all
+            }
         }
         .onChange(of: compactColumn) { _, column in
             // Coming back to the list in the compact layout leaves nothing chosen, so the
@@ -80,6 +85,7 @@ struct SettingsView: View {
             Section {
                 Label("Sources", systemImage: "list.number").tag(SettingsDestination.sources)
                 Label("Keys and accounts", systemImage: "key").tag(SettingsDestination.keys)
+                Label("Species", systemImage: "fish").tag(SettingsDestination.species)
             } header: {
                 Text("Data").foregroundStyle(.readableSecondary)
             }
@@ -133,6 +139,7 @@ struct SettingsView: View {
         switch selection {
         case .sources: SourcesView()
         case .keys: KeysView()
+        case .species: SpeciesBrowser()
         case .cards: CustomizeView()
         case .about: AboutView()
         case .attribution: AttributionView()
