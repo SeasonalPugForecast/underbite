@@ -1,0 +1,87 @@
+---
+source: apps/underbite/src/commands/trip.rs
+expression: "render(&view).expect(\"text\")"
+---
+Trip (Nov 8 to Nov 10; Under way)
+- 40.7033,-74.0170 (River or stream)
+! Not for navigation.
+! A traditional cue, not a promise.
+
+== Sun Nov 8 ==
+  Luna's verdict: — [unavailable: no forecast yet]
+  Snack times: 6:15 to 7:15 AM [certain]
+    Incoming tide, Low light, Solunar
+    From tide, light and solunar only
+  Tide: Low 12:59 AM, 0.1 ft MLLW [certain]
+    Low 12:59 AM, 0.1 ft MLLW
+    High 7:06 AM, 5.6 ft MLLW
+    Low 1:35 PM, 0.0 ft MLLW
+    High 7:27 PM, 4.7 ft MLLW
+  River flow: — [unavailable: no source here]
+  Water temperature: — [unavailable: no source here]
+  Sun: 6:34 AM to 4:45 PM [certain]
+  Moon: Waning crescent [certain]
+    1% lit
+  Solunar: Small nibble 5:31 to 6:31 AM [certain]
+    Small nibble 5:31 to 6:31 AM
+    Big nibble 10:05 AM to 12:05 PM
+    Small nibble 3:31 to 4:31 PM
+    Big nibble 10:28 PM to 12:28 AM
+
+== Mon Nov 9 ==
+  Luna's verdict: — [unavailable: no forecast yet]
+  Snack times: 6:15 to 7:45 AM [certain]
+    Incoming tide, Low light, Solunar
+    From tide, light and solunar only
+  Tide: Low 1:40 AM, 0.2 ft MLLW [certain]
+    Low 1:40 AM, 0.2 ft MLLW
+    High 7:44 AM, 5.6 ft MLLW
+    Low 2:18 PM, 0.0 ft MLLW
+    High 8:07 PM, 4.5 ft MLLW
+  River flow: — [unavailable: no source here]
+  Water temperature: — [unavailable: no source here]
+  Sun: 6:35 AM to 4:44 PM [certain]
+  Moon: New moon [certain]
+    0% lit
+  Solunar: Small nibble 6:37 to 7:37 AM [certain]
+    Big nibble 10:28 PM to 12:28 AM
+    Small nibble 6:37 to 7:37 AM
+    Big nibble 10:53 AM to 12:53 PM
+    Small nibble 4:03 to 5:03 PM
+    Big nibble 11:17 PM to 1:17 AM
+
+== Tue Nov 10 ==
+  Luna's verdict: — [unavailable: no forecast yet]
+  Snack times: 6:30 to 7:45 AM [certain]
+    Incoming tide, Low light
+    From tide, light and solunar only
+  Tide: Low 2:19 AM, 0.3 ft MLLW [certain]
+    Low 2:19 AM, 0.3 ft MLLW
+    High 8:21 AM, 5.5 ft MLLW
+    Low 3:00 PM, 0.1 ft MLLW
+    High 8:47 PM, 4.4 ft MLLW
+  River flow: — [unavailable: no source here]
+  Water temperature: — [unavailable: no source here]
+  Sun: 6:36 AM to 4:43 PM [certain]
+  Moon: Waxing crescent [certain]
+    2% lit
+  Solunar: Small nibble 7:41 to 8:41 AM [certain]
+    Big nibble 11:17 PM to 1:17 AM
+    Small nibble 7:41 to 8:41 AM
+    Big nibble 11:43 AM to 1:43 PM
+    Small nibble 4:41 to 5:41 PM
+
+Checklist
+- Freshwater regulations (New York State Department of Environmental Conservation, link checked 2026-11-16) https://dec.ny.gov/things-to-do/freshwater-fishing
+- Fishing licence (New York State Department of Environmental Conservation, link checked 2026-11-16) https://dec.ny.gov/regulatory/permits-licenses
+- Fishing regulations change during the year. Underbite does not state limits, seasons or licence rules; open the official page and check it before you fish.
+- Rods, reels and tackle
+- Pliers and line cutter
+- Headlamp or navigation light
+- Rain jacket
+- Snacks (Luna insists)
+- Offline pack: not downloaded
+- Not shared
+Credit: Sun and moon positions from astronomical algorithms
+Credit: Predictions and observations: NOAA CO-OPS
+Credit: Computed from NOAA harmonic constants
