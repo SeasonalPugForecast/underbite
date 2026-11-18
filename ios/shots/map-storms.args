@@ -1,0 +1,2 @@
+-seed -tab map -mapBase apple-standard -mapLayers storms -mapStormsSample noreaster -mapStormsStep 8 -mapAt 38.5,-69,16 -mapDrawer weather
+wait 40

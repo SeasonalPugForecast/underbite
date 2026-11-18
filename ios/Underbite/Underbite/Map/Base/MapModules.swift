@@ -7,6 +7,7 @@ enum MapModules {
             DepthModule(controller: controller),
             SourcesModule(controller: controller),
             BreaksModule(controller: controller),
+            StormsModule(controller: controller),
             StructureModule(controller: controller),
             RecordsModule(controller: controller),
             StationsModule(controller: controller),
