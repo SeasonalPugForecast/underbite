@@ -1,0 +1,2 @@
+-seed -tab map -mapBase apple-standard -mapLayers enc-seabed,enc-structure-points -mapAt 40.685,-74.03,0.025
+wait 90
