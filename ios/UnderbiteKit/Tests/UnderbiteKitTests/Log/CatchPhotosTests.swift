@@ -148,4 +148,83 @@ final class CatchPhotosTests: XCTestCase {
         let kept = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
         XCTAssertEqual(kept, [])
     }
+
+    /// The photo files in the store's folder.
+    private var photoFiles: [String] {
+        let folder = directory.appending(path: CatchStore.photosFolder, directoryHint: .isDirectory)
+        return (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
+    }
+
+    /// A photo that is still loading for a while, whether or not its editor closes.
+    nonisolated private static func slow(_ data: Data) -> CatchPhotoAdds.Load {
+        {
+            await Task.detached { try? await Task.sleep(for: .milliseconds(300)) }.value
+            return data
+        }
+    }
+
+    func testAPhotoAddedForAClosedEditorIsNotKept() async throws {
+        let store = CatchStore(files: AppFiles(directory: directory), clock: { 1_800_000_000 })
+        let data = try Self.cameraJPEG(width: 400, height: 200)
+        let task = Task { try await store.addPhoto(data) }
+        task.cancel()
+        do {
+            _ = try await task.value
+            XCTFail("a photo was kept for a closed editor")
+        } catch {
+            XCTAssertTrue(error is CancellationError, "\(error)")
+        }
+        XCTAssertEqual(photoFiles, [])
+    }
+
+    func testAnEditorsPhotosComeInOrderAndStayOnceSaved() async throws {
+        let store = CatchStore(files: AppFiles(directory: directory), clock: { 1_800_000_000 })
+        let adds = CatchPhotoAdds(catches: store)
+        let a = try Self.cameraJPEG(width: 400, height: 200)
+        let b = try Self.cameraJPEG(width: 200, height: 200)
+        adds.add([{ a }, { nil }])
+        adds.add([{ b }])
+        XCTAssertEqual(adds.adding, 3)
+        await adds.settle()
+        XCTAssertEqual(adds.adding, 0)
+        XCTAssertEqual(adds.added.count, 2)
+        XCTAssertTrue(adds.failed, "the photo without data")
+        XCTAssertEqual(Set(photoFiles), Set(adds.added))
+        let first = try Self.properties(Data(contentsOf: store.photoURL(adds.added[0])))
+        XCTAssertEqual(first[kCGImagePropertyPixelWidth] as? Int, 400, "in the order picked")
+
+        adds.keep()
+        adds.cancel()
+        XCTAssertEqual(photoFiles.count, 2, "saved photos stay")
+    }
+
+    func testCancellingAnEditorStopsItsPhotosAndRemovesThem() async throws {
+        let store = CatchStore(files: AppFiles(directory: directory), clock: { 1_800_000_000 })
+        let adds = CatchPhotoAdds(catches: store)
+        let a = try Self.cameraJPEG(width: 400, height: 200)
+        adds.add([{ a }])
+        await adds.settle()
+        XCTAssertEqual(photoFiles.count, 1)
+        adds.add([Self.slow(a)])
+        try await Task.sleep(for: .milliseconds(50))
+        adds.cancel()
+        XCTAssertEqual(adds.adding, 0)
+        XCTAssertEqual(adds.added, [])
+        await adds.settle()
+        XCTAssertEqual(adds.added, [])
+        XCTAssertEqual(photoFiles, [], "no photo is left without a catch")
+    }
+
+    func testAnEditorThatGoesAwayStopsItsPhotos() async throws {
+        let store = CatchStore(files: AppFiles(directory: directory), clock: { 1_800_000_000 })
+        let a = try Self.cameraJPEG(width: 400, height: 200)
+        var adds: CatchPhotoAdds? = CatchPhotoAdds(catches: store)
+        adds?.add([{ a }])
+        await adds?.settle()
+        adds?.add([Self.slow(a)])
+        try await Task.sleep(for: .milliseconds(50))
+        adds = nil
+        try await Task.sleep(for: .seconds(1))
+        XCTAssertEqual(photoFiles, [], "no photo is left without a catch")
+    }
 }

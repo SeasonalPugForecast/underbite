@@ -164,9 +164,11 @@ final class CatchStore {
 
     /// Keeps a picked photo for a catch in `photos/`: scaled down, upright and without the
     /// picture's metadata (`CatchPhotos`), worked out off the main actor. Returns its file name.
-    /// Throws `Unsaved` when the log cannot be saved.
+    /// Throws `Unsaved` when the log cannot be saved, and `CancellationError` when the task is
+    /// cancelled (the editor closed): then no file is left.
     func addPhoto(_ data: Data) async throws -> String {
         guard canSave else { throw Unsaved() }
+        try Task.checkCancellation()
         let files = self.files
         let name = CatchPhotos.newName()
         try await Task.detached(priority: .userInitiated) {
@@ -175,6 +177,11 @@ final class CatchStore {
                 throw CatchPhotos.Failure.unwritable
             }
         }.value
+        // Written for an editor that has closed meanwhile: no catch will keep it.
+        if Task.isCancelled {
+            removePhoto(name)
+            throw CancellationError()
+        }
         return name
     }
 

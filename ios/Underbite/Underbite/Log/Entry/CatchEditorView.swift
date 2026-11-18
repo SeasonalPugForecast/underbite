@@ -28,12 +28,18 @@ struct CatchEditorView: View {
     @State private var preview: CatchConditionsPreview?
     @State private var saveError: String?
     @State private var picked: [PhotosPickerItem] = []
-    /// Photo files written while the editor is open; removed again unless saved.
-    @State private var addedPhotos: [String] = []
-    @State private var addingPhotos = 0
-    @State private var photoProblem: String?
+    /// Photo files written while the editor is open; removed again unless saved, and stopped
+    /// when the editor closes.
+    @State private var photos: CatchPhotoAdds
     @State private var locating = false
     @State private var locationProblem: String?
+
+    init(catches: CatchStore, catchID: String?, saved: @escaping (String) -> Void) {
+        self.catches = catches
+        self.catchID = catchID
+        self.saved = saved
+        _photos = State(initialValue: CatchPhotoAdds(catches: catches))
+    }
 
     var body: some View {
         Group {
@@ -58,7 +64,8 @@ struct CatchEditorView: View {
                     .disabled(!canSave)
             }
         }
-        .interactiveDismissDisabled(changed)
+        // Not swiped away while photos are being added: Cancel stops them.
+        .interactiveDismissDisabled(changed || photos.adding > 0)
         .task { load() }
         // The conditions follow the time and the place, and a fetch that brings a newer snapshot.
         .task(id: previewKey) { await buildPreview() }
@@ -71,7 +78,14 @@ struct CatchEditorView: View {
         .onChange(of: picked) { _, items in
             guard !items.isEmpty else { return }
             picked = []
-            Task { await addPhotos(items) }
+            photos.add(
+                items.map { item -> CatchPhotoAdds.Load in
+                    { try await item.loadTransferable(type: Data.self) }
+                })
+        }
+        .onChange(of: photos.added) { old, new in
+            // The photos as they come, after those already there.
+            draft.photos.append(contentsOf: new.dropFirst(old.count))
         }
     }
 
@@ -215,13 +229,16 @@ struct CatchEditorView: View {
                 }
                 .scrollIndicators(.hidden)
             }
-            if addingPhotos > 0 {
+            if photos.adding > 0 {
                 HStack {
                     ProgressView()
                     Text("Adding photos…").foregroundStyle(.readableSecondary)
                 }
             }
-            if let photoProblem { ProblemText(text: photoProblem) }
+            if photos.failed {
+                ProblemText(
+                    text: "A photo could not be added. It may still be downloading from iCloud.")
+            }
             PhotosPicker(
                 selection: $picked, maxSelectionCount: 10, selectionBehavior: .ordered,
                 matching: .images, preferredItemEncoding: .current
@@ -283,11 +300,12 @@ struct CatchEditorView: View {
     }
 
     private var changed: Bool {
-        opened != nil && (opened != draft || !addedPhotos.isEmpty)
+        opened != nil && (opened != draft || !photos.added.isEmpty)
     }
 
     private var canSave: Bool {
-        catches.canSave && opened != nil && lengthProblem == nil && weightProblem == nil && addingPhotos == 0
+        catches.canSave && opened != nil && lengthProblem == nil && weightProblem == nil
+            && photos.adding == 0
             && draft.position(spots: spots.spots) != nil
     }
 
@@ -382,27 +400,8 @@ struct CatchEditorView: View {
         }
     }
 
-    private func addPhotos(_ items: [PhotosPickerItem]) async {
-        photoProblem = nil
-        addingPhotos += items.count
-        for item in items {
-            defer { addingPhotos -= 1 }
-            do {
-                guard let data = try await item.loadTransferable(type: Data.self) else {
-                    throw CatchPhotos.Failure.unreadable
-                }
-                let name = try await catches.addPhoto(data)
-                addedPhotos.append(name)
-                draft.photos.append(name)
-            } catch {
-                photoProblem = "A photo could not be added. It may still be downloading from iCloud."
-            }
-        }
-    }
-
     private func cancel() {
-        catches.removePhotos(addedPhotos)
-        addedPhotos = []
+        photos.cancel()
         dismiss()
     }
 
@@ -417,9 +416,9 @@ struct CatchEditorView: View {
                 _ = try? catches.attachConditions(to: id, snapshotJSON: snapshot)
             }
             let kept = Set(draft.photos)
-            let dropped = ((opened?.photos ?? []) + addedPhotos).filter { !kept.contains($0) }
+            let dropped = ((opened?.photos ?? []) + photos.added).filter { !kept.contains($0) }
             catches.removePhotos(dropped)
-            addedPhotos = []
+            photos.keep()
             saved(id)
             dismiss()
         } catch {
