@@ -32,8 +32,14 @@ struct MapCanvas: UIViewRepresentable {
             target: coordinator, action: #selector(Coordinator.tapped(_:)))
         single.delegate = coordinator
         single.require(toFail: double)
+        // A long press starts measuring; a tap waits for it to fail.
+        let long = UILongPressGestureRecognizer(
+            target: coordinator, action: #selector(Coordinator.pressed(_:)))
+        long.delegate = coordinator
+        single.require(toFail: long)
         map.addGestureRecognizer(double)
         map.addGestureRecognizer(single)
+        map.addGestureRecognizer(long)
         coordinator.map = map
         return map
     }
@@ -336,6 +342,15 @@ struct MapCanvas: UIViewRepresentable {
                 MapTap(
                     coordinate: map.convert(point, toCoordinateFrom: map), point: point,
                     mapPointsPerPoint: map.visibleMapRect.width / Double(map.bounds.width)))
+        }
+
+        @objc func pressed(_ recognizer: UILongPressGestureRecognizer) {
+            guard recognizer.state == .began, let map, map.bounds.width > 0 else { return }
+            let point = recognizer.location(in: map)
+            let press = MapTap(
+                coordinate: map.convert(point, toCoordinateFrom: map), point: point,
+                mapPointsPerPoint: map.visibleMapRect.width / Double(map.bounds.width))
+            controller.modules.lazy.compactMap { $0 as? InspectorModule }.first?.longPress(press)
         }
 
         func gestureRecognizer(

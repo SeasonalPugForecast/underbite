@@ -3,6 +3,7 @@ enum MapModules {
     @MainActor
     static func make(controller: MapController) -> [any MapModule] {
         [
+            InspectorModule(controller: controller),
             SourcesModule(controller: controller),
             StationsModule(controller: controller),
         ]

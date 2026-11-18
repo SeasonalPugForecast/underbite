@@ -112,10 +112,8 @@ private struct MapScreen: View {
                     // The map stays usable beside the sheet's medium height.
                     .presentationBackgroundInteraction(.enabled(upThrough: .medium))
             }
-            .sheet(item: $controller.inspection) { _ in
+            .overlay {
                 InspectorSheet(controller: controller)
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
             }
     }
 }
