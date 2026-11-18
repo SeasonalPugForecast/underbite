@@ -6,10 +6,11 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use underbite_core::discover::rank::{LinkPlace, Plan};
 use underbite_core::model::{
-    Measurement, Requirements, SourceError as ModelSourceError, SourceErrorKind, Spot,
+    BloomInfo, Measurement, Requirements, SourceError as ModelSourceError, SourceErrorKind, Spot,
     StockingEvent,
 };
 use underbite_core::provenance::{Attribution, SourceId};
+use underbite_providers::blooms::{cyan, hab};
 use underbite_providers::request::{CacheHint, Coordinates, Place, Target, Window};
 use underbite_providers::session::usage::OPEN_METEO;
 use underbite_providers::session::{Chain, Link, Session, SessionOutcome};
@@ -111,6 +112,35 @@ pub(crate) async fn run_session<H: FetchHost>(
         }
     }
     session.finish(host.now)
+}
+
+/// When the satellite was asked about the spot's bloom and its composites were all old, and no
+/// other source gave a bloom block, an empty block with the satellite's link: the bloom card
+/// then says there is no recent satellite data, never that there is no bloom. The error stays
+/// with the others.
+pub(crate) fn note_stale_satellite(outcome: &mut SessionOutcome, spot: &Spot) {
+    let stale = outcome.errors.iter().any(|e| {
+        e.source == SourceId::CYAN
+            && e.measurement == Some(Measurement::Bloom)
+            && e.kind == SourceErrorKind::Stale
+    });
+    if !stale || outcome.water.bloom.is_some() {
+        return;
+    }
+    let at = Coordinates {
+        latitude: spot.latitude,
+        longitude: spot.longitude,
+    };
+    let mut links = vec![cyan::info_link()];
+    for link in hab::links_near(at) {
+        if !links.contains(&link) {
+            links.push(link);
+        }
+    }
+    outcome.water.bloom = Some(BloomInfo {
+        links,
+        ..BloomInfo::default()
+    });
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -549,6 +579,72 @@ mod tests {
             &event(Some("Westchester"), "Kensico Reservoir"),
             &waters
         ));
+    }
+
+    #[test]
+    fn old_satellite_composites_leave_a_bloom_block_that_says_so() {
+        use underbite_core::discover::rank::{ChainSpec, Limits};
+        use underbite_core::model::WaterType;
+        use underbite_providers::request::RoundedPoint;
+
+        use crate::testing::{ctx, fixtures};
+
+        // Oneida Lake: the recorded composites end in March, months before the fetch.
+        let spot = Spot {
+            id: "oneida".into(),
+            name: "Oneida Lake".into(),
+            latitude: 43.2,
+            longitude: -76.0,
+            water_type: WaterType::LakeReservoir,
+            water_body: None,
+            time_zone: "America/New_York".into(),
+        };
+        let at = Coordinates {
+            latitude: spot.latitude,
+            longitude: spot.longitude,
+        };
+        let url = cyan::request_url(RoundedPoint::new(at, 2), cyan::Frequency::Weekly);
+        let body = std::fs::read_to_string(
+            fixtures().join("raw/cyan/cyan-oneida-lake-weekly-2026-11-17.json"),
+        )
+        .expect("fixture");
+        let host = MemoryHost::default().answering(url, body);
+        let chain = ChainSpec {
+            sources: vec![SourceId::CYAN],
+            limits: Limits::default(),
+        };
+        let chains = BTreeMap::from([(Measurement::Bloom, chain)]);
+        let d = pollster::block_on(crate::discover(&host, &ctx(), &spot, chains, true));
+        let requirements = Requirements {
+            measurements: BTreeSet::from([Measurement::Bloom]),
+            ..Requirements::default()
+        };
+        let driver = pollster::block_on(Driver::new(&host, now(), true));
+        let session = Session::new(
+            session_chains(&d.plan, &requirements, &ctx()),
+            requirements.clone(),
+            ctx(),
+        );
+        let mut out = pollster::block_on(run_session(&driver, session));
+        assert_eq!(out.water.bloom, None);
+        let stale =
+            |e: &ModelSourceError| e.source == SourceId::CYAN && e.kind == SourceErrorKind::Stale;
+        assert!(out.errors.iter().any(stale), "{:#?}", out.errors);
+
+        note_stale_satellite(&mut out, &spot);
+        let bloom = out.water.bloom.as_ref().expect("a block");
+        assert_eq!(bloom.links, [cyan::info_link()]);
+        assert!(bloom.cyan_max_cells_ml.is_none() && bloom.hab.is_none());
+        assert!(out.errors.iter().any(stale), "the error stays");
+
+        // Nothing is added when the satellite was not asked or gave a block.
+        let mut quiet = SessionOutcome {
+            errors: Vec::new(),
+            ..out
+        };
+        quiet.water.bloom = None;
+        note_stale_satellite(&mut quiet, &spot);
+        assert_eq!(quiet.water.bloom, None);
     }
 
     #[test]

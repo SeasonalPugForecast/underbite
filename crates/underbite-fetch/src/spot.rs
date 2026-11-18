@@ -18,7 +18,9 @@ use crate::discovery::discover_with;
 use crate::host::{Driver, FetchHost};
 use crate::normals::fetch_normals;
 use crate::registry::{chain_specs, requirements, wants_stocking, weather_chain};
-use crate::sessions::{Stocking, fetch_stocking, fetch_weather, run_session, session_chains};
+use crate::sessions::{
+    Stocking, fetch_stocking, fetch_weather, note_stale_satellite, run_session, session_chains,
+};
 use crate::sky::{sky, time_zone};
 use crate::store::{self, spot_key};
 use crate::storms::fetch_storms;
@@ -106,6 +108,7 @@ pub async fn fetch_spot<H: FetchHost>(
     .with_usage(host.usage.clone())
     .allow_metered(options.allow_metered);
     let mut water = run_session(&host, session).await;
+    note_stale_satellite(&mut water, spot);
     let stocking = if wants_stocking(config, spot.water_type) {
         fetch_stocking(&host, spot, discovery.water_name.as_deref()).await
     } else {
