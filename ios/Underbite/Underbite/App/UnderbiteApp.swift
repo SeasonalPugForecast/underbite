@@ -21,16 +21,20 @@ struct UnderbiteApp: App {
                 .sunMode(store.sunMode || LaunchArguments.sunMode)
                 .paintsWithTheme(sunMode: store.sunMode || LaunchArguments.sunMode)
                 // While the app is open, due spots are fetched and the page built again every
-                // minute; in the background nothing is.
+                // minute; in the background only the alert checks iOS grants run.
                 .onChange(of: phase, initial: true) { _, phase in
                     switch phase {
                     case .active: store.setForeground(true)
                     case .background:
                         store.setForeground(false)
                         store.saveSettingsNow()
+                        AlertsBackground.schedule()
                     default: break
                     }
                 }
+        }
+        .backgroundTask(.appRefresh(AlertsBackground.refreshTask)) {
+            await AlertsBackground.run(store)
         }
     }
 
