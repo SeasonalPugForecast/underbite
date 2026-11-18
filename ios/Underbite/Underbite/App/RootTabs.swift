@@ -24,9 +24,7 @@ struct RootTabs: View {
                 TripsTab()
             }
             Tab("Log", systemImage: "book.closed", value: AppTab.log) {
-                ComingSection(
-                    title: "Log", systemImage: "book.closed",
-                    text: "Keep your catches, where and when, and see what worked.")
+                LogTab()
             }
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
                 SettingsView()
