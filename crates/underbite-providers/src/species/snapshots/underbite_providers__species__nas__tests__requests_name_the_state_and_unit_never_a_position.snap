@@ -1,0 +1,5 @@
+---
+source: crates/underbite-providers/src/species/nas.rs
+expression: "search_request(&query(Some(\"NY\"), None, NasTaxon::Genus(\"Channa\".into())), 0,\n3).unwrap().url"
+---
+https://nas.er.usgs.gov/api/v2/occurrence/search?state=NY&genus=Channa&limit=3&offset=0

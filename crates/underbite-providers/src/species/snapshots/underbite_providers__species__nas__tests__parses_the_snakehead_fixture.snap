@@ -1,0 +1,33 @@
+---
+source: crates/underbite-providers/src/species/nas.rs
+expression: records
+---
+- source: usgs-nas
+  id: "164584"
+  taxon: Channa argus
+  latitude: 40.734269
+  longitude: -73.84069
+  licence: public-domain
+  url: "https://nas.er.usgs.gov/queries/SpecimenViewer.aspx?SpecimenID=164584"
+- source: usgs-nas
+  id: "238474"
+  taxon: Channa argus
+  latitude: 40.734269
+  longitude: -73.84069
+  observed_on:
+    year: 2007
+    month: 5
+    day: 23
+  licence: public-domain
+  url: "https://nas.er.usgs.gov/queries/SpecimenViewer.aspx?SpecimenID=238474"
+- source: usgs-nas
+  id: "238508"
+  taxon: Channa argus
+  latitude: 40.734269
+  longitude: -73.84069
+  observed_on:
+    year: 2006
+    month: 5
+    day: 23
+  licence: public-domain
+  url: "https://nas.er.usgs.gov/queries/SpecimenViewer.aspx?SpecimenID=238508"
