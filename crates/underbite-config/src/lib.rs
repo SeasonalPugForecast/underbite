@@ -2,6 +2,7 @@
 //! windows and map layers, serialized with serde and described by a JSON Schema,
 //! versioned with migrations from older versions.
 
+pub mod alerts;
 pub mod cards;
 pub mod export;
 pub mod limits;

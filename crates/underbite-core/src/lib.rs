@@ -5,6 +5,7 @@
 //! The weather part of a spot is whether's model (`whether_core`), reused as is.
 //! Nothing here performs I/O or reads the clock: callers pass `now` explicitly.
 
+pub mod alerts;
 pub mod astro;
 pub mod datum;
 pub mod derive;
