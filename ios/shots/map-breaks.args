@@ -1,0 +1,2 @@
+-seed -tab map -mapBase apple-standard -mapLayers sst,sst-breaks -mapAt 39.5,-72.2,1.6 -mapBreaksSst 0.1 -mapDrawer none
+wait 150
