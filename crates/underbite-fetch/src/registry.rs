@@ -282,11 +282,16 @@ fn provider_id(id: &SourceId) -> Option<ProviderId> {
     serde_json::from_value(serde_json::Value::String(id.as_str().to_string())).ok()
 }
 
-/// What the weather session asks for: everything the cards can show, without air quality
-/// (no card shows it).
+/// Hours of hourly weather asked for: a week, so a trip's go/no-go has wind and weather for
+/// every day the daily forecast reaches.
+pub(crate) const HOURLY_HOURS: u8 = 168;
+
+/// What the weather session asks for: everything the cards can show, a week of hours, without
+/// air quality (no card shows it).
 pub(crate) fn weather_requirements() -> DataRequirements {
     DataRequirements {
         air_quality: false,
+        hourly_hours: HOURLY_HOURS,
         ..DataRequirements::full()
     }
 }
@@ -492,5 +497,9 @@ mod tests {
         let chain = weather_chain(&keyed, &battery);
         assert!(chain.primary.is_empty() && chain.supplements.is_empty());
         assert!(!weather_requirements().air_quality);
+        // A week of hours, matching the daily forecast, so go/no-go reaches a trip's days.
+        let req = weather_requirements();
+        assert_eq!(req.hourly_hours, 168);
+        assert!(u16::from(req.hourly_hours) >= u16::from(req.daily_days) * 24);
     }
 }
