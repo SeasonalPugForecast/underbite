@@ -1,0 +1,2 @@
+-seed -seedCatches -seedTracks -tab map -mapBase apple-standard -mapLayers catch-heat,tracks,catches -mapAt 41.219,-73.862,0.03
+wait 30
