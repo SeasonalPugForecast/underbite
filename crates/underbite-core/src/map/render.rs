@@ -4,7 +4,8 @@
 //! metres); this module turns them into colours and positions, never into text. Legends are
 //! numeric stops that the view labels.
 //!
-//! The ramps are sampled (33 of 256 entries each) from Fabio Crameri's Scientific colour maps
+//! The ramps are sampled (33 of 256 entries each; the depth ramp keeps the darker 21) from Fabio
+//! Crameri's Scientific colour maps
 //! (version 8.0.1, doi:10.5281/zenodo.8409685), which are perceptually uniform and readable with
 //! colour-vision deficiency. The colour map data are by Fabio Crameri under the MIT License; the
 //! app's Acknowledgements carry the notice.
@@ -274,6 +275,22 @@ const DEVON: [Rgba; 33] = [
 /// `devon` light to dark: shallow water light, deep water dark.
 const DEVON_REVERSED: [Rgba; 33] = reversed(DEVON);
 
+/// The depth ramp's stops: `devon` light to dark without its twelve lightest stops, which are
+/// near white and vanish on Apple's light map. Shallow water starts at a light blue-violet
+/// (`#afaaee`, twice white's darkness by contrast ratio) and is mid-blue by 30 m.
+const DEPTH_STOPS: [Rgba; 21] = last_of(DEVON_REVERSED);
+
+/// The last `M` of `N` stops.
+const fn last_of<const N: usize, const M: usize>(stops: [Rgba; N]) -> [Rgba; M] {
+    let mut out = [Rgba::TRANSPARENT; M];
+    let mut i = 0;
+    while i < M {
+        out[i] = stops[N - M + i];
+        i += 1;
+    }
+    out
+}
+
 /// Scientific colour map `vik`.
 #[rustfmt::skip]
 const VIK: [Rgba; 33] = [
@@ -336,12 +353,12 @@ pub static TURBIDITY: Ramp = Ramp {
     default_range: RampRange::log10(0.02, 3.0),
 };
 
-/// Depth below the surface (`devon` reversed, white shallows to dark blue-violet depths),
-/// 0 to 100 m.
+/// Depth below the surface (`devon` reversed and trimmed, light blue-violet shallows to dark
+/// blue-violet depths), 0 to 100 m.
 pub static DEPTH: Ramp = Ramp {
     id: "depth",
     kind: RampKind::Sequential,
-    stops: &DEVON_REVERSED,
+    stops: &DEPTH_STOPS,
     default_range: RampRange::linear(0.0, 100.0),
 };
 
@@ -846,7 +863,62 @@ mod tests {
             }
         }
         // Shallow water is drawn light and deep water dark.
-        assert!(lightness(DEPTH.stops[0]) > lightness(DEPTH.stops[32]));
+        assert!(lightness(DEPTH.stops[0]) > lightness(DEPTH.stops[DEPTH.stops.len() - 1]));
+    }
+
+    /// WCAG 2's relative luminance of a colour.
+    fn luminance(c: Rgba) -> f64 {
+        let lin = |v: u8| {
+            let s = f64::from(v) / 255.0;
+            if s <= 0.040_45 {
+                s / 12.92
+            } else {
+                ((s + 0.055) / 1.055).powf(2.4)
+            }
+        };
+        0.0722f64.mul_add(lin(c.b), 0.2126f64.mul_add(lin(c.r), 0.7152 * lin(c.g)))
+    }
+
+    /// WCAG 2's contrast ratio of a colour against white: 1 for white, 21 for black.
+    fn contrast_with_white(c: Rgba) -> f64 {
+        1.05 / (luminance(c) + 0.05)
+    }
+
+    /// `c` drawn at `opacity` over white.
+    fn over_white(c: Rgba, opacity: f64) -> Rgba {
+        let mix = |v: u8| {
+            opacity
+                .mul_add(f64::from(v), (1.0 - opacity) * 255.0)
+                .round() as u8
+        };
+        Rgba::opaque(mix(c.r), mix(c.g), mix(c.b))
+    }
+
+    /// The rule: by WCAG 2's contrast ratio against white, the shading of the shallowest water
+    /// is at least 2:1 (near-white is about 1.05:1), at least 1.75:1 still when drawn at the
+    /// shading layer's opacity of 0.8, and from 30 m on at least 3:1 (WCAG's least for
+    /// graphics); the contrast grows with depth.
+    #[test]
+    fn the_depth_ramp_stands_out_from_white_from_the_surface() {
+        let range = DEPTH.default_range;
+        let at = |m: f64| DEPTH.colour(range, m).unwrap();
+        assert!(contrast_with_white(at(0.0)) >= 2.0, "{:?}", at(0.0));
+        let shading = crate::map::catalogue::find("depth-shading").unwrap();
+        assert_eq!(shading.ramp, Some(DEPTH.id));
+        let opacity = f64::from(shading.default_opacity);
+        assert!((opacity - 0.8).abs() < 1e-6);
+        assert!(contrast_with_white(over_white(at(0.0), opacity)) >= 1.75);
+        for m in [30.0, 50.0, 100.0] {
+            assert!(contrast_with_white(at(m)) >= 3.0, "{m} m: {:?}", at(m));
+        }
+        let contrasts: Vec<f64> = (0..=100)
+            .map(|m| contrast_with_white(at(f64::from(m))))
+            .collect();
+        assert!(contrasts.windows(2).all(|w| w[1] >= w[0]), "{contrasts:?}");
+        // No stop is near white any more.
+        assert!(DEPTH.stops.iter().all(|&c| contrast_with_white(c) >= 2.0));
+        assert_eq!(DEPTH.stops[0], Rgba::opaque(0xaf, 0xaa, 0xee));
+        assert_eq!(DEPTH.stops.last(), DEVON.first());
     }
 
     #[test]
