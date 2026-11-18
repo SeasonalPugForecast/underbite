@@ -65,9 +65,15 @@ struct SettingsView: View {
         }
         .onChange(of: selection) { _, chosen in
             compactColumn = chosen == nil ? .sidebar : .detail
-            // The species list and a profile side by side need the whole width.
-            if sizeClass == .regular {
-                columns = chosen == .species ? .detailOnly : .all
+        }
+        // The species list and a profile side by side need the whole width. Set once the
+        // split view has laid out its columns, which it otherwise does over this.
+        .task(id: selection) {
+            guard sizeClass == .regular else { return }
+            await Task.yield()
+            let wanted: NavigationSplitViewVisibility = selection == .species ? .detailOnly : .all
+            if columns != wanted {
+                withAnimation { columns = wanted }
             }
         }
         .onChange(of: compactColumn) { _, column in

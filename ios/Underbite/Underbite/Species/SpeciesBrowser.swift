@@ -48,11 +48,15 @@ struct SpeciesBrowser: View {
         .navigationDestination(item: $pushed) { id in
             SpeciesProfileScreen(id: id)
         }
-        .onAppear {
-            #if DEBUG
-                if let asked = SpeciesLaunch.species() { open(asked) }
-            #endif
-        }
+        #if DEBUG
+            .task {
+                guard let asked = SpeciesLaunch.species() else { return }
+                // Once Settings has given the page its width: a profile pushed while it is
+                // still narrow would stay pushed.
+                try? await Task.sleep(for: .seconds(1))
+                open(asked)
+            }
+        #endif
         .onChange(of: wide, initial: true) { _, wide in
             guard wide else { return }
             // The profile pushed on the narrow screen shows beside the list instead.

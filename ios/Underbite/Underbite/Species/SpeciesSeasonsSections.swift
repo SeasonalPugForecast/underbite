@@ -62,7 +62,8 @@ struct SpeciesSeasonsSections: View {
                     Text(row.label)
                 }
             }
-            ForEach(now.credits, id: \.self) { credit in
+            // Each source and licence once; the profile lists every record it cites.
+            ForEach(Self.sources(of: now.credits), id: \.self) { credit in
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(credit.source)
                         .font(.caption.weight(.semibold))
@@ -75,6 +76,12 @@ struct SpeciesSeasonsSections: View {
         } footer: {
             if let spot { Text(spot) }
         }
+    }
+
+    /// The credits with one per source and licence, in their order.
+    private static func sources(of credits: [SpeciesCredit]) -> [SpeciesCredit] {
+        var seen = Set<String>()
+        return credits.filter { seen.insert($0.source + "\u{0}" + ($0.licence ?? "")).inserted }
     }
 
     // MARK: - Typical

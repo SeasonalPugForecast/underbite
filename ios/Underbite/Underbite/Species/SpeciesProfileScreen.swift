@@ -43,6 +43,12 @@ struct SpeciesProfileScreen: View {
                     description: Text(SpeciesCatalogue.message(of: error)))
             }
         }
+        #if DEBUG
+            .onAppear {
+                // `-speciesPage seasons` opens the seasons (screenshots).
+                if LaunchArguments.value(after: "-speciesPage") == "seasons" { page = .seasons }
+            }
+        #endif
         .sheet(item: $editing) { editing in
             SpeciesFieldEditor(speciesID: id, row: editing.row, field: editing.field)
                 .environment(spots)
