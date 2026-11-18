@@ -8,6 +8,8 @@ struct CatchDetailScreen: View {
     @Environment(SpotStore.self) private var spots
     let catches: CatchStore
     let id: String
+    /// Opens the catch in the editor.
+    var edit: (() -> Void)?
     @State private var detail: CatchDetail?
     @State private var loaded = false
     @State private var deleting = false
@@ -27,6 +29,11 @@ struct CatchDetailScreen: View {
         .navigationTitle(detail?.row.species ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            if detail != nil, let edit {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Edit", systemImage: "pencil", action: edit)
+                }
+            }
             if detail != nil {
                 ToolbarItem(placement: .destructiveAction) {
                     Button("Delete", systemImage: "trash", role: .destructive) { deleting = true }
@@ -124,8 +131,10 @@ private struct ConditionRow: View {
 }
 
 /// A photo of the catch, read from the app's container as a thumbnail.
-private struct CatchPhoto: View {
+struct CatchPhoto: View {
     let url: URL
+    /// The side of the square, in points.
+    var side: CGFloat = 120
     @State private var image: UIImage?
 
     var body: some View {
@@ -138,14 +147,14 @@ private struct CatchPhoto: View {
                 Rectangle().fill(.quaternary)
             }
         }
-        .frame(width: 120, height: 120)
+        .frame(width: side, height: side)
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .accessibilityElement()
         .accessibilityLabel(Text("Photo of the catch"))
         .accessibilityAddTraits(.isImage)
         .task(id: url) {
             image = UIImage(contentsOfFile: url.path)?.preparingThumbnail(
-                of: CGSize(width: 240, height: 240))
+                of: CGSize(width: side * 2, height: side * 2))
         }
     }
 }

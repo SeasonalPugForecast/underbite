@@ -155,6 +155,26 @@ final class CatchStore {
         files.url(Self.photosFolder + "/" + name)
     }
 
+    /// Keeps a picked photo for a catch in `photos/`: scaled down, upright and without the
+    /// picture's metadata (`CatchPhotos`), worked out off the main actor. Returns its file name.
+    func addPhoto(_ data: Data) async throws -> String {
+        let files = self.files
+        let name = CatchPhotos.newName()
+        try await Task.detached(priority: .userInitiated) {
+            let jpeg = try CatchPhotos.stripped(data)
+            guard files.write(jpeg, Self.photosFolder + "/" + name) else {
+                throw CatchPhotos.Failure.unwritable
+            }
+        }.value
+        return name
+    }
+
+    /// Removes photo files no catch keeps: those an edit dropped, or those an editor added and
+    /// was then cancelled.
+    func removePhotos(_ names: [String]) {
+        for name in names { removePhoto(name) }
+    }
+
     private func removePhoto(_ name: String) {
         // A name is one file in the folder, never a path out of it.
         guard !name.isEmpty, !name.contains("/"), !name.contains("\\"), name != ".", name != ".."

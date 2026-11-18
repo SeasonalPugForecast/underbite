@@ -7,9 +7,18 @@ enum LogSelection: Hashable {
     case entry(String)
 }
 
+/// The catch editor the Log shows: a new catch, or one to edit.
+enum CatchEditorSheet: Identifiable, Hashable {
+    case new
+    case edit(String)
+
+    var id: Self { self }
+}
+
 /// The catch log: the catches newest first with their filters, and "What worked". A split view:
 /// the list beside the chosen catch on the iPad, a stack on the iPhone and in a narrow iPad
-/// window. The selection is the catch's id, so it survives the collapse and back.
+/// window. The selection is the catch's id, so it survives the collapse and back. The editor is
+/// a sheet (a form sheet on the iPad).
 struct LogTab: View {
     @Environment(SpotStore.self) private var spots
     @Environment(\.horizontalSizeClass) private var sizeClass
@@ -18,17 +27,19 @@ struct LogTab: View {
     @State private var columns: NavigationSplitViewVisibility = .all
     @State private var compactColumn: NavigationSplitViewColumn = .sidebar
     @State private var filter = CatchListFilter()
+    @State private var editor: CatchEditorSheet?
 
     var body: some View {
         NavigationSplitView(columnVisibility: $columns, preferredCompactColumn: $compactColumn) {
-            CatchListColumn(catches: catches, selection: $selection, filter: $filter)
+            CatchListColumn(
+                catches: catches, selection: $selection, filter: $filter, editor: $editor)
         } detail: {
             NavigationStack {
                 switch selection {
                 case .insights:
                     InsightsView()
                 case .entry(let id):
-                    CatchDetailScreen(catches: catches, id: id).id(id)
+                    CatchDetailScreen(catches: catches, id: id) { editor = .edit(id) }.id(id)
                 case nil where catches.list?.rows.isEmpty ?? true:
                     // The list column says what to do with an empty log.
                     Color.clear
@@ -46,6 +57,11 @@ struct LogTab: View {
         }
         .onAppear {
             if sizeClass == .regular, selection == nil { selection = firstShown }
+            #if DEBUG
+                LogLaunch.apply(open: { selection = .entry($0) }) {
+                    editor = $0
+                }
+            #endif
         }
         .onChange(of: sizeClass) { _, now in
             if now == .regular, selection == nil { selection = firstShown }
@@ -62,6 +78,17 @@ struct LogTab: View {
         .onChange(of: selection) { _, chosen in
             compactColumn = chosen == nil ? .sidebar : .detail
         }
+        .sheet(item: $editor) { sheet in
+            NavigationStack {
+                switch sheet {
+                case .new:
+                    CatchEditorView(catches: catches, catchID: nil) { selection = .entry($0) }
+                case .edit(let id):
+                    CatchEditorView(catches: catches, catchID: id) { selection = .entry($0) }
+                }
+            }
+            .presentationSizing(.form)
+        }
     }
 
     /// The saved spots' names, for the catches filed under them.
@@ -76,11 +103,12 @@ struct LogTab: View {
 }
 
 /// The list column: "What worked", then the catches that pass the filters; swipe or touch and
-/// hold to delete.
+/// hold to delete. Its toolbar logs a new catch and filters.
 private struct CatchListColumn: View {
     let catches: CatchStore
     @Binding var selection: LogSelection?
     @Binding var filter: CatchListFilter
+    @Binding var editor: CatchEditorSheet?
     @State private var deleting: CatchRow?
 
     var body: some View {
@@ -140,6 +168,9 @@ private struct CatchListColumn: View {
         }
         .navigationTitle("Log")
         .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Log a catch", systemImage: "plus") { editor = .new }
+            }
             if !rows.isEmpty {
                 ToolbarItem(placement: .primaryAction) {
                     CatchFilterMenu(rows: rows, filter: $filter)
@@ -173,6 +204,35 @@ private struct CatchListColumn: View {
         .font(.subheadline)
     }
 }
+
+#if DEBUG
+    /// Launch arguments of the screenshot runs: `-editCatch <id>` opens that catch in the
+    /// editor, `-newCatch` opens the editor for a new catch. The editor comes up once the
+    /// catch's page has settled: a sheet asked for while the iPhone's stack is moving is lost.
+    enum LogLaunch {
+        private static var applied = false
+
+        static func apply(
+            open: (String) -> Void, edit: @escaping (CatchEditorSheet) -> Void
+        ) {
+            guard !applied else { return }
+            applied = true
+            let sheet: CatchEditorSheet
+            if let id = LaunchArguments.value(after: "-editCatch") {
+                open(id)
+                sheet = .edit(id)
+            } else if ProcessInfo.processInfo.arguments.contains("-newCatch") {
+                sheet = .new
+            } else {
+                return
+            }
+            Task {
+                try? await Task.sleep(for: .seconds(1))
+                edit(sheet)
+            }
+        }
+    }
+#endif
 
 /// The filter menu: species, place and fate, the choices the rows hold.
 private struct CatchFilterMenu: View {
