@@ -18,12 +18,13 @@ use crate::map::catalogue::{DateMode, Group, UnavailableReason};
 use crate::map::dem::{ApproxDepth, DepthReading};
 use crate::map::enc::{SourceDate, StructureKind};
 use crate::map::pack::{PlanError, SkipReason};
+use crate::model::nearby::{AccessKind, AccessLevel};
 use crate::model::{
     AlertSeverity, Measurement, MoonPhase, PrincipalPhase, TideKind, TurbidityUnit, WaterType,
     ZoneKind,
 };
 use crate::provenance::{Relation, SourceId, UsgsSiteType};
-use crate::time::{UnixTime, UtcOffset};
+use crate::time::{LocalDate, UnixTime, UtcOffset};
 use crate::units::{DischargeUnit, DistanceUnit, HeightUnit, PressureUnit, SpeedUnit, TempUnit};
 use crate::view::format::{Formatter, distance_to_metres};
 use crate::view::locale::{DateOrder, Language, Locale};
@@ -917,6 +918,62 @@ keys! {
     StockingPlannedWhen => ("planned: {when}", "planned: {when}"),
     /// `{species}`, `{details}`.
     StockingSummary => ("{species} · {details}", "{species} · {details}"),
+    // -- nearby lookups on the map: access, species records, stocked waters ---------------
+    NearbyZoomInAccess => (
+        "Zoom in to look for ramps, piers and public land",
+        "Zoom in to look for ramps, piers and public land",
+    ),
+    NearbyZoomInOsm => (
+        "Zoom in to look for ramps, piers and parking from OpenStreetMap",
+        "Zoom in to look for ramps, piers and parking from OpenStreetMap",
+    ),
+    NearbyZoomInRecords => ("Zoom in to look for species records", "Zoom in to look for species records"),
+    NearbyZoomInStocking => ("Zoom in to look for stocked waters", "Zoom in to look for stocked waters"),
+    /// `{source}`: the source's name.
+    NearbyMoreThanShown => (
+        "{source} has more here than shown: zoom in to see it all",
+        "{source} has more here than shown: zoom in to see it all",
+    ),
+    /// `{source}`.
+    NearbyDailyCap => (
+        "{source}: this phone's lookups for today are used up; try again tomorrow",
+        "{source}: this phone's lookups for today are used up; try again tomorrow",
+    ),
+    /// `{source}`, `{wait}`: "2 min".
+    NearbyPaused => (
+        "{source} asked to slow down; try again in {wait}",
+        "{source} asked to slow down; try again in {wait}",
+    ),
+    /// `{source}`.
+    NearbyBusy => ("{source} is busy; try again later", "{source} is busy; try again later"),
+    /// `{source}`.
+    NearbyFailed => ("{source} could not be reached", "{source} could not be reached"),
+    AccessKindRamp => ("Boat ramp", "Boat ramp"),
+    AccessKindPier => ("Pier", "Pier"),
+    AccessKindFishingSpot => ("Fishing spot", "Fishing spot"),
+    AccessKindParking => ("Parking", "Parking"),
+    AccessKindPublicLand => ("Public land", "Public land"),
+    /// `{title}`, `{kind}`, `{access}`.
+    AccessAccessibility => ("{title}, {kind}. {access}", "{title}, {kind}. {access}"),
+    /// `{date}` ("Nov 3"), `{year}`.
+    RecordSeen => ("Seen {date} {year}", "Seen {date} {year}"),
+    RecordDateUnknown => ("Date not recorded", "Date not recorded"),
+    /// `{distance}`: "30 m".
+    RecordWithin => ("Position good to {distance}", "Position good to {distance}"),
+    /// `{distance}`: the blurring cell's radius.
+    RecordObscured => (
+        "Position blurred by the source, within {distance}",
+        "Position blurred by the source, within {distance}",
+    ),
+    RecordObscuredArea => ("Position blurred by the source", "Position blurred by the source"),
+    /// `{licence}`: "CC BY".
+    RecordPhoto => ("Photo: {licence}", "Photo: {licence}"),
+    /// `{title}`, `{seen}`, `{source}`.
+    RecordAccessibility => ("{title}, {seen}, {source}", "{title}, {seen}, {source}"),
+    RecordsWhereSeen => (
+        "Records show where a species was reported, not where it is now.",
+        "Records show where a species was reported, not where it is now.",
+    ),
     // -- the catch log --------------------------------------------------------------------
     LogReleased => ("Released", "Released"),
     /// Luna's fun tag; the plain voice says "Kept".
@@ -1670,6 +1727,18 @@ safety_keys! {
     LicenceUserEdited => "Typed in, not from a source",
     /// Beside a profile with `FishBase` values, at home and in a shared file.
     SpeciesFishBaseNotice => "Values licensed CC BY-NC come from FishBase (www.fishbase.org) and may be used only non-commercially, with their citation.",
+    /// The licences of species records and access data, without a version where the source
+    /// states none.
+    LicenceCc0 => "CC0",
+    LicenceCcBy => "CC BY",
+    LicenceCcByNc => "CC BY-NC",
+    LicenceOdbl => "ODbL 1.0",
+    /// What an access feature's level means: the source's record, never permission.
+    AccessOpen => "Open to the public, as the source records it",
+    AccessRestricted => "Restricted: a permit, fee, season or membership may apply",
+    AccessClosed => "Closed to the public, as the source records it",
+    AccessUnknown => "Access not recorded",
+    AccessNotPermission => "Access is shown as the source records it, not as permission to fish, launch or park. Check posted rules and the regulations.",
 }
 
 impl SafetyKey {
@@ -2273,6 +2342,27 @@ impl Strings {
             WaterType::Ice => Key::WaterIce,
         })
     }
+
+    /// What an access feature is: "Boat ramp", "Public land".
+    pub fn access_kind(self, kind: AccessKind) -> &'static str {
+        self.get(match kind {
+            AccessKind::Ramp => Key::AccessKindRamp,
+            AccessKind::Pier => Key::AccessKindPier,
+            AccessKind::FishingSpot => Key::AccessKindFishingSpot,
+            AccessKind::Parking => Key::AccessKindParking,
+            AccessKind::PublicLand => Key::AccessKindPublicLand,
+        })
+    }
+
+    /// What an access level means, as the source records it (never permission).
+    pub fn access_level(self, level: AccessLevel) -> &'static str {
+        self.safety(match level {
+            AccessLevel::Open => SafetyKey::AccessOpen,
+            AccessLevel::Restricted => SafetyKey::AccessRestricted,
+            AccessLevel::Closed => SafetyKey::AccessClosed,
+            AccessLevel::Unknown => SafetyKey::AccessUnknown,
+        })
+    }
 }
 
 /// The map's words: the catalogue holds ids and data, the words are here, looked up by layer or
@@ -2553,6 +2643,48 @@ pub fn depth_label(f: &Formatter, metres: f64) -> String {
         f.strings.grouped(tenths, decimals),
         f.strings.height_unit(unit)
     )
+}
+
+/// When a species record was made: "Seen Nov 3 2026", or "Date not recorded".
+pub fn record_seen(f: &Formatter, observed_on: Option<LocalDate>) -> String {
+    match observed_on {
+        Some(d) => f.strings.fmt(
+            Key::RecordSeen,
+            &[("date", &f.date(d)), ("year", &d.year.to_string())],
+        ),
+        None => f.strings.get(Key::RecordDateUnknown).to_owned(),
+    }
+}
+
+/// How good a species record's position is, in the user's units: "Position good to 98 ft",
+/// "Position blurred by the source, within 17 mi"; `None` when the source says nothing. Under a
+/// kilometre the radius is a whole length in the height unit, beyond it a distance.
+pub fn record_position(
+    f: &Formatter,
+    obscured: bool,
+    uncertainty_m: Option<f32>,
+) -> Option<String> {
+    let radius = uncertainty_m
+        .filter(|m| m.is_finite() && *m >= 0.0)
+        .map(|m| {
+            if m < 1_000.0 {
+                let unit = f.units.height;
+                let v = unit.from_canonical(m).round().max(1.0);
+                format!(
+                    "{} {}",
+                    f.strings.grouped(v, 0),
+                    f.strings.height_unit(unit)
+                )
+            } else {
+                f.distance(Some(m)).full()
+            }
+        });
+    match (obscured, radius) {
+        (true, Some(r)) => Some(f.strings.fmt(Key::RecordObscured, &[("distance", &r)])),
+        (true, None) => Some(f.strings.get(Key::RecordObscuredArea).to_owned()),
+        (false, Some(r)) => Some(f.strings.fmt(Key::RecordWithin, &[("distance", &r)])),
+        (false, None) => None,
+    }
 }
 
 /// The elevation model a DEM raster belongs to, by its name; `None` for one not recognised.
@@ -3093,6 +3225,33 @@ mod tests {
     }
 
     #[test]
+    fn access_kinds_and_levels_are_worded_and_levels_are_never_permission() {
+        let plain = Strings::new(Voice::Plain);
+        let luna = Strings::new(Voice::Luna);
+        assert_eq!(plain.access_kind(AccessKind::Ramp), "Boat ramp");
+        assert_eq!(plain.access_kind(AccessKind::PublicLand), "Public land");
+        for level in [
+            AccessLevel::Open,
+            AccessLevel::Restricted,
+            AccessLevel::Closed,
+            AccessLevel::Unknown,
+        ] {
+            // Safety text: one wording in every voice.
+            assert_eq!(plain.access_level(level), luna.access_level(level));
+            assert!(!plain.access_level(level).contains("Luna"));
+        }
+        assert!(
+            plain
+                .access_level(AccessLevel::Open)
+                .contains("as the source records it")
+        );
+        assert_eq!(
+            plain.access_level(AccessLevel::Unknown),
+            "Access not recorded"
+        );
+    }
+
+    #[test]
     fn relations_have_labels() {
         let plain = Strings::new(Voice::Plain);
         assert_eq!(plain.relation(Relation::SameWaterBody), "Same water body");
@@ -3300,6 +3459,36 @@ mod tests {
             assert_eq!(map_value(&us, MapQuantity::CurrentSpeed, 0.5144), "1.0 kn");
             assert_eq!(MapQuantity::of_layer("radar"), None);
             assert_eq!(map_current(&us, 0.5144, 45.0), "1.0 kn toward NE 45°");
+        }
+
+        #[test]
+        fn species_records_are_dated_and_placed_in_the_users_units() {
+            let (us, si) = (formatter(false), formatter(true));
+            let day = LocalDate {
+                year: 2026,
+                month: 11,
+                day: 3,
+            };
+            assert_eq!(record_seen(&us, Some(day)), "Seen Nov 3 2026");
+            assert_eq!(record_seen(&us, None), "Date not recorded");
+            assert_eq!(
+                record_position(&us, false, Some(30.0)).as_deref(),
+                Some("Position good to 98 ft")
+            );
+            assert_eq!(
+                record_position(&si, false, Some(30.0)).as_deref(),
+                Some("Position good to 30 m")
+            );
+            assert_eq!(
+                record_position(&si, true, Some(27_000.0)).as_deref(),
+                Some("Position blurred by the source, within 27 km")
+            );
+            assert_eq!(
+                record_position(&us, true, None).as_deref(),
+                Some("Position blurred by the source")
+            );
+            assert_eq!(record_position(&us, false, None), None);
+            assert_eq!(record_position(&us, false, Some(f32::NAN)), None);
         }
 
         #[test]
