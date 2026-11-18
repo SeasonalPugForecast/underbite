@@ -12,9 +12,11 @@ struct LayerDrawer: View {
     @State private var expanded: Set<String> = []
     @State private var started = false
     @State private var editMode: EditMode = .inactive
+    @State private var path: [DrawerPage]
 
     init(controller: MapController) {
         self.controller = controller
+        _path = State(initialValue: DrawerLaunch.showsPresets ? [.presets] : [])
     }
 
     /// The map settings the map draws with (the launch's overrides included).
@@ -30,9 +32,14 @@ struct LayerDrawer: View {
     private var editing: Bool { editMode.isEditing }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             List {
                 let groups = groups
+                if !editing {
+                    Section {
+                        PresetLink()
+                    }
+                }
                 ForEach(groups) { group in
                     Section(isExpanded: expansion(group.id)) {
                         if group.isBase {
@@ -74,6 +81,11 @@ struct LayerDrawer: View {
             .environment(\.editMode, $editMode)
             .navigationTitle("Layers")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(for: DrawerPage.self) { page in
+                switch page {
+                case .presets: PresetList(controller: controller)
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(editing ? "Done" : "Reorder") {
