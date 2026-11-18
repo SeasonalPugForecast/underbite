@@ -3,8 +3,8 @@
 use serde_json::{Value, json};
 use underbite_ffi::settings::default_settings_json;
 use underbite_ffi::share::{
-    ShareError, ShareFuzz, SharedKind, TripChange, fuzz_trip, merge_trips, read_file, spot_file,
-    trip_file,
+    ShareError, ShareFuzz, SharedKind, TripChange, fuzz_trip, merge_trips, read_file, share_words,
+    spot_file, trip_file,
 };
 use underbite_ffi::view::SpotInfo;
 
@@ -229,4 +229,19 @@ fn a_participants_rounded_copy_never_overwrites_the_owners_exact_place() {
     let v: Value = serde_json::from_str(&merged.trip_json).unwrap();
     assert_eq!(v["places"][0]["latitude"], 40.7033);
     assert_eq!(v["notes"], "See you there.");
+}
+
+#[test]
+fn the_share_words_offer_three_precisions_with_about_a_kilometre_first() {
+    let w = share_words(default_settings_json()).unwrap();
+    let fuzz: Vec<ShareFuzz> = w.fuzz.iter().map(|c| c.fuzz).collect();
+    assert_eq!(
+        fuzz,
+        [ShareFuzz::Exact, ShareFuzz::Rounded1Km, ShareFuzz::AreaOnly]
+    );
+    assert_eq!(w.default_fuzz, ShareFuzz::Rounded1Km);
+    assert_eq!(w.fuzz[1].label, "About 1 km");
+    assert!(w.fuzz.iter().all(|c| !c.detail.is_empty()));
+    assert_eq!(w.trip_exists, "This trip is already on this device.");
+    assert!(share_words("{".to_owned()).is_err());
 }

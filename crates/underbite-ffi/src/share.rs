@@ -37,6 +37,81 @@ impl From<ShareFuzz> for Fuzz {
     }
 }
 
+/// One choice of how much location a share reveals.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct FuzzChoice {
+    pub fuzz: ShareFuzz,
+    pub label: String,
+    /// One line on what the choice reveals.
+    pub detail: String,
+}
+
+/// The words of sharing and receiving a trip or spot file, in the user's voice.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct ShareWords {
+    /// The title of the location choice before sharing.
+    pub fuzz_title: String,
+    /// The choices, from the most to the least precise.
+    pub fuzz: Vec<FuzzChoice>,
+    /// The choice offered first.
+    pub default_fuzz: ShareFuzz,
+    /// The heading of a received trip's preview.
+    pub receive_trip: String,
+    /// The heading of a received spot's preview.
+    pub receive_spot: String,
+    /// The received trip's id is already on this device.
+    pub trip_exists: String,
+    /// The received spot is already saved.
+    pub spot_exists: String,
+    pub add: String,
+    pub add_copy: String,
+    pub replace: String,
+    /// Said once the trip or spot is added.
+    pub added: String,
+}
+
+/// The words of sharing and receiving files.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn share_words(settings_json: String) -> Result<ShareWords, ShareError> {
+    let (config, _) = load(&settings_json).map_err(|e| invalid("settings", &e))?;
+    let s = Strings::new(config.presentation.voice);
+    let choice = |fuzz, label, detail| FuzzChoice {
+        fuzz,
+        label: s.get(label).to_owned(),
+        detail: s.get(detail).to_owned(),
+    };
+    Ok(ShareWords {
+        fuzz_title: s.get(Key::ShareFuzzTitle).to_owned(),
+        fuzz: vec![
+            choice(
+                ShareFuzz::Exact,
+                Key::ShareFuzzExact,
+                Key::ShareFuzzExactDetail,
+            ),
+            choice(
+                ShareFuzz::Rounded1Km,
+                Key::ShareFuzzRounded,
+                Key::ShareFuzzRoundedDetail,
+            ),
+            choice(
+                ShareFuzz::AreaOnly,
+                Key::ShareFuzzAreaOnly,
+                Key::ShareFuzzAreaOnlyDetail,
+            ),
+        ],
+        default_fuzz: ShareFuzz::Rounded1Km,
+        receive_trip: s.get(Key::ReceiveTrip).to_owned(),
+        receive_spot: s.get(Key::ReceiveSpot).to_owned(),
+        trip_exists: s.get(Key::ReceiveTripExists).to_owned(),
+        spot_exists: s.get(Key::ReceiveSpotExists).to_owned(),
+        add: s.get(Key::ReceiveAdd).to_owned(),
+        add_copy: s.get(Key::ReceiveAddCopy).to_owned(),
+        replace: s.get(Key::ReceiveReplace).to_owned(),
+        added: s.get(Key::ReceiveAdded).to_owned(),
+    })
+}
+
 /// Why a file or a shared trip cannot be used; `message` is the core's text for the person.
 #[derive(Debug, PartialEq, Eq, thiserror::Error, uniffi::Error)]
 pub enum ShareError {
