@@ -125,12 +125,23 @@ fn is_marine(water: WaterType) -> bool {
     is_salt(water) || water == WaterType::GreatLakes
 }
 
+/// Lakes and ponds, where a reservoir's project and a satellite's lake pixels apply.
+fn is_lake(water: WaterType) -> bool {
+    matches!(
+        water,
+        WaterType::LakeReservoir | WaterType::Pond | WaterType::GreatLakes
+    )
+}
+
 /// The measurements one card shows on `water`. Flow means river flow: discharge at a tidal
-/// gauge reverses with the tide, so tidal water takes tides and currents instead.
+/// gauge reverses with the tide, so tidal water takes tides and currents instead; on a lake it
+/// is the level, and a reservoir's release and inflow. A bloom is the satellite's cell counts
+/// on a lake and the coastal bloom forecast on salt water; rivers have neither.
 fn card_measurements(card: CardId, water: WaterType) -> Vec<Measurement> {
     use Measurement as M;
     let salt = is_salt(water);
     let marine = is_marine(water);
+    let lake = is_lake(water);
     let mut out = Vec::new();
     match card {
         CardId::Now => {
@@ -148,13 +159,13 @@ fn card_measurements(card: CardId, water: WaterType) -> Vec<Measurement> {
                 M::FlowForecast,
                 M::FloodCategories,
             ]),
-            WaterType::LakeReservoir | WaterType::Pond | WaterType::GreatLakes => {
-                out.push(M::LakeLevel);
-            }
+            _ if lake => out.extend([M::LakeLevel, M::Reservoir]),
             _ => {}
         },
         CardId::WaterTemp => out.push(M::WaterTemperature),
         CardId::Clarity => out.push(M::Turbidity),
+        CardId::Bloom if lake => out.extend([M::Bloom, M::Cyanobacteria]),
+        CardId::Bloom if salt => out.push(M::Bloom),
         CardId::Waves if marine => out.extend([M::Waves, M::WavesForecast]),
         CardId::Wind if marine => out.push(M::ObservedWind),
         CardId::Pressure if marine => out.push(M::ObservedPressure),
@@ -353,6 +364,53 @@ mod tests {
                 M::FlowForecast,
             ]
         );
+    }
+
+    #[test]
+    fn a_lake_asks_its_level_and_a_reservoirs_release() {
+        let req = requirements(&Config::default(), WaterType::LakeReservoir);
+        for m in [M::LakeLevel, M::Reservoir] {
+            assert!(req.measurements.contains(&m), "{m:?}");
+        }
+        // No bloom card in the shipped orders: nothing about blooms is fetched.
+        assert!(!req.measurements.contains(&M::Bloom));
+        assert!(!req.measurements.contains(&M::Cyanobacteria));
+        let river = requirements(&Config::default(), WaterType::RiverStream);
+        assert!(!river.measurements.contains(&M::Reservoir));
+    }
+
+    #[test]
+    fn a_bloom_card_asks_what_maps_its_water() {
+        // Every water type on the base order, with the bloom card added.
+        let mut config = Config::default();
+        config.cards.order.push(CardId::Bloom);
+        config.cards.river = None;
+        config.cards.pond = None;
+        let blooms = |water: WaterType| -> Vec<M> {
+            requirements(&config, water)
+                .measurements
+                .into_iter()
+                .filter(|m| matches!(m, M::Bloom | M::Cyanobacteria))
+                .collect()
+        };
+        assert_eq!(
+            blooms(WaterType::LakeReservoir),
+            [M::Cyanobacteria, M::Bloom]
+        );
+        assert_eq!(blooms(WaterType::Pond), [M::Cyanobacteria, M::Bloom]);
+        assert_eq!(blooms(WaterType::GreatLakes), [M::Cyanobacteria, M::Bloom]);
+        assert_eq!(blooms(WaterType::BayInshore), [M::Bloom]);
+        assert_eq!(blooms(WaterType::Surf), [M::Bloom]);
+        assert_eq!(blooms(WaterType::RiverStream), []);
+
+        // The lake's chains reach the satellite, the coast's the bloom forecast.
+        let lake = requirements(&config, WaterType::LakeReservoir);
+        let specs = chain_specs(&config.sources, &lake, WaterType::LakeReservoir);
+        assert_eq!(specs[&M::Bloom].sources, [SourceId::CYAN]);
+        assert_eq!(specs[&M::Cyanobacteria].sources, [SourceId::CYAN]);
+        let bay = requirements(&config, WaterType::BayInshore);
+        let specs = chain_specs(&config.sources, &bay, WaterType::BayInshore);
+        assert_eq!(specs[&M::Bloom].sources, [SourceId::NOAA_HAB]);
     }
 
     #[test]
