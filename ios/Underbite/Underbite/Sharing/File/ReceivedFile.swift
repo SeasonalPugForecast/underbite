@@ -66,13 +66,14 @@ nonisolated struct ReceivedFile: Identifiable, Equatable, Sendable {
             .appending(path: "Inbox", directoryHint: .isDirectory)
     }
 
-    /// The first `maxBytes + 1` bytes of the file at `url`.
-    static func read(_ url: URL) throws -> Data {
+    /// The first `limit` bytes of the file at `url` (`maxBytes + 1` unless another limit is
+    /// given).
+    static func read(_ url: URL, limit: Int = maxBytes + 1) throws -> Data {
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         let handle = try FileHandle(forReadingFrom: url)
         defer { try? handle.close() }
-        return try handle.read(upToCount: maxBytes + 1) ?? Data()
+        return try handle.read(upToCount: limit) ?? Data()
     }
 
     /// Decodes `data` with the core: a trip or a spot to preview, or the core's text on why it
