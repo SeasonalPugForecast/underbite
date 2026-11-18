@@ -769,11 +769,22 @@ keys! {
     MapLayerTracks => ("My tracks", "My tracks"),
     MapLayerCatchHeat => ("Catch heat map", "Catch heat map"),
     MapLayerDepthContours => ("Depth contours", "Depth contours"),
+    MapLayerSstBreaks => ("SST breaks", "SST breaks"),
+    MapLayerChlorophyllBreaks => ("Chlorophyll breaks", "Chlorophyll breaks"),
     /// Legend captions of the colour ramps.
     MapLegendColdToWarm => ("Cold to warm", "Cold to warm"),
     MapLegendClearToGreen => ("Clear to green water", "Clear to green water"),
     MapLegendClearToTurbid => ("Clear to turbid", "Clear to turbid"),
     MapLegendSlowToFast => ("Slow to fast", "Slow to fast"),
+    /// Legend captions of the breaks layers.
+    MapLegendSstBreaks => (
+        "Where the temperature changes fastest; heavier lines change faster",
+        "Where the temperature changes fastest; heavier lines change faster",
+    ),
+    MapLegendChlorophyllBreaks => (
+        "Where the water colour changes fastest; heavier lines change faster",
+        "Where the water colour changes fastest; heavier lines change faster",
+    ),
     /// Under a legend whose range follows the values in view.
     MapLegendFitted => ("Colours fitted to this view", "Colours fitted to this view"),
     /// The built-in presets, by id.
@@ -1847,6 +1858,9 @@ safety_keys! {
     MapAckGibs => "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).",
     /// The extra acknowledgement of the MUR sea surface temperature layers.
     MapAckMur => "These data were provided by JPL under support by NASA MEaSUREs program.",
+    /// The breaks layers, found on the device in another layer's grid.
+    MapCreditSstBreaks => "SST breaks: found on this device in NASA JPL MUR (MEaSUREs) SST, via NOAA CoastWatch ERDDAP. Not for navigation.",
+    MapCreditChlorophyllBreaks => "Chlorophyll breaks: found on this device in NOAA CoastWatch / NOAA STAR VIIRS ocean colour. Not for navigation.",
     /// Legend captions that say what a depth or chart layer shows.
     MapLegendGebco => "Offshore depth where the chart has none",
     MapLegendContoursIn => "Depth below the lake surface at survey",
@@ -2743,6 +2757,8 @@ impl Strings {
             "catch-heat" => Key::MapLayerCatchHeat,
             "depth-shading" => Key::MapDepthTitle,
             "depth-contours" => Key::MapLayerDepthContours,
+            "sst-breaks" => Key::MapLayerSstBreaks,
+            "chlorophyll-breaks" => Key::MapLayerChlorophyllBreaks,
             _ => return None,
         }))
     }
@@ -2759,6 +2775,8 @@ impl Strings {
             "chlorophyll" => Some(Key::MapLegendClearToGreen),
             "clarity" => Some(Key::MapLegendClearToTurbid),
             "hf-radar-currents" => Some(Key::MapLegendSlowToFast),
+            "sst-breaks" => Some(Key::MapLegendSstBreaks),
+            "chlorophyll-breaks" => Some(Key::MapLegendChlorophyllBreaks),
             _ => None,
         };
         if let Some(key) = playful {
@@ -2828,6 +2846,8 @@ impl Strings {
             "tracks" => SafetyKey::MapCreditTracks,
             "catch-heat" => SafetyKey::MapCreditCatchHeat,
             "depth-shading" | "depth-contours" => SafetyKey::MapCreditBathymetry,
+            "sst-breaks" => SafetyKey::MapCreditSstBreaks,
+            "chlorophyll-breaks" => SafetyKey::MapCreditChlorophyllBreaks,
             _ => return None,
         }))
     }
@@ -2835,7 +2855,7 @@ impl Strings {
     /// The acknowledgements a layer's source asks for on the sources page, beyond its credit.
     pub fn layer_acknowledgements(self, id: &str) -> Vec<&'static str> {
         let keys: &[SafetyKey] = match id {
-            "sst" => &[SafetyKey::MapAckMur],
+            "sst" | "sst-breaks" => &[SafetyKey::MapAckMur],
             "sst-imagery" => &[SafetyKey::MapAckGibs, SafetyKey::MapAckMur],
             "chlorophyll-imagery"
             | "true-color-viirs-n20"
@@ -3864,6 +3884,42 @@ mod tests {
                 assert_eq!(plain.layer_reference(id), luna.layer_reference(id), "{id}");
                 assert_eq!(plain.layer_licence(id), None, "{id}");
             }
+        }
+
+        #[test]
+        fn breaks_layers_credit_the_grid_they_are_found_in_and_say_not_for_navigation() {
+            let [plain, luna] = both();
+            assert_eq!(plain.layer_title("sst-breaks"), Some("SST breaks"));
+            assert_eq!(
+                plain.layer_title("chlorophyll-breaks"),
+                Some("Chlorophyll breaks")
+            );
+            for (id, source, names) in [
+                ("sst-breaks", "sst", "NASA JPL MUR"),
+                ("chlorophyll-breaks", "chlorophyll", "VIIRS"),
+            ] {
+                let credit = plain.layer_credit(id).unwrap();
+                assert_eq!(Some(credit), luna.layer_credit(id), "{id}");
+                assert!(credit.contains(names), "{id}");
+                assert!(plain.layer_credit(source).unwrap().contains(names), "{id}");
+                assert!(credit.contains("on this device"), "{id}");
+                assert!(credit.ends_with("Not for navigation."), "{id}");
+                assert!(find(id).unwrap().not_for_navigation, "{id}");
+                assert!(
+                    plain.layer_legend(id).unwrap().contains("heavier lines"),
+                    "{id}"
+                );
+                assert_eq!(plain.layer_reference(id), None, "{id}");
+            }
+            assert_eq!(
+                plain.layer_acknowledgements("sst-breaks"),
+                plain.layer_acknowledgements("sst")
+            );
+            assert_eq!(
+                plain.layer_acknowledgements("chlorophyll-breaks"),
+                Vec::<&str>::new()
+            );
+            assert_eq!(MapQuantity::of_layer("sst-breaks"), None);
         }
 
         #[test]

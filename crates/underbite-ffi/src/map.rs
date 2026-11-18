@@ -200,6 +200,10 @@ pub enum LayerDraw {
     /// [`GridStore::render_depth_tile`], the contours with [`GridStore::contour_lines`]. Not
     /// tiles from a service and not a gridded dataset.
     Depth,
+    /// Lines found on the device in the grid another layer shows ([`GridStore::breaks`]), from
+    /// the blocks the store holds for that layer's view: drawn while that layer is on the map,
+    /// with no request of their own.
+    Breaks,
     /// Listed, without a source yet.
     Unsourced,
 }
@@ -319,6 +323,7 @@ const fn draw(kind: &LayerKind) -> LayerDraw {
         LayerKind::Nearby(_) => LayerDraw::Nearby,
         LayerKind::Mine(_) => LayerDraw::Mine,
         LayerKind::Depth(_) => LayerDraw::Depth,
+        LayerKind::Breaks(_) => LayerDraw::Breaks,
         LayerKind::Unsourced => LayerDraw::Unsourced,
     }
 }

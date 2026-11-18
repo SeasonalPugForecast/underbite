@@ -40,7 +40,7 @@ const NCDS_Z14: &str = "https://gis.charttools.noaa.gov/arcgis/rest/services/Mar
 #[test]
 fn the_catalogue_is_worded_with_credits_and_notices() {
     let layers = map_catalogue(plain()).unwrap();
-    assert_eq!(layers.len(), 43);
+    assert_eq!(layers.len(), 45);
     assert!(layers[..4].iter().all(|l| l.is_base));
     assert_eq!(layers[0].draw, LayerDraw::AppleStandard);
     assert!(layers[0].shown, "the default base map is shown");

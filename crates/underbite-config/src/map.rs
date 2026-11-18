@@ -22,7 +22,7 @@ pub const KNOWN_BASES: [&str; 4] = [
 
 /// The overlay layers in drawer order. The layer list of a settings file is completed from this
 /// when it is imported.
-pub const KNOWN_LAYERS: [&str; 39] = [
+pub const KNOWN_LAYERS: [&str; 41] = [
     "gebco-relief",
     "sst",
     "sst-imagery",
@@ -62,6 +62,8 @@ pub const KNOWN_LAYERS: [&str; 39] = [
     "catch-heat",
     "depth-shading",
     "depth-contours",
+    "sst-breaks",
+    "chlorophyll-breaks",
 ];
 
 /// How much the map saves power: no animation and fewer layers.

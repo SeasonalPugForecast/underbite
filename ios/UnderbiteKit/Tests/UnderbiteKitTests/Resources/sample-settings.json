@@ -213,6 +213,14 @@
       {
         "id": "depth-contours",
         "shown": false
+      },
+      {
+        "id": "sst-breaks",
+        "shown": false
+      },
+      {
+        "id": "chlorophyll-breaks",
+        "shown": false
       }
     ],
     "offline_max_mb": 1500,

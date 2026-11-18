@@ -537,7 +537,7 @@ mod tests {
     }
 
     #[test]
-    fn a_layer_list_from_before_the_access_own_and_depth_layers_gets_them_hidden_at_the_top() {
+    fn layers_from_before_the_access_own_depth_and_breaks_ones_come_hidden_at_the_top() {
         let added = [
             "public-land",
             "access-points",
@@ -549,6 +549,8 @@ mod tests {
             "catch-heat",
             "depth-shading",
             "depth-contours",
+            "sst-breaks",
+            "chlorophyll-breaks",
         ];
         let old: Vec<_> = KNOWN_LAYERS
             .iter()
@@ -587,6 +589,27 @@ mod tests {
             .map(|l| (l.id.as_str(), l.shown))
             .collect();
         assert_eq!(tail, [("depth-shading", false), ("depth-contours", false)]);
+        assert_eq!(c.validate(), []);
+    }
+
+    #[test]
+    fn a_layer_list_from_before_the_breaks_layers_gets_them_hidden_at_the_end() {
+        let old: Vec<_> = KNOWN_LAYERS
+            .iter()
+            .filter(|id| !id.ends_with("-breaks"))
+            .map(|id| json!({ "id": id, "shown": *id == "sst" }))
+            .collect();
+        assert_eq!(old.len(), KNOWN_LAYERS.len() - 2);
+        let mut d = json!({ "map": { "layers": old } });
+        assert_eq!(prepare(&mut d), Ok(vec![]));
+        let c: crate::schema::Config = serde_json::from_value(d).unwrap();
+        let ids: Vec<_> = c.map.layers.iter().map(|l| l.id.as_str()).collect();
+        assert_eq!(ids, KNOWN_LAYERS);
+        let tail: Vec<_> = c.map.layers[KNOWN_LAYERS.len() - 2..]
+            .iter()
+            .map(|l| (l.id.as_str(), l.shown))
+            .collect();
+        assert_eq!(tail, [("sst-breaks", false), ("chlorophyll-breaks", false)]);
         assert_eq!(c.validate(), []);
     }
 

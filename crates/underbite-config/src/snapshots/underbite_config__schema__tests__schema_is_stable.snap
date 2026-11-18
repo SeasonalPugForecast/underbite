@@ -865,6 +865,14 @@ expression: json_schema()
             {
               "id": "depth-contours",
               "shown": false
+            },
+            {
+              "id": "sst-breaks",
+              "shown": false
+            },
+            {
+              "id": "chlorophyll-breaks",
+              "shown": false
             }
           ],
           "description": "The overlay layers in drawing order, first at the bottom.",
@@ -1811,6 +1819,14 @@ expression: json_schema()
           },
           {
             "id": "depth-contours",
+            "shown": false
+          },
+          {
+            "id": "sst-breaks",
+            "shown": false
+          },
+          {
+            "id": "chlorophyll-breaks",
             "shown": false
           }
         ],

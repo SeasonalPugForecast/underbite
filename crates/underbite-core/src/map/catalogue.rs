@@ -5,6 +5,7 @@
 //! reasons a layer is unavailable are in [`crate::view::strings`], looked up by layer or preset
 //! id. Presets are lists of layer ids to show, in [`PRESETS`].
 
+use crate::map::breaks::BreakKind;
 use crate::map::enc::{self, EncGroup};
 use crate::map::render::{self, Ramp, RampRange};
 use crate::map::tiles::{
@@ -207,6 +208,16 @@ pub enum DepthKind {
     Contours,
 }
 
+/// Breaks drawn as lines on the device from the grid another layer already shows: the same
+/// dataset, date and view, so they ask nothing of their own (`underbite-ffi`'s `GridStore::breaks`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct BreakLayer {
+    /// What the grid holds, which decides how its change is measured.
+    pub kind: BreakKind,
+    /// The id of the grid layer the breaks are found in.
+    pub source: &'static str,
+}
+
 /// A state agency's vector layer: the state, what it holds and where it has data. What the
 /// source says about its depths and its terms is worded in the view, by layer id.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -243,6 +254,9 @@ pub enum LayerKind {
     /// Wrecks, obstructions and rocks from NOAA ENC Direct to GIS, drawn on the device from points
     /// the core reads by box (`underbite_providers::encdirect`); the band is chosen by zoom.
     EncPoints,
+    /// Sea surface temperature or chlorophyll breaks, drawn on the device as lines from the grid
+    /// blocks the store holds for another layer's view.
+    Breaks(BreakLayer),
     /// A layer with no data source yet.
     Unsourced,
 }
@@ -301,6 +315,14 @@ impl Layer {
     pub fn grid(&self) -> Option<&GridLayer> {
         match &self.kind {
             LayerKind::Grid(g) => Some(g),
+            _ => None,
+        }
+    }
+
+    /// The grid layer a breaks layer is found in, and how.
+    pub fn breaks(&self) -> Option<&BreakLayer> {
+        match &self.kind {
+            LayerKind::Breaks(b) => Some(b),
             _ => None,
         }
     }
@@ -524,6 +546,33 @@ const fn depth_layer(id: &'static str, kind: DepthKind) -> Layer {
     l
 }
 
+/// The shallowest zoom the temperature breaks are drawn at: there a view's MUR blocks are at a
+/// stride of three at most, close enough to the grid's own hundredth of a degree for its
+/// gradients. Wider views weaken the gradient, so they draw none.
+const SST_BREAKS_MIN_ZOOM: u8 = 7;
+/// The shallowest zoom the chlorophyll breaks are drawn at: the layer's own, where the VIIRS
+/// blocks are at a stride of four at most.
+const CHLOROPHYLL_BREAKS_MIN_ZOOM: u8 = 5;
+
+/// A breaks layer found in the grid of `source`. It has no date of its own: it follows the
+/// source's. Its lines are not for navigation, like every derived line on the map.
+const fn breaks_layer(
+    id: &'static str,
+    kind: BreakKind,
+    source: &'static str,
+    min_zoom: u8,
+) -> Layer {
+    let mut l = overlay(
+        id,
+        Group::Water,
+        LayerKind::Breaks(BreakLayer { kind, source }),
+    );
+    l.min_zoom = Some(min_zoom);
+    l.not_for_navigation = true;
+    l.default_opacity = 0.9;
+    l
+}
+
 /// The shallowest zoom access is looked up at: a phone's view there (about 0.44 by 0.27 degrees
 /// at New York Harbor) is within the access lookup's widest span of half a degree.
 const ACCESS_MIN_ZOOM: u8 = 11;
@@ -574,7 +623,7 @@ pub const BASES: [Layer; 4] = [
 ];
 
 /// The overlay layers in drawer order.
-pub const LAYERS: [Layer; 39] = [
+pub const LAYERS: [Layer; 41] = [
     {
         let mut l = overlay(
             "gebco-relief",
@@ -797,6 +846,13 @@ pub const LAYERS: [Layer; 39] = [
     },
     depth_layer("depth-shading", DepthKind::Shading),
     depth_layer("depth-contours", DepthKind::Contours),
+    breaks_layer("sst-breaks", BreakKind::Sst, "sst", SST_BREAKS_MIN_ZOOM),
+    breaks_layer(
+        "chlorophyll-breaks",
+        BreakKind::Chlorophyll,
+        "chlorophyll",
+        CHLOROPHYLL_BREAKS_MIN_ZOOM,
+    ),
 ];
 
 /// The layer or base with an id.
@@ -863,6 +919,7 @@ pub const PRESETS: [Preset; 6] = [
         base: "apple-standard",
         layers: &[
             on("sst"),
+            on("sst-breaks"),
             on("chlorophyll"),
             on("hf-radar-currents"),
             on("gebco-relief"),
@@ -943,7 +1000,7 @@ mod tests {
     /// The ids of the overlays as the configuration lists them (`KNOWN_LAYERS`), in drawer order.
     /// The configuration crate cannot be a dependency here, so it checks its own list against this
     /// one.
-    const OVERLAY_IDS: [&str; 39] = [
+    const OVERLAY_IDS: [&str; 41] = [
         "gebco-relief",
         "sst",
         "sst-imagery",
@@ -983,6 +1040,8 @@ mod tests {
         "catch-heat",
         "depth-shading",
         "depth-contours",
+        "sst-breaks",
+        "chlorophyll-breaks",
     ];
     const BASE_IDS: [&str; 4] = [
         "apple-standard",
@@ -1027,6 +1086,8 @@ mod tests {
             "current-stations",
             "depth-shading",
             "depth-contours",
+            "sst-breaks",
+            "chlorophyll-breaks",
         ] {
             assert!(find(id).unwrap().not_for_navigation, "{id}");
         }
@@ -1633,6 +1694,73 @@ mod tests {
             );
             let contours = p.layers.iter().any(|pl| pl.id == "depth-contours");
             assert_eq!(contours, p.id == "offshore-pelagics", "{}", p.id);
+        }
+    }
+
+    #[test]
+    fn breaks_layers_follow_a_grid_layer_and_ask_nothing_of_their_own() {
+        use crate::map::grid::stride_for_zoom;
+        for (id, kind, source) in [
+            ("sst-breaks", BreakKind::Sst, "sst"),
+            ("chlorophyll-breaks", BreakKind::Chlorophyll, "chlorophyll"),
+        ] {
+            let l = layer(id);
+            assert_eq!(l.group, Group::Water, "{id}");
+            assert_eq!(
+                l.kind,
+                LayerKind::Breaks(BreakLayer { kind, source }),
+                "{id}"
+            );
+            assert_eq!(l.breaks(), Some(&BreakLayer { kind, source }), "{id}");
+            assert!(l.not_for_navigation, "{id}");
+            assert_eq!(l.availability, Availability::Available, "{id}");
+            // The source's date is theirs; they have no control of their own.
+            assert_eq!(l.date_mode, DateMode::None, "{id}");
+            assert!(!l.on_request(), "{id}");
+            assert_eq!(l.tile_service(), None, "{id}");
+            assert_eq!(l.tile_url(tile(8, 75, 96), None, 0), None, "{id}");
+            assert!(l.grid().is_none() && l.ramp.is_none(), "{id}");
+            // The source is a raster grid layer drawn from no deeper a zoom.
+            let src = layer(source);
+            let grid = src
+                .grid()
+                .unwrap_or_else(|| panic!("{id}: {source} is no grid"));
+            assert_eq!(grid.draw, GridDraw::Raster, "{id}");
+            assert!(grid.fallback.is_none(), "{id}");
+            assert_eq!(src.date_mode, DateMode::Daily, "{id}");
+            let min = l.min_zoom.unwrap();
+            assert!(min >= src.min_zoom.unwrap(), "{id}");
+            // From a quarter zoom short of the minimum the view's blocks are at a stride of four
+            // at most; a zoom short of it they are coarser.
+            let step = grid.primary.native_step_deg;
+            assert!(stride_for_zoom(step, f64::from(min) - 0.25) <= 4, "{id}");
+            if min > src.min_zoom.unwrap() {
+                assert!(stride_for_zoom(step, f64::from(min - 1)) > 4, "{id}");
+            }
+        }
+        assert_eq!(LAYERS.iter().filter(|l| l.breaks().is_some()).count(), 2);
+        assert_eq!(layer("sst").breaks(), None);
+        let water: Vec<_> = drawer_order()
+            .filter(|l| l.group == Group::Water)
+            .map(|l| l.id)
+            .collect();
+        assert_eq!(water.last(), Some(&"chlorophyll-breaks"));
+    }
+
+    #[test]
+    fn only_the_offshore_preset_shows_breaks_and_then_only_temperature_breaks() {
+        for p in &PRESETS {
+            assert!(
+                p.layers.iter().all(|pl| pl.id != "chlorophyll-breaks"),
+                "{}",
+                p.id
+            );
+            let sst = p.layers.iter().any(|pl| pl.id == "sst-breaks");
+            assert_eq!(sst, p.id == "offshore-pelagics", "{}", p.id);
+            // A preset that shows breaks shows the layer they are found in.
+            if sst {
+                assert!(p.layers.iter().any(|pl| pl.id == "sst"), "{}", p.id);
+            }
         }
     }
 
