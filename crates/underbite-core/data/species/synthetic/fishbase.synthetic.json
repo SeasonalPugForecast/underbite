@@ -1,0 +1,42 @@
+{
+  "species": [
+    {
+      "id": "morone-saxatilis",
+      "scientific_name": {
+        "value": "Morone saxatilis",
+        "source": { "name": "FishBase", "url": "https://example.invalid/fishbase/353", "licence": "cc_by_nc4", "reference": "Synthetic Author, 2001", "citation": "Synthetic FishBase citation" }
+      },
+      "common_names": {
+        "value": ["Synthetic striper"],
+        "source": { "name": "FishBase", "url": "https://example.invalid/fishbase/353", "licence": "cc_by_nc4", "reference": "Synthetic Author, 2001", "citation": "Synthetic FishBase citation" }
+      },
+      "water": {
+        "value": "both",
+        "source": { "name": "FishBase", "url": "https://example.invalid/fishbase/353", "licence": "cc_by_nc4", "reference": "Synthetic Author, 2001", "citation": "Synthetic FishBase citation" }
+      },
+      "preferred_temp_c": {
+        "value": { "low": 10.0, "high": 25.0 },
+        "source": { "name": "FishBase", "url": "https://example.invalid/fishbase/353", "licence": "cc_by_nc4", "reference": "Synthetic Author, 2002", "citation": "Synthetic FishBase citation" }
+      },
+      "spawn_temp_c": {
+        "value": { "low": 14.0, "high": 20.0 },
+        "source": { "name": "FishBase", "url": "https://example.invalid/fishbase/353", "licence": "cc_by_nc4", "reference": "Synthetic Author, 2003", "citation": "Synthetic FishBase citation" }
+      }
+    },
+    {
+      "id": "oncorhynchus-mykiss",
+      "scientific_name": {
+        "value": "Oncorhynchus mykiss",
+        "source": { "name": "FishBase", "url": "https://example.invalid/fishbase/239", "licence": "cc_by_nc4", "reference": "Synthetic Author, 2004", "citation": "Synthetic FishBase citation" }
+      },
+      "common_names": {
+        "value": ["Synthetic redband"],
+        "source": { "name": "FishBase", "url": "https://example.invalid/fishbase/239", "licence": "cc_by_nc4", "reference": "Synthetic Author, 2004", "citation": "Synthetic FishBase citation" }
+      },
+      "tolerated_temp_c": {
+        "value": { "low": 0.0, "high": 25.0 },
+        "source": { "name": "FishBase", "url": "https://example.invalid/fishbase/239", "licence": "cc_by_nc4", "reference": "Synthetic Author, 2005", "citation": "Synthetic FishBase citation" }
+      }
+    }
+  ]
+}

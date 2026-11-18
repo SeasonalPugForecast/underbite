@@ -1,0 +1,38 @@
+{
+  "species": [
+    {
+      "id": "morone-saxatilis",
+      "scientific_name": {
+        "value": "Morone saxatilis",
+        "source": { "name": "Synthetic agency page", "url": "https://example.invalid/agency/striped-bass", "licence": "public_domain" }
+      },
+      "common_names": {
+        "value": ["Striped bass", "Striper"],
+        "source": { "name": "Synthetic agency page", "url": "https://example.invalid/agency/striped-bass", "licence": "public_domain" }
+      },
+      "preferred_temp_c": {
+        "value": { "low": 15.0, "high": 20.0 },
+        "source": { "name": "Synthetic paper", "licence": "published", "reference": "Synthetic Author, 2000" }
+      },
+      "lures": {
+        "value": ["Bucktail", "Soft plastic"],
+        "source": { "name": "Synthetic agency page", "licence": "public_domain" }
+      }
+    },
+    {
+      "id": "oncorhynchus-mykiss",
+      "scientific_name": {
+        "value": "Oncorhynchus mykiss",
+        "source": { "name": "Synthetic agency page", "licence": "public_domain" }
+      },
+      "common_names": {
+        "value": ["Steelhead", "Rainbow trout"],
+        "source": { "name": "Synthetic agency page", "licence": "public_domain" }
+      },
+      "flow": {
+        "value": ["moving"],
+        "source": { "name": "Synthetic agency page", "licence": "public_domain" }
+      }
+    }
+  ]
+}
