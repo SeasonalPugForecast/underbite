@@ -20,7 +20,7 @@ use crate::map::breaks::BreakKind;
 use crate::map::catalogue::{DateMode, Group, UnavailableReason};
 use crate::map::dem::{ApproxDepth, DepthReading};
 use crate::map::enc::{SourceDate, StructureKind};
-use crate::map::pack::{PlanError, SkipReason};
+use crate::map::pack::{DatePolicy, MAX_DAYS, PlanError, SkipReason, Stale, ZoomReach};
 use crate::model::nearby::{AccessKind, AccessLevel};
 use crate::model::{
     AlertSeverity, Measurement, MoonPhase, PrincipalPhase, TideKind, TurbidityUnit, WaterType,
@@ -946,6 +946,109 @@ keys! {
         "This pack needs more than {cap} downloads: choose a smaller area or fewer zoom levels.",
         "This pack needs more than {cap} downloads: choose a smaller area or fewer zoom levels.",
     ),
+    PackErrorId => ("The pack's id is not valid.", "The pack's id is not valid."),
+    PackErrorName => ("Give the pack a name.", "Give the pack a name."),
+    /// The Wi-Fi rule of pack downloads, and the downloads' state while it holds.
+    PackWifiOnly => ("Wi-Fi only", "Wi-Fi only"),
+    PackWifiOnlyDetail => (
+        "Downloads wait while the phone is on cellular data or in Low Data Mode.",
+        "Downloads wait while the phone is on cellular data or in Low Data Mode.",
+    ),
+    PackWaitingForWifi => ("Waiting for Wi-Fi", "Waiting for Wi-Fi"),
+    /// How packs refresh: no promise of when.
+    PackBackgroundRefresh => (
+        "Packs refresh on Wi-Fi in the background. iOS decides when that happens, so check when a pack was last refreshed before you go.",
+        "Packs refresh on Wi-Fi in the background. iOS decides when that happens, so check when a pack was last refreshed before you go.",
+    ),
+    /// What stands in for the base map offline.
+    PackBaseMapNote => (
+        "Apple's base map is not kept offline. Without signal, the pack's NOAA chart and imagery layers stand in for it.",
+        "Apple's base map is not kept offline. Without signal, the pack's NOAA chart and imagery layers stand in for it.",
+    ),
+    /// A pack download's state.
+    PackStatusDownloading => ("Downloading", "Downloading"),
+    PackStatusPaused => ("Paused", "Paused"),
+    PackStatusDone => ("Downloaded", "Downloaded"),
+    PackStatusFailed => ("Download failed", "Download failed"),
+    PackStatusCancelled => ("Cancelled", "Cancelled"),
+    PackStatusNotDownloaded => ("Not downloaded yet", "Not downloaded yet"),
+    /// A zoom choice, `{zoom}` its deepest zoom, and what it suits.
+    PackZoomOffshore => (
+        "Up to zoom {zoom}: offshore grounds and canyons",
+        "Up to zoom {zoom}: offshore grounds and canyons",
+    ),
+    PackZoomOffshoreDetail => (
+        "A wide area for a run offshore: temperature and colour breaks, depth and the chart's overview.",
+        "A wide area for a run offshore: temperature and colour breaks, depth and the chart's overview.",
+    ),
+    PackZoomCoast => ("Up to zoom {zoom}: bays and reefs", "Up to zoom {zoom}: bays and reefs"),
+    PackZoomCoastDetail => (
+        "A bay or a stretch of coast: reefs, ledges and the main channels.",
+        "A bay or a stretch of coast: reefs, ledges and the main channels.",
+    ),
+    PackZoomHarbour => (
+        "Up to zoom {zoom}: channels and docks",
+        "Up to zoom {zoom}: channels and docks",
+    ),
+    PackZoomHarbourDetail => (
+        "A harbour, an estuary or a river reach: channel edges, docks and bridges.",
+        "A harbour, an estuary or a river reach: channel edges, docks and bridges.",
+    ),
+    PackZoomClose => (
+        "Up to zoom {zoom}: piers and jetties",
+        "Up to zoom {zoom}: piers and jetties",
+    ),
+    PackZoomCloseDetail => (
+        "A small area in close detail: piers, jetties and single rocks. The largest download for its size.",
+        "A small area in close detail: piers, jetties and single rocks. The largest download for its size.",
+    ),
+    /// Which days a pack holds, and what each choice means.
+    PackDatesLatest => ("Newest only", "Newest only"),
+    PackDatesLatestDetail => (
+        "The newest data of each layer. A refresh replaces it.",
+        "The newest data of each layer. A refresh replaces it.",
+    ),
+    PackDatesLastDay => ("Last day", "Last day"),
+    /// `{n}` days, more than one.
+    PackDatesLastDays => ("Last {n} days", "Last {n} days"),
+    PackDatesLastDaysDetail => (
+        "Each day back from the newest, to see how the water changed.",
+        "Each day back from the newest, to see how the water changed.",
+    ),
+    PackDatesChosen => ("Chosen days", "Chosen days"),
+    /// `{n}` chosen days.
+    PackDatesChosenOne => ("{n} chosen day", "{n} chosen day"),
+    PackDatesChosenMany => ("{n} chosen days", "{n} chosen days"),
+    /// `{max}` days at most.
+    PackDatesChosenDetail => (
+        "Only the days you pick, up to {max}.",
+        "Only the days you pick, up to {max}.",
+    ),
+    /// When a pack was last refreshed: `{when}` ("Nov 17", or "2:40 PM" today).
+    PackRefreshed => ("Refreshed {when}", "Refreshed {when}"),
+    /// Why a pack needs a refresh.
+    PackStaleNewest => (
+        "Needs a refresh: more than a day old",
+        "Needs a refresh: more than a day old",
+    ),
+    PackStaleWeek => (
+        "Needs a refresh: more than a week old",
+        "Needs a refresh: more than a week old",
+    ),
+    /// A download's progress: `{done}` of `{total}` items.
+    PackProgress => ("{done} of {total}", "{done} of {total}"),
+    /// `{n}` items that failed.
+    PackProgressFailed => ("{n} failed", "{n} failed"),
+    /// Two parts of a pack's line: `{a}`, `{b}`.
+    PackJoin => ("{a} · {b}", "{a} · {b}"),
+    /// What a pack's plan downloads: `{n}` of each.
+    PackCountTile => ("{n} tile", "{n} tile"),
+    PackCountTiles => ("{n} tiles", "{n} tiles"),
+    PackCountGridBlock => ("{n} grid block", "{n} grid block"),
+    PackCountGridBlocks => ("{n} grid blocks", "{n} grid blocks"),
+    PackCountDepthArea => ("{n} depth area", "{n} depth area"),
+    PackCountDepthAreas => ("{n} depth areas", "{n} depth areas"),
+    PackCountNone => ("Nothing to download", "Nothing to download"),
     /// A table that cannot be computed.
     TableNoConstants => (
         "No tide or current table could be computed from the stored constants.",
@@ -3792,8 +3895,151 @@ impl Strings {
             PlanError::TooManyItems { cap } => {
                 self.fmt(Key::PackErrorTooMany, &[("cap", &cap.to_string())])
             }
+            PlanError::InvalidId => self.get(Key::PackErrorId).to_owned(),
+            PlanError::InvalidName => self.get(Key::PackErrorName).to_owned(),
         }
     }
+
+    /// Parts of a pack's line, in order: "312 of 1,024 · 3 failed".
+    fn pack_join(self, parts: impl IntoIterator<Item = String>) -> String {
+        parts
+            .into_iter()
+            .reduce(|a, b| self.fmt(Key::PackJoin, &[("a", &a), ("b", &b)]))
+            .unwrap_or_default()
+    }
+
+    /// A count with its noun: "1 tile", "2,340 tiles".
+    fn pack_count(self, n: u64, one: Key, many: Key) -> String {
+        let key = if n == 1 { one } else { many };
+        self.fmt(key, &[("n", &self.grouped(n as f32, 0))])
+    }
+
+    /// What a plan downloads, leaving out kinds it has none of: "2,340 tiles · 12 grid
+    /// blocks · 1 depth area"; "Nothing to download" when it has none at all.
+    pub fn pack_counts(self, tiles: u64, grid_blocks: u64, depth_areas: u64) -> String {
+        let parts: Vec<String> = [
+            (tiles, Key::PackCountTile, Key::PackCountTiles),
+            (
+                grid_blocks,
+                Key::PackCountGridBlock,
+                Key::PackCountGridBlocks,
+            ),
+            (
+                depth_areas,
+                Key::PackCountDepthArea,
+                Key::PackCountDepthAreas,
+            ),
+        ]
+        .into_iter()
+        .filter(|(n, ..)| *n > 0)
+        .map(|(n, one, many)| self.pack_count(n, one, many))
+        .collect();
+        if parts.is_empty() {
+            return self.get(Key::PackCountNone).to_owned();
+        }
+        self.pack_join(parts)
+    }
+
+    /// A download's progress: "312 of 1,024 · 3 failed · 3.1 MB". The count is always shown;
+    /// the failures only when there are some and the bytes only once some are stored.
+    pub fn pack_progress(self, done: u64, total: u64, failed: u64, bytes: u64) -> String {
+        let count = self.fmt(
+            Key::PackProgress,
+            &[
+                ("done", &self.grouped(done as f32, 0)),
+                ("total", &self.grouped(total as f32, 0)),
+            ],
+        );
+        let failed = (failed > 0).then(|| {
+            self.fmt(
+                Key::PackProgressFailed,
+                &[("n", &self.grouped(failed as f32, 0))],
+            )
+        });
+        let bytes = (bytes > 0).then(|| self.pack_size(bytes));
+        self.pack_join(std::iter::once(count).chain(failed).chain(bytes))
+    }
+
+    /// Which days a pack holds: "Newest only", "Last 3 days", "4 chosen days".
+    pub fn pack_dates(self, dates: &DatePolicy) -> String {
+        match dates {
+            DatePolicy::Latest => self.get(Key::PackDatesLatest).to_owned(),
+            DatePolicy::LastDays(1) => self.get(Key::PackDatesLastDay).to_owned(),
+            DatePolicy::LastDays(n) => self.fmt(Key::PackDatesLastDays, &[("n", &n.to_string())]),
+            DatePolicy::Days(days) => {
+                let n = days.iter().collect::<std::collections::BTreeSet<_>>().len();
+                let key = if n == 1 {
+                    Key::PackDatesChosenOne
+                } else {
+                    Key::PackDatesChosenMany
+                };
+                self.fmt(key, &[("n", &n.to_string())])
+            }
+        }
+    }
+
+    /// The title of a choice of days: "Newest only", "Last 3 days", "Chosen days".
+    pub fn pack_dates_title(self, dates: &DatePolicy) -> String {
+        match dates {
+            DatePolicy::Days(_) => self.get(Key::PackDatesChosen).to_owned(),
+            other => self.pack_dates(other),
+        }
+    }
+
+    /// What a choice of days means: "Only the days you pick, up to 31."
+    pub fn pack_dates_detail(self, dates: &DatePolicy) -> String {
+        match dates {
+            DatePolicy::Latest => self.get(Key::PackDatesLatestDetail).to_owned(),
+            DatePolicy::LastDays(_) => self.get(Key::PackDatesLastDaysDetail).to_owned(),
+            DatePolicy::Days(_) => self.fmt(
+                Key::PackDatesChosenDetail,
+                &[("max", &MAX_DAYS.to_string())],
+            ),
+        }
+    }
+
+    /// A zoom choice with its deepest zoom: "Up to zoom 14: channels and docks".
+    pub fn pack_zoom_title(self, reach: ZoomReach) -> String {
+        let key = match reach {
+            ZoomReach::Offshore => Key::PackZoomOffshore,
+            ZoomReach::Coast => Key::PackZoomCoast,
+            ZoomReach::Harbour => Key::PackZoomHarbour,
+            ZoomReach::Close => Key::PackZoomClose,
+        };
+        self.fmt(key, &[("zoom", &reach.zooms().1.to_string())])
+    }
+
+    /// What a zoom choice suits.
+    pub fn pack_zoom_detail(self, reach: ZoomReach) -> &'static str {
+        self.get(match reach {
+            ZoomReach::Offshore => Key::PackZoomOffshoreDetail,
+            ZoomReach::Coast => Key::PackZoomCoastDetail,
+            ZoomReach::Harbour => Key::PackZoomHarbourDetail,
+            ZoomReach::Close => Key::PackZoomCloseDetail,
+        })
+    }
+
+    /// Why a pack needs a refresh.
+    pub fn pack_stale(self, stale: Stale) -> &'static str {
+        self.get(match stale {
+            Stale::NewestOverADay => Key::PackStaleNewest,
+            Stale::OverAWeek => Key::PackStaleWeek,
+        })
+    }
+}
+
+/// When a pack was last refreshed: "Refreshed Nov 17", or the time when it was today in the
+/// formatter's zone ("Refreshed 2:40 PM"); "Not downloaded yet" before its first download.
+pub fn pack_refreshed(f: &Formatter, refreshed_at: Option<UnixTime>, now: UnixTime) -> String {
+    let Some(at) = refreshed_at else {
+        return f.strings.get(Key::PackStatusNotDownloaded).to_owned();
+    };
+    let when = if f.date_of(at) == f.date_of(now) {
+        f.clock(at)
+    } else {
+        f.date_of(at)
+    };
+    f.strings.fmt(Key::PackRefreshed, &[("when", &when)])
 }
 
 /// A source's name as displayed, in English: "NOAA CO-OPS". The view uses
@@ -4021,6 +4267,99 @@ mod tests {
             s.pack_error(&PlanError::TooManyItems { cap: 50_000 }),
             "This pack needs more than 50000 downloads: choose a smaller area or fewer zoom levels."
         );
+    }
+
+    #[test]
+    fn pack_counts_leave_out_what_a_plan_has_none_of() {
+        let s = Strings::new(Voice::Plain);
+        assert_eq!(
+            s.pack_counts(2_340, 12, 1),
+            "2,340 tiles · 12 grid blocks · 1 depth area"
+        );
+        assert_eq!(s.pack_counts(1, 0, 4), "1 tile · 4 depth areas");
+        assert_eq!(s.pack_counts(0, 1, 0), "1 grid block");
+        assert_eq!(s.pack_counts(0, 0, 0), "Nothing to download");
+    }
+
+    #[test]
+    fn pack_progress_shows_failures_and_bytes_only_when_there_are_some() {
+        let s = Strings::new(Voice::Plain);
+        assert_eq!(
+            s.pack_progress(312, 1_024, 3, 3_100_000),
+            "312 of 1,024 · 3 failed · 3.1 MB"
+        );
+        assert_eq!(
+            s.pack_progress(312, 1_024, 0, 3_100_000),
+            "312 of 1,024 · 3.1 MB"
+        );
+        assert_eq!(s.pack_progress(0, 1_024, 0, 0), "0 of 1,024");
+        assert_eq!(s.pack_progress(5, 5, 5, 0), "5 of 5 · 5 failed");
+    }
+
+    #[test]
+    fn pack_dates_zooms_and_staleness_read_plainly() {
+        use crate::map::pack::{DEFAULT_LAST_DAYS, Stale, ZoomReach};
+        let s = Strings::new(Voice::Luna);
+        let day = |day| LocalDate {
+            year: 2026,
+            month: 11,
+            day,
+        };
+        assert_eq!(s.pack_dates(&DatePolicy::Latest), "Newest only");
+        assert_eq!(s.pack_dates(&DatePolicy::LastDays(1)), "Last day");
+        let last = DatePolicy::LastDays(DEFAULT_LAST_DAYS);
+        assert_eq!(s.pack_dates(&last), "Last 3 days");
+        assert_eq!(s.pack_dates_title(&last), "Last 3 days");
+        let chosen = DatePolicy::Days(vec![day(20), day(21), day(20)]);
+        assert_eq!(s.pack_dates(&chosen), "2 chosen days");
+        assert_eq!(
+            s.pack_dates(&DatePolicy::Days(vec![day(20)])),
+            "1 chosen day"
+        );
+        assert_eq!(s.pack_dates_title(&chosen), "Chosen days");
+        assert_eq!(
+            s.pack_dates_detail(&chosen),
+            "Only the days you pick, up to 31."
+        );
+        assert_eq!(
+            s.pack_zoom_title(ZoomReach::Harbour),
+            "Up to zoom 14: channels and docks"
+        );
+        assert_eq!(
+            s.pack_zoom_title(ZoomReach::Offshore),
+            "Up to zoom 10: offshore grounds and canyons"
+        );
+        assert_eq!(
+            s.pack_stale(Stale::NewestOverADay),
+            "Needs a refresh: more than a day old"
+        );
+        assert_eq!(
+            s.pack_error(&PlanError::InvalidName),
+            "Give the pack a name."
+        );
+    }
+
+    #[test]
+    fn a_pack_refreshed_today_shows_the_time_else_the_day() {
+        let f = Formatter::new(
+            crate::view::cards::flow::fixtures::us(),
+            Voice::Plain,
+            whether_core::presentation::TimeFormat::H12,
+            "America/New_York",
+        );
+        // 2026-11-17T19:40Z is 2:40 PM in New York.
+        let at = UnixTime(1_794_942_000 + 40 * 60);
+        assert_eq!(pack_refreshed(&f, Some(at), at), "Refreshed 2:40 PM");
+        // 11:00 PM the same evening is still the same local day; 12:40 AM the next is not.
+        assert_eq!(
+            pack_refreshed(&f, Some(at), UnixTime(at.0 + 8 * 3_600 + 20 * 60)),
+            "Refreshed 2:40 PM"
+        );
+        assert_eq!(
+            pack_refreshed(&f, Some(at), UnixTime(at.0 + 10 * 3_600)),
+            "Refreshed Nov 17"
+        );
+        assert_eq!(pack_refreshed(&f, None, at), "Not downloaded yet");
     }
 
     #[test]

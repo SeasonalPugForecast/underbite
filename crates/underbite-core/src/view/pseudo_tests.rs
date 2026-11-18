@@ -592,6 +592,76 @@ fn preset_share_words_are_translated_in_the_pseudo_locale() {
 }
 
 #[test]
+fn offline_pack_words_are_translated_in_the_pseudo_locale() {
+    use crate::map::pack::{DatePolicy, PlanError, Stale, ZoomReach};
+    use crate::time::{LocalDate, UnixTime};
+    use crate::view::strings::{Key, pack_refreshed};
+    let day = LocalDate {
+        year: 2026,
+        month: 11,
+        day: 20,
+    };
+    let at = UnixTime(1_794_944_400);
+    let mut english = Vec::new();
+    for voice in [Voice::Plain, Voice::Luna] {
+        let f = Formatter::new(
+            us(),
+            voice,
+            whether_core::presentation::TimeFormat::H12,
+            "America/New_York",
+        )
+        .with_locale(Locale::PSEUDO);
+        let s = f.strings;
+        let mut texts: Vec<String> = [
+            Key::PackWifiOnly,
+            Key::PackWifiOnlyDetail,
+            Key::PackWaitingForWifi,
+            Key::PackBackgroundRefresh,
+            Key::PackBaseMapNote,
+            Key::PackStatusDownloading,
+            Key::PackStatusPaused,
+            Key::PackStatusDone,
+            Key::PackStatusFailed,
+            Key::PackStatusCancelled,
+            Key::PackStatusNotDownloaded,
+        ]
+        .into_iter()
+        .map(|key| s.get(key).to_owned())
+        .collect();
+        for reach in ZoomReach::ALL {
+            texts.push(s.pack_zoom_title(reach));
+            texts.push(s.pack_zoom_detail(reach).to_owned());
+        }
+        for dates in [
+            DatePolicy::Latest,
+            DatePolicy::LastDays(1),
+            DatePolicy::LastDays(3),
+            DatePolicy::Days(vec![day]),
+            DatePolicy::Days(vec![day, LocalDate { day: 21, ..day }]),
+        ] {
+            texts.push(s.pack_dates(&dates));
+            texts.push(s.pack_dates_title(&dates));
+            texts.push(s.pack_dates_detail(&dates));
+        }
+        texts.extend([
+            s.pack_stale(Stale::NewestOverADay).to_owned(),
+            s.pack_stale(Stale::OverAWeek).to_owned(),
+            s.pack_error(&PlanError::InvalidId),
+            s.pack_error(&PlanError::InvalidName),
+            s.pack_counts(2_340, 12, 1),
+            s.pack_counts(1, 1, 3),
+            s.pack_counts(0, 0, 0),
+            s.pack_progress(312, 1_024, 3, 3_100_000),
+            pack_refreshed(&f, Some(at), at),
+            pack_refreshed(&f, Some(at), UnixTime(at.0 + 86_400)),
+            pack_refreshed(&f, None, at),
+        ]);
+        english.extend(english_texts(&texts, &[]));
+    }
+    assert!(english.is_empty(), "{}", english.join("\n"));
+}
+
+#[test]
 fn the_trip_view_is_translated_in_the_pseudo_locale() {
     use crate::view::trip::{TripView, tests as trip};
     type Build = fn(&ViewInput) -> trip::Built;

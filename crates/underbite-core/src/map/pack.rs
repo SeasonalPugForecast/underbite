@@ -150,6 +150,178 @@ fn pack_version() -> u32 {
     PACK_VERSION
 }
 
+/// How long a pack of the newest data only ([`DatePolicy::Latest`]) stays current after a
+/// refresh, seconds: a day, as most of its layers have a new day by then.
+pub const LATEST_FRESH_S: i64 = 86_400;
+
+/// How long any pack stays current after a refresh, seconds: a week.
+pub const FRESH_S: i64 = 7 * 86_400;
+
+/// The deepest zoom a new pack may ask for: the deepest any tiled layer of the catalogue
+/// serves (the NOAA chart's).
+pub const PACK_MAX_ZOOM: u8 = *NCDS_ZOOMS.end();
+
+/// The longest a pack's id may be, in bytes.
+pub const MAX_ID_LEN: usize = 64;
+
+/// The number of days the `LastDays` choice starts at.
+pub const DEFAULT_LAST_DAYS: u32 = 3;
+
+/// Why a pack needs a refresh.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Stale {
+    /// A pack of the newest data only, refreshed more than [`LATEST_FRESH_S`] ago.
+    NewestOverADay,
+    /// Any pack refreshed more than [`FRESH_S`] ago.
+    OverAWeek,
+}
+
+impl Pack {
+    /// Whether the pack needs a refresh at `now`, and why. A pack never downloaded is not
+    /// stale (it has nothing to be out of date), and neither is one refreshed after `now`.
+    pub fn staleness(&self, now: UnixTime) -> Option<Stale> {
+        let age = now.0.saturating_sub(self.refreshed_at?.0);
+        if age > FRESH_S {
+            Some(Stale::OverAWeek)
+        } else if self.dates == DatePolicy::Latest && age > LATEST_FRESH_S {
+            Some(Stale::NewestOverADay)
+        } else {
+            None
+        }
+    }
+
+    /// Whether the pack needs a refresh at `now` (see [`Pack::staleness`]).
+    pub fn is_stale(&self, now: UnixTime) -> bool {
+        self.staleness(now).is_some()
+    }
+
+    /// Records a completed download at `now`.
+    pub fn mark_refreshed(&mut self, now: UnixTime) {
+        self.refreshed_at = Some(now);
+    }
+}
+
+/// How close a pack's deepest zoom comes, as the choices the app offers. Each reaches the
+/// deepest zoom its name says and starts four levels above it, so the area can still be seen
+/// zoomed out without signal.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ZoomReach {
+    /// Zooms 6 to 10 (about 120 m a pixel at 40° N): a run offshore, where the temperature
+    /// and colour breaks and the canyons are kilometres wide.
+    Offshore,
+    /// Zooms 8 to 12 (about 30 m a pixel): a bay or a stretch of coast, its reefs and ledges.
+    Coast,
+    /// Zooms 10 to 14 (about 7 m a pixel): a harbour, estuary or river reach, its channel
+    /// edges, docks and bridges.
+    Harbour,
+    /// Zooms 12 to 16 (about 2 m a pixel): piers, jetties and single rocks.
+    Close,
+}
+
+impl ZoomReach {
+    /// Every choice, from the widest to the closest.
+    pub const ALL: [Self; 4] = [Self::Offshore, Self::Coast, Self::Harbour, Self::Close];
+
+    /// The choice the app starts at.
+    pub const DEFAULT: Self = Self::Harbour;
+
+    /// The shallowest and the deepest zoom.
+    pub const fn zooms(self) -> (u8, u8) {
+        match self {
+            Self::Offshore => (6, 10),
+            Self::Coast => (8, 12),
+            Self::Harbour => (10, 14),
+            Self::Close => (12, 16),
+        }
+    }
+}
+
+/// What a new pack is made of. [`PackDraft::create`] checks it and turns it into a [`Pack`].
+#[derive(Clone, Debug, PartialEq)]
+pub struct PackDraft {
+    /// The host's id for the pack (a UUID in the app): 1 to [`MAX_ID_LEN`] ASCII letters,
+    /// digits, `-` or `_`, so it is safe as a file name.
+    pub id: String,
+    pub name: String,
+    /// `west` east of `east` crosses the antimeridian.
+    pub bbox: Bbox,
+    pub min_zoom: u8,
+    pub max_zoom: u8,
+    pub layers: Vec<LayerId>,
+    pub dates: DatePolicy,
+    pub spots: Vec<SpotId>,
+}
+
+impl PackDraft {
+    /// The pack, created at `now` and not yet downloaded. The name is trimmed; layers, spots
+    /// and chosen days lose their repeats (days are sorted).
+    ///
+    /// # Errors
+    /// [`PlanError::InvalidId`] or [`PlanError::InvalidName`] for an id or a name that cannot
+    /// be used; [`PlanError::InvalidBox`] for a box with an edge that is not finite or off the
+    /// world, `south` not south of `north`, or no width; [`PlanError::InvalidZooms`] for zooms
+    /// that are reversed or deeper than [`PACK_MAX_ZOOM`]; [`PlanError::InvalidDates`] as
+    /// planning would refuse the dates.
+    pub fn create(self, now: UnixTime) -> Result<Pack, PlanError> {
+        let id_ok = (1..=MAX_ID_LEN).contains(&self.id.len())
+            && self
+                .id
+                .bytes()
+                .all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_');
+        if !id_ok {
+            return Err(PlanError::InvalidId);
+        }
+        let name = self.name.trim();
+        if name.is_empty() {
+            return Err(PlanError::InvalidName);
+        }
+        let b = self.bbox;
+        let lat = |v: f64| (-90.0..=90.0).contains(&v);
+        let lon = |v: f64| (-180.0..=180.0).contains(&v);
+        if !(lat(b.south) && lat(b.north) && lon(b.west) && lon(b.east))
+            || b.south >= b.north
+            || b.west.total_cmp(&b.east).is_eq()
+        {
+            return Err(PlanError::InvalidBox);
+        }
+        if self.min_zoom > self.max_zoom || self.max_zoom > PACK_MAX_ZOOM {
+            return Err(PlanError::InvalidZooms);
+        }
+        pack_days(&self.dates, now)?;
+        let dates = match self.dates {
+            DatePolicy::Days(days) => DatePolicy::Days(
+                days.into_iter()
+                    .collect::<BTreeSet<_>>()
+                    .into_iter()
+                    .collect(),
+            ),
+            other => other,
+        };
+        Ok(Pack {
+            version: PACK_VERSION,
+            id: self.id,
+            name: name.to_owned(),
+            bbox: b,
+            min_zoom: self.min_zoom,
+            max_zoom: self.max_zoom,
+            layers: unique(self.layers),
+            dates,
+            spots: unique(self.spots),
+            created_at: now,
+            refreshed_at: None,
+        })
+    }
+}
+
+/// The items in their first order, without repeats.
+fn unique<T: Ord + Clone>(items: Vec<T>) -> Vec<T> {
+    let mut seen = BTreeSet::new();
+    items
+        .into_iter()
+        .filter(|i| seen.insert(i.clone()))
+        .collect()
+}
+
 /// What an item is and what it addresses.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -202,7 +374,7 @@ pub struct SkippedLayer {
     pub reason: SkipReason,
 }
 
-/// A pack that cannot be planned.
+/// A pack that cannot be planned or created.
 #[derive(Clone, Debug, PartialEq, Eq, Error)]
 pub enum PlanError {
     /// The box has a non-finite edge or `south` is north of `north`.
@@ -217,6 +389,12 @@ pub enum PlanError {
     /// The plan would hold more than the cap.
     #[error("the pack needs more than {cap} downloads")]
     TooManyItems { cap: usize },
+    /// A new pack's id is empty, too long or not safe as a file name.
+    #[error("the pack's id is not valid")]
+    InvalidId,
+    /// A new pack's name is blank.
+    #[error("the pack has no name")]
+    InvalidName,
 }
 
 /// A planned pack.
@@ -1218,5 +1396,221 @@ mod tests {
                 .version,
             PACK_VERSION
         );
+    }
+
+    const HOUR: i64 = 3_600;
+
+    fn refreshed(dates: DatePolicy, ago_s: Option<i64>) -> Pack {
+        let mut p = pack(&["noaa-chart"], 10, 14, dates);
+        p.refreshed_at = ago_s.map(|s| UnixTime(NOW.0 - s));
+        p
+    }
+
+    #[test]
+    fn a_newest_only_pack_is_stale_after_a_day() {
+        let at = |ago| refreshed(DatePolicy::Latest, Some(ago)).staleness(NOW);
+        assert_eq!(at(LATEST_FRESH_S), None);
+        assert_eq!(at(LATEST_FRESH_S + 1), Some(Stale::NewestOverADay));
+        assert_eq!(at(FRESH_S), Some(Stale::NewestOverADay));
+        assert_eq!(at(FRESH_S + 1), Some(Stale::OverAWeek));
+    }
+
+    #[test]
+    fn any_pack_is_stale_after_a_week() {
+        for dates in [
+            DatePolicy::LastDays(3),
+            DatePolicy::Days(vec![NOW.local_date(UtcOffset(0))]),
+        ] {
+            let at = |ago| refreshed(dates.clone(), Some(ago)).staleness(NOW);
+            assert_eq!(at(30 * HOUR), None);
+            assert_eq!(at(FRESH_S), None);
+            assert_eq!(at(FRESH_S + 1), Some(Stale::OverAWeek));
+        }
+    }
+
+    #[test]
+    fn a_pack_never_downloaded_or_refreshed_later_is_not_stale() {
+        assert!(!refreshed(DatePolicy::Latest, None).is_stale(NOW));
+        assert!(!refreshed(DatePolicy::Latest, Some(-HOUR)).is_stale(NOW));
+        let mut p = refreshed(DatePolicy::Latest, Some(FRESH_S * 2));
+        assert!(p.is_stale(NOW));
+        p.mark_refreshed(NOW);
+        assert_eq!(p.refreshed_at, Some(NOW));
+        assert!(!p.is_stale(NOW));
+    }
+
+    fn draft() -> PackDraft {
+        PackDraft {
+            id: "3F2504E0-4F89-11D3-9A0C-0305E82C3301".into(),
+            name: "  Harbour ".into(),
+            bbox: harbour(),
+            min_zoom: 10,
+            max_zoom: 14,
+            layers: ["noaa-chart", "sst", "noaa-chart", DEM_LAYER]
+                .map(LayerId::new)
+                .to_vec(),
+            dates: DatePolicy::Latest,
+            spots: vec!["a".into(), "b".into(), "a".into()],
+        }
+    }
+
+    #[test]
+    fn a_draft_becomes_a_pack_not_yet_downloaded() {
+        let p = draft().create(NOW).unwrap();
+        assert_eq!(p.version, PACK_VERSION);
+        assert_eq!(p.id, "3F2504E0-4F89-11D3-9A0C-0305E82C3301");
+        assert_eq!(p.name, "Harbour");
+        assert_eq!(p.layers, ["noaa-chart", "sst", DEM_LAYER].map(LayerId::new));
+        assert_eq!(p.spots, ["a", "b"]);
+        assert_eq!((p.created_at, p.refreshed_at), (NOW, None));
+        assert!(run(&p).is_ok());
+    }
+
+    #[test]
+    fn chosen_days_are_sorted_without_repeats() {
+        let d = |day| LocalDate {
+            year: 2026,
+            month: 11,
+            day,
+        };
+        let p = PackDraft {
+            dates: DatePolicy::Days(vec![d(20), d(18), d(20)]),
+            ..draft()
+        }
+        .create(NOW)
+        .unwrap();
+        assert_eq!(p.dates, DatePolicy::Days(vec![d(18), d(20)]));
+    }
+
+    #[test]
+    fn a_draft_across_the_antimeridian_is_kept() {
+        let bbox = Bbox {
+            west: 179.5,
+            south: 51.0,
+            east: -179.5,
+            north: 52.0,
+        };
+        let p = PackDraft { bbox, ..draft() }.create(NOW).unwrap();
+        assert_eq!(p.bbox, bbox);
+    }
+
+    #[test]
+    fn bad_drafts_are_refused_with_their_reason() {
+        let with_box = |west, south, east, north| PackDraft {
+            bbox: Bbox {
+                west,
+                south,
+                east,
+                north,
+            },
+            ..draft()
+        };
+        let cases = [
+            (
+                PackDraft {
+                    id: String::new(),
+                    ..draft()
+                },
+                PlanError::InvalidId,
+            ),
+            (
+                PackDraft {
+                    id: "a/b".into(),
+                    ..draft()
+                },
+                PlanError::InvalidId,
+            ),
+            (
+                PackDraft {
+                    id: "x".repeat(MAX_ID_LEN + 1),
+                    ..draft()
+                },
+                PlanError::InvalidId,
+            ),
+            (
+                PackDraft {
+                    name: " \n".into(),
+                    ..draft()
+                },
+                PlanError::InvalidName,
+            ),
+            (with_box(-74.1, 40.7, -73.9, 40.6), PlanError::InvalidBox),
+            (with_box(-74.1, 40.6, -74.1, 40.7), PlanError::InvalidBox),
+            (with_box(-74.1, 40.6, -73.9, 40.6), PlanError::InvalidBox),
+            (
+                with_box(-74.1, f64::NAN, -73.9, 40.7),
+                PlanError::InvalidBox,
+            ),
+            (with_box(-190.0, 40.6, -73.9, 40.7), PlanError::InvalidBox),
+            (with_box(-74.1, 40.6, -73.9, 91.0), PlanError::InvalidBox),
+            (
+                PackDraft {
+                    min_zoom: 15,
+                    ..draft()
+                },
+                PlanError::InvalidZooms,
+            ),
+            (
+                PackDraft {
+                    max_zoom: PACK_MAX_ZOOM + 1,
+                    ..draft()
+                },
+                PlanError::InvalidZooms,
+            ),
+            (
+                PackDraft {
+                    dates: DatePolicy::LastDays(0),
+                    ..draft()
+                },
+                PlanError::InvalidDates,
+            ),
+            (
+                PackDraft {
+                    dates: DatePolicy::Days(vec![]),
+                    ..draft()
+                },
+                PlanError::InvalidDates,
+            ),
+        ];
+        for (d, error) in cases {
+            assert_eq!(d.clone().create(NOW), Err(error), "{d:?}");
+        }
+        let deepest = PackDraft {
+            min_zoom: PACK_MAX_ZOOM,
+            max_zoom: PACK_MAX_ZOOM,
+            ..draft()
+        };
+        assert!(deepest.create(NOW).is_ok());
+    }
+
+    #[test]
+    fn the_deepest_pack_zoom_is_the_deepest_any_layer_serves() {
+        let deepest = catalogue::LAYERS
+            .iter()
+            .filter_map(|l| l.max_zoom)
+            .max()
+            .unwrap();
+        assert!(deepest <= PACK_MAX_ZOOM);
+        assert_eq!(PACK_MAX_ZOOM, 20);
+    }
+
+    #[test]
+    fn zoom_presets_widen_and_plan_a_harbour_within_the_cap() {
+        let mut last = (0, 0);
+        for reach in ZoomReach::ALL {
+            let (lo, hi) = reach.zooms();
+            assert!(lo < hi && hi <= PACK_MAX_ZOOM, "{reach:?}");
+            assert!(lo > last.0 && hi > last.1, "{reach:?}");
+            last = (lo, hi);
+            let p = pack(
+                &["noaa-chart", "sst", DEM_LAYER],
+                lo,
+                hi,
+                DatePolicy::Latest,
+            );
+            let plan = run(&p).unwrap();
+            assert!(plan.tile_count > 0 && !plan.exceeds_mb(1500), "{reach:?}");
+        }
+        assert!(ZoomReach::ALL.contains(&ZoomReach::DEFAULT));
     }
 }
