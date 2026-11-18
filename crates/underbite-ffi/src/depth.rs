@@ -26,8 +26,8 @@ use underbite_core::map::{Bbox, GeoPoint, GridHost, Polyline, TileKey};
 use underbite_core::time::UnixTime;
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{
-    Key, MapQuantity, SafetyKey, break_strength, depth_label, reef_depths, structure_category,
-    structure_surveyed, structure_title,
+    Key, MapQuantity, SafetyKey, break_strength, contour_interval_text, depth_band_text,
+    depth_label, reef_depths, structure_category, structure_surveyed, structure_title,
 };
 use underbite_providers::encdirect::{self, EncBand, EncError};
 use underbite_providers::ncei_dem::{self, DemCrs, DemError};
@@ -761,6 +761,78 @@ pub fn depth_layer_info(settings_json: String) -> Result<DepthLayerInfo, MapErro
         legend_caption: s.safety(SafetyKey::MapLegendBathymetry).to_owned(),
         ramp: ramp.id.to_owned(),
         legend,
+    })
+}
+
+/// The words of the depth layers' controls and states, in the settings' voice and units.
+#[derive(Clone, Debug, PartialEq, uniffi::Record)]
+pub struct DepthWords {
+    /// The shading's title: "Water depth".
+    pub shading_title: String,
+    /// The contours' title: "Depth contours".
+    pub contours_title: String,
+    /// The settings' contour interval under the contours' switch: "Every 10 ft". Where a view
+    /// would hold too many lines the drawn interval is a multiple of it.
+    pub contours_detail: String,
+    /// The depth band control's title: "Highlight".
+    pub band_title: String,
+    /// The words before the shallow and the deep end: "from", "to".
+    pub band_from: String,
+    pub band_to: String,
+    /// The control without a band: "Off".
+    pub band_off: String,
+    /// The ends and the clear button as a screen reader names them: "Highlight from",
+    /// "Highlight to", "Clear the highlight".
+    pub band_from_label: String,
+    pub band_to_label: String,
+    pub band_clear_label: String,
+    /// The settings' band in the user's unit, shallow first: "15–25 ft"; "Off" without one.
+    pub band_text: String,
+    /// In place of depth when the view is wider than one elevation area
+    /// ([`GridStore::dem_area_request`] refuses it): "Zoom in to see depth".
+    pub zoom_in: String,
+    /// While the elevation for the view is fetched.
+    pub loading: String,
+    /// When it could not be fetched.
+    pub failed: String,
+    /// "Not for navigation." (safety text).
+    pub notice: String,
+}
+
+/// The words of the depth layers' controls (the band's labels, the contour interval) and of
+/// their states (too wide a view, loading, failed), in the settings' voice and units.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn depth_words(settings_json: String) -> Result<DepthWords, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, "UTC");
+    let s = f.strings;
+    let depth = &config.map.depth;
+    let band = depth
+        .band_m
+        .map(|(shallow, deep)| (f64::from(shallow), f64::from(deep)));
+    Ok(DepthWords {
+        shading_title: s
+            .layer_title("depth-shading")
+            .unwrap_or_default()
+            .to_owned(),
+        contours_title: s
+            .layer_title("depth-contours")
+            .unwrap_or_default()
+            .to_owned(),
+        contours_detail: contour_interval_text(&f, f64::from(depth.contour_interval_m)),
+        band_title: s.get(Key::MapDepthHighlight).to_owned(),
+        band_from: s.get(Key::MapDepthFrom).to_owned(),
+        band_to: s.get(Key::MapDepthTo).to_owned(),
+        band_off: s.get(Key::MapDepthOff).to_owned(),
+        band_from_label: s.get(Key::MapDepthHighlightFrom).to_owned(),
+        band_to_label: s.get(Key::MapDepthHighlightTo).to_owned(),
+        band_clear_label: s.get(Key::MapDepthHighlightClear).to_owned(),
+        band_text: depth_band_text(&f, band),
+        zoom_in: s.get(Key::MapDepthZoomIn).to_owned(),
+        loading: s.get(Key::MapDepthLoading).to_owned(),
+        failed: s.get(Key::MapDepthFailed).to_owned(),
+        notice: s.safety(SafetyKey::NotForNavigation).to_owned(),
     })
 }
 

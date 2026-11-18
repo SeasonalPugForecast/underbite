@@ -8,7 +8,7 @@ use std::sync::Arc;
 use serde_json::{Value, json};
 use underbite_ffi::depth::{
     DEPTH_LAYER, StructureBand, StructureLayers, StructureType, depth_band_stops, depth_layer_info,
-    gebco_capabilities_request, gebco_credit, parse_reefs, parse_state_contours,
+    depth_words, gebco_capabilities_request, gebco_credit, parse_reefs, parse_state_contours,
     parse_structure_layers, parse_structure_points, reefs_request, state_contour_request,
     structure_band, structure_layers_request, structure_points_request,
 };
@@ -451,6 +451,44 @@ fn depth_words_the_legend_and_the_band_stops_follow_the_settings() {
     let m = depth_band_stops(metric()).unwrap();
     assert!(m.iter().all(|s| s.label.ends_with(" m")));
     assert_eq!(m.first().unwrap().value, 0.0);
+}
+
+#[test]
+fn the_depth_controls_and_states_are_worded_in_the_users_voice_and_units() {
+    let banded = settings(|v| {
+        v["map"]["depth"]["band_m"] = json!([4.572, 7.62]);
+        v["map"]["depth"]["contour_interval_m"] = json!(3.048);
+    });
+    let words = depth_words(banded).unwrap();
+    assert_eq!(words.shading_title, "Water depth");
+    assert_eq!(words.contours_title, "Depth contours");
+    assert_eq!(words.contours_detail, "Every 10 ft");
+    assert_eq!(
+        (
+            words.band_title.as_str(),
+            words.band_from.as_str(),
+            words.band_to.as_str(),
+            words.band_off.as_str()
+        ),
+        ("Highlight", "from", "to", "Off")
+    );
+    assert_eq!(words.band_from_label, "Highlight from");
+    assert_eq!(words.band_to_label, "Highlight to");
+    assert_eq!(words.band_clear_label, "Clear the highlight");
+    assert_eq!(words.band_text, "15–25 ft");
+    assert_eq!(words.zoom_in, "Zoom in to see depth");
+    assert_eq!(words.loading, "Loading depth…");
+    assert_eq!(words.failed, "Depth could not be loaded");
+    assert_eq!(words.notice, "Not for navigation.");
+
+    let metres = depth_words(metric()).unwrap();
+    assert_eq!(metres.contours_detail, "Every 5 m");
+    assert_eq!(metres.band_text, "Off");
+    // Luna words the states her way; the notice stays plain.
+    let luna = depth_words(default_settings_json()).unwrap();
+    assert_ne!(luna.loading, words.loading);
+    assert_eq!(luna.notice, words.notice);
+    assert!(depth_words("{".into()).is_err());
 }
 
 /// A phone-sized view (390 by 844 points) at `zoom` around The Battery.

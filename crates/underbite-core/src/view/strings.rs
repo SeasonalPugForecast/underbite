@@ -806,6 +806,27 @@ keys! {
     // Depth on the map
     /// The depth shading's title in the layer drawer.
     MapDepthTitle => ("Water depth", "Water depth"),
+    /// The contours' interval under their switch: `{interval}` ("10 ft").
+    MapDepthContourEvery => ("Every {interval}", "Every {interval}"),
+    /// The depth band control: its title, the words at its two ends and its state without a
+    /// band.
+    MapDepthHighlight => ("Highlight", "Highlight"),
+    MapDepthFrom => ("from", "from"),
+    MapDepthTo => ("to", "to"),
+    MapDepthOff => ("Off", "Off"),
+    /// The band's ends and its clear button as a screen reader names them.
+    MapDepthHighlightFrom => ("Highlight from", "Highlight from"),
+    MapDepthHighlightTo => ("Highlight to", "Highlight to"),
+    MapDepthHighlightClear => ("Clear the highlight", "Clear the highlight"),
+    /// A band: `{shallow}`, `{deep}` (numbers), `{unit}` ("ft").
+    MapDepthBand => ("{shallow}–{deep} {unit}", "{shallow}–{deep} {unit}"),
+    /// In place of depth when the view is wider than one elevation area.
+    MapDepthZoomIn => ("Zoom in to see depth", "Zoom in and Luna will sound it out"),
+    MapDepthLoading => ("Loading depth…", "Luna's sounding the depths…"),
+    MapDepthFailed => (
+        "Depth could not be loaded",
+        "Luna couldn't reach the bottom this time",
+    ),
     /// A temperature break's strength: `{change}` ("0.9 °F"), `{distance}` ("mi").
     MapBreakTemperature => ("{change} per {distance}", "{change} per {distance}"),
     /// A chlorophyll break's strength as a ratio of concentrations: `{ratio}` ("1.3"), `{distance}`.
@@ -2993,6 +3014,37 @@ pub fn depth_label(f: &Formatter, metres: f64) -> String {
     )
 }
 
+/// A depth in the user's height unit as a bare number, to a tenth where it is not whole.
+fn depth_number(f: &Formatter, metres: f64) -> String {
+    let v = f.units.height.from_canonical(metres as f32);
+    let tenths = (v * 10.0).round() / 10.0;
+    f.strings.grouped(tenths, u8::from(tenths.fract() != 0.0))
+}
+
+/// The depth band in the user's unit, shallow first: "15–25 ft"; "Off" without a band or with
+/// ends that are not numbers.
+pub fn depth_band_text(f: &Formatter, band_m: Option<(f64, f64)>) -> String {
+    match band_m {
+        Some((a, b)) if a.is_finite() && b.is_finite() => f.strings.fmt(
+            Key::MapDepthBand,
+            &[
+                ("shallow", &depth_number(f, a.min(b))),
+                ("deep", &depth_number(f, a.max(b))),
+                ("unit", f.strings.height_unit(f.units.height)),
+            ],
+        ),
+        _ => f.strings.get(Key::MapDepthOff).to_owned(),
+    }
+}
+
+/// The contour interval under the contours' switch: "Every 10 ft".
+pub fn contour_interval_text(f: &Formatter, interval_m: f64) -> String {
+    f.strings.fmt(
+        Key::MapDepthContourEvery,
+        &[("interval", &depth_label(f, interval_m))],
+    )
+}
+
 /// When a species record was made: "Seen Nov 3 2026", or "Date not recorded".
 pub fn record_seen(f: &Formatter, observed_on: Option<LocalDate>) -> String {
     match observed_on {
@@ -3907,6 +3959,18 @@ mod tests {
             );
             assert_eq!(record_position(&us, false, None), None);
             assert_eq!(record_position(&us, false, Some(f32::NAN)), None);
+        }
+
+        #[test]
+        fn the_depth_band_and_contour_interval_read_in_the_users_units() {
+            let (us, si) = (formatter(false), formatter(true));
+            assert_eq!(depth_band_text(&us, Some((4.572, 7.62))), "15–25 ft");
+            assert_eq!(depth_band_text(&us, Some((7.62, 4.572))), "15–25 ft");
+            assert_eq!(depth_band_text(&si, Some((5.0, 7.5))), "5–7.5 m");
+            assert_eq!(depth_band_text(&si, None), "Off");
+            assert_eq!(depth_band_text(&si, Some((f64::NAN, 3.0))), "Off");
+            assert_eq!(contour_interval_text(&us, 3.048), "Every 10 ft");
+            assert_eq!(contour_interval_text(&si, 5.0), "Every 5 m");
         }
 
         #[test]

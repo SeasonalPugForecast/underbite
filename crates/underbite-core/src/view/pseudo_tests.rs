@@ -294,8 +294,9 @@ fn map_depth_and_offline_words_are_translated_in_the_pseudo_locale() {
     use crate::map::dem::{ApproxDepth, DepthReading};
     use crate::map::enc::StructureKind;
     use crate::view::strings::{
-        MapQuantity, break_strength, depth_label, depth_reading, map_current, map_measure,
-        map_time, map_value, reef_depths, structure_category, structure_title,
+        MapQuantity, break_strength, contour_interval_text, depth_band_text, depth_label,
+        depth_reading, map_current, map_measure, map_time, map_value, reef_depths,
+        structure_category, structure_title,
     };
     let input = crate::view::tests::sample_input();
     for units in [us(), metric()] {
@@ -323,6 +324,9 @@ fn map_depth_and_offline_words_are_translated_in_the_pseudo_locale() {
             line,
             depth_label(&f, 29.6),
             depth_reading(&f, &reading),
+            depth_band_text(&f, Some((4.572, 7.62))),
+            depth_band_text(&f, None),
+            contour_interval_text(&f, 3.048),
             break_strength(&f, BreakKind::Sst, 0.5),
             break_strength(&f, BreakKind::Chlorophyll, 0.0375),
             structure_title(&f, StructureKind::Wreck, false).to_owned(),
