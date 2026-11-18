@@ -1,0 +1,2 @@
+-seed -tab map -mapBase apple-standard -mapLayers public-land,access-points -mapAt 40.70,-74.00,0.06 -mapFindAccess
+wait 150

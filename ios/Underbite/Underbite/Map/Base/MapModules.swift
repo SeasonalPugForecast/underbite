@@ -7,6 +7,7 @@ enum MapModules {
             SourcesModule(controller: controller),
             RecordsModule(controller: controller),
             StationsModule(controller: controller),
+            AccessModule(controller: controller),
             MineModule(controller: controller),
         ]
     }
