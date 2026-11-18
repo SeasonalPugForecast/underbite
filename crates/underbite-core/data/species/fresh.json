@@ -1,1 +1,656 @@
-{ "species": [] }
+{
+  "species": [
+    {
+      "id": "micropterus-salmoides",
+      "scientific_name": {
+        "value": "Micropterus salmoides",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/largemouth-bass-micropterus-salmoides",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Largemouth bass"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/largemouth-bass-micropterus-salmoides",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/402",
+          "licence": "public_domain"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 15.0,
+          "high": 23.9
+        },
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/largemouth-bass-micropterus-salmoides",
+          "licence": "published",
+          "reference": "Species profile page: spawns when water temperatures warm up to 59-75 degrees Fahrenheit; converted once, rounded to 0.1 C"
+        }
+      }
+    },
+    {
+      "id": "micropterus-dolomieu",
+      "scientific_name": {
+        "value": "Micropterus dolomieu",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/smallmouth-bass-micropterus-dolomieu",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Smallmouth bass"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/smallmouth-bass-micropterus-dolomieu",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/396",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "sander-vitreus",
+      "scientific_name": {
+        "value": "Sander vitreus",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/walleye-sander-vitreus",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Walleye"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/walleye-sander-vitreus",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/831",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "esox-lucius",
+      "scientific_name": {
+        "value": "Esox lucius",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/northern-pike-esox-lucius",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Northern pike"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/northern-pike-esox-lucius",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/676",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "esox-masquinongy",
+      "scientific_name": {
+        "value": "Esox masquinongy",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/muskellunge-esox-masquinongy",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Muskellunge"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/muskellunge-esox-masquinongy",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/679",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "pomoxis-nigromaculatus",
+      "scientific_name": {
+        "value": "Pomoxis nigromaculatus",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/black-crappie-pomoxis-nigromaculatus",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Black crappie"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/black-crappie-pomoxis-nigromaculatus",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/409",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "pomoxis-annularis",
+      "scientific_name": {
+        "value": "Pomoxis annularis",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/white-crappie-pomoxis-annularis",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "White crappie"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/white-crappie-pomoxis-annularis",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/408",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "lepomis-macrochirus",
+      "scientific_name": {
+        "value": "Lepomis macrochirus",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/bluegill-lepomis-macrochirus",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Bluegill"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/bluegill-lepomis-macrochirus",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/385",
+          "licence": "public_domain"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 18.0,
+          "high": 26.0
+        },
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/bluegill-lepomis-macrochirus",
+          "licence": "published",
+          "reference": "Species profile page: 65 to 80 degrees Fahrenheit (18 to 26 degrees Celsius), as the page states"
+        }
+      }
+    },
+    {
+      "id": "ictalurus-punctatus",
+      "scientific_name": {
+        "value": "Ictalurus punctatus",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/channel-catfish-ictalurus-punctatus",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Channel catfish",
+          "Graceful catfish"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/channel-catfish-ictalurus-punctatus",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/2341",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "pylodictis-olivaris",
+      "scientific_name": {
+        "value": "Pylodictis olivaris",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/flathead-catfish-pylodictis-olivaris",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Flathead catfish"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/flathead-catfish-pylodictis-olivaris",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/750",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "salvelinus-fontinalis",
+      "scientific_name": {
+        "value": "Salvelinus fontinalis",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/brook-trout-salvelinus-fontinalis",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Brook trout",
+          "Charr",
+          "Salter",
+          "Coaster brook trout",
+          "Aurora trout"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/brook-trout-salvelinus-fontinalis",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/939",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "salmo-trutta",
+      "scientific_name": {
+        "value": "Salmo trutta",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/brown-trout-salmo-trutta",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Brown trout"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/brown-trout-salmo-trutta",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/931",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "oncorhynchus-mykiss",
+      "scientific_name": {
+        "value": "Oncorhynchus mykiss",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/rainbow-trout-oncorhynchus-mykiss",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Rainbow trout",
+          "Steelhead",
+          "Redband trout"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/rainbow-trout-oncorhynchus-mykiss",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/910",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "salvelinus-namaycush",
+      "scientific_name": {
+        "value": "Salvelinus namaycush",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/lake-trout-salvelinus-namaycush",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Lake trout"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/lake-trout-salvelinus-namaycush",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/942",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "oncorhynchus-tshawytscha",
+      "scientific_name": {
+        "value": "Oncorhynchus tshawytscha",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/chinook-salmon-oncorhynchus-tshawytscha",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Chinook salmon",
+          "King salmon"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/chinook-salmon-oncorhynchus-tshawytscha",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/920",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "oncorhynchus-kisutch",
+      "scientific_name": {
+        "value": "Oncorhynchus kisutch",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/coho-salmon-oncorhynchus-kisutch",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Coho salmon",
+          "Silver salmon"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/coho-salmon-oncorhynchus-kisutch",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/908",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "oncorhynchus-nerka",
+      "scientific_name": {
+        "value": "Oncorhynchus nerka",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/915",
+          "licence": "public_domain"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Sockeye Salmon"
+        ],
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/915",
+          "licence": "public_domain"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/915",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "salmo-salar",
+      "scientific_name": {
+        "value": "Salmo salar",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/atlantic-salmon-salmo-salar",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Atlantic salmon"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/atlantic-salmon-salmo-salar",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/926",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "perca-flavescens",
+      "scientific_name": {
+        "value": "Perca flavescens",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/yellow-perch-perca-flavescens",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Yellow perch"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/yellow-perch-perca-flavescens",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/820",
+          "licence": "public_domain"
+        }
+      }
+    },
+    {
+      "id": "cyprinus-carpio",
+      "scientific_name": {
+        "value": "Cyprinus carpio",
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/common-carp-cyprinus-carpio",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Common carp",
+          "European carp"
+        ],
+        "source": {
+          "name": "U.S. Fish & Wildlife Service",
+          "url": "https://www.fws.gov/species/common-carp-cyprinus-carpio",
+          "licence": "published",
+          "reference": "Species profile page"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/4",
+          "licence": "public_domain"
+        }
+      }
+    }
+  ]
+}

@@ -1,1 +1,1094 @@
-{ "species": [] }
+{
+  "species": [
+    {
+      "id": "micropterus-salmoides",
+      "scientific_name": {
+        "value": "Micropterus salmoides",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Micropterus-salmoides.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3385, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Largemouth black bass"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Micropterus-salmoides.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3385, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Micropterus-salmoides.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3385, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 10.0,
+          "high": 31.7
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Micropterus-salmoides.html",
+          "licence": "cc_by_nc4",
+          "reference": "Eaton et al. 1995 (Ref. 12741); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 15.0,
+          "high": 21.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Micropterus-salmoides.html",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); Eakins, R.J 2019 (Ref. 120614); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "micropterus-dolomieu",
+      "scientific_name": {
+        "value": "Micropterus dolomieu",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Micropterus-dolomieu.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3382, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Smallmouth bass"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Micropterus-dolomieu.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3382, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Micropterus-dolomieu.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3382, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 8.5,
+          "high": 29.5
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Micropterus-dolomieu.html",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 12.8,
+          "high": 22.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Micropterus-dolomieu.html",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); Baylis et al. 1993 (Ref. 32487); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "sander-vitreus",
+      "scientific_name": {
+        "value": "Sander vitreus",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Sander-vitreus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3516, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Walleye"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Sander-vitreus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3516, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Sander-vitreus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3516, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 1.1,
+          "high": 29.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Sander-vitreus.html",
+          "licence": "cc_by_nc4",
+          "reference": "Eaton et al. 1995 (Ref. 12741); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 5.6,
+          "high": 11.1
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Sander-vitreus.html",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "esox-lucius",
+      "scientific_name": {
+        "value": "Esox lucius",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Esox-lucius.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 258, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Northern pike"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Esox-lucius.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 258, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Esox-lucius.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 258, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 10.0,
+          "high": 28.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Esox-lucius.html",
+          "licence": "cc_by_nc4",
+          "reference": "Eaton et al. 1995 (Ref. 12741); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 4.4,
+          "high": 11.1
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Esox-lucius.html",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "esox-masquinongy",
+      "scientific_name": {
+        "value": "Esox masquinongy",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Esox-masquinongy.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 2711, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Muskellunge"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Esox-masquinongy.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 2711, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Esox-masquinongy.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 2711, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 9.0,
+          "high": 15.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Esox-masquinongy.html",
+          "licence": "cc_by_nc4",
+          "reference": "Hugg, D.O 1996 (Ref. 12193); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "pomoxis-nigromaculatus",
+      "scientific_name": {
+        "value": "Pomoxis nigromaculatus",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Pomoxis-nigromaculatus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3388, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Black crappie"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Pomoxis-nigromaculatus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3388, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Pomoxis-nigromaculatus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3388, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 14.0,
+          "high": 30.6
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Pomoxis-nigromaculatus.html",
+          "licence": "cc_by_nc4",
+          "reference": "Eaton et al. 1995 (Ref. 12741); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 14.0,
+          "high": 22.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Pomoxis-nigromaculatus.html",
+          "licence": "cc_by_nc4",
+          "reference": "Eakins, R.J 2019 (Ref. 120594); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "pomoxis-annularis",
+      "scientific_name": {
+        "value": "Pomoxis annularis",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Pomoxis-annularis.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3387, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "White crappie"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Pomoxis-annularis.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3387, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Pomoxis-annularis.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3387, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "lepomis-macrochirus",
+      "scientific_name": {
+        "value": "Lepomis macrochirus",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Lepomis-macrochirus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3375, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Bluegill"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Lepomis-macrochirus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3375, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Lepomis-macrochirus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3375, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 1.0,
+          "high": 36.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Lepomis-macrochirus.html",
+          "licence": "cc_by_nc4",
+          "reference": "Beitinger and Bennett 2000 (Ref. 35682); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "ictalurus-punctatus",
+      "scientific_name": {
+        "value": "Ictalurus punctatus",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Ictalurus-punctatus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 290, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Channel catfish"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Ictalurus-punctatus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 290, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Ictalurus-punctatus.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 290, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 10.0,
+          "high": 31.6
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Ictalurus-punctatus.html",
+          "licence": "cc_by_nc4",
+          "reference": "Eaton et al. 1995 (Ref. 12741); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 18.0,
+          "high": 27.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Ictalurus-punctatus.html",
+          "licence": "cc_by_nc4",
+          "reference": "Eakins, R.J 2019 (Ref. 120600); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "pylodictis-olivaris",
+      "scientific_name": {
+        "value": "Pylodictis olivaris",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Pylodictis-olivaris.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3051, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Flathead catfish"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Pylodictis-olivaris.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3051, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Pylodictis-olivaris.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 3051, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "salvelinus-fontinalis",
+      "scientific_name": {
+        "value": "Salvelinus fontinalis",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salvelinus-fontinalis.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 246, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Brook trout"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salvelinus-fontinalis.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 246, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salvelinus-fontinalis.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 246, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 0.0,
+          "high": 25.3
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salvelinus-fontinalis.html",
+          "licence": "cc_by_nc4",
+          "reference": "Beitinger and Bennett 2000 (Ref. 35682); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 3.0,
+          "high": 9.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salvelinus-fontinalis.html",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "salmo-trutta",
+      "scientific_name": {
+        "value": "Salmo trutta",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salmo-trutta.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 238, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Sea trout"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salmo-trutta.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 238, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salmo-trutta.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 238, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 2.0,
+          "high": 24.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salmo-trutta.html",
+          "licence": "cc_by_nc4",
+          "reference": "Baensch and Riehl 1991 (Ref. 2059); Eaton et al. 1995 (Ref. 12741); widest of the species-in-general and subspecies stock rows",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "oncorhynchus-mykiss",
+      "scientific_name": {
+        "value": "Oncorhynchus mykiss",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-mykiss.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 239, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Rainbow trout"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-mykiss.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 239, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-mykiss.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 239, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 10.0,
+          "high": 24.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-mykiss.html",
+          "licence": "cc_by_nc4",
+          "reference": "Eaton et al. 1995 (Ref. 12741); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 4.0,
+          "high": 19.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-mykiss.html",
+          "licence": "cc_by_nc4",
+          "reference": "Gall and Crandell 1992 (Ref. 4706); Northcote, T.G 1969 (Ref. 10966); Eakins, R.J 2019 (Ref. 120611); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "salvelinus-namaycush",
+      "scientific_name": {
+        "value": "Salvelinus namaycush",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salvelinus-namaycush.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 248, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Lake trout"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salvelinus-namaycush.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 248, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salvelinus-namaycush.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 248, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 4.0,
+          "high": 13.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salvelinus-namaycush.html",
+          "licence": "cc_by_nc4",
+          "reference": "Michigan Department of Natural Resources 2019 (Ref. 120394); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 8.9,
+          "high": 14.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salvelinus-namaycush.html",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); Kottelat and Freyhof 2007 (Ref. 59043); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "oncorhynchus-tshawytscha",
+      "scientific_name": {
+        "value": "Oncorhynchus tshawytscha",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-tshawytscha.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 244, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Chinook salmon"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-tshawytscha.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 244, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-tshawytscha.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 244, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 0.0,
+          "high": 24.9
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-tshawytscha.html",
+          "licence": "cc_by_nc4",
+          "reference": "Beitinger and Bennett 2000 (Ref. 35682); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 4.0,
+          "high": 14.5
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-tshawytscha.html",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); Eschmeyer et al. 1983 (Ref. 2850); Morrow, J.E 1980 (Ref. 27547); Eakins, R.J 2019 (Ref. 120612); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "oncorhynchus-kisutch",
+      "scientific_name": {
+        "value": "Oncorhynchus kisutch",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-kisutch.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 245, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Coho salmon"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-kisutch.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 245, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-kisutch.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 245, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 0.0,
+          "high": 24.8
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-kisutch.html",
+          "licence": "cc_by_nc4",
+          "reference": "Beitinger and Bennett 2000 (Ref. 35682); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 1.0,
+          "high": 8.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-kisutch.html",
+          "licence": "cc_by_nc4",
+          "reference": "Eakins, R.J 2019 (Ref. 120605); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "oncorhynchus-nerka",
+      "scientific_name": {
+        "value": "Oncorhynchus nerka",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-nerka.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 243, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Sockeye salmon"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-nerka.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 243, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-nerka.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 243, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 0.0,
+          "high": 24.9
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Oncorhynchus-nerka.html",
+          "licence": "cc_by_nc4",
+          "reference": "Beitinger and Bennett 2000 (Ref. 35682); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "salmo-salar",
+      "scientific_name": {
+        "value": "Salmo salar",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salmo-salar.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 236, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Atlantic salmon"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salmo-salar.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 236, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "both",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Salmo-salar.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 236, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "perca-flavescens",
+      "scientific_name": {
+        "value": "Perca flavescens",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Perca-flavescens.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 359, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "American yellow perch"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Perca-flavescens.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 359, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Perca-flavescens.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 359, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 0.0,
+          "high": 29.7
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Perca-flavescens.html",
+          "licence": "cc_by_nc4",
+          "reference": "Beitinger and Bennett 2000 (Ref. 35682); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 6.7,
+          "high": 12.2
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Perca-flavescens.html",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    },
+    {
+      "id": "cyprinus-carpio",
+      "scientific_name": {
+        "value": "Cyprinus carpio",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Cyprinus-carpio.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1450, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "common_names": {
+        "value": [
+          "Common carp"
+        ],
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Cyprinus-carpio.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1450, v26.06",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "water": {
+        "value": "fresh",
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Cyprinus-carpio.html",
+          "licence": "cc_by_nc4",
+          "reference": "FishBase species record, SpecCode 1450, v26.06 (Fresh and Saltwater flags)",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "tolerated_temp_c": {
+        "value": {
+          "low": 3.0,
+          "high": 35.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Cyprinus-carpio.html",
+          "licence": "cc_by_nc4",
+          "reference": "Eaton et al. 1995 (Ref. 12741); stock row 'species in general'",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      },
+      "spawn_temp_c": {
+        "value": {
+          "low": 17.0,
+          "high": 28.0
+        },
+        "source": {
+          "name": "FishBase",
+          "url": "https://www.fishbase.se/summary/Cyprinus-carpio.html",
+          "licence": "cc_by_nc4",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); Eakins, R.J 2019 (Ref. 120613); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)"
+        }
+      }
+    }
+  ]
+}
