@@ -291,6 +291,7 @@ pub fn alert_rules(
                     pending: None,
                     marine: BTreeMap::new(),
                     window: None,
+                    storms: BTreeMap::new(),
                 })
             } else {
                 state.rules.get(&rule.id).cloned()

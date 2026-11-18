@@ -724,6 +724,7 @@ pub(in crate::view) mod tests {
             pending: None,
             marine: BTreeMap::new(),
             window: None,
+            storms: BTreeMap::new(),
         }
     }
 

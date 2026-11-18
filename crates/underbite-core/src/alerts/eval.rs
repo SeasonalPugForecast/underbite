@@ -15,7 +15,8 @@
 //! - Marine alerts notify as whether's `AlertNotifier` does: a new alert, a stronger one, or one
 //!   that now ends an hour or more later than the one told. An alert stays remembered until it
 //!   ends, so one that drops out of a feed for a run is not told again.
-//! - A fishing window other than the one told is news while the rule stays met.
+//! - A fishing window other than the one told, or an NHC cone not told before, is news while
+//!   the rule stays met. A cone stays remembered until it leaves the place.
 //! - Quiet hours, in the target's time zone, hold a notification until they end; it is never
 //!   dropped.
 //!
@@ -148,7 +149,8 @@ pub enum EventKind {
     /// Every condition holds, for the first time or after the rule re-armed.
     Met,
     /// While the rule stays met: a marine alert it watches is new, stronger or lasts longer,
-    /// or a fishing window other than the one told is near.
+    /// a fishing window other than the one told is near, or an NHC cone not told before is
+    /// over the place.
     Update,
     /// Still met `repeat_after_hours` after the last notification.
     Repeat,
@@ -249,6 +251,9 @@ pub struct RuleState {
     /// The start of the fishing window last told, so a later window is news.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub window: Option<UnixTime>,
+    /// NHC cones told, by `spot id|storm id`, with when the cone leaves the place.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub storms: BTreeMap<String, UnixTime>,
 }
 
 /// The outcome of a run for one rule.
@@ -301,6 +306,7 @@ impl RuleState {
             pending: None,
             marine: BTreeMap::new(),
             window: None,
+            storms: BTreeMap::new(),
         }
     }
 }
@@ -353,13 +359,17 @@ fn step(
         inputs,
         told: &st.marine,
         told_window: st.window,
+        told_storms: &st.storms,
         now,
         present: BTreeSet::new(),
+        present_storms: BTreeSet::new(),
     };
     let outcome = ctx.rule(rule);
-    let present = ctx.present;
+    let (present, present_storms) = (ctx.present, ctx.present_storms);
     st.marine
         .retain(|key, told| told.ends.is_some_and(|e| e > now) || present.contains(key));
+    st.storms
+        .retain(|key, end| *end > now || present_storms.contains(key));
 
     let mut decided = None;
     match outcome {
@@ -389,6 +399,9 @@ fn step(
                             st.marine.insert(key, told);
                         }
                         Some(Told::Window(start)) => st.window = Some(start),
+                        Some(Told::Storm(key, end)) => {
+                            st.storms.insert(key, end);
+                        }
                         None => {}
                     }
                     findings.push(f.finding);
@@ -489,6 +502,8 @@ enum Told {
     Marine(String, ToldAlert),
     /// A fishing window, by its start.
     Window(UnixTime),
+    /// An NHC cone, by its key, with when it leaves the place.
+    Storm(String, UnixTime),
 }
 
 /// How a condition, a place or a rule came out.
@@ -572,9 +587,12 @@ struct Ctx<'a> {
     told: &'a BTreeMap<String, ToldAlert>,
     /// The start of the fishing window last told.
     told_window: Option<UnixTime>,
+    told_storms: &'a BTreeMap<String, UnixTime>,
     now: UnixTime,
     /// The marine alert keys found in force, so the ones told are remembered while listed.
     present: BTreeSet<String>,
+    /// The cone keys found over a place, so the ones told are remembered while listed.
+    present_storms: BTreeSet<String>,
 }
 
 impl Ctx<'_> {
@@ -670,7 +688,7 @@ impl Ctx<'_> {
                 measure(i, *metric, *below, *above, found, Some(place.spot_id))
             }
             Condition::MarineAlert { event } => self.marine(i, event, place),
-            Condition::StormAhead {} => storm_ahead(i, place, now),
+            Condition::StormAhead {} => self.storm_ahead(i, place),
             Condition::WindowStarts { within_minutes } => match place.windows {
                 Some(w) => window_starts(i, w, *within_minutes, now, self.told_window),
                 None => Outcome::NoData(i),
@@ -815,6 +833,61 @@ impl Ctx<'_> {
             Outcome::Holds(found)
         }
     }
+
+    /// A significant storm within whether's warning horizon, or an NHC cone over the place. A
+    /// cone not told before is news.
+    fn storm_ahead(&mut self, i: usize, place: &Place<'_>) -> Outcome {
+        let now = self.now;
+        let Some(watch) = place.snap.storm.as_ref() else {
+            return Outcome::NoData(i);
+        };
+        let age_s = (now.0 - watch.checked_at.0).max(0);
+        if age_s > STORM_MAX_AGE_S {
+            return Outcome::Unchecked(
+                i,
+                CheckProblem::Stale {
+                    age_s,
+                    limit_s: STORM_MAX_AGE_S,
+                },
+            );
+        }
+        let mut found = Vec::new();
+        if let Some(event) = (watch.point.as_ref()).and_then(|o| significant_event(o, now)) {
+            found.push(Found {
+                finding: Finding {
+                    at: Some(event.start),
+                    until: Some(event.end),
+                    source: Some(SourceId::new("open-meteo")),
+                    ..finding(i, FindingReason::StormAhead, Some(place.spot_id))
+                },
+                news: false,
+                told: None,
+            });
+        }
+        let at = (place.snap.spot.latitude, place.snap.spot.longitude);
+        for h in &watch.hurricanes {
+            if let Some((start, end)) = hurricane_window(h, at, now, SIGNIFICANT_HORIZON_SECS) {
+                let key = format!("{}|{}", place.spot_id, h.id);
+                self.present_storms.insert(key.clone());
+                found.push(Found {
+                    finding: Finding {
+                        at: Some(start),
+                        until: Some(end),
+                        source: Some(SourceId::new("nhc")),
+                        subject: Some(h.name.clone()),
+                        ..finding(i, FindingReason::Hurricane, Some(place.spot_id))
+                    },
+                    news: !self.told_storms.contains_key(&key),
+                    told: Some(Told::Storm(key, end)),
+                });
+            }
+        }
+        if found.is_empty() {
+            Outcome::False { clear: true }
+        } else {
+            Outcome::Holds(found)
+        }
+    }
 }
 
 fn finding(condition: usize, reason: FindingReason, spot_id: Option<&str>) -> Finding {
@@ -909,58 +982,6 @@ fn window_starts(
             told: Some(Told::Window(w.start)),
         }]),
         None => Outcome::False { clear: true },
-    }
-}
-
-/// A significant storm within whether's warning horizon, or an NHC cone over the place.
-fn storm_ahead(i: usize, place: &Place<'_>, now: UnixTime) -> Outcome {
-    let Some(watch) = place.snap.storm.as_ref() else {
-        return Outcome::NoData(i);
-    };
-    let age_s = (now.0 - watch.checked_at.0).max(0);
-    if age_s > STORM_MAX_AGE_S {
-        return Outcome::Unchecked(
-            i,
-            CheckProblem::Stale {
-                age_s,
-                limit_s: STORM_MAX_AGE_S,
-            },
-        );
-    }
-    let mut found = Vec::new();
-    if let Some(event) = (watch.point.as_ref()).and_then(|o| significant_event(o, now)) {
-        found.push(Finding {
-            at: Some(event.start),
-            until: Some(event.end),
-            source: Some(SourceId::new("open-meteo")),
-            ..finding(i, FindingReason::StormAhead, Some(place.spot_id))
-        });
-    }
-    let at = (place.snap.spot.latitude, place.snap.spot.longitude);
-    for h in &watch.hurricanes {
-        if let Some((start, end)) = hurricane_window(h, at, now, SIGNIFICANT_HORIZON_SECS) {
-            found.push(Finding {
-                at: Some(start),
-                until: Some(end),
-                source: Some(SourceId::new("nhc")),
-                subject: Some(h.name.clone()),
-                ..finding(i, FindingReason::Hurricane, Some(place.spot_id))
-            });
-        }
-    }
-    if found.is_empty() {
-        Outcome::False { clear: true }
-    } else {
-        Outcome::Holds(
-            found
-                .into_iter()
-                .map(|finding| Found {
-                    finding,
-                    news: false,
-                    told: None,
-                })
-                .collect(),
-        )
     }
 }
 
@@ -2095,6 +2116,41 @@ mod tests {
                 ..
             }
         ));
+    }
+
+    #[test]
+    fn a_hurricane_cone_after_a_storm_told_is_news() {
+        let rules = [rule(spot("battery"), vec![Condition::StormAhead {}])];
+        let now = storm_data::STORM_NOW;
+        let with_storm = |hurricanes| {
+            let mut snap = SpotSnapshot::new(sample::spot(), now);
+            snap.storm = Some(StormWatch::from_outlook(
+                now,
+                storm_data::noreaster(),
+                hurricanes,
+            ));
+            spot_inputs(snap)
+        };
+        let storm = with_storm(Vec::new());
+        let hurricane = storm_data::hurricane();
+        let cone = with_storm(vec![hurricane.clone()]);
+
+        let (events, state) = evaluate(&rules, &storm, &AlertState::default(), now);
+        assert_eq!(events[0].kind, EventKind::Met);
+        let (events, state) = evaluate(&rules, &cone, &state, now);
+        assert_eq!(events.len(), 1);
+        assert_eq!(events[0].kind, EventKind::Update);
+        let told = (events[0].findings.iter())
+            .find(|f| f.reason == FindingReason::Hurricane)
+            .unwrap();
+        assert_eq!(told.subject.as_deref(), Some(hurricane.name.as_str()));
+        assert_eq!(told.spot_id.as_deref(), Some("battery"));
+
+        // The same cone again is not news; the state reads back whole.
+        let (events, state) = evaluate(&rules, &cone, &state, now);
+        assert_eq!(events, []);
+        let text = serde_json::to_string(&state).unwrap();
+        assert_eq!(serde_json::from_str::<AlertState>(&text).unwrap(), state);
     }
 
     fn box_rule(all_of: Vec<Condition>) -> AlertRule {
