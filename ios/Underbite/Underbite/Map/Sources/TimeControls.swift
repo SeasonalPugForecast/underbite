@@ -15,15 +15,3 @@ struct TimeControls: View {
         EmptyView()
     }
 }
-
-/// The dates and times of the dated layers (satellite days, grid times, radar frames). Nothing
-/// yet.
-final class SourcesModule: MapModule {
-    private weak var controller: MapController?
-
-    init(controller: MapController) {
-        self.controller = controller
-    }
-
-    var layerIDs: Set<String> { [] }
-}
