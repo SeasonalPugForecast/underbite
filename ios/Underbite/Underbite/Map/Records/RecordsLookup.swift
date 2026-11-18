@@ -97,26 +97,3 @@ nonisolated enum RecordsLookup {
         return answers.keys.sorted().compactMap { answers[$0] }
     }
 }
-
-/// The lookup state the core keeps between lookups (iNaturalist's pace and daily count, the
-/// pauses GBIF and iNaturalist asked for), as the JSON the core gives, in one file on the
-/// device. It holds no position and nothing about the user.
-nonisolated struct RecordsStateFile: Sendable {
-    let files: AppFiles
-    static let name = "map/records-lookup-state.json"
-
-    init(files: AppFiles = .standard) {
-        self.files = files
-    }
-
-    /// The kept state; empty for none, as the core reads it.
-    func read() -> String {
-        files.text(Self.name) ?? ""
-    }
-
-    /// Keeps `json`; nothing when the plan had no state.
-    func write(_ json: String?) {
-        guard let json, !json.isEmpty else { return }
-        files.write(Data(json.utf8), Self.name)
-    }
-}

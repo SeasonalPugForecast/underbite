@@ -272,27 +272,31 @@ final class RecordsTests: XCTestCase {
         XCTAssertNotNil(results.stateJson, "the iNaturalist pace is kept")
     }
 
+    @MainActor
     func testTheLookupStateIsKeptBetweenLookups() async throws {
-        let file = RecordsStateFile(files: AppFiles(directory: directory))
-        XCTAssertEqual(file.read(), "")
-        let plan = try planRecords(
-            area: harbor,
-            query: RecordsLookup.query(scientificName: "Morone saxatilis", page: 1, region: ""),
-            stateJson: file.read(), settingsJson: "{}", now: now)
+        let store = NearbyStateStore(files: AppFiles(directory: directory))
+        XCTAssertEqual(store.load(), "")
+        let (plan, base) = try store.plan { kept in
+            try planRecords(
+                area: harbor,
+                query: RecordsLookup.query(scientificName: "Morone saxatilis", page: 1, region: ""),
+                stateJson: kept, settingsJson: "{}", now: now)
+        }
+        let at = now
         let results = await RecordsLookup.run(
-            plan, send: fakeServices(Log()), sleep: { _ in }, clock: { [now] in now })
-        file.write(results.stateJson)
-        let kept = file.read()
+            plan, send: fakeServices(Log()), sleep: { _ in }, clock: { at })
+        let state = try XCTUnwrap(results.stateJson)
+        store.save(state, base: base)
+        let kept = store.load()
         XCTAssertFalse(kept.isEmpty)
-        XCTAssertEqual(kept, results.stateJson)
-        file.write(nil)
-        XCTAssertEqual(file.read(), kept, "a plan without state keeps the last one")
 
         // The next lookup reads it: a second iNaturalist request a moment later waits its turn.
-        let next = try planRecords(
-            area: harbor,
-            query: RecordsLookup.query(scientificName: "Morone saxatilis", page: 1, region: ""),
-            stateJson: kept, settingsJson: "{}", now: now)
+        let (next, _) = try store.plan { kept in
+            try planRecords(
+                area: harbor,
+                query: RecordsLookup.query(scientificName: "Morone saxatilis", page: 1, region: ""),
+                stateJson: kept, settingsJson: "{}", now: now)
+        }
         let wait = next.requests().first { $0.source == "inaturalist" }?.delayMs
         XCTAssertNotNil(wait)
     }

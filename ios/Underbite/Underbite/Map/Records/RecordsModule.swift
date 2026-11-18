@@ -12,7 +12,8 @@ import SwiftUI
 ///   source blurred its position is drawn as a circle of the stated radius, never as a point;
 ///   a nonindigenous record is an orange diamond. Pressing again in the same view asks the next
 ///   page while the core says there is one. The lookup state the core keeps (iNaturalist's pace
-///   and daily count, the services' pauses) is kept in ``RecordsStateFile``.
+///   and daily count, the services' pauses) is kept in the ``NearbyStateStore`` it shares with
+///   the access lookups.
 /// - **Beach bloom forecasts** (`hab-beaches`): the beaches of the Gulf respiratory irritation
 ///   forecast in the view, coloured by level, with NOAA NCCOS's credit and the plain safety note.
 ///
@@ -38,7 +39,7 @@ final class RecordsModule: MapModule {
 
     @ObservationIgnored private weak var controller: MapController?
     @ObservationIgnored let host: URLSessionHost
-    @ObservationIgnored private let stateFile: RecordsStateFile
+    @ObservationIgnored private let state: NearbyStateStore
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private let clock: @Sendable () -> Int64
 
@@ -83,13 +84,13 @@ final class RecordsModule: MapModule {
     init(
         controller: MapController,
         host: URLSessionHost = URLSessionHost(storeURL: AppFiles.standard.hostDirectory),
-        stateFile: RecordsStateFile = RecordsStateFile(),
+        state: NearbyStateStore = .shared,
         defaults: UserDefaults = .standard,
         clock: @escaping @Sendable () -> Int64 = { Int64(Date().timeIntervalSince1970) }
     ) {
         self.controller = controller
         self.host = host
-        self.stateFile = stateFile
+        self.state = state
         self.defaults = defaults
         self.clock = clock
         speciesID = launch.species ?? defaults.string(forKey: Self.speciesKey)
@@ -147,26 +148,29 @@ final class RecordsModule: MapModule {
         let query = RecordsLookup.query(
             scientificName: species.scientificName, page: page,
             region: defaults.string(forKey: Self.regionKey) ?? "")
-        let plan: NearbyPlan
+        let made: (plan: NearbyPlan, base: String)
+        let json = controller.settingsJSON
+        let clock = clock
         do {
-            plan = try planRecords(
-                area: area, query: query, stateJson: stateFile.read(),
-                settingsJson: controller.settingsJSON, now: clock())
+            made = try state.plan { kept in
+                try planRecords(
+                    area: area, query: query, stateJson: kept, settingsJson: json, now: clock())
+            }
         } catch NearbyError.ZoomIn(let message) {
             recordsNotices = [message]
             return
         } catch {
             return
         }
+        let (plan, base) = made
         findingRecords = true
         let host = host
-        let clock = clock
         recordsTask = Task { [weak self] in
             let results = await RecordsLookup.run(
                 plan, send: { try await host.send(request: $0) }, clock: clock)
             guard let self else { return }
             // What was sent counts against the daily cap even when the answer is not wanted.
-            self.stateFile.write(results.stateJson)
+            if let kept = results.stateJson { self.state.save(kept, base: base) }
             guard !Task.isCancelled, self.speciesID == id else { return }
             self.findingRecords = false
             self.lastRecords = LastRecords(species: id, area: area, page: page, more: results.more)

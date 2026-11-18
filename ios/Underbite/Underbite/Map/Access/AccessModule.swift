@@ -27,7 +27,7 @@ final class AccessModule: MapModule {
     @ObservationIgnored private weak var controller: MapController?
     @ObservationIgnored private let host: FetchHost
     @ObservationIgnored private let clock: @Sendable () -> Int64
-    @ObservationIgnored private let state: NearbyStateFile
+    @ObservationIgnored private let state: NearbyStateStore
     @ObservationIgnored private let shapeOverlay = AccessShapeOverlay()
     @ObservationIgnored private let pinOverlay = AccessPinOverlay()
     @ObservationIgnored private var shapeRenderer: AccessShapeRenderer?
@@ -53,12 +53,12 @@ final class AccessModule: MapModule {
         controller: MapController,
         host: FetchHost = URLSessionHost(storeURL: AppFiles.standard.hostDirectory),
         clock: @escaping @Sendable () -> Int64 = { Int64(Date().timeIntervalSince1970) },
-        files: AppFiles = .standard
+        state: NearbyStateStore = .shared
     ) {
         self.controller = controller
         self.host = host
         self.clock = clock
-        state = NearbyStateFile(files: files)
+        self.state = state
         cardWatcher.dismissed = { [weak self] in self?.cardClosed() }
     }
 
@@ -202,7 +202,7 @@ final class AccessModule: MapModule {
         let pause: NearbyLookup.Pause = { duration in try? await Task.sleep(for: duration) }
         if access {
             do {
-                let plan = try state.plan { kept in
+                let (plan, base) = try state.plan { kept in
                     try planAccess(
                         area: area, includeParking: false, stateJson: kept, settingsJson: json,
                         now: clock())
@@ -210,11 +210,9 @@ final class AccessModule: MapModule {
                 let results = await NearbyLookup.run(
                     plan, send: send, pause: pause, clock: clock
                 ) { [weak self] partial in
-                    if let kept = partial.stateJson { state.save(kept) }
-                    await self?.show(access: partial)
+                    await self?.show(access: partial, base: base)
                 }
-                if let kept = results.stateJson { state.save(kept) }
-                show(access: results)
+                show(access: results, base: base)
             } catch NearbyError.ZoomIn(let message) {
                 zoomNotices.append(message)
             } catch {
@@ -240,7 +238,9 @@ final class AccessModule: MapModule {
         rebuild()
     }
 
-    private func show(access results: NearbyResults) {
+    /// The access results so far; their state is kept over what other lookups keep.
+    private func show(access results: NearbyResults, base: String) {
+        if let kept = results.stateJson { state.save(kept, base: base) }
         access = results
         rebuild()
     }

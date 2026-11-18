@@ -52,7 +52,6 @@ final class NearbyLookupTests: XCTestCase {
         try? FileManager.default.removeItem(at: directory)
     }
 
-    private var stateFile: NearbyStateFile { NearbyStateFile(files: AppFiles(directory: directory)) }
 
     private func settingsJSON() throws -> String { try Settings.defaults().json() }
 
@@ -108,7 +107,9 @@ final class NearbyLookupTests: XCTestCase {
         XCTAssertEqual(answers.map(\.id), ["b"])
     }
 
+    @MainActor
     func testAccessRunsToTheEndAndTheNextLookupAnswersOpenStreetMapFromTheState() async throws {
+        let store = NearbyStateStore(files: AppFiles(directory: directory))
         let json = try settingsJSON()
         let plan = try planAccess(
             area: battery, includeParking: false, stateJson: "", settingsJson: json, now: now)
@@ -137,15 +138,16 @@ final class NearbyLookupTests: XCTestCase {
             results.credits.contains { $0.source == "overpass" && $0.text.contains("OpenStreetMap") })
         XCTAssertTrue(results.notes.contains { $0.contains("not as permission") })
         let state = try XCTUnwrap(results.stateJson)
-        XCTAssertTrue(stateFile.save(state))
-        XCTAssertEqual(stateFile.load(), state)
+        XCTAssertTrue(store.save(state, base: ""))
+        XCTAssertEqual(store.load(), state, "with nothing kept, kept as the core wrote it")
 
         // An hour later the same view asks PAD-US only; the ramp comes from the kept state.
-        let later = try stateFile.plan { kept in
+        let (later, base) = try store.plan { kept in
             try planAccess(
                 area: battery, includeParking: false, stateJson: kept, settingsJson: json,
                 now: now + 3_600)
         }
+        XCTAssertFalse(base.isEmpty)
         XCTAssertEqual(later.requests().map(\.source), ["padus"])
         let cached = later.results()
         XCTAssertEqual(cached.access.filter { $0.kind == "ramp" }.count, 1)
@@ -168,35 +170,5 @@ final class NearbyLookupTests: XCTestCase {
         let words = try nearbyWords(settingsJson: settingsJSON())
         XCTAssertFalse(words.findAccess.isEmpty)
         XCTAssertNotEqual(words.findAccess, words.findingAccess)
-    }
-
-    func testAStateTheCoreCannotReadIsSetAsideAndTheLookupStartsAfresh() throws {
-        let json = try settingsJSON()
-        let files = AppFiles(directory: directory)
-        XCTAssertTrue(files.write(Data("{ not a state".utf8), NearbyStateFile.name))
-        let plan = try stateFile.plan { kept in
-            try planAccess(
-                area: battery, includeParking: false, stateJson: kept, settingsJson: json, now: now)
-        }
-        XCTAssertFalse(plan.requests().isEmpty)
-        XCTAssertFalse(files.exists(NearbyStateFile.name))
-        XCTAssertEqual(try files.utf8(NearbyStateFile.name + ".bad"), "{ not a state")
-        XCTAssertEqual(stateFile.load(), "")
-
-        // A file that is not text is set aside too, never written over.
-        XCTAssertTrue(files.write(Data([0xFF, 0xFE, 0x00, 0xC3]), NearbyStateFile.name))
-        XCTAssertEqual(stateFile.load(), "")
-        XCTAssertTrue(files.exists(NearbyStateFile.name + ".2.bad"))
-    }
-
-    func testOtherPlanningErrorsAreNotBlamedOnTheState() throws {
-        XCTAssertTrue(stateFile.save("{}"))
-        XCTAssertThrowsError(
-            try stateFile.plan { kept in
-                try planAccess(
-                    area: NearbyArea(west: 0, south: 10, east: 1, north: 5),
-                    includeParking: false, stateJson: kept, settingsJson: settingsJSON(), now: now)
-            })
-        XCTAssertEqual(stateFile.load(), "{}", "kept")
     }
 }
