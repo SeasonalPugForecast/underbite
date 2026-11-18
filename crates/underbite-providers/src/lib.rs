@@ -26,6 +26,7 @@ pub mod request;
 pub mod reservoirs;
 pub mod session;
 pub mod source;
+pub mod species;
 pub mod statemaps;
 pub mod stocking;
 pub mod storms;
