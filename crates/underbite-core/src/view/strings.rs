@@ -1067,6 +1067,12 @@ keys! {
         "Records show where a species was reported, not where it is now.",
         "Records show where a species was reported, not where it is now.",
     ),
+    /// The link to a record's page at its source.
+    RecordLinkInaturalist => ("Record on iNaturalist", "Record on iNaturalist"),
+    RecordLinkGbif => ("Record on GBIF", "Record on GBIF"),
+    RecordLinkNas => ("Record at USGS NAS", "Record at USGS NAS"),
+    /// `{source}`: the source's name, for a source without its own words.
+    RecordLink => ("Record at {source}", "Record at {source}"),
     // -- the catch log --------------------------------------------------------------------
     LogReleased => ("Released", "Released"),
     /// Luna's fun tag; the plain voice says "Kept".
@@ -3244,6 +3250,21 @@ pub fn record_position(
     }
 }
 
+/// The title of the link to a species record's page at its source: "Record on iNaturalist",
+/// "Record on GBIF", "Record at USGS NAS".
+pub fn record_link_title(s: Strings, source: &SourceId) -> String {
+    let key = if *source == SourceId::INATURALIST {
+        Key::RecordLinkInaturalist
+    } else if *source == SourceId::GBIF {
+        Key::RecordLinkGbif
+    } else if *source == SourceId::USGS_NAS {
+        Key::RecordLinkNas
+    } else {
+        return s.fmt(Key::RecordLink, &[("source", &s.source_name(source))]);
+    };
+    s.get(key).to_owned()
+}
+
 /// The elevation model a DEM raster belongs to, by its name; `None` for one not recognised.
 fn dem_model(f: &Formatter, raster: &str) -> Option<&'static str> {
     let name = raster.to_ascii_lowercase();
@@ -4386,6 +4407,24 @@ mod tests {
             );
             assert_eq!(record_position(&us, false, None), None);
             assert_eq!(record_position(&us, false, Some(f32::NAN)), None);
+        }
+
+        #[test]
+        fn a_record_page_is_named_by_its_source() {
+            let s = formatter(false).strings;
+            assert_eq!(
+                record_link_title(s, &SourceId::INATURALIST),
+                "Record on iNaturalist"
+            );
+            assert_eq!(record_link_title(s, &SourceId::GBIF), "Record on GBIF");
+            assert_eq!(
+                record_link_title(s, &SourceId::USGS_NAS),
+                "Record at USGS NAS"
+            );
+            assert_eq!(
+                record_link_title(s, &SourceId::PADUS),
+                format!("Record at {}", s.source_name(&SourceId::PADUS))
+            );
         }
 
         #[test]

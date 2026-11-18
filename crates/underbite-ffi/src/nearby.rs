@@ -46,7 +46,9 @@ use underbite_core::provenance::{Attribution, SourceId};
 use underbite_core::time::{LocalDate, UnixTime, UtcOffset};
 use underbite_core::view::cards::stocking::{self, StockingCard};
 use underbite_core::view::format::Formatter;
-use underbite_core::view::strings::{Key, SafetyKey, record_position, record_seen};
+use underbite_core::view::strings::{
+    Key, SafetyKey, record_link_title, record_position, record_seen,
+};
 use underbite_providers::access::{overpass, padus};
 use underbite_providers::blooms::hab;
 use underbite_providers::request::{Coordinates, MAX_COORDINATE_DECIMALS, Response};
@@ -254,6 +256,8 @@ pub struct RecordPin {
     pub licence_url: Option<String>,
     /// The record's page at the source: with the credit, the attribution its licence asks for.
     pub link: Option<String>,
+    /// The words of the link to that page, "Record on iNaturalist"; `None` without a page.
+    pub link_title: Option<String>,
     /// The platform's credit: "iNaturalist", "GBIF.org", or the USGS citation for NAS.
     pub credit: String,
     /// The platform's page.
@@ -1867,6 +1871,7 @@ fn record_pin(
     let title = common_name.clone().unwrap_or_else(|| record.taxon.clone());
     let seen = record_seen(f, record.observed_on);
     let source_name = f.strings.source_name(&record.source);
+    let link = web_url(record.url.as_deref());
     let photo = record.photo.as_ref().and_then(|p| {
         let words = licence_words(f, Licence::classify(p.licence.as_deref()?)?);
         Some(RecordPhoto {
@@ -1897,7 +1902,10 @@ fn record_pin(
         seen,
         licence: licence_words(f, licence),
         licence_url: web_url(record.licence.as_deref()),
-        link: web_url(record.url.as_deref()),
+        link_title: link
+            .as_ref()
+            .map(|_| record_link_title(f.strings, &record.source)),
+        link,
         credit: credit.credit.clone(),
         credit_url: credit.url.clone(),
         photo,

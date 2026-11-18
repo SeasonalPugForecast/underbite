@@ -439,6 +439,11 @@ mod nearby {
                     .is_some_and(|l| l.starts_with("https://"))
             );
             assert!(!pin.credit.is_empty() && pin.credit_url.is_some());
+            let link_title = match pin.source.as_str() {
+                "inaturalist" => "Record on iNaturalist",
+                _ => "Record on GBIF",
+            };
+            assert_eq!(pin.link_title.as_deref(), Some(link_title));
             let text = format!("{pin:?}").to_lowercase();
             for personal in ["user", "login", "recordedby", "rightsholder", "observer"] {
                 assert!(!text.contains(personal), "{personal} in {text}");
@@ -559,6 +564,8 @@ mod nearby {
         assert!(plan.requests().is_empty());
         let pin = &done.records[0];
         assert_eq!(pin.licence, "Public domain");
+        assert!(pin.link.is_some());
+        assert_eq!(pin.link_title.as_deref(), Some("Record at USGS NAS"));
         assert!(
             pin.credit
                 .contains("Nonindigenous Aquatic Species Database")
