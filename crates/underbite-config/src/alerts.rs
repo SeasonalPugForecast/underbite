@@ -201,7 +201,8 @@ pub(crate) fn round_boxes(rules: &mut [AlertRule], decimals: u8) {
     let scale = 10f64.powi(i32::from(decimals));
     let step = 1.0 / scale;
     let round = |v: f64| (v * scale).round() / scale;
-    let floor = |v: f64| (v * scale).floor() / scale;
+    // A value already on the grid stays put (`-73.29 * 100` is `-7329.000000000001`).
+    let floor = |v: f64| (v * scale + 1e-6).floor() / scale;
     // The two sides, rounded; a collapsed span starts from the low side rounded down.
     let pair = |lo: f64, hi: f64| {
         let (rlo, rhi) = (round(lo), round(hi));
@@ -561,6 +562,26 @@ all_of = [{ kind = "measurement", metric = "sea_surface_temp", above = 20.0 }]
         round_boxes(&mut coarse, 0);
         assert!(close(sides(&coarse[0]), [40.0, -74.0, 41.0, -73.0]));
         assert_eq!(errors(&coarse), Vec::<String>::new());
+    }
+
+    #[test]
+    fn alerts_a_collapsed_box_side_already_on_the_grid_stays_put() {
+        // `-73.29 * 100` and `0.29 * 100` land a hair below their integers.
+        let mut rules = vec![sst_box(0.29, -73.29, 0.292, -73.286)];
+        round_boxes(&mut rules, 2);
+        let AlertTarget::Box {
+            south,
+            west,
+            north,
+            east,
+        } = rules[0].target
+        else {
+            unreachable!()
+        };
+        let close = |a: f64, b: f64| (a - b).abs() < 1e-9;
+        assert!(close(south, 0.29) && close(north, 0.30), "{south}..{north}");
+        assert!(close(west, -73.29) && close(east, -73.28), "{west}..{east}");
+        assert_eq!(errors(&rules), Vec::<String>::new());
     }
 
     #[test]
