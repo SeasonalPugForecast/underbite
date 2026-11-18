@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		76194A01E450EE7EAE22AAD0 /* UnderbiteKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9B1C1CE85962784BBD85FD34 /* UnderbiteKit */; };
+		68DAD90B252D7F024AE45E8D /* UnderbiteKit in Frameworks */ = {isa = PBXBuildFile; productRef = 14D74D99BFDAE675CADE647F /* UnderbiteKit */; };
+		B7E95286FEE8F3C880F7F3D0 /* UnderbiteWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2D311530CB641A2AA70FAB72 /* UnderbiteWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -18,7 +20,28 @@
 			remoteGlobalIDString = 9FAB05D4966472236F70A39F;
 			remoteInfo = Underbite;
 		};
+		0C96E0B1BE3DA40CD6667643 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 80804EB712EA3EF403E363A3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AF51760CA19405E17682F002;
+			remoteInfo = UnderbiteWidgets;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0B2A2544EEE1123BB80D818D /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B7E95286FEE8F3C880F7F3D0 /* UnderbiteWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		16F22EECBD6D3490BA6547EC /* Underbite-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Underbite-Info.plist"; sourceTree = "<group>"; };
@@ -27,6 +50,9 @@
 		6E2E28B5142E1EFB7C287C38 /* Underbite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Underbite.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD7CC1B7388AAB008AFC199E /* UnderbiteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UnderbiteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED9223FA027C5E0EBD767DED /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
+		2D311530CB641A2AA70FAB72 /* UnderbiteWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = UnderbiteWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		419377EB7C81E147EA0F2C39 /* UnderbiteWidgets-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "UnderbiteWidgets-Info.plist"; sourceTree = "<group>"; };
+		F897D9E01AE430A09C0C2F43 /* UnderbiteWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UnderbiteWidgets.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -38,6 +64,11 @@
 		0829B4FED3DEC71B8D8824FF /* UnderbiteUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = UnderbiteUITests;
+			sourceTree = "<group>";
+		};
+		EC155DEBF302526068C29BFE /* UnderbiteWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = UnderbiteWidgets;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -58,6 +89,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1CAB8BC29BDED9363122E990 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68DAD90B252D7F024AE45E8D /* UnderbiteKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -66,6 +105,7 @@
 			children = (
 				6E2E28B5142E1EFB7C287C38 /* Underbite.app */,
 				FD7CC1B7388AAB008AFC199E /* UnderbiteUITests.xctest */,
+				2D311530CB641A2AA70FAB72 /* UnderbiteWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -77,7 +117,10 @@
 				ED9223FA027C5E0EBD767DED /* Version.xcconfig */,
 				16F22EECBD6D3490BA6547EC /* Underbite-Info.plist */,
 				170FE4BB5B7FF8C5389DB078 /* Underbite.entitlements */,
+				419377EB7C81E147EA0F2C39 /* UnderbiteWidgets-Info.plist */,
+				F897D9E01AE430A09C0C2F43 /* UnderbiteWidgets.entitlements */,
 				17A899418F309DFC09E4E649 /* Underbite */,
+				EC155DEBF302526068C29BFE /* UnderbiteWidgets */,
 				0829B4FED3DEC71B8D8824FF /* UnderbiteUITests */,
 				6766A8732FF62DFB606EDA66 /* Products */,
 			);
@@ -93,10 +136,12 @@
 				3ADA0597A456E9A3063AD38A /* Sources */,
 				B33125DCFF3DDC3F2BBE7D19 /* Frameworks */,
 				A6A65DE8E3597D06B6C07068 /* Resources */,
+				0B2A2544EEE1123BB80D818D /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				EDF2A390BABEDEB5E412842A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				17A899418F309DFC09E4E649 /* Underbite */,
@@ -132,6 +177,29 @@
 			productReference = FD7CC1B7388AAB008AFC199E /* UnderbiteUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		AF51760CA19405E17682F002 /* UnderbiteWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3AE5A09864954834B95EDCE7 /* Build configuration list for PBXNativeTarget "UnderbiteWidgets" */;
+			buildPhases = (
+				DA2B7CAFB90439B604DB430E /* Sources */,
+				1CAB8BC29BDED9363122E990 /* Frameworks */,
+				DEF3082616E4C406F9F665B6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				EC155DEBF302526068C29BFE /* UnderbiteWidgets */,
+			);
+			name = UnderbiteWidgets;
+			packageProductDependencies = (
+				14D74D99BFDAE675CADE647F /* UnderbiteKit */,
+			);
+			productName = UnderbiteWidgets;
+			productReference = 2D311530CB641A2AA70FAB72 /* UnderbiteWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -148,6 +216,9 @@
 					A19D481851116047E78BD851 = {
 						CreatedOnToolsVersion = 27.0;
 						TestTargetID = 9FAB05D4966472236F70A39F;
+					};
+					AF51760CA19405E17682F002 = {
+						CreatedOnToolsVersion = 27.0;
 					};
 				};
 			};
@@ -170,6 +241,7 @@
 			targets = (
 				9FAB05D4966472236F70A39F /* Underbite */,
 				A19D481851116047E78BD851 /* UnderbiteUITests */,
+				AF51760CA19405E17682F002 /* UnderbiteWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -183,6 +255,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		81188679769D469D11FE5A38 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DEF3082616E4C406F9F665B6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -206,6 +285,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DA2B7CAFB90439B604DB430E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -213,6 +299,11 @@
 			isa = PBXTargetDependency;
 			target = 9FAB05D4966472236F70A39F /* Underbite */;
 			targetProxy = F9CC3D4D305A0E4837657AD3 /* PBXContainerItemProxy */;
+		};
+		EDF2A390BABEDEB5E412842A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AF51760CA19405E17682F002 /* UnderbiteWidgets */;
+			targetProxy = 0C96E0B1BE3DA40CD6667643 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -348,6 +439,56 @@
 			};
 			name = Debug;
 		};
+		9FD688B15A88143280EBD146 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 62348A0B52395991D17C4887 /* Signing.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = UnderbiteWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "UnderbiteWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Underbite;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(UNDERBITE_BUNDLE_ID).widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1DC4DE461B88E8D8FB9E63A9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 62348A0B52395991D17C4887 /* Signing.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = UnderbiteWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "UnderbiteWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Underbite;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(UNDERBITE_BUNDLE_ID).widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -378,6 +519,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		3AE5A09864954834B95EDCE7 /* Build configuration list for PBXNativeTarget "UnderbiteWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9FD688B15A88143280EBD146 /* Debug */,
+				1DC4DE461B88E8D8FB9E63A9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -389,6 +539,11 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		9B1C1CE85962784BBD85FD34 /* UnderbiteKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E66329B12AAE92B586AD04A5 /* XCLocalSwiftPackageReference "../UnderbiteKit" */;
+			productName = UnderbiteKit;
+		};
+		14D74D99BFDAE675CADE647F /* UnderbiteKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E66329B12AAE92B586AD04A5 /* XCLocalSwiftPackageReference "../UnderbiteKit" */;
 			productName = UnderbiteKit;
