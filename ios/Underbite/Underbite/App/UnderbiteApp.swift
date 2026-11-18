@@ -9,6 +9,8 @@ struct UnderbiteApp: App {
     var body: some Scene {
         WindowGroup {
             RootTabs()
+                // `.underbite` files opened in the app: a trip or spot to add.
+                .receivesSharedFiles()
                 .environment(store)
                 .environment(\.voiceStyle, voice)
                 .sunMode(store.sunMode || LaunchArguments.sunMode)

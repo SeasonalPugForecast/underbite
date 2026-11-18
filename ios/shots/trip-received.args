@@ -1,0 +1,2 @@
+-seed -tab trips -receiveFile sample
+wait 12
