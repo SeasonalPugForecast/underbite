@@ -84,6 +84,7 @@ final class SettingsTests: XCTestCase {
         doc["map"] = map
         doc["storms"] = ["hurricane_distance_km": 1500.5]
         doc["thresholds"] = ["trout_stress_c": 18.5]
+        doc["species"] = ["followed": ["salmo-trutta", "micropterus-dolomieu"]]
         doc["alerts"] = [
             [
                 "id": "croton-low", "name": "Croton low", "enabled": false,
@@ -132,6 +133,7 @@ final class SettingsTests: XCTestCase {
         XCTAssertNil(settings.alerts[1].repeatAfterHours)
         XCTAssertEqual(settings.alerts[2].target.north, 40.5)
         XCTAssertEqual(settings.alerts.map(\.showName), [false, true, true])
+        XCTAssertEqual(settings.species.followed, ["salmo-trutta", "micropterus-dolomieu"])
     }
 
     func testARuleWithoutShowNameNamesItsPlace() throws {
@@ -160,6 +162,40 @@ final class SettingsTests: XCTestCase {
         let settings = try Settings(json: Fixtures.string(doc))
         XCTAssertEqual(settings.alerts, [])
         try Fixtures.assertSameJSON(settings.json(), original)
+    }
+
+    func testSettingsWithoutSpeciesDecode() throws {
+        let original = try Fixtures.text("sample-settings")
+        var doc = try XCTUnwrap(Fixtures.object(original) as? [String: Any])
+        doc.removeValue(forKey: "species")
+        let settings = try Settings(json: Fixtures.string(doc))
+        XCTAssertEqual(settings.species.followed, [])
+        try Fixtures.assertSameJSON(settings.json(), original)
+    }
+
+    func testFollowingASpeciesGoesThroughTheCore() throws {
+        var settings = try Settings.defaults()
+        XCTAssertEqual(settings.species.followed, [])
+        settings.species.follow("micropterus-dolomieu")
+        settings.species.follow("salmo-trutta")
+        settings.species.follow("micropterus-dolomieu")
+        XCTAssertEqual(settings.species.followed, ["micropterus-dolomieu", "salmo-trutta"])
+        XCTAssertTrue(settings.species.follows("salmo-trutta"))
+
+        let migrated = try migrateSettings(json: settings.json())
+        XCTAssertTrue(migrated.issues.isEmpty)
+        XCTAssertEqual(try Settings(json: migrated.json), settings)
+
+        settings.species.unfollow("micropterus-dolomieu")
+        XCTAssertEqual(settings.species.followed, ["salmo-trutta"])
+        XCTAssertFalse(settings.species.follows("micropterus-dolomieu"))
+
+        // An id the catalogue lacks is dropped by the core, with a warning naming it.
+        settings.species.follow("no-such-fish")
+        let tidied = try migrateSettings(json: settings.json())
+        XCTAssertEqual(try Settings(json: tidied.json).species.followed, ["salmo-trutta"])
+        XCTAssertEqual(tidied.issues.map(\.path), ["species.followed[1]"])
+        XCTAssertEqual(tidied.issues.map(\.severity), [.warning])
     }
 
     func testAnEditGoesThroughTheCore() throws {

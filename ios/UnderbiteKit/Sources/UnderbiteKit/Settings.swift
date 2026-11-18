@@ -22,6 +22,8 @@ public struct Settings: Codable, Sendable, Hashable {
     public var rivers: [RiverRange]
     public var windows: Windows
     public var presentation: Presentation
+    /// The species the user follows, for the species card.
+    public var species: Species
     public var map: MapSettings
     /// Alert rules; spots and trips are named by id.
     public var alerts: [AlertRule]
@@ -56,7 +58,8 @@ public struct Settings: Codable, Sendable, Hashable {
 }
 
 extension Settings {
-    /// Settings written before alert rules existed have no `alerts`; they decode with none.
+    /// Settings written before alert rules or followed species existed have no `alerts` or
+    /// `species`; they decode with none.
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         version = try c.decode(Int.self, forKey: .version)
@@ -70,6 +73,7 @@ extension Settings {
         rivers = try c.decode([RiverRange].self, forKey: .rivers)
         windows = try c.decode(Windows.self, forKey: .windows)
         presentation = try c.decode(Presentation.self, forKey: .presentation)
+        species = try c.decodeIfPresent(Species.self, forKey: .species) ?? Species()
         map = try c.decode(MapSettings.self, forKey: .map)
         alerts = try c.decodeIfPresent([AlertRule].self, forKey: .alerts) ?? []
     }
@@ -238,6 +242,31 @@ extension Settings {
         public var clock: String
         public var timelineHours: Int
         public var timelineStepMinutes: Int
+    }
+
+    /// The species the user follows, by catalogue id (`"morone-saxatilis"`), in the order the
+    /// species card lists them. The user's profile edits are kept apart, not here.
+    public struct Species: Codable, Sendable, Hashable {
+        public var followed: [String]
+
+        public init(followed: [String] = []) {
+            self.followed = followed
+        }
+
+        /// Whether `id` is followed.
+        public func follows(_ id: String) -> Bool {
+            followed.contains(id)
+        }
+
+        /// Follows `id`, last in the order; following it again changes nothing.
+        public mutating func follow(_ id: String) {
+            if !follows(id) { followed.append(id) }
+        }
+
+        /// Stops following `id`.
+        public mutating func unfollow(_ id: String) {
+            followed.removeAll { $0 == id }
+        }
     }
 
     /// The map section. Ranges and depths are in the core's canonical units (degrees Celsius,
