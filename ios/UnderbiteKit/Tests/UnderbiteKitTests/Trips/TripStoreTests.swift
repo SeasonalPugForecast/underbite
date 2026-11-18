@@ -128,9 +128,29 @@ final class TripStoreTests: XCTestCase {
         XCTAssertTrue(s.unreadable)
         XCTAssertEqual(s.keptAs, "trips.json.bad")
         XCTAssertEqual(files.text("trips.json.bad"), "not json")
+        XCTAssertTrue(s.canSave, "a new file starts beside the kept one")
         try s.save(trip("A", "2027-02-01", "2027-02-03"))
         XCTAssertEqual(files.text("trips.json.bad"), "not json", "the set-aside file stays")
         XCTAssertEqual(store().trips.count, 1)
+    }
+
+    func testNoTripIsAddedWhenTheUnreadableFileCannotBeMoved() throws {
+        files.write(Data("not json".utf8), TripStore.fileName)
+        // A `.bad` name for every attempt is taken by a directory, so nothing can move there.
+        for name in ["trips.json.bad"] + (2...100).map({ "trips.json.\($0).bad" }) {
+            try FileManager.default.createDirectory(
+                at: files.url(name), withIntermediateDirectories: true)
+        }
+        let s = store()
+        XCTAssertTrue(s.unreadable)
+        XCTAssertNil(s.keptAs)
+        XCTAssertFalse(s.canSave)
+        XCTAssertThrowsError(try s.save(trip("A", "2027-02-01", "2027-02-03"))) { error in
+            XCTAssertTrue(error is TripStore.Unsaved, "\(error)")
+        }
+        XCTAssertTrue(s.trips.isEmpty, "not shown, as it would be gone at the next launch")
+        XCTAssertEqual(s.revision, 0)
+        XCTAssertEqual(files.text(TripStore.fileName), "not json", "never saved over")
     }
 
     func testTripsOfALaterVersionAreSetAside() {

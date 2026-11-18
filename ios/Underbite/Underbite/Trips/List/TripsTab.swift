@@ -97,6 +97,7 @@ struct TripsTab: View {
 }
 
 /// The list column: upcoming trips soonest first, then past ones latest first; swipe to delete.
+/// No trip can be added while the store cannot save one.
 private struct TripList: View {
     @Environment(SpotStore.self) private var spots
     let trips: TripStore
@@ -122,6 +123,7 @@ private struct TripList: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("New trip", systemImage: "plus") { sheet = .new }
+                    .disabled(!trips.canSave)
             }
         }
         .confirmationDialog(
@@ -163,6 +165,7 @@ private struct TripList: View {
         VStack(spacing: 0) {
             LunaEmptyState(kind: .trips)
             Button("New trip") { sheet = .new }
+                .disabled(!trips.canSave)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .padding(.bottom, 32)

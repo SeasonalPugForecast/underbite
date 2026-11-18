@@ -129,6 +129,8 @@ struct ReceivedFileSheet: View {
                             .controlSize(.large)
                     }
                 }
+                // A trip is not added while the trips cannot be saved.
+                .disabled(isTrip && !trips.canSave)
             }
         }
     }

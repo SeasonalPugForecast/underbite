@@ -107,8 +107,8 @@ nonisolated struct TripListing: Equatable, Identifiable, Sendable {
 
 /// The saved trips, in `trips.json` in the app's directory (Application Support), written
 /// atomically like the app's other files; a file that cannot be read is set aside as
-/// `trips.json.bad` and never written over. Ids and `modified_at` are set here; every check
-/// and every word is the core's.
+/// `trips.json.bad` and never written over, and when it cannot be moved no trip is saved at all
+/// (`canSave`). Ids and `modified_at` are set here; every check and every word is the core's.
 @MainActor
 @Observable
 final class TripStore {
@@ -131,11 +131,13 @@ final class TripStore {
     /// The name the unreadable file was kept under (`trips.json.bad`), or `nil` when it could
     /// not be moved: then it is left where it was and never saved over.
     private(set) var keptAs: String?
+    /// Whether trips can be saved: not when `trips.json` could not be read nor moved aside, as
+    /// a trip added then would be gone at the next launch.
+    private(set) var canSave = true
 
     @ObservationIgnored private let files: AppFiles
     @ObservationIgnored private let clock: @Sendable () -> Int64
     @ObservationIgnored private let newID: @Sendable () -> String
-    @ObservationIgnored private var writable = true
     @ObservationIgnored private var generation = 0
 
     /// - Parameters:
@@ -157,6 +159,9 @@ final class TripStore {
     /// Why the file could not be read.
     nonisolated private struct Unreadable: Error {}
 
+    /// Why a trip was not saved: the file cannot be written (`canSave`).
+    nonisolated struct Unsaved: Error {}
+
     private func load() {
         do {
             guard let data = try files.data(Self.fileName) else { return }
@@ -164,7 +169,7 @@ final class TripStore {
         } catch {
             unreadable = true
             keptAs = files.setAside(Self.fileName)
-            writable = keptAs != nil
+            canSave = keptAs != nil
         }
     }
 
@@ -213,9 +218,11 @@ final class TripStore {
 
     /// Saves the trip `json` (the core's `Trip`): a trip without an id is a new one and gets one,
     /// a trip with an id replaces the one saved under it (or is added). `modified_at` is now.
-    /// Returns the trip's id; throws when the core cannot read it as a trip.
+    /// Returns the trip's id; throws when the core cannot read it as a trip, or `Unsaved`
+    /// when trips cannot be saved.
     @discardableResult
     func save(_ json: String) throws -> String {
+        guard canSave else { throw Unsaved() }
         guard var trip = try JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any]
         else { throw Unreadable() }
         let id = (trip["id"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? newID()
@@ -266,7 +273,7 @@ final class TripStore {
     // MARK: - Saving
 
     private func saveFile() {
-        guard writable else { return }
+        guard canSave else { return }
         files.write(Self.encode(trips), Self.fileName)
     }
 }
