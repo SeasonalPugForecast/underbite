@@ -1,0 +1,26 @@
+---
+source: crates/underbite-core/src/trip/grid.rs
+expression: render(&grid)
+---
+spot-battery America/New_York today Some(LocalDate { year: 2026, month: 11, day: 7 })
+2026-11-08
+  verdict forecast NoGo reasons 3
+  windows forecast certain_only false count 2
+  tides certain Computed Some(Mllw) Low@1794117540 0.02 High@1794139560 1.71 Low@1794162900 0.01 High@1794184020 1.43
+  flow forecast 21.5 InBest wadeable Some(false)
+  water_temp typical(29 years) 9.0 Some(Below)
+  sun certain moon certain solunar certain WaningCrescent
+2026-11-09
+  verdict forecast Unknown reasons 1
+  windows certain certain_only true count 1
+  tides certain Computed Some(Mllw) Low@1794206400 0.05 High@1794228240 1.70 Low@1794251880 0.01 High@1794272820 1.39
+  flow typical(29 years) 20.0 InBest wadeable Some(false)
+  water_temp typical(29 years) 9.0 Some(Below)
+  sun certain moon certain solunar certain New
+2026-11-10
+  verdict unavailable(BeyondForecast)
+  windows certain certain_only true count 1
+  tides certain Computed Some(Mllw) Low@1794295140 0.10 High@1794316860 1.66 Low@1794340800 0.03 High@1794361620 1.33
+  flow typical(29 years) 20.0 InBest wadeable Some(false)
+  water_temp typical(29 years) 9.0 Some(Below)
+  sun certain moon certain solunar certain WaxingCrescent
