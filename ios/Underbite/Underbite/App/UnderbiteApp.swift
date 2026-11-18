@@ -5,6 +5,7 @@ import UnderbiteKit
 struct UnderbiteApp: App {
     @State private var store = UnderbiteApp.makeStore()
     @Environment(\.scenePhase) private var phase
+    private let notifications = AlertNotificationDelegate.install()
 
     init() {
         // Files shared or exported before may hold exact positions: none outlives a launch.
