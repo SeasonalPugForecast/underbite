@@ -9,10 +9,10 @@ use underbite_ffi::fetch::{HostMethod, HostResponse};
 use underbite_ffi::map::{
     GridPacer, GridStore, LayerDates, LayerDraw, MAX_REQUESTS_PER_VIEW, MAX_STORE_BLOCKS,
     MAX_STORE_VALUES, MapError, MapPoint, OVERVIEW_MIN_MISSING, TileOutcome, ValueRange,
-    classify_tile, gibs_default_date, grid_block_is_fresh, map_catalogue, map_fitted_caption,
-    map_legend, map_presets, map_range, map_tile_size, measure, parse_time_axis, point_words,
-    previous_date, radar_covers, radar_frame_request, radar_frames, radar_latest_valid,
-    radar_meta_request, tile_request, time_axis_request,
+    classify_tile, gibs_default_date, grid_block_is_fresh, map_cached_label, map_catalogue,
+    map_fitted_caption, map_legend, map_offline_words, map_presets, map_range, map_tile_size,
+    measure, parse_time_axis, point_words, previous_date, radar_covers, radar_frame_request,
+    radar_frames, radar_latest_valid, radar_meta_request, tile_request, time_axis_request,
 };
 use underbite_ffi::settings::default_settings_json;
 
@@ -320,6 +320,13 @@ fn satellite_tiles_take_a_date_and_over_zoom_past_their_level() {
     let crop = deeper.crop.unwrap();
     assert_eq!((crop.left, crop.top, crop.size), (0.25, 0.5, 0.25));
     assert!(deeper.request.url.ends_with("/7/48/37.png"));
+    // A dated day is kept like any tile; the current day's partial picture only in memory.
+    assert!(!fetch.request.no_store && fetch.request.max_age_s.is_some_and(|s| s > 0));
+    let today = tile_request("sst-imagery".into(), None, 7, 37, 48)
+        .unwrap()
+        .unwrap();
+    assert!(today.request.no_store);
+    assert_eq!(today.request.max_age_s, None);
     // Radar starts at zoom 6.
     assert_eq!(tile_request("radar".into(), None, 5, 9, 12).unwrap(), None);
     assert!(
@@ -1139,5 +1146,26 @@ fn a_point_is_worded_to_four_decimals_with_its_hemispheres() {
             plain()
         )
         .is_err()
+    );
+}
+
+#[test]
+fn a_cached_layer_says_when_its_tiles_were_fetched() {
+    // 2026-11-17 19:40 UTC is 2:40 PM in New York.
+    let fetched: i64 = 1_794_944_400;
+    let same_day = fetched + 3_600;
+    let label = map_cached_label(fetched, same_day, plain(), "America/New_York".into()).unwrap();
+    assert_eq!(label, "cached 2:40 PM");
+    let later = map_cached_label(
+        fetched,
+        fetched + 3 * 86_400,
+        plain(),
+        "America/New_York".into(),
+    )
+    .unwrap();
+    assert_eq!(later, "cached Nov 17");
+    assert_eq!(
+        map_offline_words(plain()).unwrap().not_available,
+        "not available offline"
     );
 }

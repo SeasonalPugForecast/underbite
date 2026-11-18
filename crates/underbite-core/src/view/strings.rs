@@ -807,6 +807,9 @@ keys! {
     MapCurrentToward => ("{speed} toward {direction}", "{speed} toward {direction}"),
     /// When an hourly field is valid: `{date}`, `{time}`.
     MapDateTime => ("{date}, {time}", "{date}, {time}"),
+    /// A layer drawn from tiles kept on the phone: `{when}` (a date, or a time today).
+    MapLayerCached => ("cached {when}", "cached {when}"),
+    MapLayerNotOffline => ("not available offline", "not available offline"),
     /// A measured line: `{distance}`, `{bearing}`.
     MapMeasure => ("{distance} at {bearing}", "{distance} at {bearing}"),
     /// A bearing from true north: `{bearing}` ("NE 45°").
@@ -3146,6 +3149,17 @@ pub fn map_time(f: &Formatter, t: UnixTime, mode: DateMode) -> String {
             &[("date", &f.date_of(t)), ("time", &f.clock(t))],
         ),
     }
+}
+
+/// The badge of a layer drawn from tiles kept on the phone: "cached Nov 17", or the time when
+/// they were fetched today in the formatter's zone ("cached 2:40 PM").
+pub fn map_cached_label(f: &Formatter, fetched_at: UnixTime, now: UnixTime) -> String {
+    let when = if f.date_of(fetched_at) == f.date_of(now) {
+        f.clock(fetched_at)
+    } else {
+        f.date_of(fetched_at)
+    };
+    f.strings.fmt(Key::MapLayerCached, &[("when", &when)])
 }
 
 /// A measured line as the user reads it: the distance ("2.4 mi"), the bearing from the start

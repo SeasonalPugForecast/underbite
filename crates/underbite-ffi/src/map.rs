@@ -18,15 +18,16 @@ use underbite_core::map::dem::{self, DemSourceInfo, WaterBody};
 use underbite_core::map::grid::{self, Block, Grid};
 use underbite_core::map::render::{self, Ramp, RampRange};
 use underbite_core::map::tiles::{
-    MAX_ZOOM, TILE_PX, TileOutcome as CoreTileOutcome, cache_lifetime_s, classify, over_zoom,
-    previous_day,
+    MAX_ZOOM, TILE_PX, TileOutcome as CoreTileOutcome, TileService, cache_lifetime_s, classify,
+    over_zoom, previous_day,
 };
 use underbite_core::map::{Bbox, GeoPoint, GridHost, TileKey, tiles};
 use underbite_core::time::{LocalDate, UnixTime, UtcOffset, parse_date};
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{
-    Key, MapQuantity, SafetyKey, Strings, depth_reading, map_current, map_measure, map_point,
-    map_time, map_value,
+    Key, MapQuantity, SafetyKey, Strings, depth_reading,
+    map_cached_label as strings_map_cached_label, map_current, map_measure, map_point, map_time,
+    map_value,
 };
 use underbite_providers::erddap::{self, ErddapError, ErddapPacer, FIRST_PAUSE_S, GridTime};
 use underbite_providers::request::Response;
@@ -703,8 +704,14 @@ pub fn tile_request(
     let Some(url) = l.tile_url(fetch_key, date, 0) else {
         return Ok(None);
     };
+    let mut request = get(url, cache_lifetime_s(service, None));
+    // GIBS serves the current day's partial picture with `no-store`: keep it in memory only.
+    if service == TileService::Gibs && date.is_none() {
+        request.no_store = true;
+        request.max_age_s = None;
+    }
     Ok(Some(TileFetch {
-        request: get(url, cache_lifetime_s(service, None)),
+        request,
         z: fetch_key.z,
         x: fetch_key.x,
         y: fetch_key.y,
@@ -714,6 +721,43 @@ pub fn tile_request(
             size: o.size,
         }),
     }))
+}
+
+/// The words of a layer drawn while offline.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct MapOfflineWords {
+    /// A layer with nothing kept on the phone while offline.
+    pub not_available: String,
+}
+
+/// The words of a layer drawn while offline, in the settings' voice.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn map_offline_words(settings_json: String) -> Result<MapOfflineWords, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, "UTC");
+    Ok(MapOfflineWords {
+        not_available: f.strings.get(Key::MapLayerNotOffline).to_owned(),
+    })
+}
+
+/// The badge of a layer drawn from tiles kept on the phone, fetched at `fetched_at`: "cached
+/// Nov 17", or "cached 2:40 PM" when fetched today in `time_zone`.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn map_cached_label(
+    fetched_at: i64,
+    now: i64,
+    settings_json: String,
+    time_zone: String,
+) -> Result<String, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let f = formatter(&config, &time_zone);
+    Ok(strings_map_cached_label(
+        &f,
+        UnixTime(fetched_at),
+        UnixTime(now),
+    ))
 }
 
 /// What a tile response means.
