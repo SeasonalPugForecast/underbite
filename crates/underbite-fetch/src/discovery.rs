@@ -241,6 +241,8 @@ pub struct Discovery {
     pub errors: Vec<ModelSourceError>,
     /// Whether the hydrography related stations to the spot (its credit is due).
     pub hydrography: bool,
+    /// The name of the water the hydrography places the spot on, when the map names it.
+    pub water_name: Option<String>,
 }
 
 /// The stations around `spot` that can serve `requirements` under `config`, ranked per
@@ -344,6 +346,7 @@ pub(crate) async fn discover_with<H: FetchHost>(
         .stored(store::CHOICES, &spot_key)
         .await
         .unwrap_or_default();
+    let water_name = placement.water_name;
     let mut input = DiscoveryInput {
         latitude: spot.latitude,
         longitude: spot.longitude,
@@ -366,6 +369,7 @@ pub(crate) async fn discover_with<H: FetchHost>(
         plan,
         errors,
         hydrography,
+        water_name,
     }
 }
 

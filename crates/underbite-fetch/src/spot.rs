@@ -1,5 +1,6 @@
 //! One spot, end to end: the water type when it is to be inferred, discovery, the water and
-//! marine session, the weather, the normals, the storm watch and the sky, into one snapshot.
+//! marine session, the stocking lists, the weather, the normals, the storm watch and the sky,
+//! into one snapshot.
 
 use underbite_config::schema::Config;
 use underbite_core::astro::solunar::SolunarSettings;
@@ -16,8 +17,8 @@ use underbite_providers::storms::StormOutcome;
 use crate::discovery::discover_with;
 use crate::host::{Driver, FetchHost};
 use crate::normals::fetch_normals;
-use crate::registry::{chain_specs, requirements, weather_chain};
-use crate::sessions::{fetch_weather, run_session, session_chains};
+use crate::registry::{chain_specs, requirements, wants_stocking, weather_chain};
+use crate::sessions::{Stocking, fetch_stocking, fetch_weather, run_session, session_chains};
 use crate::sky::{sky, time_zone};
 use crate::store::{self, spot_key};
 use crate::storms::fetch_storms;
@@ -63,8 +64,8 @@ pub(crate) fn fetch_context(
 }
 
 /// Fetches everything a spot's cards need at `now` through `host`: the water type when it is
-/// to be inferred, discovery, the water and marine session, the weather, the normals, the storm
-/// watch and the sky. The stored lists, rankings and the spot's snapshot are updated and the
+/// to be inferred, discovery, the water and marine session, the stocking lists when the stocking
+/// card shows, the weather, the normals, the storm watch and the sky. The stored lists, rankings and the spot's snapshot are updated and the
 /// call ledger saved. Returns the snapshot and how it came about.
 pub async fn fetch_spot<H: FetchHost>(
     host: &H,
@@ -105,6 +106,11 @@ pub async fn fetch_spot<H: FetchHost>(
     .with_usage(host.usage.clone())
     .allow_metered(options.allow_metered);
     let mut water = run_session(&host, session).await;
+    let stocking = if wants_stocking(config, spot.water_type) {
+        fetch_stocking(&host, spot, discovery.water_name.as_deref()).await
+    } else {
+        Stocking::default()
+    };
 
     let weather_chain = weather_chain(&config.sources.weather, &rounded);
     let weather = fetch_weather(&host, &weather_chain, rounded, &options.user_agent).await;
@@ -134,7 +140,9 @@ pub async fn fetch_spot<H: FetchHost>(
     snapshot.water = water.water;
     snapshot.marine = water.marine;
     snapshot.stations = water.stations;
+    snapshot.stocking = stocking.events;
     let mut attribution = water.attribution;
+    attribution.extend(stocking.attribution);
     attribution.extend(weather.attribution);
     if let Some(storms) = &storms {
         attribution.extend(storms.attribution.iter().cloned());
@@ -149,6 +157,7 @@ pub async fn fetch_spot<H: FetchHost>(
     }
     snapshot.errors = discovery.errors;
     snapshot.errors.extend(water.errors);
+    snapshot.errors.extend(stocking.errors);
     snapshot.errors.extend(normals);
     snapshot.errors.extend(weather.errors);
     if let Some(storms) = storms {
@@ -562,6 +571,69 @@ mod tests {
         for url in host.seen() {
             assert_rounded(&url);
         }
+
+        // The stocking card shows on a river: the map names the spot's water the Croton River,
+        // and both New York lists of it are read, by county and name alone.
+        let planned = s.stocking.iter().filter(|e| e.planned).count();
+        assert_eq!((s.stocking.len() - planned, planned), (39, 2));
+        assert!(s.stocking.iter().all(|e| e.waterbody == "Croton River"));
+        let lists: Vec<String> = host
+            .seen()
+            .into_iter()
+            .filter(|u| u.contains("data.ny.gov"))
+            .collect();
+        assert_eq!(lists.len(), 2, "{lists:#?}");
+        for url in &lists {
+            assert!(
+                url.contains("WESTCHESTER") && url.contains("CROTON"),
+                "{url}"
+            );
+            assert!(!url.contains("41.") && !url.contains("73."), "{url}");
+        }
+        assert!(
+            s.attribution
+                .iter()
+                .any(|a| a.source == SourceId::NY_DEC_STOCKING)
+        );
+        assert_eq!(host.missed(), Vec::<String>::new());
+    }
+
+    #[test]
+    fn stocking_is_not_read_without_its_card_nor_outside_new_york() {
+        // The Battery's tidal cards have no stocking card: no list is asked.
+        let (out, host) = fetched(&battery(), &Config::default(), "battery");
+        assert_eq!(out.snapshot.stocking, []);
+        assert!(host.seen().iter().all(|u| !u.contains("data.ny.gov")));
+        assert!(
+            out.snapshot
+                .errors
+                .iter()
+                .all(|e| e.source != SourceId::NY_DEC_STOCKING)
+        );
+
+        // A river far from any New York water: the lists are not asked, and the error says why.
+        let host = MemoryHost::default();
+        let driver = pollster::block_on(Driver::new(&host, now(), true));
+        let spot = Spot {
+            latitude: 27.45,
+            longitude: -82.69,
+            ..croton()
+        };
+        let stocking = pollster::block_on(crate::sessions::fetch_stocking(
+            &driver,
+            &spot,
+            Some("Croton River"),
+        ));
+        assert_eq!(stocking.events, []);
+        assert_eq!(stocking.attribution, None);
+        assert_eq!(host.seen(), Vec::<String>::new());
+        let e = &stocking.errors[..];
+        assert_eq!(e.len(), 1, "{e:#?}");
+        assert_eq!(
+            (e[0].source.as_str(), e[0].measurement, e[0].kind),
+            ("ny-dec-stocking", None, SourceErrorKind::Other)
+        );
+        assert!(e[0].message.contains("New York"), "{}", e[0].message);
     }
 
     #[test]

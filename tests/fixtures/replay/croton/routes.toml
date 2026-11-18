@@ -225,3 +225,13 @@ file = "../../raw/weather/forecast_full_10001.json"
 [[route]]
 match = "api.weather.gov/alerts/active?point="
 file = "../../raw/weather/alerts_10001.json"
+
+# NYS DEC stocking lists for the Croton River in Westchester County: the actual list, then the
+# planned spring stocking.
+[[route]]
+match = "data.ny.gov/resource/e52k-ymww.json?"
+file = "../../raw/stocking-ny/socrata-ny-e52k-ymww-westchester-croton-river-2026-11-18.json"
+
+[[route]]
+match = "data.ny.gov/resource/d9y2-n436.json?"
+file = "../../raw/stocking-ny/socrata-ny-d9y2-n436-westchester-croton-river-2026-11-18.json"

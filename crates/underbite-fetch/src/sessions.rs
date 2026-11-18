@@ -1,17 +1,23 @@
-//! The two sessions of a spot fetch: Underbite's water and marine session over the discovery
-//! plan, and whether's weather session, one request at a time through the same host.
+//! The sessions of a spot fetch: Underbite's water and marine session over the discovery plan,
+//! whether's weather session and the stocking lists, one request at a time through the same
+//! host.
 
 use std::collections::{BTreeMap, BTreeSet};
 
 use underbite_core::discover::rank::{LinkPlace, Plan};
 use underbite_core::model::{
-    Measurement, Requirements, SourceError as ModelSourceError, SourceErrorKind,
+    Measurement, Requirements, SourceError as ModelSourceError, SourceErrorKind, Spot,
+    StockingEvent,
 };
 use underbite_core::provenance::{Attribution, SourceId};
-use underbite_providers::request::{Coordinates, Place, Target, Window};
+use underbite_providers::request::{CacheHint, Coordinates, Place, Target, Window};
 use underbite_providers::session::usage::OPEN_METEO;
 use underbite_providers::session::{Chain, Link, Session, SessionOutcome};
-use underbite_providers::source::{FetchContext, Period};
+use underbite_providers::source::{FetchContext, Period, SourceError};
+use underbite_providers::stocking::catalogue::{
+    Catalogue, Placed, canonical_county, canonical_waterbody, name_matches,
+};
+use underbite_providers::stocking::socrata_ny::{self, StockingRequest};
 use whether_core::model::{ProviderId, WeatherSnapshot};
 use whether_providers::{
     Attempt as WeatherAttempt, FetchContext as WeatherContext, FetchError, FetchSession,
@@ -20,6 +26,7 @@ use whether_providers::{
 
 use crate::host::{Call, Driver, FetchHost, Fetched};
 use crate::registry::{WeatherChain, water_source, weather_requirements};
+use crate::source_error;
 
 // ---------------------------------------------------------------------------------------------
 // The water session
@@ -233,6 +240,162 @@ pub(crate) async fn fetch_weather<H: FetchHost>(
     }
 }
 
+// ---------------------------------------------------------------------------------------------
+// Stocking
+// ---------------------------------------------------------------------------------------------
+
+/// How far from the spot a stocked water's point may lie, metres. A river's point is one point
+/// on its line, often well away from the spot; beyond this no stocked water is near, and the
+/// spot is outside the lists' state.
+const STOCKING_REACH_M: f64 = 30_000.0;
+/// How long a stocking list may be reused, seconds: the lists change a few times a year.
+const STOCKING_MAX_AGE_S: u32 = 24 * 3_600;
+
+/// What the stocking lists gave for a spot.
+#[derive(Debug, Default)]
+pub(crate) struct Stocking {
+    /// The actual and planned stockings of the spot's water.
+    pub(crate) events: Vec<StockingEvent>,
+    /// The lists' credit, once one answered.
+    pub(crate) attribution: Option<Attribution>,
+    pub(crate) errors: Vec<ModelSourceError>,
+}
+
+/// The stocked waters of the bundled catalogue that the spot is on: those near it whose list
+/// name or map name is the name the map gives the spot's water, the spot's water body or the
+/// spot's own name, nearest first, each water once. `Unsupported` when no stocked water at all
+/// is near: the lists cover New York State only.
+fn stocked_waters<'c>(
+    catalogue: &'c Catalogue,
+    spot: &Spot,
+    water_name: Option<&str>,
+) -> Result<Vec<&'c Placed>, SourceError> {
+    let near = catalogue.near(spot.latitude, spot.longitude, STOCKING_REACH_M);
+    if near.is_empty() {
+        return Err(SourceError::Unsupported(
+            "the NYS DEC stocking lists cover New York waters only".into(),
+        ));
+    }
+    let names: Vec<&str> = water_name
+        .into_iter()
+        .chain(spot.water_body.as_ref().and_then(|w| w.name.as_deref()))
+        .chain([spot.name.as_str()])
+        .collect();
+    let mut out: Vec<&Placed> = Vec::new();
+    for (placed, _) in near {
+        let on_it = names
+            .iter()
+            .any(|n| name_matches(&placed.waterbody, n) || name_matches(&placed.name, n));
+        let water = canonical_waterbody(&placed.waterbody);
+        let seen = out
+            .iter()
+            .any(|p| canonical_waterbody(&p.waterbody) == water);
+        if on_it && !seen {
+            out.push(placed);
+        }
+    }
+    Ok(out)
+}
+
+/// Whether `event` is a stocking of one of `waters`, compared as the catalogue looks pairs up:
+/// the county in its canonical form (an event without one matches on its water), the water
+/// ignoring case and spacing.
+fn of_waters(event: &StockingEvent, waters: &[&Placed]) -> bool {
+    let county = event.county.as_deref().map(canonical_county);
+    let water = canonical_waterbody(&event.waterbody);
+    waters.iter().any(|p| {
+        canonical_waterbody(&p.waterbody) == water
+            && county
+                .as_ref()
+                .is_none_or(|c| *c == canonical_county(&p.county))
+    })
+}
+
+/// One stocking list, from the host's cache or the portal.
+async fn stocking_list<H: FetchHost>(
+    host: &Driver<'_, H>,
+    request: &StockingRequest,
+) -> Result<Vec<StockingEvent>, SourceError> {
+    let mut call = Call::get(request.url.clone()).with_cache(CacheHint {
+        max_age: Some(STOCKING_MAX_AGE_S),
+        ..CacheHint::default()
+    });
+    call.headers.clone_from(&request.headers);
+    let fetched = match host.cached_response(&call).await {
+        Some(hit) => hit,
+        None => host
+            .send(&call)
+            .await
+            .map_err(|e| SourceError::Transport(e.to_string()))?,
+    };
+    match fetched.status {
+        200..=299 => request.dataset.parse(&fetched.body),
+        404 => Err(SourceError::NotFound(None)),
+        429 => Err(SourceError::RateLimited {
+            retry_after_s: fetched.retry_after,
+        }),
+        status => Err(SourceError::Status {
+            status,
+            message: None,
+        }),
+    }
+}
+
+/// The New York DEC lists of what was stocked in the spot's water and what is planned there.
+/// The requests name only a county and its waters, never a position. A spot with no stocked
+/// water near is outside the lists' state: nothing is asked, and the error says so.
+pub(crate) async fn fetch_stocking<H: FetchHost>(
+    host: &Driver<'_, H>,
+    spot: &Spot,
+    water_name: Option<&str>,
+) -> Stocking {
+    let source = SourceId::NY_DEC_STOCKING;
+    let mut out = Stocking::default();
+    let catalogue = match Catalogue::bundled() {
+        Ok(c) => c,
+        Err(e) => {
+            let e = SourceError::Parse(e.to_string());
+            out.errors
+                .push(source_error(source, "stocking catalogue", &e));
+            return out;
+        }
+    };
+    let waters = match stocked_waters(&catalogue, spot, water_name) {
+        Ok(w) => w,
+        Err(e) => {
+            tracing::debug!(error = %e, "stocking lists not asked");
+            out.errors.push(e.to_model(source, None));
+            return out;
+        }
+    };
+    // By county, in the order of each county's nearest water.
+    let mut counties: Vec<(String, Vec<&str>)> = Vec::new();
+    for p in &waters {
+        let county = canonical_county(&p.county);
+        match counties.iter_mut().find(|(c, _)| *c == county) {
+            Some((_, names)) => names.push(&p.waterbody),
+            None => counties.push((county, vec![&p.waterbody])),
+        }
+    }
+    for (county, names) in &counties {
+        for request in socrata_ny::requests(county, names) {
+            match stocking_list(host, &request).await {
+                Ok(events) => {
+                    out.attribution = Some(socrata_ny::attribution());
+                    out.events
+                        .extend(events.into_iter().filter(|e| of_waters(e, &waters)));
+                }
+                Err(e) => {
+                    tracing::warn!(%source, error = %e, "stocking list");
+                    out.errors
+                        .push(source_error(source.clone(), "stocking list", &e));
+                }
+            }
+        }
+    }
+    out
+}
+
 /// The failed attempts of the weather session as snapshot errors.
 fn weather_errors(attempts: &[WeatherAttempt]) -> Vec<ModelSourceError> {
     attempts
@@ -327,6 +490,65 @@ mod tests {
             .stored(store::USAGE, store::LEDGER_KEY)
             .expect("ledger");
         ledger.used(&OPEN_METEO, now())
+    }
+
+    #[test]
+    fn a_spot_is_matched_to_its_stocked_water_by_name() {
+        use crate::testing::croton;
+
+        let catalogue = Catalogue::bundled().expect("catalogue");
+        let waters = |spot: &Spot, water: Option<&str>| -> Vec<(String, String)> {
+            stocked_waters(&catalogue, spot, water)
+                .expect("in New York")
+                .into_iter()
+                .map(|p| (p.county.clone(), p.waterbody.clone()))
+                .collect()
+        };
+        let croton_river = vec![("Westchester".to_owned(), "Croton River".to_owned())];
+        // The map's name of the spot's water, about 18 km from the river's catalogue point.
+        assert_eq!(waters(&croton(), Some("Croton River")), croton_river);
+        // The spot's own name when the map names nothing, never a part of it.
+        let by_name = Spot {
+            name: "croton  river".into(),
+            ..croton()
+        };
+        assert_eq!(waters(&by_name, None), croton_river);
+        assert_eq!(waters(&croton(), None), []);
+        // A lake near the spot is not the spot's water unless the map puts the spot on it.
+        assert_eq!(waters(&croton(), Some("New Croton Reservoir")), []);
+        let amawalk = Some("Amawalk Reservoir");
+        assert_eq!(
+            waters(&croton(), amawalk),
+            [("Westchester".to_owned(), "Amawalk Reservoir".to_owned())]
+        );
+    }
+
+    #[test]
+    fn events_are_kept_for_the_matched_waters_only() {
+        let catalogue = Catalogue::bundled().expect("catalogue");
+        let spot = crate::testing::croton();
+        let waters = stocked_waters(&catalogue, &spot, Some("Croton River")).expect("waters");
+        let event = |county: Option<&str>, water: &str| StockingEvent {
+            waterbody: water.into(),
+            county: county.map(Into::into),
+            town: None,
+            when: underbite_core::model::StockingWhen::DateText("April".into()),
+            species_text: "Brown Trout".into(),
+            number_estimate: None,
+            size_m: None,
+            planned: true,
+            source: SourceId::NY_DEC_STOCKING,
+        };
+        assert!(of_waters(
+            &event(Some("WESTCHESTER"), "croton  River"),
+            &waters
+        ));
+        assert!(of_waters(&event(None, "Croton River"), &waters));
+        assert!(!of_waters(&event(Some("Putnam"), "Croton River"), &waters));
+        assert!(!of_waters(
+            &event(Some("Westchester"), "Kensico Reservoir"),
+            &waters
+        ));
     }
 
     #[test]

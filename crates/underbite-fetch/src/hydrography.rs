@@ -70,6 +70,9 @@ pub(crate) struct Placement {
     pub(crate) relations: BTreeMap<StationKey, Relation>,
     /// Whether the spot is on the mapped river network.
     pub(crate) spot_placed: bool,
+    /// The name of the water the spot is on: the waterbody it is in or at the shore of, else
+    /// the stream it is on, when the map names it.
+    pub(crate) water_name: Option<String>,
 }
 
 /// The flowlines and waterbodies loaded for a spot.
@@ -133,14 +136,17 @@ pub(crate) async fn relations<H: FetchHost>(
     if far_hydrography(host, ctx, &off, &mut network).await {
         hints = relate(&network);
     }
-    let spot_placed = hydrography::Hydro::new(
+    let position = hydrography::Hydro::new(
         &network.flowlines,
         &network.waterbodies,
         HydroOptions::default(),
     )
-    .locate_spot(here)
-    .stream
-    .is_some();
+    .locate_spot(here);
+    let spot_placed = position.stream.is_some();
+    let water_name = position
+        .waterbody
+        .and_then(|w| w.name)
+        .or_else(|| position.stream.and_then(|s| s.name));
     let placed = |hint: &hydrography::RelationHint| {
         hint.relation != Relation::Nearby
             || !hint
@@ -156,6 +162,7 @@ pub(crate) async fn relations<H: FetchHost>(
     Ok(Placement {
         relations,
         spot_placed,
+        water_name,
     })
 }
 

@@ -203,6 +203,12 @@ pub fn requirements(config: &Config, water: WaterType) -> Requirements {
     }
 }
 
+/// Whether a refresh of a spot on `water` reads the stocking lists: when its stocking card
+/// shows. Stocking is no measurement of a station, so it has no chain.
+pub(crate) fn wants_stocking(config: &Config, water: WaterType) -> bool {
+    config.cards.order_for(water).contains(&CardId::Stocking)
+}
+
 /// The chain and limits of every required measurement: the configured sources a fetch runs
 /// that supply the measurement, in order, each once; gridded marine models only on marine
 /// water, the GLSEA grid only on the Great Lakes, and the bloom sources on the water they map.

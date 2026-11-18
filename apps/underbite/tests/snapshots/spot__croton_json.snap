@@ -8564,30 +8564,588 @@ expression: json
         "id": "stocking",
         "title": "Stocking",
         "footnote": null,
-        "credits": [],
+        "credits": [
+          {
+            "source": "NYS DEC stocking",
+            "text": "NYS DEC (stocking numbers are estimates)",
+            "link": "https://data.ny.gov/",
+            "licence": null
+          }
+        ],
         "state": {
           "state": "fresh"
         },
         "notices": [],
-        "accessibility": "Stocking: No recent stocking reported nearby"
+        "accessibility": "Stocking: Rainbow Trout · Mar 2025 · about 1,040 · 9 in"
       },
       "compact": {
         "headline": {
-          "value": null,
-          "text": "—",
-          "unit": ""
+          "value": 41.0,
+          "text": "41",
+          "unit": "stockings"
         },
         "lines": [
-          "No recent stocking reported nearby"
+          "Rainbow Trout · Mar 2025 · about 1,040 · 9 in",
+          "Rainbow Trout · planned: March - third week · about 110 · 12 to 14 in"
         ],
         "spark": []
       },
       "full": {
-        "recent": [],
-        "planned": [],
-        "empty": "No recent stocking reported nearby",
-        "notes": [],
-        "sections": []
+        "recent": [
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2025",
+            "summary": "Rainbow Trout · Mar 2025 · about 1,040 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2025",
+            "summary": "Rainbow Trout · Mar 2025 · about 110 · 12 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2024",
+            "summary": "Rainbow Trout · Mar 2024 · about 990 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2024",
+            "summary": "Rainbow Trout · Mar 2024 · about 110 · 11 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2023",
+            "summary": "Rainbow Trout · Mar 2023 · about 990 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2023",
+            "summary": "Rainbow Trout · Mar 2023 · about 110 · 11 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2022",
+            "summary": "Rainbow Trout · Mar 2022 · about 110 · 12 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2022",
+            "summary": "Rainbow Trout · Mar 2022 · about 990 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2021",
+            "summary": "Rainbow Trout · Mar 2021 · about 110 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2021",
+            "summary": "Rainbow Trout · Mar 2021 · about 990 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2020",
+            "summary": "Rainbow Trout · Mar 2020 · about 680 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Mar 2020",
+            "summary": "Brown Trout · Mar 2020 · about 100 · 13 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Apr 2019",
+            "summary": "Brown Trout · Apr 2019 · about 180 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2019",
+            "summary": "Rainbow Trout · Mar 2019 · about 900 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Mar 2019",
+            "summary": "Brown Trout · Mar 2019 · about 100 · 13 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Apr 2018",
+            "summary": "Brown Trout · Apr 2018 · about 170 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2018",
+            "summary": "Rainbow Trout · Mar 2018 · about 780 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Mar 2018",
+            "summary": "Brown Trout · Mar 2018 · about 100 · 13 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Apr 2017",
+            "summary": "Brown Trout · Apr 2017 · about 100 · 13 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Apr 2017",
+            "summary": "Brown Trout · Apr 2017 · about 170 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Apr 2017",
+            "summary": "Rainbow Trout · Apr 2017 · about 900 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Apr 2016",
+            "summary": "Brown Trout · Apr 2016 · about 170 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2016",
+            "summary": "Rainbow Trout · Mar 2016 · about 900 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Mar 2016",
+            "summary": "Brown Trout · Mar 2016 · about 100 · 14 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Apr 2015",
+            "summary": "Brown Trout · Apr 2015 · about 170 · 8 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2015",
+            "summary": "Rainbow Trout · Mar 2015 · about 900 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Mar 2015",
+            "summary": "Brown Trout · Mar 2015 · about 100 · 14 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Apr 2014",
+            "summary": "Brown Trout · Apr 2014 · about 180 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2014",
+            "summary": "Rainbow Trout · Mar 2014 · about 710 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Mar 2014",
+            "summary": "Brown Trout · Mar 2014 · about 100 · 14 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Apr 2013",
+            "summary": "Brown Trout · Apr 2013 · about 150 · 8 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2013",
+            "summary": "Rainbow Trout · Mar 2013 · about 900 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Mar 2013",
+            "summary": "Brown Trout · Mar 2013 · about 100 · 13 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Apr 2012",
+            "summary": "Brown Trout · Apr 2012 · about 180 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2012",
+            "summary": "Rainbow Trout · Mar 2012 · about 900 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Mar 2012",
+            "summary": "Brown Trout · Mar 2012 · about 100 · 13 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Apr 2011",
+            "summary": "Brown Trout · Apr 2011 · about 170 · 9 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "Mar 2011",
+            "summary": "Rainbow Trout · Mar 2011 · about 900 · 8 in",
+            "planned": false
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Brown Trout",
+            "when": "Mar 2011",
+            "summary": "Brown Trout · Mar 2011 · about 100 · 13 in",
+            "planned": false
+          }
+        ],
+        "planned": [
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "planned: March - third week",
+            "summary": "Rainbow Trout · planned: March - third week · about 110 · 12 to 14 in",
+            "planned": true
+          },
+          {
+            "waterbody": "Croton River",
+            "place": "Cortlandt, Westchester",
+            "species": "Rainbow Trout",
+            "when": "planned: March - third week",
+            "summary": "Rainbow Trout · planned: March - third week · about 1,030 · 9 to 10 in",
+            "planned": true
+          }
+        ],
+        "empty": null,
+        "notes": [
+          "Numbers are the agency's estimates.",
+          "The list of stockings that took place lags about a year.",
+          "Planned stockings are a schedule and can change."
+        ],
+        "sections": [
+          {
+            "title": "Recent stockings",
+            "rows": [
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2025 · about 1,040 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2025 · about 110 · 12 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2024 · about 990 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2024 · about 110 · 11 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2023 · about 990 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2023 · about 110 · 11 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2022 · about 110 · 12 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2022 · about 990 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2021 · about 110 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2021 · about 990 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2020 · about 680 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Mar 2020 · about 100 · 13 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Apr 2019 · about 180 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2019 · about 900 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Mar 2019 · about 100 · 13 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Apr 2018 · about 170 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2018 · about 780 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Mar 2018 · about 100 · 13 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Apr 2017 · about 100 · 13 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Apr 2017 · about 170 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Apr 2017 · about 900 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Apr 2016 · about 170 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2016 · about 900 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Mar 2016 · about 100 · 14 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Apr 2015 · about 170 · 8 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2015 · about 900 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Mar 2015 · about 100 · 14 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Apr 2014 · about 180 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2014 · about 710 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Mar 2014 · about 100 · 14 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Apr 2013 · about 150 · 8 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2013 · about 900 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Mar 2013 · about 100 · 13 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Apr 2012 · about 180 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2012 · about 900 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Mar 2012 · about 100 · 13 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Apr 2011 · about 170 · 9 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · Mar 2011 · about 900 · 8 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Brown Trout · Mar 2011 · about 100 · 13 in",
+                "detail": "Cortlandt, Westchester"
+              }
+            ]
+          },
+          {
+            "title": "Planned stockings",
+            "rows": [
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · planned: March - third week · about 110 · 12 to 14 in",
+                "detail": "Cortlandt, Westchester"
+              },
+              {
+                "label": "Croton River",
+                "value": "Rainbow Trout · planned: March - third week · about 1,030 · 9 to 10 in",
+                "detail": "Cortlandt, Westchester"
+              }
+            ]
+          }
+        ]
       }
     },
     {
@@ -8606,12 +9164,12 @@ expression: json
             "text": "Provisional data, subject to revision."
           }
         ],
-        "accessibility": "Sources: USGS, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, USGS. ndbc: not found"
+        "accessibility": "Sources: USGS, NYS DEC stocking, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, USGS. ndbc: not found"
       },
       "compact": {
         "headline": {
-          "value": 6.0,
-          "text": "6",
+          "value": 7.0,
+          "text": "7",
           "unit": "sources"
         },
         "lines": [
@@ -8627,6 +9185,12 @@ expression: json
             "text": "U.S. Geological Survey",
             "link": "https://waterdata.usgs.gov",
             "licence": "Public domain"
+          },
+          {
+            "source": "NYS DEC stocking",
+            "text": "NYS DEC (stocking numbers are estimates)",
+            "link": "https://data.ny.gov/",
+            "licence": null
           },
           {
             "source": "open-meteo",
