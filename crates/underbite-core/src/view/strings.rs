@@ -1836,6 +1836,12 @@ safety_keys! {
     FileKeptLog => "Your catch log could not be read. The file was kept as {name} and a new log started; nothing is saved over the kept file.",
     FileLeftTrips => "Your trips could not be read. The file was left as it was and is never saved over, so no trip can be added.",
     FileLeftLog => "Your catch log could not be read. The file was left as it was and is never saved over, so no catch can be logged.",
+    /// `{name}`.
+    FileKeptTracks => "Your imported tracks could not be read. The file was kept as {name} and the list starts empty; nothing is saved over the kept file.",
+    /// `{name}`.
+    FileKeptSpeciesEdits => "Your species edits could not be read. The file was kept as {name} and the profiles show their sources' values; nothing is saved over the kept file.",
+    FileLeftTracks => "Your imported tracks could not be read. The file was left as it was and is never saved over, so no track can be imported.",
+    FileLeftSpeciesEdits => "Your species edits could not be read. The file was left as it was and is never saved over, so no species edit can be saved.",
     /// How serious an alert is, as the alert source grades it.
     SeverityExtreme => "Extreme",
     SeveritySevere => "Severe",
@@ -2200,6 +2206,10 @@ pub enum AppFile {
     Trips,
     /// The catch log.
     Log,
+    /// The imported tracks.
+    Tracks,
+    /// The user's edits of species profiles.
+    SpeciesEdits,
 }
 
 /// The table, bound to a voice and a locale.
@@ -2576,6 +2586,12 @@ impl Strings {
             (AppFile::Trips, Some(name)) => {
                 self.safety_fmt(SafetyKey::FileKeptTrips, &[("name", name)])
             }
+            (AppFile::Tracks, Some(name)) => {
+                self.safety_fmt(SafetyKey::FileKeptTracks, &[("name", name)])
+            }
+            (AppFile::SpeciesEdits, Some(name)) => {
+                self.safety_fmt(SafetyKey::FileKeptSpeciesEdits, &[("name", name)])
+            }
             (AppFile::Log, Some(name)) => {
                 self.safety_fmt(SafetyKey::FileKeptLog, &[("name", name)])
             }
@@ -2583,6 +2599,10 @@ impl Strings {
             (AppFile::Settings, None) => self.safety(SafetyKey::FileLeftSettings).to_owned(),
             (AppFile::Trips, None) => self.safety(SafetyKey::FileLeftTrips).to_owned(),
             (AppFile::Log, None) => self.safety(SafetyKey::FileLeftLog).to_owned(),
+            (AppFile::Tracks, None) => self.safety(SafetyKey::FileLeftTracks).to_owned(),
+            (AppFile::SpeciesEdits, None) => {
+                self.safety(SafetyKey::FileLeftSpeciesEdits).to_owned()
+            }
         }
     }
 
@@ -3896,6 +3916,25 @@ mod tests {
             assert!(
                 s.file_problem(AppFile::Log, None)
                     .contains("no catch can be logged")
+            );
+            assert_eq!(
+                s.file_problem(AppFile::Tracks, Some("tracks.json.bad")),
+                "Your imported tracks could not be read. The file was kept as tracks.json.bad \
+                 and the list starts empty; nothing is saved over the kept file."
+            );
+            assert!(
+                s.file_problem(AppFile::Tracks, None)
+                    .contains("no track can be imported")
+            );
+            let edits = s.file_problem(AppFile::SpeciesEdits, Some("species-edits.json.bad"));
+            assert!(
+                edits.starts_with("Your species edits could not be read")
+                    && edits.contains("kept as species-edits.json.bad"),
+                "{edits}"
+            );
+            assert!(
+                s.file_problem(AppFile::SpeciesEdits, None)
+                    .contains("no species edit can be saved")
             );
         }
     }

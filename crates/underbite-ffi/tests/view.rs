@@ -177,6 +177,18 @@ fn file_problems_and_app_words_come_from_the_core() {
         "{left}"
     );
     assert!(left.contains("never saved over"), "{left}");
+    let tracks = file_problem_text(AppFile::Tracks, Some("tracks.json.bad".into()));
+    assert!(
+        tracks.starts_with("Your imported tracks could not be read.")
+            && tracks.contains("kept as tracks.json.bad"),
+        "{tracks}"
+    );
+    let edits = file_problem_text(AppFile::SpeciesEdits, None);
+    assert!(
+        edits.starts_with("Your species edits could not be read.")
+            && edits.contains("never saved over"),
+        "{edits}"
+    );
     let words = app_words(default_settings_json()).unwrap();
     assert_eq!(words.map_notice, "Not for navigation.");
     assert!(words.place_search_footer.contains("Apple's Maps"));

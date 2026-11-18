@@ -248,6 +248,10 @@ pub enum AppFile {
     Trips,
     /// The catch log.
     Log,
+    /// The imported tracks.
+    Tracks,
+    /// The user's edits of species profiles.
+    SpeciesEdits,
 }
 
 /// What the app says of one of its files it could not read at launch: that it was kept as
@@ -261,6 +265,8 @@ pub fn file_problem_text(file: AppFile, kept_as: Option<String>) -> String {
         AppFile::Settings => words::AppFile::Settings,
         AppFile::Trips => words::AppFile::Trips,
         AppFile::Log => words::AppFile::Log,
+        AppFile::Tracks => words::AppFile::Tracks,
+        AppFile::SpeciesEdits => words::AppFile::SpeciesEdits,
     };
     // The voice does not matter: this is safety text.
     Strings::new(underbite_core::view::Voice::Plain).file_problem(file, kept_as.as_deref())
