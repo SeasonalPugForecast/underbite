@@ -21,6 +21,7 @@ struct UnderbiteApp: App {
                 .environment(\.voiceStyle, voice)
                 .sunMode(store.sunMode || LaunchArguments.sunMode)
                 .paintsWithTheme(sunMode: store.sunMode || LaunchArguments.sunMode)
+                .task { await AlertsBackground.runIfAsked(store) }
                 // While the app is open, due spots are fetched and the page built again every
                 // minute; in the background only the alert checks iOS grants run.
                 .onChange(of: phase, initial: true) { _, phase in

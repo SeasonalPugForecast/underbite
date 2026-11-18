@@ -1,0 +1,2 @@
+-seed -seedAlerts -seedWaterAlert -runBackgroundRefresh 120
+wait 124
