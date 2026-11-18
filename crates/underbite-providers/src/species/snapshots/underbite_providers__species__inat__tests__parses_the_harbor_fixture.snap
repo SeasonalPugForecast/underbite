@@ -1,0 +1,50 @@
+---
+source: crates/underbite-providers/src/species/inat.rs
+assertion_line: 582
+expression: records
+---
+- source: inaturalist
+  id: "9100001"
+  taxon: Morone saxatilis
+  latitude: 40.5
+  longitude: -74
+  uncertainty_m: 10
+  observed_on:
+    year: 2026
+    month: 11
+    day: 1
+  licence: cc0
+  url: "https://www.inaturalist.org/observations/9100001"
+  photo:
+    url: "https://example.invalid/photos/9000001/medium.jpg"
+    licence: cc0
+- source: inaturalist
+  id: "9100002"
+  taxon: Morone saxatilis
+  latitude: 40.8
+  longitude: -73.7
+  uncertainty_m: 28000
+  obscured: true
+  observed_on:
+    year: 2026
+    month: 10
+    day: 30
+  licence: cc0
+  url: "https://www.inaturalist.org/observations/9100002"
+  photo:
+    url: "https://example.invalid/photos/9000002/medium.jpg"
+    licence: cc0
+- source: inaturalist
+  id: "9100003"
+  taxon: Morone saxatilis
+  latitude: 40.9
+  longitude: -73.9
+  observed_on:
+    year: 2026
+    month: 10
+    day: 16
+  licence: cc0
+  url: "https://www.inaturalist.org/observations/9100003"
+  photo:
+    url: "https://example.invalid/photos/9000003/medium.jpg"
+    licence: cc0

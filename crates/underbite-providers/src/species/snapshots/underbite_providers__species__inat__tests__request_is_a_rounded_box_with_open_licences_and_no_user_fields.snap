@@ -1,0 +1,6 @@
+---
+source: crates/underbite-providers/src/species/inat.rs
+assertion_line: 466
+expression: "observations_request(\"Morone saxatilis\", HARBOR, 1, 3).unwrap().url"
+---
+https://api.inaturalist.org/v2/observations?taxon_name=Morone%20saxatilis&quality_grade=research&license=cc-by,cc-by-nc,cc0&photo_license=cc-by,cc-by-nc,cc0&nelat=41.00&nelng=-73.60&swlat=40.40&swlng=-74.40&order_by=observed_on&per_page=3&page=1&fields=%28id%3A%21t,observed_on%3A%21t,time_observed_at%3A%21t,geojson%3A%28coordinates%3A%21t%29,obscured%3A%21t,positional_accuracy%3A%21t,public_positional_accuracy%3A%21t,license_code%3A%21t,taxon%3A%28id%3A%21t,name%3A%21t,preferred_common_name%3A%21t%29,photos%3A%28id%3A%21t,url%3A%21t,license_code%3A%21t%29%29
