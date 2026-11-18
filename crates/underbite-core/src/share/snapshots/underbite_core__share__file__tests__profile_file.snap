@@ -1,0 +1,89 @@
+---
+source: crates/underbite-core/src/share/file.rs
+expression: encode(&profile()).unwrap()
+---
+{
+  "format": "underbite",
+  "kind": "profile",
+  "profile": {
+    "edits": {
+      "lures": [
+        "Tube jig"
+      ],
+      "spawn_temp_c": {
+        "high": 18.0,
+        "low": 15.0
+      }
+    },
+    "species": {
+      "aliases": [
+        {
+          "source": {
+            "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)",
+            "licence": "cc_by_nc4",
+            "name": "FishBase",
+            "reference": "FishBase species record, SpecCode 3382, v26.06",
+            "url": "https://www.fishbase.se/summary/Micropterus-dolomieu.html"
+          },
+          "value": "Smallmouth bass"
+        }
+      ],
+      "common_names": {
+        "source": {
+          "licence": "published",
+          "name": "U.S. Fish & Wildlife Service",
+          "reference": "Species profile page",
+          "url": "https://www.fws.gov/species/smallmouth-bass-micropterus-dolomieu"
+        },
+        "value": [
+          "Smallmouth bass"
+        ]
+      },
+      "id": "micropterus-dolomieu",
+      "scientific_name": {
+        "source": {
+          "licence": "published",
+          "name": "U.S. Fish & Wildlife Service",
+          "reference": "Species profile page",
+          "url": "https://www.fws.gov/species/smallmouth-bass-micropterus-dolomieu"
+        },
+        "value": "Micropterus dolomieu"
+      },
+      "spawn_temp_c": {
+        "source": {
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)",
+          "licence": "cc_by_nc4",
+          "name": "FishBase",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); Baylis et al. 1993 (Ref. 32487); widest of the study rows that give both ends, kept to North America (country code 124 or 840 or none) and not Europe",
+          "url": "https://www.fishbase.se/summary/Micropterus-dolomieu.html"
+        },
+        "value": {
+          "high": 22.0,
+          "low": 12.800000190734863
+        }
+      },
+      "tolerated_temp_c": {
+        "source": {
+          "citation": "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)",
+          "licence": "cc_by_nc4",
+          "name": "FishBase",
+          "reference": "Scott and Crossman 1973 (Ref. 1998); stock row 'species in general'",
+          "url": "https://www.fishbase.se/summary/Micropterus-dolomieu.html"
+        },
+        "value": {
+          "high": 29.5,
+          "low": 8.5
+        }
+      },
+      "water": {
+        "source": {
+          "licence": "public_domain",
+          "name": "U.S. Geological Survey, Nonindigenous Aquatic Species database",
+          "url": "https://nas.er.usgs.gov/api/v2/species/396"
+        },
+        "value": "fresh"
+      }
+    }
+  },
+  "v": 1
+}

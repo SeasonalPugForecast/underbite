@@ -251,6 +251,14 @@ pub fn read_file(bytes: Vec<u8>, settings_json: String) -> Result<SharedFile, Sh
             spot: spot_info(&share.place),
             notes: Some(share.notes),
         }),
+        // A species profile is read by `species::species_read_file`.
+        Document::Profile(_) => Err(ShareError::Unsupported {
+            message: sentence(&format!(
+                "this version of the app cannot open a {} file yet",
+                kind_words("profile")
+            )),
+            kind: "profile".to_owned(),
+        }),
         Document::Unsupported { kind } => Err(ShareError::Unsupported {
             message: sentence(&format!(
                 "this version of the app cannot open a {} file yet",

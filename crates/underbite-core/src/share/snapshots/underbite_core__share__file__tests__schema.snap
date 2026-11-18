@@ -26,6 +26,26 @@ expression: schemas
         ],
         "type": "object"
       },
+      "FlowPreference": {
+        "description": "Which tide or current a species is said to feed on.",
+        "oneOf": [
+          {
+            "enum": [
+              "incoming",
+              "outgoing",
+              "slack_high",
+              "slack_low",
+              "slack"
+            ],
+            "type": "string"
+          },
+          {
+            "const": "moving",
+            "description": "Any moving water, as against slack.",
+            "type": "string"
+          }
+        ]
+      },
       "Fuzz": {
         "description": "How much of a place's location a shared file reveals. Ordered from most to least.\n\nThe level a place carries is the level it was fuzzed to, so the receiver can say \"approximate\nlocation\".",
         "oneOf": [
@@ -55,6 +75,47 @@ expression: schemas
         ],
         "type": "string"
       },
+      "Licence": {
+        "description": "Under which terms a value may be used and shown.",
+        "oneOf": [
+          {
+            "const": "public_domain",
+            "description": "Work of a government agency, free of copyright.",
+            "type": "string"
+          },
+          {
+            "const": "cc_by4",
+            "description": "Creative Commons Attribution 4.0.",
+            "type": "string"
+          },
+          {
+            "const": "cc_by_nc4",
+            "description": "Creative Commons Attribution-NonCommercial 4.0 (`FishBase`).",
+            "type": "string"
+          },
+          {
+            "const": "published",
+            "description": "A published paper or page whose own terms apply; the value is a cited fact.",
+            "type": "string"
+          },
+          {
+            "const": "user_edited",
+            "description": "Typed in by the user.",
+            "type": "string"
+          }
+        ]
+      },
+      "LightPreference": {
+        "description": "The light a species is said to feed in.",
+        "enum": [
+          "dawn",
+          "day",
+          "dusk",
+          "night",
+          "overcast"
+        ],
+        "type": "string"
+      },
       "Method": {
         "description": "How a person fishes; the limits and the gear list follow it.",
         "enum": [
@@ -66,9 +127,491 @@ expression: schemas
         ],
         "type": "string"
       },
+      "ProfileShare": {
+        "description": "The `kind: \"profile\"` payload: one species profile as its sender has it.",
+        "properties": {
+          "edits": {
+            "$ref": "#/$defs/SpeciesEdit",
+            "description": "The sender's own values, laid over `species` when shown; absent when there are none."
+          },
+          "species": {
+            "$ref": "#/$defs/SpeciesProfile",
+            "description": "The profile as the sender's catalogue holds it: every value with its source and licence,\nand no edits."
+          }
+        },
+        "required": [
+          "species"
+        ],
+        "type": "object"
+      },
+      "Range": {
+        "additionalProperties": false,
+        "description": "A closed range of a quantity, low to high, in canonical units.",
+        "properties": {
+          "high": {
+            "format": "float",
+            "type": "number"
+          },
+          "low": {
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "required": [
+          "low",
+          "high"
+        ],
+        "type": "object"
+      },
+      "SourceRef": {
+        "additionalProperties": false,
+        "description": "Where a value came from.",
+        "properties": {
+          "citation": {
+            "description": "The citation of the database or work as a whole.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "licence": {
+            "$ref": "#/$defs/Licence"
+          },
+          "name": {
+            "description": "Who says so, for example \"`FishBase`\" or \"NOAA Fisheries\".",
+            "type": "string"
+          },
+          "reference": {
+            "description": "The record's own reference (author and year), which `FishBase` asks to be cited.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "description": "A link back to the page or record. Required for CC BY-NC values (the licence asks for it).",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "licence"
+        ],
+        "type": "object"
+      },
+      "Sourced": {
+        "additionalProperties": false,
+        "description": "A value and its source.",
+        "properties": {
+          "source": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "source"
+        ],
+        "type": "object"
+      },
+      "Sourced2": {
+        "additionalProperties": false,
+        "description": "A value and its source.",
+        "properties": {
+          "source": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "value": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "value",
+          "source"
+        ],
+        "type": "object"
+      },
+      "Sourced3": {
+        "additionalProperties": false,
+        "description": "A value and its source.",
+        "properties": {
+          "source": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "value": {
+            "$ref": "#/$defs/WaterKind"
+          }
+        },
+        "required": [
+          "value",
+          "source"
+        ],
+        "type": "object"
+      },
+      "Sourced4": {
+        "additionalProperties": false,
+        "description": "A value and its source.",
+        "properties": {
+          "source": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "value": {
+            "$ref": "#/$defs/Range"
+          }
+        },
+        "required": [
+          "value",
+          "source"
+        ],
+        "type": "object"
+      },
+      "Sourced5": {
+        "additionalProperties": false,
+        "description": "A value and its source.",
+        "properties": {
+          "source": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "value": {
+            "additionalProperties": false,
+            "properties": {
+              "autumn": {
+                "$ref": "#/$defs/Range"
+              },
+              "spring": {
+                "$ref": "#/$defs/Range"
+              },
+              "summer": {
+                "$ref": "#/$defs/Range"
+              },
+              "winter": {
+                "$ref": "#/$defs/Range"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "value",
+          "source"
+        ],
+        "type": "object"
+      },
+      "Sourced6": {
+        "additionalProperties": false,
+        "description": "A value and its source.",
+        "properties": {
+          "source": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "value": {
+            "items": {
+              "$ref": "#/$defs/FlowPreference"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "value",
+          "source"
+        ],
+        "type": "object"
+      },
+      "Sourced7": {
+        "additionalProperties": false,
+        "description": "A value and its source.",
+        "properties": {
+          "source": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "value": {
+            "items": {
+              "$ref": "#/$defs/LightPreference"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "value",
+          "source"
+        ],
+        "type": "object"
+      },
+      "SpeciesEdit": {
+        "additionalProperties": false,
+        "description": "The user's overrides for one species. A field that is `None` is not overridden.",
+        "properties": {
+          "common_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "depth_m": {
+            "additionalProperties": false,
+            "properties": {
+              "autumn": {
+                "$ref": "#/$defs/Range"
+              },
+              "spring": {
+                "$ref": "#/$defs/Range"
+              },
+              "summer": {
+                "$ref": "#/$defs/Range"
+              },
+              "winter": {
+                "$ref": "#/$defs/Range"
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "flow": {
+            "items": {
+              "$ref": "#/$defs/FlowPreference"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "habitat": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "light": {
+            "items": {
+              "$ref": "#/$defs/LightPreference"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "lures": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "preferred_temp_c": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Range"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "spawn_temp_c": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Range"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tolerated_temp_c": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Range"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "water": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/WaterKind"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
       "SpeciesId": {
         "description": "A species, by its lower-case scientific name with hyphens: `morone-saxatilis`.\n\nThe species catalogue keys its profiles by this id. Only lower-case ASCII letters and digits\nin words joined by single hyphens are accepted.",
         "type": "string"
+      },
+      "SpeciesProfile": {
+        "additionalProperties": false,
+        "description": "A species profile. Everything but the id and the scientific name is optional: a source may\nknow only some of it, and an empty field is absent, never guessed.",
+        "properties": {
+          "aliases": {
+            "description": "Other names, each with its own source (`FishBase`'s English name is kept here).",
+            "items": {
+              "$ref": "#/$defs/Sourced"
+            },
+            "type": "array"
+          },
+          "common_names": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Sourced2"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Anglers' names, the first being the one shown (\"Steelhead\", \"Rainbow trout\")."
+          },
+          "depth_m": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Sourced5"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where in the water column it is found, metres, by season."
+          },
+          "flow": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Sourced6"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "habitat": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Sourced2"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Habitat tags such as \"rocky\", \"estuary\" or \"weed edge\"."
+          },
+          "id": {
+            "$ref": "#/$defs/SpeciesId"
+          },
+          "light": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Sourced7"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lures": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Sourced2"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lures and baits, free text."
+          },
+          "preferred_temp_c": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Sourced4"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Water temperature the fish favours, °C."
+          },
+          "regions": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Sourced2"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Regions it is fished in, free text such as \"Mid-Atlantic\"."
+          },
+          "scientific_name": {
+            "$ref": "#/$defs/Sourced"
+          },
+          "spawn_temp_c": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Sourced4"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Water temperature at which it spawns, °C."
+          },
+          "tolerated_temp_c": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Sourced4"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Water temperature the fish tolerates, °C."
+          },
+          "water": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Sourced3"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "scientific_name"
+        ],
+        "type": "object"
       },
       "SpotShare": {
         "description": "The `kind: \"spot\"` payload: one place and what its owner wrote about it.",
@@ -287,6 +830,23 @@ expression: schemas
         "format": "int64",
         "type": "integer"
       },
+      "WaterKind": {
+        "description": "What kind of water a species lives in.",
+        "oneOf": [
+          {
+            "enum": [
+              "fresh",
+              "salt"
+            ],
+            "type": "string"
+          },
+          {
+            "const": "both",
+            "description": "Both, such as the striped bass or the steelhead.",
+            "type": "string"
+          }
+        ]
+      },
       "WaterType": {
         "description": "What kind of water a spot is on. It picks the default cards and source chains.",
         "enum": [
@@ -312,6 +872,16 @@ expression: schemas
       },
       "kind": {
         "$ref": "#/$defs/Kind"
+      },
+      "profile": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ProfileShare"
+          },
+          {
+            "type": "null"
+          }
+        ]
       },
       "spot": {
         "anyOf": [

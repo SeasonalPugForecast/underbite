@@ -1,16 +1,27 @@
 //! The `.underbite` document: envelope, payloads, encoding, decoding and fuzz.
 //!
 //! A file is JSON: `{"format":"underbite","v":1,"kind":"trip"|"spot"|"layers"|"profile", <kind>: {…}}`.
-//! One file type carries every kind, so the OS registers a single document type. `trip` and `spot`
-//! are defined here; `layers` and `profile` are reserved and decode as [`Document::Unsupported`]
-//! until their payloads exist. Fields this build does not know are ignored within a known version.
+//! One file type carries every kind, so the OS registers a single document type. `trip`, `spot`
+//! and `profile` are defined here; `layers` is reserved and decodes as [`Document::Unsupported`]
+//! until its payload exists. Fields this build does not know are ignored within a known version,
+//! except inside a species profile, whose types refuse fields they do not know.
 //! A file never carries keys, the catch log or photos.
+//!
+//! A shared species profile carries every value with its source and licence (a `FishBase` value
+//! keeps its link, record reference and CC BY-NC citation) and the sender's edits apart from the
+//! catalogue's values. Importing one adds the sender's edits to this device's; where both edited a
+//! field differently the device's edit stays unless the user takes the sender's
+//! ([`ProfileShare::import_into`]).
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 
-use crate::trip::model::{Fuzz, PlaceProblem, Trip, TripError, TripPlace};
+use crate::species::catalogue::Catalogue;
+use crate::species::profile::{
+    Field, Layer, Licence, ProfileEdits, SourceRef, SpeciesEdit, SpeciesProfile,
+};
+use crate::trip::model::{Fuzz, PlaceProblem, SpeciesId, Trip, TripError, TripPlace};
 
 /// The `format` member of every file.
 pub const FORMAT: &str = "underbite";
@@ -27,14 +38,199 @@ pub struct SpotShare {
     pub notes: String,
 }
 
+/// The `kind: "profile"` payload: one species profile as its sender has it.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct ProfileShare {
+    /// The profile as the sender's catalogue holds it: every value with its source and licence,
+    /// and no edits.
+    pub species: SpeciesProfile,
+    /// The sender's own values, laid over `species` when shown; absent when there are none.
+    #[serde(default, skip_serializing_if = "SpeciesEdit::is_empty")]
+    pub edits: SpeciesEdit,
+}
+
+/// What importing a shared profile does to this device's edits of the same species.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ProfileImport {
+    pub id: SpeciesId,
+    /// This build's catalogue has the species. When it has not, nothing is imported.
+    pub known: bool,
+    /// Fields the sender edited and this device has not: they become this device's edits.
+    pub added: Vec<Field>,
+    /// Fields where the sender's value is already this device's (its edit or the catalogue's).
+    pub same: Vec<Field>,
+    /// Fields both edited to different values: this device's edit stays unless the user takes
+    /// the sender's.
+    pub conflicts: Vec<Field>,
+}
+
+/// What to do with a field both sides edited differently.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum OnConflict {
+    /// Keep this device's edit.
+    KeepMine,
+    /// Take the sender's value, as the user asked.
+    TakeTheirs,
+}
+
+/// Calls `$m!(Field, field_name)` for every editable field of a profile.
+macro_rules! each_field {
+    ($m:ident) => {
+        $m!(CommonNames, common_names);
+        $m!(Water, water);
+        $m!(PreferredTemp, preferred_temp_c);
+        $m!(ToleratedTemp, tolerated_temp_c);
+        $m!(SpawnTemp, spawn_temp_c);
+        $m!(Depth, depth_m);
+        $m!(Habitat, habitat);
+        $m!(Flow, flow);
+        $m!(Light, light);
+        $m!(Lures, lures);
+        $m!(Regions, regions);
+    };
+}
+
+impl ProfileShare {
+    /// The share of one species of `catalogue` with this device's `edits` of it; `None` when the
+    /// catalogue has no such species.
+    pub fn from_catalogue(
+        catalogue: &Catalogue,
+        id: &SpeciesId,
+        edits: &ProfileEdits,
+    ) -> Option<Self> {
+        Some(Self {
+            species: catalogue.get(id)?.clone(),
+            edits: edits.species.get(id).cloned().unwrap_or_default(),
+        })
+    }
+
+    /// The profile as the sender reads it: the edits laid over it, each edited field
+    /// `user_edited`.
+    pub fn shown(&self) -> SpeciesProfile {
+        self.species.with_edits(&self.edits)
+    }
+
+    /// What [`Self::import_into`] would do, without doing it.
+    pub fn plan_import(&self, catalogue: &Catalogue, edits: &ProfileEdits) -> ProfileImport {
+        let id = &self.species.id;
+        let mut plan = ProfileImport {
+            id: id.clone(),
+            known: false,
+            added: Vec::new(),
+            same: Vec::new(),
+            conflicts: Vec::new(),
+        };
+        let Some(base) = catalogue.get(id) else {
+            return plan;
+        };
+        plan.known = true;
+        let mine = edits.species.get(id);
+        let theirs = &self.edits;
+        macro_rules! compare {
+            ($field:ident, $name:ident) => {
+                if let Some(value) = &theirs.$name {
+                    match mine.and_then(|m| m.$name.as_ref()) {
+                        Some(own) if own == value => plan.same.push(Field::$field),
+                        Some(_) => plan.conflicts.push(Field::$field),
+                        None if base.$name.as_ref().is_some_and(|b| &b.value == value) => {
+                            plan.same.push(Field::$field);
+                        }
+                        None => plan.added.push(Field::$field),
+                    }
+                }
+            };
+        }
+        each_field!(compare);
+        plan
+    }
+
+    /// Adds the sender's edits to `edits`: fields this device has not edited are taken, fields
+    /// it edited differently stay as they are unless `on_conflict` is
+    /// [`OnConflict::TakeTheirs`]. A species this build's catalogue lacks is not imported.
+    /// Returns the plan that was carried out.
+    pub fn import_into(
+        &self,
+        catalogue: &Catalogue,
+        edits: &mut ProfileEdits,
+        on_conflict: OnConflict,
+    ) -> ProfileImport {
+        let plan = self.plan_import(catalogue, edits);
+        let take: Vec<Field> = match on_conflict {
+            OnConflict::KeepMine => plan.added.clone(),
+            OnConflict::TakeTheirs => plan.added.iter().chain(&plan.conflicts).copied().collect(),
+        };
+        if !plan.known || take.is_empty() {
+            return plan;
+        }
+        let theirs = &self.edits;
+        let mine = edits.edit(&self.species.id);
+        macro_rules! copy {
+            ($field:ident, $name:ident) => {
+                if take.contains(&Field::$field) {
+                    mine.$name.clone_from(&theirs.$name);
+                }
+            };
+        }
+        each_field!(copy);
+        plan
+    }
+
+    /// Checks what a file may carry: every value sourced and sane, no edit posing as a source,
+    /// and every CC BY-NC value with its link, record reference and citation.
+    fn validate(&self) -> Result<(), ShareError> {
+        let filled = |o: &Option<String>| o.as_deref().is_some_and(|t| !t.trim().is_empty());
+        let sources_ok = self.species.sources().iter().all(|src| {
+            !src.name.trim().is_empty()
+                && src.licence != Licence::UserEdited
+                && (src.licence != Licence::CcByNc4
+                    || (filled(&src.url) && filled(&src.reference) && filled(&src.citation)))
+        });
+        if !sources_ok {
+            return Err(ShareError::Unreadable);
+        }
+        // The values, edited or not, as the catalogue checks them; the sources were checked above.
+        neutral_sources(self.shown())
+            .validate(Layer::Agency)
+            .map_err(|_| ShareError::Unreadable)
+    }
+}
+
+/// `p` with every source replaced by one that any layer accepts, to check only the values.
+fn neutral_sources(mut p: SpeciesProfile) -> SpeciesProfile {
+    let neutral = || SourceRef {
+        name: "check".to_owned(),
+        url: None,
+        licence: Licence::Published,
+        reference: None,
+        citation: None,
+    };
+    p.scientific_name.source = neutral();
+    for a in &mut p.aliases {
+        a.source = neutral();
+    }
+    macro_rules! clear {
+        ($field:ident, $name:ident) => {
+            if let Some(v) = &mut p.$name {
+                v.source = neutral();
+            }
+        };
+    }
+    each_field!(clear);
+    p
+}
+
 /// What a `.underbite` file holds.
 #[derive(Clone, Debug, PartialEq)]
+// A document is read or written once and moved whole; boxing would only complicate callers.
+#[allow(clippy::large_enum_variant)]
 pub enum Document {
     /// `kind: "trip"`.
     Trip(Trip),
     /// `kind: "spot"`.
     Spot(SpotShare),
-    /// A kind this build reserves but cannot read yet (`layers`, `profile`). It cannot be encoded.
+    /// `kind: "profile"`.
+    Profile(ProfileShare),
+    /// A kind this build reserves but cannot read yet (`layers`). It cannot be encoded.
     Unsupported { kind: String },
 }
 
@@ -81,7 +277,8 @@ impl From<PlaceProblem> for ShareError {
 ///
 /// # Errors
 /// [`ShareError`]: too large, not JSON or not this format, a newer `v`, an unknown `kind`, a
-/// payload that does not parse, or a trip whose dates or places do not validate.
+/// payload that does not parse, a trip whose dates or places do not validate, or a profile with
+/// a value that has no source or cannot be right.
 pub fn decode(bytes: &[u8]) -> Result<Document, ShareError> {
     if bytes.len() > MAX_BYTES {
         return Err(ShareError::TooLarge);
@@ -113,7 +310,12 @@ pub fn decode(bytes: &[u8]) -> Result<Document, ShareError> {
             spot.place.validate()?;
             Ok(Document::Spot(spot))
         }
-        "layers" | "profile" => Ok(Document::Unsupported { kind }),
+        "profile" => {
+            let share: ProfileShare = payload(&mut file, "profile")?;
+            share.validate()?;
+            Ok(Document::Profile(share))
+        }
+        "layers" => Ok(Document::Unsupported { kind }),
         _ => Err(ShareError::Unreadable),
     }
 }
@@ -142,6 +344,10 @@ pub fn encode(doc: &Document) -> Result<String, ShareError> {
             spot.place.validate()?;
             json!({"format": FORMAT, "v": VERSION, "kind": "spot", "spot": spot})
         }
+        Document::Profile(share) => {
+            share.validate()?;
+            json!({"format": FORMAT, "v": VERSION, "kind": "profile", "profile": share})
+        }
         Document::Unsupported { .. } => return Err(ShareError::Unreadable),
     };
     let text = serde_json::to_string_pretty(&file).map_err(|_| ShareError::Unreadable)?;
@@ -157,7 +363,8 @@ pub fn encode(doc: &Document) -> Result<String, ShareError> {
 /// A place never gets more precise: asking for a level at or above what a place already carries
 /// leaves it alone. The level is recorded on the place so the receiver can say "approximate
 /// location". `Exact` changes nothing; `Rounded1Km` rounds to 0.01 degrees; `AreaOnly` drops the
-/// coordinates and keeps name, area and region. [`Document::Unsupported`] has no places.
+/// coordinates and keeps name, area and region. A profile and [`Document::Unsupported`] have no
+/// places.
 pub fn fuzz(doc: &mut Document, level: Fuzz) {
     match doc {
         Document::Trip(trip) => {
@@ -166,7 +373,7 @@ pub fn fuzz(doc: &mut Document, level: Fuzz) {
             }
         }
         Document::Spot(spot) => fuzz_place(&mut spot.place, level),
-        Document::Unsupported { .. } => {}
+        Document::Profile(_) | Document::Unsupported { .. } => {}
     }
 }
 
@@ -196,8 +403,8 @@ fn hundredth(x: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::trip::model::Method;
     use crate::trip::model::tests::{battery, trip};
-    use crate::trip::model::{Method, SpeciesId};
 
     fn spot() -> Document {
         Document::Spot(SpotShare {
@@ -379,14 +586,15 @@ mod tests {
 
     #[test]
     fn reserved_kinds_decode_as_unsupported() {
-        for kind in ["layers", "profile"] {
-            let text =
-                format!(r#"{{"format":"underbite","v":1,"kind":"{kind}","{kind}":{{"x":1}}}}"#);
-            assert_eq!(
-                decode(text.as_bytes()),
-                Ok(Document::Unsupported { kind: kind.into() })
-            );
-        }
+        let text = r#"{"format":"underbite","v":1,"kind":"layers","layers":{"x":1}}"#;
+        assert_eq!(
+            decode(text.as_bytes()),
+            Ok(Document::Unsupported {
+                kind: "layers".into()
+            })
+        );
+        let text = r#"{"format":"underbite","v":1,"kind":"profile","profile":{"x":1}}"#;
+        assert_eq!(decode(text.as_bytes()), Err(ShareError::Unreadable));
         assert_eq!(
             encode(&Document::Unsupported {
                 kind: "layers".into()
@@ -513,6 +721,7 @@ mod tests {
             kind: Kind,
             trip: Option<Trip>,
             spot: Option<SpotShare>,
+            profile: Option<ProfileShare>,
         }
         #[derive(JsonSchema)]
         #[serde(rename_all = "snake_case")]
@@ -534,5 +743,204 @@ mod tests {
         insta::assert_json_snapshot!("schema", schemas);
         insta::assert_snapshot!("trip_file", encode(&Document::Trip(t)).unwrap());
         insta::assert_snapshot!("spot_file", encode(&spot()).unwrap());
+        insta::assert_snapshot!("profile_file", encode(&profile()).unwrap());
+    }
+
+    // -- profiles ---------------------------------------------------------------------------
+
+    fn catalogue() -> Catalogue {
+        Catalogue::bundled().unwrap()
+    }
+
+    fn bass_id() -> SpeciesId {
+        SpeciesId::new("micropterus-dolomieu").unwrap()
+    }
+
+    fn range(low: f32, high: f32) -> crate::species::profile::Range {
+        crate::species::profile::Range { low, high }
+    }
+
+    /// Smallmouth bass as the sender has it: the user's lures and spawning range.
+    fn sender_edits() -> ProfileEdits {
+        let mut edits = ProfileEdits::default();
+        let e = edits.edit(&bass_id());
+        e.lures = Some(vec!["Tube jig".into()]);
+        e.spawn_temp_c = Some(range(15.0, 18.0));
+        edits
+    }
+
+    fn share() -> ProfileShare {
+        ProfileShare::from_catalogue(&catalogue(), &bass_id(), &sender_edits()).unwrap()
+    }
+
+    fn profile() -> Document {
+        Document::Profile(share())
+    }
+
+    #[test]
+    fn a_profile_round_trips_with_its_sources_licences_and_edits() {
+        let doc = profile();
+        let text = encode(&doc).unwrap();
+        assert_eq!(decode(text.as_bytes()), Ok(doc.clone()));
+        let v = encoded(&doc);
+        assert_eq!(v["kind"], "profile");
+        let species = &v["profile"]["species"];
+        assert_eq!(species["id"], "micropterus-dolomieu");
+        // The FishBase attribution travels with each value.
+        let tolerated = &species["tolerated_temp_c"]["source"];
+        assert_eq!(tolerated["licence"], "cc_by_nc4");
+        assert!(tolerated["citation"].as_str().unwrap().contains("FishBase"));
+        assert!(tolerated["url"].as_str().unwrap().starts_with("https://"));
+        assert!(tolerated["reference"].is_string());
+        // The edits are kept apart from the catalogue's values.
+        assert_eq!(v["profile"]["edits"]["lures"], json!(["Tube jig"]));
+        assert!(!text.contains("user_edited"));
+        let Document::Profile(back) = decode(text.as_bytes()).unwrap() else {
+            panic!()
+        };
+        let shown = back.shown();
+        assert_eq!(
+            shown.spawn_temp_c.unwrap().source.licence,
+            Licence::UserEdited
+        );
+        assert_eq!(
+            shown.tolerated_temp_c.unwrap().source.licence,
+            Licence::CcByNc4
+        );
+        // A profile has no places to fuzz.
+        let mut fuzzed = doc.clone();
+        fuzz(&mut fuzzed, Fuzz::AreaOnly);
+        assert_eq!(fuzzed, doc);
+    }
+
+    #[test]
+    fn a_profile_without_edits_has_no_edits_member() {
+        let s = ProfileShare::from_catalogue(&catalogue(), &bass_id(), &ProfileEdits::default())
+            .unwrap();
+        let v = encoded(&Document::Profile(s));
+        assert!(v["profile"].get("edits").is_none());
+        assert!(
+            ProfileShare::from_catalogue(
+                &catalogue(),
+                &SpeciesId::new("nemo-imaginarius").unwrap(),
+                &ProfileEdits::default()
+            )
+            .is_none()
+        );
+    }
+
+    #[test]
+    fn a_profile_that_hides_or_drops_its_sources_is_refused() {
+        let good = encoded(&profile());
+        let with = |f: &dyn Fn(&mut Value)| {
+            let mut v = good.clone();
+            f(&mut v);
+            decode(v.to_string().as_bytes())
+        };
+        assert!(with(&|_| {}).is_ok());
+        // An edit posing as a source.
+        assert_eq!(
+            with(
+                &|v| v["profile"]["species"]["tolerated_temp_c"]["source"]["licence"] =
+                    "user_edited".into()
+            ),
+            Err(ShareError::Unreadable)
+        );
+        // A CC BY-NC value without its citation.
+        assert_eq!(
+            with(&|v| {
+                v["profile"]["species"]["tolerated_temp_c"]["source"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("citation");
+            }),
+            Err(ShareError::Unreadable)
+        );
+        assert_eq!(
+            with(&|v| v["profile"]["species"]["scientific_name"]["source"]["name"] = " ".into()),
+            Err(ShareError::Unreadable)
+        );
+        // Values that cannot be right, in the profile or the edits.
+        assert_eq!(
+            with(&|v| v["profile"]["species"]["tolerated_temp_c"]["value"]["low"] = 40.0.into()),
+            Err(ShareError::Unreadable)
+        );
+        assert_eq!(
+            with(&|v| v["profile"]["edits"]["spawn_temp_c"] = json!({"low": 30.0, "high": 10.0})),
+            Err(ShareError::Unreadable)
+        );
+        assert_eq!(
+            with(&|v| v["profile"]["edits"]["lures"] = json!([])),
+            Err(ShareError::Unreadable)
+        );
+        assert_eq!(
+            with(&|v| v["profile"]["species"]["id"] = "Not An Id".into()),
+            Err(ShareError::Unreadable)
+        );
+        let mut bad = share();
+        bad.edits.lures = Some(vec![" ".into()]);
+        assert_eq!(encode(&Document::Profile(bad)), Err(ShareError::Unreadable));
+    }
+
+    #[test]
+    fn importing_adds_the_senders_edits_where_this_device_has_none() {
+        let mut mine = ProfileEdits::default();
+        let plan = share().import_into(&catalogue(), &mut mine, OnConflict::KeepMine);
+        assert!(plan.known);
+        assert_eq!(plan.added, vec![Field::SpawnTemp, Field::Lures]);
+        assert_eq!(plan.conflicts, []);
+        assert_eq!(mine, sender_edits());
+        // Importing again changes nothing.
+        let again = share().import_into(&catalogue(), &mut mine, OnConflict::TakeTheirs);
+        assert_eq!(again.added, []);
+        assert_eq!(again.same, vec![Field::SpawnTemp, Field::Lures]);
+        assert_eq!(mine, sender_edits());
+    }
+
+    #[test]
+    fn importing_never_overwrites_this_devices_edits_unless_asked() {
+        let mut mine = ProfileEdits::default();
+        mine.edit(&bass_id()).lures = Some(vec!["Ned rig".into()]);
+        mine.edit(&bass_id()).regions = Some(vec!["Lower Hudson".into()]);
+        let before = mine.clone();
+        let plan = share().plan_import(&catalogue(), &mine);
+        assert_eq!(plan.added, vec![Field::SpawnTemp]);
+        assert_eq!(plan.conflicts, vec![Field::Lures]);
+        assert_eq!(mine, before, "planning changes nothing");
+
+        let kept = share().import_into(&catalogue(), &mut mine, OnConflict::KeepMine);
+        assert_eq!(kept.conflicts, vec![Field::Lures]);
+        let e = &mine.species[&bass_id()];
+        assert_eq!(e.lures, Some(vec!["Ned rig".to_owned()]));
+        assert_eq!(e.spawn_temp_c, Some(range(15.0, 18.0)));
+        assert_eq!(e.regions, Some(vec!["Lower Hudson".to_owned()]));
+
+        share().import_into(&catalogue(), &mut mine, OnConflict::TakeTheirs);
+        let e = &mine.species[&bass_id()];
+        assert_eq!(e.lures, Some(vec!["Tube jig".to_owned()]));
+        assert_eq!(e.regions, Some(vec!["Lower Hudson".to_owned()]));
+    }
+
+    #[test]
+    fn a_senders_value_equal_to_the_catalogue_is_not_an_edit_here() {
+        let base = catalogue().get(&bass_id()).unwrap().clone();
+        let mut theirs = ProfileEdits::default();
+        theirs.edit(&bass_id()).tolerated_temp_c = base.tolerated_temp_c.map(|t| t.value);
+        let s = ProfileShare::from_catalogue(&catalogue(), &bass_id(), &theirs).unwrap();
+        let mut mine = ProfileEdits::default();
+        let plan = s.import_into(&catalogue(), &mut mine, OnConflict::KeepMine);
+        assert_eq!(plan.same, vec![Field::ToleratedTemp]);
+        assert!(mine.species.is_empty());
+    }
+
+    #[test]
+    fn a_species_this_build_lacks_is_not_imported() {
+        let mut s = share();
+        s.species.id = SpeciesId::new("nemo-imaginarius").unwrap();
+        let mut mine = ProfileEdits::default();
+        let plan = s.import_into(&catalogue(), &mut mine, OnConflict::TakeTheirs);
+        assert!(!plan.known);
+        assert_eq!(plan.added, []);
+        assert!(mine.species.is_empty());
     }
 }
