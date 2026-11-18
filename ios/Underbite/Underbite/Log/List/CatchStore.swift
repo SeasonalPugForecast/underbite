@@ -4,9 +4,10 @@ import Observation
 
 /// The catch log, in `catches.json` in the app's directory (Application Support, so it is in
 /// the device backup), written atomically like the app's other files; a file that cannot be read
-/// is set aside as `catches.json.bad` and never written over. The file is the core's own text of
-/// the log: every change goes through the core, which returns the new bytes. Ids and the time of
-/// each change are set here; every check and every word is the core's.
+/// is set aside as `catches.json.bad` and never written over; when it cannot be moved, no catch
+/// or photo is saved at all (`canSave`). The file is the core's own text of the log: every change
+/// goes through the core, which returns the new bytes. Ids and the time of each change are set
+/// here; every check and every word is the core's.
 ///
 /// Photos of catches are files in `photos/` beside it, named by the editor; deleting a catch
 /// deletes its photos.
@@ -51,13 +52,15 @@ final class CatchStore {
     /// The name the unreadable file was kept under (`catches.json.bad`), or `nil` when it could
     /// not be moved: then it is left where it was and never saved over.
     private(set) var keptAs: String?
+    /// Whether catches and photos can be saved: not when `catches.json` could not be read nor
+    /// moved aside, as a catch logged then would be gone at the next launch.
+    private(set) var canSave = true
     /// Why the last change was refused, in the core's words.
     private(set) var problem: String?
 
     @ObservationIgnored let files: AppFiles
     @ObservationIgnored private let clock: @Sendable () -> Int64
     @ObservationIgnored private let newID: @Sendable () -> String
-    @ObservationIgnored private var writable = true
     @ObservationIgnored private var generation = 0
 
     /// - Parameters:
@@ -86,17 +89,21 @@ final class CatchStore {
         } catch {
             unreadable = true
             keptAs = files.setAside(Self.fileName)
-            writable = keptAs != nil
+            canSave = keptAs != nil
         }
     }
 
     // MARK: - Changes
 
+    /// Why a catch or a photo was not saved: the log cannot be written (`canSave`).
+    nonisolated struct Unsaved: Error {}
+
     /// Saves the editor's fields: a catch with an empty id is a new one and gets one, any other
     /// replaces the catch of that id (keeping its conditions). Returns the catch's id; throws the
-    /// core's `LogError` when a field cannot be read.
+    /// core's `LogError` when a field cannot be read, or `Unsaved` when the log cannot be saved.
     @discardableResult
     func save(_ input: CatchInput, settingsJSON: String) throws -> String {
+        guard canSave else { throw Unsaved() }
         var input = input
         if input.id.isEmpty { input.id = newID() }
         let change = try logSave(book: book, input: input, settingsJson: settingsJSON, now: clock())
@@ -133,7 +140,7 @@ final class CatchStore {
         book = bytes
         count = (try? logLoad(book: bytes).counts.catches).map(Int.init) ?? count
         revision += 1
-        if writable { files.write(bytes, Self.fileName) }
+        if canSave { files.write(bytes, Self.fileName) }
     }
 
     /// The words of a core error: its message, else a plain description.
@@ -157,7 +164,9 @@ final class CatchStore {
 
     /// Keeps a picked photo for a catch in `photos/`: scaled down, upright and without the
     /// picture's metadata (`CatchPhotos`), worked out off the main actor. Returns its file name.
+    /// Throws `Unsaved` when the log cannot be saved.
     func addPhoto(_ data: Data) async throws -> String {
+        guard canSave else { throw Unsaved() }
         let files = self.files
         let name = CatchPhotos.newName()
         try await Task.detached(priority: .userInitiated) {

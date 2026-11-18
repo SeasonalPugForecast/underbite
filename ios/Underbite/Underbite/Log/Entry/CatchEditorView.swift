@@ -6,7 +6,7 @@ import SwiftUI
 /// (read by the core, which says what is wrong as it is typed), what became of it, the lure,
 /// method and notes, photos, and the conditions it is saved with, each with its source. Photos
 /// are picked without access to the photo library and copied into the app without their
-/// metadata. Nothing is kept until Save.
+/// metadata. Nothing is kept until Save, and nothing is added while the log cannot be saved.
 struct CatchEditorView: View {
     @Environment(SpotStore.self) private var spots
     @Environment(\.dismiss) private var dismiss
@@ -228,6 +228,7 @@ struct CatchEditorView: View {
             ) {
                 Label("Add photos", systemImage: "photo.badge.plus")
             }
+            .disabled(!catches.canSave)
         } header: {
             Text("Photos")
         } footer: {
@@ -286,7 +287,7 @@ struct CatchEditorView: View {
     }
 
     private var canSave: Bool {
-        opened != nil && lengthProblem == nil && weightProblem == nil && addingPhotos == 0
+        catches.canSave && opened != nil && lengthProblem == nil && weightProblem == nil && addingPhotos == 0
             && draft.position(spots: spots.spots) != nil
     }
 

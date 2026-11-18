@@ -139,10 +139,37 @@ final class CatchStoreTests: XCTestCase {
         XCTAssertEqual(s.keptAs, "catches.json.bad")
         XCTAssertEqual(s.count, 0)
         XCTAssertEqual(files.text("catches.json.bad"), "not a log")
+        XCTAssertTrue(s.canSave, "a new log starts beside the kept one")
 
         try s.save(input(), settingsJSON: "{}")
         XCTAssertEqual(try entries().count, 1, "a new log starts beside the old file")
         XCTAssertEqual(files.text("catches.json.bad"), "not a log")
+    }
+
+    func testNoCatchOrPhotoIsSavedWhenTheUnreadableFileCannotBeMoved() async throws {
+        XCTAssertTrue(files.write(Data("not a log".utf8), CatchStore.fileName))
+        // A `.bad` name for every attempt is taken by a directory, so nothing can move there.
+        for name in ["catches.json.bad"] + (2...100).map({ "catches.json.\($0).bad" }) {
+            try FileManager.default.createDirectory(
+                at: files.url(name), withIntermediateDirectories: true)
+        }
+        let s = store()
+        XCTAssertTrue(s.unreadable)
+        XCTAssertNil(s.keptAs)
+        XCTAssertFalse(s.canSave)
+        XCTAssertThrowsError(try s.save(input(), settingsJSON: "{}")) { error in
+            XCTAssertTrue(error is CatchStore.Unsaved, "\(error)")
+        }
+        XCTAssertEqual(s.count, 0, "not shown, as it would be gone at the next launch")
+        XCTAssertEqual(s.revision, 0)
+        do {
+            _ = try await s.addPhoto(Data([0xFF, 0xD8]))
+            XCTFail("a photo was kept")
+        } catch {
+            XCTAssertTrue(error is CatchStore.Unsaved, "\(error)")
+        }
+        XCTAssertFalse(files.exists(CatchStore.photosFolder), "no photo is written")
+        XCTAssertEqual(files.text(CatchStore.fileName), "not a log", "never saved over")
     }
 
     func testAFileFromANewerVersionIsSetAside() throws {
