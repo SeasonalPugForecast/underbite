@@ -41,28 +41,38 @@ tests named `live_*` and run by hand.
 
 ## Data sources
 
+Every source, bundled dataset and map layer, with its credit text, licence, link and conditions, is
+listed in [`docs/attribution.md`](docs/attribution.md) and in the app under Settings, About,
+Attribution. The main ones:
+
 - **Tides, water levels, currents, water temperature and air observations:** NOAA/NOS CO-OPS.
   "Tide, water-level and current data: NOAA/NOS CO-OPS."
 - **Buoy observations (waves, wind, water temperature):** "Buoy observations: NOAA National Data Buoy
   Center."
 - **River flow, gage height and water temperature:** U.S. Geological Survey. Values marked
   provisional are subject to revision and must not be relied on for safety decisions.
-- **River forecasts and stage:** NOAA National Water Prediction Service (NWPS), with observations
-  courtesy of the U.S. Geological Survey and NOAA National Ocean Service.
+- **River forecasts and stage:** NOAA National Water Prediction Service (NWPS), with the credit lines
+  its data name.
 - **Marine forecasts and alerts:** NOAA National Weather Service.
 - **Marine and weather model data:** "Weather data by Open-Meteo.com" (<https://open-meteo.com/>),
-  CC BY 4.0, with the model providers it names: Copernicus Marine Service, ECMWF, NOAA NCEP, DWD and
-  the Copernicus Climate Change Service.
-- **Sea surface temperature and ocean colour:** "SST: NASA JPL MUR (MEaSUREs), via NOAA CoastWatch
-  ERDDAP"; "Ocean colour: NOAA CoastWatch / NOAA STAR VIIRS".
+  CC BY 4.0 and free for non-commercial use only, with the model providers it names: Copernicus Marine
+  Service, ECMWF, NOAA NCEP, DWD and the Copernicus Climate Change Service.
+- **Sea surface temperature, ocean colour and surface currents:** NASA JPL MUR, NOAA CoastWatch,
+  NOAA STAR VIIRS and the NOAA IOOS HF Radar Network; optionally Copernicus Marine ("Generated using
+  E.U. Copernicus Marine Service Information" with each product's DOI).
 - **Satellite imagery:** "We acknowledge the use of imagery provided by services from NASA's Global
   Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS)."
 - **Nautical charts:** NOAA Office of Coast Survey, NOAA Chart Display Service (ENC). Not for
   navigation.
 - **Bathymetry:** NOAA NCEI (DEM global mosaic, Coastal Relief Model, CUDEM) and the GEBCO Grid,
-  GEBCO Compilation Group. Not for navigation or any purpose relating to safety at sea.
-- **Access, stocking, seasons and other regional sources:** surveyed; each is credited in the app
-  once it is used.
+  GEBCO Compilation Group, with the release year read from the service. Not for navigation or any
+  purpose relating to safety at sea.
+- **Canada:** Canadian Hydrographic Service (not for navigation, with the agreement's notice) and
+  Environment and Climate Change Canada (Data Services End-use Licence).
+- **Access, stocking and species:** OpenStreetMap contributors (ODbL 1.0), USGS PAD-US, NYS DEC,
+  GBIF, iNaturalist and USGS NAS (each record shows its own licence), and FishBase (CC BY-NC 4.0,
+  bundled values only while the app is free and non-commercial).
+- **Regulations:** links to the agencies' own pages, never data.
 
 ## License
 
