@@ -879,6 +879,11 @@ pub struct SpotFetchOutcome {
     pub errors: Vec<SourceIssue>,
     /// The water type inferred, when it was asked for and something pointed to one.
     pub suggestion: Option<WaterTypeSuggestion>,
+    /// Whether nothing answered: requests were made and none got an answer (no response, another
+    /// status than 2xx, or a web page such as a captive portal's sign-in in place of data). The
+    /// snapshot is then the offline one, and the spot has no new values to show.
+    #[uniffi(default = false)]
+    pub unanswered: bool,
     /// Station metadata responses to keep for the next fetch without signal, passed back as
     /// `cached_metadata`: one per request, each replacing the copy under its key.
     #[uniffi(default = [])]
@@ -995,7 +1000,8 @@ pub async fn fetch_spot(
     }
     let traffic = std::mem::take(&mut *bridge.traffic());
     let mut snapshot = out.snapshot;
-    if traffic.answered == 0 && traffic.unanswered > 0 {
+    let unanswered = traffic.answered == 0 && traffic.unanswered > 0;
+    if unanswered {
         let zone = if snapshot.spot.time_zone.is_empty() {
             info.time_zone.as_str()
         } else {
@@ -1010,6 +1016,7 @@ pub async fn fetch_spot(
         snapshot_json: serde_json::to_string(&snapshot).map_err(|e| invalid("snapshot", &e))?,
         errors: snapshot.errors.iter().map(SourceIssue::from).collect(),
         suggestion,
+        unanswered,
         cacheable: traffic.cacheable,
     })
 }

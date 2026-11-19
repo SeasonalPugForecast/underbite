@@ -77,6 +77,8 @@ struct Phone {
     offline: AtomicBool,
     /// Every request gets this status and a sign-in page while set, as behind a captive portal.
     portal: Mutex<Option<u16>>,
+    /// When set, only requests whose URL contains this text meet the portal.
+    portal_only: Mutex<Option<String>>,
     seen: Mutex<Vec<HostRequest>>,
     values: Mutex<BTreeMap<(String, String), String>>,
 }
@@ -91,6 +93,7 @@ impl Phone {
             routes: routes.route,
             offline: AtomicBool::new(false),
             portal: Mutex::new(None),
+            portal_only: Mutex::new(None),
             seen: Mutex::new(Vec::new()),
             values: Mutex::new(BTreeMap::new()),
         })
@@ -106,6 +109,12 @@ impl Phone {
 
     fn behind_portal(&self, status: u16) {
         *self.portal.lock().unwrap() = Some(status);
+    }
+
+    /// Only requests whose URL contains `part` meet the portal; the rest are answered.
+    fn behind_portal_for(&self, status: u16, part: &str) {
+        *self.portal_only.lock().unwrap() = Some(part.to_owned());
+        self.behind_portal(status);
     }
 
     fn requests(&self) -> usize {
@@ -135,7 +144,11 @@ impl FetchHost for Phone {
                 message: "The Internet connection appears to be offline.".into(),
             });
         }
-        if let Some(status) = *self.portal.lock().unwrap() {
+        let portal = *self.portal.lock().unwrap();
+        let only = self.portal_only.lock().unwrap().clone();
+        if let Some(status) = portal
+            && only.is_none_or(|part| request.url.contains(&part))
+        {
             return Ok(HostResponse {
                 status,
                 body: b"<!DOCTYPE html><html><body>Sign in to the network</body></html>".to_vec(),
@@ -485,6 +498,43 @@ fn a_fetch_that_got_answers_is_not_offline() {
     let (s, out) = fetch(&phone, now(), Vec::new());
     assert!(s.errors.iter().all(|e| !e.message.starts_with("offline:")));
     assert_ne!(out.cacheable.len(), 0);
+    assert!(!out.unanswered);
+}
+
+#[test]
+fn a_portal_answering_every_request_is_unanswered_whatever_the_status() {
+    for status in [200, 302, 511] {
+        let phone = Phone::new();
+        phone.behind_portal(status);
+        let (_, out) = fetch(&phone, now(), Vec::new());
+        assert!(out.unanswered, "{status}");
+        assert!(out.cacheable.is_empty(), "{status}");
+    }
+}
+
+#[test]
+fn no_signal_is_unanswered() {
+    let phone = Phone::new();
+    phone.lose_signal();
+    let (_, out) = fetch(&phone, now(), Vec::new());
+    assert!(out.unanswered);
+}
+
+#[test]
+fn a_partial_answer_is_not_unanswered() {
+    let phone = Phone::new();
+    phone.behind_portal_for(200, "tidesandcurrents");
+    let (_, out) = fetch(&phone, now(), Vec::new());
+    assert!(
+        phone.requests() > 0
+            && phone
+                .seen
+                .lock()
+                .unwrap()
+                .iter()
+                .any(|r| r.url.contains("tidesandcurrents"))
+    );
+    assert!(!out.unanswered);
 }
 
 /// The keys of the constants, datums and offsets in `kept`.
