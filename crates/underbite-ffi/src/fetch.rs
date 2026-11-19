@@ -898,6 +898,11 @@ pub struct DiscoveryOutcome {
     pub stations_json: String,
     /// Station lists or hydrography that failed.
     pub errors: Vec<SourceIssue>,
+    /// Whether nothing answered: requests were made and none got an answer (no response, another
+    /// status than 2xx, or a web page such as a captive portal's sign-in in place of data). The
+    /// stations are then empty, and the lookup says nothing about the spot.
+    #[uniffi(default = false)]
+    pub unanswered: bool,
 }
 
 /// A serde enum's name (`"water_temperature"`).
@@ -1110,10 +1115,12 @@ pub async fn discover_stations(
         &options,
     ))
     .await;
+    let traffic = std::mem::take(&mut *bridge.traffic());
     Ok(DiscoveryOutcome {
         stations_json: serde_json::to_string(&found.ranking.measurements)
             .map_err(|e| invalid("stations", &e))?,
         errors: found.errors.iter().map(SourceIssue::from).collect(),
+        unanswered: traffic.answered == 0 && traffic.unanswered > 0,
     })
 }
 

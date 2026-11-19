@@ -537,6 +537,39 @@ fn a_partial_answer_is_not_unanswered() {
     assert!(!out.unanswered);
 }
 
+fn discover(phone: &Arc<Phone>) -> underbite_ffi::fetch::DiscoveryOutcome {
+    pollster::block_on(underbite_ffi::fetch::discover_stations(
+        battery(),
+        default_settings_json(),
+        Keys::default(),
+        true,
+        now(),
+        phone.host(),
+    ))
+    .expect("discovered")
+}
+
+#[test]
+fn a_portal_answering_every_discovery_request_is_unanswered() {
+    for status in [200, 302, 511] {
+        let phone = Phone::new();
+        phone.behind_portal(status);
+        let out = discover(&phone);
+        assert!(phone.requests() > 0, "{status}");
+        assert!(out.unanswered, "{status}");
+    }
+}
+
+#[test]
+fn a_partly_answered_discovery_is_not_unanswered() {
+    let phone = Phone::new();
+    phone.behind_portal_for(200, "activestations");
+    let out = discover(&phone);
+    assert!(!out.unanswered);
+    let phone = Phone::new();
+    assert!(!discover(&phone).unanswered);
+}
+
 /// The keys of the constants, datums and offsets in `kept`.
 fn constant_keys(kept: &[CachedResponse]) -> BTreeSet<String> {
     kept.iter()
