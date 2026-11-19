@@ -53,6 +53,7 @@ fn settings(edit: impl FnOnce(&mut Value)) -> String {
 const METERED: FetchOptions = FetchOptions {
     allow_metered: true,
     infer_water_type: false,
+    refresh_metadata: false,
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -84,6 +85,8 @@ struct Replay {
     base: PathBuf,
     routes: Vec<Route>,
     failing: Option<&'static str>,
+    /// Whether station metadata no route answers gets a 404 instead of a panic.
+    unrecorded_metadata_404: bool,
     seen: Mutex<Vec<HostRequest>>,
     values: Mutex<BTreeMap<(String, String), String>>,
 }
@@ -91,6 +94,15 @@ struct Replay {
 impl Replay {
     fn new(scenario: &str) -> Arc<Self> {
         Self::failing(scenario, None)
+    }
+
+    /// A replay that answers 404, as the metadata API does for a station it does not know,
+    /// where the scenario recorded no station metadata: the constants a fetch keeps of the
+    /// stations a test picks by hand.
+    fn with_unrecorded_metadata(scenario: &str) -> Arc<Self> {
+        let mut replay = Arc::into_inner(Self::new(scenario)).expect("one owner");
+        replay.unrecorded_metadata_404 = true;
+        Arc::new(replay)
     }
 
     fn failing(scenario: &str, failing: Option<&'static str>) -> Arc<Self> {
@@ -103,6 +115,7 @@ impl Replay {
             base,
             routes: routes.route,
             failing,
+            unrecorded_metadata_404: false,
             seen: Mutex::new(Vec::new()),
             values: Mutex::new(BTreeMap::new()),
         })
@@ -155,6 +168,19 @@ impl FetchHost for Replay {
             });
         }
         let Some(route) = self.routes.iter().find(|r| url.contains(&r.matches)) else {
+            if self.unrecorded_metadata_404 && url.contains("/mdapi/prod/webapi/stations/") {
+                return Ok(HostResponse {
+                    status: 404,
+                    body: br#"{"error":{"message":"not found"}}"#.to_vec(),
+                    content_type: Some("application/json".into()),
+                    date: None,
+                    expires: None,
+                    last_modified: None,
+                    etag: None,
+                    retry_after: None,
+                    rate_limit_remaining: None,
+                });
+            }
             panic!("no replay route for {}", redact_url(&url));
         };
         let path = self.base.join(&route.file);
@@ -510,7 +536,7 @@ fn tide_station(host: &Arc<Replay>) -> String {
 
 #[test]
 fn a_pin_or_exclusion_changes_the_next_fetches_station() {
-    let host = Replay::new("battery");
+    let host = Replay::with_unrecorded_metadata("battery");
     assert_eq!(tide_station(&host), "8518750");
 
     // Another tide station the ranking offers.

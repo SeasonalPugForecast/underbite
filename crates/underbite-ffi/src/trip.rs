@@ -26,11 +26,11 @@ use std::sync::Arc;
 use serde::Serialize;
 use underbite_config::view_input::{river_ranges, view_input};
 use underbite_core::astro::tide::TideHarmonics;
-use underbite_core::datum::{DatumTable, VerticalDatum};
+use underbite_core::datum::VerticalDatum;
 use underbite_core::model::{Measurement, Spot, SpotSnapshot, WaterType};
-use underbite_core::offline::cache::{CachedMetadata, cache_key, serve_offline};
+use underbite_core::offline::cache::{CachedMetadata, MetadataKind, cache_key, serve_offline};
 use underbite_core::provenance::{
-    Provenance, Quality, Relation, SourceId, StationKind, StationRef, ValueKind,
+    Provenance, Quality, SourceId, StationKind, StationRef, ValueKind,
 };
 use underbite_core::series::Series;
 use underbite_core::time::{self, LocalDate, UnixTime, day_number};
@@ -48,7 +48,8 @@ use underbite_providers::source::{FetchContext, Secrets, SourceError};
 use underbite_providers::usgs::Usgs;
 
 use crate::fetch::{
-    CachedResponse, HostRequest, HostResponse, Keys, SourceIssue, fetched, host_request, user_agent,
+    CachedResponse, HostRequest, HostResponse, Keys, SourceIssue, fetched, host_request,
+    read_metadata, station_metadata, user_agent,
 };
 use crate::settings::{SettingsError, load};
 use crate::view::SpotInfo;
@@ -290,6 +291,16 @@ enum Wanted {
 }
 
 impl Wanted {
+    /// The tide metadata of `kind`.
+    fn of(kind: MetadataKind) -> Option<Self> {
+        match kind {
+            MetadataKind::Datums => Some(Self::Datums),
+            MetadataKind::Harmonics => Some(Self::Harcon),
+            MetadataKind::TideOffsets => Some(Self::Offsets),
+            _ => None,
+        }
+    }
+
     fn source(self) -> SourceId {
         match self {
             Self::Datums | Self::Harcon | Self::Offsets => SourceId::COOPS,
@@ -597,7 +608,6 @@ impl TripPlan {
         response: &Response<'_>,
         got: &mut Gathered,
     ) -> Result<(), SourceError> {
-        let station = station_of(&p.request).unwrap_or_default();
         let body = || {
             if (200..300).contains(&response.status) {
                 Ok(response.body)
@@ -609,12 +619,9 @@ impl TripPlan {
             }
         };
         match p.wanted {
-            Wanted::Datums => mdapi::parse_datums(&station, body()?).map(|_| ()),
-            Wanted::Harcon => {
-                // Only the constants are read here; the datums come with their own request.
-                let msl = DatumTable::new(&station, BTreeMap::from([("MSL".to_owned(), 0.0)]));
-                mdapi::parse_tide_harmonics(&station, body()?, &msl, VerticalDatum::Msl).map(|_| ())
-            }
+            // Read as a spot fetch reads them before keeping them.
+            Wanted::Datums => read_metadata(MetadataKind::Datums, &p.request.url, body()?),
+            Wanted::Harcon => read_metadata(MetadataKind::Harmonics, &p.request.url, body()?),
             Wanted::Offsets => match mdapi::parse_tide_offsets(body()?)? {
                 Some(_) => Ok(()),
                 None => Err(SourceError::NoData(Some("no tide offsets".into()))),
@@ -835,63 +842,17 @@ fn tide_station(snapshot: &SpotSnapshot) -> Option<(&StationRef, &Provenance)> {
     .then_some((station, &tide.provenance))
 }
 
-fn station_target(station: StationRef) -> Target {
-    Target {
-        place: Place::Station {
-            station,
-            distance_m: None,
-            relation: Relation::Nearby,
-        },
-        measurements: std::iter::once(Measurement::Tide).collect(),
-        window: Window {
-            from: UnixTime(0),
-            to: UnixTime(0),
-        },
-        datum: None,
-    }
-}
-
-/// A subordinate station's reference, as a harmonic station.
-fn reference(station: &StationRef, id: &str) -> StationRef {
-    StationRef {
-        id: id.to_owned(),
-        name: id.to_owned(),
-        kind: StationKind::TideHarmonic,
-        bin: None,
-        reference_id: None,
-        ..station.clone()
-    }
-}
-
 /// The metadata requests the tides of a snapshot's station are computed from: a harmonic
 /// station's datums and constants, or a subordinate station's offsets and its reference's
-/// datums and constants.
+/// datums and constants, as a spot fetch keeps them.
 fn tide_requests(snapshot: &SpotSnapshot) -> Vec<(Wanted, Request)> {
     let Some((station, _)) = tide_station(snapshot) else {
         return Vec::new();
     };
-    let harmonic = match station.kind {
-        StationKind::TideSubordinate => match &station.reference_id {
-            Some(id) => reference(station, id),
-            None => return Vec::new(),
-        },
-        _ => station.clone(),
-    };
-    let mut out = Vec::new();
-    if station.kind == StationKind::TideSubordinate
-        && let Ok(r) = mdapi::tide_offsets_request(station_target(station.clone()))
-    {
-        out.push((Wanted::Offsets, r));
-    }
-    let target = station_target(harmonic.clone());
-    if let Ok(r) = mdapi::datums_request(target.clone()) {
-        out.push((Wanted::Datums, r));
-    }
-    let none = DatumTable::new(&harmonic.id, BTreeMap::new());
-    if let Ok(r) = mdapi::tide_harcon_request(target, &none) {
-        out.push((Wanted::Harcon, r));
-    }
-    out
+    station_metadata(station, None)
+        .into_iter()
+        .filter_map(|(kind, request)| Some((Wanted::of(kind)?, request)))
+        .collect()
 }
 
 fn station_of(request: &Request) -> Option<String> {

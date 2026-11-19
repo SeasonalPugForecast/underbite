@@ -230,6 +230,7 @@ fn snapshot(scenario: &str, spot: SpotInfo) -> String {
         FetchOptions {
             allow_metered: true,
             infer_water_type: false,
+            refresh_metadata: false,
         },
         now(),
         Vec::new(),
@@ -497,6 +498,7 @@ mod alerts {
             FetchOptions {
                 allow_metered: true,
                 infer_water_type: false,
+                refresh_metadata: false,
             },
             now(),
             Vec::new(),

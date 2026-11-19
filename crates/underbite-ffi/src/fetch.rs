@@ -19,11 +19,13 @@ use std::sync::{Arc, Mutex, PoisonError};
 use underbite_config::schema::Config;
 use underbite_core::datum::{DatumTable, VerticalDatum};
 use underbite_core::discover::rank::Ranking;
-use underbite_core::model::{SourceError, SourceErrorKind, Spot, SpotSnapshot, WaterType};
+use underbite_core::model::{
+    Measurement, SourceError, SourceErrorKind, Spot, SpotSnapshot, WaterType,
+};
 use underbite_core::offline::cache::{
     CachedMetadata, MetadataKind, cache_key, merge_last, serve_offline,
 };
-use underbite_core::provenance::{SourceId, ValueKind};
+use underbite_core::provenance::{Relation, SourceId, StationKind, StationRef, ValueKind};
 use underbite_core::time::UnixTime;
 use underbite_core::view::format::Formatter;
 use underbite_core::view::strings::{Key, Strings};
@@ -31,8 +33,10 @@ use underbite_fetch::store::{self, Choice, parse_station_key};
 use underbite_fetch::{self as library, Call, Fetched, TransportError};
 use underbite_providers::coops::mdapi::{self, StationList};
 use underbite_providers::ndbc;
-use underbite_providers::request::{is_secret_header, redact_url, secret_values};
-use underbite_providers::source::Secrets;
+use underbite_providers::request::{
+    Place, Request, Target, Window, is_secret_header, redact_url, secret_values,
+};
+use underbite_providers::source::{Secrets, SourceError as ProviderError};
 use whether_core::time::parse_http_date;
 use whether_providers::Method;
 
@@ -338,32 +342,250 @@ fn query_value<'a>(url: &'a str, name: &str) -> Option<&'a str> {
 /// Whether the provider of a metadata response reads `body`: a copy is kept, and counts as an
 /// answer, only then.
 fn metadata_reads(kind: MetadataKind, url: &str, body: &[u8]) -> bool {
+    read_metadata(kind, url, body).is_ok()
+}
+
+/// Reads a metadata response to `url` as its provider does, keeping nothing: `Ok` when the
+/// provider can use `body`, else why not.
+pub(crate) fn read_metadata(
+    kind: MetadataKind,
+    url: &str,
+    body: &[u8],
+) -> Result<(), ProviderError> {
     let station = station_of(url).unwrap_or_default();
+    let unread = |what: &str| ProviderError::Parse(what.to_owned());
     match kind {
         // A current station's constants are asked for by bin.
-        MetadataKind::Harmonics if url.contains("bin=") => query_value(url, "bin")
-            .and_then(|bin| bin.parse().ok())
-            .is_some_and(|bin| mdapi::parse_current_harmonics(station, Some(bin), body).is_ok()),
+        MetadataKind::Harmonics if url.contains("bin=") => {
+            let bin = query_value(url, "bin")
+                .and_then(|bin| bin.parse().ok())
+                .ok_or_else(|| unread("no bin"))?;
+            mdapi::parse_current_harmonics(station, Some(bin), body).map(|_| ())
+        }
         MetadataKind::Harmonics => {
             // Only the constants are read here; `Z0` comes from the datums.
             let msl = DatumTable::new(station, BTreeMap::from([("MSL".to_owned(), 0.0)]));
-            mdapi::parse_tide_harmonics(station, body, &msl, VerticalDatum::Msl).is_ok()
+            mdapi::parse_tide_harmonics(station, body, &msl, VerticalDatum::Msl).map(|_| ())
         }
-        MetadataKind::Datums => mdapi::parse_datums(station, body).is_ok(),
-        MetadataKind::TideOffsets => mdapi::parse_tide_offsets(body).is_ok(),
-        MetadataKind::CurrentOffsets => mdapi::parse_current_offsets(None, body).is_ok(),
-        MetadataKind::Bins => mdapi::parse_bins(body).is_ok(),
-        MetadataKind::CoopsStations => [
-            StationList::TidePredictions,
-            StationList::CurrentPredictions,
-            StationList::WaterLevels,
-            StationList::Currents,
-        ]
+        MetadataKind::Datums => mdapi::parse_datums(station, body).map(|_| ()),
+        MetadataKind::TideOffsets => mdapi::parse_tide_offsets(body).map(|_| ()),
+        MetadataKind::CurrentOffsets => mdapi::parse_current_offsets(None, body).map(|_| ()),
+        MetadataKind::Bins => mdapi::parse_bins(body).map(|_| ()),
+        MetadataKind::CoopsStations => {
+            let list = [
+                StationList::TidePredictions,
+                StationList::CurrentPredictions,
+                StationList::WaterLevels,
+                StationList::Currents,
+            ]
+            .into_iter()
+            .find(|list| query_value(url, "type") == Some(list.type_name()))
+            .ok_or_else(|| unread("an unknown station list"))?;
+            mdapi::parse_station_list(list, body).map(|_| ())
+        }
+        MetadataKind::NdbcStations => {
+            let text = std::str::from_utf8(body).map_err(|e| unread(&e.to_string()))?;
+            if ndbc::stations::parse(text)?.is_empty() {
+                return Err(ProviderError::NoData(Some("no stations".into())));
+            }
+            Ok(())
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// The station metadata tides and currents are computed from
+// ---------------------------------------------------------------------------------------------
+
+/// How old a kept copy of a station's harmonic constants, datums or offsets may be before a
+/// fetch with signal asks for it again, seconds: a week. Older copies still answer without
+/// signal, up to their kind's own limit.
+pub const METADATA_REFRESH_S: i64 = 7 * 86_400;
+
+/// A target naming only `station`, for the metadata requests: no coordinates leave with them.
+fn station_target(station: StationRef, measurement: Measurement) -> Target {
+    Target {
+        place: Place::Station {
+            station,
+            distance_m: None,
+            relation: Relation::Nearby,
+        },
+        measurements: std::iter::once(measurement).collect(),
+        window: Window {
+            from: UnixTime(0),
+            to: UnixTime(0),
+        },
+        datum: None,
+    }
+}
+
+/// The reference station `id` of a subordinate station, as a station of `kind`.
+fn reference_station(
+    station: &StationRef,
+    id: &str,
+    kind: StationKind,
+    bin: Option<u16>,
+) -> StationRef {
+    StationRef {
+        id: id.to_owned(),
+        name: id.to_owned(),
+        kind,
+        bin,
+        reference_id: None,
+        ..station.clone()
+    }
+}
+
+/// The datums and constants requests of the harmonic tide station `station`.
+fn tide_reference(station: StationRef) -> [(MetadataKind, Result<Request, ProviderError>); 2] {
+    let none = DatumTable::new(&station.id, BTreeMap::new());
+    let target = station_target(station, Measurement::Tide);
+    [
+        (MetadataKind::Datums, mdapi::datums_request(target.clone())),
+        (
+            MetadataKind::Harmonics,
+            mdapi::tide_harcon_request(target, &none),
+        ),
+    ]
+}
+
+/// The metadata requests the computed tides or currents of the CO-OPS `station` rest on, in
+/// the order the computation asks for them, each with its kind: a harmonic tide station's
+/// datums and constants; a subordinate tide station's offsets and its reference's datums and
+/// constants; a harmonic current station's constants for its bin; a subordinate current
+/// station's offsets and its reference's constants for the reference bin.
+///
+/// The reference is read from the subordinate station's `offsets` body when it is given, as the
+/// computation reads it; without it, a tide station's `reference_id` names it and a current
+/// station's reference stays unknown (only the offsets are listed). Any other station has none.
+pub(crate) fn station_metadata(
+    station: &StationRef,
+    offsets: Option<&[u8]>,
+) -> Vec<(MetadataKind, Request)> {
+    if station.source != SourceId::COOPS {
+        return Vec::new();
+    }
+    let current = |s: StationRef| station_target(s, Measurement::TidalCurrent);
+    let mut wanted: Vec<(MetadataKind, Result<Request, ProviderError>)> = Vec::new();
+    match station.kind {
+        StationKind::TideHarmonic => wanted.extend(tide_reference(station.clone())),
+        StationKind::TideSubordinate => {
+            wanted.push((
+                MetadataKind::TideOffsets,
+                mdapi::tide_offsets_request(station_target(station.clone(), Measurement::Tide)),
+            ));
+            let reference = offsets
+                .and_then(|body| mdapi::parse_tide_offsets(body).ok().flatten())
+                .map(|o| o.reference_id)
+                .or_else(|| station.reference_id.clone());
+            if let Some(id) = reference {
+                let s = reference_station(station, &id, StationKind::TideHarmonic, None);
+                wanted.extend(tide_reference(s));
+            }
+        }
+        StationKind::CurrentHarmonic => wanted.push((
+            MetadataKind::Harmonics,
+            mdapi::current_harcon_request(current(station.clone())),
+        )),
+        StationKind::CurrentSubordinate => {
+            wanted.push((
+                MetadataKind::CurrentOffsets,
+                mdapi::current_offsets_request(current(station.clone())),
+            ));
+            if let Some(o) =
+                offsets.and_then(|body| mdapi::parse_current_offsets(station.bin, body).ok())
+            {
+                let s = reference_station(
+                    station,
+                    &o.reference_id,
+                    StationKind::CurrentHarmonic,
+                    Some(o.reference_bin),
+                );
+                wanted.push((
+                    MetadataKind::Harmonics,
+                    mdapi::current_harcon_request(current(s)),
+                ));
+            }
+        }
+        _ => {}
+    }
+    wanted
         .into_iter()
-        .find(|list| query_value(url, "type") == Some(list.type_name()))
-        .is_some_and(|list| mdapi::parse_station_list(list, body).is_ok()),
-        MetadataKind::NdbcStations => std::str::from_utf8(body)
-            .is_ok_and(|text| ndbc::stations::parse(text).is_ok_and(|s| !s.is_empty())),
+        .filter_map(|(kind, request)| Some((kind, request.ok()?)))
+        .collect()
+}
+
+/// The CO-OPS stations of a snapshot's tide and tidal current.
+fn computed_stations(snapshot: &SpotSnapshot) -> Vec<&StationRef> {
+    let tide = snapshot.marine.tide.as_ref().map(|t| &t.provenance);
+    let current = snapshot
+        .marine
+        .tidal_current
+        .as_ref()
+        .map(|c| &c.provenance);
+    [tide, current]
+        .into_iter()
+        .flatten()
+        .filter_map(|p| p.station.as_ref())
+        .filter(|s| s.source == SourceId::COOPS)
+        .collect()
+}
+
+fn is_offsets(kind: MetadataKind) -> bool {
+    matches!(
+        kind,
+        MetadataKind::TideOffsets | MetadataKind::CurrentOffsets
+    )
+}
+
+impl Bridge {
+    /// Asks for what computes the tide and current of `snapshot` without signal (its stations'
+    /// constants, datums and offsets) unless the app kept a copy less than
+    /// [`METADATA_REFRESH_S`] old or this fetch already got one; `refresh` asks again in any
+    /// case, past any cache. What arrives and its provider reads is noted to keep. The requests
+    /// name the stations only.
+    async fn keep_station_metadata(&self, snapshot: &SpotSnapshot, refresh: bool) {
+        for station in computed_stations(snapshot) {
+            // A subordinate station's offsets name its reference: they come first.
+            let mut offsets = None;
+            for (_, request) in station_metadata(station, None)
+                .iter()
+                .filter(|(kind, _)| is_offsets(*kind))
+            {
+                offsets = self.metadata_body(request, refresh).await;
+            }
+            for (kind, request) in station_metadata(station, offsets.as_deref()) {
+                if !is_offsets(kind) {
+                    self.metadata_body(&request, refresh).await;
+                }
+            }
+        }
+    }
+
+    /// The body of a metadata `request`: what this fetch already received, a kept copy fresh
+    /// enough (unless `refresh`), else the network's answer, or the kept copy of any age it
+    /// may be served at when the network does not answer.
+    async fn metadata_body(&self, request: &Request, refresh: bool) -> Option<Vec<u8>> {
+        let key = cache_key(&request.url);
+        let received = self
+            .traffic()
+            .cacheable
+            .iter()
+            .find(|c| c.key == key)
+            .map(|c| c.body.clone());
+        if received.is_some() {
+            return received;
+        }
+        if !refresh
+            && let Some(kept) = self.cached.get(&key)
+            && self.now.0 - kept.fetched_at.0 <= METADATA_REFRESH_S
+        {
+            return Some(kept.body.clone());
+        }
+        let mut call = Call::from(request);
+        call.cache.fresh |= refresh;
+        let fetched = library::FetchHost::send(self, &call).await.ok()?;
+        (200..300).contains(&fetched.status).then_some(fetched.body)
     }
 }
 
@@ -584,6 +806,10 @@ pub struct FetchOptions {
     /// waterbodies and the nearest USGS site) before planning; the spot's own type is used when
     /// nothing points anywhere.
     pub infer_water_type: bool,
+    /// Whether the station metadata the spot's tides and currents are computed from without
+    /// signal is asked for again even when the kept copy is recent: a pull to refresh.
+    #[uniffi(default = false)]
+    pub refresh_metadata: bool,
 }
 
 /// A response to long-lived station metadata (harmonic constants, datums, offsets, bins, station
@@ -720,6 +946,12 @@ fn options(keys: &Keys, allow_metered: bool, infer_water_type: bool) -> library:
 /// harmonic constants, so tides are computed on the device, and the values the fetch lacks come
 /// from the spot's last snapshot with their own times; the outcome's errors then say "offline:
 /// computed from harmonic constants, other values from <time>". Anything else fails as usual.
+///
+/// With signal, the fetch makes sure the app keeps what computes the snapshot's tide and current
+/// later: the harmonic constants, datums and offsets of their CO-OPS stations (and of a
+/// subordinate station's reference) are asked for when `cached_metadata` lacks them or holds a
+/// copy more than [`METADATA_REFRESH_S`] old, or always with `options.refresh_metadata`, and
+/// returned in `cacheable`. These requests name the stations only, never a position.
 #[uniffi::export(default(cached_metadata = []))]
 #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
 pub async fn fetch_spot(
@@ -734,6 +966,7 @@ pub async fn fetch_spot(
     let (config, _) = load(&settings_json)?;
     let info = spot;
     let spot = self::spot(&info)?;
+    let refresh_metadata = options.refresh_metadata;
     let options = self::options(&keys, options.allow_metered, options.infer_water_type);
     let bridge = Bridge::new(host, cached_metadata, UnixTime(now));
     let previous = last_snapshot(&bridge, &spot.id);
@@ -755,6 +988,11 @@ pub async fn fetch_spot(
             .map(|r| strings.water_type_reason(r))
             .collect(),
     });
+    // With signal, what computes the tide and current without it is kept up to date.
+    let online = bridge.traffic().answered > 0;
+    if online {
+        Box::pin(bridge.keep_station_metadata(&out.snapshot, refresh_metadata)).await;
+    }
     let traffic = std::mem::take(&mut *bridge.traffic());
     let mut snapshot = out.snapshot;
     if traffic.answered == 0 && traffic.unanswered > 0 {
@@ -1016,6 +1254,122 @@ mod tests {
             "text/xml",
             b"<?xml version=\"1.0\"?><stations/>"
         )));
+    }
+
+    fn coops_station(id: &str, kind: StationKind, bin: Option<u16>) -> StationRef {
+        StationRef {
+            source: SourceId::COOPS,
+            id: id.into(),
+            name: id.into(),
+            kind,
+            latitude: 40.7,
+            longitude: -74.0,
+            bin,
+            reference_id: None,
+        }
+    }
+
+    /// The URLs of `station_metadata`, after the metadata API's base, with their kinds.
+    fn metadata_urls(station: &StationRef, offsets: Option<&[u8]>) -> Vec<(MetadataKind, String)> {
+        let base = "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/";
+        station_metadata(station, offsets)
+            .into_iter()
+            .map(|(kind, r)| {
+                assert_eq!(MetadataKind::of_url(&r.url), Some(kind), "{}", r.url);
+                (kind, r.url.strip_prefix(base).expect("mdapi").to_owned())
+            })
+            .collect()
+    }
+
+    #[test]
+    fn station_metadata_follows_the_computation() {
+        use MetadataKind::{CurrentOffsets, Datums, Harmonics, TideOffsets};
+        let battery = coops_station("8518750", StationKind::TideHarmonic, None);
+        assert_eq!(
+            metadata_urls(&battery, None),
+            [
+                (Datums, "8518750/datums.json?units=metric".to_owned()),
+                (Harmonics, "8518750/harcon.json?units=metric".to_owned()),
+            ]
+        );
+
+        // A subordinate tide station: the offsets, then its reference's datums and constants,
+        // the reference read from the offsets when they are there.
+        let mut sub = coops_station("8518919", StationKind::TideSubordinate, None);
+        assert_eq!(
+            metadata_urls(&sub, None),
+            [(TideOffsets, "8518919/tidepredoffsets.json".to_owned())]
+        );
+        sub.reference_id = Some("8518750".into());
+        let offsets = coops("coops-mdapi-8518919-tidepredoffsets.json");
+        for given in [None, Some(offsets.as_slice())] {
+            assert_eq!(
+                metadata_urls(&sub, given),
+                [
+                    (TideOffsets, "8518919/tidepredoffsets.json".to_owned()),
+                    (Datums, "8518750/datums.json?units=metric".to_owned()),
+                    (Harmonics, "8518750/harcon.json?units=metric".to_owned()),
+                ]
+            );
+        }
+
+        // Current stations by bin; a subordinate one's reference comes from its offsets.
+        let entrance = coops_station("NYH1927", StationKind::CurrentHarmonic, Some(13));
+        assert_eq!(
+            metadata_urls(&entrance, None),
+            [(Harmonics, "NYH1927/harcon.json?bin=13".to_owned())]
+        );
+        let sub = coops_station("ACT3646", StationKind::CurrentSubordinate, Some(1));
+        assert_eq!(
+            metadata_urls(&sub, None),
+            [(
+                CurrentOffsets,
+                "ACT3646_1/currentpredictionoffsets.json".to_owned()
+            )]
+        );
+        let offsets = coops("coops-mdapi-ACT3646_1-currentpredictionoffsets.json");
+        let reference = mdapi::parse_current_offsets(Some(1), &offsets).expect("offsets");
+        let urls = metadata_urls(&sub, Some(&offsets));
+        assert_eq!(urls.len(), 2, "{urls:?}");
+        assert_eq!(
+            urls[1],
+            (
+                Harmonics,
+                format!(
+                    "{}/harcon.json?bin={}",
+                    reference.reference_id, reference.reference_bin
+                )
+            )
+        );
+
+        // Other stations and sources have none.
+        let buoy = StationRef {
+            source: SourceId::from_static("ndbc"),
+            ..battery.clone()
+        };
+        assert_eq!(metadata_urls(&buoy, None), []);
+        let meter = coops_station("n06010", StationKind::PortsCurrentMeter, Some(1));
+        assert_eq!(metadata_urls(&meter, None), []);
+    }
+
+    #[test]
+    fn metadata_is_read_with_its_reason() {
+        let url = "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/8518750/datums.json?units=metric";
+        assert_eq!(
+            read_metadata(
+                MetadataKind::Datums,
+                url,
+                &coops("coops-mdapi-8518750-datums-metric.json")
+            ),
+            Ok(())
+        );
+        assert!(matches!(
+            read_metadata(MetadataKind::Datums, url, b"<html>"),
+            Err(ProviderError::Parse(_))
+        ));
+        let list =
+            "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=other";
+        assert!(read_metadata(MetadataKind::CoopsStations, list, b"{}").is_err());
     }
 
     fn response(body: Vec<u8>) -> HostResponse {

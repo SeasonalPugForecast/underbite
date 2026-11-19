@@ -152,6 +152,7 @@ fn fetch_and_discover(spot: &SpotInfo, settings: &str, infer: bool, host: &Arc<R
     let options = FetchOptions {
         allow_metered: true,
         infer_water_type: infer,
+        refresh_metadata: false,
     };
     let dyn_host = || Arc::clone(host) as Arc<dyn FetchHost>;
     pollster::block_on(fetch_spot(

@@ -926,6 +926,7 @@ pub async fn fetch_alert_spot(
     let options = FetchOptions {
         allow_metered,
         infer_water_type: false,
+        refresh_metadata: false,
     };
     let out = Box::pin(crate::fetch::fetch_spot(
         fetch.spot.clone(),

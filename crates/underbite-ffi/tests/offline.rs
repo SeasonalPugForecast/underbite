@@ -39,6 +39,7 @@ fn battery() -> SpotInfo {
 const OPTIONS: FetchOptions = FetchOptions {
     allow_metered: true,
     infer_water_type: false,
+    refresh_metadata: false,
 };
 
 fn fixtures() -> PathBuf {
@@ -75,7 +76,7 @@ struct Phone {
     offline: AtomicBool,
     /// Every request gets this status and a sign-in page while set, as behind a captive portal.
     portal: Mutex<Option<u16>>,
-    seen: Mutex<Vec<String>>,
+    seen: Mutex<Vec<HostRequest>>,
     values: Mutex<BTreeMap<(String, String), String>>,
 }
 
@@ -109,12 +110,25 @@ impl Phone {
     fn requests(&self) -> usize {
         self.seen.lock().unwrap().len()
     }
+
+    /// The requests for constants, datums or offsets sent since the first `from`.
+    fn constants_asked(&self, from: usize) -> Vec<HostRequest> {
+        self.seen.lock().unwrap()[from..]
+            .iter()
+            .filter(|r| {
+                ["/harcon.json", "/datums.json", "offsets.json"]
+                    .iter()
+                    .any(|file| r.url.contains(file))
+            })
+            .cloned()
+            .collect()
+    }
 }
 
 #[async_trait::async_trait]
 impl FetchHost for Phone {
     async fn send(&self, request: HostRequest) -> Result<HostResponse, HostError> {
-        self.seen.lock().unwrap().push(request.url.clone());
+        self.seen.lock().unwrap().push(request.clone());
         if self.offline.load(Ordering::SeqCst) {
             return Err(HostError::Failed {
                 message: "The Internet connection appears to be offline.".into(),
@@ -177,12 +191,21 @@ fn fetch(
     phone: &Arc<Phone>,
     at: i64,
     cached: Vec<CachedResponse>,
-) -> (SpotSnapshot, underbite_ffi::fetch::SpotFetchOutcome) {
+) -> (SpotSnapshot, SpotFetchOutcome) {
+    fetch_with(phone, at, cached, OPTIONS)
+}
+
+fn fetch_with(
+    phone: &Arc<Phone>,
+    at: i64,
+    cached: Vec<CachedResponse>,
+    options: FetchOptions,
+) -> (SpotSnapshot, SpotFetchOutcome) {
     let out = pollster::block_on(fetch_spot(
         battery(),
         default_settings_json(),
         Keys::default(),
-        OPTIONS,
+        options,
         at,
         cached,
         phone.host(),
@@ -214,8 +237,16 @@ fn a_fetch_without_signal_computes_the_tide_and_keeps_the_last_values() {
         "{:?}",
         kept.iter().map(|c| &c.key).collect::<Vec<_>>()
     );
-    // The constants and datums of the Battery were fetched earlier by the app.
-    let cached = with_constants(&first.cacheable);
+    // The fetch kept what computes the tide and the current without signal: the Battery's
+    // constants and datums, and the Hudson River Entrance's constants for its bin.
+    for key in [
+        format!("{BATTERY_MDAPI}/harcon.json?units=metric"),
+        format!("{BATTERY_MDAPI}/datums.json?units=metric"),
+        format!("{MDAPI}/stations/NYH1927/harcon.json?bin=13"),
+    ] {
+        assert!(keys.contains(key.as_str()), "{key} not in {keys:?}");
+    }
+    let cached = first.cacheable.clone();
     let water = online
         .water
         .temperature_c
@@ -239,6 +270,7 @@ fn a_fetch_without_signal_computes_the_tide_and_keeps_the_last_values() {
         tide.events.iter().any(|e| e.time.0 > later),
         "events reach past the new time"
     );
+    assert_current_table(&cached);
 
     // The other values are the last snapshot's, with their own times.
     let water = s
@@ -294,8 +326,29 @@ fn a_fetch_without_signal_computes_the_tide_and_keeps_the_last_values() {
     );
 }
 
+const MDAPI: &str = "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi";
 const BATTERY_MDAPI: &str =
     "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/8518750";
+
+/// The current station's constants in `kept` give its table without signal.
+fn assert_current_table(kept: &[CachedResponse]) {
+    let current = kept
+        .iter()
+        .find(|c| c.key.ends_with("/NYH1927/harcon.json?bin=13"))
+        .expect("the current constants");
+    let table = current_table_view(
+        "NYH1927".into(),
+        Some(13),
+        String::from_utf8(current.body.clone()).expect("text"),
+        None,
+        default_settings_json(),
+        "UTC".into(),
+        "2026-11-08".into(),
+        1,
+    )
+    .expect("a current table");
+    assert_ne!(table.rows.len(), 0);
+}
 
 /// `kept` with the Battery's `harcon` and `datums` bodies, as the app stored them a day
 /// earlier.
@@ -356,15 +409,19 @@ fn fetches_without_signal_keep_the_time_of_the_last_one_online() {
 fn kept_metadata_that_computes_nothing_is_not_called_a_computed_tide() {
     let phone = Phone::new();
     let (online, first) = fetch(&phone, now(), Vec::new());
-    assert!(
-        first.cacheable.iter().all(|c| !c.key.contains("harcon")),
-        "the online fetch kept no constants"
-    );
+    // The app lost the constants the online fetch kept.
+    let kept: Vec<CachedResponse> = first
+        .cacheable
+        .iter()
+        .filter(|c| !c.key.contains("harcon"))
+        .cloned()
+        .collect();
+    assert!(kept.len() < first.cacheable.len(), "constants were kept");
     phone.lose_signal();
     // Datums alone, then datums with constants the predictor cannot use: copies answer, but
     // no tide is computed from them.
     for harcon in [None, Some(br#"{"HarmonicConstituents":[]}"#.to_vec())] {
-        let cached = with_kept(&first.cacheable, harcon.clone());
+        let cached = with_kept(&kept, harcon.clone());
         let (s, out) = fetch(&phone, now() + 3_600, cached);
         assert_eq!(s.marine.tide, online.marine.tide, "{harcon:?}");
         let note = offline_note(&out);
@@ -427,6 +484,64 @@ fn a_fetch_that_got_answers_is_not_offline() {
     let (s, out) = fetch(&phone, now(), Vec::new());
     assert!(s.errors.iter().all(|e| !e.message.starts_with("offline:")));
     assert_ne!(out.cacheable.len(), 0);
+}
+
+/// The keys of the constants, datums and offsets in `kept`.
+fn constant_keys(kept: &[CachedResponse]) -> BTreeSet<String> {
+    kept.iter()
+        .filter(|c| c.key.contains("/harcon.json") || c.key.contains("/datums.json"))
+        .map(|c| c.key.clone())
+        .collect()
+}
+
+#[test]
+fn kept_constants_are_asked_again_only_when_a_week_old_or_on_a_refresh() {
+    let phone = Phone::new();
+    let (_, first) = fetch(&phone, now(), Vec::new());
+    let wanted = constant_keys(&first.cacheable);
+    assert_eq!(wanted.len(), 3, "{wanted:?}");
+    // They name the stations only: no position leaves with them.
+    for request in phone.constants_asked(0) {
+        let url = &request.url;
+        assert!(url.starts_with(&format!("{MDAPI}/stations/")), "{url}");
+        let query = url.split_once('?').map_or("", |(_, q)| q);
+        assert!(query == "units=metric" || query == "bin=13", "{url}");
+        assert!(!request.fresh, "{url}");
+    }
+
+    // A day later the copies are recent: the fetch does not ask for them again.
+    let day_later = now() + 86_400;
+    let before = phone.requests();
+    let (_, out) = fetch(&phone, day_later, first.cacheable.clone());
+    assert_eq!(phone.constants_asked(before), Vec::new());
+    assert_eq!(constant_keys(&out.cacheable), BTreeSet::new());
+
+    // A pull to refresh asks for them again, past any cache, and keeps the new copies.
+    let refresh = FetchOptions {
+        refresh_metadata: true,
+        ..OPTIONS
+    };
+    let before = phone.requests();
+    let (_, out) = fetch_with(&phone, day_later, first.cacheable.clone(), refresh);
+    let asked = phone.constants_asked(before);
+    assert_eq!(asked.len(), 3, "{asked:?}");
+    assert!(asked.iter().all(|r| r.fresh), "{asked:?}");
+    assert_eq!(constant_keys(&out.cacheable), wanted);
+    assert!(out.cacheable.iter().all(|c| c.fetched_at == day_later));
+
+    // Copies more than a week old are asked for again.
+    let old: Vec<CachedResponse> = first
+        .cacheable
+        .iter()
+        .map(|c| CachedResponse {
+            fetched_at: now() - 8 * 86_400,
+            ..c.clone()
+        })
+        .collect();
+    let before = phone.requests();
+    let (_, out) = fetch(&phone, now(), old);
+    assert_eq!(phone.constants_asked(before).len(), 3);
+    assert_eq!(constant_keys(&out.cacheable), wanted);
 }
 
 // ---------------------------------------------------------------------------------------------
