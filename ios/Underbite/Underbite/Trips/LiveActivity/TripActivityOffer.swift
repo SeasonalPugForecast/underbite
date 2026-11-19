@@ -45,6 +45,9 @@ private struct TripActivityOffer: ViewModifier {
             }
         }
         .task(id: "\(view.hashValue) \(checks)") { await reconsider() }
+        #if DEBUG
+            .tripActivityPreviewOnLaunch()
+        #endif
     }
 
     /// Builds today's content off the main actor and updates the offer, and the running
