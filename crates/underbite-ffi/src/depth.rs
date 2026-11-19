@@ -178,17 +178,20 @@ impl DemId {
     }
 }
 
-/// A box of four edges, checked and clamped to the world.
+/// A box of four edges, checked, clamped to the world and rounded outward to two decimals.
 fn view_box(west: f64, south: f64, east: f64, north: f64) -> Result<Bbox, MapError> {
     if ![west, south, east, north].iter().all(|v| v.is_finite()) || west >= east || south >= north {
         return Err(invalid("a view needs west < east and south < north"));
     }
-    Ok(Bbox {
+    // The view may be centred on a saved spot: it is kept to two decimals, rounded outward so
+    // that it still covers what is on screen, and the same view asks for the same area.
+    underbite_providers::species::request_box(Bbox {
         west: west.clamp(-180.0, 180.0),
         south: south.clamp(-85.0, 85.0),
         east: east.clamp(-180.0, 180.0),
         north: north.clamp(-85.0, 85.0),
     })
+    .ok_or_else(|| invalid("a view needs west < east and south < north"))
 }
 
 /// A busy or failing service the app may ask again later, else what was wrong.
@@ -246,8 +249,8 @@ impl GridStore {
     /// The request for the elevation of a view (`west`, `south`, `east`, `north` in degrees at
     /// `zoom`), for contours and the inspector: one image with cells of about a screen pixel, at
     /// most 512 pixels a side and a view of at most five degrees. None when the store holds the
-    /// area already. The box is kept to millionths of a degree so that the same view asks for
-    /// the same area.
+    /// area already. The box is rounded outward to hundredths of a degree so that the same view asks
+    /// for the same area.
     pub fn dem_area_request(
         &self,
         west: f64,
