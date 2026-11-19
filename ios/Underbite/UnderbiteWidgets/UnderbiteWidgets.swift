@@ -12,6 +12,7 @@ struct UnderbiteWidgets: WidgetBundle {
         FlowWidget()
         SnackWidget()
         NextTripWidget()
+        TripLiveActivity()
     }
 }
 
