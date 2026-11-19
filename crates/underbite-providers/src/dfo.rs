@@ -504,21 +504,29 @@ pub fn plan_with(
     };
     let interval = Some(Resolution::FifteenMinutes);
     let interval_days = Resolution::FifteenMinutes.max_days();
-    let specs = [
-        (Code::HighLow, DfoResource::TideHighLow, None, MAX_HILO_DAYS),
-        (
-            Code::Predicted,
-            DfoResource::TideCurve,
-            interval,
-            interval_days,
-        ),
-        (
-            Code::Observed,
-            DfoResource::WaterLevel,
-            interval,
-            interval_days,
-        ),
-    ];
+    // A gauge without predictions (a lake or a river) answers 404 for `wlp-hilo` and `wlp`:
+    // the station record says which kind it is, so only the series it has are requested.
+    let predicts = station.kind != StationKind::WaterLevel;
+    let observed_spec = (
+        Code::Observed,
+        DfoResource::WaterLevel,
+        interval,
+        interval_days,
+    );
+    let specs = if predicts {
+        vec![
+            (Code::HighLow, DfoResource::TideHighLow, None, MAX_HILO_DAYS),
+            (
+                Code::Predicted,
+                DfoResource::TideCurve,
+                interval,
+                interval_days,
+            ),
+            observed_spec,
+        ]
+    } else {
+        vec![observed_spec]
+    };
     let mut requests = Vec::new();
     for (code, resource, resolution, max_days) in specs {
         let observed = code == Code::Observed;
@@ -545,7 +553,12 @@ pub fn plan_with(
             if let Some(carry) = &carry {
                 request = request.with_carry(carry.clone());
             }
-            if code != Code::HighLow {
+            let required = if predicts {
+                code == Code::HighLow
+            } else {
+                observed
+            };
+            if !required {
                 request = request.optional();
             }
             requests.push(request);
@@ -1058,6 +1071,28 @@ mod tests {
                 .all(|r| r.target.datum == Some(VerticalDatum::ChsChartDatum))
         );
         assert!(requests.iter().all(|r| r.carry().is_none()));
+    }
+
+    #[test]
+    fn plan_for_a_lake_gauge_asks_only_for_observed_levels() {
+        let mut t = target(DAY0, DAY0 + DAY, None);
+        if let Place::Station { station, .. } = &mut t.place {
+            station.id = "5cebf1e43d0f4a073c4bc3e5".into();
+            station.kind = StationKind::WaterLevel;
+        }
+        let requests = plan_with(&t, &Requirements::default(), &ctx(), None, map).expect("plan");
+        assert_eq!(requests.len(), 1);
+        assert!(
+            requests
+                .iter()
+                .all(|r| r.url.contains("time-series-code=wlo"))
+        );
+        assert!(requests.iter().all(|r| r.required && r.metered));
+        assert!(
+            requests
+                .iter()
+                .all(|r| !r.url.contains("wlp") && r.url.contains("5cebf1e43d0f4a073c4bc3e5"))
+        );
     }
 
     #[test]
