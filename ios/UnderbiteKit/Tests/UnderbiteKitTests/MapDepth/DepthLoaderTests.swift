@@ -123,7 +123,7 @@ final class DepthLoaderTests: XCTestCase {
         XCTAssertEqual(host.urls.count, 1)
         let url = try XCTUnwrap(host.urls.first)
         XCTAssertTrue(url.contains("DEM_global_mosaic/ImageServer/exportImage"), url)
-        XCTAssertTrue(url.contains("bbox=-74.18,40.396,-73.92,40.604"), url)
+        XCTAssertTrue(url.contains("bbox=-74.18,40.39,-73.92,40.61"), url)
         let area = DepthArea.around(bay)
         XCTAssertEqual(states, [.loading(area), .ready(area)])
         XCTAssertEqual(store.blockCount(), 1)

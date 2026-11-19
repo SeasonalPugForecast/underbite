@@ -186,9 +186,18 @@ final class StructureTests: XCTestCase {
         XCTAssertTrue(urls.contains { $0.contains("enc_harbour/MapServer/33/query") })
         XCTAssertTrue(urls.contains { $0.contains("enc_harbour/MapServer/34/query") })
         XCTAssertFalse(urls.contains { $0.contains("MapServer/32/") || $0.contains("MapServer/158/") })
-        // Asked for the box, not the view.
+        // Asked for the box, not the view, rounded outward to hundredths of a degree.
         let box = StructureBox.around(bay, zoom: 13)
-        XCTAssertTrue(urls[1].contains(String(format: "%.6f", box.west)), urls[1])
+        let sent = try XCTUnwrap(
+            urls[1].components(separatedBy: CharacterSet(charactersIn: "?&"))
+                .first { $0.hasPrefix("geometry=") }?
+                .dropFirst("geometry=".count).split(separator: ",").map { String($0) })
+        XCTAssertEqual(sent.count, 4, urls[1])
+        XCTAssertTrue(sent.allSatisfy { ($0.split(separator: ".").last?.count ?? 0) <= 2 }, urls[1])
+        let edges = sent.compactMap(Double.init)
+        XCTAssertTrue(
+            edges[0] <= box.west && edges[1] <= box.south && edges[2] >= box.east
+                && edges[3] >= box.north, urls[1])
         // Five wrecks and five obstructions; the full pages asked a second page each.
         XCTAssertEqual(loader.points.count, 10)
         XCTAssertEqual(loader.points.filter { $0.kind == .wreck }.count, 5)
