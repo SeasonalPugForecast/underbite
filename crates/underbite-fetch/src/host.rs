@@ -262,10 +262,11 @@ pub(crate) struct Driver<'h, H> {
 impl<'h, H: FetchHost> Driver<'h, H> {
     /// A driver at `now`, with the ledger the host stored (an empty one when it has none).
     pub(crate) async fn new(host: &'h H, now: UnixTime, allow_metered: bool) -> Self {
-        let ledger = load::<UsageLedger, H>(host, store::USAGE, store::LEDGER_KEY)
+        let mut ledger = load::<UsageLedger, H>(host, store::USAGE, store::LEDGER_KEY)
             .await
             .map(|stored| stored.value)
             .unwrap_or_default();
+        ledger.drop_distant_pauses(now);
         Self {
             host,
             now,
@@ -525,6 +526,22 @@ mod tests {
         })
         .expect_err("not saved");
         assert!(err.starts_with("the call ledger was not saved: "), "{err}");
+    }
+
+    #[test]
+    fn a_stored_pause_far_ahead_of_the_clock_is_dropped_on_load() {
+        let host = MemoryHost::default();
+        pollster::block_on(async {
+            let driver = Driver::new(&host, now(), true).await;
+            let far = UnixTime(now().0 + 10 * 86_400);
+            driver.usage.with(|l| l.pause_until(&SourceId::USGS, far));
+            driver.save_usage().await.expect("saved");
+            let again = Driver::new(&host, now(), true).await;
+            assert_eq!(
+                again.usage.snapshot().paused_until(&SourceId::USGS, now()),
+                None
+            );
+        });
     }
 
     /// A USGS request that costs a call.

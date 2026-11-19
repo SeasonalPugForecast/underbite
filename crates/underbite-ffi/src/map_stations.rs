@@ -471,11 +471,15 @@ impl Link<'_> {
 
     fn ledger(&mut self) -> &mut UsageLedger {
         let host = self.host;
+        let now = self.now;
         self.ledger.get_or_insert_with(|| {
-            host.load(store::USAGE.to_owned(), store::LEDGER_KEY.to_owned())
+            let mut ledger = host
+                .load(store::USAGE.to_owned(), store::LEDGER_KEY.to_owned())
                 .and_then(|text| serde_json::from_str::<Stored<UsageLedger>>(&text).ok())
                 .map(|stored| stored.value)
-                .unwrap_or_default()
+                .unwrap_or_default();
+            ledger.drop_distant_pauses(now);
+            ledger
         })
     }
 

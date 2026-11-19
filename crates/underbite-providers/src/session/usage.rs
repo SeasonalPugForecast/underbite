@@ -26,6 +26,11 @@ const DAY: i64 = 86_400;
 /// river spot is not left without data for the rest of the hour.
 pub const DEFAULT_RATE_LIMIT_PAUSE_S: u32 = 600;
 
+/// The longest a pool is paused after a 429, seconds: a day. A larger `Retry-After` is cut to
+/// it, and a stored pause further ahead of the clock than this is dropped on load (it was
+/// saved with a wrong clock), so one bad answer cannot silence a source for good.
+pub const MAX_RATE_LIMIT_PAUSE_S: u32 = 86_400;
+
 /// The counter every Open-Meteo API counts against.
 pub const OPEN_METEO: SourceId = SourceId::from_static("open-meteo");
 
@@ -261,9 +266,12 @@ impl UsageLedger {
     }
 
     /// Records a 429 from `source`: its pool is paused for the response's `Retry-After`, or
-    /// for [`DEFAULT_RATE_LIMIT_PAUSE_S`] when it names none.
+    /// for [`DEFAULT_RATE_LIMIT_PAUSE_S`] when it names none, and never beyond
+    /// [`MAX_RATE_LIMIT_PAUSE_S`].
     pub fn rate_limited(&mut self, source: &SourceId, retry_after_s: Option<u32>, now: UnixTime) {
-        let wait = retry_after_s.unwrap_or(DEFAULT_RATE_LIMIT_PAUSE_S);
+        let wait = retry_after_s
+            .unwrap_or(DEFAULT_RATE_LIMIT_PAUSE_S)
+            .min(MAX_RATE_LIMIT_PAUSE_S);
         self.pause_until(source, UnixTime(now.0.saturating_add(i64::from(wait))));
     }
 
@@ -282,6 +290,14 @@ impl UsageLedger {
         if response.status == 429 {
             self.rate_limited(source, response.retry_after_s, now);
         }
+    }
+
+    /// Drops the pauses that end more than [`MAX_RATE_LIMIT_PAUSE_S`] after `now`: none this
+    /// ledger set can be that long, so they came from a clock that was wrong. For a ledger
+    /// just loaded.
+    pub fn drop_distant_pauses(&mut self, now: UnixTime) {
+        let latest = now.0.saturating_add(i64::from(MAX_RATE_LIMIT_PAUSE_S));
+        self.paused.retain(|_, until| until.0 <= latest);
     }
 
     /// When `source`'s pool may be asked again, if it is paused at `now`.
@@ -439,6 +455,25 @@ mod tests {
             ledger.try_spend(&USGS, hourly(1_000), NOON),
             Err(QuotaError::Paused { .. })
         ));
+    }
+
+    #[test]
+    fn a_huge_retry_after_is_cut_to_the_longest_pause() {
+        let mut ledger = UsageLedger::new();
+        ledger.rate_limited(&USGS, Some(u32::MAX), NOON);
+        let until = UnixTime(NOON.0 + i64::from(MAX_RATE_LIMIT_PAUSE_S));
+        assert_eq!(ledger.paused_until(&USGS, NOON), Some(until));
+    }
+
+    #[test]
+    fn a_loaded_pause_beyond_the_longest_is_dropped() {
+        let mut ledger = UsageLedger::new();
+        let edge = UnixTime(NOON.0 + i64::from(MAX_RATE_LIMIT_PAUSE_S));
+        ledger.pause_until(&USGS, edge);
+        ledger.pause_until(&SourceId::COOPS, UnixTime(edge.0 + 1));
+        ledger.drop_distant_pauses(NOON);
+        assert_eq!(ledger.paused_until(&USGS, NOON), Some(edge));
+        assert_eq!(ledger.paused_until(&SourceId::COOPS, NOON), None);
     }
 
     #[test]
