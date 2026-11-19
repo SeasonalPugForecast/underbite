@@ -148,6 +148,15 @@ fn bad_elevation_calls_are_refused_and_failures_come_back_as_errors() {
             .dem_area_request(-80.0, 35.0, -70.0, 45.0, 6.0)
             .is_err()
     );
+    // The span is the view's own: 4.995 degrees rounds outward to 5.01 and is still accepted,
+    // and a view of 5.01 is not.
+    assert!(
+        store
+            .dem_area_request(0.0051, 40.0, 5.0001, 40.5, 3.0)
+            .unwrap()
+            .is_some()
+    );
+    assert!(store.dem_area_request(0.0, 40.0, 5.01, 40.5, 3.0).is_err());
     assert!(
         store
             .add_dem("sst/jplMURSST41/last/40/-74/1".into(), tiff(), NOW)

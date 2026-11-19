@@ -248,7 +248,7 @@ impl GridStore {
 
     /// The request for the elevation of a view (`west`, `south`, `east`, `north` in degrees at
     /// `zoom`), for contours and the inspector: one image with cells of about a screen pixel, at
-    /// most 512 pixels a side and a view of at most five degrees. None when the store holds the
+    /// most 512 pixels a side and a view of at most five degrees (as given, before the rounding). None when the store holds the
     /// area already. The box is rounded outward to hundredths of a degree so that the same view asks
     /// for the same area.
     pub fn dem_area_request(
@@ -260,8 +260,9 @@ impl GridStore {
         zoom: f64,
     ) -> Result<Option<GridRequest>, MapError> {
         let area = view_box(west, south, east, north)?;
-        if area.east - area.west > MAX_AREA_SPAN_DEG || area.north - area.south > MAX_AREA_SPAN_DEG
-        {
+        // The view as given: rounding outward may take a 4.995 degree view past five.
+        let span = (east.min(180.0) - west.max(-180.0)).max(north.min(85.0) - south.max(-85.0));
+        if span > MAX_AREA_SPAN_DEG {
             return Err(invalid("the view is too wide for contours: zoom in"));
         }
         if !zoom.is_finite() {
