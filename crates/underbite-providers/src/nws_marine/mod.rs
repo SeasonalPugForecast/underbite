@@ -16,6 +16,28 @@ use underbite_core::provenance::{Attribution, SourceId};
 use crate::request::{Place, Request, Resource, Response, Target, ZoneTarget};
 use crate::source::{FetchContext, FragmentValue, Fragments, Source, SourceError, check_response};
 
+/// An answer of no data for the lookup of a point outside the API's coverage (404
+/// "InvalidPoint"): nothing there, not a lost endpoint.
+fn outside_coverage(request: &Request, response: &Response<'_>) -> Result<(), SourceError> {
+    if request.resource == Resource::NwsPoint
+        && response.status == 404
+        && is_invalid_point(response.body)
+    {
+        return Err(SourceError::NoData(Some(
+            "the point is outside NWS coverage".into(),
+        )));
+    }
+    Ok(())
+}
+
+/// Whether `body` is the API's `InvalidPoint` problem document.
+fn is_invalid_point(body: &[u8]) -> bool {
+    serde_json::from_slice::<serde_json::Value>(body)
+        .ok()
+        .and_then(|v| v.get("type")?.as_str().map(str::to_owned))
+        .is_some_and(|t| t.ends_with("/problems/InvalidPoint"))
+}
+
 /// Seconds a point or zone lookup may be reused (the API sets one day for `/points`).
 const LOOKUP_AGE_S: u32 = 86_400;
 /// Seconds a zone forecast may be reused.
@@ -117,6 +139,7 @@ impl Source for NwsMarine {
         response: &Response<'_>,
         ctx: &FetchContext,
     ) -> Result<Vec<Request>, SourceError> {
+        outside_coverage(request, response)?;
         let body = check_response(request, response)?;
         let target = &request.target;
         match request.resource {
@@ -192,6 +215,7 @@ impl Source for NwsMarine {
         ctx: &FetchContext,
         out: &mut Fragments,
     ) -> Result<(), SourceError> {
+        outside_coverage(request, response)?;
         // A zone without a forecast endpoint answers 404 "Marine Forecast Not Supported" (or a
         // plain 404): unsupported here, so the session turns to the text products.
         if request.resource == Resource::NwsZoneForecast && response.status == 404 {
@@ -403,7 +427,7 @@ mod tests {
     }
 
     #[test]
-    fn nws_marine_a_point_outside_coverage_is_not_found() {
+    fn nws_marine_a_point_outside_coverage_has_no_data() {
         let plan = NwsMarine
             .plan(&target(), &Requirements::default(), &ctx())
             .unwrap();
@@ -411,7 +435,79 @@ mod tests {
         let err = NwsMarine
             .follow_up(&plan[0], &Response::new(404, &body), &ctx())
             .unwrap_err();
-        assert!(matches!(err, SourceError::NotFound(_)));
+        assert!(matches!(err, SourceError::NoData(_)), "{err:?}");
+
+        // Any other 404 on the lookup is still a missing endpoint.
+        let other = br#"{"type":"https://api.weather.gov/problems/NotFound","title":"Not Found"}"#;
+        for body in [&other[..], b"not json"] {
+            let err = NwsMarine
+                .follow_up(&plan[0], &Response::new(404, body), &ctx())
+                .unwrap_err();
+            assert!(matches!(err, SourceError::NotFound(_)), "{err:?}");
+        }
+    }
+
+    /// Runs a session over the marine forecast and alerts at the test point, answering each URL
+    /// through `reply`; the measurements listed as failed.
+    fn failed_through_a_session(reply: impl Fn(&str) -> (u16, Vec<u8>)) -> Vec<Measurement> {
+        use crate::session::{Chain, Link, Session};
+        use std::collections::BTreeMap;
+        use std::sync::Arc;
+
+        let link = Link {
+            source: Arc::new(NwsMarine),
+            target: target(),
+        };
+        let chains = MEASUREMENTS
+            .iter()
+            .map(|m| {
+                let chain = Chain {
+                    links: vec![link.clone()],
+                    max_age_s: None,
+                };
+                (*m, chain)
+            })
+            .collect::<BTreeMap<_, _>>();
+        let requirements = Requirements {
+            measurements: MEASUREMENTS.into_iter().collect(),
+            ..Requirements::default()
+        };
+        let mut session = Session::new(chains, requirements, ctx());
+        while let Some(request) = session.next_request() {
+            let (status, body) = reply(&request.url);
+            session.on_response(&Response::new(status, &body));
+        }
+        let mut failed: Vec<Measurement> = session
+            .finish(NOW)
+            .errors
+            .iter()
+            .filter_map(|e| e.measurement)
+            .collect();
+        failed.sort();
+        failed
+    }
+
+    #[test]
+    fn nws_marine_a_point_outside_coverage_lists_no_error() {
+        let body = fixture("points-45.0_-30.0-invalid-point.problem.json");
+        let failed = failed_through_a_session(|_| (404, body.clone()));
+        assert_eq!(failed, []);
+    }
+
+    #[test]
+    fn nws_marine_a_zone_product_404_stays_listed() {
+        let point = fixture("points-41.55_-81.72.geo.json");
+        let zones = fixture("zones-point-41.55_-81.72.geo.json");
+        let failed = failed_through_a_session(|url| {
+            if url.contains("/points/") {
+                (200, point.clone())
+            } else if url.contains("/zones?") {
+                (200, zones.clone())
+            } else {
+                (404, fixture("zone-forecast-LEZ146-not-found.problem.json"))
+            }
+        });
+        assert!(failed.contains(&Measurement::MarineForecast), "{failed:?}");
     }
 
     #[test]
