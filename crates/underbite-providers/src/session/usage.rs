@@ -20,6 +20,12 @@ use crate::source::{Budget, Period};
 const HOUR: i64 = 3_600;
 const DAY: i64 = 86_400;
 
+/// How long a pool is paused after a 429 that names no `Retry-After`, seconds. USGS answers
+/// an anonymous caller that asks too much this way, with no `X-RateLimit-*` headers either;
+/// ten minutes is long enough for its limiter to forget a burst and short enough that a
+/// river spot is not left without data for the rest of the hour.
+pub const DEFAULT_RATE_LIMIT_PAUSE_S: u32 = 600;
+
 /// The counter every Open-Meteo API counts against.
 pub const OPEN_METEO: SourceId = SourceId::from_static("open-meteo");
 
@@ -124,6 +130,17 @@ struct Counter {
     /// Start of the period, Unix seconds.
     start: i64,
     used: u32,
+}
+
+/// What a response said about the rate limit.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct ResponseLimits {
+    /// The HTTP status.
+    pub status: u16,
+    /// `Retry-After`, seconds.
+    pub retry_after_s: Option<u32>,
+    /// `X-RateLimit-Remaining`.
+    pub remaining: Option<u32>,
 }
 
 /// Calls spent per pool, each counted in its own period, and pauses sources asked for.
@@ -241,6 +258,30 @@ impl UsageLedger {
     pub fn pause_until(&mut self, source: &SourceId, until: UnixTime) {
         let at = self.paused.entry(pool(source)).or_insert(until);
         *at = (*at).max(until);
+    }
+
+    /// Records a 429 from `source`: its pool is paused for the response's `Retry-After`, or
+    /// for [`DEFAULT_RATE_LIMIT_PAUSE_S`] when it names none.
+    pub fn rate_limited(&mut self, source: &SourceId, retry_after_s: Option<u32>, now: UnixTime) {
+        let wait = retry_after_s.unwrap_or(DEFAULT_RATE_LIMIT_PAUSE_S);
+        self.pause_until(source, UnixTime(now.0.saturating_add(i64::from(wait))));
+    }
+
+    /// Takes in what a response said about the limit: the `remaining` calls it reported
+    /// (under `budget`, when the source has one) and a 429, which pauses the pool.
+    pub fn observe_response(
+        &mut self,
+        source: &SourceId,
+        budget: Option<Budget>,
+        response: ResponseLimits,
+        now: UnixTime,
+    ) {
+        if let (Some(budget), Some(left)) = (budget, response.remaining) {
+            self.observe_remaining(source, budget, left, now);
+        }
+        if response.status == 429 {
+            self.rate_limited(source, response.retry_after_s, now);
+        }
     }
 
     /// When `source`'s pool may be asked again, if it is paused at `now`.
@@ -381,6 +422,46 @@ mod tests {
         assert_eq!(ledger.used(&USGS, NOON), 2);
         ledger.observe_remaining(&USGS, daily(1_000), 0, NOON);
         assert!(ledger.try_spend(&USGS, daily(1_000), NOON).is_err());
+    }
+
+    #[test]
+    fn a_429_without_retry_after_pauses_the_pool_by_default() {
+        let mut ledger = UsageLedger::new();
+        let limits = ResponseLimits {
+            status: 429,
+            ..ResponseLimits::default()
+        };
+        ledger.observe_response(&USGS, Some(hourly(1_000)), limits, NOON);
+        let until = UnixTime(NOON.0 + i64::from(DEFAULT_RATE_LIMIT_PAUSE_S));
+        assert_eq!(ledger.paused_until(&USGS, NOON), Some(until));
+        assert_eq!(ledger.paused_until(&USGS, until), None);
+        assert!(matches!(
+            ledger.try_spend(&USGS, hourly(1_000), NOON),
+            Err(QuotaError::Paused { .. })
+        ));
+    }
+
+    #[test]
+    fn a_429_with_retry_after_pauses_for_that_long_and_other_statuses_do_not_pause() {
+        let mut ledger = UsageLedger::new();
+        let ok = ResponseLimits {
+            status: 200,
+            retry_after_s: Some(900),
+            remaining: Some(990),
+        };
+        ledger.observe_response(&USGS, Some(hourly(1_000)), ok, NOON);
+        assert_eq!(ledger.paused_until(&USGS, NOON), None);
+        assert_eq!(ledger.used(&USGS, NOON), 10);
+        let limited = ResponseLimits {
+            status: 429,
+            retry_after_s: Some(900),
+            remaining: None,
+        };
+        ledger.observe_response(&USGS, Some(hourly(1_000)), limited, NOON);
+        assert_eq!(
+            ledger.paused_until(&USGS, NOON),
+            Some(UnixTime(NOON.0 + 900))
+        );
     }
 
     #[test]

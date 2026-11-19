@@ -38,7 +38,7 @@ use underbite_core::time::UnixTime;
 
 use crate::request::{Place, Request, Resource, Response, Target, redact_url};
 use crate::source::{FetchContext, Fragment, FragmentValue, Fragments, Source, SourceError};
-use usage::{SharedUsage, pool};
+use usage::{ResponseLimits, SharedUsage, pool};
 
 /// One source asked about one place.
 #[derive(Clone)]
@@ -282,15 +282,12 @@ impl Session {
         let id = source.id();
         let now = self.ctx.now;
         if let Some(usage) = &self.usage {
-            usage.with(|ledger| {
-                if let (Some(budget), Some(left)) = (source.budget(), response.rate_limit_remaining)
-                {
-                    ledger.observe_remaining(&id, budget, left, now);
-                }
-                if let (429, Some(wait)) = (response.status, response.retry_after) {
-                    ledger.pause_until(&id, UnixTime(now.0.saturating_add(i64::from(wait))));
-                }
-            });
+            let limits = ResponseLimits {
+                status: response.status,
+                retry_after_s: response.retry_after,
+                remaining: response.rate_limit_remaining,
+            };
+            usage.with(|ledger| ledger.observe_response(&id, source.budget(), limits, now));
         }
         let mut out = Fragments::new();
         let result = if response.status == 429 {
@@ -1500,6 +1497,33 @@ mod tests {
                 .paused_until(&SourceId::OPEN_METEO_MARINE, NOW),
             Some(UnixTime(NOW.0 + 3_600))
         );
+    }
+
+    #[test]
+    fn session_pauses_a_pool_by_default_on_a_429_without_retry_after() {
+        let (usgs, coops) = usgs_and_coops();
+        let chains = BTreeMap::from([(WaterTemperature, temperature_chain(&usgs, &coops))]);
+        let shared = SharedUsage::default();
+        let mut s = session(chains).with_usage(shared.clone());
+        let mut urls = Vec::new();
+        while let Some(request) = s.next_request() {
+            let url = request.url.clone();
+            let ok = body("water_temperature", 60, 8.0);
+            let response = if url.contains("usgs") {
+                Response::new(429, b"too many requests")
+            } else {
+                Response::new(200, ok.as_bytes())
+            };
+            s.on_response(&response);
+            urls.push(url);
+        }
+        assert_eq!(urls.len(), 2, "{urls:?}");
+        let until = UnixTime(NOW.0 + i64::from(usage::DEFAULT_RATE_LIMIT_PAUSE_S));
+        assert_eq!(
+            shared.snapshot().paused_until(&SourceId::USGS, NOW),
+            Some(until)
+        );
+        assert_eq!(shared.snapshot().paused_until(&SourceId::COOPS, NOW), None);
     }
 
     #[test]
