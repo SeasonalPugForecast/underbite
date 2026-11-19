@@ -804,7 +804,7 @@ final class SpotStore {
                     change(id) { $0.waterType = hint.waterType }
                 }
             }
-            switch FetchStanding(outcome.errors) {
+            switch FetchStanding(outcome) {
             case .online:
                 held.snapshotJSON = outcome.snapshotJson
                 held.lastSuccess = now
@@ -831,7 +831,7 @@ final class SpotStore {
                 // what was offered: the pins of a station it no longer uses are released.
                 held.metadataKeys = await metadata.keep(
                     outcome.cacheable, spot: id, kept: kept, now: now,
-                    replacing: refreshMetadata && FetchStanding(outcome.errors) == .online)
+                    replacing: refreshMetadata && FetchStanding(outcome) == .online)
                 // Deleted while the metadata was written: nothing of it stays.
                 guard self.spot(id) != nil else {
                     await metadata.forget(spot: id)

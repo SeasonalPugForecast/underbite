@@ -99,20 +99,31 @@ final class OfflineConditionsTests: XCTestCase {
             errors: [
                 Self.issue("coops", "transport", "The Internet connection appears to be offline."),
                 Self.issue("offline", "stale", Self.note),
-            ], suggestion: nil)
+            ], suggestion: nil, unanswered: true)
     }
 
     // MARK: - Reading an outcome
 
     func testAnOutcomeIsOnlineOfflineOrUnreachable() {
-        XCTAssertEqual(FetchStanding([]), .online)
+        func outcome(_ errors: [SourceIssue], unanswered: Bool = false) -> SpotFetchOutcome {
+            SpotFetchOutcome(
+                snapshotJson: "{}", errors: errors, suggestion: nil, unanswered: unanswered)
+        }
+        XCTAssertEqual(FetchStanding(outcome([])), .online)
         XCTAssertEqual(
-            FetchStanding([Self.issue("usgs", "rate_limited", "429")]), .online,
+            FetchStanding(outcome([Self.issue("usgs", "rate_limited", "429")])), .online,
             "a source that failed while others answered")
-        XCTAssertEqual(FetchStanding(Self.offline().errors), .offline(note: Self.note))
         XCTAssertEqual(
-            FetchStanding([Self.issue("coops", "transport", "no route")]),
+            FetchStanding(outcome([Self.issue("coops", "transport", "no route")])), .online,
+            "the core's flag decides, not the kind of error")
+        XCTAssertEqual(FetchStanding(Self.offline()), .offline(note: Self.note))
+        XCTAssertEqual(
+            FetchStanding(
+                outcome([Self.issue("coops", "transport", "no route")], unanswered: true)),
             .unreachable(message: "no route"))
+        XCTAssertEqual(
+            FetchStanding(outcome([Self.issue("coops", "parse", "a web page")], unanswered: true)),
+            .unreachable(message: "a web page"), "a captive portal's page is not data")
     }
 
     // MARK: - The store
@@ -195,7 +206,8 @@ final class OfflineConditionsTests: XCTestCase {
                 ? Self.online(at: clock.value)
                 : SpotFetchOutcome(
                     snapshotJson: "empty",
-                    errors: [Self.issue("coops", "transport", "no route")], suggestion: nil)
+                    errors: [Self.issue("coops", "transport", "no route")], suggestion: nil,
+                    unanswered: true)
         }
         await s.refresh()
         signal.value = false
@@ -204,6 +216,48 @@ final class OfflineConditionsTests: XCTestCase {
         XCTAssertEqual(held.snapshotJSON, "online-\(start)")
         XCTAssertEqual(held.error, "no route")
         XCTAssertNil(s.offlineNote)
+    }
+
+    func testAPortalAnsweringANewSpotIsOfflineAndRetriedWhenTheRouteReturns() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let portal = Shared(true)
+        let s = store(clock: clock, calls: calls) { _ in
+            portal.value
+                ? SpotFetchOutcome(
+                    snapshotJson: "{}",
+                    errors: [Self.issue("coops", "parse", "an unexpected web page")],
+                    suggestion: nil, unanswered: true)
+                : Self.online(at: clock.value)
+        }
+        let id = SeedSpots.battery.id
+        await s.refresh()
+        let held = s.cache(id)
+        XCTAssertNil(held.lastSuccess, "nothing answered: not a success")
+        XCTAssertEqual(held.lastAttempt, start)
+        XCTAssertEqual(held.error, "an unexpected web page")
+        XCTAssertNil(held.snapshotJSON)
+
+        portal.value = false
+        await s.refreshWaiting()
+        XCTAssertEqual(calls.value.count, 2, "retried")
+        XCTAssertEqual(s.cache(id).lastSuccess, clock.value)
+        XCTAssertNil(s.cache(id).lastAttempt)
+    }
+
+    func testAnUnansweredFetchWithACachedSnapshotShowsTheNote() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let portal = Shared(false)
+        let s = store(clock: clock, calls: calls) { _ in
+            portal.value ? Self.offline() : Self.online(at: clock.value)
+        }
+        await s.refresh()
+        portal.value = true
+        clock.value = start + 7_200
+        await s.refresh()
+        XCTAssertEqual(s.offlineNote, Self.note)
+        XCTAssertEqual(s.cache(SeedSpots.battery.id).lastSuccess, start)
     }
 
     func testDeletingTheSpotLetsItsMetadataGo() async throws {

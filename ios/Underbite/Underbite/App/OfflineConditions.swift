@@ -17,11 +17,13 @@ nonisolated enum FetchStanding: Equatable, Sendable {
     /// The source the core files its offline note under.
     static let offlineSource = "offline"
 
-    init(_ errors: [SourceIssue]) {
-        if let note = errors.first(where: { $0.source == Self.offlineSource }) {
+    /// The core says whether anything answered (`unanswered`: requests were made and none got
+    /// data, a captive portal's page included); the app does not guess from the error kinds.
+    init(_ outcome: SpotFetchOutcome) {
+        if let note = outcome.errors.first(where: { $0.source == Self.offlineSource }) {
             self = .offline(note: note.message)
-        } else if let first = errors.first, errors.allSatisfy({ $0.kind == "transport" }) {
-            self = .unreachable(message: first.message)
+        } else if outcome.unanswered {
+            self = .unreachable(message: outcome.errors.first?.message ?? "")
         } else {
             self = .online
         }

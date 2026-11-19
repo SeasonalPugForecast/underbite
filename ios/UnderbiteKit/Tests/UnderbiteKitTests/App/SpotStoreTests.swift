@@ -269,7 +269,7 @@ final class SpotStoreTests: XCTestCase {
                     errors: [
                         SourceIssue(
                             source: "coops", measurement: nil, kind: "transport", message: "offline")
-                    ], suggestion: nil)
+                    ], suggestion: nil, unanswered: true)
             }
             return SpotFetchOutcome(snapshotJson: "old", errors: [], suggestion: nil)
         })

@@ -212,10 +212,8 @@ nonisolated private final class FetchLog: @unchecked Sendable {
     func keep(_ id: String, whole: Bool, _ outcome: SpotFetchOutcome) {
         lock.withLock {
             order.append((id, whole))
-            // Every source unreachable: the phone is offline, and the older snapshot stays.
-            let offline =
-                !outcome.errors.isEmpty && outcome.errors.allSatisfy { $0.kind == "transport" }
-            if !offline { kept[id] = outcome.snapshotJson }
+            // Nothing answered (the core says so): the phone is offline, and the older snapshot stays.
+            if !outcome.unanswered { kept[id] = outcome.snapshotJson }
         }
     }
 
