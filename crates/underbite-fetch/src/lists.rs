@@ -26,9 +26,12 @@ use crate::host::{Driver, FetchHost};
 use crate::source_error;
 use crate::store::{self, COOPS_STATION_LIST_TTL_S, STATION_LIST_TTL_S, spot_key};
 
-/// Half the side of the USGS site search box, degrees. The box is centred on the spot's cell of
-/// [`USGS_CELL_DECIMALS`] decimals, up to 0.05 degrees from the spot, so it reaches at least
-/// 25 km every way.
+/// Half the side of the USGS site search box, degrees, the same in latitude and longitude. The
+/// box is centred on the spot's cell of [`USGS_CELL_DECIMALS`] decimals of the spot already
+/// rounded to the configured precision, so its centre is up to about 0.055 degrees from the
+/// spot and the box reaches at least 0.245 degrees every way: about 27 km north and south, and
+/// 27 km east and west only at the equator, since a degree of longitude shrinks with the cosine
+/// of the latitude (about 21 km at 40 degrees, 14 km at 60).
 const USGS_HALF_WIDTH_DEG: f64 = 0.3;
 
 /// Decimals of the point the USGS site box is centred on: spots in the same tenth of a degree
