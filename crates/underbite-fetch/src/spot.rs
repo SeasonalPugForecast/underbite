@@ -336,32 +336,28 @@ mod tests {
         assert_eq!(s.fetched_at, now());
 
         // The CO-OPS stations' water temperature and pressure end on 7 November, older than 180
-        // minutes, and they report no wind; each is recorded before the buoys answer, and the
-        // Battery's own barometer answers through NDBC.
+        // minutes: each is recorded before the buoys answer, and the Battery's own barometer
+        // answers through NDBC. They report no wind, which is not an error: nothing is listed
+        // for it.
         let coops = |m, kind| ("coops".to_string(), Some(m), kind);
-        let (stale, no_wind, old_pressure) = (
+        let (stale, old_pressure) = (
             coops(M::WaterTemperature, SourceErrorKind::Stale),
-            coops(M::ObservedWind, SourceErrorKind::NoData),
             coops(M::ObservedPressure, SourceErrorKind::Stale),
         );
         let mut expected = vec![stale; 2];
-        expected.extend([no_wind.clone(), no_wind.clone(), no_wind]);
         expected.extend(vec![old_pressure; 3]);
         assert_eq!(errors(s), expected);
         let pressure = s.marine.observed_pressure_hpa.as_ref().expect("pressure");
         assert_eq!(station_of(pressure), "ndbc batn6");
-        // The sources card names the CO-OPS stations' missing wind once, with the count.
         let card = sources_card(s);
-        let wind: Vec<&str> = card
-            .full
-            .errors
-            .iter()
-            .filter(|e| e.source == "NOAA CO-OPS" && e.measurement.as_deref() == Some("Wind"))
-            .map(|e| e.message.as_str())
-            .collect();
-        assert_eq!(wind.len(), 1, "{:#?}", card.full.errors);
-        assert!(wind[0].ends_with(" (2 more)"), "{}", wind[0]);
-        assert_eq!(card.full.errors.len(), 3, "{:#?}", card.full.errors);
+        assert!(
+            card.full
+                .errors
+                .iter()
+                .all(|e| e.measurement.as_deref() != Some("Wind")),
+            "{:#?}",
+            card.full.errors
+        );
 
         let credited: BTreeSet<&str> = s.attribution.iter().map(|a| a.source.as_str()).collect();
         for source in [
@@ -522,15 +518,15 @@ mod tests {
         assert!(
             matches!(&link.place, LinkPlace::Station { station, .. } if station.id == "USGS-01375000")
         );
-        // The one expected error: the buoy list's Haverstraw station has no data file (it
-        // reports water quality only). No forecast gauge is asked: none is on the Croton.
-        assert_eq!(
-            errors(s),
-            [(
-                "ndbc".into(),
-                Some(M::WaterTemperature),
-                SourceErrorKind::NotFound
-            )]
+        // No buoy is asked about a river, so nothing fails; no forecast gauge is asked either:
+        // none is on the Croton.
+        assert_eq!(errors(s), []);
+        assert!(
+            host.seen()
+                .iter()
+                .all(|u| !u.contains("ndbc.noaa.gov/data")),
+            "{:#?}",
+            host.seen()
         );
         let discharge = s.water.discharge_m3s.as_ref().expect("discharge");
         assert_eq!(station_of(discharge), "usgs USGS-01375000");

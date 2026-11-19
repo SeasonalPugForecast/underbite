@@ -7909,7 +7909,7 @@ expression: json
             "text": "Not for navigation."
           }
         ],
-        "accessibility": "Sources: NOAA NDBC, NOAA CO-OPS, Open-Meteo Marine, National Weather Service, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, Open-Meteo model providers. coops: no recent data, used ndbc (1 more) coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc (2 more) coops: no recent data, used ndbc (2 more)"
+        "accessibility": "Sources: NOAA NDBC, NOAA CO-OPS, Open-Meteo Marine, National Weather Service, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, Open-Meteo model providers. coops: no recent data, used ndbc (1 more) coops: no recent data, used ndbc (2 more)"
       },
       "compact": {
         "headline": {
@@ -7919,7 +7919,7 @@ expression: json
         },
         "lines": [
           "5 stations",
-          "3 problems"
+          "2 problems"
         ],
         "spark": []
       },
@@ -8053,12 +8053,6 @@ expression: json
             "measurement": "Water temperature",
             "kind": "Out of date",
             "message": "coops: no recent data, used ndbc (1 more)"
-          },
-          {
-            "source": "NOAA CO-OPS",
-            "measurement": "Wind",
-            "kind": "No data",
-            "message": "coops: no data: No data was found. This product may not be offered at this station at the requested time., used ndbc (2 more)"
           },
           {
             "source": "NOAA CO-OPS",

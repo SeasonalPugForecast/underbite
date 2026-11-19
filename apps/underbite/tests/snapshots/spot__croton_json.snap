@@ -9164,7 +9164,7 @@ expression: json
             "text": "Provisional data, subject to revision."
           }
         ],
-        "accessibility": "Sources: USGS, NYS DEC stocking, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, USGS. ndbc: not found"
+        "accessibility": "Sources: USGS, NYS DEC stocking, open-meteo, open-meteo-storm, USGS 3DHP, Open-Meteo, USGS."
       },
       "compact": {
         "headline": {
@@ -9173,8 +9173,7 @@ expression: json
           "unit": "sources"
         },
         "lines": [
-          "2 stations",
-          "1 problem"
+          "2 stations"
         ],
         "spark": []
       },
@@ -9251,14 +9250,7 @@ expression: json
             }
           }
         ],
-        "errors": [
-          {
-            "source": "NOAA NDBC",
-            "measurement": "Water temperature",
-            "kind": "Not found",
-            "message": "ndbc: not found"
-          }
-        ]
+        "errors": []
       }
     }
   ],

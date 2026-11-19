@@ -353,6 +353,9 @@ impl Session {
         }
         for (m, track) in &self.tracks {
             for (source, error) in &track.failures {
+                if is_absence(*m, error) {
+                    continue;
+                }
                 let mut e = error.to_model(source.clone(), Some(*m));
                 e.message = match out.sources.get(m) {
                     Some(used) => format!("{source}: {}, used {used}", e.message),
@@ -645,6 +648,28 @@ impl Session {
             outcome,
         });
     }
+}
+
+/// Whether a link's failure only says the source has nothing of `measurement` for this place:
+/// no official forecast at a gauge, no model values or marine zone inland, a station without
+/// the wind, pressure or temperature sensor its list suggested. Nothing failed, so the
+/// snapshot does not list it; a card without a value already says it is unavailable. Rate
+/// limits, transport errors and server errors never count, and a tide, current, flow or level
+/// that is missing stays an error.
+fn is_absence(measurement: Measurement, error: &SourceError) -> bool {
+    use Measurement as M;
+    matches!(error, SourceError::NoData(_) | SourceError::NotFound(_))
+        && matches!(
+            measurement,
+            M::FlowForecast
+                | M::FloodCategories
+                | M::WavesForecast
+                | M::MarineForecast
+                | M::MarineAlerts
+                | M::ObservedWind
+                | M::ObservedPressure
+                | M::WaterTemperature
+        )
 }
 
 /// Whether two targets ask about the same place, window and datum.
@@ -1242,15 +1267,8 @@ mod tests {
         assert_eq!(out.sources[&ObservedPressure], SourceId::NDBC);
         let pressure = out.marine.observed_pressure_hpa.unwrap();
         assert_eq!(pressure.samples()[0].value, 1_013.0);
-        assert_eq!(out.errors.len(), 1, "{:?}", out.errors);
-        assert_eq!(out.errors[0].measurement, Some(ObservedPressure));
-        assert_eq!(out.errors[0].kind, SourceErrorKind::NoData);
-        assert!(
-            out.errors[0].message.starts_with("coops: ")
-                && out.errors[0].message.ends_with(", used ndbc"),
-            "{}",
-            out.errors[0].message
-        );
+        // A station without the product is not a failure: nothing is listed.
+        assert_eq!(out.errors, Vec::<ModelSourceError>::new());
         let stations: Vec<&str> = out.stations.iter().map(|s| s.id.as_str()).collect();
         assert_eq!(stations, ["8516945", "KPTN6"]);
     }
@@ -1524,6 +1542,35 @@ mod tests {
             Some(until)
         );
         assert_eq!(shared.snapshot().paused_until(&SourceId::COOPS, NOW), None);
+    }
+
+    #[test]
+    fn only_an_answer_without_values_is_an_absence_and_only_for_optional_products() {
+        use Measurement::{
+            Discharge, FlowForecast, MarineAlerts, ObservedWind, Tide, WavesForecast,
+        };
+        let none = SourceError::NoData(Some("the forecast has no values".into()));
+        let lost = SourceError::NotFound(None);
+        for m in [FlowForecast, WavesForecast, MarineAlerts, ObservedWind] {
+            assert!(is_absence(m, &none), "{m:?}");
+            assert!(is_absence(m, &lost), "{m:?}");
+        }
+        // A missing tide or discharge is told.
+        assert!(!is_absence(Tide, &none));
+        assert!(!is_absence(Discharge, &lost));
+        // Failures stay errors whatever the product.
+        let limited = SourceError::RateLimited {
+            retry_after_s: None,
+        };
+        let down = SourceError::Status {
+            status: 503,
+            message: None,
+        };
+        let cut = SourceError::Transport("reset".into());
+        for e in [limited, down, cut] {
+            assert!(!is_absence(FlowForecast, &e), "{e:?}");
+            assert!(!is_absence(ObservedWind, &e), "{e:?}");
+        }
     }
 
     #[test]

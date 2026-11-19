@@ -72,6 +72,9 @@ const GREAT_LAKES_ONLY: [SourceId; 1] = [SourceId::GLERL];
 fn fits_water(source: &SourceId, water: WaterType) -> bool {
     if MARINE_ONLY.contains(source) {
         is_marine(water)
+    } else if *source == SourceId::NDBC {
+        // A buoy within reach of a stream or a pond is on another water.
+        !matches!(water, WaterType::RiverStream | WaterType::Pond)
     } else if GREAT_LAKES_ONLY.contains(source) {
         water == WaterType::GreatLakes
     } else if *source == SourceId::CYAN {
@@ -446,9 +449,16 @@ mod tests {
             .iter()
             .map(SourceId::as_str)
             .collect();
-        assert_eq!(names, ["usgs", "coops", "ndbc"]);
+        // A buoy within reach of a stream is on other water.
+        assert_eq!(names, ["usgs", "coops"]);
         assert_eq!(specs[&M::FloodCategories].sources, [SourceId::NWPS]);
         assert_eq!(specs[&M::Discharge].sources, [SourceId::USGS]);
+        let wanted = Requirements {
+            measurements: BTreeSet::from([M::WaterTemperature]),
+            ..Requirements::default()
+        };
+        let pond = chain_specs(&config.sources, &wanted, WaterType::Pond);
+        assert!(!pond[&M::WaterTemperature].sources.contains(&SourceId::NDBC));
 
         // A gridded marine model is never asked about inland water.
         let mut sst = config.sources.clone();
