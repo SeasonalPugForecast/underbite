@@ -19,7 +19,7 @@ struct RootTabs: View {
                 MapTab().connectivityBanner()
             }
             Tab("Spots", systemImage: "mappin.and.ellipse", value: AppTab.spots) {
-                SpotsView().connectivityBanner()
+                SpotsView().connectivityBanner(.shownSpot)
             }
             Tab("Trips", systemImage: "calendar", value: AppTab.trips) {
                 TripsTab().connectivityBanner()

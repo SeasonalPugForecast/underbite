@@ -62,15 +62,43 @@ nonisolated struct SpotMetadata: Sendable {
         return out
     }
 
+    /// The directory of the station a station file belongs to (`.../stations/8518750`), none for
+    /// anything else.
+    static func stationDirectory(_ key: String) -> String? {
+        guard let path = key.split(separator: "?", maxSplits: 1).first,
+            let marker = path.range(of: "/stations/"),
+            let end = path[marker.upperBound...].firstIndex(of: "/")
+        else { return nil }
+        return String(path[..<end])
+    }
+
     /// Keeps the responses a fetch of spot `id` offered, pinned to the spot, and returns the
-    /// keys to pass back next time: those kept before and the new ones. The core offers only what
-    /// it asked for again, so every offered copy replaces the one under its key.
-    func keep(_ offered: [CachedResponse], spot id: String, kept: [String], now: Int64) async
-        -> [String]
-    {
+    /// keys to pass back next time. The core offers only what it asked for again, so every
+    /// offered copy replaces the one under its key.
+    ///
+    /// Normally the keys kept before stay, and the new ones are added. With `replacing`, the
+    /// fetch asked for all the metadata it needs (a refresh with signal), so the spot's pins
+    /// follow what it offered: a station the spot no longer uses (it moved, or another station
+    /// was chosen) is released, and its files go unless another spot or a pack holds them. A
+    /// station any of whose files was offered keeps the files it was served from the store.
+    func keep(
+        _ offered: [CachedResponse], spot id: String, kept: [String], now: Int64,
+        replacing: Bool = false
+    ) async -> [String] {
+        guard !offered.isEmpty else { return kept }
         var keys = kept
+        if replacing {
+            let current = Set(offered.compactMap { Self.stationDirectory($0.key) })
+            let offeredKeys = Set(offered.map(\.key))
+            let held = kept.filter { key in
+                offeredKeys.contains(key)
+                    || Self.stationDirectory(key).map(current.contains) ?? false
+            }
+            let released = kept.filter { Self.isStationFile($0) && !held.contains($0) }
+            keys = held
+            _ = try? await store.unpin(Self.pin(spot: id), keys: released.map { .blob($0) })
+        }
         for entry in offered where !keys.contains(entry.key) { keys.append(entry.key) }
-        guard !offered.isEmpty else { return keys }
         // Pinned before written, so the bound cannot drop a new row on the way in.
         let pinned = offered.map(\.key).filter(Self.isStationFile)
         try? await store.pin(Self.pin(spot: id), pinned.map { .blob($0) })

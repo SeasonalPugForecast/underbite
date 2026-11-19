@@ -55,6 +55,7 @@ final class OfflineConditionsTests: XCTestCase {
     /// A store of the Battery whose fetch answers with `answer` and records each call.
     private func store(
         clock: Shared<Int64>, calls: Shared<[Call]>, simulatesOffline: Bool = false,
+        hold: (@Sendable () async -> Void)? = nil,
         answer: @escaping @Sendable (Int) -> SpotFetchOutcome
     ) -> SpotStore {
         let files = AppFiles(directory: directory)
@@ -70,6 +71,7 @@ final class OfflineConditionsTests: XCTestCase {
                         cached: Dictionary(uniqueKeysWithValues: cached.map { ($0.key, $0.fetchedAt) }),
                         withoutSignal: host is UnreachableHost))
                 calls.value = seen
+                await hold?()
                 return answer(seen.count)
             },
             metadata: SpotMetadata(store: scratch.store), simulatesOffline: simulatesOffline,
@@ -87,9 +89,13 @@ final class OfflineConditionsTests: XCTestCase {
             ])
     }
 
+    /// The merged snapshot as far as the app reads it: the core lists its offline note among the errors.
+    nonisolated private static let mergedSnapshot =
+        #"{"errors":[{"source":"offline","kind":"stale","message":"\#(note)"}]}"#
+
     nonisolated private static func offline() -> SpotFetchOutcome {
         SpotFetchOutcome(
-            snapshotJson: "merged",
+            snapshotJson: Self.mergedSnapshot,
             errors: [
                 Self.issue("coops", "transport", "The Internet connection appears to be offline."),
                 Self.issue("offline", "stale", Self.note),
@@ -153,7 +159,7 @@ final class OfflineConditionsTests: XCTestCase {
         clock.value = start + 7_200
         await s.refresh()
         let held = s.cache(id)
-        XCTAssertEqual(held.snapshotJSON, "merged", "the core's merge is what shows")
+        XCTAssertEqual(held.snapshotJSON, Self.mergedSnapshot, "the core's merge is what shows")
         XCTAssertEqual(held.lastSuccess, start, "updated stays at the last answer")
         XCTAssertEqual(held.lastAttempt, start + 7_200)
         XCTAssertNil(held.error, "the note is the banner's, not an error")
@@ -251,7 +257,7 @@ final class OfflineConditionsTests: XCTestCase {
             ])
     }
 
-    func testTheBannerShowsTheShownSpotsNote() async {
+    func testTheBannerShowsTheShownSpotsOwnNote() async {
         let clock = Shared(start)
         let calls = Shared<[Call]>([])
         let signal = Shared(false)
@@ -271,12 +277,169 @@ final class OfflineConditionsTests: XCTestCase {
         s.setActive(SeedSpots.croton.id)
         XCTAssertEqual(s.offlineNote, river)
 
-        // The river answers again: the banner falls back to the Battery's note.
+        // The river answers again: its banner goes; the Battery's note is not shown over it.
         signal.value = true
         await s.refresh(only: [SeedSpots.croton.id])
-        XCTAssertEqual(s.offlineNote, Self.note)
-        s.remove(SeedSpots.battery.id)
         XCTAssertNil(s.offlineNote)
+        s.setActive(SeedSpots.battery.id)
+        XCTAssertEqual(s.offlineNote, Self.note)
+    }
+
+    func testAFreshShownSpotDoesNotCarryAnotherSpotsNote() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let s = store(clock: clock, calls: calls) { _ in Self.offline() }
+        await s.refresh(only: [SeedSpots.battery.id])
+        s.add(SeedSpots.croton)
+        s.setActive(SeedSpots.croton.id)
+        XCTAssertNil(s.offlineNote, "the Croton was never fetched")
+        XCTAssertNil(s.generalOfflineNote, "one spot offline among others says nothing of the phone")
+    }
+
+    func testSectionsOfNoSpotShowANoteOnlyWhenEverySpotIsOffline() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let signal = Shared(false)
+        let s = store(clock: clock, calls: calls) { _ in
+            signal.value ? Self.online(at: clock.value) : Self.offline()
+        }
+        s.add(SeedSpots.croton)
+        await s.refresh()
+        XCTAssertEqual(s.generalOfflineNote, Self.note)
+
+        signal.value = true
+        await s.refresh(only: [SeedSpots.croton.id])
+        XCTAssertNil(s.generalOfflineNote, "the river answered")
+    }
+
+    func testARelaunchWithoutSignalShowsTheLastNoteAgain() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let signal = Shared(true)
+        let first = store(clock: clock, calls: calls) { _ in
+            signal.value ? Self.online(at: clock.value) : Self.offline()
+        }
+        await first.refresh()
+        signal.value = false
+        clock.value = start + 7_200
+        await first.refresh()
+        XCTAssertEqual(first.offlineNote, Self.note)
+
+        // A new process: nothing in memory, the spots and their caches on disk.
+        let second = store(clock: clock, calls: calls) { _ in
+            signal.value ? Self.online(at: clock.value) : Self.offline()
+        }
+        XCTAssertEqual(second.offlineNote, Self.note, "the shown spot's cache is read at launch")
+        await second.refreshOnOpen()
+        XCTAssertEqual(second.offlineNote, Self.note)
+        XCTAssertEqual(calls.value.count, 2, "the try without signal is not repeated at once")
+
+        // Online again: the note goes with the next answer and stays gone after a relaunch.
+        signal.value = true
+        await second.refreshWaiting()
+        XCTAssertNil(second.offlineNote)
+        let third = store(clock: clock, calls: calls) { _ in Self.online(at: clock.value) }
+        await third.refreshOnOpen()
+        XCTAssertNil(third.offlineNote)
+    }
+
+    func testAPullDuringAFetchOfTheSameSpotDoesNotMarkItsNextFetch() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let release = Shared(false)
+        let s = store(
+            clock: clock, calls: calls,
+            hold: { while !release.value { try? await Task.sleep(for: .milliseconds(5)) } },
+            answer: { _ in Self.online(at: clock.value) })
+        let id = SeedSpots.battery.id
+        let first = Task { await s.refresh(only: [id]) }
+        while calls.value.isEmpty { await Task.yield() }
+        // The fetch is under way: this pull joins it and is not fetched again.
+        let pull = Task { await s.refresh(only: [id]) }
+        try? await Task.sleep(for: .milliseconds(50))
+        release.value = true
+        await first.value
+        await pull.value
+        XCTAssertEqual(calls.value.count, 1)
+        XCTAssertTrue(calls.value[0].refreshMetadata)
+
+        // Its next fetch, a timed one, asks for metadata only if someone asks for it then.
+        clock.value = start + 3_600
+        await s.refreshOnOpen()
+        XCTAssertEqual(calls.value.count, 2)
+        XCTAssertFalse(calls.value[1].refreshMetadata)
+    }
+
+    func testAPullThenACancelledRefreshLeavesNothingMarked() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let s = store(clock: clock, calls: calls) { _ in Self.online(at: clock.value) }
+        let task = Task { await s.refresh(only: [SeedSpots.battery.id]) }
+        task.cancel()
+        await task.value
+        clock.value = start + 3_600
+        await s.refreshOnOpen()
+        XCTAssertFalse(calls.value.last?.refreshMetadata ?? false)
+    }
+
+    func testMovingASpotOrChoosingItsStationReleasesTheOldStationsPins() async throws {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let other =
+            "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/8519483/harcon.json?units=metric"
+        let s = store(clock: clock, calls: calls) { n in
+            n == 1
+                ? Self.online(at: clock.value)
+                : SpotFetchOutcome(
+                    snapshotJson: "online-\(n)", errors: [], suggestion: nil,
+                    cacheable: [Self.response(other, #"{"HarmonicConstituents":[]}"#, at: clock.value)])
+        }
+        let id = SeedSpots.battery.id
+        let pin = SpotMetadata.pin(spot: id)
+        await s.refresh()
+        var held = try await scratch.store.usage(of: pin)
+        XCTAssertEqual(held.stored, 2)
+
+        // Moved: the next fetch asks for the metadata again, and the old station's pins go.
+        var moved = SeedSpots.battery
+        moved.latitude += 0.5
+        s.update(moved)
+        clock.value = start + 3_600
+        await s.refreshOnOpen()
+        XCTAssertTrue(calls.value[1].refreshMetadata)
+        XCTAssertEqual(s.cache(id).metadataKeys, [other])
+        held = try await scratch.store.usage(of: pin)
+        XCTAssertEqual(held.items, 1)
+        let blobs = try await scratch.store.usage().blobs
+        XCTAssertEqual(blobs, 1, "the old station's files are gone")
+
+        // A fetch that was not asked to refresh adds and releases nothing.
+        clock.value = start + 7_200
+        await s.refreshOnOpen()
+        XCTAssertFalse(calls.value[2].refreshMetadata)
+        XCTAssertEqual(s.cache(id).metadataKeys, [other])
+    }
+
+    func testAStationFilesOfAnotherSpotStayWhenThisSpotReleasesThem() async throws {
+        let metadata = SpotMetadata(store: scratch.store)
+        let other =
+            "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/8519483/harcon.json?units=metric"
+        _ = await metadata.keep([Self.response(Self.harcon, "{}", at: start)], spot: "a", kept: [], now: start)
+        _ = await metadata.keep([Self.response(Self.harcon, "{}", at: start)], spot: "b", kept: [], now: start)
+        let keys = await metadata.keep(
+            [Self.response(other, "{}", at: start)], spot: "a", kept: [Self.harcon], now: start,
+            replacing: true)
+        XCTAssertEqual(keys, [other])
+        let held = await metadata.cached([Self.harcon, other], now: start)
+        XCTAssertEqual(Set(held.map(\.key)), [Self.harcon, other], "spot b still pins the first")
+    }
+
+    func testAStationKeepsItsOtherFilesWhenOnlyOneWasOffered() async throws {
+        let metadata = SpotMetadata(store: scratch.store)
+        let keys = await metadata.keep(
+            [Self.response(Self.harcon, "{}", at: start + 60)], spot: "a", kept: [Self.harcon, Self.datums],
+            now: start + 60, replacing: true)
+        XCTAssertEqual(keys, [Self.harcon, Self.datums])
     }
 
     func testAQueuedSpotCanGoFirst() {

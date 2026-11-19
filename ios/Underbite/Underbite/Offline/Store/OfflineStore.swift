@@ -349,6 +349,33 @@ actor OfflineStore {
         return freed
     }
 
+    /// Unpins `keys` from `pack` alone, and deletes the rows no other pack pins; returns the bytes
+    /// freed.
+    @discardableResult
+    func unpin(_ pack: String, keys: [OfflineKey]) throws -> Int64 {
+        guard !keys.isEmpty else { return 0 }
+        let db = try connection()
+        var total = bytes
+        try db.transaction {
+            for key in keys {
+                let match: [OfflineSQLValue] = [.text(key.kind.rawValue), .text(key.text)]
+                try db.run(
+                    "DELETE FROM pack_items WHERE pack_id = ? AND kind = ? AND key = ?",
+                    [.text(pack)] + match)
+                let others =
+                    try db.integer(
+                        "SELECT COUNT(*) FROM pack_items WHERE kind = ? AND key = ?", match) ?? 0
+                guard others == 0, let size = try storedBytes(key, db) else { continue }
+                try delete(key, db)
+                total -= size
+            }
+            try saveBytes(total, db)
+        }
+        let freed = bytes - total
+        bytes = total
+        return freed
+    }
+
     /// The packs that pin rows, by id.
     func packs() throws -> [String] {
         try connection().rows("SELECT DISTINCT pack_id FROM pack_items ORDER BY pack_id") {

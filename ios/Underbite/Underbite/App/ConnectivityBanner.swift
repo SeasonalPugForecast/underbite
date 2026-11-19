@@ -24,12 +24,20 @@ struct ConnectivityBanner: View {
     }
 }
 
+/// Which note a section's banner follows.
+enum ConnectivityScope {
+    /// The conditions of the shown spot: that spot's own note.
+    case shownSpot
+    /// A section that is not one spot's: a note only when no spot's fetch got an answer.
+    case general
+}
+
 extension View {
     /// The connectivity banner over this section while the last fetch found no signal. Each
     /// section carries its own, inside the tab view, so no tab bar covers it; every window reads
     /// the same note.
-    func connectivityBanner() -> some View {
-        modifier(ConnectivityInset())
+    func connectivityBanner(_ scope: ConnectivityScope = .general) -> some View {
+        modifier(ConnectivityInset(scope: scope))
     }
 }
 
@@ -38,10 +46,11 @@ extension View {
 /// floating tab bar on the iPad.
 private struct ConnectivityInset: ViewModifier {
     @Environment(SpotStore.self) private var store
+    let scope: ConnectivityScope
 
     func body(content: Content) -> some View {
         content.safeAreaInset(edge: .bottom, spacing: 0) {
-            if let note = store.offlineNote {
+            if let note = scope == .shownSpot ? store.offlineNote : store.generalOfflineNote {
                 ConnectivityBanner(text: note)
             }
         }
