@@ -72,6 +72,7 @@ enum AlertsBackground {
             trips: trips.trips, widgets: await installedWidgets(),
             timeZone: TimeZone.current.identifier, now: Int64(Date().timeIntervalSince1970))
         let outcome = await refresh.run(input)
+        await TripActivityController.refresh(store: store, trips: trips)
         log.info(
             """
             refresh: \(outcome.notices.count, privacy: .public) due, \

@@ -96,7 +96,7 @@ struct TripGridView: View {
 
     private func content(_ view: ViewModel.TripView) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            TripHeader(view: view)
+            TripHeader(view: view).tripActivityOffer(trips: trips, tripID: tripID, view: view)
             switch form(view) {
             case .grid:
                 TripDayGrid(view: view, spacing: spacing) { openDay = $0 }
