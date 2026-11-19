@@ -284,9 +284,8 @@ impl StormWatchPlan {
                 if let Some(left) = response.rate_limit_remaining {
                     ledger.observe_remaining(&OPEN_METEO_STORM, POINT_BUDGET, left, self.now);
                 }
-                if let (429, Some(wait)) = (response.status, response.retry_after) {
-                    let until = UnixTime(self.now.0.saturating_add(i64::from(wait)));
-                    ledger.pause_until(&OPEN_METEO_STORM, until);
+                if response.status == 429 {
+                    ledger.rate_limited(&OPEN_METEO_STORM, response.retry_after, self.now);
                 }
             });
         }
@@ -860,6 +859,28 @@ mod tests {
         assert_eq!(significant_event(&point, UnixTime(NOW)), None);
         let credited: Vec<&SourceId> = outcome.attribution.iter().map(|a| &a.source).collect();
         assert_eq!(credited, [&OPEN_METEO_STORM]);
+    }
+
+    #[test]
+    fn a_storm_429_pauses_the_pool_for_a_day_at_most() {
+        let usage = SharedUsage::default();
+        let mut plan = plan_at(NOW, &battery(), None, &StormOptions::default(), &usage);
+        let mut hit = false;
+        while let Some(request) = plan.next_request() {
+            if request.source == OPEN_METEO_STORM && !hit {
+                hit = true;
+                let mut response = Response::new(429, b"");
+                response.retry_after = Some(u32::MAX);
+                plan.on_response(&response);
+            } else {
+                let net = Net::new(QUIET);
+                let (status, body) = net.answer(&request.http.url);
+                plan.on_response(&Response::new(status, &body));
+            }
+        }
+        assert!(hit);
+        let until = usage.snapshot().paused_until(&OPEN_METEO, UnixTime(NOW));
+        assert_eq!(until, Some(UnixTime(NOW + 86_400)));
     }
 
     #[test]

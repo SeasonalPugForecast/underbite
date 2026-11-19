@@ -530,8 +530,8 @@ impl Link<'_> {
             if let Some(left) = fetched.rate_limit_remaining {
                 ledger.observe_remaining(&id, budget, left, now);
             }
-            if let (429, Some(wait)) = (fetched.status, fetched.retry_after) {
-                ledger.pause_until(&id, UnixTime(now.0.saturating_add(i64::from(wait))));
+            if fetched.status == 429 {
+                ledger.rate_limited(&id, fetched.retry_after, now);
             }
             // The call was counted before it went out; this only keeps what the response said.
             let _ = self.save_ledger();
@@ -1308,6 +1308,65 @@ mod tests {
             flood_category: category,
             observed_at: age_s.map(|s| UnixTime(1_000_000 - s)),
         }
+    }
+
+    /// A host that answers every request 429 with the longest `Retry-After`.
+    struct Limited;
+
+    #[async_trait::async_trait]
+    impl FetchHost for Limited {
+        async fn send(
+            &self,
+            _request: crate::fetch::HostRequest,
+        ) -> Result<crate::fetch::HostResponse, crate::fetch::HostError> {
+            Ok(crate::fetch::HostResponse {
+                status: 429,
+                body: Vec::new(),
+                content_type: None,
+                date: None,
+                expires: None,
+                last_modified: None,
+                etag: None,
+                retry_after: Some("4294967295".into()),
+                rate_limit_remaining: None,
+            })
+        }
+
+        fn load(&self, _namespace: String, _key: String) -> Option<String> {
+            None
+        }
+
+        fn store(&self, _namespace: String, _key: String, _value: String) {}
+
+        fn save_usage(&self, _ledger_json: String) -> Result<(), crate::fetch::HostError> {
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn a_429_on_the_gauge_request_pauses_the_pool_for_a_day_at_most() {
+        let now = UnixTime(1_794_780_000);
+        let host = Limited;
+        let mut link = Link {
+            host: &host,
+            now,
+            ledger: None,
+        };
+        let station = StationRef {
+            source: SourceId::USGS,
+            id: "01375000".into(),
+            name: "Croton River".into(),
+            kind: StationKind::UsgsSite(underbite_core::provenance::UsgsSiteType::Stream),
+            latitude: 41.2,
+            longitude: -73.8,
+            bin: None,
+            reference_id: None,
+        };
+        let ctx = FetchContext::new(now, "underbite/test");
+        let f = formatter();
+        let _ = pollster::block_on(usgs_readings(&mut link, &[&station], &ctx, &f));
+        let until = link.ledger().paused_until(&SourceId::USGS, now);
+        assert_eq!(until, Some(UnixTime(now.0 + 86_400)));
     }
 
     #[test]

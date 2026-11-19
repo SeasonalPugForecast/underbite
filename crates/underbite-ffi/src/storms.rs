@@ -903,11 +903,15 @@ struct Link<'h> {
 impl Link<'_> {
     fn ledger(&mut self) -> &mut UsageLedger {
         let host = self.host;
+        let now = self.now;
         self.ledger.get_or_insert_with(|| {
-            host.load(store::USAGE.to_owned(), store::LEDGER_KEY.to_owned())
+            let mut ledger = host
+                .load(store::USAGE.to_owned(), store::LEDGER_KEY.to_owned())
                 .and_then(|text| serde_json::from_str::<Stored<UsageLedger>>(&text).ok())
                 .map(|stored| stored.value)
-                .unwrap_or_default()
+                .unwrap_or_default();
+            ledger.drop_distant_pauses(now);
+            ledger
         })
     }
 
@@ -982,11 +986,8 @@ impl Link<'_> {
             if let Some(left) = response.rate_limit_remaining {
                 ledger.observe_remaining(&OPEN_METEO_STORM, POINT_BUDGET, left, now);
             }
-            if let (429, Some(wait)) = (response.status, response.retry_after) {
-                ledger.pause_until(
-                    &OPEN_METEO_STORM,
-                    UnixTime(now.0.saturating_add(i64::from(wait))),
-                );
+            if response.status == 429 {
+                ledger.rate_limited(&OPEN_METEO_STORM, response.retry_after, now);
             }
             // The call was counted before it went out; this only keeps what the response said.
             let _ = self.save_ledger();
@@ -1371,6 +1372,8 @@ mod tests {
         metas: Vec<(&'static str, String)>,
         /// URLs containing one of these answer 503.
         down: Vec<&'static str>,
+        /// URLs containing one of these answer 429 with the longest `Retry-After`.
+        limited: Vec<&'static str>,
     }
 
     impl Net {
@@ -1450,6 +1453,19 @@ mod tests {
         async fn send(&self, request: HostRequest) -> Result<HostResponse, HostError> {
             let url = request.url.clone();
             self.asked.lock().unwrap().push(request);
+            if self.limited.iter().any(|d| url.contains(d)) {
+                return Ok(HostResponse {
+                    status: 429,
+                    body: Vec::new(),
+                    content_type: None,
+                    date: None,
+                    expires: None,
+                    last_modified: None,
+                    etag: None,
+                    retry_after: Some("4294967295".into()),
+                    rate_limit_remaining: None,
+                });
+            }
             let reply = |status: u16, body: Vec<u8>| HostResponse {
                 status,
                 body,
@@ -1523,6 +1539,35 @@ mod tests {
             host,
         ))
         .unwrap()
+    }
+
+    #[test]
+    fn a_storm_429_pauses_the_pool_for_a_day_at_most() {
+        let net = Arc::new(Net {
+            limited: vec!["/v1/forecast"],
+            ..Net::default()
+        });
+        fetch_at(&net, BATTERY, true, NOW);
+        let until = net.ledger().paused_until(&OPEN_METEO, UnixTime(NOW));
+        assert_eq!(until, Some(UnixTime(NOW + 86_400)));
+    }
+
+    #[test]
+    fn a_far_future_pause_in_the_stored_ledger_is_dropped() {
+        let net = Arc::new(Net::default());
+        let mut ledger = UsageLedger::default();
+        ledger.pause_until(&OPEN_METEO, UnixTime(NOW + 4_000_000_000));
+        net.save_usage(
+            serde_json::to_string(&Stored {
+                saved_at: NOW,
+                value: &ledger,
+            })
+            .unwrap(),
+        )
+        .unwrap();
+        fetch_at(&net, BATTERY, true, NOW);
+        assert!(net.paths().iter().any(|p| p == FORECAST));
+        assert_eq!(net.ledger().paused_until(&OPEN_METEO, UnixTime(NOW)), None);
     }
 
     fn meta_paths() -> Vec<String> {
