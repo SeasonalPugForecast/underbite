@@ -9,10 +9,11 @@ use crate::map::breaks::BreakKind;
 use crate::map::enc::{self, EncGroup};
 use crate::map::render::{self, Ramp, RampRange};
 use crate::map::tiles::{
-    GibsSpec, TileService, gebco_wms_url, gibs_tile_url, ncds_wms_url, ncds_wmts_url,
-    radar_tile_url,
+    GibsSpec, TileService, copernicus_tile_url, gebco_wms_url, gibs_tile_url, ncds_wms_url,
+    ncds_wmts_url, radar_tile_url,
 };
 use crate::map::{Bbox, GridHost, GridSource, LayerId, TileKey};
+use crate::share::COPERNICUS_LAYER_PREFIX;
 use crate::time::LocalDate;
 
 /// The drawer sections.
@@ -96,6 +97,31 @@ pub enum TileSource {
     GebcoWms,
     /// The NEXRAD composite frames.
     Radar,
+    /// A Copernicus Marine WMTS layer: it needs the Copernicus opt-in.
+    Copernicus(CopernicusSpec),
+}
+
+/// A Copernicus Marine WMTS layer: one variable of one dataset of one product, drawn in one
+/// style. The service's capabilities per dataset list its `time` range.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct CopernicusSpec {
+    /// The product, such as `GLOBAL_ANALYSISFORECAST_PHY_001_024`.
+    pub product: &'static str,
+    /// The dataset with its version suffix, which changes when the product is reprocessed.
+    pub dataset: &'static str,
+    /// The variable (the last part of the `LAYER` parameter).
+    pub variable: &'static str,
+    /// The `STYLE` parameter: colour map and options.
+    pub style: &'static str,
+    /// The product's DOI, which the credit carries.
+    pub doi: &'static str,
+}
+
+impl CopernicusSpec {
+    /// The `LAYER` parameter: `<product>/<dataset>/<variable>`.
+    pub fn layer(&self) -> String {
+        format!("{}/{}/{}", self.product, self.dataset, self.variable)
+    }
 }
 
 /// Where a grid layer's data is requested: an ERDDAP dataset and its variables.
@@ -293,6 +319,19 @@ impl Layer {
         LayerId::from_static(self.id)
     }
 
+    /// Whether the layer is served by Copernicus Marine and so needs that source's opt-in.
+    pub fn needs_copernicus(&self) -> bool {
+        self.id.starts_with(COPERNICUS_LAYER_PREFIX)
+    }
+
+    /// The Copernicus Marine layer this one draws, if it is one.
+    pub fn copernicus(&self) -> Option<&CopernicusSpec> {
+        match &self.kind {
+            LayerKind::Tiles(TileSource::Copernicus(spec)) => Some(spec),
+            _ => None,
+        }
+    }
+
     /// Whether the layer is a base map.
     pub fn is_base(&self) -> bool {
         self.group == Group::Base
@@ -340,6 +379,7 @@ impl Layer {
             }
             LayerKind::Tiles(TileSource::GebcoWms) => Some(TileService::Gebco),
             LayerKind::Tiles(TileSource::Radar) => Some(TileService::Radar),
+            LayerKind::Tiles(TileSource::Copernicus(_)) => Some(TileService::Copernicus),
             _ => None,
         }
     }
@@ -365,6 +405,9 @@ impl Layer {
             TileSource::NcdsWms { groups } => Some(ncds_wms_url(groups, key)),
             TileSource::GebcoWms => Some(gebco_wms_url(key)),
             TileSource::Radar => Some(radar_tile_url(minutes_ago, key)),
+            TileSource::Copernicus(spec) => {
+                Some(copernicus_tile_url(&spec.layer(), spec.style, date, key))
+            }
         }
     }
 }
@@ -485,6 +528,24 @@ const fn grid_layer(id: &'static str, group: Group, grid: GridLayer, ramp: &'sta
     l.date_mode = DateMode::Daily;
     l.min_zoom = Some(GRID_MIN_ZOOM);
     l.ramp = Some(ramp);
+    l
+}
+
+const PHY: &str = "GLOBAL_ANALYSISFORECAST_PHY_001_024";
+const PHY_DOI: &str = "10.48670/moi-00016";
+
+/// The deepest zoom of the service's `EPSG:3857` matrix set.
+const COPERNICUS_MAX_ZOOM: u8 = 10;
+
+/// A Copernicus Marine layer: a daily picture the service renders, a day at a time.
+const fn copernicus_layer(id: &'static str, spec: CopernicusSpec) -> Layer {
+    let mut l = overlay(
+        id,
+        Group::Water,
+        LayerKind::Tiles(TileSource::Copernicus(spec)),
+    );
+    l.max_zoom = Some(COPERNICUS_MAX_ZOOM);
+    l.date_mode = DateMode::Daily;
     l
 }
 
@@ -637,7 +698,7 @@ pub const BASES: [Layer; 4] = [
 ];
 
 /// The overlay layers in drawer order.
-pub const LAYERS: [Layer; 42] = [
+pub const LAYERS: [Layer; 45] = [
     {
         let mut l = overlay(
             "gebco-relief",
@@ -868,6 +929,42 @@ pub const LAYERS: [Layer; 42] = [
         CHLOROPHYLL_BREAKS_MIN_ZOOM,
     ),
     storms_layer("storms"),
+    {
+        // Speed colours with direction arrows: the model's surface current, 0.083 degrees.
+        let mut l = copernicus_layer(
+            "copernicus-currents",
+            CopernicusSpec {
+                product: PHY,
+                dataset: "cmems_mod_glo_phy-cur_anfc_0.083deg_P1D-m_202406",
+                variable: "sea_water_velocity",
+                style: "cmap:speed,vectorStyle:solidAndVector",
+                doi: PHY_DOI,
+            },
+        );
+        l.not_for_navigation = true;
+        l
+    },
+    // The OSTIA satellite analysis, in kelvin on the service's own colour scale.
+    copernicus_layer(
+        "copernicus-sst",
+        CopernicusSpec {
+            product: "SST_GLO_SST_L4_NRT_OBSERVATIONS_010_001",
+            dataset: "METOFFICE-GLO-SST-L4-NRT-OBS-SST-V2",
+            variable: "analysed_sst",
+            style: "cmap:thermal",
+            doi: "10.48670/moi-00165",
+        },
+    ),
+    copernicus_layer(
+        "copernicus-sea-level",
+        CopernicusSpec {
+            product: PHY,
+            dataset: "cmems_mod_glo_phy_anfc_0.083deg_P1D-m_202406",
+            variable: "zos",
+            style: "cmap:viridis",
+            doi: PHY_DOI,
+        },
+    ),
 ];
 
 /// The layer or base with an id.
@@ -1015,7 +1112,7 @@ mod tests {
     /// The ids of the overlays as the configuration lists them (`KNOWN_LAYERS`), in drawer order.
     /// The configuration crate cannot be a dependency here, so it checks its own list against this
     /// one.
-    const OVERLAY_IDS: [&str; 42] = [
+    const OVERLAY_IDS: [&str; 45] = [
         "gebco-relief",
         "sst",
         "sst-imagery",
@@ -1058,6 +1155,9 @@ mod tests {
         "sst-breaks",
         "chlorophyll-breaks",
         "storms",
+        "copernicus-currents",
+        "copernicus-sst",
+        "copernicus-sea-level",
     ];
     const BASE_IDS: [&str; 4] = [
         "apple-standard",
@@ -1758,7 +1858,7 @@ mod tests {
         assert_eq!(LAYERS.iter().filter(|l| l.breaks().is_some()).count(), 2);
         assert_eq!(layer("sst").breaks(), None);
         let water: Vec<_> = drawer_order()
-            .filter(|l| l.group == Group::Water)
+            .filter(|l| l.group == Group::Water && !l.needs_copernicus())
             .map(|l| l.id)
             .collect();
         assert_eq!(water.last(), Some(&"chlorophyll-breaks"));
@@ -1822,5 +1922,56 @@ mod tests {
         assert!(inside(coverage("lake-contours-mn"), -93.07, 46.19));
         assert!(inside(coverage("artificial-reefs-ny"), -73.7175, 40.5296));
         assert!(inside(coverage("artificial-reefs-ny"), -72.46, 41.0));
+    }
+
+    #[test]
+    fn copernicus_layers_are_daily_tiles_behind_the_opt_in() {
+        let ids: Vec<_> = LAYERS
+            .iter()
+            .filter(|l| l.needs_copernicus())
+            .map(|l| l.id)
+            .collect();
+        assert_eq!(
+            ids,
+            [
+                "copernicus-currents",
+                "copernicus-sst",
+                "copernicus-sea-level"
+            ]
+        );
+        // The ids are the only thing the gate and a shared preset go by.
+        assert_eq!(
+            LAYERS.iter().filter(|l| l.copernicus().is_some()).count(),
+            ids.len()
+        );
+        assert!(BASES.iter().all(|l| !l.needs_copernicus()));
+        for id in ids {
+            let l = find(id).unwrap();
+            let spec = l.copernicus().unwrap();
+            assert_eq!(l.group, Group::Water, "{id}");
+            assert_eq!(l.date_mode, DateMode::Daily, "{id}");
+            assert_eq!(l.max_zoom, Some(10), "{id}");
+            assert_eq!(l.availability, Availability::Available, "{id}");
+            assert_eq!(l.tile_service(), Some(TileService::Copernicus), "{id}");
+            assert!(spec.doi.starts_with("10.48670/moi-"), "{id}");
+            let day = LocalDate {
+                year: 2026,
+                month: 11,
+                day: 16,
+            };
+            let url = l.tile_url(tile(5, 9, 12), Some(day), 0).unwrap();
+            assert!(url.contains(&format!("LAYER={}&STYLE={}&", spec.layer(), spec.style)));
+            assert!(
+                url.ends_with("&TILEMATRIX=5&TILEROW=12&TILECOL=9&TIME=2026-11-16T00:00:00.000Z")
+            );
+            // No preset turns an opt-in layer on.
+            assert!(
+                PRESETS
+                    .iter()
+                    .all(|p| p.layers.iter().all(|pl| pl.id != id))
+            );
+        }
+        // Currents are not for navigation.
+        assert!(find("copernicus-currents").unwrap().not_for_navigation);
     }
 }

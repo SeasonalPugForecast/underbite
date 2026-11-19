@@ -40,7 +40,7 @@ const NCDS_Z14: &str = "https://gis.charttools.noaa.gov/arcgis/rest/services/Mar
 #[test]
 fn the_catalogue_is_worded_with_credits_and_notices() {
     let layers = map_catalogue(plain()).unwrap();
-    assert_eq!(layers.len(), 46);
+    assert_eq!(layers.len(), 49);
     assert!(layers[..4].iter().all(|l| l.is_base));
     assert_eq!(layers[0].draw, LayerDraw::AppleStandard);
     assert!(layers[0].shown, "the default base map is shown");
@@ -1167,5 +1167,95 @@ fn a_cached_layer_says_when_its_tiles_were_fetched() {
     assert_eq!(
         map_offline_words(plain()).unwrap().not_available,
         "not available offline"
+    );
+}
+
+const COPERNICUS_IDS: [&str; 3] = [
+    "copernicus-currents",
+    "copernicus-sst",
+    "copernicus-sea-level",
+];
+
+/// Settings with the Copernicus opt-in as given and every Copernicus layer stored as shown.
+fn copernicus_settings(enabled: bool) -> String {
+    settings(|v| {
+        v["providers"]["copernicus"]["enabled"] = json!(enabled);
+        for l in v["map"]["layers"].as_array_mut().unwrap() {
+            if COPERNICUS_IDS.contains(&l["id"].as_str().unwrap()) {
+                l["shown"] = json!(true);
+            }
+        }
+    })
+}
+
+#[test]
+fn copernicus_layers_are_listed_and_off_until_the_opt_in_is_on() {
+    let off = map_catalogue(copernicus_settings(false)).unwrap();
+    let on = map_catalogue(copernicus_settings(true)).unwrap();
+    assert_eq!(off.len(), on.len());
+    for id in COPERNICUS_IDS {
+        let l = off.iter().find(|l| l.id == id).unwrap();
+        assert!(!l.available && !l.shown, "{id}");
+        assert_eq!(
+            l.unavailable_text.as_deref(),
+            Some("Turn on Copernicus Marine in Sources to use this layer"),
+            "{id}"
+        );
+        assert_eq!(l.draw, LayerDraw::Tiles, "{id}");
+        assert_eq!(l.dates, LayerDates::Daily, "{id}");
+        assert!(
+            l.credit.contains(
+                "Generated using E.U. Copernicus Marine Service Information; https://doi.org/10.48670/moi-00"
+            ),
+            "{id}"
+        );
+        let l = on.iter().find(|l| l.id == id).unwrap();
+        assert!(
+            l.available && l.shown && l.unavailable_text.is_none(),
+            "{id}"
+        );
+    }
+    let currents = on.iter().find(|l| l.id == "copernicus-currents").unwrap();
+    assert_eq!(currents.notice.as_deref(), Some("Not for navigation."));
+    assert!(currents.credit.contains("Not for navigation."));
+    // The opt-in changes nothing else.
+    let changed: Vec<_> = off
+        .iter()
+        .zip(&on)
+        .filter(|(a, b)| a.available != b.available)
+        .map(|(a, _)| a.id.as_str())
+        .collect();
+    assert_eq!(changed, COPERNICUS_IDS);
+}
+
+#[test]
+fn a_copernicus_layer_asks_the_wmts_for_a_day_and_keeps_the_tile_thirty_days() {
+    let fetch = tile_request("copernicus-sst".into(), Some("2026-11-16".into()), 5, 9, 12)
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        fetch.request.url,
+        "https://wmts.marine.copernicus.eu/teroWmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=SST_GLO_SST_L4_NRT_OBSERVATIONS_010_001/METOFFICE-GLO-SST-L4-NRT-OBS-SST-V2/analysed_sst&STYLE=cmap:thermal&FORMAT=image/png&TILEMATRIXSET=EPSG:3857&TILEMATRIX=5&TILEROW=12&TILECOL=9&TIME=2026-11-16T00:00:00.000Z"
+    );
+    assert_eq!(fetch.request.max_age_s, Some(2_592_000));
+    assert_eq!((fetch.z, fetch.x, fetch.y), (5, 9, 12));
+    assert!(fetch.crop.is_none());
+    // Deeper than the service's last level, the ancestor is fetched and cropped.
+    let deep = tile_request("copernicus-sst".into(), None, 12, 1206, 1539)
+        .unwrap()
+        .unwrap();
+    assert_eq!(deep.z, 10);
+    assert!(deep.crop.is_some());
+    assert!(!deep.request.url.contains("TIME"));
+    assert_eq!(
+        classify_tile(
+            "copernicus-sst".into(),
+            400,
+            Some("text/xml".into()),
+            400,
+            0
+        )
+        .unwrap(),
+        TileOutcome::NoData
     );
 }

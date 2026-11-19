@@ -225,6 +225,18 @@
       {
         "id": "storms",
         "shown": false
+      },
+      {
+        "id": "copernicus-currents",
+        "shown": false
+      },
+      {
+        "id": "copernicus-sst",
+        "shown": false
+      },
+      {
+        "id": "copernicus-sea-level",
+        "shown": false
       }
     ],
     "offline_max_mb": 1500,

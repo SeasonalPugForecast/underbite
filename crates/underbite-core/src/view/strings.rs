@@ -776,6 +776,10 @@ keys! {
     MapLayerSstBreaks => ("SST breaks", "SST breaks"),
     MapLayerChlorophyllBreaks => ("Chlorophyll breaks", "Chlorophyll breaks"),
     MapLayerStorms => ("Storms", "Storms"),
+    MapLayerCopernicusCurrents => ("Ocean currents (Copernicus)", "Ocean currents (Copernicus)"),
+    MapLayerCopernicusSst => ("Sea surface temperature (Copernicus)", "Sea surface temperature (Copernicus)"),
+    MapLayerCopernicusSeaLevel => ("Sea level (Copernicus)", "Sea level (Copernicus)"),
+    MapLegendLowToHigh => ("Low to high", "Low to high"),
     /// Legend captions of the colour ramps.
     MapLegendColdToWarm => ("Cold to warm", "Cold to warm"),
     MapLegendClearToGreen => ("Clear to green water", "Clear to green water"),
@@ -801,6 +805,11 @@ keys! {
     MapPresetGreatLakesTrolling => ("Great Lakes trolling", "Great Lakes trolling"),
     /// In place of the switch of a layer that cannot be turned on.
     MapNoSource => ("No source yet", "Luna hasn't found a source yet"),
+    /// Shown in place of the switch of a Copernicus Marine layer while that source is off.
+    MapNeedsCopernicus => (
+        "Turn on Copernicus Marine in Sources to use this layer",
+        "Turn on Copernicus Marine in Sources to use this layer",
+    ),
     /// The point inspector where a layer has no value (land, cloud, outside its data).
     MapNoValue => ("No value here", "Nothing here"),
     /// A surface current at a point: `{speed}`, `{direction}`.
@@ -2107,6 +2116,10 @@ safety_keys! {
     MapCreditChlorophyllBreaks => "Chlorophyll breaks: found on this device in NOAA CoastWatch / NOAA STAR VIIRS ocean colour. Not for navigation.",
     /// The storms layer: model lows and NHC's hurricanes.
     MapCreditStorms => "Storms: model lows from ECMWF, NOAA GFS, ECCC GEM and DWD ICON via Open-Meteo.com (CC BY 4.0); hurricanes, forecast tracks and the forecast cone from the NOAA National Hurricane Center. Not for navigation.",
+    /// The Copernicus Marine layers: the licence's credit with the product's DOI.
+    MapCreditCopernicusCurrents => "Ocean currents: Generated using E.U. Copernicus Marine Service Information; https://doi.org/10.48670/moi-00016. Modelled daily means on a 9 km grid, with a forecast. Not for navigation.",
+    MapCreditCopernicusSst => "Sea surface temperature: Generated using E.U. Copernicus Marine Service Information; https://doi.org/10.48670/moi-00165. Satellite analysis (OSTIA, Met Office).",
+    MapCreditCopernicusSeaLevel => "Sea level: Generated using E.U. Copernicus Marine Service Information; https://doi.org/10.48670/moi-00016. Modelled daily means on a 9 km grid, with a forecast.",
     /// Legend captions that say what a depth or chart layer shows.
     MapLegendGebco => "Offshore depth where the chart has none",
     MapLegendContoursIn => "Depth below the lake surface at survey",
@@ -3021,6 +3034,9 @@ impl Strings {
             "sst-breaks" => Key::MapLayerSstBreaks,
             "chlorophyll-breaks" => Key::MapLayerChlorophyllBreaks,
             "storms" => Key::MapLayerStorms,
+            "copernicus-currents" => Key::MapLayerCopernicusCurrents,
+            "copernicus-sst" => Key::MapLayerCopernicusSst,
+            "copernicus-sea-level" => Key::MapLayerCopernicusSeaLevel,
             _ => return None,
         }))
     }
@@ -3033,10 +3049,11 @@ impl Strings {
     /// The short caption under a layer's legend; `None` for a layer without one.
     pub fn layer_legend(self, id: &str) -> Option<&'static str> {
         let playful = match id {
-            "sst" | "great-lakes-sst" => Some(Key::MapLegendColdToWarm),
+            "sst" | "great-lakes-sst" | "copernicus-sst" => Some(Key::MapLegendColdToWarm),
             "chlorophyll" => Some(Key::MapLegendClearToGreen),
             "clarity" => Some(Key::MapLegendClearToTurbid),
-            "hf-radar-currents" => Some(Key::MapLegendSlowToFast),
+            "hf-radar-currents" | "copernicus-currents" => Some(Key::MapLegendSlowToFast),
+            "copernicus-sea-level" => Some(Key::MapLegendLowToHigh),
             "sst-breaks" => Some(Key::MapLegendSstBreaks),
             "chlorophyll-breaks" => Some(Key::MapLegendChlorophyllBreaks),
             _ => None,
@@ -3112,6 +3129,9 @@ impl Strings {
             "sst-breaks" => SafetyKey::MapCreditSstBreaks,
             "chlorophyll-breaks" => SafetyKey::MapCreditChlorophyllBreaks,
             "storms" => SafetyKey::MapCreditStorms,
+            "copernicus-currents" => SafetyKey::MapCreditCopernicusCurrents,
+            "copernicus-sst" => SafetyKey::MapCreditCopernicusSst,
+            "copernicus-sea-level" => SafetyKey::MapCreditCopernicusSeaLevel,
             _ => return None,
         }))
     }
@@ -3184,6 +3204,12 @@ impl Strings {
             .collect();
         (!titles.is_empty())
             .then(|| self.fmt(Key::ReceiveLayersOptIn, &[("layers", &titles.join(", "))]))
+    }
+
+    /// Why a Copernicus Marine layer cannot be turned on while that source's opt-in is off, shown
+    /// in place of its switch.
+    pub fn copernicus_needs_opt_in(self) -> &'static str {
+        self.get(Key::MapNeedsCopernicus)
     }
 
     /// Why a layer cannot be turned on, shown in place of its switch.

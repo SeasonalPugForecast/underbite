@@ -1066,7 +1066,7 @@ fn the_catalogue_lists_the_breaks_layers_in_the_water_group() {
     }
     let water: Vec<_> = layers
         .iter()
-        .filter(|l| l.group == "water")
+        .filter(|l| l.group == "water" && !l.id.starts_with("copernicus-"))
         .map(|l| l.id.as_str())
         .collect();
     assert_eq!(

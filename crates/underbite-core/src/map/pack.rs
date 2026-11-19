@@ -684,6 +684,7 @@ fn host_of(source: TileSource) -> &'static str {
         TileSource::NcdsWmts | TileSource::NcdsWms { .. } => "gis.charttools.noaa.gov",
         TileSource::GebcoWms => "wms.gebco.net",
         TileSource::Radar => "mesonet.agron.iastate.edu",
+        TileSource::Copernicus(_) => "wmts.marine.copernicus.eu",
     }
 }
 
@@ -704,7 +705,7 @@ fn tile_seed(layer: &Layer, source: TileSource) -> u64 {
         TileSource::NcdsWmts => SEED_NCDS_WMTS,
         TileSource::NcdsWms { .. } => SEED_NCDS_WMS,
         TileSource::GebcoWms => SEED_GEBCO,
-        TileSource::Radar => 0,
+        TileSource::Radar | TileSource::Copernicus(_) => 0,
     }
 }
 
@@ -726,7 +727,11 @@ fn plan_layer(
         return Err(Stop::Skip(SkipReason::Unavailable));
     }
     match layer.kind {
-        LayerKind::Tiles(TileSource::Radar) => Err(Stop::Skip(SkipReason::NotPackable)),
+        // Radar frames age in minutes; Copernicus Marine tiles stay in the tile cache and nothing
+        // else is kept of them.
+        LayerKind::Tiles(TileSource::Radar | TileSource::Copernicus(_)) => {
+            Err(Stop::Skip(SkipReason::NotPackable))
+        }
         LayerKind::Tiles(source) => plan_tiles(b, pack, layer, source, boxes, days),
         LayerKind::Grid(grid) if layer.date_mode != DateMode::Frames => {
             plan_grid(b, pack, layer, &grid.primary.source(), boxes, days)

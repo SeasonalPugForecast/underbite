@@ -555,7 +555,7 @@ mod tests {
         ];
         let old: Vec<_> = KNOWN_LAYERS
             .iter()
-            .filter(|id| !added.contains(id))
+            .filter(|id| !added.contains(id) && !id.starts_with("copernicus-"))
             .map(|id| json!({ "id": id, "shown": *id == "spots" }))
             .collect();
         assert_eq!(old.len(), 29);
@@ -597,16 +597,18 @@ mod tests {
     fn a_layer_list_from_before_the_breaks_layers_gets_them_hidden_at_the_end() {
         let old: Vec<_> = KNOWN_LAYERS
             .iter()
-            .filter(|id| !id.ends_with("-breaks") && **id != "storms")
+            .filter(|id| {
+                !id.ends_with("-breaks") && **id != "storms" && !id.starts_with("copernicus-")
+            })
             .map(|id| json!({ "id": id, "shown": *id == "sst" }))
             .collect();
-        assert_eq!(old.len(), KNOWN_LAYERS.len() - 3);
+        assert_eq!(old.len(), KNOWN_LAYERS.len() - 6);
         let mut d = json!({ "map": { "layers": old } });
         assert_eq!(prepare(&mut d), Ok(vec![]));
         let c: crate::schema::Config = serde_json::from_value(d).unwrap();
         let ids: Vec<_> = c.map.layers.iter().map(|l| l.id.as_str()).collect();
         assert_eq!(ids, KNOWN_LAYERS);
-        let tail: Vec<_> = c.map.layers[KNOWN_LAYERS.len() - 3..]
+        let tail: Vec<_> = c.map.layers[KNOWN_LAYERS.len() - 6..KNOWN_LAYERS.len() - 3]
             .iter()
             .map(|l| (l.id.as_str(), l.shown))
             .collect();
@@ -625,17 +627,48 @@ mod tests {
     fn a_layer_list_from_before_the_storms_layer_gets_it_hidden_at_the_end() {
         let old: Vec<_> = KNOWN_LAYERS
             .iter()
-            .filter(|id| **id != "storms")
+            .filter(|id| **id != "storms" && !id.starts_with("copernicus-"))
             .map(|id| json!({ "id": id, "shown": *id == "radar" }))
             .collect();
-        assert_eq!(old.len(), KNOWN_LAYERS.len() - 1);
+        assert_eq!(old.len(), KNOWN_LAYERS.len() - 4);
         let mut d = json!({ "map": { "layers": old } });
         assert_eq!(prepare(&mut d), Ok(vec![]));
         let c: crate::schema::Config = serde_json::from_value(d).unwrap();
         let ids: Vec<_> = c.map.layers.iter().map(|l| l.id.as_str()).collect();
         assert_eq!(ids, KNOWN_LAYERS);
-        let last = c.map.layers.last().map(|l| (l.id.as_str(), l.shown));
-        assert_eq!(last, Some(("storms", false)));
+        let storms = c.map.layers.get(KNOWN_LAYERS.len() - 4);
+        assert_eq!(
+            storms.map(|l| (l.id.as_str(), l.shown)),
+            Some(("storms", false))
+        );
+        assert_eq!(c.validate(), []);
+    }
+
+    #[test]
+    fn a_layer_list_from_before_the_copernicus_layers_gets_them_hidden_at_the_end() {
+        let old: Vec<_> = KNOWN_LAYERS
+            .iter()
+            .filter(|id| !id.starts_with("copernicus-"))
+            .map(|id| json!({ "id": id, "shown": *id == "radar" }))
+            .collect();
+        assert_eq!(old.len(), KNOWN_LAYERS.len() - 3);
+        let mut d = json!({ "map": { "layers": old } });
+        assert_eq!(prepare(&mut d), Ok(vec![]));
+        let c: crate::schema::Config = serde_json::from_value(d).unwrap();
+        let ids: Vec<_> = c.map.layers.iter().map(|l| l.id.as_str()).collect();
+        assert_eq!(ids, KNOWN_LAYERS);
+        let tail: Vec<_> = c.map.layers[KNOWN_LAYERS.len() - 3..]
+            .iter()
+            .map(|l| (l.id.as_str(), l.shown))
+            .collect();
+        assert_eq!(
+            tail,
+            [
+                ("copernicus-currents", false),
+                ("copernicus-sst", false),
+                ("copernicus-sea-level", false)
+            ]
+        );
         assert_eq!(c.validate(), []);
     }
 

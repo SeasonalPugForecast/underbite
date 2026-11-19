@@ -239,6 +239,8 @@ const GIBS_WMTS: &str = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
 const NCDS_WMTS: &str = "https://gis.charttools.noaa.gov/arcgis/rest/services/MarineChart_Services/NOAACharts/MapServer/WMTS/tile/1.0.0/MarineChart_Services_NOAACharts/default/default028mm";
 const NCDS_WMS: &str = "https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer";
 const GEBCO_WMS: &str = "https://wms.gebco.net/mapserv";
+/// The Copernicus Marine WMTS endpoint (key-value requests only).
+pub const COPERNICUS_WMTS: &str = "https://wmts.marine.copernicus.eu/teroWmts";
 const IEM: &str = "https://mesonet.agron.iastate.edu";
 
 /// The NOAA chart tile cache's zooms: its level 0 is Web Mercator zoom 2 and its level 18 is 20.
@@ -253,6 +255,30 @@ pub fn gibs_tile_url(spec: &GibsSpec, date: Option<LocalDate>, key: TileKey) -> 
     format!(
         "{GIBS_WMTS}/{}/default/{when}/{}/{}/{}/{}.{}",
         spec.layer, spec.matrix_set, key.z, key.y, key.x, spec.ext
+    )
+}
+
+/// The Copernicus Marine WMTS tile of `layer` (`<product>/<dataset>/<variable>`) in `style`, in
+/// the `EPSG:3857` matrix set, where the matrix id is the zoom, the row counts from the north and
+/// the column from the west. `date` is a UTC day, sent as its midnight; none leaves `TIME` out, which
+/// the service answers with the dataset's default day. Colons and commas in the layer and style
+/// stay as they are, as the service takes them.
+pub fn copernicus_tile_url(
+    layer: &str,
+    style: &str,
+    date: Option<LocalDate>,
+    key: TileKey,
+) -> String {
+    let time = date.map_or_else(String::new, |d| {
+        format!(
+            "&TIME={:04}-{:02}-{:02}T00:00:00.000Z",
+            d.year, d.month, d.day
+        )
+    });
+    format!(
+        "{COPERNICUS_WMTS}?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER={layer}&STYLE={style}\
+         &FORMAT=image/png&TILEMATRIXSET=EPSG:3857&TILEMATRIX={}&TILEROW={}&TILECOL={}{time}",
+        key.z, key.y, key.x
     )
 }
 
@@ -346,6 +372,8 @@ pub enum TileService {
     Gebco,
     /// The NEXRAD tiles of the Iowa Environmental Mesonet.
     Radar,
+    /// The Copernicus Marine WMTS.
+    Copernicus,
 }
 
 /// What a tile response means.
@@ -401,6 +429,8 @@ pub fn classify(
             }
         }
         404 if matches!(service, TileService::Gibs | TileService::Radar) => TileOutcome::NoData,
+        // A day outside the dataset's range is an `ExceptionReport` with status 400.
+        400 if service == TileService::Copernicus => TileOutcome::NoData,
         400 if service == TileService::Gibs => TileOutcome::TooDeep,
         429 if attempt < RETRIES_AFTER_BUSY => TileOutcome::Retry { after_s: 30 },
         503 if attempt < RETRIES_AFTER_BUSY => TileOutcome::Retry { after_s: 10 },
@@ -432,6 +462,8 @@ pub fn cache_lifetime_s(service: TileService, cache_control: Option<&str>) -> u6
         TileService::Gibs | TileService::Ncds => 86_400,
         TileService::Gebco => 2_630_000,
         TileService::Radar => 300,
+        // The service's own `max-age`: 30 days.
+        TileService::Copernicus => 2_592_000,
     }
 }
 
@@ -742,6 +774,12 @@ mod tests {
         assert_eq!(classify(Radar, 503, None, 0, 1), Retry { after_s: 10 });
         assert_eq!(classify(Radar, 503, None, 0, 2), Failed);
         assert_eq!(classify(Gibs, 500, None, 0, 0), Failed);
+        assert_eq!(classify(Copernicus, 400, Some("text/xml"), 400, 0), NoData);
+        assert_eq!(
+            classify(Copernicus, 200, Some("image/png"), 4_400, 0),
+            Image
+        );
+        assert_eq!(classify(Copernicus, 500, None, 0, 0), Failed);
     }
 
     #[test]
@@ -763,5 +801,28 @@ mod tests {
         assert_eq!(cache_lifetime_s(Ncds, Some("public")), 86_400);
         assert_eq!(cache_lifetime_s(Ncds, Some("max-age=soon")), 86_400);
         assert_eq!(cache_lifetime_s(Radar, None), 300);
+        assert_eq!(cache_lifetime_s(Copernicus, None), 2_592_000);
+        assert_eq!(
+            cache_lifetime_s(Copernicus, Some("max-age=2592000")),
+            2_592_000
+        );
+    }
+
+    #[test]
+    fn copernicus_tiles_are_key_value_requests_with_the_day_as_a_midnight() {
+        let key = TileKey { z: 5, x: 9, y: 12 };
+        let layer = "GLOBAL_ANALYSISFORECAST_PHY_001_024/cmems_mod_glo_phy-thetao_anfc_0.083deg_P1D-m_202406/thetao";
+        let day = LocalDate {
+            year: 2026,
+            month: 11,
+            day: 16,
+        };
+        assert_eq!(
+            copernicus_tile_url(layer, "cmap:thermal", Some(day), key),
+            format!(
+                "https://wmts.marine.copernicus.eu/teroWmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER={layer}&STYLE=cmap:thermal&FORMAT=image/png&TILEMATRIXSET=EPSG:3857&TILEMATRIX=5&TILEROW=12&TILECOL=9&TIME=2026-11-16T00:00:00.000Z"
+            )
+        );
+        assert!(!copernicus_tile_url(layer, "cmap:thermal", None, key).contains("TIME"));
     }
 }

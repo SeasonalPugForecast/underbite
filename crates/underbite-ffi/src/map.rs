@@ -503,6 +503,12 @@ fn layer_info(l: &Layer, config: &Config, f: &Formatter) -> LayerInfo {
         )
     };
     let (available, unavailable_text) = match l.availability {
+        // Copernicus Marine layers are listed, and off, until that source's opt-in is on.
+        catalogue::Availability::Available
+            if l.needs_copernicus() && !config.providers.copernicus.enabled =>
+        {
+            (false, Some(s.copernicus_needs_opt_in().to_owned()))
+        }
         catalogue::Availability::Available => (true, None),
         catalogue::Availability::Unavailable { reason } => {
             (false, Some(s.unavailable_reason(reason).to_owned()))
