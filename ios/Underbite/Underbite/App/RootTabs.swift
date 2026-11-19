@@ -6,7 +6,8 @@ enum AppTab: String, CaseIterable, Hashable {
 }
 
 /// The five sections: a tab bar on the iPhone and the iPad (the iPad can still switch to the sidebar
-/// from it, so the Spots list is not covered by default). The welcome comes up on the first launch.
+/// from it, so the Spots list is not covered by default). The welcome comes up on the first launch,
+/// and the connectivity banner shows over all of them while the last fetch found no signal.
 struct RootTabs: View {
     @State private var selection = LaunchArguments.initialTab ?? .map
     @AppStorage("welcomeSeen") private var welcomeSeen = false
@@ -15,19 +16,19 @@ struct RootTabs: View {
     var body: some View {
         TabView(selection: $selection) {
             Tab("Map", systemImage: "map", value: AppTab.map) {
-                MapTab()
+                MapTab().connectivityBanner()
             }
             Tab("Spots", systemImage: "mappin.and.ellipse", value: AppTab.spots) {
-                SpotsView()
+                SpotsView().connectivityBanner()
             }
             Tab("Trips", systemImage: "calendar", value: AppTab.trips) {
-                TripsTab()
+                TripsTab().connectivityBanner()
             }
             Tab("Log", systemImage: "book.closed", value: AppTab.log) {
-                LogTab()
+                LogTab().connectivityBanner()
             }
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
-                SettingsView()
+                SettingsView().connectivityBanner()
             }
         }
         .tabViewStyle(.sidebarAdaptable)

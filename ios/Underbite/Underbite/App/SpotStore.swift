@@ -71,11 +71,18 @@ nonisolated struct FileProblem: Equatable, Sendable {
 nonisolated struct SpotStatus: Equatable, Sendable {
     var lastSuccess: Int64?
     var error: String?
+    /// When a fetch last found no signal, until one gets an answer.
+    var lastAttempt: Int64?
 
     init(_ cache: SpotCache) {
         lastSuccess = cache.lastSuccess
         error = cache.error
+        lastAttempt = cache.lastAttempt
     }
+
+    /// The time the refresh interval counts from: the last try without signal while there was
+    /// none, else the last success.
+    var refreshedAt: Int64? { lastAttempt ?? lastSuccess }
 }
 
 /// One row of the spot list and the page header, as `view_model` returns it: the core wrote
@@ -107,12 +114,18 @@ nonisolated private struct PageHead: Decodable {
 @Observable
 final class SpotStore {
     /// The one store of the process: every scene, every size class and every iPad window shares it.
-    static let shared = SpotStore()
+    /// It keeps the spots' station metadata in the app's one offline store.
+    static let shared = SpotStore(
+        metadata: SpotMetadata(store: MapOffline.store), simulatesOffline: NetworkRoute.launchOffline)
 
     /// Runs one spot's fetch (the core's `fetch_spot`; tests may stand another in).
     typealias Fetcher =
         @Sendable (SpotInfo, String, Keys, FetchOptions, Int64, FetchHost) async throws
         -> SpotFetchOutcome
+    /// Runs one spot's fetch with the station metadata kept for it (the core's `fetch_spot`).
+    typealias MetadataFetcher =
+        @Sendable (SpotInfo, String, Keys, FetchOptions, Int64, [CachedResponse], FetchHost)
+        async throws -> SpotFetchOutcome
     /// Looks up the stations around one spot (the core's `discover_stations`; tests may stand
     /// another in).
     typealias Discoverer =
@@ -151,6 +164,11 @@ final class SpotStore {
     private(set) var stationsRevision = 0
     /// The files that could not be read at launch, for the views to say so.
     private(set) var fileProblems: [FileProblem] = []
+    /// The core's offline note of the last fetch that found no signal ("offline: computed from
+    /// harmonic constants, other values from ..."), until a fetch gets an answer again. It
+    /// follows fetch outcomes only, so a brief loss of the route between fetches shows nothing.
+    /// Every window shares it.
+    private(set) var offlineNote: String?
 
     /// A fix of the phone.
     struct CurrentPlace: Equatable {
@@ -163,7 +181,15 @@ final class SpotStore {
     @ObservationIgnored private let keys: @Sendable () -> Keys
     @ObservationIgnored private let clock: @Sendable () -> Int64
     @ObservationIgnored private let lowPower: @Sendable () -> Bool
-    @ObservationIgnored private let fetcher: Fetcher
+    @ObservationIgnored private let fetcher: MetadataFetcher
+    /// Where the spots' station metadata is kept; none keeps nothing (tests, the sample).
+    @ObservationIgnored private let metadata: SpotMetadata?
+    /// Debug `-offline`: a spot fetched once online (now or before) is then fetched through a
+    /// host without signal.
+    @ObservationIgnored private let simulatesOffline: Bool
+    @ObservationIgnored private var primed: Set<String> = []
+    /// The spots a refresh someone asked for is fetching: their metadata is asked for again.
+    @ObservationIgnored private var asked: Set<String> = []
     @ObservationIgnored private let discoverer: Discoverer
     @ObservationIgnored private let pageBuilder: PageBuilder
     /// The whole caches read so far: the shown spots' and those a view asked for. The others
@@ -201,11 +227,10 @@ final class SpotStore {
         keys: @escaping @Sendable () -> Keys = { Keychain.keys() },
         clock: @escaping @Sendable () -> Int64 = { Int64(Date().timeIntervalSince1970) },
         lowPower: @escaping @Sendable () -> Bool = { ProcessInfo.processInfo.isLowPowerModeEnabled },
-        fetcher: @escaping Fetcher = { spot, settings, keys, options, now, host in
-            try await fetchSpot(
-                spot: spot, settingsJson: settings, keys: keys, options: options, now: now,
-                cachedMetadata: [], host: host)
-        },
+        fetcher: Fetcher? = nil,
+        metadataFetcher: MetadataFetcher? = nil,
+        metadata: SpotMetadata? = nil,
+        simulatesOffline: Bool = false,
         discoverer: @escaping Discoverer = { spot, settings, keys, now, host in
             try await UnderbiteKit.discoverStations(
                 spot: spot, settingsJson: settings, keys: keys, allowMetered: true, now: now,
@@ -220,7 +245,21 @@ final class SpotStore {
         self.keys = keys
         self.clock = clock
         self.lowPower = lowPower
-        self.fetcher = fetcher
+        if let metadataFetcher {
+            self.fetcher = metadataFetcher
+        } else if let fetcher {
+            self.fetcher = { @Sendable spot, settings, keys, options, now, _, host in
+                try await fetcher(spot, settings, keys, options, now, host)
+            }
+        } else {
+            self.fetcher = { @Sendable spot, settings, keys, options, now, cached, host in
+                try await fetchSpot(
+                    spot: spot, settingsJson: settings, keys: keys, options: options, now: now,
+                    cachedMetadata: cached, host: host)
+            }
+        }
+        self.metadata = metadata
+        self.simulatesOffline = simulatesOffline
         self.discoverer = discoverer
         self.pageBuilder = pageBuilder
         settingsJSON = defaultSettingsJson()
@@ -384,6 +423,7 @@ final class SpotStore {
         pages[id] = nil
         files.remove(files.cacheName(id))
         forgetSpot(spotId: id, host: host)
+        if let metadata { Task { await metadata.forget(spot: id) } }
         stationProblems[id] = nil
         rowsBuilt[id] = nil
         if activeID == id { activeID = arranged.first?.id }
@@ -585,20 +625,35 @@ final class SpotStore {
         let now = clock()
         let after = RefreshPolicy.dueAfter(minutes: refreshMinutes, lowPower: lowPower())
         let due = RefreshPolicy.due(
-            spots.map { ($0.id, statuses[$0.id]?.lastSuccess) }, now: now, after: after)
+            spots.map { ($0.id, statuses[$0.id]?.refreshedAt) }, now: now, after: after)
         guard !due.isEmpty else {
             await rebuildPage()
             return
         }
-        await refresh(only: due)
+        await refresh(only: due, asked: false)
+    }
+
+    /// The route came back and held: fetches the spots whose last fetch found no signal.
+    func refreshWaiting() async {
+        await loadStatuses()
+        let waiting = Set(spots.map(\.id).filter { statuses[$0]?.lastAttempt != nil })
+        guard !waiting.isEmpty else { return }
+        await refresh(only: waiting, asked: false)
     }
 
     /// Fetches `ids` (every spot when `nil`), one at a time: each fetch loads the call ledger
     /// and saves its own copy, so side-by-side fetches would under-count the metered calls.
     /// A refresh asked for while one runs joins it and returns when it ends; a spot being
     /// fetched then is not fetched again. Cancelling the task drops the spots still waiting.
+    /// Someone asked for it (a pull to refresh, a new spot, a pack's download): the station
+    /// metadata is asked for again too.
     func refresh(only ids: Set<String>? = nil) async {
+        await refresh(only: ids, asked: true)
+    }
+
+    private func refresh(only ids: Set<String>?, asked: Bool) async {
         let wanted = arranged.map(\.id).filter { ids?.contains($0) ?? true }
+        if asked { self.asked.formUnion(wanted) }
         let first = wanted.filter { $0 == activeID } + wanted.filter { $0 != activeID }
         queue.add(first, except: refreshing)
         pageDue = true
@@ -626,7 +681,8 @@ final class SpotStore {
                     break
                 }
                 guard let id = queue.next() else { break }
-                await fetchOne(id)
+                // Debug `-offline`: the first fetch went online, the next one has no signal.
+                if await fetchOne(id) { queue.add([id]) }
             }
             if pageDue {
                 pageDue = false
@@ -641,26 +697,41 @@ final class SpotStore {
         for waiter in done { waiter.resume() }
     }
 
-    private func fetchOne(_ id: String) async {
-        guard spot(id) != nil else { return }
+    /// Fetches spot `id` with the station metadata kept for it, and keeps what came back: a
+    /// snapshot with an answer, the core's merged one without signal (its offline note then
+    /// shows, and the time of the last success stays), or the older snapshot when nothing
+    /// answered and there was nothing to merge. Returns whether a debug `-offline` launch
+    /// should fetch it again, now without signal.
+    @discardableResult
+    private func fetchOne(_ id: String) async -> Bool {
+        guard spot(id) != nil else { return false }
         refreshing.insert(id)
         defer { refreshing.remove(id) }
+        let refreshMetadata = asked.remove(id) != nil
         var held = await storedCache(id)
         await rebuildPage()
-        guard let spot = spot(id) else { return }
+        guard let spot = spot(id) else { return false }
         let now = clock()
         let options = FetchOptions(
-            allowMetered: true, inferWaterType: !spot.waterTypeChosen && held.suggestion == nil)
+            allowMetered: true, inferWaterType: !spot.waterTypeChosen && held.suggestion == nil,
+            refreshMetadata: refreshMetadata)
+        let kept = held.metadataKeys ?? []
+        let cached = await metadata?.cached(kept, now: now) ?? []
+        let withoutSignal =
+            simulatesOffline
+            && (primed.contains(id) || (held.snapshotJSON != nil && !kept.isEmpty))
+        let host: FetchHost = withoutSignal ? UnreachableHost(self.host) : self.host
         let result: Result<SpotFetchOutcome, any Error>
         do {
-            result = .success(try await fetcher(spot.info, settingsJSON, keys(), options, now, host))
+            result = .success(
+                try await fetcher(spot.info, settingsJSON, keys(), options, now, cached, host))
         } catch {
             result = .failure(error)
         }
         // A spot deleted meanwhile keeps nothing: the fetch stored its snapshot on the host.
         guard let current = self.spot(id) else {
-            forgetSpot(spotId: id, host: host)
-            return
+            forgetSpot(spotId: id, host: self.host)
+            return false
         }
         var ranked: String?
         switch result {
@@ -673,15 +744,35 @@ final class SpotStore {
                     change(id) { $0.waterType = hint.waterType }
                 }
             }
-            // Every source unreachable: the phone is offline; the older snapshot stays.
-            if !outcome.errors.isEmpty, outcome.errors.allSatisfy({ $0.kind == "transport" }) {
-                held.error = outcome.errors[0].message
-            } else {
+            switch FetchStanding(outcome.errors) {
+            case .online:
                 held.snapshotJSON = outcome.snapshotJson
                 held.lastSuccess = now
+                held.lastAttempt = nil
                 held.error = nil
+                offlineNote = nil
                 // The stations the fetch ranked, so the list shows them before any lookup.
-                ranked = storedStations(spotId: id, host: host)
+                ranked = storedStations(spotId: id, host: self.host)
+            case .offline(let note):
+                // The core's merge: the last values with their own times, and the tide
+                // computed from the kept constants. The last success stays the last online.
+                held.snapshotJSON = outcome.snapshotJson
+                held.lastAttempt = now
+                held.error = nil
+                offlineNote = note
+            case .unreachable(let message):
+                // Nothing answered and nothing to merge: the older snapshot stays.
+                held.lastAttempt = now
+                held.error = message
+            }
+            if let metadata, !outcome.cacheable.isEmpty {
+                held.metadataKeys = await metadata.keep(
+                    outcome.cacheable, spot: id, kept: kept, now: now)
+                // Deleted while the metadata was written: nothing of it stays.
+                guard self.spot(id) != nil else {
+                    await metadata.forget(spot: id)
+                    return false
+                }
             }
         case .failure(let error):
             held.error = Self.message(of: error)
@@ -694,6 +785,8 @@ final class SpotStore {
             held.stationsJSON = kept.stationsJSON
         }
         keep(held, for: id)
+        guard simulatesOffline, !withoutSignal, case .success = result else { return false }
+        return primed.insert(id).inserted
     }
 
     /// What an error of a fetch, lookup or station choice says: the core's own message for the

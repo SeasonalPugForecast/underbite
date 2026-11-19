@@ -110,4 +110,10 @@ nonisolated struct SpotCache: Codable, Equatable, Sendable {
     var suggestion: WaterTypeHint?
     /// The stations around the spot, as `discover_stations` returned them.
     var stationsJSON: String?
+    /// The keys of the station metadata kept for the spot in the offline store, passed back to
+    /// its fetches so one without signal can still compute the tide.
+    var metadataKeys: [String]?
+    /// When a fetch last found no signal (Unix seconds), until one gets an answer again: the
+    /// next try waits the refresh interval from then, or for the route to come back.
+    var lastAttempt: Int64?
 }
