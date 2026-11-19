@@ -11,6 +11,7 @@ pub(crate) mod testutil;
 pub mod access;
 pub mod blooms;
 pub mod coops;
+pub mod copernicus;
 pub mod dfo;
 pub mod eccc;
 pub mod encdirect;
