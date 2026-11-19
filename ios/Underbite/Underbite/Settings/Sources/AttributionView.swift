@@ -77,10 +77,10 @@ private struct CreditRow: View {
                 Text(conditions).font(.caption).foregroundStyle(.readableSecondary)
             }
             if let url = terms.flatMap(URL.init(string:)) {
-                PageLink(url: url, label: "\(name) terms")
+                PageLink(url: url, kind: "Terms", label: "\(name) terms")
             }
             if let url = site.flatMap(URL.init(string:)), site != terms {
-                PageLink(url: url, label: "\(name) website")
+                PageLink(url: url, kind: "Website", label: "\(name) website")
             }
         }
         .accessibilityElement(children: .contain)
@@ -105,7 +105,7 @@ private struct MapCreditRow: View {
                 Text(notice).font(.caption.bold())
             }
             if let url = credit.termsUrl.flatMap(URL.init(string:)) {
-                PageLink(url: url, label: "\(credit.layers.first ?? "") terms")
+                PageLink(url: url, kind: "Terms", label: "\(credit.layers.first ?? "") terms")
             }
         }
         .accessibilityElement(children: .contain)
@@ -115,11 +115,13 @@ private struct MapCreditRow: View {
 /// A full-height link target, read as the page's name and not its address.
 private struct PageLink: View {
     let url: URL
+    /// What the page is: "Terms" or "Website".
+    let kind: String
     let label: String
 
     var body: some View {
         Link(destination: url) {
-            Label(url.host() ?? label, systemImage: "safari")
+            Label("\(kind): \(url.host() ?? label)", systemImage: "safari")
                 .frame(minHeight: 44, alignment: .leading)
                 .contentShape(Rectangle())
         }
