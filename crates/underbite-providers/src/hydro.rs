@@ -20,10 +20,12 @@
 use serde::Deserialize;
 use serde_json::Value;
 use underbite_core::discover::hydro::{Flowline, FlowlineKind, Point, Waterbody, WaterbodyKind};
+use underbite_core::map::Bbox;
 use underbite_core::provenance::{Attribution, SourceId};
 
 use crate::request::{Coordinates, Response};
 use crate::source::{FetchContext, SourceError};
+use crate::species::{fmt_degrees, request_box};
 
 /// The source id of 3DHP data.
 pub const SOURCE: SourceId = SourceId::from_static("usgs-3dhp");
@@ -107,8 +109,17 @@ pub fn flowlines_query(
     let centre = ctx.round(spot).coordinates();
     let radius = search_radius(centre, radius_m, ctx.coordinate_precision());
     let (xmin, ymin, xmax, ymax) = envelope(centre, radius)?;
+    // Rounded outward to two decimals, like every other area sent.
+    let sent = request_box(Bbox {
+        west: xmin,
+        south: ymin,
+        east: xmax,
+        north: ymax,
+    })
+    .ok_or_else(|| SourceError::Unsupported("envelope out of range".to_owned()))?;
+    let [xmin, ymin, xmax, ymax] = [sent.west, sent.south, sent.east, sent.north].map(fmt_degrees);
     let url = format!(
-        "{BASE_URL}/50/query?where=1=1&geometry={xmin:.5},{ymin:.5},{xmax:.5},{ymax:.5}\
+        "{BASE_URL}/50/query?where=1=1&geometry={xmin},{ymin},{xmax},{ymax}\
 &geometryType=esriGeometryEnvelope&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects\
 &outFields={FLOWLINE_FIELDS}&returnGeometry=true&geometryPrecision=5\
 &orderByFields=hydrosequence%20ASC&resultRecordCount={PAGE_SIZE}&f=json"
@@ -129,12 +140,13 @@ pub fn waterbodies_query(
     envelope(centre, radius)?;
     let distance = radius.round();
     let url = format!(
-        "{BASE_URL}/60/query?where=1=1&geometry={:.5},{:.5}&geometryType=esriGeometryPoint\
+        "{BASE_URL}/60/query?where=1=1&geometry={},{}&geometryType=esriGeometryPoint\
 &inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance={distance}\
 &units=esriSRUnit_Meter&outFields={WATERBODY_FIELDS}&returnGeometry=true&geometryPrecision=5\
 &maxAllowableOffset={WATERBODY_GENERALISATION_DEG}&orderByFields=id3dhp%20ASC\
 &resultRecordCount={PAGE_SIZE}&f=json",
-        centre.longitude, centre.latitude
+        fmt_degrees(centre.longitude),
+        fmt_degrees(centre.latitude)
     );
     Ok(query(url, Layer::Waterbody, 0))
 }
@@ -619,9 +631,11 @@ mod tests {
     #[test]
     fn waterbody_request_uses_a_point_with_distance() {
         let q = waterbodies_query(croton(), 3000.0, &ctx()).unwrap();
-        assert!(q.url.contains(
-            "/60/query?where=1=1&geometry=-73.86000,41.23000&geometryType=esriGeometryPoint"
-        ));
+        assert!(
+            q.url.contains(
+                "/60/query?where=1=1&geometry=-73.86,41.23&geometryType=esriGeometryPoint"
+            )
+        );
         // 3 km plus the half-diagonal of a 0.01-degree cell at 41.2 degrees (557 m by 419 m).
         assert!(
             q.url.contains("distance=3696&units=esriSRUnit_Meter"),
@@ -644,15 +658,15 @@ mod tests {
         let coarse = ctx().with_coordinate_precision(1);
         let q = flowlines_query(spot, 0.0, &coarse).unwrap();
         let [xmin, ymin, xmax, ymax] = envelope_from_url(&q.url).expect("valid envelope");
-        assert!((f64::midpoint(ymin, ymax) - 41.2).abs() < 1e-4);
-        assert!((f64::midpoint(xmin, xmax) + 73.9).abs() < 1e-4);
+        assert!((f64::midpoint(ymin, ymax) - 41.2).abs() < 0.01);
+        assert!((f64::midpoint(xmin, xmax) + 73.9).abs() < 0.01);
         let dlat = MIN_RADIUS_M / METRES_PER_DEGREE;
         let dlon = dlat / spot.latitude.to_radians().cos();
         assert!(ymax >= spot.latitude + dlat && ymin <= spot.latitude - dlat);
         assert!(xmax >= spot.longitude + dlon && xmin <= spot.longitude - dlon);
 
         let w = waterbodies_query(spot, 0.0, &coarse).unwrap();
-        assert!(w.url.contains("geometry=-73.90000,41.20000&"), "{}", w.url);
+        assert!(w.url.contains("geometry=-73.90,41.20&"), "{}", w.url);
         let distance: f64 = w
             .url
             .split('&')
@@ -665,7 +679,7 @@ mod tests {
 
         let whole = ctx().with_coordinate_precision(0);
         let w = waterbodies_query(spot, 0.0, &whole).unwrap();
-        assert!(w.url.contains("geometry=-74.00000,41.00000&"), "{}", w.url);
+        assert!(w.url.contains("geometry=-74.00,41.00&"), "{}", w.url);
         assert!(w.url.contains("distance=71424&"), "{}", w.url);
     }
 

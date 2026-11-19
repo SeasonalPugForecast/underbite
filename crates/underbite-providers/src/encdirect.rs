@@ -221,7 +221,7 @@ pub fn parse_layers(response: &Response<'_>) -> Result<BandLayers, EncError> {
 /// `layer` is an id from [`parse_layers`] for the same band; `offset` is the number of features to
 /// skip (0 for the first page, then `offset + PAGE_SIZE` while [`StructurePage::more`] is set).
 /// The answer is `JSON` with every field (`outFields=*`) and positions in WGS 84 degrees; the box
-/// is sent to six decimals, about 0.1 m.
+/// is rounded outward to two decimals, so it never pins down a place finer than a spot's.
 ///
 /// # Errors
 /// [`EncError::InvalidRequest`] for a box that is not finite, outside the world or inverted.
@@ -243,15 +243,15 @@ pub fn points_request(
     if !ok {
         return Err(EncError::InvalidRequest("box"));
     }
+    let bbox = crate::species::request_box(bbox).ok_or(EncError::InvalidRequest("box"))?;
     let base = format!("{HOST}/{}/MapServer/{layer}/query", band.service());
     let url = QueryBuilder::new(&base)
         .param("f", "json")
         .param(
             "geometry",
-            format!(
-                "{:.6},{:.6},{:.6},{:.6}",
-                bbox.west, bbox.south, bbox.east, bbox.north
-            ),
+            [bbox.west, bbox.south, bbox.east, bbox.north]
+                .map(crate::species::fmt_degrees)
+                .join(","),
         )
         .param("geometryType", "esriGeometryEnvelope")
         .param("inSR", "4326")
@@ -487,7 +487,7 @@ mod tests {
         let r = points_request(EncBand::Harbour, 36, BIGHT, 1000).unwrap();
         assert_eq!(
             r.url,
-            "https://gis.charttools.noaa.gov/arcgis/rest/services/encdirect/enc_harbour/MapServer/36/query?f=json&geometry=-74.200000,40.350000,-73.700000,40.750000&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=%2A&returnGeometry=true&outSR=4326&orderByFields=OBJECTID&resultOffset=1000&resultRecordCount=1000"
+            "https://gis.charttools.noaa.gov/arcgis/rest/services/encdirect/enc_harbour/MapServer/36/query?f=json&geometry=-74.20,40.35,-73.70,40.75&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=%2A&returnGeometry=true&outSR=4326&orderByFields=OBJECTID&resultOffset=1000&resultRecordCount=1000"
         );
         for bad in [
             Bbox {

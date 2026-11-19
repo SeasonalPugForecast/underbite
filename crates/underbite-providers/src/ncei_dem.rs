@@ -203,8 +203,9 @@ fn pixels(span: f64, cell: f64) -> f64 {
 /// The export of an area in degrees with cells of about `cell_deg` degrees, for contours or a
 /// whole harbour at once.
 ///
-/// The box is clipped to -180..180 and -90..90. When either side would exceed [`MAX_IMAGE_PX`]
-/// pixels, both are scaled down together so the cells stay square and grow; the decoded image's
+/// The box is clipped to -180..180 and -90..90 and sent as given: the image covers exactly that
+/// box, so a caller that shows a view rounds it first (as the map's elevation requests do).
+/// When either side would exceed [`MAX_IMAGE_PX`] pixels, both are scaled down together so the cells stay square and grow; the decoded image's
 /// pixel size is the one to use.
 ///
 /// # Errors

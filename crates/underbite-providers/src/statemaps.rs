@@ -132,10 +132,11 @@ pub fn contour_request(
     if !ok {
         return Err(StateMapError::InvalidRequest("box"));
     }
-    let geometry = format!(
-        "{:.6},{:.6},{:.6},{:.6}",
-        bbox.west, bbox.south, bbox.east, bbox.north
-    );
+    // Rounded outward to two decimals: the view may be centred on a saved spot.
+    let bbox = crate::species::request_box(bbox).ok_or(StateMapError::InvalidRequest("box"))?;
+    let geometry = [bbox.west, bbox.south, bbox.east, bbox.north]
+        .map(crate::species::fmt_degrees)
+        .join(",");
     let mut q = QueryBuilder::new(state.base())
         .param("where", "1=1")
         .param("geometry", geometry)
@@ -476,7 +477,7 @@ mod tests {
         assert!(r.url.starts_with(IN_QUERY), "{}", r.url);
         for part in [
             "where=1%3D1",
-            "geometry=-86.310000,39.110000,-86.280000,39.130000",
+            "geometry=-86.31,39.11,-86.28,39.13",
             "geometryType=esriGeometryEnvelope",
             "inSR=4326",
             "spatialRel=esriSpatialRelIntersects",

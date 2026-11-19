@@ -138,7 +138,7 @@ pub fn without_inaturalist_duplicates(
 /// A box fit to send: finite, inside the world and not inverted, rounded outward to
 /// [`MAX_COORDINATE_DECIMALS`] so it still covers the area asked for. `None` for a box that
 /// cannot be sent (one across the antimeridian is two boxes).
-pub(crate) fn request_box(bbox: Bbox) -> Option<Bbox> {
+pub fn request_box(bbox: Bbox) -> Option<Bbox> {
     let ok = [bbox.west, bbox.south, bbox.east, bbox.north]
         .iter()
         .all(|v| v.is_finite())
@@ -161,6 +161,19 @@ pub(crate) fn request_box(bbox: Bbox) -> Option<Bbox> {
         east: up(bbox.east).min(180.0),
         north: up(bbox.north).min(90.0),
     })
+}
+
+/// A degree value as sent in a query: [`MAX_COORDINATE_DECIMALS`] places, never `-0.00`.
+pub(crate) fn fmt_degrees(value: f64) -> String {
+    let text = format!(
+        "{value:.prec$}",
+        prec = usize::from(MAX_COORDINATE_DECIMALS)
+    );
+    if text.starts_with('-') && text.bytes().all(|b| matches!(b, b'-' | b'0' | b'.')) {
+        text[1..].to_owned()
+    } else {
+        text
+    }
 }
 
 #[cfg(test)]

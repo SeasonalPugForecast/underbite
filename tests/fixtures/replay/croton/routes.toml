@@ -8,53 +8,53 @@
 # Flowlines and waterbodies within 5 km of the spot rounded to 41.23,-73.86 (plus the rounding
 # cell).
 [[route]]
-match = "geometry=-73.92804,41.17883,-73.79196,41.28117&"
+match = "geometry=-73.93,41.17,-73.79,41.29&"
 file = "../../raw/hydro/hydro-50-croton-geom.json"
 
 [[route]]
-match = "geometry=-73.86000,41.23000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=5696&"
+match = "geometry=-73.86,41.23&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=5696&"
 file = "../../raw/hydro/hydro-60-croton-geom.json"
 
 # Within 1.5 km (plus the rounding cell) of the river gauges beyond them: Hunter Brook, Katonah,
 # West Nyack and West Point.
 [[route]]
-match = "geometry=-73.86625,41.24027,-73.81375,41.27973&"
+match = "geometry=-73.87,41.24,-73.81,41.28&"
 file = "../../raw/hydro/hydro-50-hunter-brook-geom.json"
 
 [[route]]
-match = "geometry=-73.84000,41.26000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
+match = "geometry=-73.84,41.26&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
 file = "../../raw/hydro/hydro-60-hunter-brook-geom.json"
 
 [[route]]
-match = "geometry=-73.69625,41.25027,-73.64375,41.28973&"
+match = "geometry=-73.70,41.25,-73.64,41.29&"
 file = "../../raw/hydro/hydro-50-ktnn6-geom.json"
 
 [[route]]
-match = "geometry=-73.67000,41.27000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
+match = "geometry=-73.67,41.27&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
 file = "../../raw/hydro/hydro-60-ktnn6-geom.json"
 
 [[route]]
-match = "geometry=-73.98619,41.08026,-73.93381,41.11974&"
+match = "geometry=-73.99,41.08,-73.93,41.12&"
 file = "../../raw/hydro/hydro-50-wnyn6-geom.json"
 
 [[route]]
-match = "geometry=-73.96000,41.10000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2197&"
+match = "geometry=-73.96,41.10&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2197&"
 file = "../../raw/hydro/hydro-60-wnyn6-geom.json"
 
 [[route]]
-match = "geometry=-73.98629,41.37027,-73.93371,41.40973&"
+match = "geometry=-73.99,41.37,-73.93,41.41&"
 file = "../../raw/hydro/hydro-50-wptn6-geom.json"
 
 [[route]]
-match = "geometry=-73.96000,41.39000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
+match = "geometry=-73.96,41.39&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
 file = "../../raw/hydro/hydro-60-wptn6-geom.json"
 
 [[route]]
-match = "geometry=-73.62625,41.24027,-73.57375,41.27973&"
+match = "geometry=-73.63,41.24,-73.57,41.28&"
 file = "../../raw/hydro/hydro-50-xrvn6-geom.json"
 
 [[route]]
-match = "geometry=-73.60000,41.26000&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
+match = "geometry=-73.60,41.26&geometryType=esriGeometryPoint&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&distance=2196&"
 file = "../../raw/hydro/hydro-60-xrvn6-geom.json"
 
 # NWS point lookup for the rounded spot: land (zone NYZ070), so no marine zone.
