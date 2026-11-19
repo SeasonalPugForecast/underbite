@@ -13,6 +13,7 @@ pub mod locale;
 pub mod log;
 #[cfg(any(test, debug_assertions))]
 pub mod packs;
+pub mod privacy;
 #[cfg(test)]
 mod pseudo_tests;
 pub mod species;

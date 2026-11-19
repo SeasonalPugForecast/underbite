@@ -367,7 +367,7 @@ fn map_depth_and_offline_words_are_translated_in_the_pseudo_locale() {
 }
 
 /// Texts that are not translated, among `texts`, leaving out what `data` says.
-fn english_texts(texts: &[String], data: &[String]) -> Vec<String> {
+pub(in crate::view) fn english_texts(texts: &[String], data: &[String]) -> Vec<String> {
     texts
         .iter()
         .filter_map(|t| untranslated(t, data).map(|rest| format!("{t:?} ({rest:?})")))

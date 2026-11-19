@@ -2298,6 +2298,32 @@ safety_keys! {
     /// A rule's safety conditions for the editor. `{alert}`: the event name it watches.
     AlertRuleMarine => "{alert} in effect",
     AlertRuleStorm => "A significant storm or a hurricane forecast cone",
+    /// The Privacy page: what is stored where and what is sent. Plain fact in every voice, the
+    /// same as `docs/privacy.md`.
+    PrivacyStaysTitle => "What stays on your device",
+    PrivacyStaysData => "Your spots, trips, catches, photos, notes, alert rules and settings live in the app's own storage on the phone and are not uploaded anywhere.",
+    PrivacyStaysLocation => "Where you are is used only on the phone, to centre the map, to start a new spot or to search near you. Location access is optional, and asking for it once does not keep it running.",
+    PrivacyStaysExact => "The spots' exact coordinates stay on the phone. Stations are chosen on the phone from lists fetched for the rounded place.",
+    PrivacyStaysKeys => "Optional keys, such as a USGS API key, are kept in the iOS Keychain. They are never written to settings, logs or exports.",
+    PrivacyLeavesTitle => "What leaves the device",
+    PrivacyLeavesIntro => "The app contacts public data services to get tides, currents, river flow, water temperature, weather, waves, charts, access, stocking and species information. They are named on the Sources screen, with their licences.",
+    PrivacyLeavesPlace => "To ask them about a spot, the app sends the spot's place, rounded. Latitude and longitude are rounded before they leave the phone to the number of decimals chosen below: two (about 1 km, the default and the finest allowed), one (about 10 km) or none (whole degrees). A coarser place may pick a station farther from the water you fish. Station requests use the station's own identifier, which is public.",
+    PrivacyLeavesArea => "The area on the map is sent too. Map layers, depth shading, access areas and nearby species ask the services for the part of the world on screen, by tile, by grid block or by box. These are areas you are looking at, not a spot you saved.",
+    PrivacyLeavesSearch => "The words you type in the new-spot search go to Apple Maps, with an approximate area around you when your location is known. The app keeps no list of past searches.",
+    PrivacyLeavesServices => "The services see your IP address, as any website does, and they can log the rounded coordinates they receive along with it. Each service keeps its own logs under its own terms, which Underbite does not control. The app sends an identifier of itself and its version, and no device or advertising identifier. Requests are never logged with keys. The app does not track you and has no third-party code that collects data.",
+    PrivacySendTitle => "What you choose to send",
+    PrivacySendShares => "When you share a spot or a trip, the file or link holds what you chose to share, including its exact place unless you round it or share only the area. You send it, to whom you choose, by the iOS share sheet.",
+    PrivacySendICloud => "Sharing through iCloud happens only when you share. Underbite does not sync your data to iCloud on its own.",
+    PrivacySendExports => "A catch export (CSV or GPX) holds exact locations, since a log of where you caught fish is of little use otherwise. Catch photos are saved without their location and camera metadata, so a shared photo carries none.",
+    /// The rounding setting of the Privacy page.
+    PrivacyRoundingTitle => "Place sent as",
+    PrivacyRound2 => "2 decimals, about 1 km",
+    PrivacyRound1 => "1 decimal, about 10 km",
+    PrivacyRound0 => "Whole degrees, about 100 km",
+    /// A setting no choice covers. `{n}`: its decimals.
+    PrivacyRoundOther => "{n} decimals",
+    PrivacyRoundingFooter => "Data providers are sent your spot's place rounded to this many decimals of latitude and longitude, never finer. Your exact spots stay on this device. A coarser place may pick a station farther from the water you fish.",
+    PrivacyTooFine => "Finer than allowed: choose another",
 }
 
 impl SafetyKey {
