@@ -23,8 +23,14 @@ nonisolated struct PrivacyModel {
     /// "too fine" label for it so the picker still has a selection.
     var offersCurrent: Bool { choices.contains { $0.decimals == precision } }
 
+    /// The edit that sets the rounding to `decimals`: what the page's picker applies through
+    /// the store, and what `choosing` applies to a document.
+    static func setting(_ decimals: Int) -> (inout Settings) -> Void {
+        { $0.sources.coordinatePrecision = decimals }
+    }
+
     /// `json` with the rounding set to `decimals`, or the reason it is not valid.
     static func choosing(_ decimals: Int, in json: String) throws -> String {
-        try Preferences.applying(json) { $0.sources.coordinatePrecision = decimals }
+        try Preferences.applying(json, setting(decimals))
     }
 }

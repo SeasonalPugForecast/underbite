@@ -194,9 +194,9 @@ struct PrivacyPage: View {
                 LabeledContent(model.words.roundingTitle, value: model.words.roundingCurrent)
                 Picker(
                     model.words.roundingTitle,
-                    selection: access.binding({ $0.sources.coordinatePrecision }, fallback: 2) {
-                        $0.sources.coordinatePrecision = $1
-                    }
+                    selection: Binding(
+                        get: { model.precision },
+                        set: { access.edit(PrivacyModel.setting($0)) })
                 ) {
                     ForEach(model.choices, id: \.decimals) { choice in
                         Text(choice.label).tag(choice.decimals)

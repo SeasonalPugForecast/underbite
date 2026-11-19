@@ -10,7 +10,11 @@ struct AttributionView: View {
     private static let catalogue = sourceCatalogue()
 
     var body: some View {
-        let page = try? attributionPage(settingsJson: store.settingsJSON)
+        // Settings that cannot be read must not cost the not-for-navigation statement: the
+        // core words the page the same from its default settings.
+        let page =
+            (try? attributionPage(settingsJson: store.settingsJSON))
+            ?? (try? attributionPage(settingsJson: defaultSettingsJson()))
         List {
             if let page {
                 Section(page.notForNavigationTitle) {
