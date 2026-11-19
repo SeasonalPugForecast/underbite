@@ -13,41 +13,35 @@ struct AttributionView: View {
         let page = try? attributionPage(settingsJson: store.settingsJSON)
         List {
             if let page {
-                Section("Not for navigation") {
+                Section(page.notForNavigationTitle) {
                     Text(page.notForNavigation)
                 }
-            }
-            Section {
-                ForEach(Self.catalogue, id: \.id) { source in
-                    CreditRow(
-                        name: source.name, credit: source.credit, licence: source.license,
-                        conditions: source.conditions, site: source.url, terms: source.termsUrl)
+                Section(page.sourcesTitle) {
+                    ForEach(Self.catalogue, id: \.id) { source in
+                        CreditRow(
+                            name: source.name, credit: source.credit, licence: source.license,
+                            conditions: source.conditions, links: source.links)
+                    }
                 }
-            } header: {
-                Text("Data sources")
-            }
-            if let page {
-                Section {
+                Section(page.datasetsTitle) {
                     ForEach(page.datasets, id: \.id) { dataset in
                         CreditRow(
                             name: dataset.name, credit: dataset.credit, licence: dataset.license,
-                            conditions: dataset.conditions, site: nil, terms: dataset.termsUrl)
+                            conditions: dataset.conditions, links: dataset.links)
                     }
-                } header: {
-                    Text("Bundled data and links")
                 }
                 Section {
                     ForEach(page.mapCredits, id: \.credit) { credit in
                         MapCreditRow(credit: credit)
                     }
                 } header: {
-                    Text("Map layers")
+                    Text(page.mapLayersTitle)
                 } footer: {
                     Text(page.footer)
                 }
-            }
-            Section {
-                NavigationLink("Acknowledgements") { AcknowledgementsView() }
+                Section {
+                    NavigationLink(page.acknowledgementsTitle) { AcknowledgementsView() }
+                }
             }
         }
         .readableText()
@@ -57,14 +51,13 @@ struct AttributionView: View {
 }
 
 /// One source or dataset: its name, the credit as it asks, its licence, what it asks beyond
-/// that, and links to its site and to the page that states its terms.
+/// that, and its links.
 private struct CreditRow: View {
     let name: String
     let credit: String
     let licence: String?
     let conditions: String?
-    let site: String?
-    let terms: String?
+    let links: [CreditLink]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -76,12 +69,7 @@ private struct CreditRow: View {
             if let conditions {
                 Text(conditions).font(.caption).foregroundStyle(.readableSecondary)
             }
-            if let url = terms.flatMap(URL.init(string:)) {
-                PageLink(url: url, kind: "Terms", label: "\(name) terms")
-            }
-            if let url = site.flatMap(URL.init(string:)), site != terms {
-                PageLink(url: url, kind: "Website", label: "\(name) website")
-            }
+            ForEach(links, id: \.url) { PageLink(link: $0) }
         }
         .accessibilityElement(children: .contain)
     }
@@ -93,7 +81,7 @@ private struct MapCreditRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(credit.layers.joined(separator: ", ")).font(.headline)
+            Text(credit.title).font(.headline)
             Text(credit.credit).font(.subheadline)
             ForEach(credit.acknowledgements, id: \.self) { acknowledgement in
                 Text(acknowledgement).font(.caption).foregroundStyle(.readableSecondary)
@@ -104,28 +92,25 @@ private struct MapCreditRow: View {
             if let notice = credit.notice {
                 Text(notice).font(.caption.bold())
             }
-            if let url = credit.termsUrl.flatMap(URL.init(string:)) {
-                PageLink(url: url, kind: "Terms", label: "\(credit.layers.first ?? "") terms")
-            }
+            ForEach(credit.links, id: \.url) { PageLink(link: $0) }
         }
         .accessibilityElement(children: .contain)
     }
 }
 
-/// A full-height link target, read as the page's name and not its address.
+/// A full-height link target, labelled as the core words it.
 private struct PageLink: View {
-    let url: URL
-    /// What the page is: "Terms" or "Website".
-    let kind: String
-    let label: String
+    let link: CreditLink
 
     var body: some View {
-        Link(destination: url) {
-            Label("\(kind): \(url.host() ?? label)", systemImage: "safari")
-                .frame(minHeight: 44, alignment: .leading)
-                .contentShape(Rectangle())
+        if let url = URL(string: link.url) {
+            Link(destination: url) {
+                Label(link.label, systemImage: "safari")
+                    .frame(minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .font(.subheadline)
+            .accessibilityLabel(Text(link.accessibility))
         }
-        .font(.subheadline)
-        .accessibilityLabel(Text(label))
     }
 }
