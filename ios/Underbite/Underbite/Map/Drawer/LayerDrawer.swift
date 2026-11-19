@@ -62,6 +62,7 @@ struct LayerDrawer: View {
                 Section {
                     PresetLink { withAnimation { page = .presets } }
                 }
+                PacksDrawerSection(controller: controller)
             }
             ForEach(groups) { group in
                 Section(isExpanded: expansion(group.id)) {

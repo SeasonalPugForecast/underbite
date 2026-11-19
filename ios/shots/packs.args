@@ -1,0 +1,2 @@
+-seed -seedPack -tab map -mapAt 40.7033,-74.0170,0.1 -mapDrawer packs -packs list
+wait 30
