@@ -263,7 +263,7 @@ pub async fn stations_near<H: FetchHost>(
 
 /// Ranks the stations around `spot` for `chains` at the context's time: lists, hydrography,
 /// pins and exclusions, stored rankings and coverage checks. Metered calls are spent only when
-/// `allow_metered`.
+/// `allow_metered`. The call ledger, with any pause a 429 set, is saved before it returns.
 pub async fn discover<H: FetchHost>(
     host: &H,
     ctx: &FetchContext,
@@ -272,7 +272,11 @@ pub async fn discover<H: FetchHost>(
     allow_metered: bool,
 ) -> Discovery {
     let driver = Driver::new(host, ctx.now, allow_metered).await;
-    discover_with(&driver, ctx, spot, chains).await
+    let found = discover_with(&driver, ctx, spot, chains).await;
+    if let Err(e) = driver.save_usage().await {
+        tracing::warn!(error = %e, "call ledger");
+    }
+    found
 }
 
 /// [`discover`] within a fetch, on its driver.
@@ -579,6 +583,29 @@ mod tests {
         assert_eq!(inflow.samples().len(), 2);
         assert!(out.attribution.iter().any(|a| a.source == SourceId::CWMS));
         assert_eq!(host.missed(), Vec::<String>::new());
+    }
+
+    #[test]
+    fn a_429_during_discovery_is_saved_with_the_ledger() {
+        use crate::Fetched;
+        use underbite_core::discover::rank::Limits;
+
+        let host = MemoryHost::default().answering_part("usgs.gov", Fetched::new(429, "slow down"));
+        let lake = ChainSpec {
+            sources: vec![SourceId::USGS],
+            limits: Limits::default(),
+        };
+        let chains = BTreeMap::from([(M::Discharge, lake)]);
+        let d = pollster::block_on(discover(&host, &ctx(), &croton(), chains, true));
+        assert_ne!(d.errors.len(), 0);
+        let paused = pollster::block_on(async {
+            let fresh = Driver::new(&host, ctx().now, true).await;
+            fresh
+                .usage
+                .snapshot()
+                .paused_until(&SourceId::USGS, ctx().now)
+        });
+        assert!(paused.is_some(), "{:?}", host.seen());
     }
 
     #[test]

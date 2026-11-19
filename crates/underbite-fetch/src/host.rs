@@ -243,6 +243,11 @@ pub async fn send<H: FetchHost>(host: &H, call: &Call) -> Result<Fetched, Transp
 
 /// One fetch's way out: the host, the call ledger the sessions share and the responses kept
 /// while [`Driver::keeping`] runs. Requests go out one at a time.
+///
+/// The ledger lives in memory while the driver does and is saved in two places: before a
+/// metered request goes out, and by whoever created the driver, once at the end of its entry
+/// point (`fetch_spot`, `discover`). A pause a 429 sets is therefore saved only by the latter,
+/// so a function that creates a driver must call [`Driver::save_usage`] before dropping it.
 pub(crate) struct Driver<'h, H> {
     host: &'h H,
     pub(crate) now: UnixTime,
