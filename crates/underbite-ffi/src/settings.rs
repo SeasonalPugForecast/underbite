@@ -889,6 +889,14 @@ pub fn setting_stops(
     }
 }
 
+/// The words of the settings `settings_json`, in the default voice when they cannot be read.
+pub(crate) fn strings_of(settings_json: &str) -> Strings {
+    let voice = load(settings_json)
+        .map(|(config, _)| config.presentation.voice)
+        .unwrap_or_default();
+    Strings::new(voice)
+}
+
 fn duration_text(config: &Config, seconds: f64) -> String {
     let units = config.units.display_units();
     Formatter::new(units, config.presentation.voice, TimeFormat::H12, "UTC")

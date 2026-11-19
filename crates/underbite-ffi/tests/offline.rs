@@ -16,7 +16,8 @@ use underbite_ffi::fetch::{
 };
 use underbite_ffi::map::GridStore;
 use underbite_ffi::offline::{
-    PackItemKind, PackRequest, current_table_view, pack_requests, plan_pack, tide_table_view,
+    PackItemKind, PackRequest, current_table_view, pack_requests, plan_pack, storage_size_text,
+    storage_view, tide_table_view,
 };
 use underbite_ffi::settings::default_settings_json;
 use underbite_ffi::view::SpotInfo;
@@ -854,6 +855,41 @@ fn a_plan_over_the_offline_limit_says_so_and_a_huge_one_is_refused() {
         now(),
     );
     assert!(bad.is_err());
+}
+
+// ---------------------------------------------------------------------------------------------
+// Storage
+// ---------------------------------------------------------------------------------------------
+
+#[test]
+fn the_storage_page_words_what_is_kept_against_the_limit() {
+    let view = storage_view(412_000_000, 300_000_000, 1_500, default_settings_json());
+    assert_eq!(view.total_text, "412 MB of 1.5 GB");
+    assert_eq!(view.packs_text, "Packs: 300 MB");
+    assert_eq!(view.cache_text, "Map cache: 112 MB");
+    assert_eq!(view.limit_text, "Limit: 1.5 GB");
+
+    // A limit of 0 keeps nothing but packs.
+    let off = storage_view(300_000_000, 300_000_000, 0, default_settings_json());
+    assert_eq!(off.total_text, "300 MB used");
+    assert_eq!(off.cache_text, "Map cache: 0 KB");
+    assert_eq!(off.limit_text, "No map cache: only packs are kept");
+
+    // Counts taken while the store changes never make a negative cache.
+    let odd = storage_view(10_000, 20_000, 500, default_settings_json());
+    assert_eq!(odd.cache_text, "Map cache: 0 KB");
+    assert_eq!(odd.total_text, "10 KB of 500 MB");
+
+    // Pack rows read the same way; unreadable settings still give words.
+    assert_eq!(
+        storage_size_text(48_260_000, default_settings_json()),
+        "48.3 MB"
+    );
+    assert_eq!(storage_size_text(1_540_000_000, "{".into()), "1.5 GB");
+    assert_eq!(
+        storage_view(412_000_000, 0, 1_500, "{".into()).total_text,
+        "412 MB of 1.5 GB"
+    );
 }
 
 // ---------------------------------------------------------------------------------------------

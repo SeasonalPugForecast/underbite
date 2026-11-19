@@ -932,6 +932,18 @@ keys! {
         "About {size}: more than your {limit} offline limit.",
         "About {size}: more than your {limit} offline limit.",
     ),
+    /// What the offline store holds against its limit: `{used}`, `{limit}`.
+    StorageTotal => ("{used} of {limit}", "{used} of {limit}"),
+    /// What the offline store holds when its limit is 0: `{used}`.
+    StorageTotalNoLimit => ("{used} used", "{used} used"),
+    /// What the packs hold, never dropped: `{size}`.
+    StoragePacks => ("Packs: {size}", "Packs: {size}"),
+    /// What the map kept of what was viewed, dropped oldest first past the limit: `{size}`.
+    StorageCache => ("Map cache: {size}", "Map cache: {size}"),
+    /// The offline limit: `{size}`.
+    StorageLimit => ("Limit: {size}", "Limit: {size}"),
+    /// An offline limit of 0.
+    StorageLimitOff => ("No map cache: only packs are kept", "No map cache: only packs are kept"),
     /// Why a layer is not in a pack.
     PackSkipUnknown => ("Not a map layer", "Not a map layer"),
     PackSkipUnavailable => ("Not available", "Not available"),

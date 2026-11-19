@@ -36,7 +36,7 @@ use underbite_providers::ncei_dem;
 
 use crate::fetch::HostRequest;
 use crate::map::{BlockId, MapError, formatter, get, invalid, layer, node_name, tile_request};
-use crate::settings::load;
+use crate::settings::{load, strings_of};
 
 /// The most days a table covers.
 pub const MAX_TABLE_DAYS: u32 = 366;
@@ -544,6 +544,69 @@ pub fn pack_row(
         stale: stale.is_some(),
         stale_text: stale.map(|why| f.strings.pack_stale(why).to_owned()),
     })
+}
+
+/// What the offline store holds, in words, for the storage page.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct StorageView {
+    /// Everything stored against the limit: "412 MB of 1.5 GB" ("412 MB used" when the limit
+    /// is 0).
+    pub total_text: String,
+    /// What the packs hold, never dropped: "Packs: 380 MB".
+    pub packs_text: String,
+    /// What the map kept of what was viewed, dropped oldest first past the limit:
+    /// "Map cache: 32 MB".
+    pub cache_text: String,
+    /// The limit: "Limit: 1.5 GB", or "No map cache: only packs are kept" for 0.
+    pub limit_text: String,
+}
+
+/// The storage page's words for a store holding `total_bytes`, `pinned_bytes` of them pinned by
+/// packs (the rest is the map's cache), under a limit of `limit_mb` megabytes
+/// (`map.offline_max_mb`; a megabyte is 1,000,000 bytes). Sizes read as pack sizes do; the
+/// settings give the voice, the default one when they cannot be read.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn storage_view(
+    total_bytes: u64,
+    pinned_bytes: u64,
+    limit_mb: u32,
+    settings_json: String,
+) -> StorageView {
+    let s = strings_of(&settings_json);
+    let used = s.pack_size(total_bytes);
+    let (total_text, limit_text) = if limit_mb == 0 {
+        (
+            s.fmt(Key::StorageTotalNoLimit, &[("used", &used)]),
+            s.get(Key::StorageLimitOff).to_owned(),
+        )
+    } else {
+        let limit = s.pack_size(u64::from(limit_mb) * 1_000_000);
+        (
+            s.fmt(Key::StorageTotal, &[("used", &used), ("limit", &limit)]),
+            s.fmt(Key::StorageLimit, &[("size", &limit)]),
+        )
+    };
+    StorageView {
+        total_text,
+        packs_text: s.fmt(Key::StoragePacks, &[("size", &s.pack_size(pinned_bytes))]),
+        cache_text: s.fmt(
+            Key::StorageCache,
+            &[(
+                "size",
+                &s.pack_size(total_bytes.saturating_sub(pinned_bytes)),
+            )],
+        ),
+        limit_text,
+    }
+}
+
+/// `bytes` as a pack size: "512 KB", "48.3 MB", "1.5 GB", for a row of the storage page. The
+/// settings give the voice, the default one when they cannot be read.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn storage_size_text(bytes: u64, settings_json: String) -> String {
+    strings_of(&settings_json).pack_size(bytes)
 }
 
 /// A download's progress: `done` items handled of `total`, `failed` of them failed, `bytes`
