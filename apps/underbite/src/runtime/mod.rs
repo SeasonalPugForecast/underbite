@@ -5,3 +5,6 @@ pub(crate) mod cache;
 pub(crate) mod env;
 pub(crate) mod host;
 pub(crate) mod transport;
+
+#[cfg(test)]
+mod live;
