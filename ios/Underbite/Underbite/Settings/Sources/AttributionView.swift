@@ -1,41 +1,50 @@
 import SwiftUI
 import UnderbiteKit
 
-/// Every source with its credit, licence and link, as the core's catalogue words them, the
-/// not-for-navigation statement, and the open-source notices.
+/// Every source with its credit, licence, conditions and terms, the bundled datasets, the credit
+/// of every map layer, the not-for-navigation statement and the open-source notices. Every word
+/// is the core's; this view only lays them out.
 struct AttributionView: View {
+    @Environment(SpotStore.self) private var store
+
     private static let catalogue = sourceCatalogue()
 
     var body: some View {
+        let page = try? attributionPage(settingsJson: store.settingsJSON)
         List {
-            Section("Not for navigation") {
-                Text("Underbite is not for navigation. Tides, currents, depths, charts and every other value it shows are for planning a day on the water only. They can be wrong, late or missing. Never rely on them to steer a vessel or to judge a hazard, and always follow official charts, notices and local regulations.")
+            if let page {
+                Section("Not for navigation") {
+                    Text(page.notForNavigation)
+                }
             }
             Section {
                 ForEach(Self.catalogue, id: \.id) { source in
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(source.name).font(.headline)
-                        Text(source.credit).font(.subheadline)
-                        if let license = source.license {
-                            Text(license).font(.caption).foregroundStyle(.readableSecondary)
-                        }
-                        if let url = source.url.flatMap(URL.init(string:)) {
-                            // A full-height target, read as the source's site, not its address.
-                            Link(destination: url) {
-                                Label(url.host() ?? source.name, systemImage: "safari")
-                                    .frame(minHeight: 44, alignment: .leading)
-                                    .contentShape(Rectangle())
-                            }
-                            .font(.subheadline)
-                            .accessibilityLabel(Text("\(source.name) website"))
-                        }
-                    }
-                    .accessibilityElement(children: .contain)
+                    CreditRow(
+                        name: source.name, credit: source.credit, licence: source.license,
+                        conditions: source.conditions, site: source.url, terms: source.termsUrl)
                 }
             } header: {
                 Text("Data sources")
-            } footer: {
-                Text("Every value is shown with the source it came from. Regulations are links to the agencies' own pages, not data.")
+            }
+            if let page {
+                Section {
+                    ForEach(page.datasets, id: \.id) { dataset in
+                        CreditRow(
+                            name: dataset.name, credit: dataset.credit, licence: dataset.license,
+                            conditions: dataset.conditions, site: nil, terms: dataset.termsUrl)
+                    }
+                } header: {
+                    Text("Bundled data and links")
+                }
+                Section {
+                    ForEach(page.mapCredits, id: \.credit) { credit in
+                        MapCreditRow(credit: credit)
+                    }
+                } header: {
+                    Text("Map layers")
+                } footer: {
+                    Text(page.footer)
+                }
             }
             Section {
                 NavigationLink("Acknowledgements") { AcknowledgementsView() }
@@ -44,5 +53,77 @@ struct AttributionView: View {
         .readableText()
         .navigationTitle("Attribution")
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// One source or dataset: its name, the credit as it asks, its licence, what it asks beyond
+/// that, and links to its site and to the page that states its terms.
+private struct CreditRow: View {
+    let name: String
+    let credit: String
+    let licence: String?
+    let conditions: String?
+    let site: String?
+    let terms: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(name).font(.headline)
+            Text(credit).font(.subheadline)
+            if let licence {
+                Text(licence).font(.caption).foregroundStyle(.readableSecondary)
+            }
+            if let conditions {
+                Text(conditions).font(.caption).foregroundStyle(.readableSecondary)
+            }
+            if let url = terms.flatMap(URL.init(string:)) {
+                PageLink(url: url, label: "\(name) terms")
+            }
+            if let url = site.flatMap(URL.init(string:)), site != terms {
+                PageLink(url: url, label: "\(name) website")
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+}
+
+/// The credit of one or more map layers that share it.
+private struct MapCreditRow: View {
+    let credit: MapCredit
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(credit.layers.joined(separator: ", ")).font(.headline)
+            Text(credit.credit).font(.subheadline)
+            ForEach(credit.acknowledgements, id: \.self) { acknowledgement in
+                Text(acknowledgement).font(.caption).foregroundStyle(.readableSecondary)
+            }
+            if let terms = credit.terms {
+                Text(terms).font(.caption).foregroundStyle(.readableSecondary)
+            }
+            if let notice = credit.notice {
+                Text(notice).font(.caption.bold())
+            }
+            if let url = credit.termsUrl.flatMap(URL.init(string:)) {
+                PageLink(url: url, label: "\(credit.layers.first ?? "") terms")
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+}
+
+/// A full-height link target, read as the page's name and not its address.
+private struct PageLink: View {
+    let url: URL
+    let label: String
+
+    var body: some View {
+        Link(destination: url) {
+            Label(url.host() ?? label, systemImage: "safari")
+                .frame(minHeight: 44, alignment: .leading)
+                .contentShape(Rectangle())
+        }
+        .font(.subheadline)
+        .accessibilityLabel(Text(label))
     }
 }
