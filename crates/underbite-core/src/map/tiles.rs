@@ -467,6 +467,23 @@ pub fn cache_lifetime_s(service: TileService, cache_control: Option<&str>) -> u6
     }
 }
 
+/// How long a Copernicus Marine tile of `date` stays good in the cache, seconds, on UTC day
+/// `today`; none when the tile must not be stored. A tile without a date is the newest
+/// picture, which changes under the same URL, so it is not stored. A day at or after `today`
+/// is a forecast day of the physics layers, which the service re-issues, so it is kept
+/// [`COPERNICUS_FORECAST_TILE_S`] only. Past days keep the service's usual lifetime.
+pub fn copernicus_tile_lifetime_s(date: Option<LocalDate>, today: LocalDate) -> Option<u64> {
+    let date = date?;
+    Some(if date >= today {
+        COPERNICUS_FORECAST_TILE_S
+    } else {
+        cache_lifetime_s(TileService::Copernicus, None)
+    })
+}
+
+/// How long a Copernicus Marine tile of a forecast day stays cached: six hours.
+pub const COPERNICUS_FORECAST_TILE_S: u64 = 21_600;
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -484,6 +501,21 @@ mod tests {
 
     fn date(year: i32, month: u8, day: u8) -> LocalDate {
         LocalDate { year, month, day }
+    }
+
+    #[test]
+    fn copernicus_tiles_are_stored_by_the_age_of_their_day() {
+        let today = date(2026, 11, 19);
+        // No date: the newest picture, not stored.
+        assert_eq!(copernicus_tile_lifetime_s(None, today), None);
+        // Today and the forecast days: six hours.
+        for d in [date(2026, 11, 19), date(2026, 11, 20), date(2027, 1, 1)] {
+            assert_eq!(copernicus_tile_lifetime_s(Some(d), today), Some(21_600));
+        }
+        // Past days: the service's 30 days.
+        for d in [date(2026, 11, 18), date(2025, 12, 31)] {
+            assert_eq!(copernicus_tile_lifetime_s(Some(d), today), Some(2_592_000));
+        }
     }
 
     #[test]

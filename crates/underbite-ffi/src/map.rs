@@ -693,13 +693,29 @@ pub fn tile_request(
     x: u32,
     y: u32,
 ) -> Result<Option<TileFetch>, MapError> {
-    let l = self::layer(&layer)?;
+    // The one clock read of the map: what "today" is for a forecast day's tile lifetime.
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| i64::try_from(d.as_secs()).unwrap_or(i64::MAX));
+    tile_request_at(&layer, date.as_deref(), z, x, y, UnixTime(now))
+}
+
+/// [`tile_request`] at `now`.
+#[allow(clippy::many_single_char_names)] // z/x/y are the tile's address
+pub(crate) fn tile_request_at(
+    layer: &str,
+    date: Option<&str>,
+    z: u8,
+    x: u32,
+    y: u32,
+    now: UnixTime,
+) -> Result<Option<TileFetch>, MapError> {
+    let l = self::layer(layer)?;
     let service = l
         .tile_service()
         .ok_or_else(|| invalid(format!("`{layer}` is not a tiled layer")))?;
     let key = tile_key(z, x, y)?;
     let date: Option<LocalDate> = date
-        .as_deref()
         .map(|d| parse_date(d.trim()).map_err(|e| invalid(e.to_string())))
         .transpose()?;
     if l.min_zoom.is_some_and(|min| z < min) {
@@ -715,6 +731,12 @@ pub fn tile_request(
     if service == TileService::Gibs && date.is_none() {
         request.no_store = true;
         request.max_age_s = None;
+    }
+    // Copernicus Marine tiles: the newest picture is not stored, a forecast day is kept briefly.
+    if service == TileService::Copernicus {
+        let lifetime = tiles::copernicus_tile_lifetime_s(date, now.local_date(UtcOffset(0)));
+        request.no_store = lifetime.is_none();
+        request.max_age_s = lifetime.map(|s| u32::try_from(s).unwrap_or(u32::MAX));
     }
     Ok(Some(TileFetch {
         request,
@@ -2031,6 +2053,29 @@ pub fn radar_frame_request(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn copernicus_tiles_are_stored_by_their_day() {
+        // 2026-11-19 12:00:00 UTC.
+        let now = UnixTime(1_795_089_600);
+        let fetch = |date: Option<&str>| {
+            tile_request_at("copernicus-sst", date, 3, 2, 3, now)
+                .expect("request")
+                .expect("tile")
+                .request
+        };
+        let newest = fetch(None);
+        assert!(newest.no_store);
+        assert_eq!(newest.max_age_s, None);
+        for day in ["2026-11-19", "2026-11-22"] {
+            let r = fetch(Some(day));
+            assert!(!r.no_store, "{day}");
+            assert_eq!(r.max_age_s, Some(21_600), "{day}");
+        }
+        let past = fetch(Some("2026-11-18"));
+        assert!(!past.no_store);
+        assert_eq!(past.max_age_s, Some(2_592_000));
+    }
 
     #[test]
     fn tile_keys_outside_their_level_are_refused() {
