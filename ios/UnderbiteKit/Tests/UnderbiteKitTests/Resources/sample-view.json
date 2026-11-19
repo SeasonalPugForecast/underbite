@@ -3038,37 +3038,37 @@
             },
             {
               "licence": "Public domain",
-              "link": "https://www.ndbc.noaa.gov/",
+              "link": "https://www.weather.gov/disclaimer",
               "source": "NOAA NDBC",
-              "text": "Observations: NOAA National Data Buoy Center"
+              "text": "Buoy observations: NOAA National Data Buoy Center"
             },
             {
-              "licence": null,
-              "link": null,
+              "licence": "Copernicus Marine Service licence",
+              "link": "https://marine.copernicus.eu/user-corner/service-commitments-and-licence",
               "source": "copernicus",
               "text": "copernicus"
             },
             {
-              "licence": null,
-              "link": null,
+              "licence": "No licence stated",
+              "link": "https://www.epa.gov/water-research/cyanobacteria-assessment-network-application-cyan-app",
               "source": "EPA CyAN",
-              "text": "EPA CyAN"
+              "text": "Cyanobacteria: EPA, NASA, NOAA and USGS CyAN"
             },
             {
               "licence": "Public domain",
-              "link": "https://water.noaa.gov/",
+              "link": "https://www.weather.gov/disclaimer",
               "source": "NOAA NWPS",
               "text": "River forecasts: NOAA National Water Prediction Service"
             },
             {
               "licence": "CC BY 4.0",
-              "link": "https://open-meteo.com/",
+              "link": "https://open-meteo.com/en/licence",
               "source": "Open-Meteo Marine",
               "text": "Weather data by Open-Meteo.com"
             },
             {
               "licence": "Public domain",
-              "link": "https://www.weather.gov/",
+              "link": "https://www.weather.gov/disclaimer",
               "source": "National Weather Service",
               "text": "Marine forecasts and alerts: NOAA National Weather Service"
             },

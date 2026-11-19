@@ -9189,25 +9189,25 @@ expression: json
             "source": "NYS DEC stocking",
             "text": "NYS DEC (stocking numbers are estimates)",
             "link": "https://data.ny.gov/",
-            "licence": null
+            "licence": "OPEN-NY Terms of Use"
           },
           {
             "source": "open-meteo",
             "text": "Weather data by Open-Meteo.com",
             "link": "https://open-meteo.com",
-            "licence": null
+            "licence": "CC BY 4.0"
           },
           {
             "source": "open-meteo-storm",
             "text": "Weather data by Open-Meteo.com (CC BY 4.0); ECMWF data CC BY 4.0.",
             "link": "https://open-meteo.com/",
-            "licence": null
+            "licence": "CC BY 4.0"
           },
           {
             "source": "USGS 3DHP",
             "text": "USGS TNM / NGTOC - 3D National Hydrographic Program (3DHP). Features may not reflect current conditions and are not for critical use.",
             "link": "https://www.usgs.gov/3d-hydrography-program",
-            "licence": null
+            "licence": "Public domain"
           },
           {
             "source": "Open-Meteo",

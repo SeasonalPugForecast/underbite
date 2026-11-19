@@ -16,9 +16,13 @@ use underbite_core::units::{
     DischargeUnit, DistanceUnit, HeightUnit, PressureUnit, SpeedUnit, TempUnit, pressure_from_hpa,
     pressure_to_hpa,
 };
+use underbite_core::view::cards::sources::{
+    DATASETS, conditions_text, credit_text, gebco_page_credit, layer_terms_url, licence_text,
+    source_terms,
+};
 use underbite_core::view::format::{Formatter, distance_from_metres, distance_to_metres};
 use underbite_core::view::privacy::privacy_words as core_privacy_words;
-use underbite_core::view::strings::{MEASUREMENTS, Strings, WATER_TYPES, source_name};
+use underbite_core::view::strings::{MEASUREMENTS, SafetyKey, Strings, WATER_TYPES, source_name};
 use underbite_core::view::{CardId, DisplayUnits, Voice};
 use underbite_providers::blooms::cyan::Cyan;
 use underbite_providers::blooms::hab::HabGulf;
@@ -1223,6 +1227,10 @@ pub struct SourceInfo {
     pub license: Option<String>,
     /// Its home page.
     pub url: Option<String>,
+    /// The page that states its terms or its licence.
+    pub terms_url: Option<String>,
+    /// What its terms ask beyond the credit; none when nothing.
+    pub conditions: Option<String>,
     /// It serves only with a key or an account of the user's own.
     pub needs_key: bool,
     /// It takes a key but also serves without one.
@@ -1238,9 +1246,6 @@ struct Row {
     id: &'static str,
     /// A name for sources the core's names do not cover.
     name: Option<&'static str>,
-    credit: Option<&'static str>,
-    license: Option<&'static str>,
-    url: Option<&'static str>,
     /// What a source supplies that this version cannot fetch yet.
     measurements: &'static [Measurement],
     needs_key: bool,
@@ -1253,9 +1258,6 @@ impl Row {
         Self {
             id,
             name: None,
-            credit: None,
-            license: None,
-            url: None,
             measurements: &[],
             needs_key: false,
             key_optional: false,
@@ -1263,9 +1265,6 @@ impl Row {
         }
     }
 }
-
-const PUBLIC_DOMAIN: &str = "Public domain";
-const CC_BY_4: &str = "CC BY 4.0";
 
 /// The sources the configuration knows, in the order of [`KNOWN_SOURCES`].
 fn rows() -> Vec<Row> {
@@ -1277,39 +1276,20 @@ fn rows() -> Vec<Row> {
     vec![
         Row {
             key_optional: true,
-            license: Some(PUBLIC_DOMAIN),
             ..Row::new("usgs")
         },
-        Row {
-            license: Some(PUBLIC_DOMAIN),
-            ..Row::new("coops")
-        },
-        Row {
-            license: Some(PUBLIC_DOMAIN),
-            ..Row::new("coops-harmonics")
-        },
-        Row {
-            license: Some(PUBLIC_DOMAIN),
-            ..Row::new("ndbc")
-        },
-        Row {
-            license: Some(PUBLIC_DOMAIN),
-            ..Row::new("nwps")
-        },
-        Row {
-            license: Some(PUBLIC_DOMAIN),
-            ..Row::new("nws")
-        },
+        Row::new("coops"),
+        Row::new("coops-harmonics"),
+        Row::new("ndbc"),
+        Row::new("nwps"),
+        Row::new("nws"),
         Row {
             name: Some("NOAA GLERL"),
-            url: Some("https://www.glerl.noaa.gov/"),
             measurements: &[M::WaterTemperature, M::LakeLevel, M::Waves],
             ..Row::new("glerl")
         },
         Row {
             name: Some("NASA JPL MUR sea surface temperature"),
-            credit: Some("SST: NASA JPL MUR (MEaSUREs), via NOAA CoastWatch ERDDAP"),
-            license: Some("JPL PO.DAAC data policy"),
             measurements: &[M::SeaSurfaceTemp],
             ..Row::new("mur-sst")
         },
@@ -1320,45 +1300,26 @@ fn rows() -> Vec<Row> {
         },
         Row {
             name: Some("Copernicus Marine"),
-            url: Some("https://marine.copernicus.eu/"),
             measurements: &[M::OceanCurrent, M::Clarity, M::Chlorophyll],
             needs_key: true,
             opt_in: true,
             ..Row::new("copernicus")
         },
-        Row {
-            license: Some(CC_BY_4),
-            ..Row::new("open-meteo-marine")
-        },
+        Row::new("open-meteo-marine"),
         Row {
             name: Some("Open-Meteo storm tracks"),
-            credit: Some("Weather data by Open-Meteo.com"),
-            license: Some(CC_BY_4),
-            url: Some("https://open-meteo.com/"),
             ..Row::new("open-meteo-storm")
         },
         Row {
             name: Some("NOAA National Hurricane Center"),
-            credit: Some("National Hurricane Center (NOAA)"),
-            license: Some(PUBLIC_DOMAIN),
-            url: Some("https://www.nhc.noaa.gov/"),
             ..Row::new("nhc")
         },
         Row {
             needs_key: true,
             ..weather("openweather", "OpenWeather")
         },
-        Row {
-            credit: Some("Weather data by Open-Meteo.com"),
-            license: Some(CC_BY_4),
-            url: Some("https://open-meteo.com/"),
-            ..weather("open-meteo", "Open-Meteo")
-        },
-        Row {
-            license: Some(CC_BY_4),
-            url: Some("https://api.met.no/"),
-            ..weather("met-norway", "MET Norway")
-        },
+        weather("open-meteo", "Open-Meteo"),
+        weather("met-norway", "MET Norway"),
         weather("acis", "NOAA ACIS climate normals"),
         Row {
             needs_key: true,
@@ -1378,31 +1339,21 @@ fn reservoir_and_bloom_rows() -> Vec<Row> {
         Row::new("eccc-hydrometric"),
         Row {
             name: Some("US Army Corps of Engineers water management"),
-            license: Some(PUBLIC_DOMAIN),
-            url: Some("https://water.usace.army.mil/"),
             measurements: &[M::LakeLevel, M::Reservoir],
             ..Row::new("cwms")
         },
         Row {
             name: Some("Bureau of Reclamation RISE"),
-            license: Some(PUBLIC_DOMAIN),
-            url: Some("https://data.usbr.gov/"),
             measurements: &[M::LakeLevel, M::Reservoir],
             ..Row::new("rise")
         },
         Row {
             name: Some("CyAN cyanobacteria"),
-            credit: Some("Cyanobacteria: EPA, NASA, NOAA and USGS CyAN"),
-            license: Some(PUBLIC_DOMAIN),
-            url: Some("https://www.epa.gov/water-research/cyanobacteria-assessment-network-cyan"),
             measurements: &[M::Cyanobacteria, M::Bloom],
             ..Row::new("cyan")
         },
         Row {
             name: Some("NOAA Gulf of Mexico harmful algal bloom forecast"),
-            credit: Some("Harmful algal bloom forecast: NOAA NCCOS"),
-            license: Some(PUBLIC_DOMAIN),
-            url: Some("https://coastalscience.noaa.gov/"),
             measurements: &[M::Bloom],
             ..Row::new("noaa-hab")
         },
@@ -1430,9 +1381,15 @@ fn provider(id: &str) -> Option<Arc<dyn Source>> {
     })
 }
 
-/// Every source the settings can name, with what the sources screen shows for it.
+/// The source whose agreement requires its notice next to its data; the provider carries it.
+const DFO_ID: &str = "dfo-iwls";
+
+/// Every source the settings can name, with what the sources screen shows for it: its credit,
+/// licence and conditions from the core's attribution table (the credits that depend on the
+/// day's data are read there, not kept), and the pages that state its terms.
 #[uniffi::export]
 pub fn source_catalogue() -> Vec<SourceInfo> {
+    let strings = Strings::new(Voice::Plain);
     let infos: Vec<SourceInfo> = rows()
         .into_iter()
         .map(|row| {
@@ -1446,22 +1403,27 @@ pub fn source_catalogue() -> Vec<SourceInfo> {
                 || source_name(&SourceId::new(row.id)),
                 std::borrow::ToOwned::to_owned,
             );
+            let terms = source_terms(row.id);
+            let credit = match (row.id, &attribution, terms) {
+                (DFO_ID, Some(a), _) | (_, Some(a), None) => a.credit.clone(),
+                (_, _, Some(t)) => credit_text(t, strings),
+                (_, None, None) => name.clone(),
+            };
+            let non_empty = |text: String| (!text.is_empty()).then_some(text);
             SourceInfo {
                 id: row.id.to_owned(),
-                credit: attribution
-                    .as_ref()
-                    .map(|a| a.credit.clone())
-                    .or_else(|| row.credit.map(str::to_owned))
-                    .unwrap_or_else(|| name.clone()),
-                url: attribution
-                    .and_then(|a| a.url)
-                    .or_else(|| row.url.map(str::to_owned)),
+                credit,
+                url: terms
+                    .map(|t| t.site_url.to_owned())
+                    .or_else(|| attribution.and_then(|a| a.url)),
+                terms_url: terms.and_then(|t| non_empty(t.terms_url.to_owned())),
+                conditions: terms.and_then(|t| conditions_text(t, strings)),
                 name,
                 measurements: measurements
                     .into_iter()
                     .map(|m| Strings::new(Voice::Plain).measurement(m).to_owned())
                     .collect(),
-                license: row.license.map(str::to_owned),
+                license: terms.map(|t| licence_text(t, strings)),
                 needs_key: row.needs_key,
                 key_optional: row.key_optional,
                 opt_in: row.opt_in,
@@ -1473,6 +1435,123 @@ pub fn source_catalogue() -> Vec<SourceInfo> {
     infos
 }
 
+/// A bundled dataset or a set of links the app credits that is not a source of values.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct DatasetCredit {
+    pub id: String,
+    pub name: String,
+    pub credit: String,
+    pub license: String,
+    /// What the terms ask beyond the credit; none when nothing.
+    pub conditions: Option<String>,
+    /// The page that states the terms or the licence.
+    pub terms_url: Option<String>,
+}
+
+/// The credit of the map layers that share one credit line.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct MapCredit {
+    /// The credit line (safety text), as the layer shows it on the map; for the GEBCO grid, the
+    /// wording that the release year and DOI are read from the service.
+    pub credit: String,
+    /// The titles of the layers it covers, in drawer order.
+    pub layers: Vec<String>,
+    /// What the source asks to be acknowledged, beyond the credit.
+    pub acknowledgements: Vec<String>,
+    /// The terms as far as they are known.
+    pub terms: Option<String>,
+    /// "Not for navigation." on charts, currents and depth.
+    pub notice: Option<String>,
+    /// The page that states the terms.
+    pub terms_url: Option<String>,
+}
+
+/// What the attribution screen shows besides the sources. None of it is in the voice.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct AttributionPage {
+    /// The not-for-navigation statement (safety text).
+    pub not_for_navigation: String,
+    /// The regulations disclaimer (safety text).
+    pub regulations: String,
+    /// The bundled datasets and the regulation links.
+    pub datasets: Vec<DatasetCredit>,
+    /// The map layers' credits, one entry per distinct credit line.
+    pub map_credits: Vec<MapCredit>,
+    /// The line under the lists.
+    pub footer: String,
+}
+
+/// The attribution screen's words: the safety statements, the datasets and the credit of every
+/// map layer. The sources come from [`source_catalogue`].
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn attribution_page(settings_json: String) -> Result<AttributionPage, SettingsError> {
+    let strings = Strings::new(Voice::Plain);
+    let layers = crate::map::map_catalogue(settings_json).map_err(|e| invalid(e.to_string()))?;
+    let mut map_credits: Vec<MapCredit> = Vec::new();
+    for layer in layers {
+        let credit = if layer.id == "gebco-relief" {
+            gebco_page_credit(strings)
+        } else {
+            layer.credit
+        };
+        // A layer with no source yet has nothing to credit.
+        if credit.is_empty() {
+            continue;
+        }
+        let terms_url = layer_terms_url(&layer.id).map(str::to_owned);
+        match map_credits.iter_mut().find(|c| c.credit == credit) {
+            Some(existing) => {
+                existing.layers.push(layer.title);
+                for ack in layer.acknowledgements {
+                    if !existing.acknowledgements.contains(&ack) {
+                        existing.acknowledgements.push(ack);
+                    }
+                }
+                existing.terms = existing.terms.take().or(layer.terms);
+                existing.notice = existing.notice.take().or(layer.notice);
+                existing.terms_url = existing.terms_url.take().or(terms_url);
+            }
+            None => map_credits.push(MapCredit {
+                terms_url,
+                credit,
+                layers: vec![layer.title],
+                acknowledgements: layer.acknowledgements,
+                terms: layer.terms,
+                notice: layer.notice,
+            }),
+        }
+    }
+    let datasets = DATASETS
+        .iter()
+        .map(|d| {
+            let non_empty = |text: &str| (!text.is_empty()).then(|| text.to_owned());
+            let conditions = if d.terms.id == "regulations" {
+                Some(strings.safety(SafetyKey::RegulationsDisclaimer).to_owned())
+            } else {
+                conditions_text(&d.terms, strings)
+            };
+            DatasetCredit {
+                id: d.terms.id.to_owned(),
+                name: strings.safety(d.name).to_owned(),
+                credit: credit_text(&d.terms, strings),
+                license: licence_text(&d.terms, strings),
+                conditions,
+                terms_url: non_empty(d.terms.terms_url),
+            }
+        })
+        .collect();
+    Ok(AttributionPage {
+        not_for_navigation: strings
+            .safety(SafetyKey::NotForNavigationStatement)
+            .to_owned(),
+        regulations: strings.safety(SafetyKey::RegulationsDisclaimer).to_owned(),
+        datasets,
+        map_credits,
+        footer: strings.safety(SafetyKey::AttributionFooter).to_owned(),
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1481,5 +1560,101 @@ mod tests {
     fn the_catalogue_follows_the_known_sources() {
         let ids: Vec<String> = source_catalogue().into_iter().map(|s| s.id).collect();
         assert_eq!(ids, KNOWN_SOURCES);
+    }
+
+    #[test]
+    fn every_known_source_is_credited_with_its_licence_and_terms() {
+        for info in source_catalogue() {
+            assert!(
+                !info.credit.is_empty() && info.credit != info.id,
+                "{}",
+                info.id
+            );
+            assert!(info.license.is_some(), "{}", info.id);
+            assert!(
+                info.terms_url
+                    .as_deref()
+                    .is_some_and(|u| u.starts_with("https://")),
+                "{}",
+                info.id
+            );
+            assert!(
+                info.url
+                    .as_deref()
+                    .is_some_and(|u| u.starts_with("https://")),
+                "{}",
+                info.id
+            );
+        }
+    }
+
+    #[test]
+    fn credits_that_depend_on_the_day_are_read_not_kept() {
+        let sources = source_catalogue();
+        let find = |id: &str| sources.iter().find(|s| s.id == id).unwrap();
+        // The Copernicus credit lists the DOI of each product a layer draws.
+        let copernicus = find("copernicus");
+        assert!(
+            copernicus
+                .credit
+                .contains("https://doi.org/10.48670/moi-00016")
+        );
+        assert!(
+            copernicus
+                .credit
+                .contains("https://doi.org/10.48670/moi-00165")
+        );
+        // The weather providers' credit is whether's own.
+        assert_eq!(find("met-norway").credit, "Data from MET Norway");
+        // The Canadian Hydrographic Service's notice travels with its credit.
+        assert!(
+            find("dfo-iwls")
+                .credit
+                .contains("not to be used for navigation")
+        );
+        // No credit names a GEBCO year; the layer's credit reads it from the service.
+        let page = attribution_page(default_settings_json()).unwrap();
+        let gebco = page
+            .map_credits
+            .iter()
+            .find(|c| c.layers.iter().any(|l| l.contains("GEBCO")))
+            .unwrap();
+        assert!(!gebco.credit.contains("2026"), "{}", gebco.credit);
+    }
+
+    #[test]
+    fn the_attribution_page_carries_the_safety_statements_and_every_layer_credit() {
+        let page = attribution_page(default_settings_json()).unwrap();
+        assert!(
+            page.not_for_navigation
+                .starts_with("Underbite is not for navigation.")
+        );
+        assert!(page.regulations.contains("Underbite does not state limits"));
+        let names: Vec<&str> = page.datasets.iter().map(|d| d.id.as_str()).collect();
+        assert_eq!(names, ["fishbase", "regulations"]);
+        let fishbase = &page.datasets[0];
+        assert_eq!(fishbase.license, "CC BY-NC 4.0");
+        // Every layer with a credit is listed once, charts with their notice, none in a
+        // voice.
+        let layers: usize = page.map_credits.iter().map(|c| c.layers.len()).sum();
+        let with_credit = crate::map::map_catalogue(default_settings_json())
+            .unwrap()
+            .iter()
+            .filter(|l| !l.credit.is_empty())
+            .count();
+        assert_eq!(layers, with_credit);
+        let charts = page
+            .map_credits
+            .iter()
+            .find(|c| c.credit.contains("Chart Display Service"))
+            .unwrap();
+        assert!(charts.notice.is_some() || charts.credit.contains("navigation"));
+        assert!(charts.terms_url.is_some());
+        // Layers that share a credit are one entry.
+        let credits: Vec<&str> = page.map_credits.iter().map(|c| c.credit.as_str()).collect();
+        let mut unique = credits.clone();
+        unique.sort_unstable();
+        unique.dedup();
+        assert_eq!(credits.len(), unique.len());
     }
 }

@@ -4,6 +4,7 @@ use schemars::JsonSchema;
 use serde::Serialize;
 use whether_core::model::ProviderId;
 
+use crate::map::catalogue;
 use crate::model::{Measurement, SourceError, SourceErrorKind, SpotSnapshot};
 use crate::provenance::{Provenance, Quality, Relation, SourceId, ValueKind};
 use crate::series::Series;
@@ -18,6 +19,470 @@ use crate::view::{
 const PROVISIONAL_STATEMENT: &str = "https://waterdata.usgs.gov/provisional-data-statement/";
 const OPEN_METEO: &str = "https://open-meteo.com/";
 const OPEN_METEO_LICENCE: &str = "https://open-meteo.com/en/licence";
+
+// ---------------------------------------------------------------------------------------------
+// What each source asks to be shown with its data
+// ---------------------------------------------------------------------------------------------
+
+/// What a source or a bundled dataset asks for: the credit line, the licence it states, the
+/// conditions that go with it, and the pages to read them on. The words are safety texts: the
+/// same in every voice.
+///
+/// A credit that depends on the day's data is not kept here: the GEBCO release year, the
+/// Copernicus DOI of each product and the credit lines NWPS names in its responses are read
+/// where the data are (the catalogue's products, the service's capabilities, the snapshot's
+/// attribution). A `credit` of none means the credit is built from those; see [`credit_text`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct SourceTerms {
+    /// The id the settings and the snapshot use.
+    pub id: &'static str,
+    /// The credit line; none when it is built at run time.
+    pub credit: Option<SafetyKey>,
+    /// The licence as the source states it.
+    pub licence: SafetyKey,
+    /// What the licence or the source asks beyond the credit.
+    pub conditions: Option<SafetyKey>,
+    /// The page that states the terms or the licence; empty when there is none.
+    pub terms_url: &'static str,
+    /// The source's home page; empty when there is none.
+    pub site_url: &'static str,
+}
+
+const fn terms(
+    id: &'static str,
+    credit: Option<SafetyKey>,
+    licence: SafetyKey,
+    conditions: Option<SafetyKey>,
+    terms_url: &'static str,
+    site_url: &'static str,
+) -> SourceTerms {
+    SourceTerms {
+        id,
+        credit,
+        licence,
+        conditions,
+        terms_url,
+        site_url,
+    }
+}
+
+const WEATHER_GOV_TERMS: &str = "https://www.weather.gov/disclaimer";
+const COOPS_TERMS: &str = "https://tidesandcurrents.noaa.gov/disclaimers.html";
+const ERDDAP_TERMS: &str = "https://coastwatch.pfeg.noaa.gov/erddap/legal.html";
+const OPEN_NY_TERMS: &str = "https://data.ny.gov/dataset/OPEN-NY-Terms-Of-Use/77gx-ii52";
+const PADUS_PAGE: &str =
+    "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-overview";
+const USGS_TERMS: &str =
+    "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits";
+const COPERNICUS_TERMS: &str =
+    "https://marine.copernicus.eu/user-corner/service-commitments-and-licence";
+const GLERL_DATASET: &str = "https://apps.glerl.noaa.gov/erddap/griddap/GLSEA_ACSPO_GCS.html";
+const HAB_PAGE: &str =
+    "https://coastalscience.noaa.gov/science-areas/habs/hab-forecasts/gulf-coast/";
+
+/// Every source the settings or a snapshot can name, with its credit, licence and terms.
+pub const SOURCE_TERMS: [SourceTerms; 31] = [
+    terms(
+        "usgs",
+        Some(SafetyKey::AttrUsgsCredit),
+        SafetyKey::LicencePublicDomain,
+        Some(SafetyKey::AttrUsgsConditions),
+        USGS_TERMS,
+        "https://waterdata.usgs.gov/",
+    ),
+    terms(
+        "coops",
+        Some(SafetyKey::AttrCoopsCredit),
+        SafetyKey::LicencePublicDomain,
+        Some(SafetyKey::AttrCoopsConditions),
+        COOPS_TERMS,
+        "https://tidesandcurrents.noaa.gov/",
+    ),
+    terms(
+        "coops-harmonics",
+        Some(SafetyKey::AttrCoopsHarmonicsCredit),
+        SafetyKey::LicencePublicDomain,
+        Some(SafetyKey::AttrCoopsHarmonicsConditions),
+        COOPS_TERMS,
+        "https://tidesandcurrents.noaa.gov/",
+    ),
+    terms(
+        "ndbc",
+        Some(SafetyKey::AttrNdbcCredit),
+        SafetyKey::LicencePublicDomain,
+        Some(SafetyKey::AttrNdbcConditions),
+        WEATHER_GOV_TERMS,
+        "https://www.ndbc.noaa.gov/",
+    ),
+    terms(
+        "nwps",
+        Some(SafetyKey::AttrNwpsCredit),
+        SafetyKey::LicencePublicDomain,
+        Some(SafetyKey::AttrNwpsConditions),
+        WEATHER_GOV_TERMS,
+        "https://water.noaa.gov/",
+    ),
+    terms(
+        "nws",
+        Some(SafetyKey::AttrNwsCredit),
+        SafetyKey::LicencePublicDomain,
+        Some(SafetyKey::AttrNwsConditions),
+        WEATHER_GOV_TERMS,
+        "https://www.weather.gov/",
+    ),
+    terms(
+        "open-meteo-marine",
+        Some(SafetyKey::AttrOpenMeteoMarineCredit),
+        SafetyKey::LicenceCcBy4,
+        Some(SafetyKey::AttrOpenMeteoMarineConditions),
+        OPEN_METEO_LICENCE,
+        OPEN_METEO,
+    ),
+    terms(
+        "usgs-3dhp",
+        Some(SafetyKey::AttrUsgs3dhpCredit),
+        SafetyKey::LicencePublicDomain,
+        None,
+        "https://hydro.nationalmap.gov/arcgis/rest/services/3DHP_all/MapServer",
+        "https://hydro.nationalmap.gov/",
+    ),
+    terms(
+        "glerl",
+        Some(SafetyKey::AttrGlerlCredit),
+        SafetyKey::LicenceFreeNotLegal,
+        Some(SafetyKey::AttrGlerlConditions),
+        GLERL_DATASET,
+        "https://www.glerl.noaa.gov/",
+    ),
+    terms(
+        "cwms",
+        Some(SafetyKey::AttrCwmsCredit),
+        SafetyKey::LicencePublicDomain,
+        Some(SafetyKey::AttrCwmsConditions),
+        "https://cwms-data-api.readthedocs.io/latest/",
+        "https://water.usace.army.mil/",
+    ),
+    terms(
+        "rise",
+        Some(SafetyKey::AttrRiseCredit),
+        SafetyKey::LicenceUsGovernment,
+        None,
+        "https://www.usbr.gov/main/disclaimer.html",
+        "https://data.usbr.gov/",
+    ),
+    terms(
+        "cyan",
+        Some(SafetyKey::AttrCyanCredit),
+        SafetyKey::LicenceNoneStated,
+        Some(SafetyKey::AttrCyanConditions),
+        "https://www.epa.gov/water-research/cyanobacteria-assessment-network-application-cyan-app",
+        "https://www.epa.gov/water-research/cyanobacteria-assessment-network-cyan",
+    ),
+    terms(
+        "noaa-hab",
+        Some(SafetyKey::AttrNoaaHabCredit),
+        SafetyKey::LicenceUsGovernment,
+        Some(SafetyKey::AttrNoaaHabConditions),
+        HAB_PAGE,
+        "https://coastalscience.noaa.gov/",
+    ),
+    terms(
+        "ny-dec-stocking",
+        Some(SafetyKey::AttrNyDecStockingCredit),
+        SafetyKey::LicenceOpenNy,
+        Some(SafetyKey::AttrNyDecStockingConditions),
+        OPEN_NY_TERMS,
+        "https://dec.ny.gov/",
+    ),
+    terms(
+        "overpass",
+        Some(SafetyKey::AttrOverpassCredit),
+        SafetyKey::LicenceOdbl,
+        Some(SafetyKey::AttrOverpassConditions),
+        "https://www.openstreetmap.org/copyright",
+        "https://www.openstreetmap.org/",
+    ),
+    terms(
+        "padus",
+        Some(SafetyKey::AttrPadusCredit),
+        SafetyKey::LicencePublicDomain,
+        Some(SafetyKey::AttrPadusConditions),
+        PADUS_PAGE,
+        PADUS_PAGE,
+    ),
+    terms(
+        "gbif",
+        Some(SafetyKey::AttrGbifCredit),
+        SafetyKey::LicenceGbifRecords,
+        Some(SafetyKey::AttrGbifConditions),
+        "https://www.gbif.org/terms/data-user",
+        "https://www.gbif.org/",
+    ),
+    terms(
+        "inaturalist",
+        Some(SafetyKey::AttrInaturalistCredit),
+        SafetyKey::LicenceInaturalistRecords,
+        Some(SafetyKey::AttrInaturalistConditions),
+        "https://www.inaturalist.org/terms",
+        "https://www.inaturalist.org/",
+    ),
+    terms(
+        "usgs-nas",
+        Some(SafetyKey::AttrUsgsNasCredit),
+        SafetyKey::LicencePublicDomain,
+        Some(SafetyKey::AttrUsgsNasConditions),
+        "https://nas.er.usgs.gov/api/documentation.aspx",
+        "https://nas.er.usgs.gov/",
+    ),
+    terms(
+        "dfo-iwls",
+        Some(SafetyKey::AttrDfoIwlsCredit),
+        SafetyKey::LicenceChs,
+        Some(SafetyKey::AttrDfoIwlsConditions),
+        "https://www.tides.gc.ca/en/licence-agreement",
+        "https://www.tides.gc.ca/",
+    ),
+    terms(
+        "eccc-hydrometric",
+        Some(SafetyKey::AttrEcccHydrometricCredit),
+        SafetyKey::LicenceEccc,
+        Some(SafetyKey::AttrEcccHydrometricConditions),
+        "https://eccc-msc.github.io/open-data/licence/readme_en/",
+        "https://wateroffice.ec.gc.ca/",
+    ),
+    terms(
+        "mur-sst",
+        Some(SafetyKey::AttrMurSstCredit),
+        SafetyKey::LicenceJplPodaac,
+        Some(SafetyKey::AttrMurSstConditions),
+        ERDDAP_TERMS,
+        "https://coastwatch.pfeg.noaa.gov/erddap/",
+    ),
+    terms(
+        "hf-radar",
+        Some(SafetyKey::AttrHfRadarCredit),
+        SafetyKey::LicenceFreeNotLegal,
+        Some(SafetyKey::AttrHfRadarConditions),
+        ERDDAP_TERMS,
+        "https://coastwatch.pfeg.noaa.gov/erddap/",
+    ),
+    terms(
+        "copernicus",
+        None,
+        SafetyKey::LicenceCopernicus,
+        Some(SafetyKey::AttrCopernicusConditions),
+        COPERNICUS_TERMS,
+        "https://marine.copernicus.eu/",
+    ),
+    terms(
+        "open-meteo-storm",
+        Some(SafetyKey::AttrOpenMeteoStormCredit),
+        SafetyKey::LicenceCcBy4,
+        Some(SafetyKey::AttrOpenMeteoStormConditions),
+        OPEN_METEO_LICENCE,
+        OPEN_METEO,
+    ),
+    terms(
+        "nhc",
+        Some(SafetyKey::AttrNhcCredit),
+        SafetyKey::LicencePublicDomain,
+        Some(SafetyKey::AttrNhcConditions),
+        "https://www.nhc.noaa.gov/disclaimer.shtml",
+        "https://www.nhc.noaa.gov/",
+    ),
+    terms(
+        "openweather",
+        None,
+        SafetyKey::LicenceOwnOpenWeather,
+        Some(SafetyKey::AttrOpenweatherConditions),
+        "https://openweathermap.org/",
+        "https://openweathermap.org/",
+    ),
+    terms(
+        "open-meteo",
+        None,
+        SafetyKey::LicenceCcBy4,
+        Some(SafetyKey::AttrOpenMeteoConditions),
+        OPEN_METEO_LICENCE,
+        OPEN_METEO,
+    ),
+    terms(
+        "met-norway",
+        None,
+        SafetyKey::LicenceCcBy4,
+        None,
+        "https://api.met.no/doc/TermsOfService",
+        "https://api.met.no/",
+    ),
+    terms(
+        "acis",
+        None,
+        SafetyKey::LicenceUsGovernment,
+        None,
+        "https://www.rcc-acis.org/",
+        "https://www.rcc-acis.org/",
+    ),
+    terms(
+        "pirate-weather",
+        None,
+        SafetyKey::LicenceOwnPirateWeather,
+        Some(SafetyKey::AttrPirateWeatherConditions),
+        "https://pirateweather.net/",
+        "https://pirateweather.net/",
+    ),
+];
+
+/// The terms of a source, by id.
+pub fn source_terms(id: &str) -> Option<&'static SourceTerms> {
+    SOURCE_TERMS.iter().find(|t| t.id == id)
+}
+
+/// The weather provider a configuration id names.
+fn weather_provider(id: &str) -> Option<ProviderId> {
+    Some(match id {
+        "openweather" => ProviderId::OpenWeather,
+        "open-meteo" => ProviderId::OpenMeteo,
+        "met-norway" => ProviderId::MetNorway,
+        "acis" => ProviderId::Acis,
+        "pirate-weather" => ProviderId::PirateWeather,
+        _ => return None,
+    })
+}
+
+/// The Copernicus credit of every product the map layers draw: "Generated using E.U. Copernicus
+/// Marine Service Information" and the DOIs, read from the catalogue's products.
+pub fn copernicus_credit(strings: Strings) -> String {
+    let mut dois: Vec<&str> = Vec::new();
+    for layer in &catalogue::LAYERS {
+        if let Some(spec) = layer.copernicus()
+            && !dois.contains(&spec.doi)
+        {
+            dois.push(spec.doi);
+        }
+    }
+    let links: Vec<String> = dois
+        .iter()
+        .map(|d| format!("https://doi.org/{d}"))
+        .collect();
+    format!(
+        "{}{}",
+        strings.safety(SafetyKey::AttrCopernicusCreditPrefix),
+        links.join(", ")
+    )
+}
+
+/// The credit line of an entry: its own, or for those that depend on the day's data or on the
+/// weather provider, the one read from there.
+pub fn credit_text(t: &SourceTerms, strings: Strings) -> String {
+    if let Some(key) = t.credit {
+        strings.safety(key).to_owned()
+    } else if let Some(p) = weather_provider(t.id) {
+        p.attribution().to_owned()
+    } else if t.id == "copernicus" {
+        copernicus_credit(strings)
+    } else {
+        t.id.to_owned()
+    }
+}
+
+/// What an entry asks beyond its credit; for Open-Meteo's marine data it includes the model
+/// providers.
+pub fn conditions_text(t: &SourceTerms, strings: Strings) -> Option<String> {
+    let own = t.conditions.map(|k| strings.safety(k).to_owned());
+    if t.id == "open-meteo-marine" {
+        let models = strings.safety(SafetyKey::AttrOpenMeteoMarineModels);
+        return Some(match own {
+            Some(c) => format!("{c} {models}."),
+            None => format!("{models}."),
+        });
+    }
+    own
+}
+
+/// The licence of an entry as its source states it.
+pub fn licence_text(t: &SourceTerms, strings: Strings) -> String {
+    strings.safety(t.licence).to_owned()
+}
+
+/// The GEBCO grid's credit on the attribution page. The release year and the DOI are the
+/// service's to state and change with each release, so the page says where they are read from;
+/// the map layer shows them as the service's capabilities give them.
+pub fn gebco_page_credit(strings: Strings) -> String {
+    strings.safety(SafetyKey::AttrGebcoPage).to_owned()
+}
+
+/// A dataset the app carries or links that is not a source of values: its name and terms.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Dataset {
+    pub name: SafetyKey,
+    pub terms: SourceTerms,
+}
+
+/// The bundled datasets and the regulation links.
+pub const DATASETS: [Dataset; 2] = [
+    Dataset {
+        name: SafetyKey::AttrFishbaseName,
+        terms: terms(
+            "fishbase",
+            Some(SafetyKey::AttrFishbaseCredit),
+            SafetyKey::LicenceCcByNc4,
+            Some(SafetyKey::AttrFishbaseConditions),
+            "https://www.fishbase.se/summary/citation.php",
+            "https://www.fishbase.org/",
+        ),
+    },
+    Dataset {
+        name: SafetyKey::AttrRegulationsName,
+        terms: terms(
+            "regulations",
+            Some(SafetyKey::AttrRegulationsCredit),
+            SafetyKey::LicenceLinksOnly,
+            None,
+            "",
+            "",
+        ),
+    },
+];
+
+/// The page that states the terms of a map layer's data, for the layers that have a source to
+/// state them; none for a layer drawn from the user's own data and for a base map.
+pub fn layer_terms_url(layer_id: &str) -> Option<&'static str> {
+    Some(match layer_id {
+        "noaa-chart"
+        | "enc-depths"
+        | "enc-seabed"
+        | "enc-special-areas"
+        | "enc-structure-points" => {
+            "https://nauticalcharts.noaa.gov/data/gis-data-and-services.html"
+        }
+        "gebco-relief" => "https://www.gebco.net/data-products/gridded-bathymetry-data",
+        "depth-shading" | "depth-contours" => {
+            "https://www.ncei.noaa.gov/products/coastal-relief-model"
+        }
+        "sst" | "chlorophyll" | "clarity" | "hf-radar-currents" | "sst-breaks"
+        | "chlorophyll-breaks" => ERDDAP_TERMS,
+        "sst-imagery"
+        | "chlorophyll-imagery"
+        | "true-color-viirs-n20"
+        | "true-color-viirs-n21"
+        | "true-color-modis-terra"
+        | "true-color-modis-aqua" => "https://nasa-gibs.github.io/gibs-api-docs/",
+        "great-lakes-sst" => GLERL_DATASET,
+        "radar" => "https://mesonet.agron.iastate.edu/disclaimer.php",
+        "tide-stations" | "current-stations" => COOPS_TERMS,
+        "usgs-gauges" => USGS_TERMS,
+        "buoys" | "nwps-gauges" => WEATHER_GOV_TERMS,
+        "lake-contours-mn" => "https://www.dnr.state.mn.us/wmas/kml/license.html",
+        "artificial-reefs-ny" | "stocking-points" => OPEN_NY_TERMS,
+        "public-land" => PADUS_PAGE,
+        "access-points" => "https://www.openstreetmap.org/copyright",
+        "species-records" => "https://www.gbif.org/terms/data-user",
+        "hab-beaches" => HAB_PAGE,
+        "storms" => OPEN_METEO_LICENCE,
+        "copernicus-currents" | "copernicus-sst" | "copernicus-sea-level" => COPERNICUS_TERMS,
+        _ => return None,
+    })
+}
 
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
 pub struct SourcesCard {
@@ -211,58 +676,24 @@ fn error_kind_label(f: &Formatter, k: SourceErrorKind) -> &'static str {
 }
 
 /// The credit a source is owed: the snapshot's own wording and link when it has them, else the
-/// credit line the source asks for, with its licence as the source states it.
+/// credit line the source asks for, with its licence as the source states it and its terms page.
 fn credit_for(snapshot: &SpotSnapshot, id: &SourceId, strings: Strings) -> CreditVm {
-    let (text, link, licence) = match id.as_str() {
-        "usgs" => (
-            Some(SafetyKey::CreditUsgs),
-            "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
-            Some(SafetyKey::LicencePublicDomain),
-        ),
-        "coops" => (
-            Some(SafetyKey::CreditCoops),
-            "https://tidesandcurrents.noaa.gov/",
-            Some(SafetyKey::LicencePublicDomain),
-        ),
-        "coops-harmonics" => (
-            Some(SafetyKey::CreditHarmonics),
-            "https://tidesandcurrents.noaa.gov/",
-            Some(SafetyKey::LicencePublicDomain),
-        ),
-        "ndbc" => (
-            Some(SafetyKey::CreditObservationsNdbc),
-            "https://www.ndbc.noaa.gov/",
-            Some(SafetyKey::LicencePublicDomain),
-        ),
-        "nwps" => (
-            Some(SafetyKey::CreditNwps),
-            "https://water.noaa.gov/",
-            Some(SafetyKey::LicencePublicDomain),
-        ),
-        "nws" => (
-            Some(SafetyKey::CreditNws),
-            "https://www.weather.gov/",
-            Some(SafetyKey::LicencePublicDomain),
-        ),
-        "open-meteo-marine" => (
-            Some(SafetyKey::CreditOpenMeteo),
-            OPEN_METEO,
-            Some(SafetyKey::LicenceCcBy4),
-        ),
-        _ => (None, "", None),
-    };
+    let entry = source_terms(id.as_str());
     let found = snapshot.attribution.iter().find(|a| a.source == *id);
     let name = strings.source_name(id);
     CreditVm {
-        text: match (found, text) {
+        text: match (found, entry) {
             (Some(a), _) => a.credit.clone(),
+            (None, Some(t)) => t
+                .credit
+                .map_or_else(|| name.clone(), |k| strings.safety(k).to_owned()),
             (None, None) => name.clone(),
-            (None, Some(key)) => strings.safety(key).to_owned(),
         },
         link: found
             .and_then(|a| a.url.clone())
-            .or_else(|| (!link.is_empty()).then(|| link.to_owned())),
-        licence: licence.map(|key| strings.safety(key).to_owned()),
+            .or_else(|| entry.map(|t| t.terms_url.to_owned()))
+            .filter(|l| !l.is_empty()),
+        licence: entry.map(|t| licence_text(t, strings)),
         source: name,
     }
 }
@@ -523,6 +954,10 @@ mod tests {
     use crate::view::Voice;
     use crate::view::tests::sample_input;
 
+    fn plain() -> Strings {
+        Strings::new(Voice::Plain)
+    }
+
     fn names(card: &SourcesCard) -> Vec<&str> {
         card.full
             .credits
@@ -586,6 +1021,154 @@ mod tests {
             kinds,
             [NoticeKind::NotForNavigation, NoticeKind::Provisional]
         );
+    }
+
+    /// The ids of every `SourceId` constant, read from where they are declared so that a new
+    /// one without a credit fails here.
+    fn declared_source_ids() -> Vec<String> {
+        include_str!("../../provenance.rs")
+            .lines()
+            .filter_map(|l| l.split("SourceId::from_static(\"").nth(1))
+            .filter_map(|rest| rest.split('"').next())
+            .map(str::to_owned)
+            .collect()
+    }
+
+    #[test]
+    fn every_source_id_has_an_attribution_entry() {
+        let ids = declared_source_ids();
+        assert!(ids.len() >= 21, "the declarations were not read: {ids:?}");
+        for id in &ids {
+            let t = source_terms(id).unwrap_or_else(|| panic!("{id} has no attribution entry"));
+            assert!(!credit_text(t, plain()).is_empty(), "{id}");
+        }
+        // The constants and the list agree.
+        for id in [
+            SourceId::USGS,
+            SourceId::COOPS,
+            SourceId::COOPS_HARMONICS,
+            SourceId::NDBC,
+            SourceId::NWPS,
+            SourceId::OPEN_METEO_MARINE,
+            SourceId::NWS,
+            SourceId::USGS_3DHP,
+            SourceId::GLERL,
+            SourceId::CWMS,
+            SourceId::RISE,
+            SourceId::CYAN,
+            SourceId::NOAA_HAB,
+            SourceId::NY_DEC_STOCKING,
+            SourceId::OVERPASS,
+            SourceId::PADUS,
+            SourceId::GBIF,
+            SourceId::INATURALIST,
+            SourceId::USGS_NAS,
+            SourceId::DFO_IWLS,
+            SourceId::ECCC_HYDROMETRIC,
+        ] {
+            assert!(ids.iter().any(|i| i == id.as_str()), "{id}");
+        }
+    }
+
+    #[test]
+    fn every_entry_states_a_licence_and_links_its_terms() {
+        let mut seen = Vec::new();
+        let all = SOURCE_TERMS.iter().chain(DATASETS.iter().map(|d| &d.terms));
+        for t in all {
+            assert!(!seen.contains(&t.id), "{} is listed twice", t.id);
+            seen.push(t.id);
+            assert!(!licence_text(t, plain()).is_empty(), "{}", t.id);
+            if t.id != "regulations" {
+                assert!(t.terms_url.starts_with("https://"), "{}", t.id);
+                assert!(t.site_url.starts_with("https://"), "{}", t.id);
+            }
+        }
+    }
+
+    #[test]
+    fn a_credit_that_depends_on_the_day_is_read_not_kept() {
+        // Copernicus: the DOI of each product the layers draw.
+        let t = source_terms("copernicus").unwrap();
+        assert!(t.credit.is_none());
+        let credit = credit_text(t, plain());
+        for doi in ["moi-00016", "moi-00165"] {
+            assert!(
+                credit.starts_with("Generated using E.U. Copernicus Marine Service Information;")
+                    && credit.contains(&format!("https://doi.org/10.48670/{doi}")),
+                "{credit}"
+            );
+        }
+        // The weather providers: whether's own wording.
+        let open_meteo = credit_text(source_terms("open-meteo").unwrap(), plain());
+        assert_eq!(open_meteo, ProviderId::OpenMeteo.attribution());
+        // NWPS: no credit lines of the data are kept; the snapshot's win.
+        let nwps = conditions_text(source_terms("nwps").unwrap(), plain()).unwrap();
+        assert!(!nwps.contains("20"), "{nwps}");
+        // The GEBCO grid year appears in no entry.
+        for t in &SOURCE_TERMS {
+            let text = format!(
+                "{} {}",
+                credit_text(t, plain()),
+                conditions_text(t, plain()).unwrap_or_default()
+            );
+            assert!(!text.contains("GEBCO"), "{}", t.id);
+        }
+        assert!(!gebco_page_credit(plain()).contains("2026"));
+    }
+
+    #[test]
+    fn open_meteo_marine_names_its_model_providers_with_their_dois() {
+        let text = conditions_text(source_terms("open-meteo-marine").unwrap(), plain()).unwrap();
+        for expected in [
+            "10.48670/moi-00017",
+            "10.48670/moi-00016",
+            "10.24381/cds.adbb2d47",
+            "ECMWF (WAM)",
+            "NOAA NCEP",
+            "DWD",
+        ] {
+            assert!(text.contains(expected), "{expected} missing from {text}");
+        }
+    }
+
+    #[test]
+    fn every_layer_with_a_source_links_its_terms() {
+        // Base maps and the user's own layers have no source's terms to link; the wind,
+        // pressure and wave layers have no source yet; Indiana states no terms for its
+        // contours.
+        let without = [
+            "apple-standard",
+            "apple-satellite",
+            "apple-hybrid",
+            "wind",
+            "pressure",
+            "waves",
+            "spots",
+            "catches",
+            "tracks",
+            "catch-heat",
+            "lake-contours-in",
+        ];
+        for id in catalogue::ids() {
+            let linked = layer_terms_url(id).is_some();
+            assert_eq!(linked, !without.contains(&id), "{id}");
+        }
+    }
+
+    #[test]
+    fn a_credit_without_a_snapshot_attribution_has_its_licence_and_terms() {
+        let mut snapshot = sample_input().snapshot;
+        snapshot.attribution.clear();
+        for id in declared_source_ids() {
+            let c = credit_for(
+                &snapshot,
+                &SourceId::new(id.clone()),
+                Strings::new(Voice::Plain),
+            );
+            assert!(c.licence.is_some(), "{id}");
+            assert!(c.link.is_some(), "{id}");
+            assert_ne!(c.text, id, "{id}");
+        }
     }
 
     #[test]
