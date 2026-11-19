@@ -14,6 +14,20 @@ final class ThemeCheckLinesTests: XCTestCase {
         }
     }
 
+    /// The default theme, and a custom copy of it as the editor first opens it, pass every
+    /// check in light and in dark appearance: no words, marks, pins or pairs fall short.
+    func testTheDefaultThemeAndAFreshCopyOfItPassInLightAndDark() {
+        let base = ColorPresets.resolve(id: ColorPresets.defaultID)
+        let copy = CustomThemes.duplicate(base, existing: []).completed(from: base)
+        for theme in [base, copy] {
+            let failures = ThemeChecks.failures(theme)
+            XCTAssertEqual(failures, [], theme.id)
+            XCTAssertEqual(ThemeCheckLines.lines(theme, locale: english), [], theme.id)
+            XCTAssertTrue(ThemeChecks.findings(theme, level: .standard).contains { $0.dark })
+            XCTAssertTrue(ThemeChecks.findings(theme, level: .standard).contains { !$0.dark })
+        }
+    }
+
     func testAnEditThatFallsShortIsSaidOncePerRoleAndCheck() {
         let base = ColorPresets.underbite
         let theme = ColorTheme(id: "custom-1", name: "Mine", base: "underbite", colors: [:])
