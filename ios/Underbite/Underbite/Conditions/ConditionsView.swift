@@ -250,17 +250,31 @@ private struct PageHeader: View {
     let header: ViewModel.SpotHeader
     let notices: [ViewModel.SpotNotice]
     let status: ViewModel.SpotStatus?
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 6) {
-                Text(header.waterTypeLabel)
-                Text(verbatim: "·").accessibilityHidden(true)
-                Text(status?.updated ?? header.updated)
-                if status?.refreshing == true { ProgressView().controlSize(.mini) }
+            if typeSize.isAccessibilitySize {
+                // Stacked, whole lines, no separator: the two parts read as two lines.
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(header.waterTypeLabel)
+                    HStack(spacing: 6) {
+                        Text(status?.updated ?? header.updated)
+                        if status?.refreshing == true { ProgressView().controlSize(.mini) }
+                    }
+                }
+                .font(.subheadline)
+                .foregroundStyle(.readableSecondary)
+            } else {
+                HStack(spacing: 6) {
+                    Text(header.waterTypeLabel)
+                    Text(verbatim: "·").accessibilityHidden(true)
+                    Text(status?.updated ?? header.updated)
+                    if status?.refreshing == true { ProgressView().controlSize(.mini) }
+                }
+                .font(.subheadline)
+                .foregroundStyle(.readableSecondary)
             }
-            .font(.subheadline)
-            .foregroundStyle(.readableSecondary)
             if let error = status?.error {
                 Label(error, systemImage: "exclamationmark.triangle")
                     .font(.caption)

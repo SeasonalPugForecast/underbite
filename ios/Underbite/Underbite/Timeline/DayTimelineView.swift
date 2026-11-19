@@ -16,6 +16,10 @@ struct DayTimelineView: View {
     /// The part of the strip on screen, so labels are placed where they can be read whole.
     @State private var visible: ClosedRange<CGFloat> = 0...0
     @Environment(\.sunMode) private var sunMode
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    /// At accessibility sizes a lane's name sits above the lane, so the plot has the card's width.
+    private var namesAbove: Bool { typeSize.isAccessibilitySize }
 
     private let axisHeight: CGFloat = 20
     private let rowSpacing: CGFloat = 6
@@ -29,20 +33,30 @@ struct DayTimelineView: View {
     /// The height of a lane's name, which follows every text size.
     @ScaledMetric(relativeTo: .caption) private var labelHeight: CGFloat = 16
 
+    /// The room for a name above its lane (none beside it).
+    private var nameGap: CGFloat { namesAbove ? labelHeight + 4 : 0 }
+
     private func rowHeight(_ lane: ViewModel.TimelineLane) -> CGFloat {
         max(lane.chart.series.isEmpty ? 48 : 88, labelHeight + 12)
     }
 
     private var stripHeight: CGFloat {
-        axisHeight + lanes.reduce(0) { $0 + rowSpacing + rowHeight($1) }
+        axisHeight + lanes.reduce(0) { $0 + rowSpacing + nameGap + rowHeight($1) }
     }
 
     var body: some View {
         if !lanes.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .top, spacing: 8) {
-                    labels
-                    strip.dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                if namesAbove {
+                    ZStack(alignment: .topLeading) {
+                        strip.dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                        labelsAbove.allowsHitTesting(false)
+                    }
+                } else {
+                    HStack(alignment: .top, spacing: 8) {
+                        labels
+                        strip.dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                    }
                 }
                 if let selected { readings(at: selected) }
                 ForEach(lanes, id: \.kind) { lane in
@@ -78,6 +92,28 @@ struct DayTimelineView: View {
         }
     }
 
+    /// The names over the strip, each in the gap kept above its lane, full width.
+    private var labelsAbove: some View {
+        VStack(alignment: .leading, spacing: rowSpacing) {
+            Color.clear.frame(width: 1, height: axisHeight)
+            ForEach(lanes, id: \.kind) { lane in
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(lane.label)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.readableSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        // On a backing, so the line for now does not strike through the name.
+                        .padding(.trailing, 4)
+                        .background(Color(.secondarySystemGroupedBackground))
+                        .frame(height: nameGap, alignment: .leading)
+                    Color.clear.frame(width: 1, height: rowHeight(lane))
+                }
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
     // MARK: The strip
 
     private var strip: some View {
@@ -102,7 +138,11 @@ struct DayTimelineView: View {
                 VStack(alignment: .leading, spacing: rowSpacing) {
                     TimelineAxis(timeline: timeline, visible: visible).frame(height: axisHeight)
                     ForEach(lanes, id: \.kind) { lane in
-                        LaneRow(timeline: timeline, lane: lane, sunMode: sunMode)
+                        VStack(alignment: .leading, spacing: 0) {
+                            Color.clear.frame(width: 1, height: nameGap)
+                            LaneRow(
+                                timeline: timeline, lane: lane, sunMode: sunMode, visible: visible
+                            )
                             .overlay {
                                 LaneLabels(timeline: timeline, lane: lane, visible: visible)
                             }
@@ -113,6 +153,7 @@ struct DayTimelineView: View {
                                 ChartAudioGraph(
                                     chart: lane.chart,
                                     yDomain: TimelineLayout.range(of: lane) ?? 0...1))
+                        }
                     }
                 }
                 if let selected {
@@ -234,6 +275,8 @@ private struct LaneRow: View {
     let timeline: ViewModel.Timeline
     let lane: ViewModel.TimelineLane
     let sunMode: Bool
+    /// The part of the strip on screen: a band's words start inside it.
+    let visible: ClosedRange<CGFloat>
 
     private let topInset: CGFloat = 16
     private let bottomInset: CGFloat = 15
@@ -264,9 +307,12 @@ private struct LaneRow: View {
                 context.fill(Path(rect), with: .color(Self.color(band.kind, sunMode: sunMode)))
                 let text = context.resolve(
                     Text(band.label).font(.caption2).foregroundStyle(Color.primary))
-                if text.measure(in: size).width + 6 <= rect.width {
-                    context.draw(
-                        text, at: CGPoint(x: rect.minX + 4, y: size.height - 8), anchor: .leading)
+                // Start at the bar's visible start, never left of the part on screen.
+                let shown = visible.upperBound > visible.lowerBound ? visible : 0...size.width
+                let left = max(rect.minX, shown.lowerBound, 0) + 4
+                let right = min(rect.maxX, shown.upperBound)
+                if left + text.measure(in: size).width + 2 <= right {
+                    context.draw(text, at: CGPoint(x: left, y: size.height - 8), anchor: .leading)
                 }
             }
 

@@ -1,0 +1,2 @@
+-seed -tab spots -open-spot seed-battery -UIPreferredContentSizeCategoryName UICTContentSizeCategoryAccessibilityXXXL
+wait 60
