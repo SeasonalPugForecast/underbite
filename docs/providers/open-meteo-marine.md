@@ -215,6 +215,13 @@ was a few kB.
 - No deprecation or outage notices were found on the documentation pages on 2026-11-08 (**unverified**
   beyond that: the pages and the open-meteo.com status feed were not searched for incident history).
 
+Re-checked 2026-11-18: licence and non-commercial terms unchanged; details read the same day:
+
+- `https://open-meteo.com/en/licence`: API data under CC BY 4.0; "You must include a link next to any location Open-Meteo data are displayed", for example "Weather data by Open-Meteo.com". The page lists each data provider with a link to that provider's licence (DWD, ECMWF, Norwegian MI and others CC BY; UK Met Office CC BY-SA); it gives no per-provider credit wording. The per-model credit wording is on the API documentation page, not the licence page as written above.
+- `https://open-meteo.com/en/docs/marine-weather-api`: "MeteoFrance MFWAM waves, SMOC currents and tides, and sea surface temperature: generated using E.U. Copernicus Marine Service Information (https://doi.org/10.48670/moi-00017, https://doi.org/10.48670/moi-00016)"; ECMWF WAM wave forecasts from ECMWF; GFS Wave forecasts from NOAA NCEP; EWAM and GWAM from DWD; "ERA5-Ocean wave reanalysis: generated using Copernicus Climate Change Service information (https://doi.org/10.24381/cds.adbb2d47)". "All users of Open-Meteo data must provide a clear attribution to the providers of the models they use as well as a reference to Open-Meteo."
+- `https://open-meteo.com/en/terms`: free use is non-commercial, "Less than 10'000 API calls per day, 5'000 per hour and 600 per minute" (the comparison table adds 300,000 per month), limits per IP address and application, blocking without notice for misuse. Qualifying examples: "Private or non-profit websites or apps that do not have subscriptions or advertising"; voluntary donations and tip jars are permitted. Commercial: apps with subscriptions or advertisements, commercial products. Changes to the terms take effect when posted.
+- Privacy section of the terms: web server logs "may contain sensitive information such as geographical coordinates", are not shared with third parties and are deleted after 90 days.
+
 ## Using the result
 
 Suitable as a global fallback for waves, SST and a tide-like sea level where no CO-OPS or NDBC source

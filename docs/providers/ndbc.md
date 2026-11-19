@@ -195,6 +195,10 @@ needed column. Nearby stations of interest for New York Harbor: 44025 (40.258, -
   reviewed archive. Wave and wind sensors on buoys fail and are repaired without notice, so a fresh `MM` column is
   normal.
 
+Re-checked 2026-11-18: public-domain and credit wording unchanged (`https://www.weather.gov/disclaimer`, to which the "Disclaimer" links on the NDBC home and station pages point).
+
+Partner stations: no NDBC page read states additional terms for them. `activestations.xml` (read 2026-11-18) carries `pgm` values `IOOS Partners` (515 stations), `NOS/CO-OPS` (292), `International Partners` (140), `NERRS` (104) and `Marine METAR` (35), and an `owner` attribute naming the operator (for example `MYSOUND`, `Stony Brook University`, `National Estuarine Research Reserve System`, `Federal Aviation Administration`). The station pages for 44069 and ANMN6 show "Owned and maintained by <owner>"; the page for KATP (Marine METAR) shows no owner line and says "Data from this station are not quality controlled by NDBC." The weather.gov disclaimer has a "Use of Third-Party Data and Products" paragraph: third-party information is "used under license by the individual third-party provider", and readers are asked to "contact the third-party provider for information on your rights to further use these data/products". So NDBC publishes no per-partner licence; the rights to partner-owned stations are **unverified** beyond that paragraph. Pages tried that do not exist (404): `/data_policy.shtml`, `/ioos_partners.shtml`, `/faq/partners.shtml`.
+
 ## 6. Outages, changes and deprecations
 
 - 2023-08-15 (about): station ids may be seven characters in some NDBC files (notice 23-85).

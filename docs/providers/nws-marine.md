@@ -340,3 +340,7 @@ Offshore mapping as observed in the two recordings:
   id through a fixed table: `ANZ800` to `ANZ815`, `ANZ898` and `ANZ900` to `NT1`; `ANZ820` to `ANZ835`,
   `ANZ899` and `ANZ905` to `ANZ935` to `NT2`. Other offshore zones (`NT3` to `NT5`) were not fetched and
   are **unverified**.
+
+## Licence, terms and attribution
+
+Re-checked 2026-11-18: unchanged. `https://www.weather.gov/documentation/services-web-api` still says the information is "intended to be open data, free to use for any purpose", no fees, a rate limit that "is not public information" (retry after the limit clears, typically within 5 seconds), and that a User-Agent is required and "will be replaced with an API key in the future". Use terms are those of `https://www.weather.gov/disclaimer` (public domain; do not claim as your own, imply endorsement or modify and present as official; the NWS name and visual identifier are protected).

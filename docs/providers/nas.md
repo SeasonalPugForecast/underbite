@@ -69,6 +69,8 @@ The database holds records of non-native occurrences (the `status` and `freshMar
 
 Public US government data. The site's data disclaimer: the data "vary in accuracy, scale, completeness, extent of coverage and origin. It is the user's responsibility to use these data consistent with their intended purpose and within stated limitations." Publications are asked to contact NAS. Suggested citation: "U.S. Geological Survey. [year]. Nonindigenous Aquatic Species Database. Gainesville, Florida. Accessed [date]."
 
+Re-checked 2026-11-18: unchanged. `https://nas.er.usgs.gov/api/documentation.aspx` carries the same data disclaimer and the citation form "U.S. Geological Survey. [2026]. Nonindigenous Aquatic Species Database. Gainesville, Florida. Accessed [11/18/2026].", and asks users who publish to contact NAS to make sure the data are used appropriately.
+
 ## Unverified
 
 - The documented maximum for `limit`.

@@ -106,6 +106,8 @@ GIBS imagery is NASA Earth science data under NASA's open data policy ("full and
 
 The MUR layers also carry the JPL acknowledgement: "These data were provided by JPL under support by NASA MEaSUREs program." No "not for navigation" text is supplied by GIBS; the app adds its own wording to the SST and chlorophyll layers.
 
+Re-checked 2026-11-18: unchanged. `https://nasa-gibs.github.io/gibs-api-docs/` ("Data Use Guidance and Acknowledgements") carries the same acknowledgement text quoted above and "NASA promotes full and open sharing of data". The JPL MUR acknowledgement was not read again on this date.
+
 ## What was not verified
 
 - A numeric rate limit or fair-use threshold.

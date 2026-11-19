@@ -152,3 +152,7 @@ guidance, not an official forecast.
 - Behaviour of `ratings`, `riverflow`, `raag` and `monitor`.
 - Whether the reach endpoint shares the experimental label of the other National Water Model services.
 - Outages: none seen; no deprecation notice found for `/nwps/v1`.
+
+## Licence, terms and attribution
+
+Re-checked 2026-11-18: unchanged. The NWPS site footer (`https://water.noaa.gov/`) links to the NWS disclaimer, `https://www.weather.gov/disclaimer`, read the same day: public domain unless noted and usable for any lawful purpose if one does not claim it as one's own, imply NOAA or NWS endorsement, or modify it and present it as official; the NWS name and visual identifier are protected and not to be used without permission except to identify unaltered content; experimental products are "intended for research use"; the "Public Notice of Appropriate Use" asks clients to know the refresh cycle and to retry a failed service no more often than every minute. No NWPS-specific terms page was found (`water.noaa.gov/about/disclaimer` and `/about/nwps` answered 404). The credit lines are the `dataAttribution` objects in the data (see the field table).

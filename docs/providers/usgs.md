@@ -124,6 +124,8 @@ for safety decisions. A display of live values should say "provisional" for thos
 identifier (logo) is trademarked and needs separate permission; do not use it. Contact for questions:
 `wdfn@usgs.gov`.
 
+Re-checked 2026-11-18: public-domain and credit wording unchanged (`https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits`: "Credit: U.S. Geological Survey" as a suggested form; the USGS identifier is trademarked and must be used under the Visual Identity System rules). The provisional data statement (`https://waterdata.usgs.gov/provisional-data-statement/`) answered HTTP 403 (a CloudFront block) to `curl` and to a fetch tool on 2026-11-18, so its current text is **unverified**; the wording above is from the earlier read.
+
 ## Fields
 
 ### monitoring-locations (`collections/monitoring-locations/items`)

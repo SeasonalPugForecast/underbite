@@ -77,3 +77,7 @@ Every `coastalscience.noaa.gov` page read on 2026-11-17 carried the banner "The 
 - Not usable for the New York test places or any region outside the Gulf Coast forecast area (Florida and Texas); the beaches in the 2026-11-17 file are on the Florida coast (26.8 to 30.7 N, 80.1 to 86.2 W).
 - The number of beaches per file varies from run to run (about 55 on 2026-11-08, 22 on 2026-11-17); a client must not assume a fixed set.
 - The Gulf feed has no history; a short-term use is "respiratory irritation today at the nearest beach", shown only within a distance threshold of a listed beach.
+
+## Licence, terms and attribution
+
+Re-checked 2026-11-18: unchanged. `https://coastalscience.noaa.gov/science-areas/habs/hab-forecasts/gulf-coast/` states no terms. The NOAA disclaimer page (`https://www.noaa.gov/disclaimer`) answered HTTP 403 to `curl` (**unverified**); the public-domain statement above rests on the NOAA and NWS pages read for the other notes.

@@ -178,6 +178,8 @@ Units come from the response's own `columnUnits`. The core can read them rather 
 - `noaacwN21VIIRSkd490NSWUSDaily`: `license` is the "may be used and redistributed for free but is not intended for legal use" text with the no-warranty clause; creator "NOAA CoastWatch" (`https://coastwatch.noaa.gov`), institution "NOAA NESDIS STAR". Credit line: "Water clarity: NOAA CoastWatch / NOAA STAR VIIRS".
 - `erdMH1kd4901day_R2022NRT`: `license` points to NASA's data and information policy; data from NASA OBPG (`oceancolor.gsfc.nasa.gov`).
 
+Re-checked 2026-11-18: unchanged in substance. `https://coastwatch.pfeg.noaa.gov/erddap/legal.html` still has the as-is disclaimer and "The data from some datasets may be subject to usage limitations or restrictions" (see each dataset's `license`). The `license` attributes of `ucsdHfrE6` and `noaacwN21VIIRSkd490NSWUSDaily` still carry the "may be used and redistributed for free but is not intended for legal use" text. `jplMURSST41.das` answered HTTP 503 on three requests, so its license and acknowledgement were not read again (**unverified** on this date; the JPL acknowledgement is also on the GIBS layer, see `gibs.md`); the `.das` of the 4 km VIIRS chlorophyll dataset was not read again. The NASA policy URL given above now redirects: it is `https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-information-guidance`, which still says "NASA promotes the full and open sharing of data".
+
 ## What was not verified
 
 - Rate limit thresholds and the `429` response headers (no `429` occurred on 2026-11-16 while keeping under 10 requests a minute per host).

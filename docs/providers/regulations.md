@@ -143,6 +143,8 @@ yearly summary PDF as well. No state was found that publishes only a PDF, but pa
 - Fees, seasons and limits change during the year (several agencies post in-season changes and
   emergency rules); the app text must say regulations may have changed and must link, not quote.
 
+Re-checked 2026-11-18: unchanged. No agency terms page was read and no agency content is copied.
+
 ## Unverified
 
 - Page content for the 403 and 404 links listed above.
@@ -304,6 +306,8 @@ language from its own language setting and fall back to English when a jurisdict
   may have changed and link, not quote.
 - Closures and rule changes happen during the season (for example short-notice stream closures in Alberta and the
   rules that took effect in New Brunswick in March 2026, as announced on gnb.ca).
+
+Re-checked 2026-11-18: unchanged. No agency terms page was read and no agency content is copied.
 
 ## Unverified
 

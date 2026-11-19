@@ -26,6 +26,8 @@ byline/photo/image credits". The data are a US Government work. A credit such as
 Observatory" satisfies that request. No bulk-use limit is stated, so these files are recorded once and
 the app does not call the service.
 
+Re-checked 2026-11-18: unchanged. The privacy notice (`https://aa.usno.navy.mil/about/PrivacyNotice`) still says "All information on this site is considered public information and may be distributed or copied unless otherwise specified. Use of appropriate byline/photo/image credits is requested." The API page itself was not read again.
+
 ## Requests
 
 One day of Sun and Moon data at The Battery, in UTC (fixture `usno-rstt-40.7033_-74.0170-2026-11-08.json`):

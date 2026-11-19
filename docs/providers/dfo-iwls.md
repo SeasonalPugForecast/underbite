@@ -113,6 +113,8 @@ Sources: the OpenAPI `info.description` links "Terms of service" (`https://www.d
 
 Consequences: do not bundle IWLS data (station lists or predictions) in the app or in the repository; fetch at run time. The test fixtures are synthetic and contain no CHS data. Show the full notice above (or a link to it) wherever IWLS values appear, plus "Canadian Hydrographic Service, Fisheries and Oceans Canada" as the source and "not for navigation". Whether sharing cached snapshots between users (the `.underbite` file) counts as "given to a third party" is **unverified**; avoid including IWLS series in shared files until clarified with CHS.
 
+Re-checked 2026-11-18: unchanged. `https://www.tides.gc.ca/en/licence-agreement` still shows "Date modified: 2023-08-14" and the same clauses: no derivative products for commercial purposes, sale or profit; the data are not to be given to a third party; the quoted notice on derivative products; the agreement ends by public notice from CHS with copies destroyed within 15 days. The general Fisheries and Oceans terms page (`https://www.dfo-mpo.gc.ca/terms-avis/terms-conditions-avis-eng.htm`) says commercial redistribution needs written permission and refers anyone reproducing CHS data to CHS directly. The question of sharing cached snapshots stays **unverified**.
+
 ## Known issues and changes
 
 - No deprecation or outage notice found on the pages read (2026-11-17). The service asks users to send a name and email to `chsinfo@dfo-mpo.gc.ca` to receive update notices; this was not done.

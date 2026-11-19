@@ -87,6 +87,8 @@ Missing days are absent rows (not checked for 05BH004; **unverified** for gaps).
 
 Environment and Climate Change Canada Data Services End-use Licence, version 2.1.1 (August 2026), `https://eccc-msc.github.io/open-data/licence/readme_en/` (read 2026-11-17): worldwide, royalty-free, perpetual, non-exclusive, commercial use allowed; copy, modify, publish, translate, adapt and distribute for any lawful purpose. Conditions: acknowledge the source, including any attribution the provider specifies; attribute outside originators; where a provider gives none or several attributions are impractical, use "Contains information licenced under the Data Server End-use Licence of Environment and Climate Change Canada." and link the licence where possible. Suggested credit line: "Data Source: Environment and Climate Change Canada" (the text the licence gives as an example), plus the contributor from `CONTRIBUTOR_EN` where present. The licence does not grant use of personal information, third-party rights, or the logos and symbols of the department, and states no endorsement. The collections carry no per-collection attribution field. Water levels are not for navigation and carry no warranty.
 
+Re-checked 2026-11-18: unchanged. `https://eccc-msc.github.io/open-data/licence/readme_en/` is still version 2.1.1 ("August 2026") with the same attribution forms (the page's own versioning paragraph says "version 2.1").
+
 ## Known issues
 
 - The units are not machine-readable in the queryables or schema; they are fixed here from ECCC's pages (`LEVEL` m, `DISCHARGE` m3/s).

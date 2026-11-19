@@ -100,6 +100,8 @@ Client rule: a response is a tile only if the `content-type` is `image/png`; tre
 - No terms of use are stated on the Coast Survey page or in the capabilities (`Fees` and `AccessConstraints` are empty). The data are NOAA ENC data, a US government work. Credit "NOAA Office of Coast Survey, NOAA Chart Display Service (ENC)". Keep the "not for navigation" note.
 - Updates: the page states that the ENC data and chart images are updated weekly. Chart tiles show no date in the response; the app cannot say how old a tile is beyond the cache header.
 
+Re-checked 2026-11-18: unchanged. The WMS capabilities (`.../MaritimeChartService/WMSServer?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities`) still have empty `Fees` and `AccessConstraints`, and `https://nauticalcharts.noaa.gov/data/gis-data-and-services.html` still says the ENC data and chart images are updated weekly and gives no terms. The page's "Disclaimer" link was not read (**unverified**).
+
 ## Structure points (checked 2026-11-17)
 
 Checked on 2026-11-17 with `curl` and `User-Agent: underbite-scout/0.1 (provider docs check)`, one request every four seconds or more, about 90 requests in all. Fixtures: `tests/fixtures/raw/ncds/` (lines under "Structure points" in its `README.md`).
@@ -171,6 +173,8 @@ https://gis.charttools.noaa.gov/arcgis/rest/services/encdirect/enc_harbour/MapSe
 ### Licence and attribution for structure data
 
 As for NCDS: no terms on the pages read; US government ENC data; credit "NOAA Office of Coast Survey, ENC Direct to GIS" (or "NOAA Chart Display Service (ENC)"); keep "not for navigation". The ENC Direct page's only disclaimer: "This service is for informational purposes only and does not constitute an endorsement by the U.S. Government."
+
+Re-checked 2026-11-18: **unverified**. The ENC Direct viewer page (`https://encdirect.noaa.gov/`) is script-driven and returned no readable text, so the disclaimer quoted above was not read again; the REST root (`https://encdirect.noaa.gov/arcgis/rest/services/encdirect`) answered 200.
 
 ## What was not verified
 

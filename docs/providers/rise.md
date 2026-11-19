@@ -90,3 +90,7 @@ Release and storage units: some locations publish `af` and `cfs` release as sepa
 - A location lookup by name is not possible (the filter is ignored). Fetch the reservoir location list (three pages, 218 KB at 100 per page) once, bundle the id, name and coordinates, and fetch catalogue items per location with the record-to-item route above when needed.
 - The `result` endpoint requires an `itemId`, `locationId` or `modelRunId` now. `tier2.md` recorded a 30 s timeout for this case on 2026-11-08; on 2026-11-17 the server answers HTTP 400.
 - The ignored-filter behaviour is silent. Always check `meta.totalItems` against the expected number of rows before reading a page.
+
+## Licence, terms and attribution
+
+Re-checked 2026-11-18: unchanged. `https://www.usbr.gov/main/disclaimer.html` (last updated 8/5/26) still defers to the Department of the Interior disclaimer policy and states no licence or credit requirement; the Interior page `https://www.doi.gov/privacy/doi-disclaimer` answered 404 and was not read (**unverified**). The catalogue-item `disclaimer` text was not fetched again.

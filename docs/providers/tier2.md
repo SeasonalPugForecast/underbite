@@ -633,3 +633,7 @@ Connector"), `lengthkm`, `streamorder` (7 for the Croton River reach), `mainstem
 links to the mainstem reference), `hydrosequence`/`dnhydrosequence`/`uphydrosequence` and `levelpath` (for
 upstream and downstream tracing), `featuredate` (epoch milliseconds). Many flowlines are unnamed
 (`gnisidlabel` null); filter on it to find the named river.
+
+## Licence, terms and attribution
+
+Re-checked 2026-11-18: the licence statements in this survey are re-checked in the per-source notes (`cwms.md`, `rise.md`, `cyan.md`, `hab.md`, `glerl.md`, `overpass.md`, `padus.md`, `gbif.md`, `inaturalist.md`, `nas.md`, `stocking-ny.md`, `copernicus.md`, `dfo-iwls.md`, `eccc-hydrometric.md`, `hydro.md`); where a note and this survey differ, the note is current. The TVA and Water Quality Portal sections were not re-read.

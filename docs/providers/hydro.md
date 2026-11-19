@@ -183,3 +183,7 @@ requests as in `docs/providers/usgs.md`, fixtures in `tests/fixtures/raw/usgs/`
 - `f=geojson` and `f=pbf` output: listed in `supportedQueryFormats`, not requested.
 - Whether the data are served identically from the `FeatureServer` endpoint.
 - The data refresh date: the layer reports the "refreshed September 4, 2026" credit in `tier2.md`.
+
+## Licence, terms and attribution
+
+Re-checked 2026-11-18: unchanged. The service description at `https://hydro.nationalmap.gov/arcgis/rest/services/3DHP_all/MapServer?f=pjson` still says "Use Constraints: None. All data are open and non-proprietary", asks for acknowledgment of the U.S. Geological Survey, and gives `copyrightText` "Credits: USGS TNM / NGTOC – 3D National Hydrographic Program (3DHP.) Data refreshed September 4, 2026."; `licenseInfo` and `accessInformation` are "None".

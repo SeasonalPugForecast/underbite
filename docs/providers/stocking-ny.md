@@ -102,3 +102,7 @@ The service has no county field, so a county restriction needs a county polygon 
 - The numeric threshold for requests without a token.
 - Whether the 80 % figure holds for the 2026 additions to the spring list.
 - Behaviour of the pair-list query once the datasets exceed the `$limit=50000` row cap (the pair lists are about 1,600 and 500 rows).
+
+## Licence, terms and attribution
+
+Re-checked 2026-11-18: unchanged. The OPEN-NY Terms of Use document (`https://data.ny.gov/dataset/OPEN-NY-Terms-Of-Use/77gx-ii52`, PDF, "LAST MODIFIED: March 8, 2013") was read in full: no requirement to attribute, re-post the terms or obtain pre-approval; the State grants a "non-exclusive, revocable license"; use must be lawful and the State may require a user to stop in writing; the State Seal and page graphics are not licensed; no warranty. Crediting NYS DEC remains optional.

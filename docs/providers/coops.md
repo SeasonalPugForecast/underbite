@@ -399,6 +399,8 @@ HTTP 400.
   was not tested (**unverified**).
 - Tide and current predictions are not for navigation; display "not for navigation" next to charts and currents.
 
+Re-checked 2026-11-18: unchanged. `https://tidesandcurrents.noaa.gov/disclaimers.html` still carries the raw-data disclaimer ("preliminary data to be used only with appropriate caution"), the public-domain statement, the request that attribution be given whenever NOS material is reproduced and re-disseminated, and the as-is wording. The `datagetter` host was not tested (still **unverified**).
+
 ## 7. Outages, changes and deprecations
 
 - The `datums` product no longer exists on the Data API; use mdapi (documentation).

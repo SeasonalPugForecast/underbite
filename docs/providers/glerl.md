@@ -47,6 +47,8 @@ No limit is published for this server beyond the general ERDDAP documentation (s
 
 "NOAA Great Lakes Environmental Research Laboratory (CoastWatch Great Lakes Node)", with the sentence "not intended for legal use". The SST is a satellite analysis of the skin or near-surface water, not a gauge reading; it is not a navigation product.
 
+Re-checked 2026-11-18: unchanged. The `license` attribute of `GLSEA_ACSPO_GCS` (`https://apps.glerl.noaa.gov/erddap/griddap/GLSEA_ACSPO_GCS.das`) still reads "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies...".
+
 ## Not verified
 
 - Rate limits and the `429` response headers.

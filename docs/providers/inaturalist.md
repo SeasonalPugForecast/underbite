@@ -77,6 +77,8 @@ Keys are month numbers as strings, 1 to 12, always all twelve in the sample. `da
 
 Records and photos are licensed individually by the observer. Filter with `license=` and `photo_license=` (comma-separated codes) to retrieve only reusable ones; photos hosted on `inaturalist-open-data.s3.amazonaws.com` carry open licences, those on `static.inaturalist.org` do not. When showing a record, credit the observer as the licence requires, link the observation (`uri`), and credit iNaturalist. Observer names then come from `user.login`, a field the app does not request by default; decide when a credit line is built.
 
+Re-checked 2026-11-18: partly verified. The API description (`https://api.inaturalist.org/v1/swagger.json`) is unchanged: throttle at 100 requests per minute, a request to keep to 60 per minute and under 10,000 per day, blocks without notification, "intended to support application development, not data scraping", with links to the Terms of Service (`https://www.inaturalist.org/terms`) and Privacy Policy. The "API recommended practices" page (`https://www.inaturalist.org/pages/api+recommended+practices`) and the terms page both answered HTTP 403 to `curl` on 2026-11-18: still **unverified**. iNaturalist's citation help article (`https://help.inaturalist.org/en/support/solutions/articles/151000170344-what-is-the-inaturalist-api-`) gives "[Observer name]. [year of posting to iNaturalist]. iNaturalist observation: [url for observation]. Accessed on [date of access]" for a single record and "iNaturalist. Available from https://www.inaturalist.org. Accessed [date]" for the service.
+
 ## Unverified
 
 - The "API recommended practices" page (HTTP 403 to scripts, 2026-11-17).

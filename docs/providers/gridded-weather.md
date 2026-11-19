@@ -93,6 +93,8 @@ GFS and WaveWatch III reach the public only as GRIB2 on NOMADS (`nomads.ncep.noa
 - nowCOAST (not used): NOAA public domain data, `Fees` and `AccessConstraints` `NONE` in the capabilities.
 - Not for navigation: charts and current layers carry the note in the app; wind, pressure and wave grids are model output on a 0.083 to 0.5 degree grid and read as forecasts, not as conditions at a spot.
 
+Re-checked 2026-11-18: partly verified. The `license` and `acknowledgement` attributes of `ncep_global_lon180` (`https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global_lon180.das`) are unchanged; the `ww3_global_lon180` `.das` was not read again. PacIOOS's own data-use page was not found (`https://www.pacioos.hawaii.edu/data-policy/` and `.../about/data-use/` answered 404), so it stays **unverified**. Copernicus and Open-Meteo: see `copernicus.md` and `open-meteo-marine.md`. nowCOAST is not used and was not read again.
+
 ## Recommendation for a later layer task
 
 1. **Wind arrows and pressure**: grid path from `ncep_global_lon180` on the PacIOOS ERDDAP. Add `GridHost` for `pae-paha.pacioos.hawaii.edu`; layers `wind` (`GridDraw::Arrows`, variables `ugrd10m`, `vgrd10m`) and `pressure` (`GridDraw::Raster`, `prmslmsl`, Pa to hPa in the core, optional isobars from the existing contour code). Time slider in 3-hour steps read from the time axis (`time[(today):1:(last)]`); never request a time past the axis. Label the layer "model forecast, about 55 km".

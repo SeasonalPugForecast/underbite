@@ -73,3 +73,7 @@ Neither has ocean coast; Indiana (Lake Michigan) and Minnesota (Lake Superior) p
 - Reef lists for Indiana and Minnesota (none found), and for other coastal states.
 - Rate limits: none published by any of the three hosts; none returned rate-limit headers.
 - Maintenance windows or deprecations: none announced in anything read; the Metropolitan Council copy of the Minnesota service was down on the check date.
+
+## Licence, terms and attribution
+
+Re-checked 2026-11-18: Minnesota unchanged: the DNR General Geographic Data License Agreement (`https://www.dnr.state.mn.us/wmas/kml/license.html`) still grants a "non-exclusive, non-sublicensable, license", requires that MNDNR "must be acknowledged as having contributed data to the development of the product", provides the data "as is", and says that although use is not restricted, the data "may not be sold commercially or privately" without written permission; the dataset-specific record stays **unverified**. Indiana unchanged: the service root has `licenseInfo` and `accessInformation` "None", and layer 0 has `copyrightText` "Indiana Department of Natural Resources, Division of Fish and Wildlife"; terms for the GIS layer stay **unverified**. New York artificial reefs: the OPEN-NY Terms of Use were read in full on this date (see `stocking-ny.md`): no attribution is required, the State grants a non-exclusive, revocable licence, and use must be lawful. The earlier statement that the terms page could not be read is answered; crediting NYSDEC remains optional.

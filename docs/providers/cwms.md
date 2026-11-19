@@ -111,3 +111,7 @@ Offices with `Flow-Out` series in the catalogue on 2026-11-17: NAB 67, NAE 16, M
 - Vertical datum differs per project (`NAVD-88`, `NGVD-29`, or a project datum `OTHER`/`PCD`). Show the pool as height above the datum named in `vertical-datum-info`; "vs normal pool" needs conservation-pool elevations, which this API did not provide in the requests above (**unverified**: a `projects` or `levels` endpoint was not tried).
 - Series are updated about every 15 minutes to hourly; the newest row was 0 to 3 hours old when checked.
 - Series using a non-UTC `time-zone` (`US/Central`, `Etc/GMT+6`) still return UTC epochs.
+
+## Licence, terms and attribution
+
+Re-checked 2026-11-18: **unverified** (no terms page reachable). The OpenAPI `info` of `/cwms-data/swagger-docs` (version 2026.09.22-b) has title and description only, no licence. The project documentation (`https://cwms-data-api.readthedocs.io/latest/`) still ends "Copyright Public Domain.". The USACE site pages `https://www.usace.army.mil/Disclaimer/` and `.../Privacy-and-Security/` answered HTTP 403 to `curl`. No attribution text is prescribed anywhere read; the credit "U.S. Army Corps of Engineers" is a convention.

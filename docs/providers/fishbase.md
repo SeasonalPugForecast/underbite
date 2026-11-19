@@ -59,6 +59,8 @@ Consequences for the app (the first three restate the project's decision to bund
 - A CC BY-NC dataset cannot be redistributed under an open licence; if the project ever publishes the
   bundled catalogue as data, the FishBase part has to be excluded or relicensed by the FishBase team.
 
+Re-checked 2026-11-18: unchanged. `https://www.fishbase.se/summary/citation.php` still says "This work is licensed under Attribution-NonCommercial 4.0 International", asks for non-commercial reuse with a backward link to the source page, and gives the citation "Froese, R. and D. Pauly. Editors. 2026. FishBase. World Wide Web electronic publication. www.fishbase.org, (06/2026)". The dataset card on Hugging Face still says "Reuse of this data is not licensed for commerical applications. Developers should contact the FishBase team directly." The licence deed `https://creativecommons.org/licenses/by-nc/4.0/` is the 4.0 NonCommercial deed, which settles the version. The questions about the App Store and the species page URL pattern stay **unverified**.
+
 ## Tables and fields
 
 All tables are keyed by `SpecCode` (an integer species id); several also carry `StockCode`. Missing

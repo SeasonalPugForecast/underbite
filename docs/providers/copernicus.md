@@ -108,6 +108,8 @@ Credits and DOIs (each resolves at `https://doi.org/<DOI>` to the product page, 
 
 A screen that shows layers from more than one product lists every DOI of the layers visible.
 
+Re-checked 2026-11-18: unchanged. `https://marine.copernicus.eu/user-corner/service-commitments-and-licence` still contains the worldwide, non-exclusive, royalty-free, perpetual grant, the credit forms, the usage-records clause ("maintain such records to document and trace use of Copernicus Marine Service Products", provided "upon reasonable notice", propagated to descending licences), free of charge until the end of the service phase "planned on 30 June 2028", and "Login and password are personal to the signatory of the SLA". The text still has no clause on anonymous WMTS use, so that question stays **unverified**. Detail not recorded above: the credit "shall be clearly visible on the home page of the Licensee's website or at least on the page allowing to access to the products". The help article is now at `https://help.marine.copernicus.eu/en/articles/4444611-citing-copernicus-marine-products-and-services` (the earlier slug redirects) and still gives "Source: European Union, Copernicus Marine Service Information or Data (year), ©Mercator Ocean" for redistribution. The DOI links were not resolved again.
+
 ## Unverified
 
 - Anonymous WMTS access under the licence (2026-11-17, no clause either way).

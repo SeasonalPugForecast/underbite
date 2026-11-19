@@ -89,6 +89,8 @@ A shipped app needs its own caching layer or a paid or self-hosted instance for 
 
 ODbL 1.0. Every response carries `osm3s.copyright`: "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL." Credit "(c) OpenStreetMap contributors" with a link to `https://www.openstreetmap.org/copyright`. A database derived from OSM data and redistributed (for example a bundled catalogue of ramps) must be offered under ODbL.
 
+Re-checked 2026-11-18: licence unchanged; one usage statement is new to this note. `https://www.openstreetmap.org/copyright` still requires credit to OpenStreetMap and a clear statement that the data is available under the ODbL (a link to the copyright page is enough). The OSM wiki usage text (`https://wiki.openstreetmap.org/wiki/Overpass_API`) is unchanged from the "Usage policy" section below. The Overpass user manual's Commons page (`https://dev.overpass-api.de/overpass-doc/en/preface/commons.html`), read the same day, lists among problematic behaviour "Setting up an app for more than just OSM mappers and relying on the public instances as backend" and says "only running your own instance sustainably serves your mission" in that case; it states each public server can fulfil about 1 million requests a day for roughly 30,000 daily users and gives a guideline of about 10,000 requests and 1 GB per day per user.
+
 ## Unverified
 
 - The dresel.systems and overpass.ch instances (not requested).

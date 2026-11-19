@@ -88,6 +88,8 @@ Geometry is Web Mercator (wkid 102100) unless `outSR=4326` is requested. Missing
 
 Public-domain US government data. The item's license text is a no-warranty disclaimer that points to the PAD-US Data Overview. USGS asks for the citation "U.S. Geological Survey (USGS) Gap Analysis Project (GAP), 2024, Protected Areas Database of the United States (PAD-US) 4.1, https://doi.org/10.5066/P96WBCHS". Check the version number against the item description when the service is updated. The USGS Data Manual page has no separate terms-of-use section.
 
+Re-checked 2026-11-18: unchanged. The ArcGIS item license text is the same no-warranty disclaimer (item modified 2026-07-30); the PAD-US Data Overview (`https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-overview`) still gives "PAD-US 4.1", 2024, doi:10.5066/P96WBCHS as the citation, and the data history page says version 4.1, released March 2025, is the most recent.
+
 ## Unverified
 
 - A description of each code beyond the dictionary's one-line labels: the "Data Overview" and the metadata XML were not read.

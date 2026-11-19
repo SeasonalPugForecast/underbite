@@ -74,6 +74,8 @@ Names of people appear in `recordedBy`, `identifiedBy`, `rightsHolder`, `media[]
 
 Each record carries its own `license` (CC0, CC BY, CC BY-NC in the samples) and the media have their own. A commercial or sold app must filter out CC BY-NC records (the request parameter is `license=CC0_1_0,CC_BY_4_0`, not exercised here: **unverified**). Credit text: "GBIF.org" plus the dataset name or the dataset's citation, with the licence. The GBIF data-user terms page could not be read (HTTP 403 on 2026-11-17), so the exact citation wording is **unverified**.
 
+Re-checked 2026-11-18: **unverified**. `https://www.gbif.org/terms/data-user` and `https://www.gbif.org/citation-guidelines` answered HTTP 403 to `curl` and to a fetch tool on 2026-11-18. The API documentation (`https://techdocs.gbif.org/en/openapi/`) says rapid or numerous queries to search APIs may be rate limited and that no particular rate is guaranteed.
+
 ## Unverified
 
 - The month filter parameter and the licence filter value names listed above.

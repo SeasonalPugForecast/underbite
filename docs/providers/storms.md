@@ -109,3 +109,5 @@ public a-decks are 20 to 640 KB compressed in 2026.
 - NHC data: US government work, public domain; credit "National Hurricane Center (NOAA)".
 - Any storm display says the cone and tracks are NHC's, links the advisory, and is not for
   navigation or as a sole safety source.
+
+Re-checked 2026-11-18: Open-Meteo: see `open-meteo-marine.md` (terms and licence read 2026-11-18); the forecast API page that lists ECMWF as a data provider was not read, so the ECMWF credit wording is **unverified**. NHC (`https://www.nhc.noaa.gov/disclaimer.shtml`): information on the server is in the public domain unless annotated otherwise and may be used freely, must not be modified and presented as official, and the server "is not an official source" for the products; no credit wording is prescribed.
