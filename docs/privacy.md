@@ -32,7 +32,9 @@ screen, with their licences. To ask them about a spot, the app sends:
 - **Place search.** The words you type in the new-spot search go to Apple Maps, with an
   approximate area around you when your location is known. The app keeps no list of past searches.
 
-The services see your IP address, as any website does. The app sends an identifier of itself and its
+The services see your IP address, as any website does, and they can log the rounded coordinates
+they receive, along with that address. Each service keeps its own logs under its own terms, which
+Underbite does not control; the Sources screen names each one. The app sends an identifier of itself and its
 version, `underbite/<version>`, and no device or advertising identifier. Requests are never logged
 with keys. The app does not track you, does not use or ask for an advertising identifier, and has no
 third-party code that collects data.
