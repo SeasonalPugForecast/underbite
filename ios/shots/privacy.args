@@ -1,1 +1,2 @@
--seed -tab settings -preferences privacy
+-seed -tab settings -preferences privacy -scrollToRounding
+wait 20

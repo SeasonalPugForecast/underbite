@@ -157,37 +157,62 @@ struct SunModePage: View {
     }
 }
 
-/// How exactly a spot's place is sent to the data providers.
+/// What stays on the phone, what leaves it, and how exactly a spot's place is sent to the
+/// data providers. Every text is the core's.
 struct PrivacyPage: View {
     var body: some View {
+        ScrollViewReader { proxy in
+            page
+                #if DEBUG
+                .task {
+                    // Screenshots only: open scrolled to the rounding choice.
+                    if ProcessInfo.processInfo.arguments.contains("-scrollToRounding") {
+                        try? await Task.sleep(for: .seconds(2))
+                        proxy.scrollTo("rounding", anchor: .top)
+                    }
+                }
+                #endif
+        }
+    }
+
+    private var page: some View {
         PreferencePage(title: "Privacy") { access in
-            let current = access.settings?.sources.coordinatePrecision ?? 2
+            let model = PrivacyModel(settingsJSON: access.json)
+            ForEach(Array(model.words.sections.enumerated()), id: \.offset) { _, section in
+                Section {
+                    ForEach(Array(section.paragraphs.enumerated()), id: \.offset) { _, paragraph in
+                        Text(paragraph)
+                    }
+                } header: {
+                    Text(section.title)
+                        .font(.headline)
+                        .textCase(nil)
+                        .accessibilityAddTraits(.isHeader)
+                }
+            }
             Section {
+                LabeledContent(model.words.roundingTitle, value: model.words.roundingCurrent)
                 Picker(
-                    "Place sent as",
+                    model.words.roundingTitle,
                     selection: access.binding({ $0.sources.coordinatePrecision }, fallback: 2) {
                         $0.sources.coordinatePrecision = $1
                     }
                 ) {
-                    ForEach(Preferences.precisionChoices, id: \.self) { decimals in
-                        Text(Self.title(decimals)).tag(decimals)
+                    ForEach(model.choices, id: \.decimals) { choice in
+                        Text(choice.label).tag(choice.decimals)
                     }
-                    if !Preferences.allowsPrecision(current) {
-                        Text("Finer than allowed: choose another").tag(current)
+                    if !model.offersCurrent {
+                        Text(model.words.roundingTooFine).tag(model.precision)
                     }
                 }
                 .pickerStyle(.inline)
+                .labelsHidden()
+            } header: {
+                Text(model.words.roundingTitle).textCase(nil)
             } footer: {
-                Text("Data providers are sent your spot's place rounded to this many decimals of latitude and longitude, never finer. Your exact spots stay on this device. A coarser place may pick a station farther from the water you fish.")
+                Text(model.words.roundingFooter)
             }
-        }
-    }
-
-    private static func title(_ decimals: Int) -> String {
-        switch decimals {
-        case 2: "2 decimals, neighbourhood"
-        case 1: "1 decimal, town"
-        default: "Whole degrees, region"
+            .id("rounding")
         }
     }
 }

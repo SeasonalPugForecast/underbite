@@ -131,12 +131,6 @@ final class PreferencesTests: XCTestCase {
 
     // MARK: Privacy and freshness
 
-    func testPrecisionNeverOffersFinerThanTwoDecimals() {
-        XCTAssertEqual(Preferences.precisionChoices, [2, 1, 0])
-        XCTAssertFalse(Preferences.allowsPrecision(3))
-        XCTAssertFalse(Preferences.allowsPrecision(-1))
-    }
-
     func testPrecisionVoiceAndSolunarEditsAreValid() throws {
         let edited = try Preferences.applying(try defaults()) {
             $0.sources.coordinatePrecision = 1

@@ -266,14 +266,6 @@ nonisolated enum Preferences {
     /// How old a reading may be, in minutes; the choices of the freshness picker.
     static let freshnessChoices = [15, 30, 60, 120, 180, 360, 720, 1440]
 
-    // MARK: - Privacy
-
-    /// The decimals of the coordinates sent to data providers: two or fewer, never finer.
-    static let precisionChoices = [2, 1, 0]
-
-    /// Whether a precision may be offered: a whole number from 0 to 2.
-    static func allowsPrecision(_ decimals: Int) -> Bool { precisionChoices.contains(decimals) }
-
     // MARK: - Values through the core
 
     /// A stop of a slider: the value as the settings field holds it, and the core's label.
