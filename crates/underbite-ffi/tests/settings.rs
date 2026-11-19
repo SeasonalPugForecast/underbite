@@ -8,8 +8,9 @@ use underbite_ffi::settings::{
     IssueSeverity, SettingsError, card_catalogue, default_settings_json, display_stops,
     export_settings_toml, format_duration, format_setting_value, import_settings_toml,
     limit_summary, measurement_titles, migrate_settings, offline_limit_stops, parse_setting_value,
-    parse_user_value, percentile_band_label, setting_field_keys, setting_stops, source_catalogue,
-    source_group_titles, source_limits_text, unit_options, validate_settings, water_type_options,
+    parse_user_value, percentile_band_label, privacy_words, setting_field_keys, setting_stops,
+    source_catalogue, source_group_titles, source_limits_text, unit_options, validate_settings,
+    water_type_options,
 };
 
 fn settings(edit: impl FnOnce(&mut Value)) -> String {
@@ -744,4 +745,41 @@ fn the_shaded_band_has_its_own_label() {
         percentile_band_label("5th percentile".into(), "95th percentile".into(), cfs()).unwrap(),
         "Shaded: 5th percentile to 95th percentile"
     );
+}
+
+#[test]
+fn privacy_words_carry_the_page_and_the_current_rounding() {
+    let words = privacy_words(default_settings_json());
+    assert_eq!(words.sections.len(), 3);
+    assert!(words.sections.iter().all(|s| !s.paragraphs.is_empty()));
+    assert_eq!(words.rounding_current, "2 decimals, about 1 km");
+    let choices: Vec<(u8, &str)> = words
+        .rounding_choices
+        .iter()
+        .map(|c| (c.decimals, c.label.as_str()))
+        .collect();
+    assert_eq!(
+        choices,
+        [
+            (2, "2 decimals, about 1 km"),
+            (1, "1 decimal, about 10 km"),
+            (0, "Whole degrees, about 100 km")
+        ]
+    );
+    assert_eq!(
+        words.rounding_too_fine,
+        "Finer than allowed: choose another"
+    );
+
+    let coarse = privacy_words(settings(|v| {
+        v["sources"]["coordinate_precision"] = json!(0);
+    }));
+    assert_eq!(coarse.rounding_current, "Whole degrees, about 100 km");
+
+    // The voice does not change a word, and unreadable settings give the defaults' words.
+    let plain = privacy_words(settings(|v| {
+        v["presentation"]["voice"] = json!("plain");
+    }));
+    assert_eq!(plain, words);
+    assert_eq!(privacy_words("{".into()), words);
 }

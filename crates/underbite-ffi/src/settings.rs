@@ -17,6 +17,7 @@ use underbite_core::units::{
     pressure_to_hpa,
 };
 use underbite_core::view::format::{Formatter, distance_from_metres, distance_to_metres};
+use underbite_core::view::privacy::privacy_words as core_privacy_words;
 use underbite_core::view::strings::{MEASUREMENTS, Strings, WATER_TYPES, source_name};
 use underbite_core::view::{CardId, DisplayUnits, Voice};
 use underbite_providers::blooms::cyan::Cyan;
@@ -29,6 +30,7 @@ use underbite_providers::ndbc::Ndbc;
 use underbite_providers::nwps::Nwps;
 use underbite_providers::nws_marine::NwsMarine;
 use underbite_providers::open_meteo_marine::OpenMeteoMarine;
+use underbite_providers::request::MAX_COORDINATE_DECIMALS;
 use underbite_providers::reservoirs::cwms::Cwms;
 use underbite_providers::reservoirs::rise::Rise;
 use underbite_providers::source::Source;
@@ -924,6 +926,73 @@ pub fn offline_limit_stops(settings_json: String) -> Vec<DisplayStop> {
             label: strings.pack_size(u64::from(mb) * 1_000_000),
         })
         .collect()
+}
+
+/// One section of the Privacy page.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PrivacySection {
+    pub title: String,
+    /// Plain sentences, no markup.
+    pub paragraphs: Vec<String>,
+}
+
+/// One choice of the rounding of the place sent to data providers.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PrivacyChoice {
+    /// The decimals of latitude and longitude: 2, 1 or 0.
+    pub decimals: u8,
+    /// "2 decimals, about 1 km".
+    pub label: String,
+}
+
+/// The words of the Privacy page.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PrivacyWords {
+    /// What stays on the device, what leaves it, what the person chooses to send.
+    pub sections: Vec<PrivacySection>,
+    /// The title of the rounding setting: "Place sent as".
+    pub rounding_title: String,
+    /// The settings' current rounding: "2 decimals, about 1 km".
+    pub rounding_current: String,
+    /// The choices, finest first: 2, 1, 0.
+    pub rounding_choices: Vec<PrivacyChoice>,
+    /// What the rounding means.
+    pub rounding_footer: String,
+    /// The label of a current setting finer than allowed: "Finer than allowed: choose another".
+    pub rounding_too_fine: String,
+}
+
+/// The Privacy page's words: the same facts as `docs/privacy.md`, and the rounding the settings
+/// hold (the finest allowed when they cannot be read). Plain fact, the same in every voice.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn privacy_words(settings_json: String) -> PrivacyWords {
+    let decimals = load(&settings_json).map_or(MAX_COORDINATE_DECIMALS, |(config, _)| {
+        config.sources.coordinate_precision
+    });
+    let words = core_privacy_words(strings_of(&settings_json), decimals);
+    PrivacyWords {
+        sections: words
+            .sections
+            .into_iter()
+            .map(|s| PrivacySection {
+                title: s.title,
+                paragraphs: s.paragraphs,
+            })
+            .collect(),
+        rounding_title: words.rounding_title,
+        rounding_current: words.rounding_current,
+        rounding_choices: words
+            .rounding_choices
+            .into_iter()
+            .map(|c| PrivacyChoice {
+                decimals: c.decimals,
+                label: c.label,
+            })
+            .collect(),
+        rounding_footer: words.rounding_footer,
+        rounding_too_fine: words.rounding_too_fine,
+    }
 }
 
 fn duration_text(config: &Config, seconds: f64) -> String {
