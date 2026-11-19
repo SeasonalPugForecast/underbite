@@ -889,12 +889,41 @@ pub fn setting_stops(
     }
 }
 
+/// The choices of the offline storage limit (`map.offline_max_mb`), megabytes. The setting has
+/// no upper bound and only 0 (no map cache) below them.
+pub const OFFLINE_LIMIT_STOPS_MB: [u32; 6] = [250, 500, 1_000, 1_500, 2_000, 5_000];
+
 /// The words of the settings `settings_json`, in the default voice when they cannot be read.
 pub(crate) fn strings_of(settings_json: &str) -> Strings {
     let voice = load(settings_json)
         .map(|(config, _)| config.presentation.voice)
         .unwrap_or_default();
     Strings::new(voice)
+}
+
+/// The choices of the offline storage limit (`map.offline_max_mb`): each value in megabytes as
+/// the setting stores it, labelled as pack sizes are ("250 MB", "1.5 GB"). A limit the
+/// settings hold that is none of them (and not 0) is listed too, in order, so the current
+/// choice always shows. Unreadable settings give the choices alone.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn offline_limit_stops(settings_json: String) -> Vec<DisplayStop> {
+    let strings = strings_of(&settings_json);
+    let mut stops = OFFLINE_LIMIT_STOPS_MB.to_vec();
+    if let Ok((config, _)) = load(&settings_json) {
+        let current = config.map.offline_max_mb;
+        if current > 0 && !stops.contains(&current) {
+            stops.push(current);
+            stops.sort_unstable();
+        }
+    }
+    stops
+        .into_iter()
+        .map(|mb| DisplayStop {
+            value: f64::from(mb),
+            label: strings.pack_size(u64::from(mb) * 1_000_000),
+        })
+        .collect()
 }
 
 fn duration_text(config: &Config, seconds: f64) -> String {

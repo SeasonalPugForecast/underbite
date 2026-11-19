@@ -7,8 +7,8 @@ use serde_json::{Value, json};
 use underbite_ffi::settings::{
     IssueSeverity, SettingsError, card_catalogue, default_settings_json, display_stops,
     export_settings_toml, format_duration, format_setting_value, import_settings_toml,
-    limit_summary, measurement_titles, migrate_settings, parse_setting_value, parse_user_value,
-    percentile_band_label, setting_field_keys, setting_stops, source_catalogue,
+    limit_summary, measurement_titles, migrate_settings, offline_limit_stops, parse_setting_value,
+    parse_user_value, percentile_band_label, setting_field_keys, setting_stops, source_catalogue,
     source_group_titles, source_limits_text, unit_options, validate_settings, water_type_options,
 };
 
@@ -27,6 +27,38 @@ fn metric() -> String {
         v["units"] = json!({ "discharge": "m3s", "height": "m", "speed": "ms", "water_temp": "C",
             "pressure": "hPa", "distance": "km" });
     })
+}
+
+#[test]
+fn offline_limit_stops_are_megabytes_labelled_as_sizes() {
+    let stops = offline_limit_stops(default_settings_json());
+    let values: Vec<f64> = stops.iter().map(|s| s.value).collect();
+    assert_eq!(values, [250.0, 500.0, 1_000.0, 1_500.0, 2_000.0, 5_000.0]);
+    let labels: Vec<&str> = stops.iter().map(|s| s.label.as_str()).collect();
+    assert_eq!(
+        labels,
+        ["250 MB", "500 MB", "1.0 GB", "1.5 GB", "2.0 GB", "5.0 GB"]
+    );
+    // Every stop is a limit the settings take as it is.
+    for stop in &stops {
+        // Whole megabytes, as the setting stores them: `1000`, never `1000.0`.
+        let mb: Value = serde_json::from_str(&stop.value.to_string()).expect("a number");
+        assert!(mb.is_u64(), "{mb}");
+        let json = settings(|v| v["map"]["offline_max_mb"] = mb);
+        assert_eq!(validate_settings(json), [], "{}", stop.label);
+    }
+
+    // A limit between them is listed in its place; 0 (no map cache) is not a stop.
+    let own = offline_limit_stops(settings(|v| v["map"]["offline_max_mb"] = json!(800)));
+    let values: Vec<f64> = own.iter().map(|s| s.value).collect();
+    assert_eq!(
+        values,
+        [250.0, 500.0, 800.0, 1_000.0, 1_500.0, 2_000.0, 5_000.0]
+    );
+    assert_eq!(own[2].label, "800 MB");
+    let off = offline_limit_stops(settings(|v| v["map"]["offline_max_mb"] = json!(0)));
+    assert_eq!(off, stops);
+    assert_eq!(offline_limit_stops("{".into()), stops);
 }
 
 #[test]
