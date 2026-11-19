@@ -33,15 +33,14 @@ extension View {
     }
 }
 
-/// The banner as an inset of a section, from the store every window shares: at the top in a
-/// compact width, where the tab bar is at the bottom; at the bottom in a regular width, where the
-/// tab bar floats over the top.
+/// The banner as an inset at the bottom of a section, from the store every window shares. At the
+/// top it would take the place of the section's navigation bar on the iPhone, and sit under the
+/// floating tab bar on the iPad.
 private struct ConnectivityInset: ViewModifier {
     @Environment(SpotStore.self) private var store
-    @Environment(\.horizontalSizeClass) private var sizeClass
 
     func body(content: Content) -> some View {
-        content.safeAreaInset(edge: sizeClass == .regular ? .bottom : .top, spacing: 0) {
+        content.safeAreaInset(edge: .bottom, spacing: 0) {
             if let note = store.offlineNote {
                 ConnectivityBanner(text: note)
             }

@@ -72,6 +72,12 @@ nonisolated struct RefreshQueue: Equatable {
         for id in ids where !waiting.contains(id) && !running.contains(id) { waiting.append(id) }
     }
 
+    /// Puts `id` first, ahead of everything waiting (moved there if it was waiting already).
+    mutating func addFirst(_ id: String) {
+        waiting.removeAll { $0 == id }
+        waiting.insert(id, at: 0)
+    }
+
     /// The next spot to fetch.
     mutating func next() -> String? {
         waiting.isEmpty ? nil : waiting.removeFirst()

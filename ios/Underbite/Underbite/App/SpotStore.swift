@@ -164,11 +164,17 @@ final class SpotStore {
     private(set) var stationsRevision = 0
     /// The files that could not be read at launch, for the views to say so.
     private(set) var fileProblems: [FileProblem] = []
-    /// The core's offline note of the last fetch that found no signal ("offline: computed from
-    /// harmonic constants, other values from ..."), until a fetch gets an answer again. It
-    /// follows fetch outcomes only, so a brief loss of the route between fetches shows nothing.
-    /// Every window shares it.
-    private(set) var offlineNote: String?
+    /// Per spot, the core's offline note of its last fetch when that found no signal ("offline:
+    /// computed from harmonic constants, other values from ..."), until one of its fetches gets
+    /// an answer. It follows fetch outcomes only, so a brief loss of the route between fetches
+    /// shows nothing.
+    private(set) var offlineNotes: [String: String] = [:]
+
+    /// The note the banner shows, every window alike: the shown spot's, else the first in the
+    /// list's order.
+    var offlineNote: String? {
+        activeID.flatMap { offlineNotes[$0] } ?? arranged.lazy.compactMap { self.offlineNotes[$0.id] }.first
+    }
 
     /// A fix of the phone.
     struct CurrentPlace: Equatable {
@@ -425,6 +431,7 @@ final class SpotStore {
         forgetSpot(spotId: id, host: host)
         if let metadata { Task { await metadata.forget(spot: id) } }
         stationProblems[id] = nil
+        offlineNotes[id] = nil
         rowsBuilt[id] = nil
         if activeID == id { activeID = arranged.first?.id }
         saveState()
@@ -681,8 +688,9 @@ final class SpotStore {
                     break
                 }
                 guard let id = queue.next() else { break }
-                // Debug `-offline`: the first fetch went online, the next one has no signal.
-                if await fetchOne(id) { queue.add([id]) }
+                // Debug `-offline`: the first fetch went online; the next one, at once and
+                // before the other spots, has no signal.
+                if await fetchOne(id) { queue.addFirst(id) }
             }
             if pageDue {
                 pageDue = false
@@ -750,7 +758,7 @@ final class SpotStore {
                 held.lastSuccess = now
                 held.lastAttempt = nil
                 held.error = nil
-                offlineNote = nil
+                offlineNotes[id] = nil
                 // The stations the fetch ranked, so the list shows them before any lookup.
                 ranked = storedStations(spotId: id, host: self.host)
             case .offline(let note):
@@ -759,7 +767,7 @@ final class SpotStore {
                 held.snapshotJSON = outcome.snapshotJson
                 held.lastAttempt = now
                 held.error = nil
-                offlineNote = note
+                offlineNotes[id] = note
             case .unreachable(let message):
                 // Nothing answered and nothing to merge: the older snapshot stays.
                 held.lastAttempt = now

@@ -16,6 +16,7 @@ private final class Shared<Value>: @unchecked Sendable {
 
 /// One call of the store's fetch, as the fetch saw it.
 private struct Call: Sendable {
+    var spot: String
     var refreshMetadata: Bool
     var cached: [String: Int64]
     var withoutSignal: Bool
@@ -61,11 +62,11 @@ final class OfflineConditionsTests: XCTestCase {
             files: files, host: URLSessionHost(storeURL: files.hostDirectory),
             keys: { Keys(usgs: nil, copernicusUser: nil, copernicusPassword: nil) },
             clock: { clock.value }, lowPower: { false },
-            metadataFetcher: { _, _, _, options, _, cached, host in
+            metadataFetcher: { spot, _, _, options, _, cached, host in
                 var seen = calls.value
                 seen.append(
                     Call(
-                        refreshMetadata: options.refreshMetadata,
+                        spot: spot.id, refreshMetadata: options.refreshMetadata,
                         cached: Dictionary(uniqueKeysWithValues: cached.map { ($0.key, $0.fetchedAt) }),
                         withoutSignal: host is UnreachableHost))
                 calls.value = seen
@@ -231,6 +232,59 @@ final class OfflineConditionsTests: XCTestCase {
         // Once primed (or with kept data and constants), every fetch is without signal.
         await s.refresh()
         XCTAssertEqual(calls.value.map(\.withoutSignal), [false, true, true])
+    }
+
+    func testADebugOfflineLaunchFetchesASpotWithoutSignalRightAfterItsOnlineFetch() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let s = store(clock: clock, calls: calls, simulatesOffline: true) { _ in
+            calls.value.last?.withoutSignal == true ? Self.offline() : Self.online(at: clock.value)
+        }
+        s.add(SeedSpots.croton)
+        await s.refresh()
+        let order = calls.value.map { "\($0.spot) \($0.withoutSignal ? "offline" : "online")" }
+        XCTAssertEqual(
+            order,
+            [
+                "\(SeedSpots.battery.id) online", "\(SeedSpots.battery.id) offline",
+                "\(SeedSpots.croton.id) online", "\(SeedSpots.croton.id) offline",
+            ])
+    }
+
+    func testTheBannerShowsTheShownSpotsNote() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let signal = Shared(false)
+        let river = "offline: values from Nov 18, 7:00 AM"
+        let s = store(clock: clock, calls: calls) { _ in
+            if signal.value { return Self.online(at: clock.value) }
+            let spot = calls.value.last?.spot
+            return spot == SeedSpots.croton.id
+                ? SpotFetchOutcome(
+                    snapshotJson: "merged",
+                    errors: [Self.issue("offline", "stale", river)], suggestion: nil)
+                : Self.offline()
+        }
+        s.add(SeedSpots.croton)
+        await s.refresh()
+        XCTAssertEqual(s.offlineNote, Self.note, "the shown spot's, the Battery's")
+        s.setActive(SeedSpots.croton.id)
+        XCTAssertEqual(s.offlineNote, river)
+
+        // The river answers again: the banner falls back to the Battery's note.
+        signal.value = true
+        await s.refresh(only: [SeedSpots.croton.id])
+        XCTAssertEqual(s.offlineNote, Self.note)
+        s.remove(SeedSpots.battery.id)
+        XCTAssertNil(s.offlineNote)
+    }
+
+    func testAQueuedSpotCanGoFirst() {
+        var queue = RefreshQueue()
+        queue.add(["a", "b", "c"])
+        queue.addFirst("c")
+        queue.addFirst("d")
+        XCTAssertEqual(queue.waiting, ["d", "c", "a", "b"])
     }
 
     // MARK: - The kept metadata in the offline store
