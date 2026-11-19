@@ -600,8 +600,8 @@ fn answers_from_the_platforms_cache_are_not_answers() {
         "the cached request was made"
     );
     assert!(out.unanswered);
-    assert!(out.cacheable.is_empty());
-    assert!(out.metadata_stations.is_empty());
+    assert_eq!(out.cacheable, []);
+    assert_eq!(out.metadata_stations, Vec::<String>::new());
 
     // The same fetch with the network answering is an answer.
     let phone = Phone::new();
@@ -631,7 +631,7 @@ fn the_fetch_names_the_stations_the_spot_needs_even_when_a_prediction_fails() {
     phone.lose_signal();
     let (_, out) = fetch(&phone, now() + 3_600, first.cacheable);
     assert!(out.unanswered);
-    assert!(out.metadata_stations.is_empty());
+    assert_eq!(out.metadata_stations, Vec::<String>::new());
 }
 
 fn discover(phone: &Arc<Phone>) -> underbite_ffi::fetch::DiscoveryOutcome {
