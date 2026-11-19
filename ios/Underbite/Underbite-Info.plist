@@ -2,10 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- Merged into the generated Info.plist (the rest is in the target's build settings).
      Location is "when in use" only: no background location. On the map, approximate access can
-     be made precise for the session from the locate button (purpose key MapPosition). The one
-     background mode is background fetch, for the alert checks (the app-refresh task
-     dev.savery.underbite.refresh);
-     a trip day shows as a Live Activity.
+     be made precise for the session from the locate button (purpose key MapPosition). The
+     background modes are background fetch, for the alert checks (the app-refresh task
+     dev.savery.underbite.refresh), and processing, for the offline packs' refresh (the processing
+     task dev.savery.underbite.pack-refresh); a pack download someone starts goes on as a
+     continued-processing task (dev.savery.underbite.pack-download.<pack id>). A trip day shows
+     as a Live Activity.
      A trip or a spot is sent as a .underbite file (JSON with a "kind"), which the app exports
      and opens. GPX, KML, KMZ and CSV files open in the importer: GPX (as Xcode declares it),
      KML and KMZ (as Google Earth declares them) are imported types, CSV is the system's. The app
@@ -170,10 +172,13 @@
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>dev.savery.underbite.refresh</string>
+		<string>dev.savery.underbite.pack-refresh</string>
+		<string>dev.savery.underbite.pack-download.*</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
+		<string>processing</string>
 	</array>
 	<key>NSSupportsLiveActivities</key>
 	<true/>

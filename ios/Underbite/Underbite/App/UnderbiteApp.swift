@@ -10,6 +10,7 @@ struct UnderbiteApp: App {
     init() {
         // Files shared or exported before may hold exact positions: none outlives a launch.
         UnderbiteFile.sweep(exports: true)
+        PackBackground.register()
     }
 
     var body: some Scene {
@@ -31,6 +32,7 @@ struct UnderbiteApp: App {
                         store.setForeground(false)
                         store.saveSettingsNow()
                         AlertsBackground.schedule()
+                        PackBackground.schedule()
                     default: break
                     }
                 }
