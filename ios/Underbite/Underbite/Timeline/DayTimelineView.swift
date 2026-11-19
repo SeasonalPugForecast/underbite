@@ -140,9 +140,7 @@ struct DayTimelineView: View {
                     ForEach(lanes, id: \.kind) { lane in
                         VStack(alignment: .leading, spacing: 0) {
                             Color.clear.frame(width: 1, height: nameGap)
-                            LaneRow(
-                                timeline: timeline, lane: lane, sunMode: sunMode, visible: visible
-                            )
+                            LaneRow(timeline: timeline, lane: lane, sunMode: sunMode)
                             .overlay {
                                 LaneLabels(timeline: timeline, lane: lane, visible: visible)
                             }
@@ -270,13 +268,12 @@ private struct TimelineAxis: View {
     }
 }
 
-/// One lane: bands behind, the series, then the markers with their labels.
+/// One lane: bands behind, the series, then the markers. Nothing here depends on where the strip
+/// is scrolled, so scrolling does not draw it again; the words are `LaneLabels`'.
 private struct LaneRow: View {
     let timeline: ViewModel.Timeline
     let lane: ViewModel.TimelineLane
     let sunMode: Bool
-    /// The part of the strip on screen: a band's words start inside it.
-    let visible: ClosedRange<CGFloat>
 
     private let topInset: CGFloat = 16
     private let bottomInset: CGFloat = 15
@@ -305,15 +302,6 @@ private struct LaneRow: View {
                 let b = CGFloat(TimelineLayout.x(band.endT, start: timeline.startT))
                 let rect = CGRect(x: a, y: 0, width: max(b - a, 1), height: size.height)
                 context.fill(Path(rect), with: .color(Self.color(band.kind, sunMode: sunMode)))
-                let text = context.resolve(
-                    Text(band.label).font(.caption2).foregroundStyle(Color.primary))
-                // Start at the bar's visible start, never left of the part on screen.
-                let shown = visible.upperBound > visible.lowerBound ? visible : 0...size.width
-                let left = max(rect.minX, shown.lowerBound, 0) + 4
-                let right = min(rect.maxX, shown.upperBound)
-                if left + text.measure(in: size).width + 2 <= right {
-                    context.draw(text, at: CGPoint(x: left, y: size.height - 8), anchor: .leading)
-                }
             }
 
             // Series.
@@ -420,8 +408,10 @@ private struct LaneRow: View {
     }
 }
 
-/// A lane's marker words ("High 4.3 ft", "Sunset 4:37 PM"): right of their marker, or left of
-/// it where the right would run past the part on screen, and left out while neither fits whole.
+/// A lane's words, which follow the part of the strip on screen: its bands' ("Night", "Major")
+/// start at the band's visible start and are left out while they do not fit whole inside it, and
+/// its markers' ("High 4.3 ft", "Sunset 4:37 PM") go right of their marker, or left of it where
+/// the right would run past the part on screen, and are left out while neither fits whole.
 private struct LaneLabels: View {
     let timeline: ViewModel.Timeline
     let lane: ViewModel.TimelineLane
@@ -432,6 +422,19 @@ private struct LaneLabels: View {
             let shown = visible.upperBound > visible.lowerBound ? visible : 0...size.width
             let low = max(0, shown.lowerBound)
             let high = min(size.width, shown.upperBound)
+            for band in lane.chart.bands {
+                let a = CGFloat(TimelineLayout.x(band.startT, start: timeline.startT))
+                let b = CGFloat(TimelineLayout.x(band.endT, start: timeline.startT))
+                let rect = CGRect(x: a, y: 0, width: max(b - a, 1), height: size.height)
+                let text = context.resolve(
+                    Text(band.label).font(.caption2).foregroundStyle(Color.primary))
+                // Start at the bar's visible start, never left of the part on screen.
+                let left = max(rect.minX, low) + 4
+                let right = min(rect.maxX, high)
+                if left + text.measure(in: size).width + 2 <= right {
+                    context.draw(text, at: CGPoint(x: left, y: size.height - 8), anchor: .leading)
+                }
+            }
             var lastEnd: CGFloat = -.infinity
             for marker in lane.chart.markers.sorted(by: { $0.t < $1.t }) {
                 let x = CGFloat(TimelineLayout.x(marker.t, start: timeline.startT))

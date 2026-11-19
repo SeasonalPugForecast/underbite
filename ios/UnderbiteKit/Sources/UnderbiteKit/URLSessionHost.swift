@@ -46,6 +46,13 @@ public final class URLSessionHost: FetchHost, @unchecked Sendable {
     /// the core's User-Agent unless the request has one. Throws `HostError` only: `TooLarge`
     /// past the limit, `TimedOut`, or `Failed` when no response came.
     public func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let (data, http, _) = try await fetch(request)
+        return (data, http)
+    }
+
+    /// ``send(_:)`` and whether the session's own cache answered, so the core does not take it
+    /// for a sign of the network.
+    func fetch(_ request: URLRequest) async throws -> (Data, HTTPURLResponse, fromCache: Bool) {
         #if DEBUG
             if Self.simulateOffline {
                 throw HostError.Failed(message: URLError(.notConnectedToInternet).localizedDescription)
@@ -57,7 +64,8 @@ public final class URLSessionHost: FetchHost, @unchecked Sendable {
             request.setValue(Self.userAgent, forHTTPHeaderField: "User-Agent")
         }
         do {
-            let (bytes, response) = try await session.bytes(for: request)
+            let probe = CacheProbe()
+            let (bytes, response) = try await session.bytes(for: request, delegate: probe)
             guard let http = response as? HTTPURLResponse else {
                 bytes.task.cancel()
                 throw HostError.Failed(message: "not an HTTP response")
@@ -78,7 +86,7 @@ public final class URLSessionHost: FetchHost, @unchecked Sendable {
                 }
                 body.append(byte)
             }
-            return (Data(body), http)
+            return (Data(body), http, probe.fromCache)
         } catch let error as HostError {
             throw error
         } catch let error as URLError where error.code == .timedOut {
@@ -93,11 +101,38 @@ public final class URLSessionHost: FetchHost, @unchecked Sendable {
             throw HostError.Failed(message: "invalid URL")
         }
         let urlRequest = Self.urlRequest(request, url: url)
-        let (data, http) = try await send(urlRequest)
-        if let maxAge = request.maxAgeS, !request.noStore {
+        let (data, http, fromCache) = try await fetch(urlRequest)
+        if let maxAge = request.maxAgeS, !request.noStore, !fromCache {
             keep(data, http, for: urlRequest, maxAge: maxAge)
         }
-        return Self.response(data, http)
+        return Self.response(data, http, fromCache: fromCache)
+    }
+
+    /// Learns from the task's metrics whether the response came from the URL cache. The
+    /// metrics arrive before the body ends.
+    private final class CacheProbe: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+        private let lock = NSLock()
+        private var cached = false
+
+        var fromCache: Bool { lock.withLock { cached } }
+
+        func urlSession(
+            _ session: URLSession, task: URLSessionTask,
+            didFinishCollecting metrics: URLSessionTaskMetrics
+        ) {
+            let served = URLSessionHost.servedFromCache(
+                metrics.transactionMetrics.map(\.resourceFetchType))
+            lock.withLock { cached = served }
+        }
+    }
+
+    /// Whether the transactions of a task, in order, ended in the local cache: the last one
+    /// is the one whose response the caller got (a revalidation that went to the network, or
+    /// a redirect, ends in `networkLoad`).
+    static func servedFromCache(
+        _ types: [URLSessionTaskMetrics.ResourceFetchType]
+    ) -> Bool {
+        types.last == .localCache
     }
 
     /// The `URLRequest` for the core's request.
@@ -155,7 +190,9 @@ public final class URLSessionHost: FetchHost, @unchecked Sendable {
     }
 
     /// The response as the core reads it.
-    static func response(_ data: Data, _ http: HTTPURLResponse) -> HostResponse {
+    static func response(_ data: Data, _ http: HTTPURLResponse, fromCache: Bool = false)
+        -> HostResponse
+    {
         func header(_ name: String) -> String? { http.value(forHTTPHeaderField: name) }
         return HostResponse(
             status: UInt16(clamping: http.statusCode),
@@ -166,7 +203,8 @@ public final class URLSessionHost: FetchHost, @unchecked Sendable {
             lastModified: header("Last-Modified"),
             etag: header("ETag"),
             retryAfter: header("Retry-After"),
-            rateLimitRemaining: header("X-RateLimit-Remaining")
+            rateLimitRemaining: header("X-RateLimit-Remaining"),
+            fromCache: fromCache
         )
     }
 

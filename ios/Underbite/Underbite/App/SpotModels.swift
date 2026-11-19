@@ -116,4 +116,7 @@ nonisolated struct SpotCache: Codable, Equatable, Sendable {
     /// When a fetch last found no signal (Unix seconds), until one gets an answer again: the
     /// next try waits the refresh interval from then, or for the route to come back.
     var lastAttempt: Int64?
+    /// The core's offline note of the kept snapshot, while the last fetch found no signal and
+    /// merged it: carried here so no snapshot is decoded to show it.
+    var offlineNote: String?
 }

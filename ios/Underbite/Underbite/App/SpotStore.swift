@@ -77,12 +77,23 @@ nonisolated struct SpotStatus: Equatable, Sendable {
     /// merged snapshot lists it among its errors, so it survives a relaunch.
     var offlineNote: String?
 
+    /// The status of `cache`, from what it carries: no snapshot is read.
     init(_ cache: SpotCache) {
         lastSuccess = cache.lastSuccess
         error = cache.error
         lastAttempt = cache.lastAttempt
-        offlineNote =
-            cache.lastAttempt == nil ? nil : cache.snapshotJSON.flatMap(Self.offlineNote(in:))
+        offlineNote = cache.lastAttempt == nil ? nil : cache.offlineNote
+    }
+
+    /// The status of `cache` as read from its file: one written before the cache carried the
+    /// note has it read from the snapshot's errors (decoding the snapshot, so off the main
+    /// actor only).
+    static func decoding(_ cache: SpotCache) -> SpotStatus {
+        var status = SpotStatus(cache)
+        if status.lastAttempt != nil, cache.offlineNote == nil {
+            status.offlineNote = cache.snapshotJSON.flatMap(Self.offlineNote(in:))
+        }
+        return status
     }
 
     /// The snapshot's offline note, if the core merged one in.
@@ -198,10 +209,20 @@ final class SpotStore {
     /// settings): none unless every saved spot's last fetch found no signal, which says the
     /// phone has none; then one note, the shown spot's else the first in the list's order. One
     /// spot offline among others that answered says only something about that spot.
+    ///
+    /// A spot whose last fetch found nothing to merge (no snapshot yet) has no note but is as
+    /// offline as the rest, so it counts. The words are the core's: with no note among the
+    /// spots, no banner shows (the core has no plain word for it, and none is made up here).
     var generalOfflineNote: String? {
-        guard !spots.isEmpty, spots.allSatisfy({ offlineNotes[$0.id] != nil }) else { return nil }
+        guard !spots.isEmpty,
+            spots.allSatisfy({ offlineNotes[$0.id] != nil || unreachable.contains($0.id) })
+        else { return nil }
         return offlineNote ?? arranged.lazy.compactMap { self.offlineNotes[$0.id] }.first
     }
+
+    /// The ids whose last fetch found no signal and had nothing to merge: no note, but not
+    /// online either, until one of their fetches gets an answer.
+    private(set) var unreachable: Set<String> = []
 
     /// A fix of the phone.
     struct CurrentPlace: Equatable {
@@ -394,14 +415,18 @@ final class SpotStore {
         let files = self.files
         let read = await Task.detached(priority: .userInitiated) {
             missing.map { id in
-                (id, SpotStatus(files.read(SpotCache.self, files.cacheName(id)) ?? SpotCache()))
+                (id, SpotStatus.decoding(files.read(SpotCache.self, files.cacheName(id)) ?? SpotCache()))
             }
         }.value
         // A fetch that ended meanwhile wrote a newer one.
         for (id, status) in read where statuses[id] == nil && spot(id) != nil {
             statuses[id] = status
             // A relaunch without signal: the note of the last fetch shows again.
-            if let note = status.offlineNote { offlineNotes[id] = note }
+            if let note = status.offlineNote {
+                offlineNotes[id] = note
+            } else if status.lastAttempt != nil {
+                unreachable.insert(id)
+            }
         }
     }
 
@@ -410,7 +435,11 @@ final class SpotStore {
     /// which must not change what the views observe.
     private func adoptOfflineNotes() {
         for spot in spots where offlineNotes[spot.id] == nil {
-            if let note = statuses[spot.id]?.offlineNote { offlineNotes[spot.id] = note }
+            if let note = statuses[spot.id]?.offlineNote {
+                offlineNotes[spot.id] = note
+            } else if statuses[spot.id]?.lastAttempt != nil {
+                unreachable.insert(spot.id)
+            }
         }
     }
 
@@ -479,6 +508,7 @@ final class SpotStore {
         if let metadata { Task { await metadata.forget(spot: id) } }
         stationProblems[id] = nil
         offlineNotes[id] = nil
+        unreachable.remove(id)
         asked.remove(id)
         changed.remove(id)
         rowsBuilt[id] = nil
@@ -810,7 +840,9 @@ final class SpotStore {
                 held.lastSuccess = now
                 held.lastAttempt = nil
                 held.error = nil
+                held.offlineNote = nil
                 offlineNotes[id] = nil
+                unreachable.remove(id)
                 if refreshMetadata { changed.remove(id) }
                 // The stations the fetch ranked, so the list shows them before any lookup.
                 ranked = storedStations(spotId: id, host: self.host)
@@ -820,18 +852,23 @@ final class SpotStore {
                 held.snapshotJSON = outcome.snapshotJson
                 held.lastAttempt = now
                 held.error = nil
+                held.offlineNote = note
                 offlineNotes[id] = note
+                unreachable.remove(id)
             case .unreachable(let message):
                 // Nothing answered and nothing to merge: the older snapshot stays.
                 held.lastAttempt = now
                 held.error = message
+                unreachable.insert(id)
             }
-            if let metadata, !outcome.cacheable.isEmpty {
-                // After an answer to a request for all the metadata, what the spot needs is
-                // what was offered: the pins of a station it no longer uses are released.
+            // After an answer to a request for all the metadata, the core names the stations
+            // the spot needs now, whether or not their requests got through: the pins of any
+            // other station are released. Without that list nothing is.
+            let needed =
+                refreshMetadata && FetchStanding(outcome) == .online ? outcome.metadataStations : []
+            if let metadata, !outcome.cacheable.isEmpty || !needed.isEmpty {
                 held.metadataKeys = await metadata.keep(
-                    outcome.cacheable, spot: id, kept: kept, now: now,
-                    replacing: refreshMetadata && FetchStanding(outcome) == .online)
+                    outcome.cacheable, spot: id, kept: kept, now: now, needed: needed)
                 // Deleted while the metadata was written: nothing of it stays.
                 guard self.spot(id) != nil else {
                     await metadata.forget(spot: id)

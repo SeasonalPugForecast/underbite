@@ -86,7 +86,8 @@ final class OfflineConditionsTests: XCTestCase {
             cacheable: [
                 Self.response(Self.harcon, #"{"HarmonicConstituents":[]}"#, at: time),
                 Self.response(Self.datums, #"{"datums":[]}"#, at: time),
-            ])
+            ],
+            metadataStations: ["8518750"])
     }
 
     /// The merged snapshot as far as the app reads it: the core lists its offline note among the errors.
@@ -366,6 +367,73 @@ final class OfflineConditionsTests: XCTestCase {
         XCTAssertNil(s.generalOfflineNote, "the river answered")
     }
 
+    func testASpotNothingAnsweredForCountsTowardsTheGeneralNote() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let unreachable = SpotFetchOutcome(
+            snapshotJson: "empty", errors: [Self.issue("coops", "transport", "no route")],
+            suggestion: nil, unanswered: true)
+        let s = store(clock: clock, calls: calls) { _ in
+            calls.value.last?.spot == SeedSpots.battery.id ? Self.offline() : unreachable
+        }
+        s.add(SeedSpots.croton)
+        await s.refresh()
+        XCTAssertNil(s.offlineNotes[SeedSpots.croton.id], "nothing to merge: no note of its own")
+        XCTAssertTrue(s.unreachable.contains(SeedSpots.croton.id))
+        XCTAssertEqual(s.generalOfflineNote, Self.note, "the Battery's note speaks for both")
+    }
+
+    func testWhenEverySpotIsUnreachableThereIsNoWordForTheBannerAndNoBanner() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let s = store(clock: clock, calls: calls) { _ in
+            SpotFetchOutcome(
+                snapshotJson: "empty", errors: [Self.issue("coops", "transport", "no route")],
+                suggestion: nil, unanswered: true)
+        }
+        s.add(SeedSpots.croton)
+        await s.refresh()
+        XCTAssertTrue(s.offlineNotes.isEmpty)
+        XCTAssertEqual(s.unreachable.count, 2)
+        XCTAssertNil(s.generalOfflineNote, "the core has no plain offline word; none is made up")
+    }
+
+    func testAnUnreachableSpotAmongOnesThatAnsweredIsNotAGeneralNote() async {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let s = store(clock: clock, calls: calls) { _ in
+            calls.value.last?.spot == SeedSpots.battery.id
+                ? Self.online(at: clock.value)
+                : SpotFetchOutcome(
+                    snapshotJson: "empty", errors: [Self.issue("coops", "transport", "no route")],
+                    suggestion: nil, unanswered: true)
+        }
+        s.add(SeedSpots.croton)
+        await s.refresh()
+        XCTAssertNil(s.generalOfflineNote)
+    }
+
+    func testTheNoteTravelsInTheCacheAndNoSnapshotIsDecodedForTheStatus() async throws {
+        let cache = SpotCache(snapshotJSON: Self.mergedSnapshot, lastAttempt: start)
+        XCTAssertNil(SpotStatus(cache).offlineNote, "building a status reads no snapshot")
+        XCTAssertEqual(SpotStatus.decoding(cache).offlineNote, Self.note, "an older file's note")
+        XCTAssertEqual(
+            SpotStatus(SpotCache(lastAttempt: start, offlineNote: Self.note)).offlineNote, Self.note)
+        XCTAssertNil(SpotStatus(SpotCache(lastAttempt: nil, offlineNote: Self.note)).offlineNote)
+
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let signal = Shared(false)
+        let s = store(clock: clock, calls: calls) { _ in
+            signal.value ? Self.online(at: clock.value) : Self.offline()
+        }
+        await s.refresh()
+        XCTAssertEqual(s.cache(SeedSpots.battery.id).offlineNote, Self.note)
+        signal.value = true
+        await s.refresh()
+        XCTAssertNil(s.cache(SeedSpots.battery.id).offlineNote)
+    }
+
     func testARelaunchWithoutSignalShowsTheLastNoteAgain() async {
         let clock = Shared(start)
         let calls = Shared<[Call]>([])
@@ -446,7 +514,8 @@ final class OfflineConditionsTests: XCTestCase {
                 ? Self.online(at: clock.value)
                 : SpotFetchOutcome(
                     snapshotJson: "online-\(n)", errors: [], suggestion: nil,
-                    cacheable: [Self.response(other, #"{"HarmonicConstituents":[]}"#, at: clock.value)])
+                    cacheable: [Self.response(other, #"{"HarmonicConstituents":[]}"#, at: clock.value)],
+                    metadataStations: ["8519483"])
         }
         let id = SeedSpots.battery.id
         let pin = SpotMetadata.pin(spot: id)
@@ -482,7 +551,7 @@ final class OfflineConditionsTests: XCTestCase {
         _ = await metadata.keep([Self.response(Self.harcon, "{}", at: start)], spot: "b", kept: [], now: start)
         let keys = await metadata.keep(
             [Self.response(other, "{}", at: start)], spot: "a", kept: [Self.harcon], now: start,
-            replacing: true)
+            needed: ["8519483"])
         XCTAssertEqual(keys, [other])
         let held = await metadata.cached([Self.harcon, other], now: start)
         XCTAssertEqual(Set(held.map(\.key)), [Self.harcon, other], "spot b still pins the first")
@@ -492,8 +561,76 @@ final class OfflineConditionsTests: XCTestCase {
         let metadata = SpotMetadata(store: scratch.store)
         let keys = await metadata.keep(
             [Self.response(Self.harcon, "{}", at: start + 60)], spot: "a", kept: [Self.harcon, Self.datums],
-            now: start + 60, replacing: true)
+            now: start + 60, needed: ["8518750"])
         XCTAssertEqual(keys, [Self.harcon, Self.datums])
+    }
+
+    nonisolated private static let current =
+        "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/NYH1927/harcon.json?bin=13"
+    nonisolated private static let list =
+        "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=tidepredictions"
+
+    func testAStationTheFetchDidNotOfferIsNotReleasedWhileTheCoreNamesIt() async throws {
+        let metadata = SpotMetadata(store: scratch.store)
+        let pin = SpotMetadata.pin(spot: "a")
+        let all = [Self.harcon, Self.datums, Self.current, Self.list]
+        let kept = await metadata.keep(
+            all.map { Self.response($0, "{}", at: start) }, spot: "a", kept: [], now: start)
+        XCTAssertEqual(kept, all)
+
+        // The current's predictions failed, so only the Battery's files were offered again; the
+        // core still names both stations: the current's files stay pinned.
+        var keys = await metadata.keep(
+            [Self.response(Self.harcon, "{}", at: start + 60)], spot: "a", kept: kept,
+            now: start + 60, needed: ["8518750", "NYH1927"])
+        XCTAssertEqual(Set(keys), Set(all))
+        var held = try await scratch.store.usage(of: pin)
+        XCTAssertEqual(held.items, 3, "the lists are not pinned")
+
+        // No list from the core (no signal, or unknown): nothing is released, offered or not.
+        keys = await metadata.keep(
+            [Self.response(Self.harcon, "{}", at: start + 120)], spot: "a", kept: kept,
+            now: start + 120)
+        XCTAssertEqual(Set(keys), Set(all))
+        held = try await scratch.store.usage(of: pin)
+        XCTAssertEqual(held.items, 3)
+
+        // Only a station the core leaves out is released; the station lists stay.
+        keys = await metadata.keep(
+            [], spot: "a", kept: kept, now: start + 180, needed: ["8518750"])
+        XCTAssertEqual(keys, [Self.harcon, Self.datums, Self.list])
+        held = try await scratch.store.usage(of: pin)
+        XCTAssertEqual(held.items, 2)
+    }
+
+    func testAFailedPredictionKeepsTheStationsFilesPinnedThroughTheStore() async throws {
+        let clock = Shared(start)
+        let calls = Shared<[Call]>([])
+        let s = store(clock: clock, calls: calls) { n in
+            n == 1
+                ? SpotFetchOutcome(
+                    snapshotJson: "online-1", errors: [], suggestion: nil,
+                    cacheable: [Self.harcon, Self.datums, Self.current].map {
+                        Self.response($0, "{}", at: 0)
+                    },
+                    metadataStations: ["8518750", "NYH1927"])
+                : SpotFetchOutcome(
+                    snapshotJson: "online-\(n)", errors: [], suggestion: nil,
+                    cacheable: [Self.response(Self.harcon, "{}", at: 0)],
+                    metadataStations: ["8518750", "NYH1927"])
+        }
+        let id = SeedSpots.battery.id
+        await s.refresh()
+        var moved = SeedSpots.battery
+        moved.latitude += 0.001
+        s.update(moved)
+        clock.value = start + 3_600
+        await s.refreshOnOpen()
+        XCTAssertTrue(calls.value[1].refreshMetadata)
+        XCTAssertEqual(
+            Set(s.cache(id).metadataKeys ?? []), [Self.harcon, Self.datums, Self.current])
+        let held = try await scratch.store.usage(of: SpotMetadata.pin(spot: id))
+        XCTAssertEqual(held.items, 3)
     }
 
     func testAQueuedSpotCanGoFirst() {

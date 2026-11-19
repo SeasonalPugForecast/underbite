@@ -74,30 +74,36 @@ nonisolated struct SpotMetadata: Sendable {
         return String(path[..<end])
     }
 
+    /// The id of the station a station file belongs to (`8518750` for
+    /// `.../stations/8518750/harcon.json`), none for anything else.
+    static func stationID(_ key: String) -> String? {
+        stationDirectory(key).flatMap { $0.split(separator: "/").last.map(String.init) }
+    }
+
     /// Keeps the responses a fetch of spot `id` offered, pinned to the spot, and returns the
     /// keys to pass back next time. The core offers only what it asked for again, so every
     /// offered copy replaces the one under its key.
     ///
-    /// Normally the keys kept before stay, and the new ones are added. With `replacing`, the
-    /// fetch asked for all the metadata it needs (a refresh with signal), so the spot's pins
-    /// follow what it offered: a station the spot no longer uses (it moved, or another station
-    /// was chosen) is released, and its files go unless another spot or a pack holds them. A
-    /// station any of whose files was offered keeps the files it was served from the store.
+    /// The keys kept before stay, and the new ones are added. `needed` is what the core says
+    /// the spot uses now: the ids of the stations whose files it needs (a fetch with signal
+    /// that asked for all the metadata). Only then are the pins of any other station's files
+    /// released, so a station the spot no longer uses (it moved, or another station was
+    /// chosen) lets go, and its files go unless another spot or a pack holds them. A station
+    /// the fetch merely did not ask about (its predictions failed, nothing was offered) is
+    /// never read as unused, and the keys that are not a station's (the station lists) stay.
+    /// An empty `needed` says nothing, and releases nothing.
     func keep(
         _ offered: [CachedResponse], spot id: String, kept: [String], now: Int64,
-        replacing: Bool = false
+        needed: [String] = []
     ) async -> [String] {
-        guard !offered.isEmpty else { return kept }
+        guard !offered.isEmpty || !needed.isEmpty else { return kept }
         var keys = kept
-        if replacing {
-            let current = Set(offered.compactMap { Self.stationDirectory($0.key) })
-            let offeredKeys = Set(offered.map(\.key))
-            let held = kept.filter { key in
-                offeredKeys.contains(key)
-                    || Self.stationDirectory(key).map(current.contains) ?? false
+        if !needed.isEmpty {
+            let wanted = Set(needed)
+            let released = kept.filter { key in
+                Self.stationID(key).map { !wanted.contains($0) } ?? false
             }
-            let released = kept.filter { Self.isStationFile($0) && !held.contains($0) }
-            keys = held
+            keys = kept.filter { !released.contains($0) }
             _ = try? await store.unpin(Self.pin(spot: id), keys: released.map { .blob($0) })
         }
         for entry in offered where !keys.contains(entry.key) { keys.append(entry.key) }

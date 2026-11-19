@@ -145,6 +145,32 @@ final class URLSessionHostTests: XCTestCase {
         XCTAssertEqual(kept.storagePolicy, .allowedInMemoryOnly)
     }
 
+    // MARK: - Cache-served responses
+
+    func testOnlyAResponseEndingInTheLocalCacheIsFromCache() {
+        typealias Fetch = URLSessionTaskMetrics.ResourceFetchType
+        XCTAssertTrue(URLSessionHost.servedFromCache([.localCache]))
+        XCTAssertFalse(URLSessionHost.servedFromCache([.networkLoad]))
+        XCTAssertFalse(URLSessionHost.servedFromCache([.serverPush, .unknown]))
+        // A redirect whose last hop went to the network is an answer.
+        XCTAssertFalse(URLSessionHost.servedFromCache([Fetch.localCache, .networkLoad]))
+        XCTAssertFalse(URLSessionHost.servedFromCache([]))
+    }
+
+    func testTheCacheFlagPassesThroughToTheCore() throws {
+        let http = try XCTUnwrap(
+            HTTPURLResponse(
+                url: URL(string: tides)!, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: [:]))
+        XCTAssertFalse(URLSessionHost.response(Data(), http).fromCache)
+        XCTAssertTrue(URLSessionHost.response(Data(), http, fromCache: true).fromCache)
+    }
+
+    func testAnAnswerFromTheNetworkIsNotFlagged() async throws {
+        StubProtocol.answer(.response(status: 200, headers: ["Content-Type": "application/json"], body: Data("[]".utf8)))
+        let response = try await host().send(request: get(tides, maxAge: 600))
+        XCTAssertFalse(response.fromCache)
+    }
+
     func testTheServersCacheHeadersAndNoStoreRequestsAreLeftAlone() async throws {
         StubProtocol.answer(.response(status: 200, headers: ["Cache-Control": "max-age=60"], body: Data("[]".utf8)))
         let host = host()
