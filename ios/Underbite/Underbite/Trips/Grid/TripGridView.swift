@@ -103,6 +103,7 @@ struct TripGridView: View {
             case .stacked:
                 TripDayCards(view: view) { openDay = $0 }
             }
+            TripChecklistEntry(trips: trips, tripID: tripID)
             if !view.notes.isEmpty {
                 Text(view.notes)
                     .font(.subheadline)
