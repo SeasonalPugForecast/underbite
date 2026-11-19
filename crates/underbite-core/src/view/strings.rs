@@ -2338,6 +2338,17 @@ safety_keys! {
     LicenceLinksOnly => "Links only, no data",
     /// The attribution screen's statement and the line under its lists.
     NotForNavigationStatement => "Underbite is not for navigation. Tides, currents, depths, charts and every other value it shows are for planning a day on the water only. They can be wrong, late or missing. Never rely on them to steer a vessel or to judge a hazard, and always follow official charts, notices and local regulations.",
+    /// The attribution screen's section titles and link labels. `{host}` is a page's host,
+    /// `{name}` the source's or layer's name.
+    AttrNotForNavigationTitle => "Not for navigation",
+    AttrDataSourcesTitle => "Data sources",
+    AttrDatasetsTitle => "Bundled data and links",
+    AttrMapLayersTitle => "Map layers",
+    AttrAcknowledgementsTitle => "Acknowledgements",
+    AttrLinkTerms => "Terms: {host}",
+    AttrLinkWebsite => "Website: {host}",
+    AttrLinkTermsAccessibility => "{name} terms",
+    AttrLinkWebsiteAccessibility => "{name} website",
     AttributionFooter => "Every value is shown with the source it came from. Regulations are links to the agencies' own pages, not data.",
     RegulationsDisclaimer => "Fishing regulations change during the year. Underbite does not state limits, seasons or licence rules; open the official page and check it before you fish.",
     /// The licences of species profile values.

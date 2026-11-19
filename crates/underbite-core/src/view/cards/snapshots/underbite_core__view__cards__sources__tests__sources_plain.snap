@@ -93,7 +93,7 @@ expression: build(&input).unwrap()
       },
       {
         "source": "Open-Meteo model providers",
-        "text": "Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean)",
+        "text": "Marine models: MeteoFrance MFWAM waves, SMOC currents and tides, and sea surface temperature, generated using E.U. Copernicus Marine Service Information (https://doi.org/10.48670/moi-00017, https://doi.org/10.48670/moi-00016); ECMWF (WAM); NOAA NCEP (GFS Wave); DWD (EWAM, GWAM); ERA5-Ocean, generated using Copernicus Climate Change Service information (https://doi.org/10.24381/cds.adbb2d47)",
         "link": "https://open-meteo.com/en/licence",
         "licence": null
       },

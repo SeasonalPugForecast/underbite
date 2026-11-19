@@ -1285,7 +1285,10 @@ fn attribution(f: &Formatter, places: &[PlaceCtx]) -> Vec<CreditVm> {
         {
             push(CreditVm {
                 source: f.strings.safety(SafetyKey::SourceModelProviders).to_owned(),
-                text: f.strings.safety(SafetyKey::CreditMarineModels).to_owned(),
+                text: f
+                    .strings
+                    .safety(SafetyKey::AttrOpenMeteoMarineModels)
+                    .to_owned(),
                 link: None,
                 licence: None,
             });

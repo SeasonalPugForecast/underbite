@@ -102,7 +102,7 @@ credit Computed on device: Sun and moon positions from astronomical algorithms
 credit Open-Meteo: Weather data by Open-Meteo.com
 credit NOAA CO-OPS: NOAA CO-OPS
 credit Open-Meteo Marine: Weather data by Open-Meteo.com
-credit Open-Meteo model providers: Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean)
+credit Open-Meteo model providers: Marine models: MeteoFrance MFWAM waves, SMOC currents and tides, and sea surface temperature, generated using E.U. Copernicus Marine Service Information (https://doi.org/10.48670/moi-00017, https://doi.org/10.48670/moi-00016); ECMWF (WAM); NOAA NCEP (GFS Wave); DWD (EWAM, GWAM); ERA5-Ocean, generated using Copernicus Climate Change Service information (https://doi.org/10.24381/cds.adbb2d47)
 notice NotForNavigation: Not for navigation.
 notice TraditionalCue: A traditional cue, not a promise.
 compact Next trip: Hudson weekend | Under way | No-go | Sun Nov 8 at The Battery: No-go: gusts 40 km/h over your 33 km/h limit

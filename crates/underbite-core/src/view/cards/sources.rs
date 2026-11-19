@@ -759,7 +759,11 @@ fn credits(snapshot: &SpotSnapshot, used: &[Used<'_>], strings: Strings) -> Vec<
         }
     }
     if seen.contains(&SourceId::OPEN_METEO_MARINE) {
-        models.push(strings.safety(SafetyKey::CreditMarineModels).to_owned());
+        models.push(
+            strings
+                .safety(SafetyKey::AttrOpenMeteoMarineModels)
+                .to_owned(),
+        );
     }
     if !models.is_empty() {
         add(

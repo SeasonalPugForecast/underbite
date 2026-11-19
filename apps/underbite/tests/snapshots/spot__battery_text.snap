@@ -143,7 +143,7 @@ Credit: Sun and moon positions from astronomical algorithms
   Credit: Weather data by Open-Meteo.com (CC BY 4.0); ECMWF data CC BY 4.0. (https://open-meteo.com/)
   Credit: USGS TNM / NGTOC - 3D National Hydrographic Program (3DHP). Features may not reflect current conditions and are not for critical use. (https://www.usgs.gov/3d-hydrography-program)
   Credit: Weather data by Open-Meteo.com (https://open-meteo.com/)
-  Credit: Marine models: Copernicus Marine Service (MeteoFrance MFWAM, SMOC), ECMWF (WAM), NOAA NCEP (GFS Wave), DWD (EWAM, GWAM), Copernicus Climate Change Service (ERA5-Ocean) (https://open-meteo.com/en/licence)
+  Credit: Marine models: MeteoFrance MFWAM waves, SMOC currents and tides, and sea surface temperature, generated using E.U. Copernicus Marine Service Information (https://doi.org/10.48670/moi-00017, https://doi.org/10.48670/moi-00016); ECMWF (WAM); NOAA NCEP (GFS Wave); DWD (EWAM, GWAM); ERA5-Ocean, generated using Copernicus Climate Change Service information (https://doi.org/10.24381/cds.adbb2d47) (https://open-meteo.com/en/licence)
   Problem: NOAA CO-OPS, Water temperature: coops: no recent data, used ndbc (1 more)
   Problem: NOAA CO-OPS, Pressure: coops: no recent data, used ndbc (2 more)
   Water temperature, Pressure: 8518750 - The Battery, NY (NOAA NDBC, 0.2 mi, 42 min ago)

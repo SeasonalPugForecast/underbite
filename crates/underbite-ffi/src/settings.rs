@@ -1075,7 +1075,7 @@ pub struct WaterTypeOption {
     pub id: String,
     /// Its name in the user's voice: "River or stream".
     pub label: String,
-    /// Its name in the plain voice, for `VoiceOver`, when the user's voice words it differently.
+    /// Its name in the plain voice, for ``VoiceOver``, when the user's voice words it differently.
     pub plain_label: Option<String>,
 }
 
@@ -1231,6 +1231,8 @@ pub struct SourceInfo {
     pub terms_url: Option<String>,
     /// What its terms ask beyond the credit; none when nothing.
     pub conditions: Option<String>,
+    /// Its terms page and its home page, labelled for display and for `VoiceOver`.
+    pub links: Vec<CreditLink>,
     /// It serves only with a key or an account of the user's own.
     pub needs_key: bool,
     /// It takes a key but also serves without one.
@@ -1410,7 +1412,11 @@ pub fn source_catalogue() -> Vec<SourceInfo> {
                 (_, None, None) => name.clone(),
             };
             let non_empty = |text: String| (!text.is_empty()).then_some(text);
+            let site = terms
+                .map(|t| t.site_url.to_owned())
+                .or_else(|| attribution.as_ref().and_then(|a| a.url.clone()));
             SourceInfo {
+                links: credit_links(strings, &name, terms.map(|t| t.terms_url), site.as_deref()),
                 id: row.id.to_owned(),
                 credit,
                 url: terms
@@ -1446,11 +1452,60 @@ pub struct DatasetCredit {
     pub conditions: Option<String>,
     /// The page that states the terms or the licence.
     pub terms_url: Option<String>,
+    /// The terms page and the home page, labelled for display and for `VoiceOver`.
+    pub links: Vec<CreditLink>,
+}
+
+/// A link to a page, with the label to show and the one `VoiceOver` reads.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct CreditLink {
+    /// "Terms: www.usgs.gov".
+    pub label: String,
+    /// "USGS terms".
+    pub accessibility: String,
+    pub url: String,
+}
+
+/// The host of a link: "www.usgs.gov" of `https://www.usgs.gov/a/b`.
+fn host_of(url: &str) -> &str {
+    let rest = url.split_once("://").map_or(url, |(_, r)| r);
+    rest.split(['/', '?', '#']).next().unwrap_or(rest)
+}
+
+/// The links of a source, dataset or layer: its terms page, then its home page when that is
+/// another page. Both are safety words, the same in every voice.
+fn credit_links(
+    strings: Strings,
+    name: &str,
+    terms: Option<&str>,
+    site: Option<&str>,
+) -> Vec<CreditLink> {
+    let mut links = Vec::new();
+    let terms = terms.filter(|u| !u.is_empty());
+    if let Some(url) = terms {
+        links.push(CreditLink {
+            label: strings.safety_fmt(SafetyKey::AttrLinkTerms, &[("host", host_of(url))]),
+            accessibility: strings
+                .safety_fmt(SafetyKey::AttrLinkTermsAccessibility, &[("name", name)]),
+            url: url.to_owned(),
+        });
+    }
+    if let Some(url) = site.filter(|u| !u.is_empty() && Some(*u) != terms) {
+        links.push(CreditLink {
+            label: strings.safety_fmt(SafetyKey::AttrLinkWebsite, &[("host", host_of(url))]),
+            accessibility: strings
+                .safety_fmt(SafetyKey::AttrLinkWebsiteAccessibility, &[("name", name)]),
+            url: url.to_owned(),
+        });
+    }
+    links
 }
 
 /// The credit of the map layers that share one credit line.
 #[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
 pub struct MapCredit {
+    /// The layers' titles, joined, as the heading.
+    pub title: String,
     /// The credit line (safety text), as the layer shows it on the map; for the GEBCO grid, the
     /// wording that the release year and DOI are read from the service.
     pub credit: String,
@@ -1464,13 +1519,25 @@ pub struct MapCredit {
     pub notice: Option<String>,
     /// The page that states the terms.
     pub terms_url: Option<String>,
+    /// The terms page, labelled for display and for `VoiceOver`.
+    pub links: Vec<CreditLink>,
 }
 
 /// What the attribution screen shows besides the sources. None of it is in the voice.
 #[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
 pub struct AttributionPage {
+    /// The title of the not-for-navigation section (safety text).
+    pub not_for_navigation_title: String,
     /// The not-for-navigation statement (safety text).
     pub not_for_navigation: String,
+    /// The title of the sources section.
+    pub sources_title: String,
+    /// The title of the datasets section.
+    pub datasets_title: String,
+    /// The title of the map layers section.
+    pub map_layers_title: String,
+    /// The label of the link to the open-source notices.
+    pub acknowledgements_title: String,
     /// The regulations disclaimer (safety text).
     pub regulations: String,
     /// The bundled datasets and the regulation links.
@@ -1514,6 +1581,8 @@ pub fn attribution_page(settings_json: String) -> Result<AttributionPage, Settin
             }
             None => map_credits.push(MapCredit {
                 terms_url,
+                title: String::new(),
+                links: Vec::new(),
                 credit,
                 layers: vec![layer.title],
                 acknowledgements: layer.acknowledgements,
@@ -1521,6 +1590,10 @@ pub fn attribution_page(settings_json: String) -> Result<AttributionPage, Settin
                 notice: layer.notice,
             }),
         }
+    }
+    for c in &mut map_credits {
+        c.title = c.layers.join(", ");
+        c.links = credit_links(strings, &c.title, c.terms_url.as_deref(), None);
     }
     let datasets = DATASETS
         .iter()
@@ -1531,9 +1604,11 @@ pub fn attribution_page(settings_json: String) -> Result<AttributionPage, Settin
             } else {
                 conditions_text(&d.terms, strings)
             };
+            let name = strings.safety(d.name).to_owned();
             DatasetCredit {
+                links: credit_links(strings, &name, Some(d.terms.terms_url), None),
                 id: d.terms.id.to_owned(),
-                name: strings.safety(d.name).to_owned(),
+                name,
                 credit: credit_text(&d.terms, strings),
                 license: licence_text(&d.terms, strings),
                 conditions,
@@ -1542,6 +1617,15 @@ pub fn attribution_page(settings_json: String) -> Result<AttributionPage, Settin
         })
         .collect();
     Ok(AttributionPage {
+        not_for_navigation_title: strings
+            .safety(SafetyKey::AttrNotForNavigationTitle)
+            .to_owned(),
+        sources_title: strings.safety(SafetyKey::AttrDataSourcesTitle).to_owned(),
+        datasets_title: strings.safety(SafetyKey::AttrDatasetsTitle).to_owned(),
+        map_layers_title: strings.safety(SafetyKey::AttrMapLayersTitle).to_owned(),
+        acknowledgements_title: strings
+            .safety(SafetyKey::AttrAcknowledgementsTitle)
+            .to_owned(),
         not_for_navigation: strings
             .safety(SafetyKey::NotForNavigationStatement)
             .to_owned(),
@@ -1620,6 +1704,34 @@ mod tests {
             .find(|c| c.layers.iter().any(|l| l.contains("GEBCO")))
             .unwrap();
         assert!(!gebco.credit.contains("2026"), "{}", gebco.credit);
+    }
+
+    #[test]
+    fn links_are_labelled_by_the_core() {
+        let strings = Strings::new(Voice::Plain);
+        let links = credit_links(
+            strings,
+            "USGS",
+            Some("https://www.usgs.gov/a/b?c"),
+            Some("https://waterdata.usgs.gov/"),
+        );
+        let labels: Vec<&str> = links.iter().map(|l| l.label.as_str()).collect();
+        assert_eq!(
+            labels,
+            ["Terms: www.usgs.gov", "Website: waterdata.usgs.gov"]
+        );
+        assert_eq!(links[0].accessibility, "USGS terms");
+        assert_eq!(links[1].accessibility, "USGS website");
+        // The same page is one link.
+        let same = credit_links(strings, "X", Some("https://a.b/"), Some("https://a.b/"));
+        assert_eq!(same.len(), 1);
+        for info in source_catalogue() {
+            assert!(!info.links.is_empty(), "{}", info.id);
+        }
+        let page = attribution_page(default_settings_json()).unwrap();
+        assert_eq!(page.not_for_navigation_title, "Not for navigation");
+        assert_eq!(page.map_layers_title, "Map layers");
+        assert!(page.map_credits.iter().all(|c| !c.title.is_empty()));
     }
 
     #[test]

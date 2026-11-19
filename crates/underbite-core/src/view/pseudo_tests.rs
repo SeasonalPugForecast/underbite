@@ -198,6 +198,19 @@ fn data_texts(input: &ViewInput) -> Vec<String> {
     texts
 }
 
+/// Whether a word is a link (`https://doi.org/10.48670/moi-00016,`) or a bare DOI
+/// ("(10.48670/moi-00016)"): a prefix "10.", at least four digits and a "/".
+fn address(token: &str) -> bool {
+    if token.contains("://") {
+        return true;
+    }
+    let t = token.trim_start_matches('(');
+    t.strip_prefix("10.").is_some_and(|rest| {
+        let digits = rest.chars().take_while(char::is_ascii_digit).count();
+        digits >= 4 && rest[digits..].starts_with('/')
+    })
+}
+
 /// What is left of `text` once the data is taken out, when that still has English in it.
 fn untranslated(text: &str, data: &[String]) -> Option<String> {
     let mut rest = text.to_owned();
@@ -206,6 +219,12 @@ fn untranslated(text: &str, data: &[String]) -> Option<String> {
             rest = rest.replace(d.as_str(), " ");
         }
     }
+    // A link or a DOI is an address, not a text or a number to translate.
+    let rest = rest
+        .split(' ')
+        .filter(|token| !address(token))
+        .collect::<Vec<_>>()
+        .join(" ");
     let letters = rest.chars().any(|c| c.is_ascii_alphabetic());
     let chars: Vec<char> = rest.chars().collect();
     let point = chars
@@ -240,6 +259,15 @@ fn the_check_finds_english_words_and_decimal_points() {
         None
     );
     assert!(untranslated("[Ŧíđé ] high", &data).is_some());
+    // Links and DOIs are exempt, a number beside them is not.
+    assert_eq!(
+        untranslated(
+            "[Ŧé] https://doi.org/10.48670/moi-00016, (10.24381/cds.adbb2d47)",
+            &data
+        ),
+        None
+    );
+    assert!(untranslated("[Ŧé] 4.2 https://doi.org/10.48670/moi-00016", &data).is_some());
     assert!(untranslated("4.2 [ƒŧ ]", &data).is_some());
     assert!(untranslated("12:03 · 2026-11-08", &data).is_none());
 }
