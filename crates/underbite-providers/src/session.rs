@@ -656,10 +656,17 @@ impl Session {
 /// snapshot does not list it; a card without a value already says it is unavailable. Rate
 /// limits, transport errors and server errors never count, and a tide, current, flow or level
 /// that is missing stays an error.
+///
+/// An answer without values (`NoData`) is an absence for all of these. A 404 or 410
+/// (`NotFound`) is one only where it means the station does not offer the product: a gauge
+/// without a forecast or flood stages, a station without a wind, pressure or temperature
+/// sensor. For the marine forecast, the marine alerts and the model waves it points at a moved
+/// endpoint or a lost zone (the alerts service answers "no alerts" with an empty list), so it
+/// stays an error.
 fn is_absence(measurement: Measurement, error: &SourceError) -> bool {
     use Measurement as M;
-    matches!(error, SourceError::NoData(_) | SourceError::NotFound(_))
-        && matches!(
+    match error {
+        SourceError::NoData(_) => matches!(
             measurement,
             M::FlowForecast
                 | M::FloodCategories
@@ -669,7 +676,17 @@ fn is_absence(measurement: Measurement, error: &SourceError) -> bool {
                 | M::ObservedWind
                 | M::ObservedPressure
                 | M::WaterTemperature
-        )
+        ),
+        SourceError::NotFound(_) => matches!(
+            measurement,
+            M::FlowForecast
+                | M::FloodCategories
+                | M::ObservedWind
+                | M::ObservedPressure
+                | M::WaterTemperature
+        ),
+        _ => false,
+    }
 }
 
 /// Whether two targets ask about the same place, window and datum.
@@ -1553,7 +1570,13 @@ mod tests {
         let lost = SourceError::NotFound(None);
         for m in [FlowForecast, WavesForecast, MarineAlerts, ObservedWind] {
             assert!(is_absence(m, &none), "{m:?}");
+        }
+        for m in [FlowForecast, ObservedWind] {
             assert!(is_absence(m, &lost), "{m:?}");
+        }
+        // A lost endpoint or zone is a failure for the alerts and the marine forecast.
+        for m in [MarineAlerts, Measurement::MarineForecast, WavesForecast] {
+            assert!(!is_absence(m, &lost), "{m:?}");
         }
         // A missing tide or discharge is told.
         assert!(!is_absence(Tide, &none));
@@ -1571,6 +1594,53 @@ mod tests {
             assert!(!is_absence(FlowForecast, &e), "{e:?}");
             assert!(!is_absence(ObservedWind, &e), "{e:?}");
         }
+    }
+
+    #[test]
+    fn an_alerts_404_stays_listed_and_the_last_alerts_are_kept() {
+        use underbite_core::model::{AlertSeverity, MarineAlert, Spot, SpotSnapshot, WaterType};
+        use underbite_core::offline::cache::merge_last;
+
+        let nws = Arc::new(source(
+            "nws",
+            &[Measurement::MarineAlerts],
+            &[FakeRequest::required("https://nws.test/alerts")],
+        ));
+        let chains = BTreeMap::from([(
+            Measurement::MarineAlerts,
+            chain(vec![link(&nws, "ANZ328", &[])]),
+        )]);
+        let (out, _) = drive(session(chains), |_| Some((404, String::new())));
+        assert_eq!(out.errors.len(), 1, "{:?}", out.errors);
+        assert_eq!(out.errors[0].measurement, Some(Measurement::MarineAlerts));
+
+        let spot = Spot {
+            id: "battery".into(),
+            name: "The Battery".into(),
+            latitude: 40.7,
+            longitude: -74.02,
+            water_type: WaterType::TidalRiverEstuary,
+            water_body: None,
+            time_zone: "America/New_York".into(),
+        };
+        let mut last = SpotSnapshot::new(spot.clone(), UnixTime(NOW.0 - 600));
+        last.marine.marine_alerts.push(MarineAlert {
+            id: "urn:oid:1".into(),
+            event: "Small Craft Advisory".into(),
+            headline: None,
+            description: None,
+            instruction: None,
+            onset: None,
+            ends: None,
+            expires: None,
+            severity: AlertSeverity::Minor,
+            zones: vec!["ANZ328".into()],
+            vtec_key: None,
+        });
+        let mut fresh = SpotSnapshot::new(spot, NOW);
+        fresh.errors = out.errors;
+        let merged = merge_last(&last, fresh);
+        assert_eq!(merged.marine.marine_alerts, last.marine.marine_alerts);
     }
 
     #[test]
