@@ -1,13 +1,24 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ %@" : {
+      "comment" : "A value followed by its unit on a card of the conditions screen; both arguments come from the core",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ %@"
+          }
+        }
+      }
+    },
     "%@ %@, below %@" : {
       "comment" : "Part of a colour check warning: the measured contrast ratio, the appearance and the ratio it should reach",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ %2$@, below %3$@"
+            "value" : "%@ %@, below %@"
           }
         }
       }
@@ -18,7 +29,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ (%2$@): %3$@"
+            "value" : "%@ (%@): %@"
           }
         }
       }
@@ -29,7 +40,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ (%2$@): hard to see against the background %3$@"
+            "value" : "%@ (%@): hard to see against the background %@"
           }
         }
       }
@@ -40,7 +51,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ (%2$@): too close to tell apart with %3$@ vision %4$@"
+            "value" : "%@ (%@): too close to tell apart with %@ vision %@"
           }
         }
       }
@@ -51,7 +62,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ (%2$@): words on it at %3$@"
+            "value" : "%@ (%@): words on it at %@"
           }
         }
       }
@@ -62,7 +73,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ and %2$@"
+            "value" : "%@ and %@"
           }
         }
       }
@@ -128,7 +139,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@, %2$@"
+            "value" : "%@, %@"
           }
         }
       }
@@ -150,7 +161,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@: %2$@"
+            "value" : "%@: %@"
           }
         }
       }
@@ -1723,7 +1734,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Every colour you changed in %1$@ goes back to %2$@'s."
+            "value" : "Every colour you changed in %@ goes back to %@'s."
           }
         }
       }
@@ -5683,7 +5694,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version %1$@, core %2$@"
+            "value" : "Version %@, core %@"
           }
         }
       }

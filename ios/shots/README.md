@@ -15,7 +15,7 @@ wait 60
 ```
 
 - **Line 1** is the launch arguments, split on whitespace (blank for none; `-seedLimits` adds a sample go/no-go limits profile). They are passed to
-  `xcrun simctl launch` as they stand; the app reads them only in debug builds.
+  `xcrun simctl launch` as they stand; the app reads them only in debug builds. System arguments such as `-NSDoubleLocalizedStrings YES` (every localized string appears twice, so Swift strings that skip the catalog stay single length; `now-pseudo` and `trip-grid-pseudo` use it) and `-UIPreferredContentSizeCategoryName` work in any build. Doubling a format string that takes arguments can leave stray characters beside the values (the "Now" card shows "@ @" before its tide height); the values themselves are intact. `-AppleLanguages (en-XA)` does nothing, as the app has only English.
 - **Line 2 onward** are optional, in any order, each at most once: `dark`, which also takes a dark-appearance screenshot of the same launch (the appearance is
   set with the app stopped, read back, then the app is launched with the same wait as the light
   shot; light is restored afterwards), and

@@ -20,7 +20,7 @@ struct QuantityText: View {
         } else {
             let value = Text(quantity.text).font(font)
             let unit = Text(quantity.unit).font(.subheadline).foregroundStyle(.readableSecondary)
-            Text(verbatim: "\(value) \(unit)")
+            Text("\(value) \(unit)")
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
