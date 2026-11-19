@@ -59,15 +59,27 @@ final class StorageModelTests: XCTestCase {
         let m = model()
         await m.load(settingsJSON: try settings(limit: 1_500), packs: packs)
         let figures = try XCTUnwrap(m.figures)
-        // The packs' share holds the spot's pinned metadata too.
+        // The packs' share is the packs' own rows: the spot's kept metadata is in the total only.
         XCTAssertEqual(figures.words.totalText, "\(size(5_001_000)) of 1.5 GB")
-        XCTAssertEqual(figures.words.packsText, "Packs: \(size(2_001_000))")
+        XCTAssertEqual(figures.words.packsText, "Packs: \(size(2_000_000))")
         XCTAssertEqual(figures.words.cacheText, "Map cache: \(size(3_000_000))")
         XCTAssertEqual(figures.words.limitText, "Limit: 1.5 GB")
         XCTAssertEqual(figures.fill ?? 0, 5_001_000.0 / 1_500_000_000, accuracy: 1e-9)
         XCTAssertEqual(figures.packs.map(\.name), ["Harbour"])
         XCTAssertEqual(figures.packs.first?.sizeText, size(2_000_000))
         XCTAssertEqual(figures.limitMegabytes, 1_500)
+    }
+
+    func testAPhoneWithNoPacksReadsPacksAsZero() async throws {
+        try await scratch.store.put(.blob("tile/cache"), blob(3_000_000), now: now)
+        _ = await SpotMetadata(store: scratch.store).keep(
+            [CachedResponse(key: Self.harcon, body: Data(repeating: 0x7B, count: 1_000), fetchedAt: now)],
+            spot: "s", kept: [], now: now)
+        let m = model()
+        await m.load(settingsJSON: try settings(limit: 1_500), packs: [])
+        XCTAssertEqual(m.figures?.words.packsText, "Packs: \(size(0))")
+        XCTAssertEqual(m.figures?.words.cacheText, "Map cache: \(size(3_000_000))")
+        XCTAssertEqual(m.figures?.words.totalText, "\(size(3_001_000)) of 1.5 GB")
     }
 
     func testTheLimitsOfferNoCacheTheCoresStopsAndTheUsersOwn() throws {

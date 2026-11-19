@@ -40,9 +40,22 @@ nonisolated struct StorageFigures: Equatable, Sendable {
         let limit = max(0, (try? Settings(json: settingsJSON))?.map.offlineMaxMb ?? 0)
         let total = UInt64(max(0, usage.bytes))
         let pinned = UInt64(max(0, min(usage.pinnedBytes, usage.bytes)))
-        let words = storageView(
+        // What the packs hold: the sum of their own rows (a row two packs share counts for
+        // both, so it is bounded by what is pinned). The spots' kept metadata is pinned too, but
+        // it is no pack's, and clearing the map cache does not free it.
+        let held = packs.reduce(into: UInt64(0)) { $0 += UInt64(max(0, $1.bytes)) }
+        let inPacks = min(held, pinned)
+        // "Packs" is the packs' share; "Map cache" is what is not pinned at all, which is
+        // what clearing frees. Both phrases are the core's.
+        let packWords = storageView(
+            totalBytes: total, pinnedBytes: inPacks, limitMb: UInt32(clamping: limit),
+            settingsJson: settingsJSON)
+        let cacheWords = storageView(
             totalBytes: total, pinnedBytes: pinned, limitMb: UInt32(clamping: limit),
             settingsJson: settingsJSON)
+        let words = StorageView(
+            totalText: packWords.totalText, packsText: packWords.packsText,
+            cacheText: cacheWords.cacheText, limitText: packWords.limitText)
         let limitBytes = OfflineRules.limitBytes(megabytes: limit)
         let fill = limitBytes > 0 ? min(1, Double(total) / Double(limitBytes)) : nil
         let rows = packs.compactMap { pack -> StoragePackRow? in
