@@ -911,10 +911,9 @@ final class SpotStore {
                 return
             }
             var held = cache(id)
-            // Every list unreachable: the phone is offline; the older stations stay.
-            let offline =
-                !found.errors.isEmpty && found.errors.allSatisfy { $0.kind == "transport" }
-            if !offline || held.stationsJSON == nil {
+            // Nothing answered (the core says so, a captive portal's page included): the phone is
+            // offline; the older stations stay.
+            if !found.unanswered || held.stationsJSON == nil {
                 held.stationsJSON = found.stationsJson
                 keep(held, for: id)
                 stationsRevision += 1

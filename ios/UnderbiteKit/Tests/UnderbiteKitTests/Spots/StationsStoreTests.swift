@@ -277,7 +277,7 @@ final class StationsStoreTests: XCTestCase {
                             SourceIssue(
                                 source: "coops", measurement: nil, kind: "transport",
                                 message: "offline")
-                        ])
+                        ], unanswered: true)
                 }
                 return StationsStoreTests.found()
             })
@@ -287,6 +287,46 @@ final class StationsStoreTests: XCTestCase {
         await s.discoverStations(for: SeedSpots.battery.id)
         XCTAssertFalse(s.stationRows(for: SeedSpots.battery.id).isEmpty)
         XCTAssertEqual(s.stationProblems[SeedSpots.battery.id], "offline")
+    }
+
+    func testAnUnansweredLookupBehindAPortalKeepsTheStationsItHad() async {
+        let portal = Shared(false)
+        let (s, _) = store(
+            in: directory,
+            discoverer: { _, _, _, _, _ in
+                if portal.value {
+                    return DiscoveryOutcome(
+                        stationsJson: "{}",
+                        errors: [
+                            SourceIssue(
+                                source: "coops", measurement: nil, kind: "parse",
+                                message: "a web page")
+                        ], unanswered: true)
+                }
+                return StationsStoreTests.found()
+            })
+        s.add(SeedSpots.battery)
+        await s.discoverStations(for: SeedSpots.battery.id)
+        portal.value = true
+        await s.discoverStations(for: SeedSpots.battery.id)
+        XCTAssertFalse(s.stationRows(for: SeedSpots.battery.id).isEmpty)
+        XCTAssertEqual(s.stationProblems[SeedSpots.battery.id], "a web page")
+    }
+
+    func testAnAnsweredLookupWithErrorsIsNotOffline() async {
+        let (s, _) = store(
+            in: directory,
+            discoverer: { _, _, _, _, _ in
+                DiscoveryOutcome(
+                    stationsJson: "{}",
+                    errors: [
+                        SourceIssue(
+                            source: "coops", measurement: nil, kind: "transport", message: "slow")
+                    ], unanswered: false)
+            })
+        s.add(SeedSpots.battery)
+        await s.discoverStations(for: SeedSpots.battery.id)
+        XCTAssertEqual(s.cache(SeedSpots.battery.id).stationsJSON, "{}")
     }
 
     func testARemovedSpotKeepsNoStations() async {
