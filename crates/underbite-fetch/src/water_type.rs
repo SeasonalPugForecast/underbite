@@ -18,7 +18,7 @@ use underbite_providers::source::{FetchContext, Source, SourceError, check_respo
 
 use crate::host::{Call, Driver, FetchHost, Fetched};
 use crate::hydrography::{HYDRO_RADIUS_M, hydro_pages};
-use crate::lists::{StoredList, area_key, point_target, usgs_list};
+use crate::lists::{StoredList, area_key, point_target, usgs_cell, usgs_list};
 use crate::store::{self, STATION_LIST_TTL_S};
 
 /// How far from the spot the nearest USGS site may be to tell its water type, metres.
@@ -123,7 +123,7 @@ async fn nearest_usgs_site<H: FetchHost>(
     ctx: &FetchContext,
     spot: &Spot,
 ) -> Option<UsgsSiteType> {
-    let point = spot_point(ctx, spot);
+    let point = usgs_cell(spot_point(ctx, spot));
     let stored = host
         .stored_within::<StoredList>(
             store::STATIONS,

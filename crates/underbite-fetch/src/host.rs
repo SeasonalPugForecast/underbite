@@ -15,7 +15,7 @@ use underbite_core::time::UnixTime;
 use underbite_providers::request::{
     CacheHint, Request, Response, is_secret_header, redact_url, secret_values,
 };
-use underbite_providers::session::usage::{SharedUsage, UsageLedger};
+use underbite_providers::session::usage::{ResponseLimits, SharedUsage, UsageLedger};
 use underbite_providers::source::{Source, SourceError};
 use whether_providers::{HttpRequest, Method};
 
@@ -356,9 +356,24 @@ impl<'h, H: FetchHost> Driver<'h, H> {
                 })?;
             self.save_usage().await.map_err(SourceError::Transport)?;
         }
-        self.send(&call)
+        let fetched = self
+            .send(&call)
             .await
-            .map_err(|e| SourceError::Transport(e.to_string()))
+            .map_err(|e| SourceError::Transport(e.to_string()))?;
+        if request.metered {
+            // A 429 pauses the pool (saved with the ledger at the end of the fetch), so the
+            // next request of any spot does not ask again at once.
+            let limits = ResponseLimits {
+                status: fetched.status,
+                retry_after_s: fetched.retry_after,
+                remaining: fetched.rate_limit_remaining,
+            };
+            let now = self.now;
+            let id = source.id();
+            self.usage
+                .with(|ledger| ledger.observe_response(&id, source.budget(), limits, now));
+        }
+        Ok(fetched)
     }
 
     /// The value stored under `namespace` and `key` while it is at most `ttl_s` old.
@@ -418,6 +433,7 @@ async fn load<T: DeserializeOwned, H: FetchHost>(
 mod tests {
     use super::*;
     use crate::testing::{MemoryHost, now};
+    use underbite_core::provenance::SourceId;
     use underbite_providers::request::{
         Coordinates, Place, Resource, RoundedPoint, Target, Window,
     };
@@ -504,6 +520,95 @@ mod tests {
         })
         .expect_err("not saved");
         assert!(err.starts_with("the call ledger was not saved: "), "{err}");
+    }
+
+    /// A USGS request that costs a call.
+    fn usgs_request(url: &str) -> Request {
+        Request::new(url.into(), Resource::UsgsMonitoringLocations, target()).metered()
+    }
+
+    #[test]
+    fn a_429_without_retry_after_pauses_the_pool_and_the_next_request_is_not_sent() {
+        use underbite_providers::usgs::Usgs;
+
+        let host = MemoryHost::default()
+            .answering_part("waterdata.test/a", Fetched::new(429, "slow down"))
+            .answering("https://waterdata.test/b", "{}");
+        pollster::block_on(async {
+            let driver = Driver::new(&host, now(), true).await;
+            let usgs = Usgs::new();
+            let first = driver
+                .get(&usgs, &usgs_request("https://waterdata.test/a"))
+                .await
+                .expect("a response");
+            assert_eq!(first.status, 429);
+            let until = UnixTime(now().0 + 600);
+            assert_eq!(
+                driver.usage.snapshot().paused_until(&SourceId::USGS, now()),
+                Some(until)
+            );
+            driver.save_usage().await.expect("saved");
+            // A later fetch loads the pause with the ledger.
+            let later = Driver::new(&host, UnixTime(now().0 + 60), true).await;
+            let refused = later
+                .get(&usgs, &usgs_request("https://waterdata.test/b"))
+                .await
+                .expect_err("paused");
+            assert!(
+                matches!(
+                    refused,
+                    SourceError::RateLimited {
+                        retry_after_s: Some(540)
+                    }
+                ),
+                "{refused:?}"
+            );
+            let after = Driver::new(&host, UnixTime(until.0 + 1), true).await;
+            after
+                .get(&usgs, &usgs_request("https://waterdata.test/b"))
+                .await
+                .expect("sent again");
+        });
+        assert_eq!(host.seen().len(), 2, "{:?}", host.seen());
+    }
+
+    #[test]
+    fn a_reported_remaining_count_lowers_what_is_left_and_a_retry_after_is_honoured() {
+        use underbite_providers::usgs::Usgs;
+
+        let counted = Fetched {
+            rate_limit_remaining: Some(7),
+            ..Fetched::new(200, "{}")
+        };
+        let limited = Fetched {
+            retry_after: Some(1_800),
+            ..Fetched::new(429, "")
+        };
+        let host = MemoryHost::default()
+            .answering_part("waterdata.test/count", counted)
+            .answering_part("waterdata.test/limit", limited);
+        pollster::block_on(async {
+            let driver = Driver::new(&host, now(), true).await;
+            let usgs = Usgs::new();
+            driver
+                .get(&usgs, &usgs_request("https://waterdata.test/count"))
+                .await
+                .expect("a response");
+            let left = driver.usage.snapshot().remaining(
+                &SourceId::USGS,
+                usgs.budget().expect("budget"),
+                now(),
+            );
+            assert_eq!(left, 7);
+            driver
+                .get(&usgs, &usgs_request("https://waterdata.test/limit"))
+                .await
+                .expect("a response");
+            assert_eq!(
+                driver.usage.snapshot().paused_until(&SourceId::USGS, now()),
+                Some(UnixTime(now().0 + 1_800))
+            );
+        });
     }
 
     #[test]

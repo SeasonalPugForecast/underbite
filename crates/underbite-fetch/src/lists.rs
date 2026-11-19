@@ -26,8 +26,22 @@ use crate::host::{Driver, FetchHost};
 use crate::source_error;
 use crate::store::{self, COOPS_STATION_LIST_TTL_S, STATION_LIST_TTL_S, spot_key};
 
-/// Half the side of the USGS site search box, degrees (about 25 km).
-const USGS_HALF_WIDTH_DEG: f64 = 0.25;
+/// Half the side of the USGS site search box, degrees. The box is centred on the spot's cell of
+/// [`USGS_CELL_DECIMALS`] decimals, up to 0.05 degrees from the spot, so it reaches at least
+/// 25 km every way.
+const USGS_HALF_WIDTH_DEG: f64 = 0.3;
+
+/// Decimals of the point the USGS site box is centred on: spots in the same tenth of a degree
+/// share one list, so a few spots in a row ask USGS once.
+const USGS_CELL_DECIMALS: u8 = 1;
+
+/// The centre of the USGS site box (and the key of its list) for a spot at `point`.
+pub(crate) fn usgs_cell(point: RoundedPoint) -> RoundedPoint {
+    RoundedPoint::new(
+        point.coordinates(),
+        USGS_CELL_DECIMALS.min(point.decimals()),
+    )
+}
 
 /// A station list as stored.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -175,6 +189,8 @@ pub(crate) async fn usgs_list<H: FetchHost>(
                     }
                 }
             }
+            // Asked too much: the other requests would only be refused too.
+            Err(e @ SourceError::RateLimited { .. }) => return Err(e),
             Err(e) => gaps.push(e),
         }
     }
@@ -397,14 +413,16 @@ pub(crate) async fn station_lists<H: FetchHost>(
         .await;
     }
     if sources.contains(&SourceId::USGS) {
-        let key = area_key("usgs", point);
+        let cell = usgs_cell(point);
+        let key = area_key("usgs", cell);
+        let cell_target = point_target(cell, host.now);
         list(
             host,
             &mut lists,
             SourceId::USGS,
             &key,
             STATION_LIST_TTL_S,
-            usgs_list(host, &target, ctx),
+            usgs_list(host, &cell_target, ctx),
         )
         .await;
     }

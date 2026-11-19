@@ -118,6 +118,8 @@ struct Routes {
 #[derive(Default)]
 pub(crate) struct MemoryHost {
     pages: BTreeMap<String, String>,
+    /// Responses for the URLs containing a part, before the routes.
+    parts: Vec<(String, Fetched)>,
     base: PathBuf,
     routes: Vec<Route>,
     forgetful: bool,
@@ -143,6 +145,12 @@ impl MemoryHost {
     /// The same host answering `url` exactly with `body`.
     pub(crate) fn answering(mut self, url: impl Into<String>, body: impl Into<String>) -> Self {
         self.pages.insert(url.into(), body.into());
+        self
+    }
+
+    /// The same host answering every URL containing `part` with `fetched`.
+    pub(crate) fn answering_part(mut self, part: impl Into<String>, fetched: Fetched) -> Self {
+        self.parts.push((part.into(), fetched));
         self
     }
 
@@ -195,6 +203,9 @@ impl MemoryHost {
     fn answer(&self, call: &Call) -> Option<Fetched> {
         if let Some(body) = self.pages.get(&call.url) {
             return Some(Fetched::new(200, body.clone()));
+        }
+        if let Some((_, fetched)) = self.parts.iter().find(|(p, _)| call.url.contains(p)) {
+            return Some(fetched.clone());
         }
         let route = self.routes.iter().find(|r| call.url.contains(&r.matches))?;
         let path = self.base.join(&route.file);
