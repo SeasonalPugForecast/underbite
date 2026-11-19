@@ -79,6 +79,11 @@ struct Phone {
     portal: Mutex<Option<u16>>,
     /// When set, only requests whose URL contains this text meet the portal.
     portal_only: Mutex<Option<String>>,
+    /// While set, only requests whose URL contains this text are answered, from the platform's
+    /// cache; every other request fails at the transport.
+    cache_only: Mutex<Option<String>>,
+    /// Requests whose URL contains one of these texts get a 503.
+    broken: Mutex<Vec<String>>,
     seen: Mutex<Vec<HostRequest>>,
     values: Mutex<BTreeMap<(String, String), String>>,
 }
@@ -94,6 +99,8 @@ impl Phone {
             offline: AtomicBool::new(false),
             portal: Mutex::new(None),
             portal_only: Mutex::new(None),
+            cache_only: Mutex::new(None),
+            broken: Mutex::new(Vec::new()),
             seen: Mutex::new(Vec::new()),
             values: Mutex::new(BTreeMap::new()),
         })
@@ -115,6 +122,15 @@ impl Phone {
     fn behind_portal_for(&self, status: u16, part: &str) {
         *self.portal_only.lock().unwrap() = Some(part.to_owned());
         self.behind_portal(status);
+    }
+
+    /// From now on only requests containing `part` are answered, from the cache.
+    fn serve_from_cache(&self, part: &str) {
+        *self.cache_only.lock().unwrap() = Some(part.to_owned());
+    }
+
+    fn break_requests(&self, parts: &[&str]) {
+        *self.broken.lock().unwrap() = parts.iter().map(|p| (*p).to_owned()).collect();
     }
 
     fn requests(&self) -> usize {
@@ -144,6 +160,35 @@ impl FetchHost for Phone {
                 message: "The Internet connection appears to be offline.".into(),
             });
         }
+        let cache_only = self.cache_only.lock().unwrap().clone();
+        if let Some(part) = &cache_only
+            && !request.url.contains(part)
+        {
+            return Err(HostError::Failed {
+                message: "The Internet connection appears to be offline.".into(),
+            });
+        }
+        let from_cache = cache_only.is_some();
+        if self
+            .broken
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|part| request.url.contains(part))
+        {
+            return Ok(HostResponse {
+                status: 503,
+                body: Vec::new(),
+                content_type: None,
+                date: None,
+                expires: None,
+                last_modified: None,
+                etag: None,
+                retry_after: None,
+                rate_limit_remaining: None,
+                from_cache: false,
+            });
+        }
         let portal = *self.portal.lock().unwrap();
         let only = self.portal_only.lock().unwrap().clone();
         if let Some(status) = portal
@@ -159,6 +204,7 @@ impl FetchHost for Phone {
                 etag: None,
                 retry_after: None,
                 rate_limit_remaining: None,
+                from_cache: false,
             });
         }
         let url = request.url;
@@ -184,6 +230,7 @@ impl FetchHost for Phone {
             etag: None,
             retry_after: None,
             rate_limit_remaining: None,
+            from_cache,
         })
     }
 
@@ -537,6 +584,56 @@ fn a_partial_answer_is_not_unanswered() {
     assert!(!out.unanswered);
 }
 
+#[test]
+fn answers_from_the_platforms_cache_are_not_answers() {
+    // Signal lost: the weather service's point lookup comes from memory, everything else fails.
+    let phone = Phone::new();
+    phone.serve_from_cache("api.weather.gov/points");
+    let (_, out) = fetch(&phone, now(), Vec::new());
+    assert!(
+        phone
+            .seen
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|r| r.url.contains("api.weather.gov/points")),
+        "the cached request was made"
+    );
+    assert!(out.unanswered);
+    assert!(out.cacheable.is_empty());
+    assert!(out.metadata_stations.is_empty());
+
+    // The same fetch with the network answering is an answer.
+    let phone = Phone::new();
+    let (_, out) = fetch(&phone, now(), Vec::new());
+    assert!(!out.unanswered);
+}
+
+#[test]
+fn the_fetch_names_the_stations_the_spot_needs_even_when_a_prediction_fails() {
+    let phone = Phone::new();
+    let (_, first) = fetch(&phone, now(), Vec::new());
+    assert_eq!(first.metadata_stations, ["8518750", "NYH1927"]);
+
+    // The current predictions fail: the current's constants are still wanted.
+    let phone = Phone::new();
+    phone.break_requests(&["interval=max_slack", "interval=6&"]);
+    let refresh = FetchOptions {
+        refresh_metadata: true,
+        ..OPTIONS
+    };
+    let (_, out) = fetch_with(&phone, now(), Vec::new(), refresh);
+    assert!(!out.unanswered);
+    assert_eq!(out.metadata_stations, ["8518750", "NYH1927"]);
+
+    // Without signal nothing is known: the app releases nothing.
+    phone.break_requests(&[]);
+    phone.lose_signal();
+    let (_, out) = fetch(&phone, now() + 3_600, first.cacheable);
+    assert!(out.unanswered);
+    assert!(out.metadata_stations.is_empty());
+}
+
 fn discover(phone: &Arc<Phone>) -> underbite_ffi::fetch::DiscoveryOutcome {
     pollster::block_on(underbite_ffi::fetch::discover_stations(
         battery(),
@@ -760,6 +857,7 @@ fn ok(content_type: &str, body: Vec<u8>) -> HostResponse {
         etag: None,
         retry_after: None,
         rate_limit_remaining: None,
+        from_cache: false,
     }
 }
 

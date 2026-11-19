@@ -81,6 +81,7 @@ impl FetchHost for Replay {
             etag: None,
             retry_after: None,
             rate_limit_remaining: None,
+            from_cache: false,
         })
     }
 

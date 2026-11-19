@@ -179,6 +179,7 @@ impl FetchHost for Replay {
                     etag: None,
                     retry_after: None,
                     rate_limit_remaining: None,
+                    from_cache: false,
                 });
             }
             panic!("no replay route for {}", redact_url(&url));
@@ -200,6 +201,7 @@ impl FetchHost for Replay {
             etag: None,
             retry_after: None,
             rate_limit_remaining: None,
+            from_cache: false,
         })
     }
 

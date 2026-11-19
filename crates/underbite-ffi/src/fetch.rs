@@ -148,6 +148,10 @@ pub struct HostResponse {
     pub retry_after: Option<String>,
     /// The `X-RateLimit-Remaining` header.
     pub rate_limit_remaining: Option<String>,
+    /// Whether the platform answered from its own cache, without asking the source. Such a
+    /// response is not evidence that the network works: the fetch does not count it as an answer.
+    #[uniffi(default = false)]
+    pub from_cache: bool,
 }
 
 impl fmt::Debug for HostResponse {
@@ -287,7 +291,11 @@ impl Bridge {
 
     /// Whether `response` answers the request for `url`, counted either way; metadata its
     /// provider reads is noted to keep.
-    fn note(&self, url: &str, response: &Fetched) -> bool {
+    ///
+    /// A response the platform served from its own cache is used when it is data, but it is
+    /// neither an answer nor a failure: it says nothing about whether the network works, and no
+    /// copy of it is kept as fresh.
+    fn note(&self, url: &str, response: &Fetched, from_cache: bool) -> bool {
         let kind = MetadataKind::of_url(url);
         let answered = (200..300).contains(&response.status)
             && !is_page(response)
@@ -296,6 +304,9 @@ impl Bridge {
         if !answered {
             traffic.unanswered += 1;
             return false;
+        }
+        if from_cache {
+            return true;
         }
         traffic.answered += 1;
         let Some(entry) = CachedMetadata::new(url, response.body.clone(), self.now) else {
@@ -515,20 +526,45 @@ pub(crate) fn station_metadata(
         .collect()
 }
 
-/// The CO-OPS stations of a snapshot's tide and tidal current.
-fn computed_stations(snapshot: &SpotSnapshot) -> Vec<&StationRef> {
+/// The CO-OPS stations the spot's tide and current rest on: those of the snapshot's tide and
+/// tidal current, and those its rankings chose for them (the best ranked and any pinned), which
+/// a fetch whose predictions failed (a current that fell back to another source) still needs
+/// the constants of.
+fn computed_stations(snapshot: &SpotSnapshot, ranked: Option<&Ranking>) -> Vec<StationRef> {
     let tide = snapshot.marine.tide.as_ref().map(|t| &t.provenance);
     let current = snapshot
         .marine
         .tidal_current
         .as_ref()
         .map(|c| &c.provenance);
-    [tide, current]
+    let mut out: Vec<StationRef> = [tide, current]
         .into_iter()
         .flatten()
         .filter_map(|p| p.station.as_ref())
         .filter(|s| s.source == SourceId::COOPS)
-        .collect()
+        .cloned()
+        .collect();
+    for measurement in [Measurement::Tide, Measurement::TidalCurrent] {
+        let Some(ranking) = ranked.and_then(|r| r.measurements.get(&measurement)) else {
+            continue;
+        };
+        let coops = || {
+            ranking
+                .stations
+                .iter()
+                .filter(|r| r.station.source == SourceId::COOPS)
+        };
+        let chosen = coops().take(1).chain(coops().filter(|r| r.pinned));
+        for r in chosen {
+            if !out
+                .iter()
+                .any(|s| s.id == r.station.id && s.bin == r.station.bin)
+            {
+                out.push(r.station.clone());
+            }
+        }
+    }
+    out
 }
 
 fn is_offsets(kind: MetadataKind) -> bool {
@@ -544,22 +580,40 @@ impl Bridge {
     /// [`METADATA_REFRESH_S`] old or this fetch already got one; `refresh` asks again in any
     /// case, past any cache. What arrives and its provider reads is noted to keep. The requests
     /// name the stations only.
-    async fn keep_station_metadata(&self, snapshot: &SpotSnapshot, refresh: bool) {
-        for station in computed_stations(snapshot) {
+    ///
+    /// Returns the ids of the stations whose files the spot needs now (the stations and the
+    /// references of the subordinate ones), whether or not their requests succeeded. Empty when
+    /// that is not known: a subordinate station's offsets did not arrive, so its reference is
+    /// not named. The app releases the files of any other station only on this list.
+    async fn keep_station_metadata(&self, stations: &[StationRef], refresh: bool) -> Vec<String> {
+        let mut needed = std::collections::BTreeSet::new();
+        for station in stations {
             // A subordinate station's offsets name its reference: they come first.
             let mut offsets = None;
             for (_, request) in station_metadata(station, None)
                 .iter()
                 .filter(|(kind, _)| is_offsets(*kind))
             {
+                needed.extend(station_of(&request.url).map(str::to_owned));
                 offsets = self.metadata_body(request, refresh).await;
             }
+            let subordinate = matches!(
+                station.kind,
+                StationKind::TideSubordinate | StationKind::CurrentSubordinate
+            );
+            let named = offsets.is_some()
+                || (station.kind == StationKind::TideSubordinate && station.reference_id.is_some());
+            if subordinate && !named {
+                return Vec::new();
+            }
             for (kind, request) in station_metadata(station, offsets.as_deref()) {
+                needed.extend(station_of(&request.url).map(str::to_owned));
                 if !is_offsets(kind) {
                     self.metadata_body(&request, refresh).await;
                 }
             }
         }
+        needed.into_iter().collect()
     }
 
     /// The body of a metadata `request`: what this fetch already received, a kept copy fresh
@@ -591,12 +645,16 @@ impl Bridge {
 
 impl library::FetchHost for Bridge {
     async fn send(&self, call: &Call) -> Result<Fetched, TransportError> {
+        let mut from_cache = false;
         let fetched = match self.host.send(host_request(call)).await {
-            Ok(response) => fetched(response),
+            Ok(response) => {
+                from_cache = response.from_cache;
+                fetched(response)
+            }
             Err(e) => Err(transport_error(e, &call.url)),
         };
         match fetched {
-            Ok(fetched) if self.note(&call.url, &fetched) => Ok(fetched),
+            Ok(fetched) if self.note(&call.url, &fetched, from_cache) => Ok(fetched),
             // Not an answer: a kept copy answers metadata, anything else fails as it came.
             Ok(fetched) => Ok(self.offline_answer(&call.url).unwrap_or(fetched)),
             Err(e) => {
@@ -888,6 +946,13 @@ pub struct SpotFetchOutcome {
     /// `cached_metadata`: one per request, each replacing the copy under its key.
     #[uniffi(default = [])]
     pub cacheable: Vec<CachedResponse>,
+    /// The CO-OPS stations (ids as in the metadata URLs, `.../stations/{id}/...`) whose
+    /// metadata the spot needs now: those its tide and current rest on or its rankings chose for
+    /// them, and the references of subordinate ones, whether or not this fetch's requests for
+    /// them succeeded. Empty when the fetch had no signal or does not know (a subordinate
+    /// station's offsets did not arrive): the app then releases nothing.
+    #[uniffi(default = [])]
+    pub metadata_stations: Vec<String>,
 }
 
 /// The stations around a spot.
@@ -1000,8 +1065,12 @@ pub async fn fetch_spot(
     });
     // With signal, what computes the tide and current without it is kept up to date.
     let online = bridge.traffic().answered > 0;
+    let mut metadata_stations = Vec::new();
     if online {
-        Box::pin(bridge.keep_station_metadata(&out.snapshot, refresh_metadata)).await;
+        let ranked = last_ranking(&bridge, &spot.id);
+        let stations = computed_stations(&out.snapshot, ranked.as_ref());
+        metadata_stations =
+            Box::pin(bridge.keep_station_metadata(&stations, refresh_metadata)).await;
     }
     let traffic = std::mem::take(&mut *bridge.traffic());
     let mut snapshot = out.snapshot;
@@ -1023,7 +1092,17 @@ pub async fn fetch_spot(
         suggestion,
         unanswered,
         cacheable: traffic.cacheable,
+        metadata_stations,
     })
+}
+
+/// The ranking the fetch stored for the spot.
+fn last_ranking(bridge: &Bridge, spot_id: &str) -> Option<Ranking> {
+    let text = bridge
+        .host
+        .load(store::DISCOVERY.to_owned(), store::spot_key(spot_id))?;
+    let mut stored: store::Stored<StoredRankings> = serde_json::from_str(&text).ok()?;
+    stored.value.spots.remove(spot_id)
 }
 
 /// Whether the fetch computed a tide or a current itself (from harmonic constants).
@@ -1397,6 +1476,7 @@ mod tests {
             etag: Some("\"abc\"".into()),
             retry_after: None,
             rate_limit_remaining: None,
+            from_cache: false,
         }
     }
 

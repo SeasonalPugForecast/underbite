@@ -57,6 +57,7 @@ fn response(status: u16, content_type: &str, body: Vec<u8>) -> HostResponse {
         etag: None,
         retry_after: None,
         rate_limit_remaining: None,
+        from_cache: false,
     }
 }
 
