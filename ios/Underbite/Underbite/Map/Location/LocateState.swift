@@ -93,8 +93,8 @@ nonisolated struct LocateState: Equatable, Sendable {
     /// What VoiceOver reads after the button's label.
     var accessibilityValue: String {
         switch access {
-        case .refused: "Location access is off"
-        case .undecided, .allowed: following ? "Following" : ""
+        case .refused: String(localized: "Location access is off", comment: "What VoiceOver reads after the locate button when location access is off")
+        case .undecided, .allowed: following ? String(localized: "Following", comment: "What VoiceOver reads after the locate button when the map follows the location") : ""
         }
     }
 }

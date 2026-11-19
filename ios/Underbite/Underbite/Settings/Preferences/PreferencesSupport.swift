@@ -78,7 +78,7 @@ struct QuantityRow: View {
     let value: Double?
     /// Whether the value may be unset (shows a switch).
     var optional = true
-    var offLabel = "Not set"
+    var offLabel = String(localized: "Not set", comment: "Value shown when an optional limit is switched off")
     let onChange: (Double?) -> Void
 
     @State private var typed = ""

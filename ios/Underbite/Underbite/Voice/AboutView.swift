@@ -27,7 +27,7 @@ struct AboutView: View {
             Section("In memory") {
                 // PLACEHOLDER FOR THE OWNER: the dedication text is theirs to write; the brackets
                 // keep it visibly unfinished until then.
-                Text("[Dedication placeholder: a few words about Luna, a bulldog who loved swimming and watching people, and snacks, most of all sashimi.]")
+                Text(verbatim: "[Dedication placeholder: a few words about Luna, a bulldog who loved swimming and watching people, and snacks, most of all sashimi.]")
                 photoRow
             }
 

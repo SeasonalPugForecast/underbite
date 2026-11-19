@@ -124,11 +124,11 @@ struct CustomizeView: View {
 
     private var footer: String {
         guard let target else {
-            return "These cards and their order show for every water type that has no layout of its own."
+            return String(localized: "These cards and their order show for every water type that has no layout of its own.", comment: "Footer of the card layout list when editing the default layout")
         }
         return ownLayout
-            ? "Changes here only affect \(label(for: target))."
-            : "Changes here affect every water type without a layout of its own."
+            ? String(localized: "Changes here only affect \(label(for: target)).", comment: "Footer of the card layout list when the water type has its own layout; the argument is the water type")
+            : String(localized: "Changes here affect every water type without a layout of its own.", comment: "Footer of the card layout list when the water type uses the default layout")
     }
 
     private func currentSettings() -> Settings? {

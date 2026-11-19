@@ -111,16 +111,16 @@ private struct SatelliteDayControl: View {
         if let day = module.days[layer.id] {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
-                    StepButton(back: true, label: "Day before", action: before(day))
+                    StepButton(back: true, label: String(localized: "Day before", comment: "Accessibility label of the button that steps the map layer back one day"), action: before(day))
                     DayMenu(
                         shown: day.asked.label, items: days, label: \.label,
                         isShown: { $0 == day.asked }, choose: { module.pick($0, for: layer.id) })
-                    StepButton(back: false, label: "Day after", action: after(day, in: days))
+                    StepButton(back: false, label: String(localized: "Day after", comment: "Accessibility label of the button that steps the map layer forward one day"), action: after(day, in: days))
                 }
                 if day.exhausted {
-                    Note(text: "No picture for these days.")
+                    Note(text: String(localized: "No picture for these days.", comment: "Note under the day control of a satellite layer that has no picture for the days offered"))
                 } else if day.steps > 0 {
-                    Note(text: "The days after it have no picture yet.")
+                    Note(text: String(localized: "The days after it have no picture yet.", comment: "Note under the day control of a satellite layer: later days have no picture yet"))
                 }
             }
         } else {
@@ -164,10 +164,10 @@ private struct GridDayControl: View {
                 case .looking:
                     HStack(spacing: 6) {
                         ProgressView()
-                        Note(text: "Looking for a day with values in view.")
+                        Note(text: String(localized: "Looking for a day with values in view.", comment: "Note shown while the app looks for the latest day with values in the map view"))
                     }
                 case .some(.none):
-                    Note(text: "No day with values in view among the last days.")
+                    Note(text: String(localized: "No day with values in view among the last days.", comment: "Note shown when no recent day has values in the map view"))
                 default:
                     EmptyView()
                 }
@@ -180,12 +180,12 @@ private struct GridDayControl: View {
     /// The day before, the day shown with the days of the axis to choose from, the day after.
     private func days(_ axis: [LayerTime], _ shown: LayerTime) -> some View {
         HStack(spacing: 8) {
-            StepButton(back: true, label: "Day before", action: step(-1, axis))
+            StepButton(back: true, label: String(localized: "Day before", comment: "Accessibility label of the button that steps the map layer back one day"), action: step(-1, axis))
             DayMenu(
                 shown: shown.label, items: Array(axis.reversed()), label: \.label,
                 isShown: { $0.time == shown.time },
                 choose: { module.pick(GridTimes.checked($0.time, in: axis), for: layer.id) })
-            StepButton(back: false, label: "Day after", action: step(1, axis))
+            StepButton(back: false, label: String(localized: "Day after", comment: "Accessibility label of the button that steps the map layer forward one day"), action: step(1, axis))
         }
     }
 
@@ -227,13 +227,13 @@ private struct GridHourControl: View {
             let label = offered.indices.contains(index) ? offered[index].label : ""
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 8) {
-                    StepButton(back: true, label: "Hour before", action: step(-1, offered))
+                    StepButton(back: true, label: String(localized: "Hour before", comment: "Accessibility label of the button that steps the map layer back one hour"), action: step(-1, offered))
                     Text(label)
                         .font(.body.weight(.medium).monospacedDigit())
                         .foregroundStyle(Color.primary)
                         .accessibilityIdentifier("map-date-label")
                     Spacer(minLength: 0)
-                    StepButton(back: false, label: "Hour after", action: step(1, offered))
+                    StepButton(back: false, label: String(localized: "Hour after", comment: "Accessibility label of the button that steps the map layer forward one hour"), action: step(1, offered))
                 }
                 if offered.count > 1 {
                     Slider(

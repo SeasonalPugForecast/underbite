@@ -1,0 +1,6210 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ %@, below %@" : {
+      "comment" : "Part of a colour check warning: the measured contrast ratio, the appearance and the ratio it should reach",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@, below %3$@"
+          }
+        }
+      }
+    },
+    "%@ (%@): %@" : {
+      "comment" : "Colour check warning: a colour role, its group and what is wrong with its contrast",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): %3$@"
+          }
+        }
+      }
+    },
+    "%@ (%@): hard to see against the background %@" : {
+      "comment" : "Colour check warning: a colour that is hard to see against the background; the last argument says the appearance",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): hard to see against the background %3$@"
+          }
+        }
+      }
+    },
+    "%@ (%@): too close to tell apart with %@ vision %@" : {
+      "comment" : "Colour check warning: colours too close to tell apart; the arguments are the role or roles, their group, the kinds of colour vision and the appearance",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): too close to tell apart with %3$@ vision %4$@"
+          }
+        }
+      }
+    },
+    "%@ (%@): words on it at %@" : {
+      "comment" : "Colour check warning: the contrast of text drawn on a colour; the arguments are the role, its group and the ratio with the appearance",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): words on it at %3$@"
+          }
+        }
+      }
+    },
+    "%@ and %@" : {
+      "comment" : "Joins two names with and: two colour roles, or the last two kinds of colour vision",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ and %2$@"
+          }
+        }
+      }
+    },
+    "%@ at work" : {
+      "comment" : "Section header (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ at work"
+          }
+        }
+      }
+    },
+    "%@ colours from" : {
+      "comment" : "Accessibility label (layer range row)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ colours from"
+          }
+        }
+      }
+    },
+    "%@ colours to" : {
+      "comment" : "Accessibility label (layer range row)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ colours to"
+          }
+        }
+      }
+    },
+    "%@ is coming" : {
+      "comment" : "Text (root tabs)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is coming"
+          }
+        }
+      }
+    },
+    "%@ opacity" : {
+      "comment" : "Accessibility label (layer drawer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ opacity"
+          }
+        }
+      }
+    },
+    "%@, %@" : {
+      "comment" : "Joins two names in a list of kinds of colour vision",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@, dark appearance" : {
+      "comment" : "Text (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, dark appearance"
+          }
+        }
+      }
+    },
+    "%@: %@" : {
+      "comment" : "Label (card detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%@: stations" : {
+      "comment" : "Navigation title of the stations of a spot; the argument is the spot name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: stations"
+          }
+        }
+      }
+    },
+    "A USGS gauge number, such as 01420500." : {
+      "comment" : "Section footer (rivers page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A USGS gauge number, such as 01420500."
+          }
+        }
+      }
+    },
+    "A fishing window soon" : {
+      "comment" : "Kind of condition in an alert rule: a fishing window starts soon",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A fishing window soon"
+          }
+        }
+      }
+    },
+    "A gauge number is 8 or more digits, such as 01420500." : {
+      "comment" : "Problem shown when the gauge number typed has too few digits",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A gauge number is 8 or more digits, such as 01420500."
+          }
+        }
+      }
+    },
+    "A go day on the trip" : {
+      "comment" : "Kind of condition in an alert rule: a day of the trip is a go",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A go day on the trip"
+          }
+        }
+      }
+    },
+    "A key is optional. Rivers and lakes work without one; a key of your own raises your phone's allowance of requests." : {
+      "comment" : "Section footer (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A key is optional. Rivers and lakes work without one; a key of your own raises your phone's allowance of requests."
+          }
+        }
+      }
+    },
+    "A limit that is switched off is not checked." : {
+      "comment" : "Section footer (limits page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A limit that is switched off is not checked."
+          }
+        }
+      }
+    },
+    "A marine alert" : {
+      "comment" : "Kind of condition in an alert rule: a marine weather alert is in force",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A marine alert"
+          }
+        }
+      }
+    },
+    "A measurement" : {
+      "comment" : "Kind of condition in an alert rule: a measurement crossing a limit",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A measurement"
+          }
+        }
+      }
+    },
+    "A photo could not be added. It may still be downloading from iCloud." : {
+      "comment" : "Problem shown when a photo of a catch could not be added",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A photo could not be added. It may still be downloading from iCloud."
+          }
+        }
+      }
+    },
+    "A pin or an exclusion holds for this spot, in every measurement the station serves, from the next refresh. The others are ranked by distance, water body and freshness." : {
+      "comment" : "Text (stations)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A pin or an exclusion holds for this spot, in every measurement the station serves, from the next refresh. The others are ranked by distance, water body and freshness."
+          }
+        }
+      }
+    },
+    "A preset shows its layers and hides the others." : {
+      "comment" : "Section footer (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A preset shows its layers and hides the others."
+          }
+        }
+      }
+    },
+    "A profile says what you will fish in. The conditions card checks the forecast against it." : {
+      "comment" : "Section footer (limits page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A profile says what you will fish in. The conditions card checks the forecast against it."
+          }
+        }
+      }
+    },
+    "A rule watches a spot, a trip or an area on the map and tells you when all of its conditions hold." : {
+      "comment" : "Text (alert rules page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A rule watches a spot, a trip or an area on the map and tells you when all of its conditions hold."
+          }
+        }
+      }
+    },
+    "A storm or hurricane ahead" : {
+      "comment" : "Kind of condition in an alert rule: a storm or hurricane is forecast",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A storm or hurricane ahead"
+          }
+        }
+      }
+    },
+    "About" : {
+      "comment" : "Label (settings); Section header (settings); Navigation title (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About"
+          }
+        }
+      }
+    },
+    "Above this water temperature the water temperature card warns that trout are stressed. The usual threshold is %@." : {
+      "comment" : "Section footer (more pages)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Above this water temperature the water temperature card warns that trout are stressed. The usual threshold is %@."
+          }
+        }
+      }
+    },
+    "Acknowledgements" : {
+      "comment" : "Label (settings); Navigation title (acknowledgements); Link label (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acknowledgements"
+          }
+        }
+      }
+    },
+    "Add" : {
+      "comment" : "Label (spots); Button label (spots); Button label (areas)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        }
+      }
+    },
+    "Add a condition" : {
+      "comment" : "Label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a condition"
+          }
+        }
+      }
+    },
+    "Add a gauge" : {
+      "comment" : "Button label (rivers page); Section header (rivers page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a gauge"
+          }
+        }
+      }
+    },
+    "Add a line" : {
+      "comment" : "Button label (species field editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a line"
+          }
+        }
+      }
+    },
+    "Add a profile" : {
+      "comment" : "Button label (limits page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a profile"
+          }
+        }
+      }
+    },
+    "Add a spot" : {
+      "comment" : "Button label (spots); Navigation title (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a spot"
+          }
+        }
+      }
+    },
+    "Add a spot first." : {
+      "comment" : "Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a spot first."
+          }
+        }
+      }
+    },
+    "Add an item" : {
+      "comment" : "Text field label (trip checklist)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add an item"
+          }
+        }
+      }
+    },
+    "Add as spot" : {
+      "comment" : "Button label (pin)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add as spot"
+          }
+        }
+      }
+    },
+    "Add by" : {
+      "comment" : "Picker label (add spot); Accessibility label (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add by"
+          }
+        }
+      }
+    },
+    "Add photos" : {
+      "comment" : "Label (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add photos"
+          }
+        }
+      }
+    },
+    "Add the first place you fish and she will paddle out to watch it." : {
+      "comment" : "Empty spot list text in Luna's voice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the first place you fish and she will paddle out to watch it."
+          }
+        }
+      }
+    },
+    "Add the places you fish on the Spots tab first." : {
+      "comment" : "Section footer (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the places you fish on the Spots tab first."
+          }
+        }
+      }
+    },
+    "Add the places you fish to see their conditions." : {
+      "comment" : "Empty spot list text",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the places you fish to see their conditions."
+          }
+        }
+      }
+    },
+    "Add the places you fish, or search for a place, drop a pin or type coordinates." : {
+      "comment" : "Text (welcome)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the places you fish, or search for a place, drop a pin or type coordinates."
+          }
+        }
+      }
+    },
+    "Add to favourites" : {
+      "comment" : "Text (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to favourites"
+          }
+        }
+      }
+    },
+    "Add your first spot" : {
+      "comment" : "Label (welcome)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your first spot"
+          }
+        }
+      }
+    },
+    "Add, taking their edits" : {
+      "comment" : "Text (received profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add, taking their edits"
+          }
+        }
+      }
+    },
+    "Adding photos…" : {
+      "comment" : "Text (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adding photos…"
+          }
+        }
+      }
+    },
+    "Air no colder than" : {
+      "comment" : "Label of the lowest air temperature of a limits profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Air no colder than"
+          }
+        }
+      }
+    },
+    "Alert, such as Small Craft Advisory" : {
+      "comment" : "Text field label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alert, such as Small Craft Advisory"
+          }
+        }
+      }
+    },
+    "Alerts" : {
+      "comment" : "Label (settings); Navigation title (alert rules page); Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerts"
+          }
+        }
+      }
+    },
+    "All catches" : {
+      "comment" : "Choice that removes the fate filter of the catch list",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All catches"
+          }
+        }
+      }
+    },
+    "All places" : {
+      "comment" : "Choice that removes the place filter of the catch list",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All places"
+          }
+        }
+      }
+    },
+    "All species" : {
+      "comment" : "Choice that removes the species filter of the catch list",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All species"
+          }
+        }
+      }
+    },
+    "All water types" : {
+      "comment" : "Text (customize)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All water types"
+          }
+        }
+      }
+    },
+    "Already the same as yours" : {
+      "comment" : "Heading of the species edits in a received profile that match this phone's",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already the same as yours"
+          }
+        }
+      }
+    },
+    "Always" : {
+      "comment" : "Text (layer drawer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Always"
+          }
+        }
+      }
+    },
+    "Always use" : {
+      "comment" : "Text (stations)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Always use"
+          }
+        }
+      }
+    },
+    "An area watches sea surface temperature and chlorophyll from satellites." : {
+      "comment" : "Section footer (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An area watches sea surface temperature and chlorophyll from satellites."
+          }
+        }
+      }
+    },
+    "Any age" : {
+      "comment" : "Text (more pages)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any age"
+          }
+        }
+      }
+    },
+    "Any distance" : {
+      "comment" : "Value shown when there is no limit to the distance of a station",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any distance"
+          }
+        }
+      }
+    },
+    "Area" : {
+      "comment" : "Section header (spot editor); Picker label (spot editor); Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Area"
+          }
+        }
+      }
+    },
+    "Areas" : {
+      "comment" : "Navigation title (areas)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Areas"
+          }
+        }
+      }
+    },
+    "Arrange areas" : {
+      "comment" : "Button label (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrange areas"
+          }
+        }
+      }
+    },
+    "Attribution" : {
+      "comment" : "Label (settings); Navigation title (attribution); Link label (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attribution"
+          }
+        }
+      }
+    },
+    "Autumn" : {
+      "comment" : "Season of the depth field of a species profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autumn"
+          }
+        }
+      }
+    },
+    "Battery-friendly map" : {
+      "comment" : "Text (layer drawer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Battery-friendly map"
+          }
+        }
+      }
+    },
+    "Best from" : {
+      "comment" : "Label of the lowest flow of the best range of a river",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best from"
+          }
+        }
+      }
+    },
+    "Best range" : {
+      "comment" : "Text (rivers page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best range"
+          }
+        }
+      }
+    },
+    "Best up to" : {
+      "comment" : "Label of the highest flow of the best range of a river",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best up to"
+          }
+        }
+      }
+    },
+    "Blown out above" : {
+      "comment" : "Label of the flow over which the river is blown out",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blown out above"
+          }
+        }
+      }
+    },
+    "Boat" : {
+      "comment" : "Way of fishing on a trip: from a boat",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boat"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "comment" : "Button label (trip editor); Button label (trip checklist); Button label (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "Cancel download" : {
+      "comment" : "Label (pack detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel download"
+          }
+        }
+      }
+    },
+    "Cards" : {
+      "comment" : "Label (settings); Section header (customize); Menu label (conditions)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cards"
+          }
+        }
+      }
+    },
+    "Cards for" : {
+      "comment" : "Picker label (customize)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cards for"
+          }
+        }
+      }
+    },
+    "Change species" : {
+      "comment" : "Text (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change species"
+          }
+        }
+      }
+    },
+    "Change the area" : {
+      "comment" : "Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change the area"
+          }
+        }
+      }
+    },
+    "Change the photo" : {
+      "comment" : "Text (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change the photo"
+          }
+        }
+      }
+    },
+    "Changes here affect every water type without a layout of its own." : {
+      "comment" : "Footer of the card layout list when the water type uses the default layout",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changes here affect every water type without a layout of its own."
+          }
+        }
+      }
+    },
+    "Changes here only affect %@." : {
+      "comment" : "Footer of the card layout list when the water type has its own layout; the argument is the water type",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changes here only affect %@."
+          }
+        }
+      }
+    },
+    "Checklist" : {
+      "comment" : "Navigation title (trip checklist); Label (trip checklist)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checklist"
+          }
+        }
+      }
+    },
+    "Checks" : {
+      "comment" : "Section header (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checks"
+          }
+        }
+      }
+    },
+    "Choose a catch" : {
+      "comment" : "Text (log tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a catch"
+          }
+        }
+      }
+    },
+    "Choose a photo" : {
+      "comment" : "Text (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a photo"
+          }
+        }
+      }
+    },
+    "Choose a rule" : {
+      "comment" : "Text (alert rules page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a rule"
+          }
+        }
+      }
+    },
+    "Choose a setting" : {
+      "comment" : "Text (settings)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a setting"
+          }
+        }
+      }
+    },
+    "Choose a species" : {
+      "comment" : "Text (species browser)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a species"
+          }
+        }
+      }
+    },
+    "Choose a spot" : {
+      "comment" : "Text (spots); Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a spot"
+          }
+        }
+      }
+    },
+    "Choose a trip" : {
+      "comment" : "Text (trips tab); Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a trip"
+          }
+        }
+      }
+    },
+    "Choose one or more of your spots." : {
+      "comment" : "Text (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose one or more of your spots."
+          }
+        }
+      }
+    },
+    "Choose species" : {
+      "comment" : "Text (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose species"
+          }
+        }
+      }
+    },
+    "Choose the stations this spot always uses or never uses." : {
+      "comment" : "Section footer (spot editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the stations this spot always uses or never uses."
+          }
+        }
+      }
+    },
+    "Choose your sources, units, cards and limits in Settings." : {
+      "comment" : "Text (welcome)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose your sources, units, cards and limits in Settings."
+          }
+        }
+      }
+    },
+    "Clear map cache" : {
+      "comment" : "Button label (storage page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear map cache"
+          }
+        }
+      }
+    },
+    "Colours" : {
+      "comment" : "Navigation title of the colour editor when the theme has no name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colours"
+          }
+        }
+      }
+    },
+    "Colours based on Sun are held to the higher contrast for bright light: words at 7:1, marks at 4.5:1. A warning never stops a change; the roles it is about are marked below." : {
+      "comment" : "Text (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colours based on Sun are held to the higher contrast for bright light: words at 7:1, marks at 4.5:1. A warning never stops a change; the roles it is about are marked below."
+          }
+        }
+      }
+    },
+    "Colours from" : {
+      "comment" : "Text (layer range row)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colours from"
+          }
+        }
+      }
+    },
+    "Common or scientific name" : {
+      "comment" : "Placeholder of a text field (species picker); Placeholder of a text field (species browser)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Common or scientific name"
+          }
+        }
+      }
+    },
+    "Condition" : {
+      "comment" : "Picker label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condition"
+          }
+        }
+      }
+    },
+    "Conditions" : {
+      "comment" : "Navigation title of the conditions screen when the spot has no name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions"
+          }
+        }
+      }
+    },
+    "Copernicus Marine" : {
+      "comment" : "The name of a data service; do not translate",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copernicus Marine"
+          }
+        }
+      }
+    },
+    "Count all catches" : {
+      "comment" : "Button label (insights)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Count all catches"
+          }
+        }
+      }
+    },
+    "Current location" : {
+      "comment" : "Text (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current location"
+          }
+        }
+      }
+    },
+    "Current up to" : {
+      "comment" : "Label of the highest current speed of a limits profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current up to"
+          }
+        }
+      }
+    },
+    "Customize" : {
+      "comment" : "Navigation title (customize); Button label (conditions); Text (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customize"
+          }
+        }
+      }
+    },
+    "Customize %@…" : {
+      "comment" : "Button label (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customize %@…"
+          }
+        }
+      }
+    },
+    "Customize…" : {
+      "comment" : "Button label (conditions); Button label (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customize…"
+          }
+        }
+      }
+    },
+    "Data" : {
+      "comment" : "Section header (settings)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data"
+          }
+        }
+      }
+    },
+    "Data is fetched when the app opens and older than about two thirds of this, and again while it is open. Low Power Mode waits longer." : {
+      "comment" : "Section footer (more pages)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data is fetched when the app opens and older than about two thirds of this, and again while it is open. Low Power Mode waits longer."
+          }
+        }
+      }
+    },
+    "Day after" : {
+      "comment" : "Accessibility label of the button that steps the map layer forward one day",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day after"
+          }
+        }
+      }
+    },
+    "Day before" : {
+      "comment" : "Accessibility label of the button that steps the map layer back one day",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day before"
+          }
+        }
+      }
+    },
+    "Days" : {
+      "comment" : "Section header (trip editor); Section header (new pack); Picker label (new pack)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Days"
+          }
+        }
+      }
+    },
+    "Decimal degrees: north and east are positive." : {
+      "comment" : "Section footer (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decimal degrees: north and east are positive."
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "comment" : "Button label (trips tab); Label (trips tab); Button label (trip checklist)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
+    "Delete %@" : {
+      "comment" : "Button label (alert rules page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete %@"
+          }
+        }
+      }
+    },
+    "Delete %@?" : {
+      "comment" : "Question asking to delete a spot or a trip; the argument is its name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete %@?"
+          }
+        }
+      }
+    },
+    "Delete account" : {
+      "comment" : "Button label (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete account"
+          }
+        }
+      }
+    },
+    "Delete catch" : {
+      "comment" : "Button label (log tab); Button label (catch detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete catch"
+          }
+        }
+      }
+    },
+    "Delete key" : {
+      "comment" : "Button label (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete key"
+          }
+        }
+      }
+    },
+    "Delete pack" : {
+      "comment" : "Label (pack detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete pack"
+          }
+        }
+      }
+    },
+    "Delete rule" : {
+      "comment" : "Button label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete rule"
+          }
+        }
+      }
+    },
+    "Delete spot" : {
+      "comment" : "Button label (spots); Button label (spot editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete spot"
+          }
+        }
+      }
+    },
+    "Delete spot?" : {
+      "comment" : "Question asking to delete a spot",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete spot?"
+          }
+        }
+      }
+    },
+    "Delete this catch?" : {
+      "comment" : "Text (log tab); Confirmation question (catch detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this catch?"
+          }
+        }
+      }
+    },
+    "Delete this rule?" : {
+      "comment" : "Text (alert rules page); Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this rule?"
+          }
+        }
+      }
+    },
+    "Delete trip" : {
+      "comment" : "Button label (trips tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete trip"
+          }
+        }
+      }
+    },
+    "Delete trip?" : {
+      "comment" : "Question asking to delete a trip",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete trip?"
+          }
+        }
+      }
+    },
+    "Deutan" : {
+      "comment" : "Name of deuteranopia, a kind of colour blindness, in the colour-blind preview",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deutan"
+          }
+        }
+      }
+    },
+    "Different from the group they belong to" : {
+      "comment" : "Section header (units page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different from the group they belong to"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "comment" : "Button label (theme editor); Button label (structure card); Button label (storm card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "Download" : {
+      "comment" : "Row label (trip checklist); Row label (pack detail); Label (pack detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download"
+          }
+        }
+      }
+    },
+    "Drag the handles to reorder. A card with no data for a spot does not show." : {
+      "comment" : "Section footer (customize)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag the handles to reorder. A card with no data for a spot does not show."
+          }
+        }
+      }
+    },
+    "Draw the area on the map" : {
+      "comment" : "Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draw the area on the map"
+          }
+        }
+      }
+    },
+    "Duplicate" : {
+      "comment" : "Button label (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicate"
+          }
+        }
+      }
+    },
+    "Dynamic Island" : {
+      "comment" : "Caption of the Dynamic Island preview of the trip Live Activity",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dynamic Island"
+          }
+        }
+      }
+    },
+    "Each kind of data tries its sources in this order. The first one with a reading near enough and fresh enough serves; the rest fill what it lacks." : {
+      "comment" : "Text (sources)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each kind of data tries its sources in this order. The first one with a reading near enough and fresh enough serves; the rest fill what it lacks."
+          }
+        }
+      }
+    },
+    "Each preset paints the colours that carry meaning: go / no-go, river flow and flood stages, station pins, the tide, the timeline and the charts. Customize makes your own colours from a preset (or touch and hold one)." : {
+      "comment" : "Text (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each preset paints the colours that carry meaning: go / no-go, river flow and flood stages, station pins, the tide, the timeline and the charts. Customize makes your own colours from a preset (or touch and hold one)."
+          }
+        }
+      }
+    },
+    "Edit" : {
+      "comment" : "Button label (trips tab); Label (trips tab); Button label (trip grid)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        }
+      }
+    },
+    "Edit %@…" : {
+      "comment" : "Button label (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit %@…"
+          }
+        }
+      }
+    },
+    "Edit catch" : {
+      "comment" : "Text (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit catch"
+          }
+        }
+      }
+    },
+    "Edit rule" : {
+      "comment" : "Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit rule"
+          }
+        }
+      }
+    },
+    "Edit spot" : {
+      "comment" : "Navigation title (spot editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit spot"
+          }
+        }
+      }
+    },
+    "Edit trip" : {
+      "comment" : "Text (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit trip"
+          }
+        }
+      }
+    },
+    "Edited" : {
+      "comment" : "Text (species browser)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited"
+          }
+        }
+      }
+    },
+    "Edited by you too: yours stay unless you take theirs" : {
+      "comment" : "Heading of the species edits in a received profile that were also edited on this phone",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited by you too: yours stay unless you take theirs"
+          }
+        }
+      }
+    },
+    "Edits the rule" : {
+      "comment" : "Accessibility hint (alert rules page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edits the rule"
+          }
+        }
+      }
+    },
+    "Edits this value." : {
+      "comment" : "Text (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edits this value."
+          }
+        }
+      }
+    },
+    "Edit…" : {
+      "comment" : "Button label (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit…"
+          }
+        }
+      }
+    },
+    "End" : {
+      "comment" : "Picker label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End"
+          }
+        }
+      }
+    },
+    "End at" : {
+      "comment" : "Text (measure card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End at"
+          }
+        }
+      }
+    },
+    "Estimate" : {
+      "comment" : "Section header (pack detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimate"
+          }
+        }
+      }
+    },
+    "Every colour goes back to %@'s." : {
+      "comment" : "Section footer (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every colour goes back to %@'s."
+          }
+        }
+      }
+    },
+    "Every colour you changed in %@ goes back to %@'s." : {
+      "comment" : "Alert message (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every colour you changed in %1$@ goes back to %2$@'s."
+          }
+        }
+      }
+    },
+    "Farthest station" : {
+      "comment" : "Label of the greatest distance of a station that may serve a spot",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farthest station"
+          }
+        }
+      }
+    },
+    "Fate" : {
+      "comment" : "Picker label (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fate"
+          }
+        }
+      }
+    },
+    "Favourite" : {
+      "comment" : "Text (spots); Accessibility label (spots); Switch label (spot editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favourite"
+          }
+        }
+      }
+    },
+    "Filter" : {
+      "comment" : "Text (log tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter"
+          }
+        }
+      }
+    },
+    "Filtered" : {
+      "comment" : "Text (log tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtered"
+          }
+        }
+      }
+    },
+    "Finding where you are…" : {
+      "comment" : "Text (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finding where you are…"
+          }
+        }
+      }
+    },
+    "First day" : {
+      "comment" : "Picker label (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First day"
+          }
+        }
+      }
+    },
+    "Fit the colours to the view" : {
+      "comment" : "Button label (layer range row)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fit the colours to the view"
+          }
+        }
+      }
+    },
+    "Follow" : {
+      "comment" : "Text (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Follow"
+          }
+        }
+      }
+    },
+    "Following" : {
+      "comment" : "What VoiceOver reads after the locate button when the map follows the location",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Following"
+          }
+        }
+      }
+    },
+    "For a species that is not in the list." : {
+      "comment" : "Section footer (species picker)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For a species that is not in the list."
+          }
+        }
+      }
+    },
+    "Freshness and distance" : {
+      "comment" : "Title of the settings page for how fresh and how near data must be",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Freshness and distance"
+          }
+        }
+      }
+    },
+    "From" : {
+      "comment" : "Switch that limits the insights to catches from a day on",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From"
+          }
+        }
+      }
+    },
+    "From %@" : {
+      "comment" : "Text (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From %@"
+          }
+        }
+      }
+    },
+    "From shore" : {
+      "comment" : "Way of fishing on a trip: from the shore",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From shore"
+          }
+        }
+      }
+    },
+    "From the settings" : {
+      "comment" : "Text (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From the settings"
+          }
+        }
+      }
+    },
+    "Gauge" : {
+      "comment" : "Section header (rivers page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gauge"
+          }
+        }
+      }
+    },
+    "Gauge number" : {
+      "comment" : "Text field label (rivers page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gauge number"
+          }
+        }
+      }
+    },
+    "Gear" : {
+      "comment" : "Section header (trip checklist)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gear"
+          }
+        }
+      }
+    },
+    "Go/no-go limits" : {
+      "comment" : "Title of the settings page for the go/no-go limits",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go/no-go limits"
+          }
+        }
+      }
+    },
+    "Group spots by the water you fish." : {
+      "comment" : "Text (areas)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group spots by the water you fish."
+          }
+        }
+      }
+    },
+    "Group spots by the water you fish: \"Montauk\", \"Upper Delaware\"." : {
+      "comment" : "Alert message (spots); Alert message (areas)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group spots by the water you fish: \"Montauk\", \"Upper Delaware\"."
+          }
+        }
+      }
+    },
+    "Gusts up to" : {
+      "comment" : "Label of the highest gust speed of a limits profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gusts up to"
+          }
+        }
+      }
+    },
+    "Here" : {
+      "comment" : "Navigation title (pin); Text (add spot); Navigation title (access card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Here"
+          }
+        }
+      }
+    },
+    "Hide %@" : {
+      "comment" : "Button label (conditions)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide %@"
+          }
+        }
+      }
+    },
+    "High" : {
+      "comment" : "Text (chart plot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High"
+          }
+        }
+      }
+    },
+    "High contrast for bright light, as sun mode paints." : {
+      "comment" : "Summary of the sun colour preset",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High contrast for bright light, as sun mode paints."
+          }
+        }
+      }
+    },
+    "Higher contrast, bolder text and heavier lines and outlines, for reading the screen in bright sun. Values and words stay the same." : {
+      "comment" : "Section footer (more pages)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Higher contrast, bolder text and heavier lines and outlines, for reading the screen in bright sun. Values and words stay the same."
+          }
+        }
+      }
+    },
+    "Hour" : {
+      "comment" : "Accessibility label (time controls)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hour"
+          }
+        }
+      }
+    },
+    "Hour after" : {
+      "comment" : "Accessibility label of the button that steps the map layer forward one hour",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hour after"
+          }
+        }
+      }
+    },
+    "Hour before" : {
+      "comment" : "Accessibility label of the button that steps the map layer back one hour",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hour before"
+          }
+        }
+      }
+    },
+    "Hours between reminders" : {
+      "comment" : "Accessibility label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hours between reminders"
+          }
+        }
+      }
+    },
+    "How" : {
+      "comment" : "Section header (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How"
+          }
+        }
+      }
+    },
+    "How soon" : {
+      "comment" : "Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How soon"
+          }
+        }
+      }
+    },
+    "How you fish" : {
+      "comment" : "Section header (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How you fish"
+          }
+        }
+      }
+    },
+    "Import waypoints and tracks" : {
+      "comment" : "Button label (import)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import waypoints and tracks"
+          }
+        }
+      }
+    },
+    "In memory" : {
+      "comment" : "Section header (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In memory"
+          }
+        }
+      }
+    },
+    "It decides which cards and sources the spot uses." : {
+      "comment" : "Section footer (spot editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It decides which cards and sources the spot uses."
+          }
+        }
+      }
+    },
+    "It was deleted, or the log could not be read." : {
+      "comment" : "Text (catch detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It was deleted, or the log could not be read."
+          }
+        }
+      }
+    },
+    "Item" : {
+      "comment" : "Text field label (trip checklist)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Item"
+          }
+        }
+      }
+    },
+    "Its conditions show here." : {
+      "comment" : "Text (spots); Text (alert rules page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its conditions show here."
+          }
+        }
+      }
+    },
+    "Its page shows here." : {
+      "comment" : "Text (settings)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its page shows here."
+          }
+        }
+      }
+    },
+    "Its photos, notes and conditions are deleted from this device." : {
+      "comment" : "Alert message (log tab); Alert message (catch detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its photos, notes and conditions are deleted from this device."
+          }
+        }
+      }
+    },
+    "Its places and days show here." : {
+      "comment" : "Text (trips tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its places and days show here."
+          }
+        }
+      }
+    },
+    "Its places, days and notes are deleted from this device. The spots stay." : {
+      "comment" : "Alert message (trips tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its places, days and notes are deleted from this device. The spots stay."
+          }
+        }
+      }
+    },
+    "Its profile and seasons show here." : {
+      "comment" : "Text (species browser)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its profile and seasons show here."
+          }
+        }
+      }
+    },
+    "Its saved conditions are deleted from this device too." : {
+      "comment" : "Alert message (spots); Alert message (spot editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its saved conditions are deleted from this device too."
+          }
+        }
+      }
+    },
+    "Its size, its place and the conditions at the time show here." : {
+      "comment" : "Text (log tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its size, its place and the conditions at the time show here."
+          }
+        }
+      }
+    },
+    "Kayak" : {
+      "comment" : "Way of fishing on a trip: from a kayak",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kayak"
+          }
+        }
+      }
+    },
+    "Keep what you catch, where and when. Sashimi is a fine reason." : {
+      "comment" : "Empty catch log text in Luna's voice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep what you catch, where and when. Sashimi is a fine reason."
+          }
+        }
+      }
+    },
+    "Keep your catches, where and when, and see what worked." : {
+      "comment" : "Empty catch log text",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep your catches, where and when, and see what worked."
+          }
+        }
+      }
+    },
+    "Kept in this phone's Keychain only. Never in the settings, never exported, never sent anywhere but to the source it belongs to." : {
+      "comment" : "Note under the access key fields; Keychain is the iOS secure store",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kept in this phone's Keychain only. Never in the settings, never exported, never sent anywhere but to the source it belongs to."
+          }
+        }
+      }
+    },
+    "Kept or released" : {
+      "comment" : "Name of the fate filter in the catch list menu: whether the fish was kept or released",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kept or released"
+          }
+        }
+      }
+    },
+    "Key" : {
+      "comment" : "Row label (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Key"
+          }
+        }
+      }
+    },
+    "Key saved" : {
+      "comment" : "Value shown when an access key is saved on this phone",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Key saved"
+          }
+        }
+      }
+    },
+    "Keys and accounts" : {
+      "comment" : "Label (settings); Navigation title (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keys and accounts"
+          }
+        }
+      }
+    },
+    "Kind of water" : {
+      "comment" : "Section header (spot editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kind of water"
+          }
+        }
+      }
+    },
+    "Last clear day" : {
+      "comment" : "Label (time controls)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last clear day"
+          }
+        }
+      }
+    },
+    "Last day" : {
+      "comment" : "Picker label (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last day"
+          }
+        }
+      }
+    },
+    "Latitude, longitude" : {
+      "comment" : "Text field label (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latitude, longitude"
+          }
+        }
+      }
+    },
+    "Layers" : {
+      "comment" : "Section header (new pack); Accessibility label (map tab); Accessibility label (layer drawer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Layers"
+          }
+        }
+      }
+    },
+    "Length" : {
+      "comment" : "Label of the field for the length of a catch",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Length"
+          }
+        }
+      }
+    },
+    "Libraries" : {
+      "comment" : "Section header (acknowledgements)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Libraries"
+          }
+        }
+      }
+    },
+    "Light and dark appearance" : {
+      "comment" : "Text (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light and dark appearance"
+          }
+        }
+      }
+    },
+    "Limit" : {
+      "comment" : "Text (storage page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limit"
+          }
+        }
+      }
+    },
+    "Limits" : {
+      "comment" : "Picker label (trip editor); Row label (sources); Section header (limits page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limits"
+          }
+        }
+      }
+    },
+    "Loading" : {
+      "comment" : "Text (empty states)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading"
+          }
+        }
+      }
+    },
+    "Loading…" : {
+      "comment" : "Loading text",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading…"
+          }
+        }
+      }
+    },
+    "Location access is off" : {
+      "comment" : "What VoiceOver reads after the locate button when location access is off",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location access is off"
+          }
+        }
+      }
+    },
+    "Location access is off for Underbite (Settings, Privacy)." : {
+      "comment" : "Error shown when the app may not read the location; Settings and Privacy are the names of iOS settings screens",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location access is off for Underbite (Settings, Privacy)."
+          }
+        }
+      }
+    },
+    "Location found" : {
+      "comment" : "Label (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location found"
+          }
+        }
+      }
+    },
+    "Lock Screen" : {
+      "comment" : "Caption of the Lock Screen preview of the trip Live Activity",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock Screen"
+          }
+        }
+      }
+    },
+    "Lock Screen, out of date" : {
+      "comment" : "Caption of the Lock Screen preview of the trip Live Activity when its data is out of date",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock Screen, out of date"
+          }
+        }
+      }
+    },
+    "Log" : {
+      "comment" : "Tab title (root tabs); Navigation title (log tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log"
+          }
+        }
+      }
+    },
+    "Log a catch" : {
+      "comment" : "Button label (log tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log a catch"
+          }
+        }
+      }
+    },
+    "Look and privacy" : {
+      "comment" : "Section header (settings)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Look and privacy"
+          }
+        }
+      }
+    },
+    "Looking for a day with values in view." : {
+      "comment" : "Note shown while the app looks for the latest day with values in the map view",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looking for a day with values in view."
+          }
+        }
+      }
+    },
+    "Looking up stations" : {
+      "comment" : "Accessibility label (stations)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looking up stations"
+          }
+        }
+      }
+    },
+    "Low" : {
+      "comment" : "Text (chart plot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low"
+          }
+        }
+      }
+    },
+    "Luna" : {
+      "comment" : "The name of the dog the app's voice is named after; do not translate",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luna"
+          }
+        }
+      }
+    },
+    "Luna adds a little personality to captions and empty screens. Safety text, alerts and the \"not for navigation\" notes are always plain." : {
+      "comment" : "The name of the dog the app's voice is named after; do not translate",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luna adds a little personality to captions and empty screens. Safety text, alerts and the \"not for navigation\" notes are always plain."
+          }
+        }
+      }
+    },
+    "Luna found nothing here" : {
+      "comment" : "Empty conditions title in Luna's voice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luna found nothing here"
+          }
+        }
+      }
+    },
+    "Luna is swimming for the dock, and she is bringing the water report." : {
+      "comment" : "Welcome text in Luna's voice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luna is swimming for the dock, and she is bringing the water report."
+          }
+        }
+      }
+    },
+    "Luna's fetching the water…" : {
+      "comment" : "Loading text in Luna's voice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luna's fetching the water…"
+          }
+        }
+      }
+    },
+    "Luna's waiting at the shore" : {
+      "comment" : "Empty spot list title in Luna's voice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luna's waiting at the shore"
+          }
+        }
+      }
+    },
+    "Lure" : {
+      "comment" : "Text field label (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lure"
+          }
+        }
+      }
+    },
+    "Make a pack for this trip" : {
+      "comment" : "Label (trip checklist)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make a pack for this trip"
+          }
+        }
+      }
+    },
+    "Map" : {
+      "comment" : "Tab title (root tabs); Text (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Map"
+          }
+        }
+      }
+    },
+    "Map: tap to drop a pin" : {
+      "comment" : "Accessibility label (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Map: tap to drop a pin"
+          }
+        }
+      }
+    },
+    "Measure" : {
+      "comment" : "Label (measure card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Measure"
+          }
+        }
+      }
+    },
+    "Measure from here" : {
+      "comment" : "Button label (point card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Measure from here"
+          }
+        }
+      }
+    },
+    "Method" : {
+      "comment" : "Picker label (trip editor); Text field label (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Method"
+          }
+        }
+      }
+    },
+    "Move and zoom the map until the frame holds the area to watch." : {
+      "comment" : "Text (alert box picker)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move and zoom the map until the frame holds the area to watch."
+          }
+        }
+      }
+    },
+    "Move to area" : {
+      "comment" : "Menu label (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to area"
+          }
+        }
+      }
+    },
+    "My list" : {
+      "comment" : "Section header (trip checklist)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My list"
+          }
+        }
+      }
+    },
+    "My location" : {
+      "comment" : "Button label (measure card); Accessibility label (map tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My location"
+          }
+        }
+      }
+    },
+    "Name" : {
+      "comment" : "Section header (trip editor); Text field label (trip editor); Text field label (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
+    },
+    "Name the place in notifications" : {
+      "comment" : "Switch label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name the place in notifications"
+          }
+        }
+      }
+    },
+    "Nearest station" : {
+      "comment" : "Section header (point card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nearest station"
+          }
+        }
+      }
+    },
+    "Never" : {
+      "comment" : "Text (layer drawer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never"
+          }
+        }
+      }
+    },
+    "Never use" : {
+      "comment" : "Text (stations)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never use"
+          }
+        }
+      }
+    },
+    "New area" : {
+      "comment" : "Alert title (spots); Button label (spots); Alert title (areas)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New area"
+          }
+        }
+      }
+    },
+    "New catch" : {
+      "comment" : "Text (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New catch"
+          }
+        }
+      }
+    },
+    "New pack" : {
+      "comment" : "Label (packs); Navigation title (new pack)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New pack"
+          }
+        }
+      }
+    },
+    "New preset" : {
+      "comment" : "Text (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New preset"
+          }
+        }
+      }
+    },
+    "New profile" : {
+      "comment" : "Name given to a new limits profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New profile"
+          }
+        }
+      }
+    },
+    "New profile %lld" : {
+      "comment" : "Name given to a new limits profile when the first is taken; the argument is a number",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New profile %lld"
+          }
+        }
+      }
+    },
+    "New rule" : {
+      "comment" : "Label (alert rules page); Button label (alert rules page); Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New rule"
+          }
+        }
+      }
+    },
+    "New trip" : {
+      "comment" : "Button label (trips tab); Text (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New trip"
+          }
+        }
+      }
+    },
+    "No account and no ads. Your spots stay on your device." : {
+      "comment" : "Text (welcome)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No account and no ads. Your spots stay on your device."
+          }
+        }
+      }
+    },
+    "No alert rules yet" : {
+      "comment" : "Text (alert rules page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No alert rules yet"
+          }
+        }
+      }
+    },
+    "No area" : {
+      "comment" : "Button label (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No area"
+          }
+        }
+      }
+    },
+    "No areas" : {
+      "comment" : "Text (areas)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No areas"
+          }
+        }
+      }
+    },
+    "No catch in the log passes these filters." : {
+      "comment" : "Text (log tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No catch in the log passes these filters."
+          }
+        }
+      }
+    },
+    "No catches logged yet" : {
+      "comment" : "Empty catch log title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No catches logged yet"
+          }
+        }
+      }
+    },
+    "No catches match" : {
+      "comment" : "Label (log tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No catches match"
+          }
+        }
+      }
+    },
+    "No colour" : {
+      "comment" : "Name of seeing no colour at all in the colour-blind preview",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No colour"
+          }
+        }
+      }
+    },
+    "No conditions to show" : {
+      "comment" : "Empty conditions title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No conditions to show"
+          }
+        }
+      }
+    },
+    "No day with values in view among the last days." : {
+      "comment" : "Note shown when no recent day has values in the map view",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No day with values in view among the last days."
+          }
+        }
+      }
+    },
+    "No gauges yet." : {
+      "comment" : "Section footer (rivers page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No gauges yet."
+          }
+        }
+      }
+    },
+    "No go/no-go for this trip yet." : {
+      "comment" : "Widget message when the trip has no go/no-go yet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No go/no-go for this trip yet."
+          }
+        }
+      }
+    },
+    "No key" : {
+      "comment" : "Value shown when no access key is saved",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No key"
+          }
+        }
+      }
+    },
+    "No lightning" : {
+      "comment" : "Text (limits page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No lightning"
+          }
+        }
+      }
+    },
+    "No picture for these days." : {
+      "comment" : "Note under the day control of a satellite layer that has no picture for the days offered",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No picture for these days."
+          }
+        }
+      }
+    },
+    "No river gauge at this spot." : {
+      "comment" : "Widget message when the spot has no river gauge",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No river gauge at this spot."
+          }
+        }
+      }
+    },
+    "No small craft advisory" : {
+      "comment" : "Text (limits page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No small craft advisory"
+          }
+        }
+      }
+    },
+    "No snack times at this spot yet." : {
+      "comment" : "Widget message when the spot has no snack times",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No snack times at this spot yet."
+          }
+        }
+      }
+    },
+    "No species in the list matches “%@”." : {
+      "comment" : "Section footer (species picker)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No species in the list matches “%@”."
+          }
+        }
+      }
+    },
+    "No spots yet" : {
+      "comment" : "Empty spot list title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No spots yet"
+          }
+        }
+      }
+    },
+    "No station is close enough yet. Try another spot or loosen the distance limits." : {
+      "comment" : "Empty conditions text in Luna's voice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No station is close enough yet. Try another spot or loosen the distance limits."
+          }
+        }
+      }
+    },
+    "No station is close enough. Try another spot or loosen the distance limits." : {
+      "comment" : "Empty conditions text",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No station is close enough. Try another spot or loosen the distance limits."
+          }
+        }
+      }
+    },
+    "No tide at this spot." : {
+      "comment" : "Widget message when the spot has no tide",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No tide at this spot."
+          }
+        }
+      }
+    },
+    "No trip ahead. Plan one in Underbite." : {
+      "comment" : "Widget message when there is no trip ahead",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No trip ahead. Plan one in Underbite."
+          }
+        }
+      }
+    },
+    "No trips on the calendar" : {
+      "comment" : "Empty trip list title in Luna's voice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No trips on the calendar"
+          }
+        }
+      }
+    },
+    "No trips yet" : {
+      "comment" : "Empty trip list title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No trips yet"
+          }
+        }
+      }
+    },
+    "None" : {
+      "comment" : "Value shown when no species is chosen for a catch",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        }
+      }
+    },
+    "Not a source this version knows; it is skipped" : {
+      "comment" : "Note under a data source in the chain that this version of the app does not know",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not a source this version knows; it is skipped"
+          }
+        }
+      }
+    },
+    "Not available yet. The switch stays off until the app can use it." : {
+      "comment" : "Text (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not available yet. The switch stays off until the app can use it."
+          }
+        }
+      }
+    },
+    "Not available yet; it is skipped" : {
+      "comment" : "Note under a data source in the chain that the app cannot use yet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not available yet; it is skipped"
+          }
+        }
+      }
+    },
+    "Not drawn now: the battery-friendly map draws only the top two image layers." : {
+      "comment" : "Note under a map layer that is switched on but not drawn in the battery-friendly map",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not drawn now: the battery-friendly map draws only the top two image layers."
+          }
+        }
+      }
+    },
+    "Not for navigation" : {
+      "comment" : "Section header (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not for navigation"
+          }
+        }
+      }
+    },
+    "Not in this version's list of species." : {
+      "comment" : "Section footer (species picker)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not in this version's list of species."
+          }
+        }
+      }
+    },
+    "Not now" : {
+      "comment" : "Text (welcome)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not now"
+          }
+        }
+      }
+    },
+    "Not saved" : {
+      "comment" : "Value shown when a user name or password is not saved",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not saved"
+          }
+        }
+      }
+    },
+    "Not set" : {
+      "comment" : "Value shown when an optional limit is switched off",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not set"
+          }
+        }
+      }
+    },
+    "Not updated yet" : {
+      "comment" : "Text (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not updated yet"
+          }
+        }
+      }
+    },
+    "Notes" : {
+      "comment" : "Section header (trip editor); Text field label (trip editor); Section header (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes"
+          }
+        }
+      }
+    },
+    "Nothing found for \"%@\"." : {
+      "comment" : "Shown when a place search finds nothing; the argument is what was typed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing found for \"%@\"."
+          }
+        }
+      }
+    },
+    "Nothing to add: you have every edit in this profile." : {
+      "comment" : "Text (received profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to add: you have every edit in this profile."
+          }
+        }
+      }
+    },
+    "Notify" : {
+      "comment" : "Section header (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notify"
+          }
+        }
+      }
+    },
+    "Now" : {
+      "comment" : "Section header (species field editor); Row label (preferences support); Text (chart plot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "comment" : "Button label (stations); Button label (sources); Button label (preferences support)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "Off unless you turn it on, and it needs your own Copernicus Marine account." : {
+      "comment" : "Section footer (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off unless you turn it on, and it needs your own Copernicus Marine account."
+          }
+        }
+      }
+    },
+    "Offline packs" : {
+      "comment" : "Section header (storage page); Navigation title (packs); Title of an empty screen (packs)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline packs"
+          }
+        }
+      }
+    },
+    "Oldest reading" : {
+      "comment" : "Text (more pages)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oldest reading"
+          }
+        }
+      }
+    },
+    "On" : {
+      "comment" : "Switch label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On"
+          }
+        }
+      }
+    },
+    "On now: no animation, and two image layers at most." : {
+      "comment" : "Text (layer drawer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On now: no animation, and two image layers at most."
+          }
+        }
+      }
+    },
+    "On the ice" : {
+      "comment" : "Way of fishing on a trip: on the ice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the ice"
+          }
+        }
+      }
+    },
+    "On this device" : {
+      "comment" : "Row label (trip checklist); Row label (pack detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On this device"
+          }
+        }
+      }
+    },
+    "One per line; swipe a line to delete it." : {
+      "comment" : "Section footer (species field editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One per line; swipe a line to delete it."
+          }
+        }
+      }
+    },
+    "Open Settings" : {
+      "comment" : "Button label (map tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
+          }
+        }
+      }
+    },
+    "Open Underbite to load this spot." : {
+      "comment" : "Widget message when the app has not loaded the spot yet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Underbite to load this spot."
+          }
+        }
+      }
+    },
+    "Open Underbite to update." : {
+      "comment" : "Widget message when its data is out of date",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Underbite to update."
+          }
+        }
+      }
+    },
+    "Open spot" : {
+      "comment" : "Label (point card); Label (pin)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open spot"
+          }
+        }
+      }
+    },
+    "Optional" : {
+      "comment" : "Placeholder of a text field (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional"
+          }
+        }
+      }
+    },
+    "Optional. The photo stays on this device and is never shared or uploaded." : {
+      "comment" : "Text (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional. The photo stays on this device and is never shared or uploaded."
+          }
+        }
+      }
+    },
+    "Order" : {
+      "comment" : "Text (compact card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Order"
+          }
+        }
+      }
+    },
+    "Other spots" : {
+      "comment" : "Text (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other spots"
+          }
+        }
+      }
+    },
+    "Ounces" : {
+      "comment" : "Label of the field for the ounces part of the weight of a catch",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ounces"
+          }
+        }
+      }
+    },
+    "Over" : {
+      "comment" : "Label of the field for the value a measurement must rise over in an alert rule",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Over"
+          }
+        }
+      }
+    },
+    "Own layout for %@" : {
+      "comment" : "Text (customize)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Own layout for %@"
+          }
+        }
+      }
+    },
+    "Pack area" : {
+      "comment" : "Accessibility label (new pack)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pack area"
+          }
+        }
+      }
+    },
+    "Passes" : {
+      "comment" : "Text (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passes"
+          }
+        }
+      }
+    },
+    "Passes every check: words, marks and pins stand out on their backgrounds, and the colours drawn together stay apart, for colour-blind eyes too." : {
+      "comment" : "Shown when a colour theme passes every contrast check",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passes every check: words, marks and pins stand out on their backgrounds, and the colours drawn together stay apart, for colour-blind eyes too."
+          }
+        }
+      }
+    },
+    "Password" : {
+      "comment" : "Row label (keys); Text field label (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password"
+          }
+        }
+      }
+    },
+    "Past" : {
+      "comment" : "Section header (trips tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past"
+          }
+        }
+      }
+    },
+    "Paste a key" : {
+      "comment" : "Text field label (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste a key"
+          }
+        }
+      }
+    },
+    "Pause" : {
+      "comment" : "Text (time controls); Label (pack detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause"
+          }
+        }
+      }
+    },
+    "Photo of the catch" : {
+      "comment" : "Text (catch detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo of the catch"
+          }
+        }
+      }
+    },
+    "Photos" : {
+      "comment" : "Section header (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos"
+          }
+        }
+      }
+    },
+    "Photos are copied into the app, smaller and without their location, time or camera details." : {
+      "comment" : "Section footer (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos are copied into the app, smaller and without their location, time or camera details."
+          }
+        }
+      }
+    },
+    "Pin" : {
+      "comment" : "Text (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin"
+          }
+        }
+      }
+    },
+    "Pin dropped" : {
+      "comment" : "Label (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin dropped"
+          }
+        }
+      }
+    },
+    "Pin to the top" : {
+      "comment" : "Switch label (spot editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin to the top"
+          }
+        }
+      }
+    },
+    "Pin to top" : {
+      "comment" : "Text (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin to top"
+          }
+        }
+      }
+    },
+    "Pinned" : {
+      "comment" : "Label (spots); Accessibility label (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pinned"
+          }
+        }
+      }
+    },
+    "Place" : {
+      "comment" : "A place: the name of the place filter in the catch list, and of a search result that has no name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Place"
+          }
+        }
+      }
+    },
+    "Place name" : {
+      "comment" : "Text field label (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Place name"
+          }
+        }
+      }
+    },
+    "Place or address" : {
+      "comment" : "Text field label (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Place or address"
+          }
+        }
+      }
+    },
+    "Places" : {
+      "comment" : "Section header (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Places"
+          }
+        }
+      }
+    },
+    "Plain" : {
+      "comment" : "Text (more pages)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plain"
+          }
+        }
+      }
+    },
+    "Plan a day on the water and she will start on the snack list." : {
+      "comment" : "Empty trip list text in Luna's voice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan a day on the water and she will start on the snack list."
+          }
+        }
+      }
+    },
+    "Plan a trip first." : {
+      "comment" : "Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan a trip first."
+          }
+        }
+      }
+    },
+    "Plan a trip's days, with a checklist and maps for offline use." : {
+      "comment" : "Empty trip list text",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan a trip's days, with a checklist and maps for offline use."
+          }
+        }
+      }
+    },
+    "Play" : {
+      "comment" : "Text (time controls)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play"
+          }
+        }
+      }
+    },
+    "Preset" : {
+      "comment" : "Row label (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preset"
+          }
+        }
+      }
+    },
+    "Presets" : {
+      "comment" : "Section header (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presets"
+          }
+        }
+      }
+    },
+    "Preview as" : {
+      "comment" : "Text (theme editor); Picker label (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview as"
+          }
+        }
+      }
+    },
+    "Privacy" : {
+      "comment" : "Title of the settings page for privacy",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy"
+          }
+        }
+      }
+    },
+    "Privacy settings" : {
+      "comment" : "Link label (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy settings"
+          }
+        }
+      }
+    },
+    "Profile" : {
+      "comment" : "Title of the page that edits one go/no-go limits profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile"
+          }
+        }
+      }
+    },
+    "Protan" : {
+      "comment" : "Name of protanopia, a kind of colour blindness, in the colour-blind preview",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protan"
+          }
+        }
+      }
+    },
+    "Put back every value of %@?" : {
+      "comment" : "Question asking to reset all edits of a species profile; the argument is the species name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Put back every value of %@?"
+          }
+        }
+      }
+    },
+    "Quiet hours" : {
+      "comment" : "Switch label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiet hours"
+          }
+        }
+      }
+    },
+    "Quiet hours hold a notification until they end. Off, notifications say “your spot”, “your trip” or “your area” and leave out rule and station names." : {
+      "comment" : "Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiet hours hold a notification until they end. Off, notifications say “your spot”, “your trip” or “your area” and leave out rule and station names."
+          }
+        }
+      }
+    },
+    "Radar frame" : {
+      "comment" : "Accessibility label (time controls)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radar frame"
+          }
+        }
+      }
+    },
+    "Ranges" : {
+      "comment" : "Title of the page that edits the flow ranges of one river gauge",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ranges"
+          }
+        }
+      }
+    },
+    "Refresh" : {
+      "comment" : "Title of the settings page for how often data is refreshed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh"
+          }
+        }
+      }
+    },
+    "Refresh every" : {
+      "comment" : "Text (more pages)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh every"
+          }
+        }
+      }
+    },
+    "Refresh now" : {
+      "comment" : "Label (pack detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh now"
+          }
+        }
+      }
+    },
+    "Region" : {
+      "comment" : "Section header (trip checklist); Text field label (trip checklist); Text field label (species seasons sections)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Region"
+          }
+        }
+      }
+    },
+    "Regulations" : {
+      "comment" : "Section header (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regulations"
+          }
+        }
+      }
+    },
+    "Remind me while it holds" : {
+      "comment" : "Switch label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remind me while it holds"
+          }
+        }
+      }
+    },
+    "Remove %@?" : {
+      "comment" : "Question asking to remove an area; the argument is its name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove %@?"
+          }
+        }
+      }
+    },
+    "Remove area" : {
+      "comment" : "Button label (spots); Button label (areas)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove area"
+          }
+        }
+      }
+    },
+    "Remove area?" : {
+      "comment" : "Question asking to remove an area",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove area?"
+          }
+        }
+      }
+    },
+    "Remove from favourites" : {
+      "comment" : "Text (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from favourites"
+          }
+        }
+      }
+    },
+    "Remove the photo" : {
+      "comment" : "Button label (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove the photo"
+          }
+        }
+      }
+    },
+    "Remove this condition" : {
+      "comment" : "Accessibility label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove this condition"
+          }
+        }
+      }
+    },
+    "Remove this photo" : {
+      "comment" : "Text (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove this photo"
+          }
+        }
+      }
+    },
+    "Rename" : {
+      "comment" : "Alert title (trip checklist); Button label (trip checklist); Button label (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename"
+          }
+        }
+      }
+    },
+    "Rename area" : {
+      "comment" : "Text (spots); Alert title (areas)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename area"
+          }
+        }
+      }
+    },
+    "Rename colours" : {
+      "comment" : "Text (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename colours"
+          }
+        }
+      }
+    },
+    "Rename preset" : {
+      "comment" : "Text (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename preset"
+          }
+        }
+      }
+    },
+    "Renames the area" : {
+      "comment" : "Accessibility hint (areas)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renames the area"
+          }
+        }
+      }
+    },
+    "Reorder" : {
+      "comment" : "Text (layer drawer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reorder"
+          }
+        }
+      }
+    },
+    "Reset" : {
+      "comment" : "Button label (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset"
+          }
+        }
+      }
+    },
+    "Reset %@" : {
+      "comment" : "Button label (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset %@"
+          }
+        }
+      }
+    },
+    "Reset all" : {
+      "comment" : "Button label (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset all"
+          }
+        }
+      }
+    },
+    "Reset all edits" : {
+      "comment" : "Button label (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset all edits"
+          }
+        }
+      }
+    },
+    "Restore" : {
+      "comment" : "Text (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore"
+          }
+        }
+      }
+    },
+    "Restore %@'s colours?" : {
+      "comment" : "Text (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore %@'s colours?"
+          }
+        }
+      }
+    },
+    "Restore the built-in presets" : {
+      "comment" : "Button label (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore the built-in presets"
+          }
+        }
+      }
+    },
+    "Restore the built-in presets?" : {
+      "comment" : "Text (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore the built-in presets?"
+          }
+        }
+      }
+    },
+    "Restore the default layout" : {
+      "comment" : "Button label (customize)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore the default layout"
+          }
+        }
+      }
+    },
+    "Restore the default layout?" : {
+      "comment" : "Text (customize)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore the default layout?"
+          }
+        }
+      }
+    },
+    "Restore the defaults" : {
+      "comment" : "Button label (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore the defaults"
+          }
+        }
+      }
+    },
+    "Restore this preset" : {
+      "comment" : "Button label (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore this preset"
+          }
+        }
+      }
+    },
+    "Resume" : {
+      "comment" : "Label (pack detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume"
+          }
+        }
+      }
+    },
+    "Revert" : {
+      "comment" : "Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revert"
+          }
+        }
+      }
+    },
+    "River ranges" : {
+      "comment" : "Title of the settings page for river flow ranges",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "River ranges"
+          }
+        }
+      }
+    },
+    "Rule" : {
+      "comment" : "Text (chart plot); Section header (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rule"
+          }
+        }
+      }
+    },
+    "Rules" : {
+      "comment" : "Section header (alert rules page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rules"
+          }
+        }
+      }
+    },
+    "Safe for colour-blind eyes: every scale steps in lightness as well as hue." : {
+      "comment" : "Summary of the default colour preset",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safe for colour-blind eyes: every scale steps in lightness as well as hue."
+          }
+        }
+      }
+    },
+    "Save" : {
+      "comment" : "Button label (trip editor); Button label (trip checklist); Button label (spot editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        }
+      }
+    },
+    "Save a spot in Underbite to see it here." : {
+      "comment" : "Widget message when the app has no saved spot",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save a spot in Underbite to see it here."
+          }
+        }
+      }
+    },
+    "Save account" : {
+      "comment" : "Button label (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save account"
+          }
+        }
+      }
+    },
+    "Save as spot" : {
+      "comment" : "Button label (point card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save as spot"
+          }
+        }
+      }
+    },
+    "Save key" : {
+      "comment" : "Button label (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save key"
+          }
+        }
+      }
+    },
+    "Save the layers on the map as a preset…" : {
+      "comment" : "Button label (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save the layers on the map as a preset…"
+          }
+        }
+      }
+    },
+    "Save the layers on the map here" : {
+      "comment" : "Button label (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save the layers on the map here"
+          }
+        }
+      }
+    },
+    "Saved" : {
+      "comment" : "Value shown when a user name or password is saved",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved"
+          }
+        }
+      }
+    },
+    "Saved with your layers" : {
+      "comment" : "Text (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved with your layers"
+          }
+        }
+      }
+    },
+    "Search" : {
+      "comment" : "Text (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        }
+      }
+    },
+    "Seasons" : {
+      "comment" : "Text (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seasons"
+          }
+        }
+      }
+    },
+    "Series" : {
+      "comment" : "Text (chart plot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "comment" : "Navigation title (settings); Tab title (root tabs)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
+    "Share" : {
+      "comment" : "Button label (trip share button); Label (species profile); Text (insight chart)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share"
+          }
+        }
+      }
+    },
+    "Shore, wading, kayak…" : {
+      "comment" : "Placeholder of a text field (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shore, wading, kayak…"
+          }
+        }
+      }
+    },
+    "Show" : {
+      "comment" : "Picker label (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show"
+          }
+        }
+      }
+    },
+    "Show all catches" : {
+      "comment" : "Button label (log tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show all catches"
+          }
+        }
+      }
+    },
+    "Show every warning" : {
+      "comment" : "Button label (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show every warning"
+          }
+        }
+      }
+    },
+    "Show solunar times" : {
+      "comment" : "Text (more pages)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show solunar times"
+          }
+        }
+      }
+    },
+    "Show today's times on the Lock Screen" : {
+      "comment" : "Label (trip activity offer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show today's times on the Lock Screen"
+          }
+        }
+      }
+    },
+    "Shows this species on the species card of your spots." : {
+      "comment" : "Text (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows this species on the species card of your spots."
+          }
+        }
+      }
+    },
+    "Solunar major and minor periods, from the sun and moon. Left out of the fishing windows when off." : {
+      "comment" : "Section footer (more pages)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solunar major and minor periods, from the sun and moon. Left out of the fishing windows when off."
+          }
+        }
+      }
+    },
+    "Some stations could not be looked up: %@" : {
+      "comment" : "Text (stations)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some stations could not be looked up: %@"
+          }
+        }
+      }
+    },
+    "Sources" : {
+      "comment" : "Section header (species field views); Navigation title (sources); Label (settings)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sources"
+          }
+        }
+      }
+    },
+    "Species" : {
+      "comment" : "Name of the species filter in the catch list menu",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Species"
+          }
+        }
+      }
+    },
+    "Spot" : {
+      "comment" : "Picker label (alert rule editor); Text (alert rule editor); Section header (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spot"
+          }
+        }
+      }
+    },
+    "Spot name" : {
+      "comment" : "Text field label (point card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spot name"
+          }
+        }
+      }
+    },
+    "Spots" : {
+      "comment" : "Navigation title (spots); Tab title (root tabs); Section header (new pack)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spots"
+          }
+        }
+      }
+    },
+    "Spring" : {
+      "comment" : "Season of the depth field of a species profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spring"
+          }
+        }
+      }
+    },
+    "Start" : {
+      "comment" : "Picker label (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        }
+      }
+    },
+    "Start from" : {
+      "comment" : "Text (measure card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start from"
+          }
+        }
+      }
+    },
+    "Stations" : {
+      "comment" : "Navigation title of the stations of a spot",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stations"
+          }
+        }
+      }
+    },
+    "Stop" : {
+      "comment" : "Button label (trip activity offer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop"
+          }
+        }
+      }
+    },
+    "Stops showing this species on the species card." : {
+      "comment" : "Text (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stops showing this species on the species card."
+          }
+        }
+      }
+    },
+    "Storage" : {
+      "comment" : "Navigation title (storage page); Label (settings)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Storage"
+          }
+        }
+      }
+    },
+    "Suggest one for me" : {
+      "comment" : "Text (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggest one for me"
+          }
+        }
+      }
+    },
+    "Suggested: %@" : {
+      "comment" : "Text (spot editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested: %@"
+          }
+        }
+      }
+    },
+    "Summary" : {
+      "comment" : "Section header (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Summary"
+          }
+        }
+      }
+    },
+    "Summer" : {
+      "comment" : "Season of the depth field of a species profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Summer"
+          }
+        }
+      }
+    },
+    "Sun mode" : {
+      "comment" : "Title of the settings page for sun mode, a high contrast look for bright light",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sun mode"
+          }
+        }
+      }
+    },
+    "Sun mode is on" : {
+      "comment" : "Label (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sun mode is on"
+          }
+        }
+      }
+    },
+    "Sun mode paints with Sun, for bright light, until it is turned off. Colours customized from Sun are kept in sun mode too." : {
+      "comment" : "Text (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sun mode paints with Sun, for bright light, until it is turned off. Colours customized from Sun are kept in sun mode too."
+          }
+        }
+      }
+    },
+    "Tap the map" : {
+      "comment" : "Text (measure card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap the map"
+          }
+        }
+      }
+    },
+    "Tap the map to drop the pin; tap again to move it. Zoom in for the exact spot." : {
+      "comment" : "Section footer (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap the map to drop the pin; tap again to move it. Zoom in for the exact spot."
+          }
+        }
+      }
+    },
+    "Tap to use. Swipe to rename or delete; touch and hold to edit, rename, duplicate or delete. Colours you didn't change follow the preset they came from." : {
+      "comment" : "Text (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to use. Swipe to rename or delete; touch and hold to edit, rename, duplicate or delete. Colours you didn't change follow the preset they came from."
+          }
+        }
+      }
+    },
+    "That change was not kept" : {
+      "comment" : "Text (sources); Text (preferences support)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That change was not kept"
+          }
+        }
+      }
+    },
+    "That gauge is already listed." : {
+      "comment" : "Problem shown when the gauge number typed is already in the list",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That gauge is already listed."
+          }
+        }
+      }
+    },
+    "The Rust crates in the app's core." : {
+      "comment" : "Section footer (acknowledgements)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Rust crates in the app's core."
+          }
+        }
+      }
+    },
+    "The USGS Water Data site" : {
+      "comment" : "Link label (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The USGS Water Data site"
+          }
+        }
+      }
+    },
+    "The battery-friendly map draws two image layers at most. Switch one off to show this one." : {
+      "comment" : "Note under a map layer that cannot be shown because two image layers are already shown in the battery-friendly map",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The battery-friendly map draws two image layers at most. Switch one off to show this one."
+          }
+        }
+      }
+    },
+    "The choice was not saved" : {
+      "comment" : "Text (stations)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The choice was not saved"
+          }
+        }
+      }
+    },
+    "The days after it have no picture yet." : {
+      "comment" : "Note under the day control of a satellite layer: later days have no picture yet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The days after it have no picture yet."
+          }
+        }
+      }
+    },
+    "The fish" : {
+      "comment" : "Section header (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The fish"
+          }
+        }
+      }
+    },
+    "The layers on the map, their opacity and their order." : {
+      "comment" : "Alert message (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The layers on the map, their opacity and their order."
+          }
+        }
+      }
+    },
+    "The location could not be found." : {
+      "comment" : "Error shown when the phone could not find its location",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The location could not be found."
+          }
+        }
+      }
+    },
+    "The log could not be exported" : {
+      "comment" : "Text (catch export)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The log could not be exported"
+          }
+        }
+      }
+    },
+    "The log could not be read." : {
+      "comment" : "Text (insights)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The log could not be read."
+          }
+        }
+      }
+    },
+    "The log is empty, and so is the plate" : {
+      "comment" : "Empty catch log title in Luna's voice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The log is empty, and so is the plate"
+          }
+        }
+      }
+    },
+    "The order and visibility of these cards go back to the defaults." : {
+      "comment" : "Alert message (customize)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The order and visibility of these cards go back to the defaults."
+          }
+        }
+      }
+    },
+    "The photo could not be saved" : {
+      "comment" : "Alert title (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The photo could not be saved"
+          }
+        }
+      }
+    },
+    "The search did not answer. Check the connection and try again." : {
+      "comment" : "Shown when a place search fails",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The search did not answer. Check the connection and try again."
+          }
+        }
+      }
+    },
+    "The spots in it stay in the list, without an area." : {
+      "comment" : "Alert message (spots); Alert message (areas)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The spots in it stay in the list, without an area."
+          }
+        }
+      }
+    },
+    "The widgets paint with these colours from their next update." : {
+      "comment" : "Note under the colour presets: widgets follow the chosen colours",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The widgets paint with these colours from their next update."
+          }
+        }
+      }
+    },
+    "Their edits to add" : {
+      "comment" : "Heading of the species edits in a received profile that will be added",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Their edits to add"
+          }
+        }
+      }
+    },
+    "There is no account, no server of ours and no analytics. Spot coordinates leave your device only, rounded, to the data providers you choose, or in what you share yourself. The photo above stays in the app on this device." : {
+      "comment" : "Text (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There is no account, no server of ours and no analytics. Spot coordinates leave your device only, rounded, to the data providers you choose, or in what you share yourself. The photo above stays in the app on this device."
+          }
+        }
+      }
+    },
+    "These cards and their order show for every water type that has no layout of its own." : {
+      "comment" : "Footer of the card layout list when editing the default layout",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These cards and their order show for every water type that has no layout of its own."
+          }
+        }
+      }
+    },
+    "These colours were deleted" : {
+      "comment" : "Title of an empty screen (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These colours were deleted"
+          }
+        }
+      }
+    },
+    "This build has no shared space for the widgets, so they keep Underbite's colours." : {
+      "comment" : "Note under the colour presets when widgets cannot share the chosen colours",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This build has no shared space for the widgets, so they keep Underbite's colours."
+          }
+        }
+      }
+    },
+    "This catch cannot be edited" : {
+      "comment" : "Text (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This catch cannot be edited"
+          }
+        }
+      }
+    },
+    "This catch is gone" : {
+      "comment" : "Text (catch detail)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This catch is gone"
+          }
+        }
+      }
+    },
+    "This gauge is gone." : {
+      "comment" : "Text (rivers page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This gauge is gone."
+          }
+        }
+      }
+    },
+    "This profile is gone." : {
+      "comment" : "Text (limits page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This profile is gone."
+          }
+        }
+      }
+    },
+    "This species cannot be shown" : {
+      "comment" : "Text (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This species cannot be shown"
+          }
+        }
+      }
+    },
+    "This species is not in this version of the app, so its edits cannot be added." : {
+      "comment" : "Text (received profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This species is not in this version of the app, so its edits cannot be added."
+          }
+        }
+      }
+    },
+    "Tides, currents, river flow, water temperature and weather for the places you fish." : {
+      "comment" : "Welcome text",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tides, currents, river flow, water temperature and weather for the places you fish."
+          }
+        }
+      }
+    },
+    "Time" : {
+      "comment" : "Text (chart plot); Text (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        }
+      }
+    },
+    "To" : {
+      "comment" : "Text (chart plot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To"
+          }
+        }
+      }
+    },
+    "Today's times are on the Lock Screen" : {
+      "comment" : "Label (trip activity offer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's times are on the Lock Screen"
+          }
+        }
+      }
+    },
+    "Touch a value to change it; your edits stay on this device." : {
+      "comment" : "Section footer (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touch a value to change it; your edits stay on this device."
+          }
+        }
+      }
+    },
+    "Tracks" : {
+      "comment" : "Section header (import)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracks"
+          }
+        }
+      }
+    },
+    "Trip" : {
+      "comment" : "Picker label (alert rule editor); Text (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trip"
+          }
+        }
+      }
+    },
+    "Trips" : {
+      "comment" : "Navigation title (trips tab); Tab title (root tabs)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trips"
+          }
+        }
+      }
+    },
+    "Tritan" : {
+      "comment" : "Name of tritanopia, a kind of colour blindness, in the colour-blind preview",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tritan"
+          }
+        }
+      }
+    },
+    "Trout and fishing windows" : {
+      "comment" : "Title of the settings page for trout and fishing windows",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trout and fishing windows"
+          }
+        }
+      }
+    },
+    "Trout stress above" : {
+      "comment" : "Label of the water temperature above which trout are stressed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trout stress above"
+          }
+        }
+      }
+    },
+    "Try again" : {
+      "comment" : "Button label (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        }
+      }
+    },
+    "Type" : {
+      "comment" : "Text (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type"
+          }
+        }
+      }
+    },
+    "Type a value" : {
+      "comment" : "Text field label (preferences support)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type a value"
+          }
+        }
+      }
+    },
+    "Type latitude and longitude in decimal degrees, like 40.7033, -74.0170." : {
+      "comment" : "Text (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type latitude and longitude in decimal degrees, like 40.7033, -74.0170."
+          }
+        }
+      }
+    },
+    "Typical" : {
+      "comment" : "Name of typical colour vision in the colour-blind preview",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Typical"
+          }
+        }
+      }
+    },
+    "US-NY" : {
+      "comment" : "Example of a region code in the form country and state; do not translate",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "US-NY"
+          }
+        }
+      }
+    },
+    "Under" : {
+      "comment" : "Label of the field for the value a measurement must stay under in an alert rule",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Under"
+          }
+        }
+      }
+    },
+    "Underbite" : {
+      "comment" : "The name of the app; do not translate",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Underbite"
+          }
+        }
+      }
+    },
+    "Underbite does not tell you what is legal. Seasons, sizes, limits, closures and licences are links to the agencies' own pages, never data held here. Check them before you fish." : {
+      "comment" : "The name of the app; do not translate",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Underbite does not tell you what is legal. Seasons, sizes, limits, closures and licences are links to the agencies' own pages, never data held here. Check them before you fish."
+          }
+        }
+      }
+    },
+    "Underbite is not for navigation. Tides, currents, depths, charts and every other value it shows are for planning a day on the water only. They can be wrong, late or missing. Never rely on them to steer a vessel or to judge a hazard, and always follow official charts, notices and local regulations." : {
+      "comment" : "The name of the app; do not translate",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Underbite is not for navigation. Tides, currents, depths, charts and every other value it shows are for planning a day on the water only. They can be wrong, late or missing. Never rely on them to steer a vessel or to judge a hazard, and always follow official charts, notices and local regulations."
+          }
+        }
+      }
+    },
+    "Unfavourite" : {
+      "comment" : "Text (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unfavourite"
+          }
+        }
+      }
+    },
+    "Units" : {
+      "comment" : "Title of the settings page for units",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Units"
+          }
+        }
+      }
+    },
+    "Units and limits" : {
+      "comment" : "Section header (settings)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Units and limits"
+          }
+        }
+      }
+    },
+    "Unpin" : {
+      "comment" : "Text (spots)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unpin"
+          }
+        }
+      }
+    },
+    "Until" : {
+      "comment" : "Switch that limits the insights to catches up to a day",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Until"
+          }
+        }
+      }
+    },
+    "Up to 31 days." : {
+      "comment" : "Text (trip editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up to 31 days."
+          }
+        }
+      }
+    },
+    "Upcoming" : {
+      "comment" : "Section header (trips tab)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upcoming"
+          }
+        }
+      }
+    },
+    "Use" : {
+      "comment" : "Button label (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use"
+          }
+        }
+      }
+    },
+    "Use Copernicus Marine" : {
+      "comment" : "Switch label (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Copernicus Marine"
+          }
+        }
+      }
+    },
+    "Use my location" : {
+      "comment" : "Label (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use my location"
+          }
+        }
+      }
+    },
+    "Use my location, or search for a place, drop a pin or type coordinates." : {
+      "comment" : "Text (welcome)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use my location, or search for a place, drop a pin or type coordinates."
+          }
+        }
+      }
+    },
+    "Use the source's value" : {
+      "comment" : "Button label (species profile); Button label (species field editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the source's value"
+          }
+        }
+      }
+    },
+    "Use the suggestion" : {
+      "comment" : "Button label (spot editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the suggestion"
+          }
+        }
+      }
+    },
+    "Use the usual order" : {
+      "comment" : "Button label (sources)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the usual order"
+          }
+        }
+      }
+    },
+    "Use the usual threshold" : {
+      "comment" : "Button label (more pages)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the usual threshold"
+          }
+        }
+      }
+    },
+    "Use this area" : {
+      "comment" : "Button label (alert box picker)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use this area"
+          }
+        }
+      }
+    },
+    "Use “%@”" : {
+      "comment" : "Label (species picker)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use “%@”"
+          }
+        }
+      }
+    },
+    "User name" : {
+      "comment" : "Row label (keys); Text field label (keys)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User name"
+          }
+        }
+      }
+    },
+    "Value" : {
+      "comment" : "Text (insight chart); Text (compact card); Text (chart plot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Value"
+          }
+        }
+      }
+    },
+    "Values you have saved, such as limits and river ranges, keep their size: only how they are written changes." : {
+      "comment" : "Section footer (units page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Values you have saved, such as limits and river ranges, keep their size: only how they are written changes."
+          }
+        }
+      }
+    },
+    "Version %@, core %@" : {
+      "comment" : "Text (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %1$@, core %2$@"
+          }
+        }
+      }
+    },
+    "Visibility at least" : {
+      "comment" : "Label of the lowest visibility of a limits profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visibility at least"
+          }
+        }
+      }
+    },
+    "Voice" : {
+      "comment" : "Title of the settings page for the voice of captions",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voice"
+          }
+        }
+      }
+    },
+    "Wadeable below" : {
+      "comment" : "Label of the flow under which the river can be waded",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wadeable below"
+          }
+        }
+      }
+    },
+    "Wading" : {
+      "comment" : "Way of fishing on a trip: wading",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wading"
+          }
+        }
+      }
+    },
+    "Warning" : {
+      "comment" : "Text (theme editor); Accessibility label (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warning"
+          }
+        }
+      }
+    },
+    "Warnings" : {
+      "comment" : "Section header (limits page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warnings"
+          }
+        }
+      }
+    },
+    "Watch" : {
+      "comment" : "Picker label (alert rule editor); Section header (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch"
+          }
+        }
+      }
+    },
+    "Water" : {
+      "comment" : "Picker label (spot editor); Picker label (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Water"
+          }
+        }
+      }
+    },
+    "Waves up to" : {
+      "comment" : "Label of the highest wave height of a limits profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waves up to"
+          }
+        }
+      }
+    },
+    "Waypoints" : {
+      "comment" : "Section header (import)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waypoints"
+          }
+        }
+      }
+    },
+    "Weekend on the Hudson" : {
+      "comment" : "Example of a trip name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekend on the Hudson"
+          }
+        }
+      }
+    },
+    "Weight" : {
+      "comment" : "Label of the field for the weight of a catch",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weight"
+          }
+        }
+      }
+    },
+    "Welcome" : {
+      "comment" : "Label (settings)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome"
+          }
+        }
+      }
+    },
+    "What worked" : {
+      "comment" : "Label (log tab); Navigation title (insights); Text (insights)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What worked"
+          }
+        }
+      }
+    },
+    "What you saved over them is removed. Your own presets stay." : {
+      "comment" : "Alert message (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you saved over them is removed. Your own presets stay."
+          }
+        }
+      }
+    },
+    "When all of these hold" : {
+      "comment" : "Section header (alert rule editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When all of these hold"
+          }
+        }
+      }
+    },
+    "When and where" : {
+      "comment" : "Section header (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When and where"
+          }
+        }
+      }
+    },
+    "When on: no animation, and two image layers at most." : {
+      "comment" : "Text (layer drawer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When on: no animation, and two image layers at most."
+          }
+        }
+      }
+    },
+    "Where it was logged" : {
+      "comment" : "Text (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where it was logged"
+          }
+        }
+      }
+    },
+    "Wind up to" : {
+      "comment" : "Label of the highest wind speed of a limits profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wind up to"
+          }
+        }
+      }
+    },
+    "Winter" : {
+      "comment" : "Season of the depth field of a species profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winter"
+          }
+        }
+      }
+    },
+    "With Low Power Mode" : {
+      "comment" : "Text (layer drawer)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With Low Power Mode"
+          }
+        }
+      }
+    },
+    "Words are held to 4.5:1 and marks to 3:1 against the light and dark backgrounds. A warning never stops a change; the roles it is about are marked below." : {
+      "comment" : "Text (theme editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Words are held to 4.5:1 and marks to 3:1 against the light and dark backgrounds. A warning never stops a change; the roles it is about are marked below."
+          }
+        }
+      }
+    },
+    "Your colours" : {
+      "comment" : "Section header (colors)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your colours"
+          }
+        }
+      }
+    },
+    "Your edits of this species are removed; the sources' values show again." : {
+      "comment" : "Alert message (species profile)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your edits of this species are removed; the sources' values show again."
+          }
+        }
+      }
+    },
+    "Your location is read once, and only kept if you save it as a spot." : {
+      "comment" : "Section footer (add spot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your location is read once, and only kept if you save it as a spot."
+          }
+        }
+      }
+    },
+    "Your location is set" : {
+      "comment" : "Label (catch editor)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your location is set"
+          }
+        }
+      }
+    },
+    "Your own numbers for this gauge: the flow card shows where today's flow falls." : {
+      "comment" : "Section footer (rivers page)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your own numbers for this gauge: the flow card shows where today's flow falls."
+          }
+        }
+      }
+    },
+    "Your own presets stay." : {
+      "comment" : "Section footer (preset list)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your own presets stay."
+          }
+        }
+      }
+    },
+    "Your photo" : {
+      "comment" : "Accessibility label (about)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your photo"
+          }
+        }
+      }
+    },
+    "Your species edits could not be read, so new ones cannot be saved." : {
+      "comment" : "Text (species browser)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your species edits could not be read, so new ones cannot be saved."
+          }
+        }
+      }
+    },
+    "Zero" : {
+      "comment" : "Text (chart plot)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zero"
+          }
+        }
+      }
+    },
+    "Zoom" : {
+      "comment" : "Section header (new pack); Picker label (new pack)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom"
+          }
+        }
+      }
+    },
+    "achromat" : {
+      "comment" : "Seeing no colour, in a colour check warning",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "achromat"
+          }
+        }
+      }
+    },
+    "deutan" : {
+      "comment" : "Deuteranopia, a kind of colour blindness, in a colour check warning",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "deutan"
+          }
+        }
+      }
+    },
+    "in dark appearance" : {
+      "comment" : "Part of a colour check warning: it fails in the dark appearance",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in dark appearance"
+          }
+        }
+      }
+    },
+    "in light and dark appearance" : {
+      "comment" : "Part of a colour check warning: it fails in both appearances",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in light and dark appearance"
+          }
+        }
+      }
+    },
+    "in light appearance" : {
+      "comment" : "Part of a colour check warning: it fails in the light appearance",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in light appearance"
+          }
+        }
+      }
+    },
+    "marks at %@" : {
+      "comment" : "Part of a colour check warning: the contrast of marks; the argument says the ratio and appearance",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "marks at %@"
+          }
+        }
+      }
+    },
+    "no key" : {
+      "comment" : "Note under a data source: it needs no key",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no key"
+          }
+        }
+      }
+    },
+    "protan" : {
+      "comment" : "Protanopia, a kind of colour blindness, in a colour check warning",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "protan"
+          }
+        }
+      }
+    },
+    "the pin's symbol at %@" : {
+      "comment" : "Part of a colour check warning: the contrast of a map pin's symbol; the argument says the ratio and appearance",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the pin's symbol at %@"
+          }
+        }
+      }
+    },
+    "to" : {
+      "comment" : "Text (layer range row)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "to"
+          }
+        }
+      }
+    },
+    "tritan" : {
+      "comment" : "Tritanopia, a kind of colour blindness, in a colour check warning",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tritan"
+          }
+        }
+      }
+    },
+    "typical" : {
+      "comment" : "Name of typical colour vision in a colour check warning",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "typical"
+          }
+        }
+      }
+    },
+    "words at %@" : {
+      "comment" : "Part of a colour check warning: the text contrast; the argument says the ratio and appearance",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "words at %@"
+          }
+        }
+      }
+    },
+    "your key" : {
+      "comment" : "Note under a data source: it uses the key the user saved",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "your key"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

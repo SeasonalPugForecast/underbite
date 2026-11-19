@@ -258,12 +258,12 @@ private struct LayerRow: View {
             } else if blocked {
                 DrawerFootnote(
                     text:
-                        "The battery-friendly map draws two image layers at most. Switch one off to show this one."
+                        String(localized: "The battery-friendly map draws two image layers at most. Switch one off to show this one.", comment: "Note under a map layer that cannot be shown because two image layers are already shown in the battery-friendly map")
                 )
             } else if held {
                 DrawerFootnote(
                     text:
-                        "Not drawn now: the battery-friendly map draws only the top two image layers."
+                        String(localized: "Not drawn now: the battery-friendly map draws only the top two image layers.", comment: "Note under a map layer that is switched on but not drawn in the battery-friendly map")
                 )
             }
             if let notice = layer.notice {

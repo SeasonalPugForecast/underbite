@@ -255,9 +255,9 @@ private struct CatchFilterMenu: View {
 
     var body: some View {
         Menu {
-            choice("Species", all: "All species", CatchListFilter.species(in: rows), $filter.species)
-            choice("Place", all: "All places", CatchListFilter.places(in: rows), $filter.place)
-            choice("Kept or released", all: "All catches", CatchListFilter.fates(in: rows), $filter.fate)
+            choice(String(localized: "Species", comment: "Name of the species filter in the catch list menu"), all: String(localized: "All species", comment: "Choice that removes the species filter of the catch list"), CatchListFilter.species(in: rows), $filter.species)
+            choice(String(localized: "Place", comment: "A place: the name of the place filter in the catch list, and of a search result that has no name"), all: String(localized: "All places", comment: "Choice that removes the place filter of the catch list"), CatchListFilter.places(in: rows), $filter.place)
+            choice(String(localized: "Kept or released", comment: "Name of the fate filter in the catch list menu: whether the fish was kept or released"), all: String(localized: "All catches", comment: "Choice that removes the fate filter of the catch list"), CatchListFilter.fates(in: rows), $filter.fate)
             if filter.isActive {
                 Divider()
                 Button("Show all catches", systemImage: "xmark.circle") { filter = CatchListFilter() }
@@ -358,6 +358,6 @@ private struct CatchEmptyState: View {
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("\(spoken.title). \(spoken.body)"))
+        .accessibilityLabel(Text(verbatim: "\(spoken.title). \(spoken.body)"))
     }
 }

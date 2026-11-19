@@ -61,7 +61,7 @@ struct StationsView: View {
                 }
             }
         }
-        .navigationTitle(store.spot(spotID).map { "\($0.name): stations" } ?? "Stations")
+        .navigationTitle(store.spot(spotID).map { String(localized: "\($0.name): stations", comment: "Navigation title of the stations of a spot; the argument is the spot name") } ?? String(localized: "Stations", comment: "Navigation title of the stations of a spot"))
         .navigationBarTitleDisplayMode(.inline)
         .alert(
             "The choice was not saved",

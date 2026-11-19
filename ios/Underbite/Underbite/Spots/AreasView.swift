@@ -75,7 +75,7 @@ struct AreasView: View {
                 Text("Group spots by the water you fish: \"Montauk\", \"Upper Delaware\".")
             }
             .confirmationDialog(
-                removing.map { "Remove \($0.name)?" } ?? "Remove area?",
+                removing.map { String(localized: "Remove \($0.name)?", comment: "Question asking to remove an area; the argument is its name") } ?? String(localized: "Remove area?", comment: "Question asking to remove an area"),
                 isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
                 titleVisibility: .visible, presenting: removing
             ) { area in

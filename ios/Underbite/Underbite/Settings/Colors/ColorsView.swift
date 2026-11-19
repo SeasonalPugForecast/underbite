@@ -99,8 +99,8 @@ struct ColorsView: View {
 
     private var widgetsNote: String {
         switch model.backing {
-        case .appGroup: "The widgets paint with these colours from their next update."
-        case .standard: "This build has no shared space for the widgets, so they keep Underbite's colours."
+        case .appGroup: String(localized: "The widgets paint with these colours from their next update.", comment: "Note under the colour presets: widgets follow the chosen colours")
+        case .standard: String(localized: "This build has no shared space for the widgets, so they keep Underbite's colours.", comment: "Note under the colour presets when widgets cannot share the chosen colours")
         }
     }
 
@@ -255,8 +255,8 @@ private struct PresetCard: View {
     static func summary(_ id: String) -> String {
         switch id {
         case ColorPresets.defaultID:
-            "Safe for colour-blind eyes: every scale steps in lightness as well as hue."
-        case ColorPresets.sunID: "High contrast for bright light, as sun mode paints."
+            String(localized: "Safe for colour-blind eyes: every scale steps in lightness as well as hue.", comment: "Summary of the default colour preset")
+        case ColorPresets.sunID: String(localized: "High contrast for bright light, as sun mode paints.", comment: "Summary of the sun colour preset")
         default: ""
         }
     }

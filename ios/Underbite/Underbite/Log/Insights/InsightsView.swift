@@ -182,8 +182,8 @@ private struct InsightsFilterBar: View {
     }
 
     @ViewBuilder private var days: some View {
-        DayToggle(title: "From", day: $filter.from, other: filter.until, earliest: true)
-        DayToggle(title: "Until", day: $filter.until, other: filter.from, earliest: false)
+        DayToggle(title: String(localized: "From", comment: "Switch that limits the insights to catches from a day on"), day: $filter.from, other: filter.until, earliest: true)
+        DayToggle(title: String(localized: "Until", comment: "Switch that limits the insights to catches up to a day"), day: $filter.until, other: filter.from, earliest: false)
     }
 }
 

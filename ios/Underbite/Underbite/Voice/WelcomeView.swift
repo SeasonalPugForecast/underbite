@@ -21,8 +21,8 @@ struct WelcomeView: View {
                     .font(.largeTitle.bold())
                 Text(
                     voice.pick(
-                        luna: "Luna is swimming for the dock, and she is bringing the water report.",
-                        plain: "Tides, currents, river flow, water temperature and weather for the places you fish.")
+                        luna: String(localized: "Luna is swimming for the dock, and she is bringing the water report.", comment: "Welcome text in Luna's voice"),
+                        plain: String(localized: "Tides, currents, river flow, water temperature and weather for the places you fish.", comment: "Welcome text"))
                 )
                 .font(.title3)
                 .multilineTextAlignment(.center)

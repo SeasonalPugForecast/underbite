@@ -6,7 +6,7 @@ import UnderbiteKit
 /// Changing a unit changes labels only: stored ranges and limits stay as they are.
 struct UnitsPage: View {
     var body: some View {
-        PreferencePage(title: "Units") { access in
+        PreferencePage(title: PreferencePageID.units.title) { access in
             let groups = (try? unitOptions(settingsJson: access.json)) ?? []
             Section {
                 ForEach(groups.filter { $0.follows == nil }, id: \.id) { group in

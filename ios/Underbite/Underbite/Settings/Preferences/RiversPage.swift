@@ -9,7 +9,7 @@ struct RiversPage: View {
     @State private var gaugeProblem: String?
 
     var body: some View {
-        PreferencePage(title: "River ranges") { access in
+        PreferencePage(title: PreferencePageID.rivers.title) { access in
             let rivers = access.settings?.rivers ?? []
             Section {
                 ForEach(Array(rivers.enumerated()), id: \.offset) { index, river in
@@ -47,12 +47,12 @@ struct RiversPage: View {
 
     private func add(_ access: SettingsAccess) {
         guard let site = Preferences.riverSite(from: gauge) else {
-            gaugeProblem = "A gauge number is 8 or more digits, such as 01420500."
+            gaugeProblem = String(localized: "A gauge number is 8 or more digits, such as 01420500.", comment: "Problem shown when the gauge number typed has too few digits")
             return
         }
         gaugeProblem = nil
         if access.settings?.rivers.contains(where: { $0.site == site }) == true {
-            gaugeProblem = "That gauge is already listed."
+            gaugeProblem = String(localized: "That gauge is already listed.", comment: "Problem shown when the gauge number typed is already in the list")
             return
         }
         access.edit { $0.rivers.append(Preferences.newRiver(site: site)) }
@@ -65,7 +65,7 @@ struct RiverEditorPage: View {
     let index: Int
 
     var body: some View {
-        PreferencePage(title: "Ranges") { access in
+        PreferencePage(title: String(localized: "Ranges", comment: "Title of the page that edits the flow ranges of one river gauge")) { access in
             if let river = access.settings.flatMap({ $0.rivers.indices.contains(index) ? $0.rivers[index] : nil }) {
                 Section {
                     Text(river.site)
@@ -74,14 +74,14 @@ struct RiverEditorPage: View {
                 }
                 Section {
                     QuantityRow(
-                        title: "Wadeable below", quantity: Preferences.flow,
+                        title: String(localized: "Wadeable below", comment: "Label of the flow under which the river can be waded"), quantity: Preferences.flow,
                         settingsJSON: access.json, value: river.wadeableBelowCfs
                     ) { value in
                         update(access) { $0.wadeableBelowCfs = value }
                     }
                     bestRange(river, access)
                     QuantityRow(
-                        title: "Blown out above", quantity: Preferences.floodFlow,
+                        title: String(localized: "Blown out above", comment: "Label of the flow over which the river is blown out"), quantity: Preferences.floodFlow,
                         settingsJSON: access.json, value: river.blownOutAboveCfs
                     ) { value in
                         update(access) { $0.blownOutAboveCfs = value }
@@ -114,13 +114,13 @@ struct RiverEditorPage: View {
                 }))
         if let best {
             QuantityRow(
-                title: "Best from", quantity: Preferences.bestFlow, settingsJSON: access.json,
+                title: String(localized: "Best from", comment: "Label of the lowest flow of the best range of a river"), quantity: Preferences.bestFlow, settingsJSON: access.json,
                 value: best[0], optional: false
             ) { value in
                 if let value { update(access) { $0.bestCfs = [value, best[1]] } }
             }
             QuantityRow(
-                title: "Best up to", quantity: Preferences.bestFlow, settingsJSON: access.json,
+                title: String(localized: "Best up to", comment: "Label of the highest flow of the best range of a river"), quantity: Preferences.bestFlow, settingsJSON: access.json,
                 value: best[1], optional: false
             ) { value in
                 if let value { update(access) { $0.bestCfs = [best[0], value] } }

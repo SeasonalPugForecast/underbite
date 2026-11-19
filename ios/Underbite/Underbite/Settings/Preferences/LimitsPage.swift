@@ -4,7 +4,7 @@ import UnderbiteKit
 /// The go/no-go profiles (Kayak, a boat, wading...): add, edit and delete.
 struct LimitsPage: View {
     var body: some View {
-        PreferencePage(title: "Go/no-go limits") { access in
+        PreferencePage(title: PreferencePageID.limits.title) { access in
             let limits = access.settings?.limits ?? []
             Section {
                 ForEach(Array(limits.enumerated()), id: \.offset) { index, limit in
@@ -44,7 +44,7 @@ struct LimitEditorPage: View {
     let index: Int
 
     var body: some View {
-        PreferencePage(title: "Profile") { access in
+        PreferencePage(title: String(localized: "Profile", comment: "Title of the page that edits one go/no-go limits profile")) { access in
             if let limit = access.settings?.limits[preferenceItem: index] {
                 Section("Name") {
                     ProfileNameField(name: limit.name) { name in

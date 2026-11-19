@@ -9,8 +9,8 @@ enum CurrentLocation {
 
         var errorDescription: String? {
             switch self {
-            case .denied: "Location access is off for Underbite (Settings, Privacy)."
-            case .unavailable: "The location could not be found."
+            case .denied: String(localized: "Location access is off for Underbite (Settings, Privacy).", comment: "Error shown when the app may not read the location; Settings and Privacy are the names of iOS settings screens")
+            case .unavailable: String(localized: "The location could not be found.", comment: "Error shown when the phone could not find its location")
             }
         }
     }

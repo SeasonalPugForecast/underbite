@@ -88,7 +88,7 @@ struct SpeciesProfileScreen: View {
             }
         }
         .confirmationDialog(
-            "Put back every value of \(profile.name)?", isPresented: $resettingAll,
+            String(localized: "Put back every value of \(profile.name)?", comment: "Question asking to reset all edits of a species profile; the argument is the species name"), isPresented: $resettingAll,
             titleVisibility: .visible
         ) {
             Button("Reset all edits", role: .destructive) { reset(field: nil) }

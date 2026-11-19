@@ -193,7 +193,7 @@ private struct SpotList: View {
             Button("Cancel", role: .cancel) { renamingArea = nil }
         }
         .confirmationDialog(
-            deleting.map { "Delete \($0.name)?" } ?? "Delete spot?",
+            deleting.map { String(localized: "Delete \($0.name)?", comment: "Question asking to delete a spot or a trip; the argument is its name") } ?? String(localized: "Delete spot?", comment: "Question asking to delete a spot"),
             isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
             titleVisibility: .visible, presenting: deleting
         ) { spot in
@@ -202,7 +202,7 @@ private struct SpotList: View {
             Text("Its saved conditions are deleted from this device too.")
         }
         .confirmationDialog(
-            removingArea.map { "Remove \($0.name)?" } ?? "Remove area?",
+            removingArea.map { String(localized: "Remove \($0.name)?", comment: "Question asking to remove an area; the argument is its name") } ?? String(localized: "Remove area?", comment: "Question asking to remove an area"),
             isPresented: Binding(get: { removingArea != nil }, set: { if !$0 { removingArea = nil } }),
             titleVisibility: .visible, presenting: removingArea
         ) { area in

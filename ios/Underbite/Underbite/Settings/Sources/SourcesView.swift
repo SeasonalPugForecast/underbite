@@ -131,14 +131,14 @@ private struct ChainRow: View {
     }
 
     private var detail: String? {
-        guard row.known else { return "Not a source this version knows; it is skipped" }
+        guard row.known else { return String(localized: "Not a source this version knows; it is skipped", comment: "Note under a data source in the chain that this version of the app does not know") }
         var parts: [String] = []
         if !row.implemented {
-            parts.append("Not available yet; it is skipped")
+            parts.append(String(localized: "Not available yet; it is skipped", comment: "Note under a data source in the chain that the app cannot use yet"))
         } else if let info {
             parts.append(info.measurements.joined(separator: ", "))
         }
-        if let info, info.keyOptional { parts.append(keys.usgs ? "your key" : "no key") }
+        if let info, info.keyOptional { parts.append(keys.usgs ? String(localized: "your key", comment: "Note under a data source: it uses the key the user saved") : String(localized: "no key", comment: "Note under a data source: it needs no key")) }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 }

@@ -254,7 +254,7 @@ struct CardDetailView: View {
     private func forecastRows(_ full: ViewModel.MarineForecastFull) -> some View {
         Section {
             Text(full.zoneName).font(.headline)
-            Text("\(full.product) · \(full.issued)").foregroundStyle(.readableSecondary)
+            Text(verbatim: "\(full.product) · \(full.issued)").foregroundStyle(.readableSecondary)
             ForEach(Array(full.periods.enumerated()), id: \.offset) { _, period in
                 VStack(alignment: .leading, spacing: 2) {
                     Text(period.name).font(.subheadline.weight(.semibold))

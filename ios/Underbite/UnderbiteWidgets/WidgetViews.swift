@@ -276,16 +276,16 @@ struct WidgetGapView: View {
     private var message: String {
         switch gap {
         case .loading: "Underbite"
-        case .noSpot: "Save a spot in Underbite to see it here."
-        case .noPayload: "Open Underbite to load this spot."
-        case .noTrip: "No trip ahead. Plan one in Underbite."
-        case .outdated: "Open Underbite to update."
+        case .noSpot: String(localized: "Save a spot in Underbite to see it here.", comment: "Widget message when the app has no saved spot")
+        case .noPayload: String(localized: "Open Underbite to load this spot.", comment: "Widget message when the app has not loaded the spot yet")
+        case .noTrip: String(localized: "No trip ahead. Plan one in Underbite.", comment: "Widget message when there is no trip ahead")
+        case .outdated: String(localized: "Open Underbite to update.", comment: "Widget message when its data is out of date")
         case .noData:
             switch kind {
-            case .tide: "No tide at this spot."
-            case .flow: "No river gauge at this spot."
-            case .snack: "No snack times at this spot yet."
-            case .nextTrip: "No go/no-go for this trip yet."
+            case .tide: String(localized: "No tide at this spot.", comment: "Widget message when the spot has no tide")
+            case .flow: String(localized: "No river gauge at this spot.", comment: "Widget message when the spot has no river gauge")
+            case .snack: String(localized: "No snack times at this spot yet.", comment: "Widget message when the spot has no snack times")
+            case .nextTrip: String(localized: "No go/no-go for this trip yet.", comment: "Widget message when the trip has no go/no-go yet")
             }
         }
     }

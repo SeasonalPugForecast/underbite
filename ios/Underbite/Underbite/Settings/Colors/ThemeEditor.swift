@@ -35,11 +35,11 @@ struct ThemeEditor: View {
 
         var title: String {
             switch self {
-            case .typical: "Typical"
-            case .protan: "Protan"
-            case .deutan: "Deutan"
-            case .tritan: "Tritan"
-            case .noColor: "No colour"
+            case .typical: String(localized: "Typical", comment: "Name of typical colour vision in the colour-blind preview")
+            case .protan: String(localized: "Protan", comment: "Name of protanopia, a kind of colour blindness, in the colour-blind preview")
+            case .deutan: String(localized: "Deutan", comment: "Name of deuteranopia, a kind of colour blindness, in the colour-blind preview")
+            case .tritan: String(localized: "Tritan", comment: "Name of tritanopia, a kind of colour blindness, in the colour-blind preview")
+            case .noColor: String(localized: "No colour", comment: "Name of seeing no colour at all in the colour-blind preview")
             }
         }
     }
@@ -54,7 +54,7 @@ struct ThemeEditor: View {
                     ContentUnavailableView("These colours were deleted", systemImage: "paintpalette")
                 }
             }
-            .navigationTitle(saved?.name ?? "Colours")
+            .navigationTitle(saved?.name ?? String(localized: "Colours", comment: "Navigation title of the colour editor when the theme has no name"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
@@ -125,7 +125,7 @@ struct ThemeEditor: View {
             if warnings.isEmpty {
                 CheckLine(
                     passes: true,
-                    text: "Passes every check: words, marks and pins stand out on their backgrounds, and the colours drawn together stay apart, for colour-blind eyes too.")
+                    text: String(localized: "Passes every check: words, marks and pins stand out on their backgrounds, and the colours drawn together stay apart, for colour-blind eyes too.", comment: "Shown when a colour theme passes every contrast check"))
             } else {
                 let shown = showsEveryWarning ? warnings : Array(warnings.prefix(Self.firstWarnings))
                 ForEach(shown) { CheckLine(passes: false, text: $0.text) }

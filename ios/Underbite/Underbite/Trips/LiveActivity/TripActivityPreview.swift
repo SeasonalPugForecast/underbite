@@ -35,12 +35,12 @@
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     if let content {
-                        caption("Lock Screen")
+                        caption(String(localized: "Lock Screen", comment: "Caption of the Lock Screen preview of the trip Live Activity"))
                         lockScreen(content, stale: false)
-                        caption("Lock Screen, out of date")
+                        caption(String(localized: "Lock Screen, out of date", comment: "Caption of the Lock Screen preview of the trip Live Activity when its data is out of date"))
                         lockScreen(content, stale: true)
                         if phone {
-                            caption("Dynamic Island")
+                            caption(String(localized: "Dynamic Island", comment: "Caption of the Dynamic Island preview of the trip Live Activity"))
                             compact(content)
                             expanded(content)
                         }

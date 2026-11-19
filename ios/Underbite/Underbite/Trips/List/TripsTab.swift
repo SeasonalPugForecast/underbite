@@ -131,7 +131,7 @@ private struct TripList: View {
             }
         }
         .confirmationDialog(
-            deleting.map { "Delete \($0.title)?" } ?? "Delete trip?",
+            deleting.map { String(localized: "Delete \($0.title)?", comment: "Question asking to delete a spot or a trip; the argument is its name") } ?? String(localized: "Delete trip?", comment: "Question asking to delete a trip"),
             isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
             titleVisibility: .visible, presenting: deleting
         ) { trip in

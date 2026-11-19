@@ -1,0 +1,215 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@" : {
+      "comment" : "Title (widget intents)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
+    },
+    "A spot's next snack time, when fish feed. Touch and hold to choose the spot." : {
+      "comment" : "Text (underbite widgets)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A spot's next snack time, when fish feed. Touch and hold to choose the spot."
+          }
+        }
+      }
+    },
+    "A spot's river flow, its trend and the past week. Touch and hold to choose the spot." : {
+      "comment" : "Text (underbite widgets)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A spot's river flow, its trend and the past week. Touch and hold to choose the spot."
+          }
+        }
+      }
+    },
+    "A spot's tide curve with its highs and lows. Touch and hold to choose the spot." : {
+      "comment" : "Text (underbite widgets)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A spot's tide curve with its highs and lows. Touch and hold to choose the spot."
+          }
+        }
+      }
+    },
+    "Choose the spot the widget shows." : {
+      "comment" : "Text (widget intents)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the spot the widget shows."
+          }
+        }
+      }
+    },
+    "Go or no-go for your next trip, with the reason." : {
+      "comment" : "Text (underbite widgets)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go or no-go for your next trip, with the reason."
+          }
+        }
+      }
+    },
+    "Next trip" : {
+      "comment" : "Text (underbite widgets)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next trip"
+          }
+        }
+      }
+    },
+    "No go/no-go for this trip yet." : {
+      "comment" : "Widget message when the trip has no go/no-go yet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No go/no-go for this trip yet."
+          }
+        }
+      }
+    },
+    "No river gauge at this spot." : {
+      "comment" : "Widget message when the spot has no river gauge",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No river gauge at this spot."
+          }
+        }
+      }
+    },
+    "No snack times at this spot yet." : {
+      "comment" : "Widget message when the spot has no snack times",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No snack times at this spot yet."
+          }
+        }
+      }
+    },
+    "No tide at this spot." : {
+      "comment" : "Widget message when the spot has no tide",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No tide at this spot."
+          }
+        }
+      }
+    },
+    "No trip ahead. Plan one in Underbite." : {
+      "comment" : "Widget message when there is no trip ahead",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No trip ahead. Plan one in Underbite."
+          }
+        }
+      }
+    },
+    "Open Underbite to load this spot." : {
+      "comment" : "Widget message when the app has not loaded the spot yet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Underbite to load this spot."
+          }
+        }
+      }
+    },
+    "Open Underbite to update." : {
+      "comment" : "Widget message when its data is out of date",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Underbite to update."
+          }
+        }
+      }
+    },
+    "River flow" : {
+      "comment" : "Text (underbite widgets)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "River flow"
+          }
+        }
+      }
+    },
+    "Save a spot in Underbite to see it here." : {
+      "comment" : "Widget message when the app has no saved spot",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save a spot in Underbite to see it here."
+          }
+        }
+      }
+    },
+    "Snack times" : {
+      "comment" : "Text (underbite widgets)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snack times"
+          }
+        }
+      }
+    },
+    "Spot" : {
+      "comment" : "Text (widget intents); Title (widget intents)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spot"
+          }
+        }
+      }
+    },
+    "Tide" : {
+      "comment" : "Text (underbite widgets)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tide"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

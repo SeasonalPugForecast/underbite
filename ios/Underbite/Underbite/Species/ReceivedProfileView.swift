@@ -53,11 +53,11 @@ struct ReceivedProfileView: View {
                 Text("This species is not in this version of the app, so its edits cannot be added.")
                     .fixedSize(horizontal: false, vertical: true)
             } else {
-                fields("Their edits to add", plan.added, systemImage: "plus.circle")
+                fields(String(localized: "Their edits to add", comment: "Heading of the species edits in a received profile that will be added"), plan.added, systemImage: "plus.circle")
                 fields(
-                    "Edited by you too: yours stay unless you take theirs", plan.conflicts,
+                    String(localized: "Edited by you too: yours stay unless you take theirs", comment: "Heading of the species edits in a received profile that were also edited on this phone"), plan.conflicts,
                     systemImage: "arrow.triangle.branch")
-                fields("Already the same as yours", plan.same, systemImage: "equal.circle")
+                fields(String(localized: "Already the same as yours", comment: "Heading of the species edits in a received profile that match this phone's"), plan.same, systemImage: "equal.circle")
                 if plan.added.isEmpty, plan.conflicts.isEmpty {
                     Text("Nothing to add: you have every edit in this profile.")
                         .foregroundStyle(.readableSecondary)

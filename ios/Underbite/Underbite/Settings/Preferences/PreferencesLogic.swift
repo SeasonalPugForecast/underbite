@@ -79,12 +79,12 @@ nonisolated enum Preferences {
 
         var title: String {
             switch self {
-            case .wind: "Wind up to"
-            case .gust: "Gusts up to"
-            case .wave: "Waves up to"
-            case .current: "Current up to"
-            case .airTemp: "Air no colder than"
-            case .visibility: "Visibility at least"
+            case .wind: String(localized: "Wind up to", comment: "Label of the highest wind speed of a limits profile")
+            case .gust: String(localized: "Gusts up to", comment: "Label of the highest gust speed of a limits profile")
+            case .wave: String(localized: "Waves up to", comment: "Label of the highest wave height of a limits profile")
+            case .current: String(localized: "Current up to", comment: "Label of the highest current speed of a limits profile")
+            case .airTemp: String(localized: "Air no colder than", comment: "Label of the lowest air temperature of a limits profile")
+            case .visibility: String(localized: "Visibility at least", comment: "Label of the lowest visibility of a limits profile")
             }
         }
 
@@ -142,10 +142,11 @@ nonisolated enum Preferences {
     /// A name for a new profile that no other profile has.
     static func newLimitName(existing: [Settings.Limit]) -> String {
         let taken = Set(existing.map(\.name))
-        if !taken.contains("New profile") { return "New profile" }
+        let first = String(localized: "New profile", comment: "Name given to a new limits profile")
+        if !taken.contains(first) { return first }
         var n = 2
-        while taken.contains("New profile \(n)") { n += 1 }
-        return "New profile \(n)"
+        while taken.contains(String(localized: "New profile \(n)", comment: "Name given to a new limits profile when the first is taken; the argument is a number")) { n += 1 }
+        return String(localized: "New profile \(n)", comment: "Name given to a new limits profile when the first is taken; the argument is a number")
     }
 
     /// An empty profile: safety flags on, no numeric limits until the user sets them.

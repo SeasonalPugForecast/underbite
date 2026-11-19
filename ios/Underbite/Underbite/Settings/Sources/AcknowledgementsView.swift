@@ -10,7 +10,7 @@ struct AcknowledgementsView: View {
     var body: some View {
         List {
             Section {
-                Text("Underbite is free software under the MIT License. Copyright (c) 2026 Sean Avery.")
+                Text(verbatim: "Underbite is free software under the MIT License. Copyright (c) 2026 Sean Avery.")
                     .font(.callout)
             }
             Section {
@@ -25,7 +25,7 @@ struct AcknowledgementsView: View {
                         .navigationBarTitleDisplayMode(.inline)
                     } label: {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("\(crate.name) \(crate.version)")
+                            Text(verbatim: "\(crate.name) \(crate.version)")
                             Text(crate.license).font(.caption).foregroundStyle(.readableSecondary)
                         }
                     }

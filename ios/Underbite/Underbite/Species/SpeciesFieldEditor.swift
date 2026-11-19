@@ -98,7 +98,12 @@ struct SpeciesFieldEditor: View {
     }
 
     /// The four seasons of the depth field, in the order the core reads them.
-    private static let seasons = ["Spring", "Summer", "Autumn", "Winter"]
+    private static let seasons = [
+        String(localized: "Spring", comment: "Season of the depth field of a species profile"),
+        String(localized: "Summer", comment: "Season of the depth field of a species profile"),
+        String(localized: "Autumn", comment: "Season of the depth field of a species profile"),
+        String(localized: "Winter", comment: "Season of the depth field of a species profile"),
+    ]
 
     // MARK: - Sections
 

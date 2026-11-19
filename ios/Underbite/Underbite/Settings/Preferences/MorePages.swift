@@ -4,11 +4,11 @@ import UnderbiteKit
 /// Trout stress threshold and the solunar switch.
 struct FishingPage: View {
     var body: some View {
-        PreferencePage(title: "Trout and fishing windows") { access in
+        PreferencePage(title: PreferencePageID.fishing.title) { access in
             if let settings = access.settings {
                 Section {
                     QuantityRow(
-                        title: "Trout stress above", quantity: Preferences.troutStress,
+                        title: String(localized: "Trout stress above", comment: "Label of the water temperature above which trout are stressed"), quantity: Preferences.troutStress,
                         settingsJSON: access.json, value: settings.thresholds.troutStressC,
                         optional: false
                     ) { value in
@@ -38,7 +38,7 @@ struct FishingPage: View {
 /// How old a reading may be and how far away a station may be, per kind of data.
 struct FreshnessPage: View {
     var body: some View {
-        PreferencePage(title: "Freshness and distance") { access in
+        PreferencePage(title: PreferencePageID.freshness.title) { access in
             if let settings = access.settings {
                 ForEach(Preferences.SourceKind.allCases) { kind in
                     let group = kind.group(in: settings.sources)
@@ -62,9 +62,9 @@ struct FreshnessPage: View {
                             }
                         }
                         QuantityRow(
-                            title: "Farthest station", quantity: Preferences.distance(of: kind),
+                            title: String(localized: "Farthest station", comment: "Label of the greatest distance of a station that may serve a spot"), quantity: Preferences.distance(of: kind),
                             settingsJSON: access.json, value: group.maxDistanceKm,
-                            offLabel: "Any distance"
+                            offLabel: String(localized: "Any distance", comment: "Value shown when there is no limit to the distance of a station")
                         ) { value in
                             access.edit {
                                 var changed = kind.group(in: $0.sources)
@@ -117,7 +117,7 @@ struct RefreshPage: View {
 /// Luna's voice or plain words. Values, alerts and safety text are plain either way.
 struct VoicePage: View {
     var body: some View {
-        PreferencePage(title: "Voice") { access in
+        PreferencePage(title: PreferencePageID.voice.title) { access in
             Section {
                 Picker(
                     "Voice",
@@ -176,7 +176,7 @@ struct PrivacyPage: View {
     }
 
     private var page: some View {
-        PreferencePage(title: "Privacy") { access in
+        PreferencePage(title: PreferencePageID.privacy.title) { access in
             let model = PrivacyModel(settingsJSON: access.json)
             ForEach(Array(model.words.sections.enumerated()), id: \.offset) { _, section in
                 Section {

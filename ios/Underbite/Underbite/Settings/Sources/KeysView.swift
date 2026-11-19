@@ -18,7 +18,7 @@ struct KeysView: View {
     var body: some View {
         List {
             Section {
-                LabeledContent("Key", value: keys.usgs ? "Key saved" : "No key")
+                LabeledContent("Key", value: keys.usgs ? String(localized: "Key saved", comment: "Value shown when an access key is saved on this phone") : String(localized: "No key", comment: "Value shown when no access key is saved"))
                 SecureField("Paste a key", text: $usgsDraft)
                     .modifier(KeyField())
                 Button("Save key") {
@@ -32,7 +32,7 @@ struct KeysView: View {
                     }
                 }
             } header: {
-                Text(usgs?.name ?? "USGS")
+                Text(verbatim: usgs?.name ?? "USGS")
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("A key is optional. Rivers and lakes work without one; a key of your own raises your phone's allowance of requests.")
@@ -51,10 +51,10 @@ struct KeysView: View {
                         .font(.footnote)
                         .foregroundStyle(.readableSecondary)
                 }
-                LabeledContent("User name", value: keys.copernicusUser ? "Saved" : "Not saved")
+                LabeledContent("User name", value: keys.copernicusUser ? String(localized: "Saved", comment: "Value shown when a user name or password is saved") : String(localized: "Not saved", comment: "Value shown when a user name or password is not saved"))
                 TextField("User name", text: $userDraft)
                     .modifier(KeyField())
-                LabeledContent("Password", value: keys.copernicusPassword ? "Saved" : "Not saved")
+                LabeledContent("Password", value: keys.copernicusPassword ? String(localized: "Saved", comment: "Value shown when a user name or password is saved") : String(localized: "Not saved", comment: "Value shown when a user name or password is not saved"))
                 SecureField("Password", text: $passwordDraft)
                     .modifier(KeyField())
                 Button("Save account") {
@@ -72,7 +72,7 @@ struct KeysView: View {
                     }
                 }
             } header: {
-                Text(copernicus?.name ?? "Copernicus Marine")
+                Text(verbatim: copernicus?.name ?? "Copernicus Marine")
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Off unless you turn it on, and it needs your own Copernicus Marine account.")
@@ -90,7 +90,7 @@ struct KeysView: View {
     }
 
     private static let neverExported =
-        "Kept in this phone's Keychain only. Never in the settings, never exported, never sent anywhere but to the source it belongs to."
+        String(localized: "Kept in this phone's Keychain only. Never in the settings, never exported, never sent anywhere but to the source it belongs to.", comment: "Note under the access key fields; Keychain is the iOS secure store")
 
     private func blank(_ text: String) -> Bool {
         text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty

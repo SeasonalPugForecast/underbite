@@ -469,8 +469,8 @@ private struct AlertConditionRow: View {
                         Text(metric.title).tag(metric.metric)
                     }
                 }
-                threshold("Under", text: $condition.below, problem: belowProblem)
-                threshold("Over", text: $condition.above, problem: aboveProblem)
+                threshold(String(localized: "Under", comment: "Label of the field for the value a measurement must stay under in an alert rule"), text: $condition.below, problem: belowProblem)
+                threshold(String(localized: "Over", comment: "Label of the field for the value a measurement must rise over in an alert rule"), text: $condition.above, problem: aboveProblem)
             case .marineAlert:
                 TextField("Alert, such as Small Craft Advisory", text: $condition.event)
                     .textInputAutocapitalization(.words)
@@ -513,11 +513,11 @@ private struct AlertConditionRow: View {
 
     static func title(_ kind: AlertDraft.ConditionDraft.Kind) -> String {
         switch kind {
-        case .measurement: "A measurement"
-        case .marineAlert: "A marine alert"
-        case .windowStarts: "A fishing window soon"
-        case .stormAhead: "A storm or hurricane ahead"
-        case .tripGo: "A go day on the trip"
+        case .measurement: String(localized: "A measurement", comment: "Kind of condition in an alert rule: a measurement crossing a limit")
+        case .marineAlert: String(localized: "A marine alert", comment: "Kind of condition in an alert rule: a marine weather alert is in force")
+        case .windowStarts: String(localized: "A fishing window soon", comment: "Kind of condition in an alert rule: a fishing window starts soon")
+        case .stormAhead: String(localized: "A storm or hurricane ahead", comment: "Kind of condition in an alert rule: a storm or hurricane is forecast")
+        case .tripGo: String(localized: "A go day on the trip", comment: "Kind of condition in an alert rule: a day of the trip is a go")
         }
     }
 }

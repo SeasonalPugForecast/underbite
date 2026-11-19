@@ -15,6 +15,15 @@ struct AddSpotView: View {
     private enum Way: String, CaseIterable, Identifiable {
         case here = "Here", search = "Search", map = "Map", typed = "Type"
         var id: String { rawValue }
+
+        var title: LocalizedStringKey {
+            switch self {
+            case .here: "Here"
+            case .search: "Search"
+            case .map: "Map"
+            case .typed: "Type"
+            }
+        }
     }
 
     @State private var way = Way.here
@@ -38,7 +47,7 @@ struct AddSpotView: View {
             Form {
                 Section {
                     Picker("Add by", selection: $way) {
-                        ForEach(Way.allCases) { Text($0.rawValue).tag($0) }
+                        ForEach(Way.allCases) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
                     .accessibilityLabel("Add by")
@@ -141,7 +150,7 @@ struct AddSpotView: View {
                     if name.trimmingCharacters(in: .whitespaces).isEmpty { name = item.name ?? "" }
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(item.name ?? "Place")
+                        Text(item.name ?? String(localized: "Place", comment: "A place: the name of the place filter in the catch list, and of a search result that has no name"))
                         if let address = item.address?.shortAddress {
                             Text(address).font(.caption).foregroundStyle(.readableSecondary)
                         }
@@ -234,10 +243,10 @@ struct AddSpotView: View {
         }
         do {
             results = try await MKLocalSearch(request: request).start().mapItems
-            if results.isEmpty { searchError = "Nothing found for \"\(text)\"." }
+            if results.isEmpty { searchError = String(localized: "Nothing found for \"\(text)\".", comment: "Shown when a place search finds nothing; the argument is what was typed") }
         } catch {
             results = []
-            searchError = "The search did not answer. Check the connection and try again."
+            searchError = String(localized: "The search did not answer. Check the connection and try again.", comment: "Shown when a place search fails")
         }
     }
 

@@ -89,32 +89,66 @@ nonisolated enum ThemeCheckLines {
     private static func text(_ key: Key, _ g: Gathered, locale: Locale) -> String {
         let role = key.role
         let appearance =
-            g.light && g.dark ? "in light and dark appearance" : g.dark ? "in dark appearance" : "in light appearance"
-        let measured = "\(ratio(g.lowest, locale: locale)) \(appearance), below \(minimum(g.minimum, locale: locale))"
+            g.light && g.dark
+            ? String(localized: "in light and dark appearance", comment: "Part of a colour check warning: it fails in both appearances")
+            : g.dark
+                ? String(localized: "in dark appearance", comment: "Part of a colour check warning: it fails in the dark appearance")
+                : String(localized: "in light appearance", comment: "Part of a colour check warning: it fails in the light appearance")
+        let measured = String(
+            localized: "\(ratio(g.lowest, locale: locale)) \(appearance), below \(minimum(g.minimum, locale: locale))",
+            comment: "Part of a colour check warning: the measured contrast ratio, the appearance and the ratio it should reach")
         switch key.kind {
         case .contrast:
             let what =
                 switch role.kind {
-                case .text: "words at"
-                case .pin: "the pin's symbol at"
-                case .mark, .fill: "marks at"
+                case .text:
+                    String(localized: "words at \(measured)", comment: "Part of a colour check warning: the text contrast; the argument says the ratio and appearance")
+                case .pin:
+                    String(localized: "the pin's symbol at \(measured)", comment: "Part of a colour check warning: the contrast of a map pin's symbol; the argument says the ratio and appearance")
+                case .mark, .fill:
+                    String(localized: "marks at \(measured)", comment: "Part of a colour check warning: the contrast of marks; the argument says the ratio and appearance")
                 }
-            return "\(role.title) (\(role.group.title)): \(what) \(measured)"
+            return String(
+                localized: "\(role.title) (\(role.group.title)): \(what)",
+                comment: "Colour check warning: a colour role, its group and what is wrong with its contrast")
         case .fillText:
-            return "\(role.title) (\(role.group.title)): words on it at \(measured)"
+            return String(
+                localized: "\(role.title) (\(role.group.title)): words on it at \(measured)",
+                comment: "Colour check warning: the contrast of text drawn on a colour; the arguments are the role, its group and the ratio with the appearance")
         case .fillVisible:
-            return "\(role.title) (\(role.group.title)): hard to see against the background \(appearance)"
+            return String(
+                localized: "\(role.title) (\(role.group.title)): hard to see against the background \(appearance)",
+                comment: "Colour check warning: a colour that is hard to see against the background; the last argument says the appearance")
         case .apart:
-            let other = key.other.map { " and \($0.title)" } ?? ""
-            return "\(role.title)\(other) (\(role.group.title)): too close to tell apart with \(visions(g.visions)) vision \(appearance)"
+            let pair =
+                key.other.map {
+                    String(localized: "\(role.title) and \($0.title)", comment: "Joins two names with and: two colour roles, or the last two kinds of colour vision")
+                } ?? role.title
+            return String(
+                localized: "\(pair) (\(role.group.title)): too close to tell apart with \(visions(g.visions)) vision \(appearance)",
+                comment: "Colour check warning: colours too close to tell apart; the arguments are the role or roles, their group, the kinds of colour vision and the appearance")
         }
     }
 
     /// "typical", "deutan", "typical and deutan", "protan, deutan and tritan".
     private static func visions(_ visions: [Deficiency?]) -> String {
-        let names = visions.sorted { rank($0) < rank($1) }.map { $0.map(\.rawValue) ?? "typical" }
-        guard let last = names.last else { return "typical" }
-        return names.count == 1 ? last : names.dropLast().joined(separator: ", ") + " and " + last
+        let typical = String(localized: "typical", comment: "Name of typical colour vision in a colour check warning")
+        let names = visions.sorted { rank($0) < rank($1) }.map { $0.map(name) ?? typical }
+        guard let last = names.last else { return typical }
+        guard names.count > 1 else { return last }
+        let head = names.dropLast().dropFirst().reduce(names[0]) {
+            String(localized: "\($0), \($1)", comment: "Joins two names in a list of kinds of colour vision")
+        }
+        return String(localized: "\(head) and \(last)", comment: "Joins two names with and: two colour roles, or the last two kinds of colour vision")
+    }
+
+    private static func name(_ vision: Deficiency) -> String {
+        switch vision {
+        case .protan: String(localized: "protan", comment: "Protanopia, a kind of colour blindness, in a colour check warning")
+        case .deutan: String(localized: "deutan", comment: "Deuteranopia, a kind of colour blindness, in a colour check warning")
+        case .tritan: String(localized: "tritan", comment: "Tritanopia, a kind of colour blindness, in a colour check warning")
+        case .achromat: String(localized: "achromat", comment: "Seeing no colour, in a colour check warning")
+        }
     }
 
     private static func rank(_ vision: Deficiency?) -> Int {

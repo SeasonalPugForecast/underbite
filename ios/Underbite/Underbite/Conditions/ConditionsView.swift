@@ -21,7 +21,7 @@ struct ConditionsView: View {
         let spot = store.spot(spotID)
         content
             .background(Color(.systemGroupedBackground))
-            .navigationTitle(spot?.name ?? "Conditions")
+            .navigationTitle(spot?.name ?? String(localized: "Conditions", comment: "Navigation title of the conditions screen when the spot has no name"))
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: ViewModel.Card.self) { CardDetailView(card: $0) }
             .navigationDestination(item: $openCard) { CardDetailView(card: $0) }
@@ -255,7 +255,7 @@ private struct PageHeader: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
                 Text(header.waterTypeLabel)
-                Text("·").accessibilityHidden(true)
+                Text(verbatim: "·").accessibilityHidden(true)
                 Text(status?.updated ?? header.updated)
                 if status?.refreshing == true { ProgressView().controlSize(.mini) }
             }

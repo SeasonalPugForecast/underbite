@@ -208,11 +208,11 @@ struct TripEditorView: View {
 
     private static func methodName(_ method: String) -> String {
         switch method {
-        case "shore": "From shore"
-        case "wade": "Wading"
-        case "kayak": "Kayak"
-        case "boat": "Boat"
-        case "ice": "On the ice"
+        case "shore": String(localized: "From shore", comment: "Way of fishing on a trip: from the shore")
+        case "wade": String(localized: "Wading", comment: "Way of fishing on a trip: wading")
+        case "kayak": String(localized: "Kayak", comment: "Way of fishing on a trip: from a kayak")
+        case "boat": String(localized: "Boat", comment: "Way of fishing on a trip: from a boat")
+        case "ice": String(localized: "On the ice", comment: "Way of fishing on a trip: on the ice")
         default: method
         }
     }

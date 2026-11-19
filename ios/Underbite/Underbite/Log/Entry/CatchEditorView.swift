@@ -164,15 +164,15 @@ struct CatchEditorView: View {
                     other: $draft.speciesText)
             } label: {
                 LabeledContent("Species") {
-                    Text(speciesName ?? "None").foregroundStyle(.readableSecondary)
+                    Text(speciesName ?? String(localized: "None", comment: "Value shown when no species is chosen for a catch")).foregroundStyle(.readableSecondary)
                 }
             }
             if let units {
-                sizeField("Length", text: $draft.lengthText, unit: units.lengthLabel)
+                sizeField(String(localized: "Length", comment: "Label of the field for the length of a catch"), text: $draft.lengthText, unit: units.lengthLabel)
                 if let lengthProblem { ProblemText(text: lengthProblem) }
-                sizeField("Weight", text: $draft.weightText, unit: units.weightLabel)
+                sizeField(String(localized: "Weight", comment: "Label of the field for the weight of a catch"), text: $draft.weightText, unit: units.weightLabel)
                 if !units.ouncesLabel.isEmpty {
-                    sizeField("Ounces", text: $draft.ouncesText, unit: units.ouncesLabel)
+                    sizeField(String(localized: "Ounces", comment: "Label of the field for the ounces part of the weight of a catch"), text: $draft.ouncesText, unit: units.ouncesLabel)
                 }
                 if let weightProblem { ProblemText(text: weightProblem) }
             }
@@ -192,7 +192,7 @@ struct CatchEditorView: View {
     private func sizeField(_ title: String, text: Binding<String>, unit: String) -> some View {
         LabeledContent {
             HStack(spacing: 6) {
-                TextField(title, text: text, prompt: Text(""))
+                TextField(title, text: text, prompt: Text(verbatim: ""))
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
                     .accessibilityLabel(Text(title))
@@ -239,7 +239,7 @@ struct CatchEditorView: View {
             }
             if photos.failed {
                 ProblemText(
-                    text: "A photo could not be added. It may still be downloading from iCloud.")
+                    text: String(localized: "A photo could not be added. It may still be downloading from iCloud.", comment: "Problem shown when a photo of a catch could not be added"))
             }
             PhotosPicker(
                 selection: $picked, maxSelectionCount: 10, selectionBehavior: .ordered,
