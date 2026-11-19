@@ -9,12 +9,14 @@
     /// matrices the theme checks use (`ColorMath.simulationMatrix`, Machado et al. 2009 at full
     /// severity), applied by Core Image in its linear working space. It redraws twice a second
     /// from a snapshot of the app's window (the map included) and lets every touch through. A
-    /// label at the bottom says which simulation it is.
+    /// strip at the bottom, under the picture (drawn a little smaller to make room), says which simulation it is.
     @MainActor
     enum ColorVisionSimulation {
         private static var window: UIWindow?
         private static var imageView: UIImageView?
         private static let context = CIContext()
+        /// The height of the label's strip under the picture.
+        private static let stripHeight: CGFloat = 22
 
         /// Starts the simulation when the launch asks for one.
         static func startIfAsked() {
@@ -25,25 +27,38 @@
             let overlay = UIWindow(windowScene: scene)
             overlay.windowLevel = .alert + 1
             overlay.isUserInteractionEnabled = false
-            overlay.backgroundColor = .clear
+            overlay.backgroundColor = .black
             let controller = UIViewController()
-            controller.view.backgroundColor = .clear
-            let image = UIImageView(frame: overlay.bounds)
-            image.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            image.contentMode = .scaleToFill
+            controller.view.backgroundColor = .black
+            // The label has a strip of its own under the picture, which is drawn a little
+            // smaller to make room, so the label covers nothing of the app.
+            let strip = UIView()
+            strip.backgroundColor = .black
+            strip.translatesAutoresizingMaskIntoConstraints = false
+            let image = UIImageView()
+            image.contentMode = .scaleAspectFit
+            image.clipsToBounds = true
+            image.translatesAutoresizingMaskIntoConstraints = false
             controller.view.addSubview(image)
+            controller.view.addSubview(strip)
             let badge = UILabel()
-            badge.text = "  Simulated: \(deficiency.rawValue)  "
+            badge.text = "Simulated: \(deficiency.rawValue)"
             badge.font = .preferredFont(forTextStyle: .caption2)
             badge.textColor = .white
-            badge.backgroundColor = UIColor.black.withAlphaComponent(0.65)
-            badge.layer.cornerRadius = 7
-            badge.layer.masksToBounds = true
             badge.translatesAutoresizingMaskIntoConstraints = false
-            controller.view.addSubview(badge)
+            strip.addSubview(badge)
+            let view: UIView = controller.view
             NSLayoutConstraint.activate([
-                badge.centerXAnchor.constraint(equalTo: controller.view.centerXAnchor),
-                badge.bottomAnchor.constraint(equalTo: controller.view.bottomAnchor, constant: -4),
+                strip.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                strip.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                strip.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                strip.heightAnchor.constraint(equalToConstant: Self.stripHeight),
+                image.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                image.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                image.topAnchor.constraint(equalTo: view.topAnchor),
+                image.bottomAnchor.constraint(equalTo: strip.topAnchor),
+                badge.centerXAnchor.constraint(equalTo: strip.centerXAnchor),
+                badge.centerYAnchor.constraint(equalTo: strip.centerYAnchor),
             ])
             overlay.rootViewController = controller
             overlay.isHidden = false
