@@ -1,0 +1,2 @@
+-seed -tab spots -open-spot seed-battery -open-card tide
+wait 20

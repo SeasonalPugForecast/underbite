@@ -1,0 +1,2 @@
+-seed -tab map -mapBase apple-standard -mapLayers tide-stations,buoys,usgs-gauges,nwps-gauges,spots -mapAt 40.62,-74.02,0.35
+wait 40

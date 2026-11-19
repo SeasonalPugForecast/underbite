@@ -29,8 +29,10 @@ commands:
                       also ios/UnderbiteKit/UnderbiteFFI.xcframework
   ios licenses        write the app's open-source notices
                       (ios/Underbite/Underbite/Resources/Acknowledgements.json)
-  ios remote doctor|sync|build|test|app|shots|device [--host user@mac] [--dir d] [--dry-run]
+  ios remote doctor|sync|build|test|app|shots|store-shots|device [--host user@mac] [--dir d] [--dry-run]
                       the same on the Mac over SSH (host: ios/remote.local.toml)
+  ios remote archive [--unsigned]
+                      a Release archive on the Mac (not exported or uploaded)
   ios remote ui [--on iphone|ipad] [--only Class/test]
                       the UI and accessibility tests on the iPhone and iPad simulators,
                       accessibility switched on and each simulator booted again

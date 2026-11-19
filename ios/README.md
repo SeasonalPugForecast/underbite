@@ -28,6 +28,8 @@ host = "you@your-mac.local"             # anything `ssh` accepts, including a Ho
 dir = "/Users/Shared/underbite-build"   # on the Mac; relative paths are under its home
 # simulator = "iPhone 17"               # the iPhone simulator (the default)
 # ipad_simulator = "iPad Air 11-inch (M4)"   # the iPad simulator (the default)
+# store_simulator = "iPhone 17 Pro Max"         # store-shots: a 6.9-inch iPhone (the default)
+# store_ipad_simulator = "iPad Pro 13-inch (M5)"   # store-shots: a 13-inch iPad (the default)
 ```
 
 or pass `--host`, or set `UNDERBITE_MAC`. Then, from the repository root:
@@ -40,6 +42,8 @@ or pass `--host`, or set `UNDERBITE_MAC`. Then, from the repository root:
 | `cargo xtask ios remote test` | build, then `swift test` in `ios/UnderbiteKit` |
 | `cargo xtask ios remote app` | build, then the app for the iPhone simulator, once |
 | `cargo xtask ios remote shots` | app, then run it in the iPhone and the iPad simulator and take a screenshot for each `ios/shots/*.args` file; they land in `target/ios-screens/iphone/` and `target/ios-screens/ipad/` (see `ios/shots/README.md`; a `wait <seconds>` line in an `.args` file, up to 180, waits longer before that shot, and `-seedLimits` adds a sample limits profile) |
+| `cargo xtask ios remote store-shots [--simulator name]` | app, then the App Store screenshots: one per `ios/shots/store/*.args` file (six: conditions, tide detail, map with layers, trip grid, catch log, widgets), light, with the status bar at 9:41 (full battery and signal), on a 6.9-inch iPhone simulator (`store_simulator`, default `iPhone 17 Pro Max`, 1320x2868) and a 13-inch iPad simulator (`store_ipad_simulator`, default `iPad Pro 13-inch (M5)`, 2064x2752, which App Store Connect requires for an iPad app); they land in `target/ios-store-shots/iphone/` and `target/ios-store-shots/ipad/`, and the run fails when one is not an accepted size or has an alpha channel. `--simulator` replaces the iPhone. The `.args` format is that of `shots`, without `dark` |
+| `cargo xtask ios remote archive [--unsigned]` | build the Rust core, then a Release archive on the Mac, `.archive/Underbite.xcarchive` in the lane's directory (bundle identifier `dev.savery.underbite`), signed with `team` from `ios/remote.local.toml` like `device` (it asks for the Mac account's password to unlock the keychain unless `keychain_password_command` is set), or unsigned with `--unsigned`. It never exports or uploads: open the archive in Xcode's Organizer and submit it by hand. It is large: `clean` deletes it with the lane |
 | `cargo xtask ios remote ui [--on iphone\|ipad] [--only Class/test]` | build, then the `UnderbiteUITests` target (accessibility audits and what VoiceOver reads) on the iPhone and the iPad simulator one after the other; it switches the simulator's accessibility on and boots it again first (writing the keys to a running simulator is not enough); `--on` picks one device, `--only` one class or test; fails naming the devices that failed |
 | `cargo xtask ios remote exec [--fetch path]… -- command…` | sync, then run the command in the lane's directory on the Mac with Xcode selected; `--fetch` copies a path (relative to the repository) back |
 | `cargo xtask ios remote device [--iphone name] [--release]` | build, sign and install the app on your iPhone (or the named one), then start it (main checkout only) |
@@ -80,7 +84,8 @@ main checkout has no lane.
 - **Lock.** Every run holds `<dir>.lock` until it ends, even on failure. A second run in the same
   directory waits and retries; a stale lock is taken over with a warning.
 - **Simulators.** `app` and `shots` make a missing configured simulator from its device type, and
-  clone both simulators the first time a lane needs them (`xcrun simctl clone`, which requires the
+  clone both simulators the first time a lane needs them, as does `store-shots` for its two
+  (`xcrun simctl clone`, which requires the
   source to be shut down, so creating a lane's simulators shuts the configured ones down once).
   `test` and `exec` need no simulator.
 - **The phone stays in the main checkout.** `device` refuses to run in a lane: it signs with the

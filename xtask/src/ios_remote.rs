@@ -44,6 +44,32 @@ const STAGE: &str = ".stage";
 const DERIVED: &str = ".derived";
 /// Screenshots on the Mac, inside the directory.
 const SCREENS: &str = ".screens";
+/// App Store screenshots on the Mac, inside the directory.
+const STORE_SCREENS: &str = ".store-shots";
+/// The Release archive on the Mac, inside the directory.
+const ARCHIVE_DIR: &str = ".archive";
+/// The archive's file name.
+const ARCHIVE_NAME: &str = "Underbite.xcarchive";
+/// Where `store-shots` puts its screenshots here.
+const STORE_LOCAL: &str = "target/ios-store-shots";
+/// The store shots' launch arguments, one `<name>.args` file each.
+const STORE_SHOTS_DIR: &str = "ios/shots/store";
+/// The Swift script that rewrites the store screenshots without their alpha channel, run on the
+/// Mac (relative to the repository).
+const DROP_ALPHA: &str = "ios/shots/store/drop-alpha.swift";
+/// The most screenshots App Store Connect takes for one device size.
+const MAX_STORE_SHOTS: usize = 10;
+/// The iPhone simulator for `store-shots` when `store_simulator` is not set: a 6.9-inch
+/// iPhone, whose screenshots are 1320x2868 pixels.
+const DEFAULT_STORE_SIMULATOR: &str = "iPhone 17 Pro Max";
+/// The iPad simulator for `store-shots` when `store_ipad_simulator` is not set: a 13-inch
+/// iPad Pro, whose screenshots are 2064x2752 pixels.
+const DEFAULT_STORE_IPAD_SIMULATOR: &str = "iPad Pro 13-inch (M5)";
+/// The portrait pixel sizes App Store Connect accepts for the 6.9-inch iPhone display
+/// (<https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications>).
+const IPHONE_STORE_SIZES: [(u32, u32); 3] = [(1260, 2736), (1290, 2796), (1320, 2868)];
+/// The portrait sizes it requires for an iPad app: the 13-inch display.
+const IPAD_STORE_SIZES: [(u32, u32); 2] = [(2064, 2752), (2048, 2732)];
 /// The iPhone simulator for `app` and `shots` when `simulator` is not set.
 const DEFAULT_SIMULATOR: &str = "iPhone 17";
 /// The iPad simulator when `ipad_simulator` is not set: an 11-inch iPad Air, which the
@@ -72,6 +98,7 @@ const MIN_FREE_GIB: u64 = 15;
 const USAGE: &str = "\
 usage: cargo xtask ios remote <step> [--host user@mac] [--dir path] [--debug] [--dry-run]
                                [--iphone name] [--release] [--local] [--simulator name]
+                               [--unsigned]
        cargo xtask ios remote ui [--on iphone|ipad] [--only Class/test] [--host user@mac] [--dry-run]
        cargo xtask ios remote exec [--fetch path]… [--host user@mac] [--dir path] [--dry-run] -- command…
        cargo xtask ios remote clean (--lane <name> | --all-lanes) [--host user@mac] [--dry-run]
@@ -87,6 +114,14 @@ steps:
            ios/shots/*.args file (a light one, and a dark one when it has a `dark` line;
            a `wait <seconds>` line waits longer before the shot) and copy them to
            target/ios-screens/<iphone|ipad>/
+  store-shots
+           app, then the App Store screenshots (ios/shots/store/*.args, light, status bar
+           9:41) on `store_simulator` (default iPhone 17 Pro Max, 1320x2868) and
+           `store_ipad_simulator` (default iPad Pro 13-inch (M5), 2064x2752) to
+           target/ios-store-shots/<iphone|ipad>/; --simulator picks another iPhone
+  archive  build, then a Release archive in the lane's directory on the Mac
+           (.archive/Underbite.xcarchive), signed with the team of ios/remote.local.toml
+           (`team`) unless --unsigned. Nothing is exported or uploaded
   ui       build, then run the UI tests (UnderbiteUITests: the accessibility audits) on the
            iPhone and then the iPad simulator, each with its accessibility switched on first
            (else the runner can time out waiting for it); --on iphone|ipad tests on one,
@@ -109,7 +144,8 @@ A linked git worktree is a lane: its directory on the Mac is `<dir>-<lane>` and 
 `<simulator> (<lane>)` (lane = the worktree directory's name; UNDERBITE_LANE overrides it,
 empty switches it off). `device` runs only from the main checkout.
 
---simulator <name> uses that iPhone simulator instead of `simulator`.
+--simulator <name> uses that iPhone simulator instead of `simulator` (`store_simulator` for
+store-shots).
 
 The Mac is --host, else UNDERBITE_MAC, else `host` in ios/remote.local.toml.
 The Rust core is built on the build host of `cargo xtask remote` when one answers
@@ -124,6 +160,8 @@ enum Step {
     Test,
     App,
     Shots,
+    StoreShots,
+    Archive,
     Ui,
     Exec,
     Device,
@@ -135,7 +173,14 @@ impl Step {
     fn packages(self) -> bool {
         matches!(
             self,
-            Self::Build | Self::Test | Self::App | Self::Shots | Self::Ui | Self::Device
+            Self::Build
+                | Self::Test
+                | Self::App
+                | Self::Shots
+                | Self::StoreShots
+                | Self::Archive
+                | Self::Ui
+                | Self::Device
         )
     }
 }
@@ -161,6 +206,8 @@ struct Args {
     all_lanes: bool,
     /// The iPhone simulator to use instead of the configured one.
     simulator: Option<String>,
+    /// `archive`: do not sign.
+    unsigned: bool,
     /// `ui`: the one simulator to test on (`iphone` or `ipad`), else both.
     on: Option<String>,
     /// `ui`: the one test class or test to run (`AccessibilityAuditTests/testConditions`).
@@ -180,6 +227,8 @@ fn parse(args: &[&str]) -> Result<Args, String> {
         Some(&"test") => Step::Test,
         Some(&"app") => Step::App,
         Some(&"shots") => Step::Shots,
+        Some(&"store-shots") => Step::StoreShots,
+        Some(&"archive") => Step::Archive,
         Some(&"ui") => Step::Ui,
         Some(&"exec") => Step::Exec,
         Some(&"device") => Step::Device,
@@ -198,6 +247,7 @@ fn parse(args: &[&str]) -> Result<Args, String> {
         lane: None,
         all_lanes: false,
         simulator: None,
+        unsigned: false,
         on: None,
         only: None,
         fetch: Vec::new(),
@@ -211,6 +261,7 @@ fn parse(args: &[&str]) -> Result<Args, String> {
             "--dry-run" => out.dry_run = true,
             "--release" => out.release = true,
             "--local" => out.local = true,
+            "--unsigned" => out.unsigned = true,
             "--all-lanes" => out.all_lanes = true,
             "--lane" => match iter.next() {
                 Some(name) => out.lane = Some((*name).to_owned()),
@@ -256,6 +307,9 @@ fn parse(args: &[&str]) -> Result<Args, String> {
     if step != Step::Exec && !(out.fetch.is_empty() && out.command.is_empty()) {
         return Err(format!("--fetch and a command belong to exec\n\n{USAGE}"));
     }
+    if step != Step::Archive && out.unsigned {
+        return Err(format!("--unsigned belongs to archive\n\n{USAGE}"));
+    }
     if step != Step::Ui && (out.on.is_some() || out.only.is_some()) {
         return Err(format!("--on and --only belong to ui\n\n{USAGE}"));
     }
@@ -298,6 +352,8 @@ struct LocalFile {
     xcode: Option<String>,
     simulator: Option<String>,
     ipad_simulator: Option<String>,
+    store_simulator: Option<String>,
+    store_ipad_simulator: Option<String>,
     team: Option<String>,
     iphone: Option<String>,
     keychain_password_command: Option<String>,
@@ -320,13 +376,16 @@ impl LocalFile {
                 "xcode" => out.xcode = Some(text),
                 "simulator" => out.simulator = Some(text),
                 "ipad_simulator" => out.ipad_simulator = Some(text),
+                "store_simulator" => out.store_simulator = Some(text),
+                "store_ipad_simulator" => out.store_ipad_simulator = Some(text),
                 "team" => out.team = Some(text),
                 "iphone" => out.iphone = Some(text),
                 "keychain_password_command" => out.keychain_password_command = Some(text),
                 _ => {
                     return Err(format!(
                         "unknown key `{key}` (use host, dir, xcode, simulator, ipad_simulator, \
-                         team, iphone and keychain_password_command)"
+                         store_simulator, store_ipad_simulator, team, iphone and \
+                         keychain_password_command)"
                     ));
                 }
             }
@@ -357,6 +416,15 @@ struct Remote {
     ipad: String,
     /// The iPad simulator the main checkout uses.
     base_ipad: String,
+    /// The iPhone simulator `store-shots` uses: `base_store`, or its clone for the lane.
+    store: String,
+    /// The iPhone simulator the main checkout uses for `store-shots`: `--simulator`, else
+    /// `store_simulator`.
+    base_store: String,
+    /// The iPad simulator `store-shots` uses: `base_store_ipad`, or its clone for the lane.
+    store_ipad: String,
+    /// The iPad simulator the main checkout uses for `store-shots`.
+    base_store_ipad: String,
     /// The Apple development team for signing, if set here.
     team: Option<String>,
     /// The paired iPhone's name, for `device`.
@@ -427,8 +495,15 @@ fn remote(
         nonempty(file.simulator).unwrap_or_else(|| DEFAULT_SIMULATOR.to_string());
     let base_ipad =
         nonempty(file.ipad_simulator).unwrap_or_else(|| DEFAULT_IPAD_SIMULATOR.to_string());
-    let base_simulator =
-        nonempty(args.simulator.clone()).unwrap_or_else(|| config_simulator.clone());
+    // `--simulator` names the iPhone of whichever step it is given to.
+    let for_store = args.step == Step::StoreShots;
+    let base_simulator = nonempty(args.simulator.clone().filter(|_| !for_store))
+        .unwrap_or_else(|| config_simulator.clone());
+    let base_store = nonempty(args.simulator.clone().filter(|_| for_store))
+        .or_else(|| nonempty(file.store_simulator))
+        .unwrap_or_else(|| DEFAULT_STORE_SIMULATOR.to_string());
+    let base_store_ipad = nonempty(file.store_ipad_simulator)
+        .unwrap_or_else(|| DEFAULT_STORE_IPAD_SIMULATOR.to_string());
     Ok(Remote {
         host,
         dir,
@@ -439,6 +514,10 @@ fn remote(
         config_simulator,
         ipad: lane_simulator(&base_ipad, lane.as_deref()),
         base_ipad,
+        store: lane_simulator(&base_store, lane.as_deref()),
+        base_store,
+        store_ipad: lane_simulator(&base_store_ipad, lane.as_deref()),
+        base_store_ipad,
         lane,
         team: nonempty(file.team),
         iphone: nonempty(file.iphone),
@@ -491,6 +570,8 @@ fn rsync_args(remote: &Remote) -> Vec<String> {
             format!("--filter=P /{STAGE}"),
             format!("--filter=P /{DERIVED}"),
             format!("--filter=P /{SCREENS}"),
+            format!("--filter=P /{STORE_SCREENS}"),
+            format!("--filter=P /{ARCHIVE_DIR}"),
             // What `build` made there stays for the steps after it (`exec`, `sync`).
             format!("--filter=P /{XCFRAMEWORK}"),
             format!("--filter=P /{SWIFT_DEST}/{SWIFT}"),
@@ -527,9 +608,9 @@ fn package(remote: &Remote) -> String {
     )
 }
 
-/// On the Mac: the app for the simulator, without signing.
-fn app(remote: &Remote) -> String {
-    let destination = quote(&format!("platform=iOS Simulator,name={}", remote.simulator));
+/// On the Mac: the app for the simulator `sim`, without signing.
+fn app(remote: &Remote, sim: &str) -> String {
+    let destination = quote(&format!("platform=iOS Simulator,name={sim}"));
     in_dir(
         remote,
         &format!(
@@ -640,17 +721,117 @@ fn read_shots(dir: &Path) -> Result<Vec<Shot>, String> {
         .collect()
 }
 
+/// The store shots in [`STORE_SHOTS_DIR`]: light only (a `dark` line is an error), at least one
+/// and at most [`MAX_STORE_SHOTS`], the number App Store Connect takes per device size.
+fn read_store_shots(dir: &Path) -> Result<Vec<Shot>, String> {
+    let list = read_shots(dir)?;
+    if let Some(shot) = list.iter().find(|s| s.dark) {
+        return Err(format!(
+            "{STORE_SHOTS_DIR}/{}.args: store screenshots are light only, drop the `dark` line",
+            shot.name
+        ));
+    }
+    if list.len() > MAX_STORE_SHOTS {
+        return Err(format!(
+            "{STORE_SHOTS_DIR}/ has {} shots; App Store Connect takes {MAX_STORE_SHOTS} per device size",
+            list.len()
+        ));
+    }
+    Ok(list)
+}
+
+/// The width, height and colour type of the PNG in `bytes` (from its `IHDR` chunk).
+fn png_header(bytes: &[u8]) -> Option<(u32, u32, u8)> {
+    const SIGNATURE: &[u8] = &[0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a];
+    if bytes.len() < 26 || !bytes.starts_with(SIGNATURE) || &bytes[12..16] != b"IHDR" {
+        return None;
+    }
+    let word =
+        |at: usize| u32::from_be_bytes([bytes[at], bytes[at + 1], bytes[at + 2], bytes[at + 3]]);
+    Some((word(16), word(20), bytes[25]))
+}
+
+/// Whether a PNG colour type carries an alpha channel (grey with alpha, or RGBA).
+fn has_alpha(color_type: u8) -> bool {
+    matches!(color_type, 4 | 6)
+}
+
+/// The problems with the PNGs in `dir`: each must be one of `sizes`, and have no alpha channel
+/// (App Store Connect refuses both otherwise). Empty when all is well; a directory without
+/// PNGs is a problem too.
+fn check_store_pngs(dir: &Path, sizes: &[(u32, u32)], expected: usize) -> Vec<String> {
+    let mut found = 0;
+    let mut problems = Vec::new();
+    let mut files: Vec<PathBuf> = std::fs::read_dir(dir)
+        .into_iter()
+        .flatten()
+        .filter_map(Result::ok)
+        .map(|e| e.path())
+        .filter(|p| p.extension().is_some_and(|e| e == "png"))
+        .collect();
+    files.sort();
+    for file in files {
+        found += 1;
+        let name = file.display();
+        let mut head = vec![0u8; 26];
+        let read = std::fs::File::open(&file).and_then(|mut f| {
+            use std::io::Read as _;
+            f.read_exact(&mut head)
+        });
+        match (read, png_header(&head)) {
+            (Ok(()), Some((w, h, color))) => {
+                if !sizes.contains(&(w, h)) {
+                    problems.push(format!(
+                        "{name}: {w}x{h} is not a size App Store Connect takes"
+                    ));
+                }
+                if has_alpha(color) {
+                    problems.push(format!("{name}: has an alpha channel"));
+                }
+            }
+            _ => problems.push(format!("{name}: not a readable PNG")),
+        }
+    }
+    if found != expected {
+        problems.push(format!(
+            "{}: {found} screenshots, expected {expected}",
+            dir.display()
+        ));
+    }
+    problems
+}
+
 /// On the Mac: makes the simulators the step needs, unless they exist. A missing configured
 /// simulator is made from the device type of that name (the newest runtime). In a lane the
 /// lane's simulator is a clone of it; `clone` needs the source shut down, so the configured
 /// simulator is shut down first (once per lane; the main checkout boots it again when it
 /// needs it).
 fn ensure_simulators(remote: &Remote) -> String {
+    ensure_pairs(
+        remote,
+        &[
+            (&remote.simulator, &remote.base_simulator),
+            (&remote.ipad, &remote.base_ipad),
+        ],
+    )
+}
+
+/// [`ensure_simulators`] for the two simulators `store-shots` uses.
+fn ensure_store_simulators(remote: &Remote) -> String {
+    ensure_pairs(
+        remote,
+        &[
+            (&remote.store, &remote.base_store),
+            (&remote.store_ipad, &remote.base_store_ipad),
+        ],
+    )
+}
+
+/// Makes each `(simulator, base)` pair of simulators: the base from its device type when
+/// missing, and in a lane the lane's clone of it.
+fn ensure_pairs(remote: &Remote, pairs: &[(&String, &String)]) -> String {
     let mut parts = vec![developer_dir(remote)];
-    for (sim, base) in [
-        (&remote.simulator, &remote.base_simulator),
-        (&remote.ipad, &remote.base_ipad),
-    ] {
+    for (sim, base) in pairs {
         parts.push(ensure_simulator(remote, sim, base));
     }
     parts.join("; ")
@@ -720,6 +901,8 @@ fn delete_simulators(remote: &Remote, which: &Which) -> String {
         &remote.config_simulator,
         &remote.base_simulator,
         &remote.base_ipad,
+        &remote.base_store,
+        &remote.base_store_ipad,
     ] {
         if !bases.contains(&base.as_str()) {
             bases.push(base);
@@ -776,7 +959,8 @@ const BLANK_BYTES: u32 = 120_000;
 /// under [`BLANK_BYTES`] is taken again after a further wait, up to three
 /// times, and one still blank is reported rather than passed off. The size
 /// comes from `wc -c`: the Mac's `stat` may be GNU's (Homebrew), whose `-f`
-/// means something else. `args` are quoted word by word.
+/// means something else. A launch that fails (the first one after an install can) is tried
+/// again, up to three times. `args` are quoted word by word.
 fn launch_line(sim: &str, dir: &str, name: &str, args: &[String], wait: u32) -> String {
     let file = format!("{dir}/{name}.png");
     let args = args.iter().fold(String::new(), |mut all, a| {
@@ -785,7 +969,8 @@ fn launch_line(sim: &str, dir: &str, name: &str, args: &[String], wait: u32) -> 
     });
     format!(
         "xcrun simctl terminate {sim} {BUNDLE_ID} 2>/dev/null || true; \
-         xcrun simctl launch {sim} {BUNDLE_ID}{args} >/dev/null; sleep {wait}; n=0; \
+         l=0; until xcrun simctl launch {sim} {BUNDLE_ID}{args} >/dev/null; do l=$((l+1)); \
+         [ $l -ge 3 ] && break; sleep 6; done; sleep {wait}; n=0; \
          while :; do xcrun simctl io {sim} screenshot {file} >/dev/null 2>&1; \
          size=$(wc -c < {file} 2>/dev/null) || size=0; [ ${{size:-0}} -ge {BLANK_BYTES} ] && break; \
          n=$((n+1)); if [ $n -ge 3 ]; then echo \"blank screenshot: {name}\" >&2; break; fi; \
@@ -804,17 +989,54 @@ fn shot_devices(remote: &Remote) -> [(&'static str, &str); 2] {
 /// is removed before it is installed, so a run never starts from data an earlier build
 /// left behind (a lane's simulators are clones that carry the base devices' app data).
 fn shots(remote: &Remote, list: &[Shot]) -> String {
+    capture(remote, list, shot_devices(remote), SCREENS, false)
+}
+
+/// The simulators `store-shots` takes pictures on, like [`shot_devices`].
+fn store_devices(remote: &Remote) -> [(&'static str, &str); 2] {
+    [("iphone", &remote.store), ("ipad", &remote.store_ipad)]
+}
+
+/// On the Mac: the light App Store screenshots of `list` in [`STORE_SCREENS`], one directory
+/// per device, with the status bar set to 9:41, full battery and signal (and cleared again).
+fn store_shots(remote: &Remote, list: &[Shot]) -> String {
+    capture(remote, list, store_devices(remote), STORE_SCREENS, true)
+}
+
+/// The status bar the store screenshots show: 9:41, charged, full signal. The options are
+/// those of `xcrun simctl status_bar <device> override`.
+fn status_bar_override(sim: &str) -> String {
+    format!(
+        "xcrun simctl status_bar {sim} override --time 9:41 --batteryState charged \
+         --batteryLevel 100 --wifiMode active --wifiBars 3 --cellularMode active \
+         --cellularBars 4 --operatorName ''"
+    )
+}
+
+/// On the Mac: runs the app in each of `devices` (a directory label and a simulator) and takes
+/// the shots of `list` into `<screens>/<label>/`. With `store` the status bar is overridden and
+/// only light shots are taken.
+fn capture(
+    remote: &Remote,
+    list: &[Shot],
+    devices: [(&str, &str); 2],
+    screens: &str,
+    store: bool,
+) -> String {
     let app = format!("{DERIVED}/Build/Products/Debug-iphonesimulator/{APP}");
-    let mut steps = vec![format!("rm -rf {SCREENS}")];
-    for (label, name) in shot_devices(remote) {
+    let mut steps = vec![format!("rm -rf {screens}")];
+    for (label, name) in devices {
         let sim = quote(name);
-        let dir = format!("{SCREENS}/{label}");
+        let dir = format!("{screens}/{label}");
         steps.push(format!(
             "mkdir -p {dir}; xcrun simctl boot {sim} 2>/dev/null || true; \
              xcrun simctl bootstatus {sim} -b >/dev/null; xcrun simctl ui {sim} appearance light; \
              xcrun simctl uninstall {sim} {BUNDLE_ID} 2>/dev/null || true; \
              xcrun simctl install {sim} {app}"
         ));
+        if store {
+            steps.push(status_bar_override(&sim));
+        }
         for (i, shot) in list.iter().enumerate() {
             // The first launch fetches; later ones start from the cache.
             steps.push(launch_line(
@@ -824,7 +1046,7 @@ fn shots(remote: &Remote, list: &[Shot]) -> String {
                 &shot.args,
                 shot.wait_after_launch(if i == 0 { 12 } else { 8 }),
             ));
-            if shot.dark {
+            if shot.dark && !store {
                 // The appearance is set while the app is not running, and read back
                 // before the launch: a running app can keep its old look.
                 steps.push(format!(
@@ -844,6 +1066,15 @@ fn shots(remote: &Remote, list: &[Shot]) -> String {
                 ));
             }
         }
+        if store {
+            steps.push(format!("xcrun simctl status_bar {sim} clear"));
+        }
+    }
+    if store {
+        // The simulator's screenshots carry an alpha channel; App Store Connect refuses it.
+        steps.push(format!(
+            "xcrun swift {DROP_ALPHA} {screens}/*/*.png || echo \"could not drop the alpha channel\" >&2"
+        ));
     }
     in_dir(remote, &steps.join("; "))
 }
@@ -954,6 +1185,32 @@ fn device(remote: &Remote, iphone: &str, release: bool) -> String {
              xcrun devicectl device process launch --device {phone} {BUNDLE_ID} >/dev/null 2>&1 \
              && echo 'installed and started' \
              || echo 'installed; it did not start (is the phone locked?), so open it on the phone'"
+        ),
+    )
+}
+
+/// On the Mac: a Release archive of the app (`.archive/Underbite.xcarchive`). Signed (with the
+/// team from the configuration, through automatic signing, like `device`) unless `unsigned`.
+/// Nothing is exported or uploaded: the archive stays in the lane's directory, and its size is
+/// printed.
+fn archive(remote: &Remote, unsigned: bool) -> String {
+    let path = format!("{ARCHIVE_DIR}/{ARCHIVE_NAME}");
+    let (prefix, signing) = if unsigned {
+        (String::new(), "CODE_SIGNING_ALLOWED=NO")
+    } else {
+        (
+            format!("{}{UNLOCK}", team_line(remote)),
+            "-allowProvisioningUpdates",
+        )
+    };
+    in_dir(
+        remote,
+        &format!(
+            "{prefix}rm -rf {ARCHIVE_DIR}; xcodebuild -quiet -project {PROJECT} -scheme {SCHEME} \
+             -configuration Release -destination generic/platform=iOS -derivedDataPath {DERIVED} \
+             -archivePath {path} {signing} archive || exit 1; \
+             du -sh {path}; echo \"archive: $PWD/{path} ({})\"",
+            if unsigned { "unsigned" } else { "signed" }
         ),
     )
 }
@@ -1188,7 +1445,19 @@ fn plan(args: &Args, remote: &Remote, stage: &str, list: &[Shot]) -> Plan {
     if matches!(args.step, Step::App | Step::Shots) {
         // The lane's own simulators, cloned on first use (and a missing one made).
         steps.push(ssh(ensure_simulators(remote)));
-        steps.push(ssh(app(remote)));
+        steps.push(ssh(app(remote, &remote.simulator)));
+    }
+    if args.step == Step::StoreShots {
+        steps.push(ssh(ensure_store_simulators(remote)));
+        steps.push(ssh(app(remote, &remote.store)));
+    }
+    if args.step == Step::Archive {
+        let mut line = vec![remote.host.clone(), archive(remote, args.unsigned)];
+        if !args.unsigned && remote.keychain_password_command.is_none() {
+            // A terminal, so the keychain can ask for the password.
+            line.insert(0, "-t".into());
+        }
+        steps.push(("ssh".to_string(), line));
     }
     if args.step == Step::Ui {
         steps.push(ssh(ensure_simulators(remote)));
@@ -1230,6 +1499,14 @@ fn plan(args: &Args, remote: &Remote, stage: &str, list: &[Shot]) -> Plan {
         fetches.push((
             "rsync".to_string(),
             fetch_screens(remote, SCREENS, &local.to_string_lossy()),
+        ));
+    }
+    if args.step == Step::StoreShots {
+        steps.push(ssh(store_shots(remote, list)));
+        let local = workspace_root().join(STORE_LOCAL);
+        fetches.push((
+            "rsync".to_string(),
+            fetch_screens(remote, STORE_SCREENS, &local.to_string_lossy()),
         ));
     }
     (steps, fetches)
@@ -1333,9 +1610,17 @@ pub(crate) fn run(args: &[&str]) -> Result<(), String> {
             Some(lane) => println!("lane: {lane} (directory {})", remote.dir),
             None => println!("lane: none (the main checkout; directory {})", remote.dir),
         }
-        if matches!(args.step, Step::App | Step::Shots | Step::Ui) {
+        if matches!(
+            args.step,
+            Step::App | Step::Shots | Step::StoreShots | Step::Archive | Step::Ui
+        ) {
             println!("project: {PROJECT}, scheme {SCHEME}, app {APP}, bundle {BUNDLE_ID}");
-            for (label, name) in shot_devices(&remote) {
+            let devices = if args.step == Step::StoreShots {
+                store_devices(&remote)
+            } else {
+                shot_devices(&remote)
+            };
+            for (label, name) in devices {
                 println!("simulator ({label}): {name}");
             }
         }
@@ -1343,13 +1628,20 @@ pub(crate) fn run(args: &[&str]) -> Result<(), String> {
     if args.step == Step::Doctor && !args.dry_run {
         return doctor(&remote);
     }
-    let list = if args.step == Step::Shots {
-        let list = read_shots(&workspace_root().join(SHOTS_DIR))?;
+    let list = if matches!(args.step, Step::Shots | Step::StoreShots) {
+        let (dir, list) = if args.step == Step::Shots {
+            (SHOTS_DIR, read_shots(&workspace_root().join(SHOTS_DIR))?)
+        } else {
+            (
+                STORE_SHOTS_DIR,
+                read_store_shots(&workspace_root().join(STORE_SHOTS_DIR))?,
+            )
+        };
         if list.is_empty() {
             if !args.dry_run {
-                return Err(format!("no screenshots: {SHOTS_DIR}/ has no *.args files"));
+                return Err(format!("no screenshots: {dir}/ has no *.args files"));
             }
-            println!("shots: none ({SHOTS_DIR}/*.args)");
+            println!("shots: none ({dir}/*.args)");
         } else {
             println!(
                 "shots: {}",
@@ -1386,8 +1678,12 @@ pub(crate) fn run(args: &[&str]) -> Result<(), String> {
             args.dry_run,
         )?
     };
-    if args.step == Step::Shots && !args.dry_run {
-        let dir = workspace_root().join("target/ios-screens");
+    if matches!(args.step, Step::Shots | Step::StoreShots) && !args.dry_run {
+        let dir = workspace_root().join(if args.step == Step::Shots {
+            "target/ios-screens"
+        } else {
+            STORE_LOCAL
+        });
         std::fs::create_dir_all(&dir).map_err(|e| format!("creating {}: {e}", dir.display()))?;
     }
     let mut first_error = None;
@@ -1411,6 +1707,21 @@ pub(crate) fn run(args: &[&str]) -> Result<(), String> {
             first_error.get_or_insert(e);
         }
     }
+    if args.step == Step::StoreShots && !args.dry_run && first_error.is_none() {
+        let root = workspace_root().join(STORE_LOCAL);
+        let problems: Vec<String> = [
+            ("iphone", &IPHONE_STORE_SIZES[..]),
+            ("ipad", &IPAD_STORE_SIZES[..]),
+        ]
+        .into_iter()
+        .flat_map(|(label, sizes)| check_store_pngs(&root.join(label), sizes, list.len()))
+        .collect();
+        if problems.is_empty() {
+            println!("store screenshots: sizes and alpha channels checked");
+        } else {
+            first_error = Some(problems.join("\n"));
+        }
+    }
     first_error.map_or(Ok(()), Err)
 }
 
@@ -1425,7 +1736,7 @@ fn execute(
     command.args(arguments).current_dir(workspace_root());
     let password = match &remote.keychain_password_command {
         Some(get)
-            if args.step == Step::Device
+            if matches!(args.step, Step::Device | Step::Archive)
                 && arguments
                     .last()
                     .is_some_and(|line| line.contains("unlock-keychain")) =>
@@ -1463,6 +1774,7 @@ mod tests {
             lane: None,
             all_lanes: false,
             simulator: None,
+            unsigned: false,
             on: None,
             only: None,
             fetch: Vec::new(),
@@ -1522,10 +1834,289 @@ mod tests {
         assert!(parse(&["device", "--iphone"]).is_err());
         assert!(parse(&[]).is_err());
         assert!(parse(&["build", "--fast"]).is_err());
-        // The App Store steps and the entitlement flag are not here.
+        // The entitlement flag is not here.
         assert!(parse(&["device", "--no-weatherkit"]).is_err());
-        assert!(parse(&["store-shots"]).is_err());
-        assert!(parse(&["archive"]).is_err());
+    }
+
+    #[test]
+    fn store_shots_and_archive_parse_their_own_flags() {
+        let a = parse(&["store-shots", "--simulator", "iPhone 16 Pro Max"]).unwrap();
+        assert_eq!(a.step, Step::StoreShots);
+        assert_eq!(a.simulator.as_deref(), Some("iPhone 16 Pro Max"));
+        let a = parse(&["archive", "--unsigned", "--dry-run"]).unwrap();
+        assert!(a.step == Step::Archive && a.unsigned && a.dry_run);
+        assert!(!parse(&["archive"]).unwrap().unsigned);
+        assert!(parse(&["shots", "--unsigned"]).is_err());
+        assert!(parse(&["store-shots", "--unsigned"]).is_err());
+        // Nothing here exports or uploads.
+        assert!(parse(&["archive", "--export"]).is_err());
+        assert!(parse(&["upload"]).is_err());
+    }
+
+    #[test]
+    fn store_simulators_default_to_a_6_9_inch_iphone_and_a_13_inch_ipad() {
+        let r = lane_remote(None);
+        assert_eq!(r.store, "iPhone 17 Pro Max");
+        assert_eq!(r.store_ipad, "iPad Pro 13-inch (M5)");
+        // The ordinary shots keep their simulators.
+        assert_eq!(
+            (r.simulator.as_str(), r.ipad.as_str()),
+            ("iPhone 17", "iPad Air 11-inch (M4)")
+        );
+        let laned = lane_remote(Some("lane-a"));
+        assert_eq!(laned.store, "iPhone 17 Pro Max (lane-a)");
+        assert_eq!(laned.store_ipad, "iPad Pro 13-inch (M5) (lane-a)");
+        // The configuration names them; --simulator replaces only the iPhone, and only for
+        // store-shots.
+        let file = || LocalFile {
+            host: Some("me@mac".into()),
+            store_simulator: Some("iPhone 16 Pro Max".into()),
+            store_ipad_simulator: Some("iPad Pro 13-inch (M4)".into()),
+            ..LocalFile::default()
+        };
+        let store = |step, simulator: Option<&str>| {
+            let a = Args {
+                simulator: simulator.map(str::to_owned),
+                host: None,
+                ..args(step)
+            };
+            remote(&a, &|_| None, file(), None).unwrap()
+        };
+        let r = store(Step::StoreShots, None);
+        assert_eq!(
+            (r.store.as_str(), r.store_ipad.as_str()),
+            ("iPhone 16 Pro Max", "iPad Pro 13-inch (M4)")
+        );
+        let r = store(Step::StoreShots, Some("iPhone 18 Pro Max"));
+        assert_eq!(
+            (r.store.as_str(), r.simulator.as_str()),
+            ("iPhone 18 Pro Max", "iPhone 17")
+        );
+        let r = store(Step::Shots, Some("iPhone 18 Pro Max"));
+        assert_eq!(
+            (r.store.as_str(), r.simulator.as_str()),
+            ("iPhone 16 Pro Max", "iPhone 18 Pro Max")
+        );
+    }
+
+    #[test]
+    fn store_shots_run_light_with_the_9_41_status_bar_on_both_store_simulators() {
+        let laned = lane_remote(Some("lane-a"));
+        let list = [
+            shot("01-now", "-seed", false),
+            shot("02-tide", "-seed -x", false),
+        ];
+        let p = plan(&args(Step::StoreShots), &laned, "s", &list);
+        let programs: Vec<&str> = p.0.iter().map(|(p, _)| p.as_str()).collect();
+        assert_eq!(
+            programs,
+            ["ssh", "rsync", "rsync", "ssh", "ssh", "ssh", "ssh"],
+            "claim, sync, stage, package, simulators, app, shots"
+        );
+        let sims = &p.0[4].1[1];
+        for clone in [
+            "xcrun simctl clone 'iPhone 17 Pro Max' 'iPhone 17 Pro Max (lane-a)'",
+            "xcrun simctl clone 'iPad Pro 13-inch (M5)' 'iPad Pro 13-inch (M5) (lane-a)'",
+        ] {
+            assert!(sims.contains(clone), "{sims}");
+        }
+        assert!(
+            !sims.contains("'iPhone 17' "),
+            "only the store simulators: {sims}"
+        );
+        assert!(
+            p.0[5].1[1].contains("name=iPhone 17 Pro Max (lane-a)"),
+            "{:?}",
+            p.0[5]
+        );
+        let line = last_line(&p);
+        assert!(line.contains("rm -rf .store-shots"), "{line}");
+        for (dir, sim) in [
+            (".store-shots/iphone", "'iPhone 17 Pro Max (lane-a)'"),
+            (".store-shots/ipad", "'iPad Pro 13-inch (M5) (lane-a)'"),
+        ] {
+            assert!(line.contains(&format!("mkdir -p {dir}")), "{line}");
+            assert!(
+                line.contains(&format!(
+                    "xcrun simctl status_bar {sim} override --time 9:41"
+                )),
+                "{line}"
+            );
+            assert!(
+                line.contains(&format!("xcrun simctl status_bar {sim} clear")),
+                "{line}"
+            );
+            assert!(line.contains(&format!("{dir}/01-now.png")), "{line}");
+            assert!(line.contains(&format!("{dir}/02-tide.png")), "{line}");
+            assert!(
+                line.contains(&format!(
+                    "xcrun simctl uninstall {sim} dev.savery.underbite"
+                )),
+                "{line}"
+            );
+        }
+        assert!(
+            line.contains("--batteryState charged --batteryLevel 100"),
+            "{line}"
+        );
+        assert!(!line.contains("appearance dark"), "light only: {line}");
+        assert!(
+            line.contains("xcrun swift ios/shots/store/drop-alpha.swift .store-shots/*/*.png"),
+            "{line}"
+        );
+        assert_eq!(p.1.len(), 1);
+        assert!(
+            p.1[0].1[3].ends_with("target/ios-store-shots/"),
+            "{:?}",
+            p.1[0]
+        );
+        assert!(p.1[0].1[2].ends_with("/.store-shots/"), "{:?}", p.1[0]);
+    }
+
+    #[test]
+    fn store_shots_are_light_and_at_most_ten() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("a.args"), "-seed\nwait 20\n").unwrap();
+        assert_eq!(read_store_shots(dir.path()).unwrap().len(), 1);
+        std::fs::write(dir.path().join("b.args"), "-seed\ndark\n").unwrap();
+        assert!(
+            read_store_shots(dir.path())
+                .unwrap_err()
+                .contains("light only")
+        );
+        std::fs::remove_file(dir.path().join("b.args")).unwrap();
+        for i in 0..MAX_STORE_SHOTS {
+            std::fs::write(dir.path().join(format!("n{i:02}.args")), "-seed\n").unwrap();
+        }
+        assert!(
+            read_store_shots(dir.path())
+                .unwrap_err()
+                .contains("per device size")
+        );
+    }
+
+    #[test]
+    fn the_repository_store_shots_are_the_six_scenes() {
+        let list = read_store_shots(&workspace_root().join(STORE_SHOTS_DIR)).unwrap();
+        let names: Vec<&str> = list.iter().map(|s| s.name.as_str()).collect();
+        assert_eq!(
+            names,
+            [
+                "01-conditions",
+                "02-tide-detail",
+                "03-map-layers",
+                "04-trip-grid",
+                "05-catch-log",
+                "06-widgets"
+            ]
+        );
+    }
+
+    /// A PNG's first 26 bytes: signature, `IHDR` and the start of its data.
+    fn png_head(width: u32, height: u32, color: u8) -> Vec<u8> {
+        let mut out = vec![0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13];
+        out.extend_from_slice(b"IHDR");
+        out.extend_from_slice(&width.to_be_bytes());
+        out.extend_from_slice(&height.to_be_bytes());
+        out.extend_from_slice(&[8, color]);
+        out
+    }
+
+    #[test]
+    fn store_pngs_are_checked_for_size_and_alpha() {
+        assert_eq!(png_header(&png_head(1320, 2868, 2)), Some((1320, 2868, 2)));
+        assert_eq!(png_header(b"not a png at all, but long enough"), None);
+        assert!(has_alpha(6) && has_alpha(4) && !has_alpha(2) && !has_alpha(0));
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("a.png"), png_head(1320, 2868, 2)).unwrap();
+        assert_eq!(
+            check_store_pngs(dir.path(), &IPHONE_STORE_SIZES, 1),
+            Vec::<String>::new()
+        );
+        // Wrong count, wrong size, alpha.
+        assert_eq!(
+            check_store_pngs(dir.path(), &IPHONE_STORE_SIZES, 2).len(),
+            1
+        );
+        std::fs::write(dir.path().join("b.png"), png_head(1170, 2532, 6)).unwrap();
+        let problems = check_store_pngs(dir.path(), &IPHONE_STORE_SIZES, 2);
+        assert_eq!(problems.len(), 2, "{problems:?}");
+        assert!(problems.iter().any(|p| p.contains("1170x2532")));
+        assert!(problems.iter().any(|p| p.contains("alpha")));
+        // The accepted sizes are the 6.9-inch iPhone's and the 13-inch iPad's.
+        assert!(IPAD_STORE_SIZES.contains(&(2064, 2752)));
+        assert!(
+            !IPHONE_STORE_SIZES.contains(&(1206, 2622)),
+            "that is the 6.1-inch size"
+        );
+        assert_eq!(
+            check_store_pngs(&dir.path().join("none"), &IPAD_STORE_SIZES, 1).len(),
+            1
+        );
+    }
+
+    #[test]
+    fn archive_is_a_release_build_that_is_neither_exported_nor_uploaded() {
+        let r = Remote {
+            team: Some("ABCDE12345".into()),
+            ..lane_remote(Some("lane-a"))
+        };
+        let signed = plan(&args(Step::Archive), &r, "s", &[]);
+        assert_eq!(
+            signed.0.last().unwrap().1[0],
+            "-t",
+            "a terminal for the keychain"
+        );
+        let line = last_line(&signed);
+        for needed in [
+            "-configuration Release",
+            "-destination generic/platform=iOS",
+            "-archivePath .archive/Underbite.xcarchive",
+            "-scheme Underbite",
+            "-allowProvisioningUpdates",
+            "security unlock-keychain login.keychain-db",
+            "printf 'DEVELOPMENT_TEAM = %s\\n' 'ABCDE12345'",
+            "du -sh .archive/Underbite.xcarchive",
+        ] {
+            assert!(line.contains(needed), "{needed}: {line}");
+        }
+        assert!(!line.contains("CODE_SIGNING_ALLOWED"), "{line}");
+        let unsigned = plan(
+            &Args {
+                unsigned: true,
+                ..args(Step::Archive)
+            },
+            &r,
+            "s",
+            &[],
+        );
+        assert_eq!(
+            unsigned.0.last().unwrap().1[0],
+            "me@mac",
+            "no terminal needed"
+        );
+        let line = last_line(&unsigned);
+        assert!(line.contains("CODE_SIGNING_ALLOWED=NO"), "{line}");
+        assert!(
+            !line.contains("unlock-keychain") && !line.contains("DEVELOPMENT_TEAM"),
+            "{line}"
+        );
+        // The core is built and packaged first, and nothing is fetched or exported.
+        assert_eq!(unsigned.0.len(), 5, "claim, sync, stage, package, archive");
+        assert_eq!(unsigned.1, []);
+        for text in [line, last_line(&signed)] {
+            for forbidden in [
+                "exportArchive",
+                "altool",
+                "notarytool",
+                "upload",
+                "-exportOptionsPlist",
+            ] {
+                assert!(!text.contains(forbidden), "{forbidden}: {text}");
+            }
+        }
+        // The signed archive may run in a lane: it installs nothing.
+        assert_eq!(check_lane(Step::Archive, Some("lane-a")), Ok(()));
     }
 
     #[test]
@@ -2022,6 +2613,10 @@ mod tests {
             line.contains(
                 r"launch 'iPhone 17' dev.savery.underbite '-seed' 'it'\''s; rm -rf /' >/dev/null"
             ),
+            "{line}"
+        );
+        assert!(
+            line.contains("until xcrun simctl launch 'iPhone 17'"),
             "{line}"
         );
     }
