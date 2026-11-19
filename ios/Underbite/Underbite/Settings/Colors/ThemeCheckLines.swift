@@ -86,48 +86,161 @@ nonisolated enum ThemeCheckLines {
         }
     }
 
+    /// One whole sentence per kind of check and appearance, so a language can order the words
+    /// as it needs: keys with positional arguments, formatted here.
     private static func text(_ key: Key, _ g: Gathered, locale: Locale) -> String {
+        enum Appearance { case light, dark, both }
+        let appearance: Appearance = g.light && g.dark ? .both : g.dark ? .dark : .light
         let role = key.role
-        let appearance =
-            g.light && g.dark
-            ? String(localized: "in light and dark appearance", comment: "Part of a colour check warning: it fails in both appearances")
-            : g.dark
-                ? String(localized: "in dark appearance", comment: "Part of a colour check warning: it fails in the dark appearance")
-                : String(localized: "in light appearance", comment: "Part of a colour check warning: it fails in the light appearance")
-        let measured = String(
-            localized: "\(ratio(g.lowest, locale: locale)) \(appearance), below \(minimum(g.minimum, locale: locale))",
-            comment: "Part of a colour check warning: the measured contrast ratio, the appearance and the ratio it should reach")
+        let measured = [ratio(g.lowest, locale: locale), minimum(g.minimum, locale: locale)]
+        let args: [CVarArg]
+        switch key.kind {
+        case .contrast, .fillText: args = [role.title, role.group.title] + measured
+        case .fillVisible: args = [role.title, role.group.title]
+        case .apart:
+            let pair = key.other.map { joined(role.title, $0.title) } ?? role.title
+            args = [pair, role.group.title, visions(g.visions)]
+        }
         switch key.kind {
         case .contrast:
-            let what =
-                switch role.kind {
-                case .text:
-                    String(localized: "words at \(measured)", comment: "Part of a colour check warning: the text contrast; the argument says the ratio and appearance")
-                case .pin:
-                    String(localized: "the pin's symbol at \(measured)", comment: "Part of a colour check warning: the contrast of a map pin's symbol; the argument says the ratio and appearance")
-                case .mark, .fill:
-                    String(localized: "marks at \(measured)", comment: "Part of a colour check warning: the contrast of marks; the argument says the ratio and appearance")
+            switch role.kind {
+            case .text:
+                switch appearance {
+                case .light:
+                    return String(
+                        format: NSLocalizedString(
+                            "%1$@ (%2$@): words at %3$@ in light appearance, below %4$@", bundle: .main,
+                            comment: "Colour check warning: the contrast of text, in light appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                        arguments: args)
+                case .dark:
+                    return String(
+                        format: NSLocalizedString(
+                            "%1$@ (%2$@): words at %3$@ in dark appearance, below %4$@", bundle: .main,
+                            comment: "Colour check warning: the contrast of text, in dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                        arguments: args)
+                case .both:
+                    return String(
+                        format: NSLocalizedString(
+                            "%1$@ (%2$@): words at %3$@ in light and dark appearance, below %4$@", bundle: .main,
+                            comment: "Colour check warning: the contrast of text, in light and dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                        arguments: args)
                 }
-            return String(
-                localized: "\(role.title) (\(role.group.title)): \(what)",
-                comment: "Colour check warning: a colour role, its group and what is wrong with its contrast")
+            case .pin:
+                switch appearance {
+                case .light:
+                    return String(
+                        format: NSLocalizedString(
+                            "%1$@ (%2$@): the pin's symbol at %3$@ in light appearance, below %4$@", bundle: .main,
+                            comment: "Colour check warning: the contrast of a map pin's symbol, in light appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                        arguments: args)
+                case .dark:
+                    return String(
+                        format: NSLocalizedString(
+                            "%1$@ (%2$@): the pin's symbol at %3$@ in dark appearance, below %4$@", bundle: .main,
+                            comment: "Colour check warning: the contrast of a map pin's symbol, in dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                        arguments: args)
+                case .both:
+                    return String(
+                        format: NSLocalizedString(
+                            "%1$@ (%2$@): the pin's symbol at %3$@ in light and dark appearance, below %4$@", bundle: .main,
+                            comment: "Colour check warning: the contrast of a map pin's symbol, in light and dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                        arguments: args)
+                }
+            case .mark, .fill:
+                switch appearance {
+                case .light:
+                    return String(
+                        format: NSLocalizedString(
+                            "%1$@ (%2$@): marks at %3$@ in light appearance, below %4$@", bundle: .main,
+                            comment: "Colour check warning: the contrast of marks, in light appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                        arguments: args)
+                case .dark:
+                    return String(
+                        format: NSLocalizedString(
+                            "%1$@ (%2$@): marks at %3$@ in dark appearance, below %4$@", bundle: .main,
+                            comment: "Colour check warning: the contrast of marks, in dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                        arguments: args)
+                case .both:
+                    return String(
+                        format: NSLocalizedString(
+                            "%1$@ (%2$@): marks at %3$@ in light and dark appearance, below %4$@", bundle: .main,
+                            comment: "Colour check warning: the contrast of marks, in light and dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                        arguments: args)
+                }
+            }
         case .fillText:
-            return String(
-                localized: "\(role.title) (\(role.group.title)): words on it at \(measured)",
-                comment: "Colour check warning: the contrast of text drawn on a colour; the arguments are the role, its group and the ratio with the appearance")
+            switch appearance {
+            case .light:
+                return String(
+                    format: NSLocalizedString(
+                        "%1$@ (%2$@): words on it at %3$@ in light appearance, below %4$@", bundle: .main,
+                        comment: "Colour check warning: the contrast of text drawn on a colour, in light appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                    arguments: args)
+            case .dark:
+                return String(
+                    format: NSLocalizedString(
+                        "%1$@ (%2$@): words on it at %3$@ in dark appearance, below %4$@", bundle: .main,
+                        comment: "Colour check warning: the contrast of text drawn on a colour, in dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                    arguments: args)
+            case .both:
+                return String(
+                    format: NSLocalizedString(
+                        "%1$@ (%2$@): words on it at %3$@ in light and dark appearance, below %4$@", bundle: .main,
+                        comment: "Colour check warning: the contrast of text drawn on a colour, in light and dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach."),
+                    arguments: args)
+            }
         case .fillVisible:
-            return String(
-                localized: "\(role.title) (\(role.group.title)): hard to see against the background \(appearance)",
-                comment: "Colour check warning: a colour that is hard to see against the background; the last argument says the appearance")
+            switch appearance {
+            case .light:
+                return String(
+                    format: NSLocalizedString(
+                        "%1$@ (%2$@): hard to see against the background in light appearance", bundle: .main,
+                        comment: "Colour check warning: a colour that is hard to see against the background, in light appearance. %1$@ is the colour role, %2$@ its group."),
+                    arguments: args)
+            case .dark:
+                return String(
+                    format: NSLocalizedString(
+                        "%1$@ (%2$@): hard to see against the background in dark appearance", bundle: .main,
+                        comment: "Colour check warning: a colour that is hard to see against the background, in dark appearance. %1$@ is the colour role, %2$@ its group."),
+                    arguments: args)
+            case .both:
+                return String(
+                    format: NSLocalizedString(
+                        "%1$@ (%2$@): hard to see against the background in light and dark appearance", bundle: .main,
+                        comment: "Colour check warning: a colour that is hard to see against the background, in light and dark appearance. %1$@ is the colour role, %2$@ its group."),
+                    arguments: args)
+            }
         case .apart:
-            let pair =
-                key.other.map {
-                    String(localized: "\(role.title) and \($0.title)", comment: "Joins two names with and: two colour roles, or the last two kinds of colour vision")
-                } ?? role.title
-            return String(
-                localized: "\(pair) (\(role.group.title)): too close to tell apart with \(visions(g.visions)) vision \(appearance)",
-                comment: "Colour check warning: colours too close to tell apart; the arguments are the role or roles, their group, the kinds of colour vision and the appearance")
+            switch appearance {
+            case .light:
+                return String(
+                    format: NSLocalizedString(
+                        "%1$@ (%2$@): too close to tell apart with %3$@ vision in light appearance", bundle: .main,
+                        comment: "Colour check warning: colours too close to tell apart, in light appearance. %1$@ is the colour role, %2$@ its group. %1$@ may name two roles; %2$@ is the group of the first and %3$@ the kinds of colour vision."),
+                    arguments: args)
+            case .dark:
+                return String(
+                    format: NSLocalizedString(
+                        "%1$@ (%2$@): too close to tell apart with %3$@ vision in dark appearance", bundle: .main,
+                        comment: "Colour check warning: colours too close to tell apart, in dark appearance. %1$@ is the colour role, %2$@ its group. %1$@ may name two roles; %2$@ is the group of the first and %3$@ the kinds of colour vision."),
+                    arguments: args)
+            case .both:
+                return String(
+                    format: NSLocalizedString(
+                        "%1$@ (%2$@): too close to tell apart with %3$@ vision in light and dark appearance", bundle: .main,
+                        comment: "Colour check warning: colours too close to tell apart, in light and dark appearance. %1$@ is the colour role, %2$@ its group. %1$@ may name two roles; %2$@ is the group of the first and %3$@ the kinds of colour vision."),
+                    arguments: args)
+            }
         }
+    }
+
+    /// Two names joined with and: two colour roles, or the last two kinds of colour vision.
+    private static func joined(_ first: String, _ second: String) -> String {
+        String(
+            format: NSLocalizedString(
+                "%1$@ and %2$@", bundle: .main,
+                comment: "Joins two nouns of one kind with and: the names of two colour roles, or of two kinds of colour vision"),
+            first, second)
     }
 
     /// "typical", "deutan", "typical and deutan", "protan, deutan and tritan".
@@ -137,9 +250,13 @@ nonisolated enum ThemeCheckLines {
         guard let last = names.last else { return typical }
         guard names.count > 1 else { return last }
         let head = names.dropLast().dropFirst().reduce(names[0]) {
-            String(localized: "\($0), \($1)", comment: "Joins two names in a list of kinds of colour vision")
+            String(
+                format: NSLocalizedString(
+                    "%1$@, %2$@", bundle: .main,
+                    comment: "Joins two names in a list of kinds of colour vision"),
+                $0, $1)
         }
-        return String(localized: "\(head) and \(last)", comment: "Joins two names with and: two colour roles, or the last two kinds of colour vision")
+        return joined(head, last)
     }
 
     private static func name(_ vision: Deficiency) -> String {

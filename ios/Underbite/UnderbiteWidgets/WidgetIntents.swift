@@ -13,7 +13,12 @@ struct WidgetSpotEntity: AppEntity {
     var name: String
 
     var displayRepresentation: DisplayRepresentation {
-        DisplayRepresentation(title: "\(name)")
+        // The app's spot is a phrase of the widget's own, so it goes through the catalog; a
+        // saved spot's name is the person's and does not.
+        if id == WidgetSpotChoice.appID {
+            return DisplayRepresentation(title: "The app's spot")
+        }
+        return DisplayRepresentation(title: "\(name)")
     }
 
     init(id: String, name: String) {
@@ -25,8 +30,9 @@ struct WidgetSpotEntity: AppEntity {
         self.init(id: spot.id, name: spot.name)
     }
 
-    /// The spot the app shows, which the widget follows (the default).
-    static let app = WidgetSpotEntity(id: WidgetSpotChoice.appID, name: "The app's spot")
+    /// The spot the app shows, which the widget follows (the default). Its title is the
+    /// catalog's, so it carries no name.
+    static let app = WidgetSpotEntity(id: WidgetSpotChoice.appID, name: "")
 }
 
 /// "The app's spot", then the saved spots in the app's order, from the list the app keeps in

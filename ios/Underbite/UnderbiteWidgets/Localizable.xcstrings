@@ -199,6 +199,17 @@
         }
       }
     },
+    "The app's spot" : {
+      "comment" : "The spot the widget follows when none is chosen (widget intents)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app's spot"
+          }
+        }
+      }
+    },
     "Tide" : {
       "comment" : "Text (underbite widgets)",
       "localizations" : {

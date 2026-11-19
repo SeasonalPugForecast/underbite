@@ -119,7 +119,7 @@ struct PresetList: View {
             }
         }
         .safeAreaInset(edge: .top, spacing: 0) {
-            DrawerHeader(title: "Presets", back: back)
+            DrawerHeader(title: Text("Presets"), back: back)
         }
         .alert(
             naming == .new ? "New preset" : "Rename preset",

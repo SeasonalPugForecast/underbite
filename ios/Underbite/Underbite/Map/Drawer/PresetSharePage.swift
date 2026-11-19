@@ -42,7 +42,7 @@ struct PresetSharePage: View {
         }
         .readableText()
         .safeAreaInset(edge: .top, spacing: 0) {
-            DrawerHeader(title: words?.share ?? "", back: back)
+            DrawerHeader(title: Text(verbatim: words?.share ?? ""), back: back)
         }
         .onAppear { UnderbiteFile.sweep() }
     }

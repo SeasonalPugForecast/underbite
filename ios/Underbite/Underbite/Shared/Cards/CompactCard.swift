@@ -7,6 +7,7 @@ import UnderbiteKit
 struct QuantityText: View {
     let quantity: ViewModel.Quantity
     var font: Font = .system(.title, design: .rounded, weight: .bold)
+    @Environment(\.self) private var environment
 
     var body: some View {
         if quantity.value == nil && quantity.unit.isEmpty {
@@ -18,11 +19,22 @@ struct QuantityText: View {
             Text(quantity.text).font(font)
                 .fixedSize(horizontal: false, vertical: true)
         } else {
-            let value = Text(quantity.text).font(font)
-            let unit = Text(quantity.unit).font(.subheadline).foregroundStyle(.readableSecondary)
-            Text("\(value) \(unit)")
+            Text(valueAndUnit)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    /// The value and the unit as one attributed run, not a localised format: the line has no
+    /// words of its own, so it must not be looked up in a catalog (a pseudolanguage would
+    /// double its placeholders). The unit takes the readable secondary colour, resolved here
+    /// because an attribute holds a colour, not a style.
+    private var valueAndUnit: AttributedString {
+        var value = AttributedString(quantity.text + " ")
+        value.font = font
+        var unit = AttributedString(quantity.unit)
+        unit.font = .subheadline
+        unit.foregroundColor = ReadableSecondary().resolve(in: environment)
+        return value + unit
     }
 }
 

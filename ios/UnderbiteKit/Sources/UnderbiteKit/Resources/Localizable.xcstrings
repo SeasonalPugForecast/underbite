@@ -1,0 +1,732 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Above normal" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Above normal"
+          }
+        }
+      }
+    },
+    "Accent" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accent"
+          }
+        }
+      }
+    },
+    "Action stage" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Action stage"
+          }
+        }
+      }
+    },
+    "Alerts" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerts"
+          }
+        }
+      }
+    },
+    "Below normal" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Below normal"
+          }
+        }
+      }
+    },
+    "Card states" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Card states"
+          }
+        }
+      }
+    },
+    "Catch log" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Catch log"
+          }
+        }
+      }
+    },
+    "Charts" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Charts"
+          }
+        }
+      }
+    },
+    "Current" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current"
+          }
+        }
+      }
+    },
+    "Curve" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Curve"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "Error" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        }
+      }
+    },
+    "Favourite" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favourite"
+          }
+        }
+      }
+    },
+    "Fill under the curve" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fill under the curve"
+          }
+        }
+      }
+    },
+    "Flood stage line" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flood stage line"
+          }
+        }
+      }
+    },
+    "Flood stages" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flood stages"
+          }
+        }
+      }
+    },
+    "Forecast" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forecast"
+          }
+        }
+      }
+    },
+    "Go" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go"
+          }
+        }
+      }
+    },
+    "Go / no-go" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go / no-go"
+          }
+        }
+      }
+    },
+    "High tide" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High tide"
+          }
+        }
+      }
+    },
+    "Kept" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kept"
+          }
+        }
+      }
+    },
+    "Kept for sashimi" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kept for sashimi"
+          }
+        }
+      }
+    },
+    "Low tide" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low tide"
+          }
+        }
+      }
+    },
+    "Low water" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low water"
+          }
+        }
+      }
+    },
+    "Major flooding" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Major flooding"
+          }
+        }
+      }
+    },
+    "Marginal" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marginal"
+          }
+        }
+      }
+    },
+    "Minor flooding" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minor flooding"
+          }
+        }
+      }
+    },
+    "Modelled" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modelled"
+          }
+        }
+      }
+    },
+    "Moderate flooding" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moderate flooding"
+          }
+        }
+      }
+    },
+    "Much above normal" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Much above normal"
+          }
+        }
+      }
+    },
+    "Much below normal" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Much below normal"
+          }
+        }
+      }
+    },
+    "Night" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Night"
+          }
+        }
+      }
+    },
+    "No recent value" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No recent value"
+          }
+        }
+      }
+    },
+    "No state" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No state"
+          }
+        }
+      }
+    },
+    "No-go" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No-go"
+          }
+        }
+      }
+    },
+    "Normal" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        }
+      }
+    },
+    "Normal band" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal band"
+          }
+        }
+      }
+    },
+    "Now" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now"
+          }
+        }
+      }
+    },
+    "Observed" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Observed"
+          }
+        }
+      }
+    },
+    "Other alerts" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other alerts"
+          }
+        }
+      }
+    },
+    "Pinned" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pinned"
+          }
+        }
+      }
+    },
+    "Predicted" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Predicted"
+          }
+        }
+      }
+    },
+    "Record high" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record high"
+          }
+        }
+      }
+    },
+    "Record low" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record low"
+          }
+        }
+      }
+    },
+    "Released" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Released"
+          }
+        }
+      }
+    },
+    "Reporting" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reporting"
+          }
+        }
+      }
+    },
+    "River flow" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "River flow"
+          }
+        }
+      }
+    },
+    "Severe and extreme" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Severe and extreme"
+          }
+        }
+      }
+    },
+    "Slack water" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slack water"
+          }
+        }
+      }
+    },
+    "Snack times" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snack times"
+          }
+        }
+      }
+    },
+    "Solunar major" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solunar major"
+          }
+        }
+      }
+    },
+    "Solunar minor" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solunar minor"
+          }
+        }
+      }
+    },
+    "Spots" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spots"
+          }
+        }
+      }
+    },
+    "State unknown" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "State unknown"
+          }
+        }
+      }
+    },
+    "Station pins" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Station pins"
+          }
+        }
+      }
+    },
+    "Sunrise and sunset" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunrise and sunset"
+          }
+        }
+      }
+    },
+    "Text and accent" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text and accent"
+          }
+        }
+      }
+    },
+    "Threshold" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Threshold"
+          }
+        }
+      }
+    },
+    "Tide" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tide"
+          }
+        }
+      }
+    },
+    "Timeline" : {
+      "comment" : "Name of a group of colour roles in the theme editor",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timeline"
+          }
+        }
+      }
+    },
+    "Too far" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Too far"
+          }
+        }
+      }
+    },
+    "Too old" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Too old"
+          }
+        }
+      }
+    },
+    "Unavailable" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unavailable"
+          }
+        }
+      }
+    },
+    "Unknown" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown"
+          }
+        }
+      }
+    },
+    "Warning" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warning"
+          }
+        }
+      }
+    },
+    "Your range" : {
+      "comment" : "Name of a colour role in the theme editor and in its warnings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your range"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

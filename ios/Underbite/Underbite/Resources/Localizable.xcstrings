@@ -1,79 +1,222 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@ %@" : {
-      "comment" : "A value followed by its unit on a card of the conditions screen; both arguments come from the core",
+    "%1$@ (%2$@): hard to see against the background in dark appearance" : {
+      "comment" : "Colour check warning: a colour that is hard to see against the background, in dark appearance. %1$@ is the colour role, %2$@ its group.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ %@"
+            "value" : "%1$@ (%2$@): hard to see against the background in dark appearance"
           }
         }
       }
     },
-    "%@ %@, below %@" : {
-      "comment" : "Part of a colour check warning: the measured contrast ratio, the appearance and the ratio it should reach",
+    "%1$@ (%2$@): hard to see against the background in light and dark appearance" : {
+      "comment" : "Colour check warning: a colour that is hard to see against the background, in light and dark appearance. %1$@ is the colour role, %2$@ its group.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ %@, below %@"
+            "value" : "%1$@ (%2$@): hard to see against the background in light and dark appearance"
           }
         }
       }
     },
-    "%@ (%@): %@" : {
-      "comment" : "Colour check warning: a colour role, its group and what is wrong with its contrast",
+    "%1$@ (%2$@): hard to see against the background in light appearance" : {
+      "comment" : "Colour check warning: a colour that is hard to see against the background, in light appearance. %1$@ is the colour role, %2$@ its group.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ (%@): %@"
+            "value" : "%1$@ (%2$@): hard to see against the background in light appearance"
           }
         }
       }
     },
-    "%@ (%@): hard to see against the background %@" : {
-      "comment" : "Colour check warning: a colour that is hard to see against the background; the last argument says the appearance",
+    "%1$@ (%2$@): marks at %3$@ in dark appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of marks, in dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ (%@): hard to see against the background %@"
+            "value" : "%1$@ (%2$@): marks at %3$@ in dark appearance, below %4$@"
           }
         }
       }
     },
-    "%@ (%@): too close to tell apart with %@ vision %@" : {
-      "comment" : "Colour check warning: colours too close to tell apart; the arguments are the role or roles, their group, the kinds of colour vision and the appearance",
+    "%1$@ (%2$@): marks at %3$@ in light and dark appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of marks, in light and dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ (%@): too close to tell apart with %@ vision %@"
+            "value" : "%1$@ (%2$@): marks at %3$@ in light and dark appearance, below %4$@"
           }
         }
       }
     },
-    "%@ (%@): words on it at %@" : {
-      "comment" : "Colour check warning: the contrast of text drawn on a colour; the arguments are the role, its group and the ratio with the appearance",
+    "%1$@ (%2$@): marks at %3$@ in light appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of marks, in light appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ (%@): words on it at %@"
+            "value" : "%1$@ (%2$@): marks at %3$@ in light appearance, below %4$@"
           }
         }
       }
     },
-    "%@ and %@" : {
-      "comment" : "Joins two names with and: two colour roles, or the last two kinds of colour vision",
+    "%1$@ (%2$@): the pin's symbol at %3$@ in dark appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of a map pin's symbol, in dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ and %@"
+            "value" : "%1$@ (%2$@): the pin's symbol at %3$@ in dark appearance, below %4$@"
+          }
+        }
+      }
+    },
+    "%1$@ (%2$@): the pin's symbol at %3$@ in light and dark appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of a map pin's symbol, in light and dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): the pin's symbol at %3$@ in light and dark appearance, below %4$@"
+          }
+        }
+      }
+    },
+    "%1$@ (%2$@): the pin's symbol at %3$@ in light appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of a map pin's symbol, in light appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): the pin's symbol at %3$@ in light appearance, below %4$@"
+          }
+        }
+      }
+    },
+    "%1$@ (%2$@): too close to tell apart with %3$@ vision in dark appearance" : {
+      "comment" : "Colour check warning: colours too close to tell apart, in dark appearance. %1$@ is the colour role, %2$@ its group. %1$@ may name two roles; %2$@ is the group of the first and %3$@ the kinds of colour vision.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): too close to tell apart with %3$@ vision in dark appearance"
+          }
+        }
+      }
+    },
+    "%1$@ (%2$@): too close to tell apart with %3$@ vision in light and dark appearance" : {
+      "comment" : "Colour check warning: colours too close to tell apart, in light and dark appearance. %1$@ is the colour role, %2$@ its group. %1$@ may name two roles; %2$@ is the group of the first and %3$@ the kinds of colour vision.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): too close to tell apart with %3$@ vision in light and dark appearance"
+          }
+        }
+      }
+    },
+    "%1$@ (%2$@): too close to tell apart with %3$@ vision in light appearance" : {
+      "comment" : "Colour check warning: colours too close to tell apart, in light appearance. %1$@ is the colour role, %2$@ its group. %1$@ may name two roles; %2$@ is the group of the first and %3$@ the kinds of colour vision.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): too close to tell apart with %3$@ vision in light appearance"
+          }
+        }
+      }
+    },
+    "%1$@ (%2$@): words at %3$@ in dark appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of text, in dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): words at %3$@ in dark appearance, below %4$@"
+          }
+        }
+      }
+    },
+    "%1$@ (%2$@): words at %3$@ in light and dark appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of text, in light and dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): words at %3$@ in light and dark appearance, below %4$@"
+          }
+        }
+      }
+    },
+    "%1$@ (%2$@): words at %3$@ in light appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of text, in light appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): words at %3$@ in light appearance, below %4$@"
+          }
+        }
+      }
+    },
+    "%1$@ (%2$@): words on it at %3$@ in dark appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of text drawn on a colour, in dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): words on it at %3$@ in dark appearance, below %4$@"
+          }
+        }
+      }
+    },
+    "%1$@ (%2$@): words on it at %3$@ in light and dark appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of text drawn on a colour, in light and dark appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): words on it at %3$@ in light and dark appearance, below %4$@"
+          }
+        }
+      }
+    },
+    "%1$@ (%2$@): words on it at %3$@ in light appearance, below %4$@" : {
+      "comment" : "Colour check warning: the contrast of text drawn on a colour, in light appearance. %1$@ is the colour role, %2$@ its group. %3$@ is the lowest contrast ratio measured and %4$@ the ratio it should reach.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@): words on it at %3$@ in light appearance, below %4$@"
+          }
+        }
+      }
+    },
+    "%1$@ and %2$@" : {
+      "comment" : "Joins two nouns of one kind with and: the names of two colour roles, or of two kinds of colour vision",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ and %2$@"
+          }
+        }
+      }
+    },
+    "%1$@, %2$@" : {
+      "comment" : "Joins two names in a list of kinds of colour vision",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
           }
         }
       }
@@ -129,17 +272,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ opacity"
-          }
-        }
-      }
-    },
-    "%@, %@" : {
-      "comment" : "Joins two names in a list of kinds of colour vision",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@, %@"
           }
         }
       }
@@ -6084,50 +6216,6 @@
         }
       }
     },
-    "in dark appearance" : {
-      "comment" : "Part of a colour check warning: it fails in the dark appearance",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "in dark appearance"
-          }
-        }
-      }
-    },
-    "in light and dark appearance" : {
-      "comment" : "Part of a colour check warning: it fails in both appearances",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "in light and dark appearance"
-          }
-        }
-      }
-    },
-    "in light appearance" : {
-      "comment" : "Part of a colour check warning: it fails in the light appearance",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "in light appearance"
-          }
-        }
-      }
-    },
-    "marks at %@" : {
-      "comment" : "Part of a colour check warning: the contrast of marks; the argument says the ratio and appearance",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "marks at %@"
-          }
-        }
-      }
-    },
     "no key" : {
       "comment" : "Note under a data source: it needs no key",
       "localizations" : {
@@ -6146,17 +6234,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "protan"
-          }
-        }
-      }
-    },
-    "the pin's symbol at %@" : {
-      "comment" : "Part of a colour check warning: the contrast of a map pin's symbol; the argument says the ratio and appearance",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "the pin's symbol at %@"
           }
         }
       }
@@ -6190,17 +6267,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "typical"
-          }
-        }
-      }
-    },
-    "words at %@" : {
-      "comment" : "Part of a colour check warning: the text contrast; the argument says the ratio and appearance",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "words at %@"
           }
         }
       }

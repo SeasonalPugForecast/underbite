@@ -6,6 +6,7 @@ import PackageDescription
 
 let package = Package(
     name: "UnderbiteKit",
+    defaultLocalization: "en",
     platforms: [.iOS(.v26), .macOS(.v26)],
     products: [
         .library(name: "UnderbiteKit", targets: ["UnderbiteKit"])
@@ -16,6 +17,7 @@ let package = Package(
         // checks yet. The tests and the app use Swift 6.
         .target(
             name: "UnderbiteKit", dependencies: ["underbite_ffiFFI"],
+            resources: [.process("Resources")],
             swiftSettings: [.swiftLanguageMode(.v5)]),
         .testTarget(
             name: "UnderbiteKitTests", dependencies: ["UnderbiteKit"],

@@ -206,18 +206,18 @@ public enum ColorRoleGroup: String, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .text: "Text and accent"
-        case .cardStates: "Card states"
-        case .verdicts: "Go / no-go"
-        case .alerts: "Alerts"
-        case .catchLog: "Catch log"
-        case .flow: "River flow"
-        case .flood: "Flood stages"
-        case .stations: "Station pins"
-        case .tide: "Tide"
-        case .timeline: "Timeline"
-        case .charts: "Charts"
-        case .spots: "Spots"
+        case .text: String(localized: "Text and accent", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
+        case .cardStates: String(localized: "Card states", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
+        case .verdicts: String(localized: "Go / no-go", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
+        case .alerts: String(localized: "Alerts", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
+        case .catchLog: String(localized: "Catch log", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
+        case .flow: String(localized: "River flow", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
+        case .flood: String(localized: "Flood stages", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
+        case .stations: String(localized: "Station pins", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
+        case .tide: String(localized: "Tide", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
+        case .timeline: String(localized: "Timeline", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
+        case .charts: String(localized: "Charts", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
+        case .spots: String(localized: "Spots", bundle: .module, comment: "Name of a group of colour roles in the theme editor")
         }
     }
 }
@@ -226,65 +226,65 @@ extension ColorRole {
     /// The role's name in the editor.
     public var title: String {
         switch self {
-        case .accent: "Accent"
-        case .statusWarning: "Warning"
-        case .statusError: "Error"
-        case .statusSuccess: "Done"
-        case .cardFresh: "Current"
-        case .cardStale: "Too old"
-        case .cardFar: "Too far"
-        case .cardUnavailable: "Unavailable"
-        case .verdictGo: "Go"
-        case .verdictMarginal: "Marginal"
-        case .verdictNoGo: "No-go"
-        case .verdictUnknown: "Unknown"
-        case .alertSevere: "Severe and extreme"
-        case .alertModerate: "Other alerts"
-        case .fateReleased: "Released"
-        case .fateKept: "Kept"
-        case .fateKeptForSashimi: "Kept for sashimi"
-        case .flowRecordLow: "Record low"
-        case .flowMuchBelowNormal: "Much below normal"
-        case .flowBelowNormal: "Below normal"
-        case .flowNormal: "Normal"
-        case .flowAboveNormal: "Above normal"
-        case .flowMuchAboveNormal: "Much above normal"
-        case .flowRecordHigh: "Record high"
-        case .floodAction: "Action stage"
-        case .floodMinor: "Minor flooding"
-        case .floodModerate: "Moderate flooding"
-        case .floodMajor: "Major flooding"
-        case .stationNone: "No state"
-        case .stationUnknown: "State unknown"
-        case .stationNoData: "No recent value"
-        case .stationReporting: "Reporting"
-        case .stationLow: "Low water"
-        case .stationNormal: "Normal"
-        case .stationElevated: "Action stage"
-        case .stationFloodMinor: "Minor flooding"
-        case .stationFloodModerate: "Moderate flooding"
-        case .stationFloodMajor: "Major flooding"
-        case .tideCurve: "Curve"
-        case .tideFill: "Fill under the curve"
-        case .tideHigh: "High tide"
-        case .tideLow: "Low tide"
-        case .tideSlack: "Slack water"
-        case .timelineNight: "Night"
-        case .timelineSun: "Sunrise and sunset"
-        case .timelineSolunarMajor: "Solunar major"
-        case .timelineSolunarMinor: "Solunar minor"
-        case .timelineWindow: "Snack times"
-        case .chartPredicted: "Predicted"
-        case .chartObserved: "Observed"
-        case .chartForecast: "Forecast"
-        case .chartModelled: "Modelled"
-        case .chartFloodCategory: "Flood stage line"
-        case .chartUserRange: "Your range"
-        case .chartThreshold: "Threshold"
-        case .chartValueBand: "Normal band"
-        case .chartNow: "Now"
-        case .spotFavourite: "Favourite"
-        case .spotPinned: "Pinned"
+        case .accent: String(localized: "Accent", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .statusWarning: String(localized: "Warning", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .statusError: String(localized: "Error", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .statusSuccess: String(localized: "Done", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .cardFresh: String(localized: "Current", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .cardStale: String(localized: "Too old", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .cardFar: String(localized: "Too far", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .cardUnavailable: String(localized: "Unavailable", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .verdictGo: String(localized: "Go", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .verdictMarginal: String(localized: "Marginal", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .verdictNoGo: String(localized: "No-go", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .verdictUnknown: String(localized: "Unknown", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .alertSevere: String(localized: "Severe and extreme", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .alertModerate: String(localized: "Other alerts", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .fateReleased: String(localized: "Released", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .fateKept: String(localized: "Kept", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .fateKeptForSashimi: String(localized: "Kept for sashimi", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .flowRecordLow: String(localized: "Record low", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .flowMuchBelowNormal: String(localized: "Much below normal", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .flowBelowNormal: String(localized: "Below normal", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .flowNormal: String(localized: "Normal", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .flowAboveNormal: String(localized: "Above normal", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .flowMuchAboveNormal: String(localized: "Much above normal", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .flowRecordHigh: String(localized: "Record high", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .floodAction: String(localized: "Action stage", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .floodMinor: String(localized: "Minor flooding", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .floodModerate: String(localized: "Moderate flooding", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .floodMajor: String(localized: "Major flooding", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .stationNone: String(localized: "No state", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .stationUnknown: String(localized: "State unknown", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .stationNoData: String(localized: "No recent value", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .stationReporting: String(localized: "Reporting", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .stationLow: String(localized: "Low water", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .stationNormal: String(localized: "Normal", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .stationElevated: String(localized: "Action stage", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .stationFloodMinor: String(localized: "Minor flooding", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .stationFloodModerate: String(localized: "Moderate flooding", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .stationFloodMajor: String(localized: "Major flooding", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .tideCurve: String(localized: "Curve", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .tideFill: String(localized: "Fill under the curve", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .tideHigh: String(localized: "High tide", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .tideLow: String(localized: "Low tide", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .tideSlack: String(localized: "Slack water", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .timelineNight: String(localized: "Night", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .timelineSun: String(localized: "Sunrise and sunset", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .timelineSolunarMajor: String(localized: "Solunar major", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .timelineSolunarMinor: String(localized: "Solunar minor", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .timelineWindow: String(localized: "Snack times", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .chartPredicted: String(localized: "Predicted", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .chartObserved: String(localized: "Observed", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .chartForecast: String(localized: "Forecast", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .chartModelled: String(localized: "Modelled", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .chartFloodCategory: String(localized: "Flood stage line", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .chartUserRange: String(localized: "Your range", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .chartThreshold: String(localized: "Threshold", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .chartValueBand: String(localized: "Normal band", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .chartNow: String(localized: "Now", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .spotFavourite: String(localized: "Favourite", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
+        case .spotPinned: String(localized: "Pinned", bundle: .module, comment: "Name of a colour role in the theme editor and in its warnings")
         }
     }
 }

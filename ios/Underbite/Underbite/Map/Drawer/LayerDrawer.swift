@@ -104,7 +104,7 @@ struct LayerDrawer: View {
         .listStyle(.sidebar)
         .environment(\.editMode, $editMode)
         .safeAreaInset(edge: .top, spacing: 0) {
-            DrawerHeader(title: "Layers") {
+            DrawerHeader(title: Text("Layers")) {
                 Button(editing ? "Done" : "Reorder") {
                     withAnimation { editMode = editing ? .inactive : .active }
                 }
@@ -154,13 +154,13 @@ extension SpotStore {
 
 /// The title of a drawer page, with a way back to the layers and a control on the right.
 struct DrawerHeader<Trailing: View>: View {
-    let title: String
+    let title: Text
     var back: (() -> Void)?
     @ViewBuilder var trailing: () -> Trailing
 
     var body: some View {
         ZStack {
-            Text(title)
+            title
                 .font(.headline)
                 .accessibilityAddTraits(.isHeader)
             HStack {
@@ -184,7 +184,7 @@ struct DrawerHeader<Trailing: View>: View {
 }
 
 extension DrawerHeader where Trailing == EmptyView {
-    init(title: String, back: (() -> Void)? = nil) {
+    init(title: Text, back: (() -> Void)? = nil) {
         self.init(title: title, back: back, trailing: { EmptyView() })
     }
 }
