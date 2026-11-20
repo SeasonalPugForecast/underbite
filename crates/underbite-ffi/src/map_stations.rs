@@ -1329,6 +1329,7 @@ mod tests {
                 etag: None,
                 retry_after: Some("4294967295".into()),
                 rate_limit_remaining: None,
+                from_cache: false,
             })
         }
 
