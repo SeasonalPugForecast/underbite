@@ -1,0 +1,2 @@
+-seed -tab map -mapBase apple-standard -mapAt 41.225,-73.8588,0.08 -mapInspect 41.2250278,-73.8588 -speciesRegion US-NY
+wait 60

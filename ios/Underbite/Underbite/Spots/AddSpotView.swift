@@ -42,6 +42,22 @@ struct AddSpotView: View {
     @State private var typed = ""
     @State private var camera = MapCameraPosition.automatic
 
+    /// - Parameter prefill: a place, a name and a water type to start from (the map's "Add as
+    ///   spot" for the water at a dropped marker); the pin is on the map, ready to move.
+    init(prefill: SpotPrefill? = nil, added: @escaping (String) -> Void) {
+        self.added = added
+        guard let prefill else { return }
+        _way = State(initialValue: .map)
+        _chosen = State(initialValue: prefill.coordinate)
+        _name = State(initialValue: prefill.name)
+        _waterType = State(initialValue: prefill.waterType)
+        _camera = State(
+            initialValue: .region(
+                MKCoordinateRegion(
+                    center: prefill.coordinate, latitudinalMeters: 2_000,
+                    longitudinalMeters: 2_000)))
+    }
+
     var body: some View {
         NavigationStack {
             Form {

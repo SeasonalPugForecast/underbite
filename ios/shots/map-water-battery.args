@@ -1,0 +1,2 @@
+-seed -tab map -mapBase apple-standard -mapLayers tide-stations -mapAt 40.70,-74.02,0.12 -mapInspect 40.70,-74.02 -speciesRegion US-NY
+wait 90

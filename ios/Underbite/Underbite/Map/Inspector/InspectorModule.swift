@@ -1,6 +1,6 @@
 import MapKit
 import SwiftUI
-import UnderbiteKit
+@preconcurrency import UnderbiteKit
 
 /// A tapped point and what the inspector shows about it.
 struct PointPick: Identifiable, Equatable {
@@ -14,9 +14,14 @@ struct PointPick: Identifiable, Equatable {
     var place = ""
     /// The nearest station on screen and its distance (the core's words).
     var nearest: NearestStation?
+    /// The water at the point, from the core's lookup (the point card's "water here").
+    var water: WaterHereState = .hidden
+    /// The words around that section, in the settings' voice.
+    var waterWords: WaterHereTexts?
 
     static func == (a: PointPick, b: PointPick) -> Bool {
         a.id == b.id && a.rows == b.rows && a.place == b.place && a.nearest == b.nearest
+            && a.water == b.water && a.waterWords == b.waterWords
     }
 }
 
@@ -32,8 +37,10 @@ struct NearestStation: Equatable {
 /// screen there from the grids already held (a long press never fetches) and "Save as spot"; so
 /// does a tap no pin took, but only while pin mode is on (``MapTapPolicy``). A line starts from
 /// the point's card, and while one is open, taps move its end. Its overlay is the measured
-/// line; its annotations are the marks at the point and at the line's ends. Nothing about the
-/// point leaves the device.
+/// line; its annotations are the marks at the point and at the line's ends. The point card also
+/// asks the core for the water at the point: the core sends the 3DHP queries with the point
+/// rounded outward (the exact point never leaves the device) and places the water on the phone;
+/// the lookup stops when the marker moves or the card closes.
 @MainActor
 @Observable
 final class InspectorModule: MapModule {
@@ -48,12 +55,24 @@ final class InspectorModule: MapModule {
     @ObservationIgnored private var lineOverlay: MKGeodesicPolyline?
     @ObservationIgnored private var marks: [InspectorMark] = []
     @ObservationIgnored private var launchDone = false
+    @ObservationIgnored private let host: FetchHost
+    @ObservationIgnored private let clock: @Sendable () -> Int64
+    @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private var waterTask: Task<Void, Never>?
 
     /// How long a sheet takes to go before the next one comes up.
     static let handOver: Duration = .milliseconds(450)
 
-    init(controller: MapController) {
+    init(
+        controller: MapController,
+        host: FetchHost = URLSessionHost(storeURL: AppFiles.standard.hostDirectory),
+        defaults: UserDefaults = .standard,
+        clock: @escaping @Sendable () -> Int64 = { Int64(Date().timeIntervalSince1970) }
+    ) {
         self.controller = controller
+        self.host = host
+        self.defaults = defaults
+        self.clock = clock
     }
 
     var layerIDs: Set<String> { [] }
@@ -114,8 +133,11 @@ final class InspectorModule: MapModule {
     func open(at coordinate: CLLocationCoordinate2D, point: CGPoint) {
         var made = PointPick(coordinate: coordinate, point: point)
         fill(&made)
+        // The marker moved: the last point's lookup is of no use.
+        waterTask?.cancel()
         pick = made
         placeMarks()
+        lookUpWater(for: made.id, at: coordinate)
     }
 
     /// Words the open point again: blocks or pins arrived, or the settings changed.
@@ -127,6 +149,8 @@ final class InspectorModule: MapModule {
 
     /// The inspector was closed.
     func close() {
+        waterTask?.cancel()
+        waterTask = nil
         guard pick != nil else { return }
         pick = nil
         placeMarks()
@@ -148,12 +172,53 @@ final class InspectorModule: MapModule {
         pick.rows = PointInspection.rows(
             shown: shown, values: values, imageryOnly: words?.imageryOnly ?? "")
         pick.place = words?.point ?? ""
+        pick.waterWords = try? waterHereWords(settingsJson: json)
         pick.nearest = PointInspection.nearestStation(stationPins(), to: at).flatMap { pin in
             let distance = try? measure(
                 from: MapPoint(lat: at.latitude, lon: at.longitude),
                 to: MapPoint(lat: pin.latitude, lon: pin.longitude), settingsJson: json)
             return distance.map { NearestStation(pin: pin, distance: $0.distance) }
         }
+    }
+
+    /// Asks the core for the water at the point and shows what comes: the section appears with
+    /// the core's loading words, then with the water, its stocking lines and links, or with the
+    /// core's failure words; with no water within reach it goes again. Nothing is asked without
+    /// the core planning it, and the answers of a point the marker has left are dropped.
+    private func lookUpWater(for id: UUID, at coordinate: CLLocationCoordinate2D) {
+        guard let controller else { return }
+        let json = controller.settingsJSON
+        let now = clock()
+        let plan: WaterHerePlan
+        do {
+            plan = try planWaterHere(
+                point: MapPoint(lat: coordinate.latitude, lon: coordinate.longitude),
+                region: WaterHereLookup.region(defaults.string(forKey: RecordsModule.regionKey)),
+                tideStations: WaterHereLookup.tideStations(stationPins()),
+                settingsJson: json, now: now)
+        } catch {
+            return
+        }
+        update(id) { $0.water = .looking }
+        let host = host
+        let clock = clock
+        let apply: @MainActor @Sendable (WaterHereResult) -> Void = { [weak self] result in
+            self?.update(id) { $0.water = WaterHereState(result) }
+        }
+        waterTask = Task {
+            let result = await WaterHereLookup.run(
+                plan, send: { try await host.send(request: $0) }, clock: clock,
+                progress: { result in Task { @MainActor in apply(result) } })
+            guard !Task.isCancelled else { return }
+            apply(result)
+        }
+    }
+
+    /// Changes the open point if it is still the one `id` names.
+    private func update(_ id: UUID, _ change: (inout PointPick) -> Void) {
+        guard var current = pick, current.id == id else { return }
+        change(&current)
+        if current != pick { pick = current }
     }
 
     /// The station pins on screen, as the stations module draws them.

@@ -1,10 +1,11 @@
 import SwiftUI
-import UnderbiteKit
+@preconcurrency import UnderbiteKit
 
-/// What the inspector shows about a tapped point: each layer on screen with its value there, the
-/// time it is valid for and its source; the nearest station and how far it is; the point's
-/// coordinates (exact, local); "Save as spot" and "Measure from here". Every value and word about
-/// the point is the core's.
+/// What the inspector shows about a tapped point: the water there (its name and kind, where the
+/// point is against it, its stocking lines and the official regulation and licence links, with
+/// "Add as spot"); each layer on screen with its value there, the time it is valid for and its
+/// source; the nearest station and how far it is; the point's coordinates (exact, local); "Save
+/// as spot" and "Measure from here". Every value and word about the point is the core's.
 struct PointCard: View {
     let module: InspectorModule
     let settingsJSON: String
@@ -12,6 +13,7 @@ struct PointCard: View {
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var saved: String?
+    @State private var adding: SpotPrefill?
 
     var body: some View {
         NavigationStack {
@@ -34,6 +36,11 @@ struct PointCard: View {
 
     private func content(_ pick: PointPick) -> some View {
         List {
+            if pick.water.showsSection {
+                WaterHereSection(pick: pick) { card in
+                    adding = SpotPrefill(card: card, at: pick.coordinate)
+                }
+            }
             if !pick.rows.isEmpty {
                 Section {
                     ForEach(pick.rows) { row in
@@ -93,6 +100,9 @@ struct PointCard: View {
             }
         }
         .readableText()
+        .sheet(item: $adding) { prefill in
+            AddSpotView(prefill: prefill) { added in saved = added }
+        }
     }
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -139,5 +149,101 @@ private struct LayerValueRow: View {
         .fixedSize(horizontal: false, vertical: true)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("inspector-row-\(row.layer)")
+    }
+}
+
+/// The point's water: the core's loading words, then the water with what applies to it, or the
+/// core's failure words. Credits the sources it draws on. Links are links to the agencies'
+/// pages, with the date each was checked; the app states no rule itself.
+private struct WaterHereSection: View {
+    let pick: PointPick
+    let add: (WaterHereCard) -> Void
+
+    var body: some View {
+        Section(pick.waterWords?.title ?? "") {
+            switch pick.water {
+            case .looking:
+                HStack(spacing: 12) {
+                    ProgressView()
+                    Text(pick.waterWords?.loading ?? "")
+                        .foregroundStyle(.readableSecondary)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("inspector-water-loading")
+            case .failed(let message):
+                Text(message)
+                    .foregroundStyle(Palette.warning)
+                    .accessibilityIdentifier("inspector-water-failed")
+            case .found(let card):
+                found(card)
+            case .hidden:
+                EmptyView()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func found(_ card: WaterHereCard) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(card.title)
+                .font(.title3.weight(.semibold))
+                .accessibilityIdentifier("inspector-water-title")
+            Text(card.kindText)
+                .font(.body)
+            Text(card.position)
+                .font(.subheadline)
+                .foregroundStyle(.readableSecondary)
+            Text(card.waterTypeText)
+                .font(.subheadline)
+                .foregroundStyle(.readableSecondary)
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityElement(children: .combine)
+        if let title = card.stockingTitle, !card.stocking.isEmpty {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).font(.headline)
+                ForEach(Array(card.stocking.enumerated()), id: \.offset) { _, line in
+                    Text(line).font(.subheadline)
+                }
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("inspector-water-stocking")
+        }
+        if let title = card.linksTitle, !card.links.isEmpty {
+            Text(title).font(.headline)
+            ForEach(card.links, id: \.url) { link in
+                if let url = URL(string: link.url) {
+                    Link(destination: url) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(link.title)
+                            Text(link.detail)
+                                .font(.footnote)
+                                .foregroundStyle(.readableSecondary)
+                        }
+                    }
+                    .accessibilityIdentifier("inspector-water-link")
+                }
+            }
+            if let disclaimer = card.disclaimer {
+                Text(disclaimer)
+                    .font(.footnote)
+                    .foregroundStyle(.readableSecondary)
+            }
+        }
+        Button(pick.waterWords?.addAsSpot ?? "", systemImage: "plus.circle") { add(card) }
+            .accessibilityIdentifier("inspector-water-add")
+        ForEach(card.credits, id: \.name) { credit in
+            VStack(alignment: .leading, spacing: 2) {
+                Text(credit.text)
+                if let licence = credit.licence {
+                    Text(licence)
+                }
+            }
+            .font(.footnote)
+            .foregroundStyle(.readableSecondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityElement(children: .combine)
+        }
     }
 }
