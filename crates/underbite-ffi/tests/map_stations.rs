@@ -183,6 +183,7 @@ impl FetchHost for Recorded {
                 etag: None,
                 retry_after: None,
                 rate_limit_remaining: None,
+                from_cache: false,
             });
         }
         let path = raw(file);
@@ -205,6 +206,7 @@ impl FetchHost for Recorded {
             etag: None,
             retry_after: None,
             rate_limit_remaining: None,
+            from_cache: false,
         })
     }
 

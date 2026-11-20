@@ -1464,6 +1464,7 @@ mod tests {
                     etag: None,
                     retry_after: Some("4294967295".into()),
                     rate_limit_remaining: None,
+                    from_cache: false,
                 });
             }
             let reply = |status: u16, body: Vec<u8>| HostResponse {
@@ -1476,6 +1477,7 @@ mod tests {
                 etag: None,
                 retry_after: None,
                 rate_limit_remaining: None,
+                from_cache: false,
             };
             if self.down.iter().any(|d| url.contains(d)) {
                 return Ok(reply(503, Vec::new()));
