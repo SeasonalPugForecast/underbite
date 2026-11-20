@@ -18,4 +18,5 @@ pub mod species;
 pub mod storms;
 pub mod trip;
 pub mod view;
+pub mod water_here;
 pub mod widgets;

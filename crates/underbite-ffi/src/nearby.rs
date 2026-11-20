@@ -744,7 +744,7 @@ impl fmt::Debug for NearbyPlan {
     }
 }
 
-fn get(url: String, user_agent: Option<&str>, max_age_s: u32) -> HostRequest {
+pub(crate) fn get(url: String, user_agent: Option<&str>, max_age_s: u32) -> HostRequest {
     HostRequest {
         url,
         headers: user_agent
