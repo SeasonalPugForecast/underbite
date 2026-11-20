@@ -75,6 +75,34 @@ nonisolated struct SpotPrefill: Identifiable, Equatable, Sendable {
     }
 }
 
+/// What the "water here" section lists under the water's name and its two buttons, in order:
+/// the stocking lines (the newest few, the rest behind the core's "Show all (N)"), the
+/// regulations, then the credits. Nothing here words or formats.
+nonisolated enum WaterHereBlocks {
+    enum Block: Hashable {
+        case stocking, regulations, credits
+    }
+
+    /// How many stocking lines show before "Show all"; the core words the label to match.
+    static let stockingPreview = 2
+
+    /// The blocks the card has, in the order they are shown.
+    static func after(hasStocking: Bool, hasLinks: Bool, hasCredits: Bool) -> [Block] {
+        var out: [Block] = []
+        if hasStocking { out.append(.stocking) }
+        if hasLinks { out.append(.regulations) }
+        if hasCredits { out.append(.credits) }
+        return out
+    }
+
+    /// The stocking lines to show: the newest few while the core offers "Show all", all of
+    /// them once opened or when there are few.
+    static func stockingLines(_ lines: [String], showAll: String?, expanded: Bool) -> [String] {
+        guard showAll != nil, !expanded else { return lines }
+        return Array(lines.prefix(stockingPreview))
+    }
+}
+
 /// The heights the point card's sheet rests at on the iPhone: a first glance, a middle height
 /// that shows the "water here" section with its buttons and credits, and full height. The card
 /// rises to the middle height by itself when the section appears, unless the person has already

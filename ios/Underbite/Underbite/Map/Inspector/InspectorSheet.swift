@@ -68,6 +68,8 @@ private struct InspectorLayer: View {
                             .frame(idealWidth: 400, idealHeight: 520)
                             .presentationDetents([Self.glance, Self.water, .large], selection: detent)
                             .presentationDragIndicator(.visible)
+                            // The map stays usable above the sheet up to the middle height.
+                            .presentationBackgroundInteraction(.enabled(upThrough: Self.water))
                             .presentationCompactAdaptation(.sheet)
                     }
                     .position(module.pick?.point ?? .zero)

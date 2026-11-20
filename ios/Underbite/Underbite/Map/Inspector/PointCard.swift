@@ -198,6 +198,7 @@ private struct WaterHereSection: View {
     let pick: PointPick
     let add: (WaterHereCard) -> Void
     let preview: (WaterHereCard) -> Void
+    @State private var showsAllStocking = false
 
     var body: some View {
         Section(pick.waterWords?.title ?? "") {
@@ -233,53 +234,86 @@ private struct WaterHereSection: View {
             Text(card.position)
                 .font(.subheadline)
                 .foregroundStyle(.readableSecondary)
-            Text(card.waterTypeText)
-                .font(.subheadline)
-                .foregroundStyle(.readableSecondary)
-        }
-        .fixedSize(horizontal: false, vertical: true)
-        .accessibilityElement(children: .combine)
-        if let title = card.stockingTitle, !card.stocking.isEmpty {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.headline)
-                ForEach(Array(card.stocking.enumerated()), id: \.offset) { _, line in
-                    Text(line).font(.subheadline)
-                }
-            }
-            .fixedSize(horizontal: false, vertical: true)
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("inspector-water-stocking")
-        }
-        if let title = card.linksTitle, !card.links.isEmpty {
-            Text(title).font(.headline)
-            if let note = card.linksNote {
-                Text(note)
+            // Said only when the kind has not already said it.
+            if !card.waterTypeText.isEmpty {
+                Text(card.waterTypeText)
                     .font(.subheadline)
-                    .accessibilityIdentifier("inspector-water-links-note")
-            }
-            ForEach(card.links, id: \.url) { link in
-                if let url = URL(string: link.url) {
-                    Link(destination: url) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(link.title)
-                            Text(link.detail)
-                                .font(.footnote)
-                                .foregroundStyle(.readableSecondary)
-                        }
-                    }
-                    .accessibilityIdentifier("inspector-water-link")
-                }
-            }
-            if let disclaimer = card.disclaimer {
-                Text(disclaimer)
-                    .font(.footnote)
                     .foregroundStyle(.readableSecondary)
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityElement(children: .combine)
+        // The actions come right under the water, before what is long.
         Button(pick.waterWords?.addAsSpot ?? "", systemImage: "plus.circle") { add(card) }
             .accessibilityIdentifier("inspector-water-add")
         Button("Preview conditions", systemImage: "eye") { preview(card) }
             .accessibilityIdentifier("inspector-water-preview")
+        let blocks = WaterHereBlocks.after(
+            hasStocking: card.stockingTitle != nil && !card.stocking.isEmpty,
+            hasLinks: card.linksTitle != nil && !card.links.isEmpty,
+            hasCredits: !card.credits.isEmpty)
+        ForEach(blocks, id: \.self) { block in
+            switch block {
+            case .stocking: stocking(card)
+            case .regulations: regulations(card)
+            case .credits: credits(card)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func stocking(_ card: WaterHereCard) -> some View {
+        let lines = WaterHereBlocks.stockingLines(
+            card.stocking, showAll: card.stockingShowAll, expanded: showsAllStocking)
+        VStack(alignment: .leading, spacing: 4) {
+            Text(card.stockingTitle ?? "").font(.headline)
+            ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                Text(line).font(.subheadline)
+            }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("inspector-water-stocking")
+        if let label = card.stockingShowAll, !showsAllStocking {
+            Button(label, systemImage: "chevron.down") {
+                withAnimation { showsAllStocking = true }
+            }
+            .accessibilityIdentifier("inspector-water-stocking-all")
+        }
+    }
+
+    @ViewBuilder
+    private func regulations(_ card: WaterHereCard) -> some View {
+        if let title = card.linksTitle {
+            Text(title).font(.headline)
+        }
+        if let note = card.linksNote {
+            Text(note)
+                .font(.subheadline)
+                .accessibilityIdentifier("inspector-water-links-note")
+        }
+        ForEach(card.links, id: \.url) { link in
+            if let url = URL(string: link.url) {
+                Link(destination: url) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(link.title)
+                        Text(link.detail)
+                            .font(.footnote)
+                            .foregroundStyle(.readableSecondary)
+                    }
+                }
+                .accessibilityIdentifier("inspector-water-link")
+            }
+        }
+        if let disclaimer = card.disclaimer {
+            Text(disclaimer)
+                .font(.footnote)
+                .foregroundStyle(.readableSecondary)
+        }
+    }
+
+    @ViewBuilder
+    private func credits(_ card: WaterHereCard) -> some View {
         ForEach(card.credits, id: \.name) { credit in
             VStack(alignment: .leading, spacing: 2) {
                 Text(credit.text)

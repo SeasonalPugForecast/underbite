@@ -203,6 +203,32 @@ final class WaterHereTests: XCTestCase {
     }
 }
 
+/// The order of the "water here" section below its buttons and the stocking disclosure.
+final class WaterHereBlocksTests: XCTestCase {
+    func testStockingThenRegulationsThenCredits() {
+        XCTAssertEqual(
+            WaterHereBlocks.after(hasStocking: true, hasLinks: true, hasCredits: true),
+            [.stocking, .regulations, .credits])
+        XCTAssertEqual(
+            WaterHereBlocks.after(hasStocking: false, hasLinks: true, hasCredits: true),
+            [.regulations, .credits])
+        XCTAssertEqual(
+            WaterHereBlocks.after(hasStocking: false, hasLinks: false, hasCredits: false), [])
+    }
+
+    func testTheNewestTwoLinesShowUntilShowAllIsOpened() {
+        let lines = ["a", "b", "c", "d"]
+        XCTAssertEqual(
+            WaterHereBlocks.stockingLines(lines, showAll: "Show all (4)", expanded: false),
+            ["a", "b"])
+        XCTAssertEqual(
+            WaterHereBlocks.stockingLines(lines, showAll: "Show all (4)", expanded: true), lines)
+        // Without the core's disclosure everything shows.
+        XCTAssertEqual(
+            WaterHereBlocks.stockingLines(["a", "b"], showAll: nil, expanded: false), ["a", "b"])
+    }
+}
+
 /// The point card's sheet: it starts at the first glance, rises to the middle height when the
 /// "water here" section appears, and stays where the person put it.
 final class PointSheetStopsTests: XCTestCase {
