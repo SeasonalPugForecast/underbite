@@ -12,8 +12,8 @@ mod nearby {
     use underbite_ffi::fetch::{Header, HostResponse};
     use underbite_ffi::nearby::{
         AccessShape, NearbyArea, NearbyError, NearbyPlan, NearbyRequest, NearbyResponse,
-        NearbyResults, RecordsQuery, nearby_limits, nearby_words, plan_access, plan_blooms,
-        plan_records, plan_stocking,
+        NearbyResults, RecordsQuery, nearby_limits, nearby_words, plan_access, plan_beach_forecast,
+        plan_blooms, plan_records, plan_stocking,
     };
     use underbite_ffi::settings::default_settings_json;
 
@@ -773,6 +773,8 @@ mod nearby {
         assert_eq!(w.finding_records, "Looking for species records\u{2026}");
         assert_eq!(w.find_blooms, "Show beach bloom forecasts here");
         assert_eq!(w.finding_blooms, "Looking for beach forecasts\u{2026}");
+        assert_eq!(w.find_beaches, "Show beach forecasts here");
+        assert_eq!(w.finding_beaches, "Looking for beach forecasts\u{2026}");
         // The same words the plans refuse a wide view with.
         let wide = area(-79.8, 40.5, -71.8, 45.0);
         let refused = |e: NearbyError| match e {
@@ -794,5 +796,229 @@ mod nearby {
             w.zoom_in_stocking,
             refused(plan_stocking(wide, settings(), now()).unwrap_err())
         );
+        assert_eq!(
+            w.zoom_in_beaches,
+            refused(plan_beach_forecast(wide, String::new(), settings(), now()).unwrap_err())
+        );
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Beach forecast zones
+    // ---------------------------------------------------------------------------------------------
+
+    /// Rockaway and the water off it, as the shots are taken (span 0.3).
+    fn rockaway() -> NearbyArea {
+        area(-73.97, 40.43, -73.67, 40.73)
+    }
+
+    fn json_response(name: &str) -> HostResponse {
+        response(200, &fixture(name))
+    }
+
+    /// Answers the layer list, the offices of the points and the zones from recorded and
+    /// hand-made responses.
+    fn beach_answers(r: &NearbyRequest) -> HostResponse {
+        let url = &r.request.url;
+        if url.starts_with("https://api.weather.gov/points/") {
+            json_response("nws-marine/points-40.7033_-74.0170.geo.json")
+        } else if url.contains("/query?") {
+            json_response("swimming/mapservices-beachforecast-box-rings.synthetic.json")
+        } else {
+            json_response("swimming/mapservices-marine-beachforecast-mapserver.json")
+        }
+    }
+
+    fn pairs(url: &str) -> Vec<String> {
+        url.split_once('?')
+            .map(|(_, q)| q.split('&').map(str::to_owned).collect())
+            .unwrap_or_default()
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn beach_forecast_finds_the_office_then_asks_for_its_zones() {
+        let at = parse_rfc3339("2026-11-20T22:00:00Z").expect("time").0;
+        let plan = plan_beach_forecast(rockaway(), String::new(), settings(), at).expect("plan");
+        let requests = plan.requests();
+        // The layer list and the office of the centre and the four corners.
+        let list: Vec<_> = requests
+            .iter()
+            .filter(|r| r.request.url.contains("MapServer?f=json"))
+            .collect();
+        assert_eq!(list.len(), 1);
+        assert_eq!(list[0].request.max_age_s, Some(7 * 86_400));
+        let points: Vec<_> = requests
+            .iter()
+            .filter(|r| r.request.url.starts_with("https://api.weather.gov/points/"))
+            .collect();
+        assert_eq!(points.len(), 5);
+        assert_eq!(requests.len(), 6);
+        for p in &points {
+            let coords = p.request.url.rsplit('/').next().expect("coordinates");
+            for v in coords.split(',') {
+                let decimals = v.split_once('.').map_or(0, |(_, d)| d.len());
+                assert!(decimals <= 2, "{}", p.request.url);
+            }
+            assert!(header(p, "User-Agent").is_some_and(|ua| ua.contains("nderbite")));
+        }
+        assert!(
+            points
+                .iter()
+                .any(|p| p.request.url.ends_with("/points/40.58,-73.82")),
+            "the centre, at two decimals"
+        );
+
+        let results = round(&plan, at, |r| Some(beach_answers(r)));
+        assert!(results.beach_zones.is_empty());
+        // One office, one box on its Day 1 layer, rounded to two decimals.
+        let zones = plan.requests();
+        assert_eq!(zones.len(), 1);
+        assert_eq!(zones[0].source, "nws-beach-forecast");
+        let url = &zones[0].request.url;
+        assert!(
+            url.contains("/MapServer/91/query?"),
+            "OKX Day 1 is layer 91: {url}"
+        );
+        let q = pairs(url);
+        assert!(
+            q.contains(&"geometry=-73.97,40.43,-73.67,40.73".to_owned()),
+            "{q:?}"
+        );
+        assert!(q.contains(&"returnGeometry=true".to_owned()));
+        assert_eq!(zones[0].request.max_age_s, Some(3_600));
+
+        let results = round(&plan, at, |r| Some(beach_answers(r)));
+        assert!(plan.requests().is_empty());
+        // The zone with no outline is not drawn; the others are, by id.
+        let ids: Vec<_> = results.beach_zones.iter().map(|z| z.id.as_str()).collect();
+        assert_eq!(ids, ["okx:nyz178", "okx:nyz179"]);
+        let moderate = &results.beach_zones[0];
+        assert_eq!(moderate.role, "moderate");
+        assert_eq!(moderate.polygons.len(), 1);
+        assert_eq!(moderate.polygons[0].rings[0].len(), 5);
+        assert!((40.55..40.6).contains(&moderate.lat));
+        let card = &moderate.card;
+        assert_eq!(card.title, "Synthetic Zone One");
+        assert_eq!(card.risk, "Moderate");
+        let rows: Vec<_> = card
+            .rows
+            .iter()
+            .map(|r| (r.label.as_str(), r.value.as_str()))
+            .collect();
+        assert_eq!(
+            rows,
+            [
+                ("Rip current risk", "Moderate"),
+                ("Surf", "2 to 3 feet."),
+                ("Water temperature", "in the mid 60s"),
+                ("UV", "Moderate"),
+                ("Weather", "Mostly sunny."),
+                ("Winds", "Southwest 10 to 15 mph."),
+            ]
+        );
+        assert_eq!(card.issued, "Issued by NWS OKX, 409 PM EST 11/20/2026");
+        assert_eq!(card.age.as_deref(), Some("51 min ago"));
+        assert!(card.safety.contains("groins, jetties, reefs and piers"));
+        assert!(card.safety.contains("Swim near a lifeguard"));
+        // A zone with nothing issued is outlined neutral and says so.
+        let none = &results.beach_zones[1];
+        assert_eq!(none.role, "none");
+        assert_eq!(none.card.risk, "No forecast issued");
+        assert_eq!(none.polygons.len(), 2);
+        assert_eq!(
+            none.polygons[1].rings.len(),
+            2,
+            "the outline keeps its hole"
+        );
+        let legend: Vec<_> = results
+            .beach_legend
+            .iter()
+            .map(|l| (l.role.as_str(), l.label.as_str()))
+            .collect();
+        assert_eq!(
+            legend,
+            [
+                ("low", "Low"),
+                ("moderate", "Moderate"),
+                ("high", "High"),
+                ("none", "No forecast issued")
+            ]
+        );
+        let credit = results
+            .credits
+            .iter()
+            .find(|c| c.source == "nws-beach-forecast")
+            .expect("the credit");
+        assert_eq!(credit.text, "Beach forecasts: National Weather Service");
+        assert_eq!(credit.licence.as_deref(), Some("Public domain"));
+        assert!(
+            results
+                .notes
+                .iter()
+                .any(|n| n.contains("Swim near a lifeguard"))
+        );
+        assert_eq!(results.notices.len(), 0, "{:?}", results.notices);
+
+        // The state keeps the layer list and the offices: the next view asks for zones only.
+        let state = results.state_json.expect("state");
+        let again = plan_beach_forecast(rockaway(), state, settings(), at + 60).expect("plan");
+        let requests = again.requests();
+        assert_eq!(requests.len(), 1, "{requests:?}");
+        assert!(requests[0].request.url.contains("/91/query?"));
+    }
+
+    #[test]
+    fn beach_forecast_over_open_water_asks_for_no_zones_and_says_so() {
+        let at = parse_rfc3339("2026-11-20T22:00:00Z").expect("time").0;
+        let plan = plan_beach_forecast(rockaway(), String::new(), settings(), at).expect("plan");
+        let results = round(&plan, at, |r| {
+            if r.request.url.starts_with("https://api.weather.gov/points/") {
+                Some(response(
+                    404,
+                    &fixture("nws-marine/points-45.0_-30.0-invalid-point.problem.json"),
+                ))
+            } else {
+                Some(beach_answers(r))
+            }
+        });
+        assert!(plan.requests().is_empty());
+        assert!(results.beach_zones.is_empty());
+        assert_eq!(results.notices, ["No beach forecast zones in this view"]);
+        assert!(results.issues.is_empty(), "{:?}", results.issues);
+    }
+
+    #[test]
+    fn a_beach_forecast_error_in_a_200_body_is_a_failure_not_an_empty_view() {
+        let at = parse_rfc3339("2026-11-20T22:00:00Z").expect("time").0;
+        let plan = plan_beach_forecast(rockaway(), String::new(), settings(), at).expect("plan");
+        round(&plan, at, |r| Some(beach_answers(r)));
+        let body =
+            br#"{"error":{"code":400,"message":"Invalid or missing input parameters.","details":[]}}"#;
+        let results = round(&plan, at, |_| Some(response(200, body)));
+        assert!(results.beach_zones.is_empty());
+        assert_eq!(results.issues.len(), 1);
+        assert!(
+            results.notices[0].contains("could not be reached"),
+            "{:?}",
+            results.notices
+        );
+        assert!(
+            !results
+                .notices
+                .iter()
+                .any(|n| n.contains("No beach forecast zones"))
+        );
+    }
+
+    #[test]
+    fn a_wide_view_is_refused_for_the_beach_forecast() {
+        let wide = area(-76.0, 39.0, -72.0, 41.0);
+        let e = plan_beach_forecast(wide, String::new(), settings(), now()).unwrap_err();
+        assert!(
+            matches!(&e, NearbyError::ZoomIn { message } if message == "Zoom in to look for beach forecasts"),
+            "{e:?}"
+        );
+        assert!(plan_beach_forecast(rockaway(), "not json".into(), settings(), now()).is_err());
+        assert!((nearby_limits().beach_max_span_deg - 2.0).abs() < 1e-9);
     }
 }

@@ -50,6 +50,7 @@ use underbite_core::view::strings::{
     Key, SafetyKey, record_link_title, record_position, record_seen,
 };
 use underbite_providers::access::{overpass, padus};
+use underbite_providers::beach_forecast;
 use underbite_providers::blooms::hab;
 use underbite_providers::request::{Coordinates, MAX_COORDINATE_DECIMALS, Response};
 use underbite_providers::species::{Licence, gbif, inat, nas, without_inaturalist_duplicates};
@@ -61,6 +62,11 @@ use underbite_providers::stocking::socrata_ny::{self, Dataset};
 use crate::fetch::{Header, HostMethod, HostRequest, HostResponse, SourceIssue, fetched};
 use crate::map::{MapPoint, formatter};
 use crate::settings::{SettingsError, load};
+
+mod beaches;
+pub use beaches::{
+    BeachCardInfo, BeachLegendItem, BeachPolygon, BeachRowInfo, BeachZonePin, plan_beach_forecast,
+};
 
 /// The widest view, in degrees of latitude or longitude, access is looked up for (PAD-US; the
 /// Overpass part is limited to [`overpass::MAX_AREAS`] cells of 0.1 degree).
@@ -340,6 +346,10 @@ pub struct NearbyResults {
     pub stocking: Vec<StockingPin>,
     /// Beach bloom forecasts ([`plan_blooms`]).
     pub blooms: Vec<BloomPin>,
+    /// Beach forecast zones with their outlines and cards ([`plan_beach_forecast`]).
+    pub beach_zones: Vec<BeachZonePin>,
+    /// The categories of the beach forecast zones' colours, in words.
+    pub beach_legend: Vec<BeachLegendItem>,
     /// Every source the pins come from.
     pub credits: Vec<NearbyCredit>,
     /// What happened, in words: "OpenStreetMap is busy; try again later", "Zoom in to look
@@ -366,6 +376,8 @@ pub struct NearbyWords {
     pub finding_records: String,
     pub find_blooms: String,
     pub finding_blooms: String,
+    pub find_beaches: String,
+    pub finding_beaches: String,
     /// In place of a lookup that is off while the view is wider than its limit, the words its
     /// plan refuses with ([`NearbyError::ZoomIn`]): "Zoom in to look for ramps, piers and
     /// public land", "Zoom in to look for species records", "Zoom in to look for stocked
@@ -373,6 +385,7 @@ pub struct NearbyWords {
     pub zoom_in_access: String,
     pub zoom_in_records: String,
     pub zoom_in_stocking: String,
+    pub zoom_in_beaches: String,
 }
 
 /// The words of the lookup buttons.
@@ -392,9 +405,12 @@ pub fn nearby_words(settings_json: String) -> Result<NearbyWords, NearbyError> {
         finding_records: w(Key::NearbyFindingRecords),
         find_blooms: w(Key::NearbyFindBlooms),
         finding_blooms: w(Key::NearbyFindingBlooms),
+        find_beaches: w(Key::NearbyFindBeaches),
+        finding_beaches: w(Key::NearbyFindingBeaches),
         zoom_in_access: w(Key::NearbyZoomInAccess),
         zoom_in_records: w(Key::NearbyZoomInRecords),
         zoom_in_stocking: w(Key::NearbyZoomInStocking),
+        zoom_in_beaches: w(Key::NearbyZoomInBeaches),
     })
 }
 
@@ -404,6 +420,7 @@ pub struct NearbyLimits {
     pub access_max_span_deg: f64,
     pub records_max_span_deg: f64,
     pub stocking_max_span_deg: f64,
+    pub beach_max_span_deg: f64,
     pub overpass_max_cells: u32,
     pub overpass_daily_cap: u32,
     pub overpass_cache_days: u32,
@@ -420,6 +437,7 @@ pub fn nearby_limits() -> NearbyLimits {
         access_max_span_deg: ACCESS_MAX_SPAN_DEG,
         records_max_span_deg: RECORDS_MAX_SPAN_DEG,
         stocking_max_span_deg: STOCKING_MAX_SPAN_DEG,
+        beach_max_span_deg: beach_forecast::MAX_BOX_SPAN_DEG,
         overpass_max_cells: u32::try_from(overpass::MAX_AREAS).unwrap_or(u32::MAX),
         overpass_daily_cap: overpass::DEFAULT_DAILY_CAP,
         overpass_cache_days: u32::try_from(overpass::CACHE_DAYS).unwrap_or(u32::MAX),
@@ -611,6 +629,10 @@ struct NearbyState {
     overpass_cache: BTreeMap<String, CachedCell>,
     inaturalist: Pacer,
     gbif: Pacer,
+    /// The beach forecast service's layer list.
+    beach_layers: Option<beaches::LayerCache>,
+    /// The forecast office of a rounded point, by `lat,lon`.
+    beach_offices: BTreeMap<String, beaches::OfficeCache>,
 }
 
 impl Default for NearbyState {
@@ -621,6 +643,8 @@ impl Default for NearbyState {
             overpass_cache: BTreeMap::new(),
             inaturalist: Pacer::default(),
             gbif: Pacer::default(),
+            beach_layers: None,
+            beach_offices: BTreeMap::new(),
         }
     }
 }
@@ -636,6 +660,7 @@ impl NearbyState {
 
     /// Drops cells that expired at `now` and keeps the newest [`OVERPASS_CACHE_CELLS`].
     fn prune(&mut self, now: UnixTime) {
+        self.prune_beaches(now);
         self.overpass_cache
             .retain(|_, c| overpass::cache_valid(UnixTime(c.fetched_at), now));
         if self.overpass_cache.len() > OVERPASS_CACHE_CELLS {
@@ -678,6 +703,14 @@ enum Want {
         points: Vec<usize>,
     },
     Blooms,
+    /// The beach forecast service's layer list.
+    BeachLayers,
+    /// The forecast office of the rounded point `key`.
+    BeachOffice {
+        key: String,
+    },
+    /// The zones of an office in the view.
+    BeachZones,
 }
 
 #[derive(Clone, Debug)]
@@ -717,6 +750,9 @@ struct Inner {
     nas_query: Option<nas::NasQuery>,
     points: Vec<Point>,
     blooms: Vec<hab::HabBeach>,
+    /// The beach forecast lookup, when this plan is one.
+    beach: Option<beaches::Run>,
+    beach_zones: Vec<beach_forecast::BeachZone>,
     /// When the oldest Overpass cell answered from the state was fetched.
     cached_oldest: Option<i64>,
     used: BTreeSet<SourceId>,
@@ -786,6 +822,8 @@ impl Inner {
             nas_query: None,
             points: Vec::new(),
             blooms: Vec::new(),
+            beach: None,
+            beach_zones: Vec::new(),
             cached_oldest: None,
             used: BTreeSet::new(),
             notices: Vec::new(),
@@ -807,16 +845,29 @@ impl Inner {
         want: Want,
         request: HostRequest,
     ) {
+        let p = self.make(source, queue, delay_ms, want, request);
+        self.round.push(p);
+    }
+
+    /// A request for the round, which the caller places.
+    fn make(
+        &mut self,
+        source: SourceId,
+        queue: &'static str,
+        delay_ms: u32,
+        want: Want,
+        request: HostRequest,
+    ) -> Pending {
         self.seq += 1;
         self.used.insert(source.clone());
-        self.round.push(Pending {
+        Pending {
             id: format!("{}:{}", self.seq, source.as_str()),
             source,
             queue,
             delay_ms,
             want,
             request,
-        });
+        }
     }
 
     fn name(&self, source: &SourceId) -> String {
@@ -1371,6 +1422,9 @@ impl Inner {
                         self.read_stocking(&response, *dataset, points);
                     }
                     Want::Blooms => self.read_blooms(&response),
+                    Want::BeachLayers => self.read_beach_layers(&response),
+                    Want::BeachOffice { key } => self.read_beach_office(key, &response),
+                    Want::BeachZones => self.read_beach_zones(&response),
                     Want::Overpass { .. } => {}
                 }
             }
@@ -2050,7 +2104,14 @@ impl Inner {
             .iter()
             .map(|b| bloom_pin(&self.config, b))
             .collect();
+        let (beach_zones, beach_legend) = self.beach_results();
         let mut notes = self.notes.clone();
+        if !beach_zones.is_empty() {
+            push_unique(
+                &mut notes,
+                f.strings.safety(SafetyKey::BeachSafety).to_owned(),
+            );
+        }
         if !blooms.is_empty() {
             push_unique(
                 &mut notes,
@@ -2058,6 +2119,7 @@ impl Inner {
             );
         }
         let mut notices = self.notices.clone();
+        self.beach_notices(&mut notices);
         if let Some(fetched) = self.cached_oldest {
             let age = f.age(self.now.0 - fetched);
             let name = self.name(&SourceId::OVERPASS);
@@ -2080,6 +2142,8 @@ impl Inner {
             records,
             stocking,
             blooms,
+            beach_zones,
+            beach_legend,
             credits: self.credits(),
             notices,
             notes,
@@ -2117,6 +2181,10 @@ fn credit_of(source: &SourceId, accessed: LocalDate) -> Option<(Attribution, Opt
         ),
         "ny-dec-stocking" => (socrata_ny::attribution(), None),
         "noaa-hab" => (hab::attribution(), Some(SafetyKey::LicencePublicDomain)),
+        "nws-beach-forecast" => (
+            beach_forecast::attribution(),
+            Some(SafetyKey::LicencePublicDomain),
+        ),
         _ => return None,
     })
 }
@@ -2156,6 +2224,7 @@ impl NearbyPlan {
         for p in &round {
             inner.read_one(p, by_id.get(p.id.as_str()).copied(), &mut next);
         }
+        inner.beach_after_round(&mut next);
         inner.round = next;
         inner.results()
     }
