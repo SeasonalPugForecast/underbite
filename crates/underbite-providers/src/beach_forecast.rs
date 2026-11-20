@@ -24,6 +24,7 @@ use std::collections::BTreeMap;
 
 use serde_json::Value;
 use underbite_core::map::{Bbox, GeoPoint};
+use underbite_core::provenance::{Attribution, SourceId};
 use underbite_core::time::{LocalDate, UnixTime, day_number};
 use whether_core::time::days_in_month;
 
@@ -53,6 +54,15 @@ pub const POINT_DISTANCE_M: u32 = 3_000;
 const SIMPLIFY_DEG: f64 = 0.001;
 
 const FIELDS: &str = "id,beachname,siteid,rip,uv,surf,wtemp,weather,winds,period,productdat,producttim,idp_ingestdate";
+
+/// The credit every display of the forecast shows.
+pub fn attribution() -> Attribution {
+    Attribution {
+        source: SourceId::NWS_BEACH_FORECAST,
+        credit: "Beach forecasts: National Weather Service".into(),
+        url: Some("https://www.weather.gov/safety/ripcurrent".into()),
+    }
+}
 
 /// The `NWS` rip current risk categories.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -734,6 +744,13 @@ mod tests {
         }
         assert_eq!(product_time("13/20/2026", "409 PM EST"), None);
         assert_eq!(product_time("2/30/2026", "409 PM EST"), None);
+    }
+
+    #[test]
+    fn the_credit_names_the_service() {
+        let a = attribution();
+        assert_eq!(a.source.as_str(), "nws-beach-forecast");
+        assert_eq!(a.credit, "Beach forecasts: National Weather Service");
     }
 
     #[test]
