@@ -193,7 +193,7 @@ fn clockwise(r: &[GeoPoint]) -> bool {
 /// The polygons of one feature, in either shape: `GeoJSON` (`Polygon` or `MultiPolygon`) or `JSON`
 /// (`rings`, where a clockwise ring starts a polygon and the counter-clockwise ones that follow
 /// are its holes). Empty for a missing or invalid geometry.
-fn polygons(f: &Value) -> Vec<Vec<Vec<GeoPoint>>> {
+pub(crate) fn polygons(f: &Value) -> Vec<Vec<Vec<GeoPoint>>> {
     let Some(g) = f.get("geometry").filter(|g| !g.is_null()) else {
         return Vec::new();
     };

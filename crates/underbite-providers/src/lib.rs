@@ -9,6 +9,7 @@
 pub(crate) mod testutil;
 
 pub mod access;
+pub mod beach_forecast;
 pub mod blooms;
 pub mod coops;
 pub mod copernicus;

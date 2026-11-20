@@ -30,6 +30,7 @@ Base: `https://mapservices.weather.noaa.gov/vector/rest/services/outlooks/marine
 - `mapservices-beachforecast-point-sandyhook-phi-day1.json`: the same on layer 97 with `geometry=-73.98,40.43` (2026-11-20)
 - `mapservices-beachforecast-point-chicago-lot-day1.json`: the same on layer 16 with `geometry=-87.62,41.90&distance=3000&units=esriSRUnit_Meter` (2026-11-20; without `distance` the point matched nothing)
 - `mapservices-beachforecast-box-day1-sample.json`: `<base>/1/query?f=json&where=1=1&outFields=id,beachname,siteid,productdat,producttim,rip,uv,surf,wtemp,period,idp_ingestdate&returnGeometry=false&resultRecordCount=2` (2026-11-20, an in-season example from Boston)
+- `mapservices-beachforecast-box-rings.synthetic.json`: hand-made, in the service's JSON shape with `rings`: three zones, one with a moderate risk, one with no forecast and two outlines (the second with a hole), one with a high risk and no outline (not a recorded answer)
 - `mapservices-raster-ndfd-folder.json`: `https://mapservices.weather.noaa.gov/raster/rest/services/NDFD?f=json` (2026-11-20, only `NDFD_temp`)
 
 ## NWPS rip current probability (polar.ncep.noaa.gov)
