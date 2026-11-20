@@ -11,6 +11,12 @@
 //!   cell, so they cover the point whatever the rounding; the exact point never leaves the
 //!   phone, and the snapping to the water happens here, on the phone. The answers may be
 //!   reused for 30 days.
+//! - **Tide**: when the water found is not a lake, pond or reservoir and a region of the point
+//!   can hold tidal water (`discover::tidal`), one more request asks the National Wetlands
+//!   Inventory for the wetland codes in the rounded box of the point (two decimals, no
+//!   geometry), after the 3DHP round and before the card is shown. Its answer decides whether
+//!   the water is a tidal river or an estuary; the tide stations on the map are the fallback
+//!   when it fails or says nothing. Inland points send nothing.
 //! - **The regions** of the point: the region the app names, if any, then every state the
 //!   point is in or beside, from the boundaries bundled with the app (`discover::states`). The
 //!   lookup is local; nothing about the exact point is asked of anyone.
@@ -29,8 +35,8 @@ use underbite_config::schema::Config;
 use underbite_config::view_input::view_input;
 use underbite_core::discover::hydro::{Flowline, HydroOptions, Point, Waterbody};
 use underbite_core::discover::states::states_at;
-use underbite_core::discover::tidal::Tide;
-use underbite_core::discover::water_here::{WaterHere, WaterKind, water_here};
+use underbite_core::discover::tidal::{self, Tide};
+use underbite_core::discover::water_here::{WaterHere, WaterKind, may_be_tidal, water_here};
 use underbite_core::model::{Spot, SpotSnapshot, StockingEvent};
 use underbite_core::provenance::SourceId;
 use underbite_core::time::UnixTime;
@@ -39,6 +45,7 @@ use underbite_core::view::format::Formatter;
 use underbite_core::view::water_here as view;
 use underbite_core::view::water_here::{WaterHereInput, WaterHereVm, WaterHereWords};
 use underbite_providers::hydro::{self, HydroQuery};
+use underbite_providers::nwi::{self, NwiQuery};
 use underbite_providers::request::Coordinates;
 use underbite_providers::source::FetchContext;
 use underbite_providers::stocking::catalogue::{
@@ -54,6 +61,9 @@ use crate::settings::load;
 /// How far around the point the water is looked for, metres (before the rounding cell is
 /// added): well beyond the snap and shore tolerances of [`HydroOptions`].
 pub const SEARCH_RADIUS_M: f64 = hydro::MIN_RADIUS_M;
+
+/// The queue of the wetland inventory request.
+const TIDE_QUEUE: &str = "usfws-nwi";
 
 /// The region whose stocking lists are bundled.
 const NY: &str = "US-NY";
@@ -179,7 +189,19 @@ pub fn water_here_words(settings_json: String) -> Result<WaterHereTexts, NearbyE
 enum Want {
     Flowlines(HydroQuery),
     Waterbodies(HydroQuery),
+    Tide,
     Stocking(Dataset),
+}
+
+impl Want {
+    /// The source the request is made of.
+    fn source(&self) -> SourceId {
+        match self {
+            Self::Flowlines(_) | Self::Waterbodies(_) => SourceId::USGS_3DHP,
+            Self::Tide => nwi::SOURCE,
+            Self::Stocking(_) => SourceId::NY_DEC_STOCKING,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -200,6 +222,11 @@ struct Inner {
     /// A state of the point's own was added to the regions.
     from_state_lines: bool,
     tide_stations: Vec<Point>,
+    /// The wetland inventory request for the point, when it could be planned.
+    tide_query: Option<NwiQuery>,
+    /// What the wetland inventory said; unknown until it answers, or when it cannot. The card
+    /// waits while its request is in the round.
+    tide: Tide,
     round: Vec<Pending>,
     seq: u32,
     flowlines: Vec<Flowline>,
@@ -235,10 +262,11 @@ impl fmt::Debug for WaterHerePlan {
 /// region the app knows the user fishes (`US-NY`), none when it is not known; the states the
 /// point is in or beside, from the bundled boundaries, are added to it for the regulation links
 /// and the stocking lists, so the section needs no saved region. `tide_stations` are the places of the tide stations on the
-/// map, which decide whether a river here is tidal.
+/// map, which decide whether a river here is tidal when the wetland inventory does not.
 ///
-/// Call it only when the point card opens. The two 3DHP requests carry the point rounded to the
-/// settings' precision, at most two decimals.
+/// Call it only when the point card opens. The 3DHP requests, and the wetland inventory's when
+/// the water may be tidal, carry the point rounded to the settings' precision, at most two
+/// decimals.
 ///
 /// # Errors
 /// [`NearbyError::Invalid`] for a point out of range or unreadable settings.
@@ -288,6 +316,8 @@ pub fn plan_water_here(
             .filter(|p| in_range(p))
             .map(|p| Point::new(p.lat, p.lon))
             .collect(),
+        tide_query: nwi::tidal_query(at, &ctx).ok(),
+        tide: Tide::Unknown,
         round: Vec::new(),
         seq: 0,
         flowlines: Vec::new(),
@@ -310,17 +340,14 @@ impl Inner {
     fn push_hydro(&mut self, queue: &'static str, want: Want) {
         let request = match &want {
             Want::Flowlines(q) | Want::Waterbodies(q) => get(q.url.clone(), None, q.max_age_s),
-            Want::Stocking(_) => return,
+            Want::Tide | Want::Stocking(_) => return,
         };
         self.push_request(queue, want, request);
     }
 
     fn push_request(&mut self, queue: &'static str, want: Want, request: HostRequest) {
         self.seq += 1;
-        let source = match want {
-            Want::Stocking(_) => SourceId::NY_DEC_STOCKING,
-            _ => SourceId::USGS_3DHP,
-        };
+        let source = want.source();
         self.round.push(Pending {
             id: format!("{}:{}", self.seq, source.as_str()),
             queue,
@@ -331,6 +358,7 @@ impl Inner {
 
     fn read_round(&mut self, round: &[Pending], answers: &[(&str, &HostResponse)]) {
         let mut next: Vec<(&'static str, Want)> = Vec::new();
+        let mut tide_settled = false;
         for p in round {
             let answer = answers.iter().find(|(id, _)| *id == p.id).map(|(_, r)| *r);
             let fetched = answer.and_then(|r| fetched(r.clone()).ok());
@@ -372,6 +400,16 @@ impl Inner {
                         Err(_) => self.hydro_failed = true,
                     }
                 }
+                Want::Tide => {
+                    // An answer that failed, was blocked or holds no polygons leaves the tide
+                    // stations to decide.
+                    if let Some(f) = &fetched
+                        && let Ok(wetlands) = nwi::parse(&f.as_response())
+                    {
+                        self.tide = wetlands.tide();
+                    }
+                    tide_settled = true;
+                }
                 Want::Stocking(dataset) => {
                     // A list that did not answer leaves the water without stocking lines.
                     if let Some(f) = &fetched
@@ -388,24 +426,45 @@ impl Inner {
         }
         if !self.placed && self.round.is_empty() {
             self.place();
+        } else if tide_settled {
+            self.locate();
+            self.ask_stocking();
         }
     }
 
-    /// The 3DHP answers are all in: place the water, and ask the stocking lists when it is a
-    /// stocked water of New York.
+    /// Places the water from the 3DHP answers, the inventory's tide and the tide stations.
+    fn locate(&mut self) {
+        self.here = water_here(
+            self.tap,
+            &self.flowlines,
+            &self.waterbodies,
+            self.tide,
+            &self.tide_stations,
+            HydroOptions::default(),
+        );
+    }
+
+    /// The 3DHP answers are all in: place the water. When it may be tidal, ask the wetland
+    /// inventory first and hold the card until it answers; otherwise ask the stocking lists
+    /// when it is a stocked water of New York.
     fn place(&mut self) {
         self.placed = true;
         if self.hydro_failed {
             return;
         }
-        self.here = water_here(
-            self.tap,
-            &self.flowlines,
-            &self.waterbodies,
-            Tide::Unknown,
-            &self.tide_stations,
-            HydroOptions::default(),
-        );
+        self.locate();
+        let ask_tide =
+            self.here.as_ref().is_some_and(may_be_tidal) && tidal::may_be_tidal(&self.regions);
+        if ask_tide && let Some(q) = self.tide_query.clone() {
+            let request = get(q.url.clone(), None, q.max_age_s);
+            self.push_request(TIDE_QUEUE, Want::Tide, request);
+            return;
+        }
+        self.ask_stocking();
+    }
+
+    /// Asks the stocking lists when the water is a stocked water of New York.
+    fn ask_stocking(&mut self) {
         let Some(here) = &self.here else {
             return;
         };
@@ -484,7 +543,7 @@ impl Inner {
             card: None,
             message: None,
         };
-        if !self.placed {
+        if !self.placed || self.round.iter().any(|p| matches!(p.want, Want::Tide)) {
             return looking;
         }
         if self.hydro_failed {
@@ -620,12 +679,7 @@ impl WaterHerePlan {
             .iter()
             .map(|p| NearbyRequest {
                 id: p.id.clone(),
-                source: match p.want {
-                    Want::Stocking(_) => SourceId::NY_DEC_STOCKING,
-                    _ => SourceId::USGS_3DHP,
-                }
-                .as_str()
-                .to_owned(),
+                source: p.want.source().as_str().to_owned(),
                 queue: p.queue.to_owned(),
                 delay_ms: 0,
                 request: p.request.clone(),

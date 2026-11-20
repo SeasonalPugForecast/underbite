@@ -107,8 +107,27 @@ mod water_here {
         plan.read(responses, now())
     }
 
-    /// Both 3DHP queries answered from the recorded files of one place.
+    /// Both 3DHP queries answered from the recorded files of one place; then, when the plan asks
+    /// the wetland inventory, an answer with no polygons (the tide stations decide).
     fn hydro(plan: &WaterHerePlan, lines: &str, bodies: &str) -> WaterHereResult {
+        let result = hydro_only(plan, lines, bodies);
+        if asks_tide(plan) {
+            return round(plan, |_| Some(response(200, EMPTY_WETLANDS)));
+        }
+        result
+    }
+
+    /// An answer of the wetland inventory with no polygons.
+    const EMPTY_WETLANDS: &[u8] = b"{\"features\":[]}";
+
+    /// The round holds the wetland inventory's request.
+    fn asks_tide(plan: &WaterHerePlan) -> bool {
+        let requests = plan.requests();
+        !requests.is_empty() && requests.iter().all(|r| r.source == "usfws-nwi")
+    }
+
+    /// Both 3DHP queries answered from the recorded files of one place.
+    fn hydro_only(plan: &WaterHerePlan, lines: &str, bodies: &str) -> WaterHereResult {
         let lines = fixture(lines);
         let bodies = fixture(bodies);
         round(plan, |r| {
@@ -436,6 +455,150 @@ mod water_here {
         assert_eq!(card.position, "The marker is on this water");
     }
 
+    /// The Hudson at Poughkeepsie.
+    const POUGHKEEPSIE: MapPoint = MapPoint {
+        lat: 41.7003,
+        lon: -73.9399,
+    };
+
+    fn poughkeepsie(plan: &WaterHerePlan) -> WaterHereResult {
+        hydro_only(
+            plan,
+            "hydro/hydro-50-poughkeepsie-geom.json",
+            "hydro/hydro-60-poughkeepsie-geom.json",
+        )
+    }
+
+    /// Answers the wetland inventory's one request with `status` and `body`.
+    fn tide_round(plan: &WaterHerePlan, status: u16, body: &[u8]) -> WaterHereResult {
+        assert!(asks_tide(plan), "{:?}", plan.requests());
+        round(plan, |_| Some(response(status, body)))
+    }
+
+    #[test]
+    fn the_inventory_makes_the_hudson_at_poughkeepsie_a_tidal_river_without_any_tide_station() {
+        let plan = plan(POUGHKEEPSIE, Some("US-NY"), &[]);
+        // The card waits for the inventory, which is the one request of the next round.
+        assert_eq!(poughkeepsie(&plan).status, WaterHereStatus::Looking);
+        let requests = plan.requests();
+        assert_eq!(requests.len(), 1, "{requests:?}");
+        let url = &requests[0].request.url;
+        assert_eq!(requests[0].source, "usfws-nwi");
+        assert!(
+            url.contains("/Wetlands/MapServer/0/query?where=1=1&"),
+            "{url}"
+        );
+        assert!(url.contains("geometry=-73.95,41.69,-73.93,41.71&"), "{url}");
+        assert!(url.contains("returnGeometry=false"), "{url}");
+        assert!(
+            !url.contains("73.9399") && !url.contains("41.7003"),
+            "{url}"
+        );
+        assert_eq!(decimals(url), [2, 2, 2, 2]);
+        let result = tide_round(
+            &plan,
+            200,
+            &fixture("tidal-limit/nwi-0-poughkeepsie-box.json"),
+        );
+        assert_eq!(result.status, WaterHereStatus::Found, "{result:?}");
+        let card = result.card.expect("a card");
+        assert_eq!(card.kind, "tidal_river", "{card:?}");
+        assert_eq!(card.kind_text, "Tidal river");
+        assert_eq!(card.water_type, "tidal_river_estuary");
+        assert!(card.credits.iter().any(|c| c.name
+            == "USFWS National Wetlands Inventory"
+            && c.text
+                == "Tidal reach: U.S. Fish and Wildlife Service, National Wetlands Inventory"
+            && c.licence.as_deref() == Some("U.S. Government data, no licence stated")));
+        let titles: Vec<&str> = card.links.iter().map(|l| l.title.as_str()).collect();
+        assert!(titles.contains(&"Saltwater regulations"), "{titles:?}");
+        assert!(
+            plan.requests().is_empty() || plan.requests().iter().all(|r| r.source != "usfws-nwi")
+        );
+    }
+
+    #[test]
+    fn estuarine_polygons_alone_make_the_water_an_estuary() {
+        let plan = plan(POUGHKEEPSIE, Some("US-NY"), &[]);
+        poughkeepsie(&plan);
+        let result = tide_round(&plan, 200, &fixture("tidal-limit/nwi-0-battery-box.json"));
+        let card = result.card.expect("a card");
+        assert_eq!(card.kind, "estuary", "{card:?}");
+        assert_eq!(card.water_type, "tidal_river_estuary");
+    }
+
+    #[test]
+    fn a_river_the_inventory_calls_not_tidal_stays_a_river_even_beside_a_tide_station() {
+        let station = MapPoint {
+            lat: 41.7005,
+            lon: -73.9401,
+        };
+        let plan = plan(POUGHKEEPSIE, Some("US-NY"), &[station]);
+        poughkeepsie(&plan);
+        let result = tide_round(&plan, 200, &fixture("tidal-limit/nwi-0-croton-box.json"));
+        let card = result.card.expect("a card");
+        assert_eq!(card.kind, "river", "{card:?}");
+        assert_eq!(card.water_type, "river_stream");
+        assert!(
+            card.credits
+                .iter()
+                .any(|c| c.name == "USFWS National Wetlands Inventory")
+        );
+    }
+
+    #[test]
+    fn an_empty_answer_or_a_firewall_page_falls_back_on_the_tide_stations_and_is_not_credited() {
+        let station = MapPoint {
+            lat: 41.7005,
+            lon: -73.9401,
+        };
+        let html: &[u8] = b"<html><body>The URL you requested has been blocked</body></html>";
+        for (status, body) in [(200, EMPTY_WETLANDS), (200, html), (403, html), (500, b"")] {
+            let with = plan(POUGHKEEPSIE, Some("US-NY"), &[station]);
+            poughkeepsie(&with);
+            let card = tide_round(&with, status, body).card.expect("a card");
+            assert_eq!(card.kind, "tidal_river", "{status}");
+            assert!(
+                !card.credits.iter().any(|c| c.name.contains("Wetlands")),
+                "{status}: {:?}",
+                card.credits
+            );
+            let without = plan(POUGHKEEPSIE, Some("US-NY"), &[]);
+            poughkeepsie(&without);
+            let card = tide_round(&without, status, body).card.expect("a card");
+            assert_eq!(card.kind, "river", "{status}");
+        }
+        // No answer at all counts as failed too.
+        let plan = plan(POUGHKEEPSIE, Some("US-NY"), &[station]);
+        poughkeepsie(&plan);
+        let result = plan.read(Vec::new(), now());
+        assert_eq!(result.card.expect("a card").kind, "tidal_river");
+    }
+
+    #[test]
+    fn a_lake_or_land_sends_nothing_to_the_inventory() {
+        let plan = plan(RESERVOIR, Some("US-NY"), &[]);
+        let result = hydro_only(
+            &plan,
+            "hydro/hydro-50-croton-geom.json",
+            "hydro/hydro-60-croton-geom.json",
+        );
+        assert_eq!(result.status, WaterHereStatus::Found);
+        assert!(plan.requests().iter().all(|r| r.source != "usfws-nwi"));
+        let plan = plan_land();
+        let result = hydro_only(
+            &plan,
+            "hydro/hydro-50-battery-geom.json",
+            "hydro/hydro-60-battery-geom.json",
+        );
+        assert_eq!(result.status, WaterHereStatus::Nothing);
+        assert!(plan.requests().is_empty());
+    }
+
+    fn plan_land() -> std::sync::Arc<WaterHerePlan> {
+        plan(LAND, Some("US-NY"), &[TIDE])
+    }
+
     #[test]
     fn open_land_has_no_water_and_no_section() {
         let plan = plan(LAND, Some("US-NY"), &[TIDE]);
@@ -497,7 +660,10 @@ mod water_here {
         );
         // That page is full too, but only one more is read.
         let second = round(&plan, |_| Some(response(200, &page)));
-        assert_eq!(second.status, WaterHereStatus::Found);
+        // The inventory is asked once the water is placed; the card waits for it.
+        assert_eq!(second.status, WaterHereStatus::Looking);
+        let third = round(&plan, |_| Some(response(200, EMPTY_WETLANDS)));
+        assert_eq!(third.status, WaterHereStatus::Found);
         // Only the stocking lists of the stocked Croton River follow.
         assert!(
             plan.requests()
