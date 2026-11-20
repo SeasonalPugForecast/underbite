@@ -1046,7 +1046,6 @@ pub const PRESETS: [Preset; 6] = [
         layers: &[
             on("usgs-gauges"),
             on("nwps-gauges"),
-            on("radar"),
             on("stocking-points"),
             on("spots"),
         ],
@@ -1054,12 +1053,12 @@ pub const PRESETS: [Preset; 6] = [
     Preset {
         id: "bass-lake",
         base: "apple-satellite",
-        layers: &[on("radar"), on("spots")],
+        layers: &[on("usgs-gauges"), on("spots")],
     },
     Preset {
         id: "surf",
         base: "apple-standard",
-        layers: &[on("buoys"), on("tide-stations"), on("radar"), on("spots")],
+        layers: &[on("buoys"), on("tide-stations"), on("spots")],
     },
     Preset {
         id: "great-lakes-trolling",
@@ -1067,7 +1066,6 @@ pub const PRESETS: [Preset; 6] = [
         layers: &[
             on("great-lakes-sst"),
             on("buoys"),
-            on("radar"),
             on("nwps-gauges"),
             on("spots"),
         ],
@@ -1725,6 +1723,13 @@ mod tests {
                 (wider.east - wider.west).max(wider.north - wider.south) > widest,
                 "{id}"
             );
+        }
+    }
+
+    #[test]
+    fn no_preset_shows_the_radar() {
+        for p in &PRESETS {
+            assert!(p.layers.iter().all(|pl| pl.id != "radar"), "{}", p.id);
         }
     }
 
