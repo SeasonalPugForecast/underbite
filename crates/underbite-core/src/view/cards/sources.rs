@@ -81,7 +81,7 @@ const HAB_PAGE: &str =
     "https://coastalscience.noaa.gov/science-areas/habs/hab-forecasts/gulf-coast/";
 
 /// Every source the settings or a snapshot can name, with its credit, licence and terms.
-pub const SOURCE_TERMS: [SourceTerms; 31] = [
+pub const SOURCE_TERMS: [SourceTerms; 32] = [
     terms(
         "usgs",
         Some(SafetyKey::AttrUsgsCredit),
@@ -193,6 +193,14 @@ pub const SOURCE_TERMS: [SourceTerms; 31] = [
         Some(SafetyKey::AttrNyDecStockingConditions),
         OPEN_NY_TERMS,
         "https://dec.ny.gov/",
+    ),
+    terms(
+        "census-boundaries",
+        Some(SafetyKey::AttrCensusBoundariesCredit),
+        SafetyKey::LicenceAcknowledgementRequired,
+        Some(SafetyKey::AttrCensusBoundariesConditions),
+        "https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html",
+        "https://www.census.gov/",
     ),
     terms(
         "overpass",

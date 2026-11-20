@@ -194,6 +194,8 @@ struct Inner {
     tap: Point,
     /// The regions of the point: the one the app named, then the states the point is in or beside.
     regions: Vec<String>,
+    /// A state of the point's own was added to the regions.
+    from_state_lines: bool,
     tide_stations: Vec<Point>,
     round: Vec<Pending>,
     seq: u32,
@@ -270,12 +272,14 @@ pub fn plan_water_here(
     };
     let flowlines = hydro::flowlines_query(at, SEARCH_RADIUS_M, &ctx).map_err(invalid)?;
     let waterbodies = hydro::waterbodies_query(at, SEARCH_RADIUS_M, &ctx).map_err(invalid)?;
+    let (regions, from_state_lines) = regions_of(region, Point::new(point.lat, point.lon));
     let mut inner = Inner {
         f: formatter(&config, "UTC"),
         config,
         now,
         tap: Point::new(point.lat, point.lon),
-        regions: regions_of(region, Point::new(point.lat, point.lon)),
+        regions,
+        from_state_lines,
         tide_stations: tide_stations
             .iter()
             .filter(|p| in_range(p))
@@ -499,6 +503,7 @@ impl Inner {
             &WaterHereInput {
                 here,
                 regions: &self.regions,
+                from_state_lines: self.from_state_lines,
                 stocking: &lines,
             },
         );
@@ -511,20 +516,22 @@ impl Inner {
 }
 
 /// The regions the links and the stocking are for: the region the app names first, then every
-/// other state the point is in or beside.
-fn regions_of(named: Option<String>, tap: Point) -> Vec<String> {
+/// other state the point is in or beside; whether any of those was added.
+fn regions_of(named: Option<String>, tap: Point) -> (Vec<String>, bool) {
     let mut regions: Vec<String> = named
         .map(|r| r.trim().to_ascii_uppercase())
         .filter(|r| !r.is_empty())
         .into_iter()
         .collect();
+    let mut added = false;
     for state in states_at(tap) {
         let region = state.region();
         if !regions.contains(&region) {
             regions.push(region);
+            added = true;
         }
     }
-    regions
+    (regions, added)
 }
 
 /// The stocked water of the catalogue that is `here`: its map name is the water's name and its

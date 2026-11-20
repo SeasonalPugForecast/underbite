@@ -20,6 +20,9 @@ use crate::view::format::Formatter;
 use crate::view::strings::{Key, SafetyKey, Strings};
 use crate::view::trip::water_of;
 
+/// The id of the state boundaries' entry in the sources list.
+const CENSUS_BOUNDARIES: &str = "census-boundaries";
+
 /// The most stocking lines the section shows.
 pub const MAX_STOCKING_LINES: usize = 6;
 
@@ -79,6 +82,9 @@ pub struct WaterHereInput<'a> {
     pub regions: &'a [String],
     /// The stocking lines of this water, newest first, from the lists that answered.
     pub stocking: &'a [StockingVm],
+    /// Some region came from the bundled state boundaries (the point's own states), so their
+    /// source is credited.
+    pub from_state_lines: bool,
 }
 
 /// "Stream", "Tidal river", ...
@@ -202,6 +208,9 @@ pub fn build(f: &Formatter, input: &WaterHereInput<'_>) -> WaterHereVm {
     if !stocking.is_empty() {
         credits.extend(credit(s, &SourceId::NY_DEC_STOCKING));
     }
+    if input.from_state_lines {
+        credits.extend(credit(s, &SourceId::from_static(CENSUS_BOUNDARIES)));
+    }
     WaterHereVm {
         named: here.name.is_some(),
         spot_name: here.name.clone(),
@@ -303,6 +312,7 @@ mod tests {
                 here: &h,
                 regions: &[],
                 stocking: &[],
+                from_state_lines: false,
             },
         );
         assert_eq!(vm.title, "Unnamed stream");
@@ -321,6 +331,7 @@ mod tests {
                 here: &h,
                 regions: &[],
                 stocking: &[],
+                from_state_lines: false,
             },
         );
         assert_eq!(vm.title, "Unnamed tidal river");
@@ -344,6 +355,7 @@ mod tests {
                     here: h,
                     regions: &regions,
                     stocking: &[],
+                    from_state_lines: false,
                 },
             )
         };
@@ -398,10 +410,26 @@ mod tests {
                     here: &h,
                     regions: &regions,
                     stocking: &[],
+                    from_state_lines: true,
                 },
             )
         };
         let two = at(&["US-NY", "US-NJ"]);
+        let census = two
+            .credits
+            .iter()
+            .find(|c| c.source == "U.S. Census Bureau state lines")
+            .expect("the state lines are credited");
+        assert_eq!(
+            census.text,
+            "State lines: U.S. Census Bureau, cartographic boundary files"
+        );
+        assert!(
+            census
+                .licence
+                .as_deref()
+                .is_some_and(|l| l.contains("acknowledgement") && !l.contains("public domain"))
+        );
         assert_eq!(
             two.links_note.as_deref(),
             Some("On the New York–New Jersey line: both states' rules are linked")
@@ -444,6 +472,7 @@ mod tests {
                 here: &h,
                 regions: &[],
                 stocking: &[],
+                from_state_lines: false,
             },
         );
         assert!(vm.position.ends_with("from the marker"), "{}", vm.position);
@@ -460,6 +489,7 @@ mod tests {
                 here: &h,
                 regions: &[],
                 stocking: &[],
+                from_state_lines: false,
             },
         );
         assert_eq!(vm.position, "120 m from the marker");

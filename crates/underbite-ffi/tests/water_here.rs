@@ -221,6 +221,13 @@ mod water_here {
         assert!(titles.contains(&"Fishing licence"), "{titles:?}");
         assert!(card.links.iter().all(|l| l.url.starts_with("https://")));
         assert!(card.disclaimer.is_some());
+        // The saved region already covers the point: the state lines played no part.
+        assert!(
+            !card
+                .credits
+                .iter()
+                .any(|c| c.text.starts_with("State lines"))
+        );
         assert!(card.credits.iter().any(|c| c.name == "USGS 3DHP"
             && c.text == "U.S. Geological Survey, 3D National Hydrographic Program"));
     }
@@ -306,6 +313,13 @@ mod water_here {
             card.links
         );
         assert_eq!(card.links_note, None, "one state, nothing to say");
+        assert!(
+            card.credits
+                .iter()
+                .any(|c| c.text == "State lines: U.S. Census Bureau, cartographic boundary files"),
+            "{:?}",
+            card.credits
+        );
         // New York stocking is asked for, by county and name, with no point in the request.
         let requests = plan.requests();
         assert_eq!(requests.len(), 2, "{requests:?}");
