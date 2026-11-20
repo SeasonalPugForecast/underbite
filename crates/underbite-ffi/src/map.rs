@@ -553,6 +553,33 @@ fn layer_info(l: &Layer, config: &Config, f: &Formatter) -> LayerInfo {
     }
 }
 
+/// The words of the map's sources strip: the line naming the sources of the layers on screen,
+/// the title of the sheet with the full credits and the strip's accessibility label (safety text).
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct MapSources {
+    /// "Sources: Apple Maps · NASA JPL MUR"; empty when no layer is credited.
+    pub line: String,
+    /// The title of the sheet that lists the credits in full.
+    pub sheet_title: String,
+    /// The accessibility label of the strip's info button.
+    pub info_label: String,
+}
+
+/// The sources strip's words for the layers on screen (`layer_ids` in the plan's order), each
+/// short source name once.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn map_sources(settings_json: String, layer_ids: Vec<String>) -> Result<MapSources, MapError> {
+    let (config, _) = load(&settings_json)?;
+    let s = Strings::new(config.presentation.voice);
+    let ids: Vec<&str> = layer_ids.iter().map(String::as_str).collect();
+    Ok(MapSources {
+        line: s.sources_line(&ids),
+        sheet_title: s.safety(SafetyKey::MapSourcesSheetTitle).to_owned(),
+        info_label: s.safety(SafetyKey::MapSourcesInfoLabel).to_owned(),
+    })
+}
+
 /// Every base map, then every overlay in drawer order (group by group, each group once),
 /// worded in the settings' voice and units, with what the settings show and how.
 #[uniffi::export]
@@ -2075,6 +2102,19 @@ mod tests {
         let past = fetch(Some("2026-11-18"));
         assert!(!past.no_store);
         assert_eq!(past.max_age_s, Some(2_592_000));
+    }
+
+    #[test]
+    fn the_sources_strip_is_worded_by_the_core() {
+        let words = map_sources(
+            "{}".to_owned(),
+            vec!["apple-standard".into(), "sst".into(), "sst".into()],
+        )
+        .unwrap();
+        assert_eq!(words.line, "Sources: Apple Maps \u{b7} NASA JPL MUR");
+        assert_eq!(words.sheet_title, "Map sources");
+        assert_eq!(words.info_label, "Map sources");
+        assert_eq!(map_sources("{}".to_owned(), vec![]).unwrap().line, "");
     }
 
     #[test]

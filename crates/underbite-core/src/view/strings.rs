@@ -2126,6 +2126,39 @@ safety_keys! {
     MapCreditContoursIn => "Lake contours: Indiana DNR, Division of Fish and Wildlife. Not for navigation.",
     MapCreditContoursMn => "Lake contours: Minnesota Department of Natural Resources (MNDNR). Not for navigation.",
     MapCreditReefsNy => "Artificial reefs: New York State Department of Environmental Conservation. Not for navigation.",
+    // -- the map: the short source names of the sources strip --------------------------------
+    MapSourceApple => "Apple Maps",
+    MapSourceChart => "NOAA Coast Survey",
+    MapSourceGebco => "GEBCO",
+    MapSourceMur => "NASA JPL MUR",
+    MapSourceViirs => "NOAA VIIRS",
+    MapSourceGibs => "NASA GIBS",
+    MapSourceHfRadar => "NOAA IOOS HF Radar",
+    MapSourceGlerl => "NOAA GLERL",
+    MapSourceRadar => "NOAA NEXRAD",
+    MapSourceWind => "Wind (no source yet)",
+    MapSourcePressure => "Pressure (no source yet)",
+    MapSourceWaves => "Waves (no source yet)",
+    MapSourceCoops => "NOAA CO-OPS",
+    MapSourceUsgs => "USGS",
+    MapSourceBuoys => "NDBC",
+    MapSourceNwps => "NOAA NWPS",
+    MapSourceDevice => "This device",
+    MapSourcePadus => "USGS PAD-US",
+    MapSourceOsm => "OpenStreetMap",
+    MapSourceNysDec => "NYS DEC",
+    MapSourceSpecies => "GBIF \u{b7} iNaturalist \u{b7} USGS NAS",
+    MapSourceHab => "NOAA NCCOS",
+    MapSourceContoursIn => "Indiana DNR",
+    MapSourceContoursMn => "Minnesota DNR",
+    MapSourceNcei => "NOAA NCEI",
+    MapSourceStorms => "NHC \u{b7} Open-Meteo",
+    MapSourceCopernicus => "Copernicus Marine",
+    /// `{list}`: the short source names, joined.
+    MapSourcesLine => "Sources: {list}",
+    MapSourcesSeparator => " \u{b7} ",
+    MapSourcesSheetTitle => "Map sources",
+    MapSourcesInfoLabel => "Map sources",
     /// The full GIBS acknowledgement for the sources page; layers carry the short credit.
     MapAckGibs => "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).",
     /// The extra acknowledgement of the MUR sea surface temperature layers.
@@ -3214,6 +3247,67 @@ impl Strings {
             "storms" => SafetyKey::MapLegendStorms,
             _ => return None,
         }))
+    }
+
+    /// The short source name of a layer for the sources strip (safety text); `None` for an id
+    /// the catalogue does not have.
+    pub fn layer_source(self, id: &str) -> Option<&'static str> {
+        Some(self.safety(match id {
+            "apple-standard" | "apple-satellite" | "apple-hybrid" => SafetyKey::MapSourceApple,
+            "noaa-chart"
+            | "enc-depths"
+            | "enc-seabed"
+            | "enc-special-areas"
+            | "enc-structure-points" => SafetyKey::MapSourceChart,
+            "gebco-relief" => SafetyKey::MapSourceGebco,
+            "sst" | "sst-imagery" | "sst-breaks" => SafetyKey::MapSourceMur,
+            "chlorophyll" | "clarity" | "chlorophyll-breaks" => SafetyKey::MapSourceViirs,
+            "chlorophyll-imagery"
+            | "true-color-viirs-n20"
+            | "true-color-viirs-n21"
+            | "true-color-modis-terra"
+            | "true-color-modis-aqua" => SafetyKey::MapSourceGibs,
+            "hf-radar-currents" => SafetyKey::MapSourceHfRadar,
+            "great-lakes-sst" => SafetyKey::MapSourceGlerl,
+            "radar" => SafetyKey::MapSourceRadar,
+            "wind" => SafetyKey::MapSourceWind,
+            "pressure" => SafetyKey::MapSourcePressure,
+            "waves" => SafetyKey::MapSourceWaves,
+            "tide-stations" | "current-stations" => SafetyKey::MapSourceCoops,
+            "usgs-gauges" => SafetyKey::MapSourceUsgs,
+            "buoys" => SafetyKey::MapSourceBuoys,
+            "nwps-gauges" => SafetyKey::MapSourceNwps,
+            "spots" | "catches" | "tracks" | "catch-heat" => SafetyKey::MapSourceDevice,
+            "public-land" => SafetyKey::MapSourcePadus,
+            "access-points" => SafetyKey::MapSourceOsm,
+            "stocking-points" | "artificial-reefs-ny" => SafetyKey::MapSourceNysDec,
+            "species-records" => SafetyKey::MapSourceSpecies,
+            "hab-beaches" => SafetyKey::MapSourceHab,
+            "lake-contours-in" => SafetyKey::MapSourceContoursIn,
+            "lake-contours-mn" => SafetyKey::MapSourceContoursMn,
+            "depth-shading" | "depth-contours" => SafetyKey::MapSourceNcei,
+            "storms" => SafetyKey::MapSourceStorms,
+            "copernicus-currents" | "copernicus-sst" | "copernicus-sea-level" => {
+                SafetyKey::MapSourceCopernicus
+            }
+            _ => return None,
+        }))
+    }
+
+    /// The strip's line for the layers on screen, in the order given: each short source name
+    /// once, "Sources: Apple Maps \u{b7} NASA JPL MUR". Empty when no layer has a source.
+    pub fn sources_line(self, ids: &[&str]) -> String {
+        let mut names: Vec<&str> = Vec::new();
+        for name in ids.iter().filter_map(|id| self.layer_source(id)) {
+            if !names.contains(&name) {
+                names.push(name);
+            }
+        }
+        if names.is_empty() {
+            return String::new();
+        }
+        let list = names.join(self.safety(SafetyKey::MapSourcesSeparator));
+        self.safety_fmt(SafetyKey::MapSourcesLine, &[("list", &list)])
     }
 
     /// The credit line a layer shows on the map (safety text); `None` for an id the catalogue
@@ -4721,6 +4815,32 @@ mod tests {
             assert_eq!(plain.layer_title("sst"), Some("Sea surface temperature"));
             assert_eq!(plain.layer_title("noaa-chart"), Some("NOAA chart"));
             assert_eq!(plain.layer_legend("sst"), Some("Cold to warm"));
+        }
+
+        #[test]
+        fn every_layer_has_a_short_source_name_and_the_line_dedups() {
+            for s in both() {
+                for l in BASES.iter().chain(LAYERS.iter()) {
+                    let name = s.layer_source(l.id).unwrap_or_else(|| panic!("{}", l.id));
+                    assert!(!name.trim().is_empty(), "{}", l.id);
+                }
+                assert_eq!(s.layer_source("nope"), None);
+                assert_eq!(s.sources_line(&[]), "");
+                assert_eq!(s.sources_line(&["nope"]), "");
+            }
+            let s = Strings::new(Voice::Luna);
+            let ids = [
+                "apple-standard",
+                "sst",
+                "sst-imagery",
+                "sst-breaks",
+                "hf-radar-currents",
+                "buoys",
+            ];
+            assert_eq!(
+                s.sources_line(&ids),
+                "Sources: Apple Maps \u{b7} NASA JPL MUR \u{b7} NOAA IOOS HF Radar \u{b7} NDBC"
+            );
         }
 
         #[test]
