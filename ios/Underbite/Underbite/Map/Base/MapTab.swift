@@ -85,6 +85,9 @@ private struct MapScreen: View {
                         .accessibilityLabel("Layers")
                         .accessibilityIdentifier("map-layers")
                         LocateButton(locator: locator)
+                        if let inspector = controller.modules.lazy.compactMap({ $0 as? InspectorModule }).first {
+                            PinModeButton(module: inspector)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -154,5 +157,51 @@ private struct LocateButton: View {
         .accessibilityLabel("My location")
         .accessibilityValue(locator.state.accessibilityValue)
         .accessibilityIdentifier("map-locate")
+    }
+}
+
+/// The pin mode button: while it is on, a tap on empty map drops the marker and opens the
+/// inspector. A short hint says so when it turns on.
+private struct PinModeButton: View {
+    let module: InspectorModule
+    @State private var hint = false
+    @State private var hideHint: Task<Void, Never>?
+
+    var body: some View {
+        Button {
+            module.pinMode.toggle()
+            hideHint?.cancel()
+            hint = module.pinMode
+            if module.pinMode {
+                hideHint = Task {
+                    try? await Task.sleep(for: .seconds(3))
+                    if !Task.isCancelled { hint = false }
+                }
+            }
+        } label: {
+            Image(systemName: "mappin.and.ellipse")
+                .font(.title3)
+                .frame(width: 48, height: 48)
+        }
+        .buttonStyle(.glass)
+        .tint(module.pinMode ? Palette.accent : nil)
+        .accessibilityLabel("Drop a pin")
+        .accessibilityHint("Tap the map to drop a pin")
+        .accessibilityAddTraits(module.pinMode ? .isSelected : [])
+        .accessibilityIdentifier("map-pin-mode")
+        .overlay(alignment: .leading) {
+            if hint {
+                Text("Tap the map to drop a pin")
+                    .font(.footnote)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .glassEffect(.regular, in: .capsule)
+                    .fixedSize()
+                    .offset(x: 56)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.default, value: hint)
     }
 }

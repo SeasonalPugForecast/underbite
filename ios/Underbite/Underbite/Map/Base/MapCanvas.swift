@@ -27,7 +27,7 @@ struct MapCanvas: UIViewRepresentable {
                 span: MKCoordinateSpan(latitudeDelta: start.span, longitudeDelta: start.span)),
             animated: false)
         let coordinator = context.coordinator
-        // A single tap waits for a double tap to fail, so zooming in never opens the inspector.
+        // A single tap waits for a double tap to fail, so zooming in never drops a marker.
         let double = UITapGestureRecognizer(target: nil, action: nil)
         double.numberOfTapsRequired = 2
         double.delegate = coordinator
@@ -35,9 +35,11 @@ struct MapCanvas: UIViewRepresentable {
             target: coordinator, action: #selector(Coordinator.tapped(_:)))
         single.delegate = coordinator
         single.require(toFail: double)
-        // A long press starts measuring; a tap waits for it to fail.
+        // A long press drops the marker; a tap waits for it to fail. UIKit's allowable movement
+        // (10 points) keeps a pan from counting as a press.
         let long = UILongPressGestureRecognizer(
             target: coordinator, action: #selector(Coordinator.pressed(_:)))
+        long.minimumPressDuration = 0.5
         long.delegate = coordinator
         single.require(toFail: long)
         map.addGestureRecognizer(double)

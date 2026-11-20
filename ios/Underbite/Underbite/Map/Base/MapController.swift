@@ -23,8 +23,6 @@ final class MapController {
     private(set) var region: MapRegion?
     /// Where the map opens.
     let start: MapStart
-    /// The point inspector's content after a tap that no module took.
-    var inspection: MapInspection?
     /// Per tiled layer, the day shown (`YYYY-MM-DD`); none for the source's newest.
     private(set) var layerDates: [String: String] = [:]
     /// Per grid layer, the time shown (Unix seconds); none for the newest.
@@ -237,20 +235,10 @@ final class MapController {
         moduleRevision += 1
     }
 
-    /// A tap on the map: the topmost module that takes it, else the point inspector with the
-    /// values of the grid layers on screen.
+    /// A tap on the map: the topmost module that takes it. A tap on empty map reaches the point
+    /// inspector only while pin mode is on or a line is being measured (``MapTapPolicy``).
     func didTap(_ tap: MapTap) {
-        for module in modules.reversed() where module.handleTap(tap) {
-            return
-        }
-        let layers = plan.layers.filter { $0.kind != .tiles }.map(\.id).reversed()
-        guard !layers.isEmpty,
-            let rows = try? gridStore.inspect(
-                lat: tap.coordinate.latitude, lon: tap.coordinate.longitude, layers: Array(layers),
-                settingsJson: settingsJSON, timeZone: TimeZone.current.identifier),
-            !rows.isEmpty
-        else { return }
-        inspection = MapInspection(tap: tap, rows: rows)
+        _ = MapTapPolicy.deliver(tap, to: Array(modules.reversed())) { $0.handleTap($1) }
     }
 
     // MARK: - Grids and arrows
@@ -384,13 +372,6 @@ struct MapStart: Equatable {
 
     /// The lower 48 states, for a first launch without spots.
     static let overview = MapStart(latitude: 39.5, longitude: -98.35, span: 28)
-}
-
-/// The point inspector's content.
-struct MapInspection: Identifiable {
-    let tap: MapTap
-    let rows: [InspectorRow]
-    var id: UUID { tap.id }
 }
 
 /// What a tiled layer's tiles for one day came back as.

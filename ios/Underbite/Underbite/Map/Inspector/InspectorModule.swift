@@ -28,9 +28,10 @@ struct NearestStation: Equatable {
 }
 
 /// The point inspector and the measuring tool. It is the bottom module, so it is asked about a
-/// tap last: a tap no pin took opens the inspector at the point, with the value of every layer
-/// on screen there from the grids already held (a tap never fetches) and "Save as spot"; a long
-/// press starts a line, and while one is open, taps move its end. Its overlay is the measured
+/// tap last. A long press opens the inspector at the point, with the value of every layer on
+/// screen there from the grids already held (a long press never fetches) and "Save as spot"; so
+/// does a tap no pin took, but only while pin mode is on (``MapTapPolicy``). A line starts from
+/// the point's card, and while one is open, taps move its end. Its overlay is the measured
 /// line; its annotations are the marks at the point and at the line's ends. Nothing about the
 /// point leaves the device.
 @MainActor
@@ -40,6 +41,8 @@ final class InspectorModule: MapModule {
     private(set) var pick: PointPick?
     /// The line being measured.
     private(set) var line: MeasureLine?
+    /// Whether a tap on empty map drops the marker; off at launch and not saved.
+    var pinMode = false
 
     @ObservationIgnored private weak var controller: MapController?
     @ObservationIgnored private var lineOverlay: MKGeodesicPolyline?
@@ -85,18 +88,24 @@ final class InspectorModule: MapModule {
     // MARK: - Taps
 
     func handleTap(_ tap: MapTap) -> Bool {
-        if var measuring = line {
-            measuring.tap(tap.coordinate)
-            setLine(measuring)
-        } else {
+        switch MapTapPolicy.action(measuring: line != nil, pinMode: pinMode) {
+        case .extendLine:
+            if var measuring = line {
+                measuring.tap(tap.coordinate)
+                setLine(measuring)
+            }
+            return true
+        case .dropMarker:
             open(at: tap.coordinate, point: tap.point)
+            return true
+        case .ignore:
+            return false
         }
-        return true
     }
 
-    /// A long press: a line starts at the point.
+    /// A long press: the marker drops and the inspector opens at the point, in either mode.
     func longPress(_ tap: MapTap) {
-        startMeasuring(MeasureLine(from: .point(tap.coordinate)))
+        open(at: tap.coordinate, point: tap.point)
     }
 
     // MARK: - The inspector
