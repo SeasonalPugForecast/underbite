@@ -91,6 +91,8 @@ pub enum CatalogueError {
 #[derive(Debug)]
 struct Entry {
     region: String,
+    /// The jurisdiction's name (`New York`).
+    name: String,
     noaa_region: String,
     /// DFO regions (`DFO-PAC`, ...) whose tidal pages cover this jurisdiction.
     dfo_regions: Vec<String>,
@@ -129,6 +131,7 @@ fn parse_ca(text: &str) -> Result<Vec<Entry>, CatalogueError> {
         };
         out.push(Entry {
             region: r.region,
+            name: r.name,
             noaa_region: String::new(),
             dfo_regions: r
                 .dfo_regions
@@ -159,6 +162,7 @@ fn parse(text: &str) -> Result<Vec<Entry>, CatalogueError> {
         if !r.url.starts_with("https://") {
             return Err(CatalogueError::Url { region: r.region });
         }
+        let name = r.name.clone();
         let label = if kind == RegKind::Federal {
             r.name
         } else {
@@ -166,6 +170,7 @@ fn parse(text: &str) -> Result<Vec<Entry>, CatalogueError> {
         };
         out.push(Entry {
             region: r.region,
+            name,
             noaa_region: r.noaa_region,
             dfo_regions: Vec::new(),
             language: "en".to_owned(),
@@ -308,6 +313,15 @@ pub fn licence_link_in(region: &str, lang: &str) -> Option<RegLink> {
 /// The licence link of `region`.
 pub fn licence_link(region: &str) -> Option<RegLink> {
     licence_link_in(region, "en")
+}
+
+/// The jurisdiction's name for a region code (`US-NY` is "New York"); none for an unknown code.
+pub fn region_name(region: &str) -> Option<&'static str> {
+    let region = region.trim().to_ascii_uppercase();
+    catalogue()
+        .iter()
+        .find(|e| e.region == region)
+        .map(|e| e.name.as_str())
 }
 
 /// The links for several regions at once, without duplicates: border waters (Lake Erie, the

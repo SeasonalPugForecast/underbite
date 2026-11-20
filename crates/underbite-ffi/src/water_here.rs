@@ -11,11 +11,14 @@
 //!   cell, so they cover the point whatever the rounding; the exact point never leaves the
 //!   phone, and the snapping to the water happens here, on the phone. The answers may be
 //!   reused for 30 days.
-//! - **Stocking**, only when the region is New York and the water's name and place match a
-//!   stocked water of the bundled catalogue: the agency's lists for that county and water, as
+//! - **The regions** of the point: the region the app names, if any, then every state the
+//!   point is in or beside, from the boundaries bundled with the app (`discover::states`). The
+//!   lookup is local; nothing about the exact point is asked of anyone.
+//! - **Stocking**, only when New York is among the regions and the water's name and place
+//!   match a stocked water of the bundled catalogue: the agency's lists for that county and water, as
 //!   the nearby stocking plan asks them. Those requests name a county and a water, no point.
-//! - **Regulation and licence links** come from the bundled catalogue for the region the
-//!   app names, as links with the date each was checked.
+//! - **Regulation and licence links** come from the bundled catalogue for each of the regions,
+//!   as links with the date each was checked.
 //!
 //! Every word is the view's.
 
@@ -25,6 +28,7 @@ use std::sync::{Arc, Mutex, PoisonError};
 use underbite_config::schema::Config;
 use underbite_config::view_input::view_input;
 use underbite_core::discover::hydro::{Flowline, HydroOptions, Point, Waterbody};
+use underbite_core::discover::states::states_at;
 use underbite_core::discover::water_here::{WaterHere, WaterKind, water_here};
 use underbite_core::model::{Spot, SpotSnapshot, StockingEvent};
 use underbite_core::provenance::SourceId;
@@ -115,6 +119,8 @@ pub struct WaterHereCard {
     /// The agency's stocking lines for this water.
     pub stocking: Vec<String>,
     pub links_title: Option<String>,
+    /// Said when the links are those of several states: "On the New York–New Jersey line: …".
+    pub links_note: Option<String>,
     pub links: Vec<WaterHereLink>,
     /// The regulations disclaimer, shown with the links.
     pub disclaimer: Option<String>,
@@ -186,7 +192,8 @@ struct Inner {
     f: Formatter,
     now: UnixTime,
     tap: Point,
-    region: Option<String>,
+    /// The regions of the point: the one the app named, then the states the point is in or beside.
+    regions: Vec<String>,
     tide_stations: Vec<Point>,
     round: Vec<Pending>,
     seq: u32,
@@ -220,8 +227,9 @@ impl fmt::Debug for WaterHerePlan {
 }
 
 /// Plans the lookup of the water at `point` at Unix time `now`. `region` is the ISO 3166-2
-/// region the app knows the user fishes (`US-NY`), for the regulation links and the stocking
-/// lists; none when it is not known. `tide_stations` are the places of the tide stations on the
+/// region the app knows the user fishes (`US-NY`), none when it is not known; the states the
+/// point is in or beside, from the bundled boundaries, are added to it for the regulation links
+/// and the stocking lists, so the section needs no saved region. `tide_stations` are the places of the tide stations on the
 /// map, which decide whether a river here is tidal.
 ///
 /// Call it only when the point card opens. The two 3DHP requests carry the point rounded to the
@@ -267,9 +275,7 @@ pub fn plan_water_here(
         config,
         now,
         tap: Point::new(point.lat, point.lon),
-        region: region
-            .map(|r| r.trim().to_ascii_uppercase())
-            .filter(|r| !r.is_empty()),
+        regions: regions_of(region, Point::new(point.lat, point.lon)),
         tide_stations: tide_stations
             .iter()
             .filter(|p| in_range(p))
@@ -392,9 +398,12 @@ impl Inner {
             &self.tide_stations,
             HydroOptions::default(),
         );
-        let (Some(here), Some(NY)) = (&self.here, self.region.as_deref()) else {
+        let Some(here) = &self.here else {
             return;
         };
+        if !self.regions.iter().any(|r| r == NY) {
+            return;
+        }
         let Ok(catalogue) = Catalogue::bundled() else {
             return;
         };
@@ -489,7 +498,7 @@ impl Inner {
             &self.f,
             &WaterHereInput {
                 here,
-                region: self.region.as_deref(),
+                regions: &self.regions,
                 stocking: &lines,
             },
         );
@@ -499,6 +508,23 @@ impl Inner {
             message: None,
         }
     }
+}
+
+/// The regions the links and the stocking are for: the region the app names first, then every
+/// other state the point is in or beside.
+fn regions_of(named: Option<String>, tap: Point) -> Vec<String> {
+    let mut regions: Vec<String> = named
+        .map(|r| r.trim().to_ascii_uppercase())
+        .filter(|r| !r.is_empty())
+        .into_iter()
+        .collect();
+    for state in states_at(tap) {
+        let region = state.region();
+        if !regions.contains(&region) {
+            regions.push(region);
+        }
+    }
+    regions
 }
 
 /// The stocked water of the catalogue that is `here`: its map name is the water's name and its
@@ -548,6 +574,7 @@ fn card(vm: WaterHereVm) -> WaterHereCard {
         stocking_title: vm.stocking_title,
         stocking: vm.stocking,
         links_title: vm.links_title,
+        links_note: vm.links_note,
         links: vm
             .links
             .into_iter()

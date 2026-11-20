@@ -60,6 +60,9 @@ pub struct WaterHereVm {
     pub stocking: Vec<String>,
     /// "Regulations and licence": the title of the links below; none without links.
     pub links_title: Option<String>,
+    /// "On the New York–New Jersey line: both states' rules are linked": said when the point
+    /// is in or beside several states; none otherwise.
+    pub links_note: Option<String>,
     pub links: Vec<WaterLinkVm>,
     /// The regulations disclaimer, with links.
     pub disclaimer: Option<String>,
@@ -71,8 +74,9 @@ pub struct WaterHereVm {
 #[derive(Clone, Copy, Debug)]
 pub struct WaterHereInput<'a> {
     pub here: &'a WaterHere,
-    /// The region the regulation links are for (ISO 3166-2, `US-NY`); none when it is not known.
-    pub region: Option<&'a str>,
+    /// The regions the regulation links are for (ISO 3166-2, `US-NY`): the one the user fishes
+    /// first, then the other states the point is in or beside; none when none is known.
+    pub regions: &'a [String],
     /// The stocking lines of this water, newest first, from the lists that answered.
     pub stocking: &'a [StockingVm],
 }
@@ -139,6 +143,27 @@ fn link_vm(s: Strings, link: RegLink) -> WaterLinkVm {
     }
 }
 
+/// The line that says several states' links are shown: only when every region is a US one the
+/// catalogue names.
+fn links_note(s: Strings, regions: &[&str]) -> Option<String> {
+    if regions.len() < 2
+        || !regions
+            .iter()
+            .all(|r| r.to_ascii_uppercase().starts_with("US-"))
+    {
+        return None;
+    }
+    let names: Vec<&str> = regions
+        .iter()
+        .map(|r| regulations::region_name(r))
+        .collect::<Option<_>>()?;
+    Some(if let [a, b] = names[..] {
+        s.fmt(Key::WaterHereTwoStates, &[("first", a), ("second", b)])
+    } else {
+        s.fmt(Key::WaterHereManyStates, &[("states", &names.join(", "))])
+    })
+}
+
 /// The section for the water at the marker.
 pub fn build(f: &Formatter, input: &WaterHereInput<'_>) -> WaterHereVm {
     let s = f.strings;
@@ -155,13 +180,18 @@ pub fn build(f: &Formatter, input: &WaterHereInput<'_>) -> WaterHereVm {
             &[("distance", &distance_text(f, distance_m))],
         ),
     };
-    let region = input.region.map(str::trim).filter(|r| !r.is_empty());
-    let links: Vec<WaterLinkVm> = region
-        .map(|r| regulations::links_in(r, water_of(here.water_type), "en"))
-        .unwrap_or_default()
-        .into_iter()
-        .map(|l| link_vm(s, l))
+    let regions: Vec<&str> = input
+        .regions
+        .iter()
+        .map(|r| r.trim())
+        .filter(|r| !r.is_empty())
         .collect();
+    let links: Vec<WaterLinkVm> =
+        regulations::links_for_regions(&regions, water_of(here.water_type), "en")
+            .into_iter()
+            .map(|l| link_vm(s, l))
+            .collect();
+    let links_note = links_note(s, &regions).filter(|_| !links.is_empty());
     let stocking: Vec<String> = input
         .stocking
         .iter()
@@ -184,6 +214,7 @@ pub fn build(f: &Formatter, input: &WaterHereInput<'_>) -> WaterHereVm {
         stocking_title: (!stocking.is_empty()).then(|| s.get(Key::CardStocking).to_owned()),
         stocking,
         links_title: (!links.is_empty()).then(|| s.get(Key::WaterHereLinksTitle).to_owned()),
+        links_note,
         disclaimer: (!links.is_empty())
             .then(|| s.safety(SafetyKey::RegulationsDisclaimer).to_owned()),
         links,
@@ -270,7 +301,7 @@ mod tests {
             &f,
             &WaterHereInput {
                 here: &h,
-                region: None,
+                regions: &[],
                 stocking: &[],
             },
         );
@@ -288,7 +319,7 @@ mod tests {
             &f,
             &WaterHereInput {
                 here: &h,
-                region: None,
+                regions: &[],
                 stocking: &[],
             },
         );
@@ -306,11 +337,12 @@ mod tests {
             Reach::On,
         );
         let at = |region: Option<&str>, h: &WaterHere| {
+            let regions: Vec<String> = region.map(str::to_owned).into_iter().collect();
             build(
                 &f,
                 &WaterHereInput {
                     here: h,
-                    region,
+                    regions: &regions,
                     stocking: &[],
                 },
             )
@@ -350,6 +382,54 @@ mod tests {
     }
 
     #[test]
+    fn several_states_are_linked_and_said_in_the_core_words() {
+        let f = formatter();
+        let h = here(
+            Some("Hudson River"),
+            WaterKind::TidalRiver,
+            WaterType::TidalRiverEstuary,
+            Reach::On,
+        );
+        let at = |regions: &[&str]| {
+            let regions: Vec<String> = regions.iter().map(|r| (*r).to_owned()).collect();
+            build(
+                &f,
+                &WaterHereInput {
+                    here: &h,
+                    regions: &regions,
+                    stocking: &[],
+                },
+            )
+        };
+        let two = at(&["US-NY", "US-NJ"]);
+        assert_eq!(
+            two.links_note.as_deref(),
+            Some("On the New York–New Jersey line: both states' rules are linked")
+        );
+        let agencies: Vec<&str> = two.links.iter().map(|l| l.detail.as_str()).collect();
+        assert!(
+            agencies.iter().any(|d| d.contains("New York State")),
+            "{agencies:?}"
+        );
+        assert!(
+            agencies.iter().any(|d| d.contains("New Jersey")),
+            "{agencies:?}"
+        );
+        let three = at(&["US-NY", "US-NJ", "US-CT"]);
+        assert_eq!(
+            three.links_note.as_deref(),
+            Some(
+                "On the line of several states (New York, New Jersey, Connecticut): \
+                 every state's rules are linked"
+            )
+        );
+        assert_eq!(at(&["US-NY"]).links_note, None);
+        assert_eq!(at(&[]).links_note, None);
+        // A Canadian province beside a state is not "states".
+        assert_eq!(at(&["US-NY", "CA-ON"]).links_note, None);
+    }
+
+    #[test]
     fn distances_and_credits_come_from_the_view() {
         let f = formatter();
         let h = here(
@@ -362,7 +442,7 @@ mod tests {
             &f,
             &WaterHereInput {
                 here: &h,
-                region: None,
+                regions: &[],
                 stocking: &[],
             },
         );
@@ -378,7 +458,7 @@ mod tests {
             &metric,
             &WaterHereInput {
                 here: &h,
-                region: None,
+                regions: &[],
                 stocking: &[],
             },
         );

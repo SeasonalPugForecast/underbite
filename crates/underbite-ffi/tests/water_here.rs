@@ -292,15 +292,87 @@ mod water_here {
     }
 
     #[test]
-    fn stocking_is_asked_only_for_new_york() {
+    fn without_a_saved_region_the_point_names_its_state() {
+        let plan = plan(CROTON, None, &[]);
+        let card = croton(&plan).card.expect("a card");
+        let titles: Vec<&str> = card.links.iter().map(|l| l.title.as_str()).collect();
+        assert!(titles.contains(&"Freshwater regulations"), "{titles:?}");
+        assert!(titles.contains(&"Fishing licence"), "{titles:?}");
+        assert!(
+            card.links
+                .iter()
+                .all(|l| l.detail.starts_with("New York State")),
+            "{:?}",
+            card.links
+        );
+        assert_eq!(card.links_note, None, "one state, nothing to say");
+        // New York stocking is asked for, by county and name, with no point in the request.
+        let requests = plan.requests();
+        assert_eq!(requests.len(), 2, "{requests:?}");
+        assert!(requests.iter().all(|r| r.source == "ny-dec-stocking"));
+        let actual =
+            fixture("stocking-ny/socrata-ny-e52k-ymww-westchester-croton-river-2026-11-18.json");
+        let planned =
+            fixture("stocking-ny/socrata-ny-d9y2-n436-westchester-croton-river-2026-11-18.json");
+        let card = round(&plan, |r| {
+            Some(response(
+                200,
+                if r.request.url.contains("e52k-ymww") {
+                    &actual
+                } else {
+                    &planned
+                },
+            ))
+        })
+        .card
+        .expect("a card");
+        assert!(
+            card.stocking
+                .first()
+                .is_some_and(|l| l.starts_with("Rainbow Trout")),
+            "{:?}",
+            card.stocking
+        );
+    }
+
+    #[test]
+    fn a_saved_region_keeps_its_links_first_and_the_points_state_is_added() {
         let plan = plan(CROTON, Some("US-NJ"), &[]);
         let card = croton(&plan).card.expect("a card");
-        assert!(plan.requests().is_empty());
-        assert!(card.stocking.is_empty());
-        let plan = self::plan(CROTON, None, &[]);
-        let card = croton(&plan).card.expect("a card");
-        assert!(plan.requests().is_empty());
-        assert!(card.links.is_empty() && card.links_title.is_none());
+        assert_eq!(
+            card.links_note.as_deref(),
+            Some("On the New Jersey–New York line: both states' rules are linked")
+        );
+        let details: Vec<&str> = card.links.iter().map(|l| l.detail.as_str()).collect();
+        assert!(details.first().is_some_and(|d| d.starts_with("New Jersey")));
+        assert!(details.iter().any(|d| d.starts_with("New York State")));
+        // New York is among the regions, so its stocking lists are asked for.
+        assert_eq!(plan.requests().len(), 2);
+    }
+
+    #[test]
+    fn the_lower_river_names_both_states_on_its_line() {
+        // The water off the Battery, a few hundred metres from the New Jersey side.
+        let at = MapPoint {
+            lat: 40.7033,
+            lon: -74.0170,
+        };
+        let plan = plan(at, None, &[TIDE]);
+        let result = battery(&plan);
+        let card = result.card.expect("a card");
+        assert_eq!(
+            card.links_note.as_deref(),
+            Some("On the New York–New Jersey line: both states' rules are linked")
+        );
+        let details: Vec<&str> = card.links.iter().map(|l| l.detail.as_str()).collect();
+        assert!(
+            details.iter().any(|d| d.starts_with("New York State")),
+            "{details:?}"
+        );
+        assert!(
+            details.iter().any(|d| d.starts_with("New Jersey")),
+            "{details:?}"
+        );
     }
 
     #[test]
@@ -411,7 +483,12 @@ mod water_here {
         // That page is full too, but only one more is read.
         let second = round(&plan, |_| Some(response(200, &page)));
         assert_eq!(second.status, WaterHereStatus::Found);
-        assert!(plan.requests().is_empty());
+        // Only the stocking lists of the stocked Croton River follow.
+        assert!(
+            plan.requests()
+                .iter()
+                .all(|r| r.source == "ny-dec-stocking")
+        );
     }
 
     #[test]
