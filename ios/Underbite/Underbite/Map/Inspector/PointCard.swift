@@ -252,6 +252,11 @@ private struct WaterHereSection: View {
         }
         if let title = card.linksTitle, !card.links.isEmpty {
             Text(title).font(.headline)
+            if let note = card.linksNote {
+                Text(note)
+                    .font(.subheadline)
+                    .accessibilityIdentifier("inspector-water-links-note")
+            }
             ForEach(card.links, id: \.url) { link in
                 if let url = URL(string: link.url) {
                     Link(destination: url) {

@@ -103,10 +103,25 @@ final class WaterHereTests: XCTestCase {
         XCTAssertEqual(card.title, "Unnamed stream")
         XCTAssertFalse(card.named)
         XCTAssertNil(card.spotName)
-        XCTAssertTrue(card.links.isEmpty, "no region, no links")
+        // No saved region: the links are those of the state the point is in, from the core's
+        // bundled boundaries, and one state needs no note.
+        XCTAssertFalse(card.links.isEmpty)
+        XCTAssertTrue(card.links.allSatisfy { $0.detail.hasPrefix("New York State") })
+        XCTAssertNil(card.linksNote)
         let prefill = SpotPrefill(card: card, at: tap)
         XCTAssertEqual(prefill.name, "")
         XCTAssertEqual(prefill.waterType, "river_stream")
+    }
+
+    func testASavedRegionAndTheStateOfThePointAreBothLinkedWithTheCoresNote() async throws {
+        let result = await WaterHereLookup.run(
+            try plan(region: "US-NJ"), send: fakeService(lines: flowlines(named: "Test Creek"), Log()),
+            sleep: { _ in }, clock: { [now] in now })
+        let card = try XCTUnwrap(WaterHereState(result).card)
+        XCTAssertEqual(
+            card.linksNote, "On the New Jersey\u{2013}New York line: both states' rules are linked")
+        XCTAssertTrue(card.links.contains { $0.detail.hasPrefix("New Jersey") })
+        XCTAssertTrue(card.links.contains { $0.detail.hasPrefix("New York State") })
     }
 
     func testNoWaterWithinReachLeavesNoSection() async throws {
