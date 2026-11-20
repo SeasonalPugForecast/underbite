@@ -194,4 +194,22 @@ final class DrawerSectionsTests: XCTestCase {
         XCTAssertLessThanOrEqual(labelled.count, 3)
         XCTAssertTrue(labelled.allSatisfy { !$0.label.isEmpty })
     }
+
+    func testTheDepthGroupListsNoLegendOfItsOwnAndHasOpacity() throws {
+        let settings = try settings(shown: ["depth-shading", "depth-contours"])
+        let depth = try XCTUnwrap(try groups(settings).first { $0.layers.contains { $0.id == "depth-shading" } })
+        // The group holds other layers too (lake contours); the depth module's two are the ones
+        // drawn on the device from the elevation model.
+        let ours = depth.layers.filter { $0.draw == .depth }
+        XCTAssertEqual(Set(ours.map(\.id)), ["depth-shading", "depth-contours"])
+        for layer in ours {
+            // The depth section of the drawer draws the legend (with the datums), once.
+            XCTAssertTrue(DrawerSections.legend(layer, drawn: nil).isEmpty, layer.id)
+            XCTAssertTrue(
+                DrawerSections.legend(layer, drawn: MapLegendState(stops: layer.legend, fittedCaption: nil))
+                    .isEmpty, layer.id)
+            // The depth module draws both at the layer's opacity.
+            XCTAssertTrue(DrawerSections.hasOpacity(layer), layer.id)
+        }
+    }
 }

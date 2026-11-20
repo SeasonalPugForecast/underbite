@@ -120,14 +120,17 @@ nonisolated enum DrawerSections {
     }
 
     /// Whether a layer has an opacity to set: what the map view draws itself (tiles, rendered
-    /// grids and arrows).
+    /// grids and arrows) and the depth layers, which the depth module draws at the layer's
+    /// opacity.
     static func hasOpacity(_ layer: LayerInfo) -> Bool {
-        !layer.isBase && PlannedLayer.Kind(layer.draw) != nil
+        !layer.isBase && (PlannedLayer.Kind(layer.draw) != nil || layer.draw == .depth)
     }
 
     /// The legend bar of a layer in the drawer: the one the map draws for the range on screen
-    /// when it has one, else the catalogue's.
+    /// when it has one, else the catalogue's. The depth layers have none here: the depth
+    /// section of the drawer shows their legend, with the datums, once.
     static func legend(_ layer: LayerInfo, drawn: MapLegendState?) -> [LegendStop] {
+        if layer.draw == .depth { return [] }
         guard let drawn, !drawn.stops.isEmpty else { return layer.legend }
         return drawn.stops
     }
