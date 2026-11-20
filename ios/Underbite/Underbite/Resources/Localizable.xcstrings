@@ -4060,6 +4060,17 @@
         }
       }
     },
+    "Preview conditions" : {
+      "comment" : "Button label (point card)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview conditions"
+          }
+        }
+      }
+    },
     "Privacy" : {
       "comment" : "Title of the settings page for privacy",
       "localizations" : {
@@ -4600,7 +4611,7 @@
       }
     },
     "Save as spot" : {
-      "comment" : "Button label (point card)",
+      "comment" : "Button label (point card); Toolbar button (conditions preview)",
       "localizations" : {
         "en" : {
           "stringUnit" : {

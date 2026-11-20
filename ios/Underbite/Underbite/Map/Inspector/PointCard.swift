@@ -14,6 +14,7 @@ struct PointCard: View {
     @State private var name = ""
     @State private var saved: String?
     @State private var adding: SpotPrefill?
+    @State private var previewing: ConditionsPreview?
 
     var body: some View {
         NavigationStack {
@@ -37,9 +38,10 @@ struct PointCard: View {
     private func content(_ pick: PointPick) -> some View {
         List {
             if pick.water.showsSection {
-                WaterHereSection(pick: pick) { card in
-                    adding = SpotPrefill(card: card, at: pick.coordinate)
-                }
+                WaterHereSection(
+                    pick: pick,
+                    add: { card in adding = SpotPrefill(card: card, at: pick.coordinate) },
+                    preview: { card in startPreview(pick, card: card) })
             }
             if !pick.rows.isEmpty {
                 Section {
@@ -74,6 +76,13 @@ struct PointCard: View {
                     .font(.body.monospacedDigit())
                     .textSelection(.enabled)
                     .accessibilityIdentifier("inspector-point")
+                // With the water here found, its own button sits beside "Add as spot".
+                if pick.water.card == nil {
+                    Button("Preview conditions", systemImage: "eye") {
+                        startPreview(pick, card: nil)
+                    }
+                    .accessibilityIdentifier("inspector-preview")
+                }
                 if let spotID = savedSpot {
                     NavigationLink {
                         ConditionsView(spotID: spotID)
@@ -103,6 +112,36 @@ struct PointCard: View {
         .sheet(item: $adding) { prefill in
             AddSpotView(prefill: prefill) { added in saved = added }
         }
+        .sheet(item: $previewing, onDismiss: { previewing?.close() }) { preview in
+            ConditionsPreviewView(preview: preview)
+        }
+        .task { await openLaunchPreview() }
+    }
+
+    /// Opens the conditions at the point without saving it, with the water's name and type
+    /// when the water here is found.
+    private func startPreview(_ pick: PointPick, card: WaterHereCard?) {
+        let prefill =
+            card.map { SpotPrefill(card: $0, at: pick.coordinate) }
+            ?? SpotPrefill(
+                latitude: pick.coordinate.latitude, longitude: pick.coordinate.longitude, name: "",
+                waterType: nil)
+        previewing = store.makePreview(prefill, place: pick.place)
+    }
+
+    /// Debug builds: `-mapPreview` opens the preview once the water here has been looked up
+    /// (screenshots).
+    private func openLaunchPreview() async {
+        #if DEBUG
+            guard ProcessInfo.processInfo.arguments.contains("-mapPreview") else { return }
+            for _ in 0..<60 {
+                try? await Task.sleep(for: .seconds(1))
+                if let pick = module.pick, pick.water != .looking, previewing == nil {
+                    startPreview(pick, card: pick.water.card)
+                    return
+                }
+            }
+        #endif
     }
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -158,6 +197,7 @@ private struct LayerValueRow: View {
 private struct WaterHereSection: View {
     let pick: PointPick
     let add: (WaterHereCard) -> Void
+    let preview: (WaterHereCard) -> Void
 
     var body: some View {
         Section(pick.waterWords?.title ?? "") {
@@ -233,6 +273,8 @@ private struct WaterHereSection: View {
         }
         Button(pick.waterWords?.addAsSpot ?? "", systemImage: "plus.circle") { add(card) }
             .accessibilityIdentifier("inspector-water-add")
+        Button("Preview conditions", systemImage: "eye") { preview(card) }
+            .accessibilityIdentifier("inspector-water-preview")
         ForEach(card.credits, id: \.name) { credit in
             VStack(alignment: .leading, spacing: 2) {
                 Text(credit.text)

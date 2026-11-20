@@ -8,6 +8,9 @@ struct ConditionsView: View {
     @Environment(SpotStore.self) private var store
     @Environment(\.horizontalSizeClass) private var sizeClass
     let spotID: String
+    /// Set for the conditions of a place that is not a saved spot: the page and the fetch are the
+    /// preview's own, and the store, the card layout and the station choices are not touched.
+    var preview: ConditionsPreview?
 
     @State private var loaded: LoadedPage?
     @State private var firstShowDone = false
@@ -19,9 +22,10 @@ struct ConditionsView: View {
 
     var body: some View {
         let spot = store.spot(spotID)
+        let title = preview.map { $0.spot.name.isEmpty ? $0.place : $0.spot.name } ?? spot?.name
         content
             .background(Color(.systemGroupedBackground))
-            .navigationTitle(spot?.name ?? String(localized: "Conditions", comment: "Navigation title of the conditions screen when the spot has no name"))
+            .navigationTitle(title ?? String(localized: "Conditions", comment: "Navigation title of the conditions screen when the spot has no name"))
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: ViewModel.Card.self) { CardDetailView(card: $0) }
             .navigationDestination(item: $openCard) { CardDetailView(card: $0) }
@@ -34,8 +38,12 @@ struct ConditionsView: View {
                     )
                     .toggleStyle(.button)
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Customize", systemImage: "slider.horizontal.3") { customizing = true }
+                if preview == nil {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("Customize", systemImage: "slider.horizontal.3") {
+                            customizing = true
+                        }
+                    }
                 }
             }
             .sheet(isPresented: $customizing) {
@@ -44,6 +52,11 @@ struct ConditionsView: View {
             }
             .task(id: spotID) {
                 firstShowDone = false
+                if let preview {
+                    await preview.load()
+                    firstShowDone = true
+                    return
+                }
                 await store.show(spotID, viewer: viewer)
                 firstShowDone = true
             }
@@ -68,8 +81,8 @@ struct ConditionsView: View {
                     openCard = view.cards.first { $0.chrome?.id == arguments[flag + 1] }
                 #endif
             }
-            .task(id: store.pageJSON(for: spotID)) {
-                let json = store.pageJSON(for: spotID)
+            .task(id: currentJSON) {
+                let json = currentJSON
                 // Let go while a card's page was pushed over this one: the last one stays
                 // until the store builds it again.
                 guard !json.isEmpty else { return }
@@ -83,9 +96,12 @@ struct ConditionsView: View {
     private var pageView: ViewModel.SpotView? { loaded?.view(for: spotID) }
 
     private var isLoading: Bool {
-        !firstShowDone || loaded?.json != store.pageJSON(for: spotID)
-            || store.refreshing.contains(spotID)
+        !firstShowDone || loaded?.json != currentJSON
+            || (preview?.refreshing ?? store.refreshing.contains(spotID))
     }
+
+    /// The page JSON of the spot shown: the preview's own or the store's.
+    private var currentJSON: String { preview?.pageJSON ?? store.pageJSON(for: spotID) }
 
     @ViewBuilder private var content: some View {
         ScrollView {
@@ -104,7 +120,13 @@ struct ConditionsView: View {
                 .containerRelativeFrame(.vertical)
             }
         }
-        .refreshable { await store.refresh(only: [spotID]) }
+        .refreshable {
+            if let preview {
+                await preview.load()
+            } else {
+                await store.refresh(only: [spotID])
+            }
+        }
     }
 
     private var columns: [GridItem] {
@@ -134,7 +156,9 @@ struct ConditionsView: View {
                         CardView(card: entry.card)
                     }
                     .buttonStyle(.plain)
-                    .contextMenu { menu(for: entry, choices: loaded.choices) }
+                    .contextMenu {
+                        if preview == nil { menu(for: entry, choices: loaded.choices) }
+                    }
                 }
             }
         }

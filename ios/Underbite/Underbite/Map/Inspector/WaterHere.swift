@@ -47,10 +47,11 @@ nonisolated struct SpotPrefill: Identifiable, Equatable, Sendable {
     let longitude: Double
     /// The water's name; empty for unnamed water (never made up).
     let name: String
-    /// The water type id (`river_stream`).
-    let waterType: String
+    /// The water type id (`river_stream`); none when the place's water is not known, and the
+    /// core suggests one after the first fetch.
+    let waterType: String?
 
-    init(latitude: Double, longitude: Double, name: String, waterType: String) {
+    init(latitude: Double, longitude: Double, name: String, waterType: String?) {
         self.latitude = latitude
         self.longitude = longitude
         self.name = name

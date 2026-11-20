@@ -624,6 +624,18 @@ final class SpotStore {
         saveState()
     }
 
+    // MARK: - Preview
+
+    /// A preview of the conditions at a place that is not a saved spot. It shares only what the
+    /// store fetches with (the host, the keys, the clock, the settings read now); it adds no
+    /// spot and keeps no cache, status, page or station metadata here, so nothing of it reaches
+    /// the spot list, the widgets, the alerts, the refresh, the offline packs or iCloud.
+    func makePreview(_ prefill: SpotPrefill, place: String) -> ConditionsPreview {
+        ConditionsPreview(
+            prefill: prefill, place: place, settingsJSON: settingsJSON, host: host, keys: keys,
+            clock: clock, fetcher: fetcher, pageBuilder: pageBuilder)
+    }
+
     // MARK: - Current location
 
     /// Records a fix (about 100 m): returns whether the phone moved 1 km or more from the last
