@@ -62,9 +62,10 @@ struct LayerBadges: View {
                 }
             }
             .foregroundStyle(Color.primary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+            .dynamicTypeSize(...MapChromeType.largest)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("map-offline-badges")
         }

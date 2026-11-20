@@ -21,25 +21,24 @@ struct TimeControls: View {
         // The layers drawn from the device's store say so above the controls.
         LayerBadges(controller: controller)
         if let module, let top = DateControl.topmost(controller.plan) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(top.layer.info.title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.primary)
+            let title = top.layer.info.title
+            VStack(alignment: .leading, spacing: 4) {
                 switch top.control {
                 case .satelliteDays:
-                    SatelliteDayControl(module: module, layer: top.layer)
+                    SatelliteDayControl(module: module, layer: top.layer, title: title)
                 case .gridDays:
-                    GridDayControl(module: module, layer: top.layer)
+                    GridDayControl(module: module, layer: top.layer, title: title)
                 case .gridHours:
-                    GridHourControl(module: module, layer: top.layer)
+                    GridHourControl(module: module, layer: top.layer, title: title)
                 case .radarFrames:
-                    RadarLoopControl(module: module)
+                    RadarLoopControl(module: module, title: title)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .dynamicTypeSize(...MapChromeType.largest)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("map-time-controls")
         }
@@ -68,6 +67,8 @@ private struct StepButton: View {
 
 /// The day shown, as a menu of the days to choose from.
 private struct DayMenu<Item: Hashable>: View {
+    /// The layer's title, a caption above the day.
+    let title: String
     let shown: String
     let items: [Item]
     let label: (Item) -> String
@@ -88,13 +89,20 @@ private struct DayMenu<Item: Hashable>: View {
                 }
             }
         } label: {
-            Label(shown, systemImage: "calendar")
-                .lineLimit(1)
-                .fixedSize()
-                .font(.body.weight(.medium))
-                .foregroundStyle(Color.primary)
-                .padding(.horizontal, 12)
-                .frame(minHeight: 36)
+            VStack(spacing: 0) {
+                Text(title)
+                    .font(.caption2)
+                    .foregroundStyle(.readableSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Label(shown, systemImage: "calendar")
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Color.primary)
+            }
+            .padding(.horizontal, 8)
+            .frame(maxWidth: .infinity, minHeight: 36)
         }
         .buttonStyle(.glass)
         .accessibilityIdentifier("map-date-picker")
@@ -105,6 +113,7 @@ private struct DayMenu<Item: Hashable>: View {
 private struct SatelliteDayControl: View {
     let module: SourcesModule
     let layer: PlannedLayer
+    let title: String
 
     var body: some View {
         let days = module.satelliteDays()
@@ -113,7 +122,7 @@ private struct SatelliteDayControl: View {
                 HStack(spacing: 8) {
                     StepButton(back: true, label: String(localized: "Day before", comment: "Accessibility label of the button that steps the map layer back one day"), action: before(day))
                     DayMenu(
-                        shown: day.asked.label, items: days, label: \.label,
+                        title: title, shown: day.asked.label, items: days, label: \.label,
                         isShown: { $0 == day.asked }, choose: { module.pick($0, for: layer.id) })
                     StepButton(back: false, label: String(localized: "Day after", comment: "Accessibility label of the button that steps the map layer forward one day"), action: after(day, in: days))
                 }
@@ -145,6 +154,7 @@ private struct SatelliteDayControl: View {
 private struct GridDayControl: View {
     let module: SourcesModule
     let layer: PlannedLayer
+    let title: String
 
     var body: some View {
         if let axis = module.times(of: layer), let shown = GridTimes.shown(layer.time, in: axis) {
@@ -182,7 +192,7 @@ private struct GridDayControl: View {
         HStack(spacing: 8) {
             StepButton(back: true, label: String(localized: "Day before", comment: "Accessibility label of the button that steps the map layer back one day"), action: step(-1, axis))
             DayMenu(
-                shown: shown.label, items: Array(axis.reversed()), label: \.label,
+                title: title, shown: shown.label, items: Array(axis.reversed()), label: \.label,
                 isShown: { $0.time == shown.time },
                 choose: { module.pick(GridTimes.checked($0.time, in: axis), for: layer.id) })
             StepButton(back: false, label: String(localized: "Day after", comment: "Accessibility label of the button that steps the map layer forward one day"), action: step(1, axis))
@@ -216,6 +226,7 @@ private struct GridDayControl: View {
 private struct GridHourControl: View {
     let module: SourcesModule
     let layer: PlannedLayer
+    let title: String
     @State private var dragged: Double?
 
     var body: some View {
@@ -228,11 +239,8 @@ private struct GridHourControl: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 8) {
                     StepButton(back: true, label: String(localized: "Hour before", comment: "Accessibility label of the button that steps the map layer back one hour"), action: step(-1, offered))
-                    Text(label)
-                        .font(.body.weight(.medium).monospacedDigit())
-                        .foregroundStyle(Color.primary)
-                        .accessibilityIdentifier("map-date-label")
-                    Spacer(minLength: 0)
+                    TitledValue(title: title, value: label)
+                        .frame(maxWidth: .infinity)
                     StepButton(back: false, label: String(localized: "Hour after", comment: "Accessibility label of the button that steps the map layer forward one hour"), action: step(1, offered))
                 }
                 if offered.count > 1 {
@@ -248,6 +256,7 @@ private struct GridHourControl: View {
                                 i == offered.count - 1 ? nil : offered[i].time, for: layer.id)
                         }
                     )
+                    .controlSize(.small)
                     .accessibilityLabel("Hour")
                     .accessibilityValue(label)
                 }
@@ -267,6 +276,7 @@ private struct GridHourControl: View {
 /// slider over the frames.
 private struct RadarLoopControl: View {
     let module: SourcesModule
+    let title: String
 
     var body: some View {
         let frames = module.frames
@@ -274,21 +284,21 @@ private struct RadarLoopControl: View {
             ProgressView()
         } else {
             let index = min(module.frameIndex, frames.count - 1)
-            HStack(spacing: 8) {
-                if module.canPlay {
-                    Button {
-                        module.playing ? module.pause() : module.play()
-                    } label: {
-                        Image(systemName: module.playing ? "pause.fill" : "play.fill")
-                            .frame(width: 36, height: 36)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 8) {
+                    if module.canPlay {
+                        Button {
+                            module.playing ? module.pause() : module.play()
+                        } label: {
+                            Image(systemName: module.playing ? "pause.fill" : "play.fill")
+                                .frame(width: 36, height: 36)
+                        }
+                        .buttonStyle(.glass)
+                        .accessibilityLabel(module.playing ? "Pause" : "Play")
                     }
-                    .buttonStyle(.glass)
-                    .accessibilityLabel(module.playing ? "Pause" : "Play")
+                    TitledValue(title: title, value: frames[index].label, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                Text(frames[index].label)
-                    .font(.body.weight(.medium).monospacedDigit())
-                    .foregroundStyle(Color.primary)
-                    .accessibilityIdentifier("map-date-label")
                 if frames.count > 1 {
                     Slider(
                         value: Binding(
@@ -299,11 +309,36 @@ private struct RadarLoopControl: View {
                             }),
                         in: 0...Double(frames.count - 1), step: 1
                     )
+                    .controlSize(.small)
                     .accessibilityLabel("Radar frame")
                     .accessibilityValue(frames[index].label)
                 }
             }
         }
+    }
+}
+
+/// The layer's title as a caption above the date or time shown.
+private struct TitledValue: View {
+    let title: String
+    let value: String
+    var alignment: HorizontalAlignment = .center
+
+    var body: some View {
+        VStack(alignment: alignment, spacing: 0) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.readableSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Text(value)
+                .font(.subheadline.weight(.medium).monospacedDigit())
+                .foregroundStyle(Color.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .accessibilityIdentifier("map-date-label")
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 

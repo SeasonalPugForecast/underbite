@@ -64,46 +64,48 @@ private struct MapScreen: View {
         (try? appWords(settingsJson: store.settingsJSON))?.mapNotice
     }
 
+    /// The core's words for the sources strip: the short line for the layers on screen.
+    private var sources: MapSources? {
+        try? mapSources(
+            settingsJson: store.settingsJSON, layerIds: controller.plan.shown.map(\.id))
+    }
+
     var body: some View {
-        MapCanvas(controller: controller, locator: locator)
-            .ignoresSafeArea()
-            .safeAreaInset(edge: .top, spacing: 0) {
-                VStack(alignment: .leading, spacing: 8) {
-                    if let notice = controller.plan.notice {
-                        NavigationNotice(text: notice)
-                            .frame(maxWidth: .infinity)
-                    }
-                    HStack(spacing: 8) {
-                        Button {
-                            showsLayers.toggle()
-                        } label: {
-                            Image(systemName: "square.3.layers.3d")
-                                .font(.title3)
-                                .frame(width: 48, height: 48)
-                        }
-                        .buttonStyle(.glass)
-                        .accessibilityLabel("Layers")
-                        .accessibilityIdentifier("map-layers")
-                        LocateButton(locator: locator)
-                        if let inspector = controller.modules.lazy.compactMap({ $0 as? InspectorModule }).first {
-                            PinModeButton(module: inspector)
-                        }
-                    }
+        ZStack(alignment: .topTrailing) {
+            MapCanvas(controller: controller, locator: locator)
+                .ignoresSafeArea()
+            // Like Apple Maps' controls: a column at the top trailing edge.
+            VStack(spacing: 8) {
+                Button {
+                    showsLayers.toggle()
+                } label: {
+                    Image(systemName: "square.3.layers.3d")
+                        .font(.title3)
+                        .frame(width: 44, height: 44)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.top, 8)
+                .buttonStyle(.glass)
+                .accessibilityLabel("Layers")
+                .accessibilityIdentifier("map-layers")
+                LocateButton(locator: locator)
+                if let inspector = controller.modules.lazy.compactMap({ $0 as? InspectorModule }).first {
+                    PinModeButton(module: inspector)
+                }
             }
+            .dynamicTypeSize(...MapChromeType.largest)
+            .padding(.trailing, 12)
+            .padding(.top, 8)
+        }
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     TimeControls(controller: controller)
                     if let legend = controller.plan.legend {
                         MapLegend(layer: legend, state: controller.legends[legend.id])
                     }
-                    MapCredits(credits: controller.plan.credits)
-                    if controller.plan.notice == nil, let notice = mapNotice {
-                        MapNotice(text: notice)
-                            .frame(maxWidth: .infinity)
+                    if let sources {
+                        MapSourcesStrip(
+                            line: sources.line, infoLabel: sources.infoLabel,
+                            sheetTitle: sources.sheetTitle, credits: controller.plan.credits,
+                            layerNotice: controller.plan.notice, mapNotice: mapNotice)
                     }
                 }
                 .frame(maxWidth: sizeClass == .regular ? 520 : .infinity, alignment: .leading)
@@ -150,7 +152,7 @@ private struct LocateButton: View {
         } label: {
             Image(systemName: locator.state.symbol)
                 .font(.title3)
-                .frame(width: 48, height: 48)
+                .frame(width: 44, height: 44)
                 .contentTransition(.symbolEffect(.replace))
         }
         .buttonStyle(.glass)
@@ -181,7 +183,7 @@ private struct PinModeButton: View {
         } label: {
             Image(systemName: "mappin.and.ellipse")
                 .font(.title3)
-                .frame(width: 48, height: 48)
+                .frame(width: 44, height: 44)
         }
         .buttonStyle(.glass)
         .tint(module.pinMode ? Palette.accent : nil)
@@ -189,7 +191,7 @@ private struct PinModeButton: View {
         .accessibilityHint("Tap the map to drop a pin")
         .accessibilityAddTraits(module.pinMode ? .isSelected : [])
         .accessibilityIdentifier("map-pin-mode")
-        .overlay(alignment: .leading) {
+        .overlay(alignment: .trailing) {
             if hint {
                 Text("Tap the map to drop a pin")
                     .font(.footnote)
@@ -197,7 +199,7 @@ private struct PinModeButton: View {
                     .padding(.vertical, 8)
                     .glassEffect(.regular, in: .capsule)
                     .fixedSize()
-                    .offset(x: 56)
+                    .offset(x: -52)
                     .allowsHitTesting(false)
                     .transition(.opacity)
             }
