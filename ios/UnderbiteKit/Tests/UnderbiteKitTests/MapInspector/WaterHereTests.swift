@@ -39,15 +39,24 @@ final class WaterHereTests: XCTestCase {
             tideStations: tide, settingsJson: "{}", now: now)
     }
 
-    /// Answers the 3DHP layers with `lines` and no waterbodies, and counts what was sent.
-    private func fakeService(lines: Data, _ log: Log) -> RecordsLookup.Send {
+    /// Wetland codes of the National Wetlands Inventory: a tidal river, and a non-tidal reach.
+    private let tidalWetlands = Data(
+        #"{"features":[{"attributes":{"ATTRIBUTE":"R3UBH"}},{"attributes":{"ATTRIBUTE":"R1UBV"}}]}"#
+            .utf8)
+    private let freshWetlands = Data(#"{"features":[{"attributes":{"ATTRIBUTE":"R3UBH"}}]}"#.utf8)
+
+    /// Answers the 3DHP layers with `lines` and no waterbodies, and the wetland inventory with
+    /// `wetlands` (no polygons by default), and records what was sent.
+    private func fakeService(lines: Data, wetlands: Data? = nil, _ log: Log) -> RecordsLookup.Send {
         let bodies = noWaterbodies
         let flowlineAnswer = response(lines)
         let waterbodyAnswer = response(bodies)
+        let wetlandAnswer = response(wetlands ?? noWaterbodies)
         return { request in
             await log.add(request.url)
             if request.url.contains("/MapServer/50/") { return flowlineAnswer }
             if request.url.contains("/MapServer/60/") { return waterbodyAnswer }
+            if request.url.contains("/Wetlands/MapServer/0/") { return wetlandAnswer }
             throw HostError.Failed(message: "unexpected request")
         }
     }
@@ -73,15 +82,17 @@ final class WaterHereTests: XCTestCase {
         XCTAssertNotNil(card.disclaimer)
     }
 
-    func testOnlyTheTwoRoundedQueriesAreSentAndNeverTheExactPoint() async throws {
+    func testOnlyRoundedQueriesAreSentAndNeverTheExactPoint() async throws {
         let log = Log()
         _ = await WaterHereLookup.run(
             try plan(), send: fakeService(lines: flowlines(named: nil), log), sleep: { _ in },
             clock: { [now] in now })
         let urls = await log.urls
-        XCTAssertEqual(urls.count, 2)
+        // The two 3DHP layers, then the wetland inventory for a stream near the coast.
+        XCTAssertEqual(urls.count, 3)
+        XCTAssertEqual(urls.filter { $0.contains("hydro.nationalmap.gov") }.count, 2)
+        XCTAssertEqual(urls.filter { $0.contains("fwspublicservices.wim.usgs.gov") }.count, 1)
         for url in urls {
-            XCTAssertTrue(url.contains("hydro.nationalmap.gov"), url)
             XCTAssertFalse(url.contains("41.2051") || url.contains("73.9001"), url)
             // Every coordinate sent has two decimals at most.
             let geometry = try XCTUnwrap(
@@ -93,6 +104,32 @@ final class WaterHereTests: XCTestCase {
                 XCTAssertLessThanOrEqual(decimals, 2, url)
             }
         }
+    }
+
+    func testTheWetlandInventoryDecidesWhetherAStreamIsTidal() async throws {
+        let tidal = await WaterHereLookup.run(
+            try plan(),
+            send: fakeService(lines: flowlines(named: "Test Creek"), wetlands: tidalWetlands, Log()),
+            sleep: { _ in }, clock: { [now] in now })
+        let card = try XCTUnwrap(WaterHereState(tidal).card)
+        XCTAssertEqual(card.kindText, "Tidal river")
+        XCTAssertEqual(card.waterType, "tidal_river_estuary")
+        XCTAssertTrue(card.credits.contains { $0.name == "USFWS National Wetlands Inventory" })
+        // A reach it maps as not tidal stays a stream, with the inventory credited.
+        let fresh = await WaterHereLookup.run(
+            try plan(),
+            send: fakeService(lines: flowlines(named: "Test Creek"), wetlands: freshWetlands, Log()),
+            sleep: { _ in }, clock: { [now] in now })
+        let freshCard = try XCTUnwrap(WaterHereState(fresh).card)
+        XCTAssertEqual(freshCard.kindText, "Stream")
+        XCTAssertTrue(freshCard.credits.contains { $0.name == "USFWS National Wetlands Inventory" })
+        // No polygons: unknown, the stream stays a stream and the inventory is not credited.
+        let unknown = await WaterHereLookup.run(
+            try plan(), send: fakeService(lines: flowlines(named: "Test Creek"), Log()),
+            sleep: { _ in }, clock: { [now] in now })
+        let unknownCard = try XCTUnwrap(WaterHereState(unknown).card)
+        XCTAssertEqual(unknownCard.kindText, "Stream")
+        XCTAssertFalse(unknownCard.credits.contains { $0.name.contains("Wetlands") })
     }
 
     func testUnnamedWaterIsUnnamedInTheCoresWordsAndOffersNoName() async throws {
