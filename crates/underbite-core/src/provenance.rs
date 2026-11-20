@@ -53,6 +53,8 @@ impl SourceId {
     pub const OVERPASS: SourceId = SourceId::from_static("overpass");
     /// USGS Protected Areas Database of the United States.
     pub const PADUS: SourceId = SourceId::from_static("padus");
+    /// NWS marine beach forecast: rip current risk and surf by beach zone.
+    pub const NWS_BEACH_FORECAST: SourceId = SourceId::from_static("nws-beach-forecast");
     /// Global Biodiversity Information Facility.
     pub const GBIF: SourceId = SourceId::from_static("gbif");
     /// iNaturalist.

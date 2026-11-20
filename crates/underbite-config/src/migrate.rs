@@ -544,6 +544,7 @@ mod tests {
             "stocking-points",
             "species-records",
             "hab-beaches",
+            "beach-forecast",
             "catches",
             "tracks",
             "catch-heat",

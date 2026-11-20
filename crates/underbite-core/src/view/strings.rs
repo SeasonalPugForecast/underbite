@@ -769,6 +769,7 @@ keys! {
         "Beach bloom forecast (Gulf of Mexico)",
         "Beach bloom forecast (Gulf of Mexico)",
     ),
+    MapLayerBeachForecast => ("Beach forecast (rip currents)", "Beach forecast (rip currents)"),
     MapLayerCatches => ("My catches", "My catches"),
     MapLayerTracks => ("My tracks", "My tracks"),
     MapLayerCatchHeat => ("Catch heat map", "Catch heat map"),
@@ -802,6 +803,7 @@ keys! {
     MapPresetTroutStream => ("Trout stream", "Trout stream"),
     MapPresetBassLake => ("Bass lake", "Bass lake"),
     MapPresetSurf => ("Surf", "Surf"),
+    MapPresetSwimming => ("Swimming", "Swimming"),
     MapPresetGreatLakesTrolling => ("Great Lakes trolling", "Great Lakes trolling"),
     /// In place of the switch of a layer that cannot be turned on.
     MapNoSource => ("No source yet", "Luna hasn't found a source yet"),
@@ -1181,6 +1183,17 @@ keys! {
     NearbyFindingBlooms => ("Looking for beach forecasts…", "Looking for beach forecasts…"),
     NearbyBloomsGulfOnly => ("The beach bloom forecast covers the Gulf coast of Florida and Texas only", "The beach bloom forecast covers the Gulf coast of Florida and Texas only"),
     NearbyBloomsNone => ("No forecast beaches in this view", "No forecast beaches in this view"),
+    NearbyFindBeaches => ("Show beach forecasts here", "Show beach forecasts here"),
+    NearbyFindingBeaches => ("Looking for beach forecasts…", "Looking for beach forecasts…"),
+    NearbyZoomInBeaches => ("Zoom in to look for beach forecasts", "Zoom in to look for beach forecasts"),
+    NearbyBeachesNone => ("No beach forecast zones in this view", "No beach forecast zones in this view"),
+    /// The labels of the beach forecast card's rows.
+    BeachRowRip => ("Rip current risk", "Rip current risk"),
+    BeachRowSurf => ("Surf", "Surf"),
+    BeachRowWaterTemperature => ("Water temperature", "Water temperature"),
+    BeachRowUv => ("UV", "UV"),
+    BeachRowWeather => ("Weather", "Weather"),
+    BeachRowWinds => ("Winds", "Winds"),
     // -- the water at a dropped marker -----------------------------------------------------
     WaterHereTitle => ("Water here", "Water here"),
     WaterHereLooking => ("Looking up the water here…", "Looking up the water here…"),
@@ -2125,6 +2138,7 @@ safety_keys! {
     /// The record platforms; each record also shows its own licence and link.
     MapCreditSpeciesRecords => "Records: GBIF.org, iNaturalist and the USGS Nonindigenous Aquatic Species Database. Each record shows its own licence.",
     /// As the forecast is credited (`underbite_providers::blooms::hab`).
+    MapCreditBeachForecast => "Beach forecasts: National Weather Service",
     MapCreditHab => "NOAA National Centers for Coastal Ocean Science (NCCOS) Gulf of Mexico respiratory irritation forecast. Cell counts: Florida Fish and Wildlife Research Institute (FWRI), HABscope, Pinellas County and the Sanibel-Captiva Conservation Foundation; wind: NOAA Meteorological Development Laboratory's National Digital Forecast Database.",
     MapCreditCatches => "Your catch log, kept on this device",
     MapCreditTracks => "Your imported tracks, kept on this device",
@@ -2155,6 +2169,7 @@ safety_keys! {
     MapSourceNysDec => "NYS DEC",
     MapSourceSpecies => "GBIF \u{b7} iNaturalist \u{b7} USGS NAS",
     MapSourceHab => "NOAA NCCOS",
+    MapSourceBeachForecast => "NWS beach forecast",
     MapSourceContoursIn => "Indiana DNR",
     MapSourceContoursMn => "Minnesota DNR",
     MapSourceNcei => "NOAA NCEI",
@@ -2192,6 +2207,7 @@ safety_keys! {
     MapLegendAccessPoints => "Ramps, piers and shore access as OpenStreetMap contributors mapped them. A pin is not permission: check the access shown and local rules.",
     MapLegendStockingPoints => "Waters New York stocked or plans to stock. Numbers are the agency's estimates.",
     MapLegendSpeciesRecords => "Where a species was reported, not where it is now. A blurred record is drawn as an area.",
+    MapLegendBeachForecast => "Rip current risk for each beach zone, as the National Weather Service office forecast it: Low, Moderate or High. A zone with no forecast issued is outlined and not filled; that is not a low risk. Rip currents can occur at any risk level and are most likely near groins, jetties, reefs and piers. Swim near a lifeguard.",
     MapLegendHabBeaches => "A forecast of breathing irritation on the beach from red tide, not a measure of the water. Algal blooms can make people and dogs sick: follow local health advisories.",
     MapLegendCatchHeat => "Where your logged catches cluster. Drawn on this device only and never shared.",
     /// What a state layer's depths are measured from, as the source states it. Never the DEM's
@@ -2256,6 +2272,25 @@ safety_keys! {
     /// `{date}`: the last composite's date.
     BloomNoRecentSatelliteLast => "No recent satellite data (last composite {date})",
     BloomNoRecentForecast => "No recent bloom forecast",
+    /// The beach forecast card's words: rip current safety text, plain in every voice. The
+    /// categories are the forecasters' own; none is a statement that water is free of rip currents.
+    BeachRiskLow => "Low",
+    BeachRiskModerate => "Moderate",
+    BeachRiskHigh => "High",
+    BeachNoForecast => "No forecast issued",
+    BeachSafety => "Rip currents can occur at any risk level and are most likely near groins, jetties, reefs and piers. Swim near a lifeguard.",
+    /// `{office}`: the issuing office's id, "OKX".
+    BeachIssuedBy => "Issued by NWS {office}",
+    /// `{office}`, `{when}`: the product's own date and time, "409 PM EST 11/20/2026".
+    BeachIssuedByAt => "Issued by NWS {office}, {when}",
+    /// `{office}`: the office of a zone with nothing issued.
+    BeachNothingFrom => "NWS {office} has issued no forecast for this zone",
+    BeachNothing => "The National Weather Service has issued no forecast for this zone",
+    /// `{value}`: the water temperature in the user's unit, from a forecast in whole degrees
+    /// Fahrenheit written as "in the lower 50s".
+    BeachWaterAbout => "about {value}",
+    /// `{name}`, `{risk}`: the zone read aloud.
+    BeachZoneRead => "{name}, rip current risk {risk}",
     /// `{level}`, `{beach}`, `{distance}`.
     BloomForecastLine => "Respiratory irritation {level} at {beach}, {distance}",
     BloomLevelVeryLow => "very low",
@@ -2271,6 +2306,7 @@ safety_keys! {
     SourceRise => "US Bureau of Reclamation",
     SourceCyan => "EPA CyAN",
     SourceNoaaHab => "NOAA NCCOS bloom forecast",
+    SourceNwsBeachForecast => "NWS beach forecast",
     SourceNyDecStocking => "NYS DEC stocking",
     SourceOverpass => "OpenStreetMap",
     SourcePadus => "USGS PAD-US",
@@ -2345,6 +2381,8 @@ safety_keys! {
     AttrRiseCredit => "U.S. Bureau of Reclamation",
     AttrCyanCredit => "Cyanobacteria: EPA, NASA, NOAA and USGS CyAN",
     AttrCyanConditions => "An experimental, research-level satellite product: provisional, and it may contain errors. Derived from Copernicus Sentinel-3 OLCI.",
+    AttrNwsBeachForecastCredit => "Beach forecasts: National Weather Service",
+    AttrNwsBeachForecastConditions => "The forecast is the issuing office's own text for a zone of beaches, as issued. It is not a rating of a beach or of the water.",
     AttrNoaaHabCredit => "Harmful algal bloom forecast: NOAA NCCOS",
     AttrNoaaHabConditions => "Cell counts: Florida Fish and Wildlife Research Institute, HABscope, Pinellas County and the Sanibel-Captiva Conservation Foundation; wind: NOAA's National Digital Forecast Database.",
     AttrNyDecStockingCredit => "NYS DEC (stocking numbers are estimates)",
@@ -2782,6 +2820,7 @@ impl Strings {
             "overpass" => SafetyKey::SourceOverpass,
             "padus" => SafetyKey::SourcePadus,
             "usfws-nwi" => SafetyKey::SourceUsfwsNwi,
+            "nws-beach-forecast" => SafetyKey::SourceNwsBeachForecast,
             "census-boundaries" => SafetyKey::SourceCensusBoundaries,
             "gbif" => SafetyKey::SourceGbif,
             "inaturalist" => SafetyKey::SourceInaturalist,
@@ -3207,6 +3246,7 @@ impl Strings {
             "stocking-points" => Key::MapLayerStockingPoints,
             "species-records" => Key::MapLayerSpeciesRecords,
             "hab-beaches" => Key::MapLayerHabBeaches,
+            "beach-forecast" => Key::MapLayerBeachForecast,
             "catches" => Key::MapLayerCatches,
             "tracks" => Key::MapLayerTracks,
             "catch-heat" => Key::MapLayerCatchHeat,
@@ -3256,6 +3296,7 @@ impl Strings {
             "stocking-points" => SafetyKey::MapLegendStockingPoints,
             "species-records" => SafetyKey::MapLegendSpeciesRecords,
             "hab-beaches" => SafetyKey::MapLegendHabBeaches,
+            "beach-forecast" => SafetyKey::MapLegendBeachForecast,
             "catch-heat" => SafetyKey::MapLegendCatchHeat,
             "depth-shading" => SafetyKey::MapLegendBathymetry,
             "depth-contours" => SafetyKey::MapLegendDepthContours,
@@ -3298,6 +3339,7 @@ impl Strings {
             "stocking-points" | "artificial-reefs-ny" => SafetyKey::MapSourceNysDec,
             "species-records" => SafetyKey::MapSourceSpecies,
             "hab-beaches" => SafetyKey::MapSourceHab,
+            "beach-forecast" => SafetyKey::MapSourceBeachForecast,
             "lake-contours-in" => SafetyKey::MapSourceContoursIn,
             "lake-contours-mn" => SafetyKey::MapSourceContoursMn,
             "depth-shading" | "depth-contours" => SafetyKey::MapSourceNcei,
@@ -3364,6 +3406,7 @@ impl Strings {
             "stocking-points" => SafetyKey::MapCreditNyDecStocking,
             "species-records" => SafetyKey::MapCreditSpeciesRecords,
             "hab-beaches" => SafetyKey::MapCreditHab,
+            "beach-forecast" => SafetyKey::MapCreditBeachForecast,
             "catches" => SafetyKey::MapCreditCatches,
             "tracks" => SafetyKey::MapCreditTracks,
             "catch-heat" => SafetyKey::MapCreditCatchHeat,
@@ -3410,7 +3453,7 @@ impl Strings {
             "lake-contours-in" => SafetyKey::MapLicenceContoursIn,
             "lake-contours-mn" => SafetyKey::MapLicenceContoursMn,
             "artificial-reefs-ny" => SafetyKey::MapLicenceReefsNy,
-            "public-land" => SafetyKey::LicencePublicDomain,
+            "public-land" | "beach-forecast" => SafetyKey::LicencePublicDomain,
             "access-points" => SafetyKey::LicenceOdbl,
             _ => return None,
         }))
@@ -3424,6 +3467,7 @@ impl Strings {
             "trout-stream" => Key::MapPresetTroutStream,
             "bass-lake" => Key::MapPresetBassLake,
             "surf" => Key::MapPresetSurf,
+            "swimming" => Key::MapPresetSwimming,
             "great-lakes-trolling" => Key::MapPresetGreatLakesTrolling,
             _ => return None,
         }))
@@ -4353,6 +4397,7 @@ mod tests {
             SourceId::NY_DEC_STOCKING,
             SourceId::OVERPASS,
             SourceId::PADUS,
+            SourceId::NWS_BEACH_FORECAST,
             SourceId::GBIF,
             SourceId::INATURALIST,
             SourceId::USGS_NAS,

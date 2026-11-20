@@ -40,7 +40,7 @@ const NCDS_Z14: &str = "https://gis.charttools.noaa.gov/arcgis/rest/services/Mar
 #[test]
 fn the_catalogue_is_worded_with_credits_and_notices() {
     let layers = map_catalogue(plain()).unwrap();
-    assert_eq!(layers.len(), 49);
+    assert_eq!(layers.len(), 50);
     assert!(layers[..4].iter().all(|l| l.is_base));
     assert_eq!(layers[0].draw, LayerDraw::AppleStandard);
     assert!(layers[0].shown, "the default base map is shown");
@@ -127,6 +127,7 @@ fn lookup_and_own_layers_are_listed_hidden_in_their_groups() {
             "water",
             "Beach bloom forecast (Gulf of Mexico)",
         ),
+        ("beach-forecast", "water", "Beach forecast (rip currents)"),
     ] {
         let l = by_id(id);
         assert_eq!((l.group.as_str(), l.title.as_str()), (group, title), "{id}");
@@ -164,6 +165,7 @@ fn lookup_and_own_layers_are_listed_hidden_in_their_groups() {
         [
             "species-records",
             "hab-beaches",
+            "beach-forecast",
             "public-land",
             "access-points",
             "stocking-points"
@@ -260,7 +262,7 @@ fn the_catalogue_follows_the_settings_voice_units_and_layer_states() {
 fn presets_are_worded_and_an_unknown_active_one_falls_back() {
     let p = map_presets(plain()).unwrap();
     assert_eq!(p.active, "inshore-flats");
-    assert_eq!(p.presets.len(), 6);
+    assert_eq!(p.presets.len(), 7);
     assert_eq!(p.presets[0].name, "Inshore flats");
     assert!(p.presets.iter().all(|p| p.built_in && p.base.is_some()));
 

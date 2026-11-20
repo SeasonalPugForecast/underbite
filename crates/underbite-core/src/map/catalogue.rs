@@ -211,6 +211,8 @@ pub enum NearbyKind {
     SpeciesRecords,
     /// Bloom forecasts at beaches as points (NOAA NCCOS, Gulf of Mexico).
     BloomBeaches,
+    /// Rip current risk and surf by beach zone as polygons (NWS marine beach forecast).
+    BeachForecast,
 }
 
 /// The user's own data, drawn on the device from what the app keeps there. Nothing is fetched
@@ -658,6 +660,10 @@ const RECORDS_MIN_ZOOM: u8 = 10;
 /// coast.
 const BLOOM_MIN_ZOOM: u8 = 6;
 
+/// The shallowest zoom the beach forecast zones are asked for: a phone's view is then about a
+/// degree wide, the widest the lookup takes.
+const BEACH_FORECAST_MIN_ZOOM: u8 = 9;
+
 /// A layer filled by a lookup around the view, on the user's action.
 const fn nearby(id: &'static str, group: Group, kind: NearbyKind, min_zoom: u8) -> Layer {
     let mut l = overlay(id, group, LayerKind::Nearby(kind));
@@ -698,7 +704,7 @@ pub const BASES: [Layer; 4] = [
 ];
 
 /// The overlay layers in drawer order.
-pub const LAYERS: [Layer; 45] = [
+pub const LAYERS: [Layer; 46] = [
     {
         let mut l = overlay(
             "gebco-relief",
@@ -912,6 +918,12 @@ pub const LAYERS: [Layer; 45] = [
         NearbyKind::BloomBeaches,
         BLOOM_MIN_ZOOM,
     ),
+    nearby(
+        "beach-forecast",
+        Group::Water,
+        NearbyKind::BeachForecast,
+        BEACH_FORECAST_MIN_ZOOM,
+    ),
     mine("catches", MineKind::Catches),
     mine("tracks", MineKind::Tracks),
     {
@@ -1015,7 +1027,7 @@ pub struct Preset {
 pub const DEFAULT_PRESET: &str = "inshore-flats";
 
 /// The built-in presets.
-pub const PRESETS: [Preset; 6] = [
+pub const PRESETS: [Preset; 7] = [
     Preset {
         id: "inshore-flats",
         base: "apple-satellite",
@@ -1059,6 +1071,18 @@ pub const PRESETS: [Preset; 6] = [
         id: "surf",
         base: "apple-standard",
         layers: &[on("buoys"), on("tide-stations"), on("spots")],
+    },
+    Preset {
+        id: "swimming",
+        base: "apple-standard",
+        layers: &[
+            on("beach-forecast"),
+            on("hf-radar-currents"),
+            on("sst"),
+            on("buoys"),
+            on("tide-stations"),
+            on("spots"),
+        ],
     },
     Preset {
         id: "great-lakes-trolling",
@@ -1110,7 +1134,7 @@ mod tests {
     /// The ids of the overlays as the configuration lists them (`KNOWN_LAYERS`), in drawer order.
     /// The configuration crate cannot be a dependency here, so it checks its own list against this
     /// one.
-    const OVERLAY_IDS: [&str; 45] = [
+    const OVERLAY_IDS: [&str; 46] = [
         "gebco-relief",
         "sst",
         "sst-imagery",
@@ -1145,6 +1169,7 @@ mod tests {
         "stocking-points",
         "species-records",
         "hab-beaches",
+        "beach-forecast",
         "catches",
         "tracks",
         "catch-heat",
@@ -1472,6 +1497,7 @@ mod tests {
                 "trout-stream",
                 "bass-lake",
                 "surf",
+                "swimming",
                 "great-lakes-trolling"
             ]
         );
@@ -1619,6 +1645,7 @@ mod tests {
             ("stocking-points", Group::Access, NearbyKind::Stocking),
             ("species-records", Group::Water, NearbyKind::SpeciesRecords),
             ("hab-beaches", Group::Water, NearbyKind::BloomBeaches),
+            ("beach-forecast", Group::Water, NearbyKind::BeachForecast),
         ] {
             let l = layer(id);
             assert_eq!(l.group, group, "{id}");
@@ -1749,7 +1776,29 @@ mod tests {
             }
             let stocked = p.layers.iter().any(|pl| pl.id == "stocking-points");
             assert_eq!(stocked, p.id == "trout-stream", "{}", p.id);
+            let beaches = p.layers.iter().any(|pl| pl.id == "beach-forecast");
+            assert_eq!(beaches, p.id == "swimming", "{}", p.id);
         }
+    }
+
+    #[test]
+    fn the_swimming_preset_shows_the_beach_forecast_and_the_water_around_it() {
+        let p = resolve_preset("swimming").unwrap();
+        assert_eq!(p.base, "apple-standard");
+        assert_eq!(
+            p.layers.iter().map(|l| l.id).collect::<Vec<_>>(),
+            [
+                "beach-forecast",
+                "hf-radar-currents",
+                "sst",
+                "buoys",
+                "tide-stations",
+                "spots"
+            ]
+        );
+        // The forecast is not a chart or a current layer: nothing in it is for navigation.
+        assert!(!layer("beach-forecast").not_for_navigation);
+        assert!(layer("hf-radar-currents").not_for_navigation);
     }
 
     #[test]

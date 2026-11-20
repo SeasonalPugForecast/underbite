@@ -22,7 +22,7 @@ pub const KNOWN_BASES: [&str; 4] = [
 
 /// The overlay layers in drawer order. The layer list of a settings file is completed from this
 /// when it is imported.
-pub const KNOWN_LAYERS: [&str; 45] = [
+pub const KNOWN_LAYERS: [&str; 46] = [
     "gebco-relief",
     "sst",
     "sst-imagery",
@@ -57,6 +57,7 @@ pub const KNOWN_LAYERS: [&str; 45] = [
     "stocking-points",
     "species-records",
     "hab-beaches",
+    "beach-forecast",
     "catches",
     "tracks",
     "catch-heat",

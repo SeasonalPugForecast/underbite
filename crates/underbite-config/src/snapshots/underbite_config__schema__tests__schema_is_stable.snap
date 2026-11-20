@@ -847,6 +847,10 @@ expression: json_schema()
               "shown": false
             },
             {
+              "id": "beach-forecast",
+              "shown": false
+            },
+            {
               "id": "catches",
               "shown": false
             },
@@ -1815,6 +1819,10 @@ expression: json_schema()
           },
           {
             "id": "hab-beaches",
+            "shown": false
+          },
+          {
+            "id": "beach-forecast",
             "shown": false
           },
           {

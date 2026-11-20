@@ -195,6 +195,10 @@
         "shown": false
       },
       {
+        "id": "beach-forecast",
+        "shown": false
+      },
+      {
         "id": "catches",
         "shown": false
       },
