@@ -39,6 +39,7 @@ request URL and the recording date:
 - [nas](raw/nas/README.md)
 - [stocking-ny](raw/stocking-ny/README.md)
 - [gridded-weather](raw/gridded-weather/README.md)
+- [tidal-limit](raw/tidal-limit/README.md) (recorded 2026-11-20; NHD, NWI, VDatum and CO-OPS requests, with the exact URL of each file in the index)
 
 ## Conventions
 

@@ -1,0 +1,29 @@
+{
+  "count": 1,
+  "units": null,
+  "stations": [
+    {
+      "state": "",
+      "tidepredoffsets": {
+        "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/TEC1603/tidepredoffsets.json"
+      },
+      "type": "S",
+      "timemeridian": -75,
+      "reference_id": "8518995",
+      "timezonecorr": -5,
+      "id": "TEC1603",
+      "name": "Troy",
+      "lat": 42.71666666666667,
+      "lng": -73.7,
+      "affiliations": "",
+      "portscode": "",
+      "products": null,
+      "disclaimers": null,
+      "notices": null,
+      "self": null,
+      "expand": null,
+      "tideType": ""
+    }
+  ],
+  "self": null
+}
