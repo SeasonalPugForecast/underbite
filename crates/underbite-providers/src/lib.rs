@@ -20,6 +20,7 @@ pub mod glerl;
 pub mod hydro;
 pub mod ncei_dem;
 pub mod ndbc;
+pub mod nwi;
 pub mod nwps;
 pub mod nws_marine;
 pub mod open_meteo_marine;
