@@ -18,7 +18,7 @@
 //! A body that is HTTP 200 with an `error` object is an error.
 //!
 //! Coordinates leave the device only rounded to two decimals (a point), or as a box rounded outward
-//! to two decimals and capped at [`MAX_BOX_SPAN_DEG`].
+//! to two decimals and capped at [`MAX_BOX_SPAN_DEG`] (two degrees).
 
 use std::collections::BTreeMap;
 
@@ -40,7 +40,7 @@ pub const LAYER_LIST_MAX_AGE_S: u32 = 7 * 86_400;
 pub const MAX_AGE_S: u32 = 3_600;
 
 /// The widest box, degrees of latitude or longitude, a request may cover.
-pub const MAX_BOX_SPAN_DEG: f64 = 1.0;
+pub const MAX_BOX_SPAN_DEG: f64 = 2.0;
 
 /// The most zones one answer holds (the service allows 2000; an office has a dozen at most).
 pub const MAX_ZONES: u32 = 200;
@@ -807,8 +807,8 @@ mod tests {
         assert!(box_request(bbox(1.0, 0.0, 0.0, 1.0), 1).is_err());
         assert!(box_request(bbox(f64::NAN, 0.0, 1.0, 1.0), 1).is_err());
         assert!(box_request(bbox(0.0, 0.0, 1.0, 91.0), 1).is_err());
-        assert!(box_request(bbox(0.0, 0.0, 1.5, 0.5), 1).is_err());
-        assert!(box_request(bbox(0.0, 0.0, 1.0, 1.0), 1).is_ok());
+        assert!(box_request(bbox(0.0, 0.0, 2.5, 0.5), 1).is_err());
+        assert!(box_request(bbox(0.0, 0.0, 2.0, 1.0), 1).is_ok());
     }
 
     #[test]
