@@ -3,7 +3,7 @@ import UnderbiteKit
 
 /// The map's launch arguments, read in debug builds only (screenshots): `-mapBase <id>` draws that
 /// base map, `-mapLayers <id,id,...>` shows those layers on top of the settings' (in that order,
-/// topmost last), and `-mapAt <lat>,<lon>,<degrees of latitude>` opens the map there. They change
+/// topmost last), and `-mapAt <lat>,<lon>,<degrees of latitude>` opens the map there; `-mapHeading <degrees>` turns it. They change
 /// what the map draws for that launch only; nothing is saved.
 enum MapLaunch {
     static var base: String? { LaunchArguments.value(after: "-mapBase") }
@@ -18,6 +18,11 @@ enum MapLaunch {
         let parts = text.split(separator: ",").compactMap { Double($0) }
         guard parts.count == 3 else { return nil }
         return MapStart(latitude: parts[0], longitude: parts[1], span: parts[2])
+    }
+
+    /// `-mapHeading <degrees>` turns the map clockwise from north.
+    static var heading: Double? {
+        LaunchArguments.value(after: "-mapHeading").flatMap { Double($0) }
     }
 
     /// Whether any argument changes the map's settings.

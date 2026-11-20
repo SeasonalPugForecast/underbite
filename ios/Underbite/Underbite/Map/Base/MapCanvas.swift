@@ -12,13 +12,17 @@ import UnderbiteKit
 struct MapCanvas: UIViewRepresentable {
     let controller: MapController
     var locator: MapLocator?
+    /// Told of the map view once, for controls that belong to it (the compass).
+    var onMap: ((MKMapView) -> Void)?
 
     func makeCoordinator() -> Coordinator { Coordinator(controller: controller) }
 
     func makeUIView(context: Context) -> MKMapView {
         let map = MKMapView()
         map.delegate = context.coordinator
-        map.showsCompass = true
+        // The compass is an MKCompassButton in the button column: the system one would sit
+        // under it.
+        map.showsCompass = false
         map.showsScale = true
         let start = controller.start
         map.setRegion(
@@ -45,7 +49,21 @@ struct MapCanvas: UIViewRepresentable {
         map.addGestureRecognizer(double)
         map.addGestureRecognizer(single)
         map.addGestureRecognizer(long)
+        #if DEBUG
+            // `-mapHeading <degrees>` turns the map for a screenshot.
+            if let heading = MapLaunch.heading {
+                map.setCamera(
+                    MKMapCamera(
+                        lookingAtCenter: CLLocationCoordinate2D(
+                            latitude: start.latitude, longitude: start.longitude),
+                        fromDistance: start.span * 111_000 * 2, pitch: 0, heading: heading),
+                    animated: false)
+            }
+        #endif
         coordinator.map = map
+        if let onMap {
+            Task { @MainActor in onMap(map) }
+        }
         return map
     }
 

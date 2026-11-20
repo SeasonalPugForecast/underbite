@@ -54,6 +54,7 @@ private struct MapScreen: View {
     @Environment(SpotStore.self) private var store
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var showsLayers = DrawerLaunch.opens
+    @State private var mapView: MKMapView?
     @Environment(\.openURL) private var openURL
 
     /// The room MapKit's own logo and legal link take at the bottom of the map.
@@ -72,7 +73,7 @@ private struct MapScreen: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            MapCanvas(controller: controller, locator: locator)
+            MapCanvas(controller: controller, locator: locator) { mapView = $0 }
                 .ignoresSafeArea()
             // Like Apple Maps' controls: a column at the top trailing edge.
             VStack(spacing: 8) {
@@ -89,6 +90,11 @@ private struct MapScreen: View {
                 LocateButton(locator: locator)
                 if let inspector = controller.modules.lazy.compactMap({ $0 as? InspectorModule }).first {
                     PinModeButton(module: inspector)
+                }
+                // Shows itself when the map is turned, and a tap turns it back to north.
+                if let mapView {
+                    MapCompass(map: mapView)
+                        .frame(width: 44, height: 44)
                 }
             }
             .dynamicTypeSize(...MapChromeType.largest)
@@ -137,6 +143,24 @@ private struct MapScreen: View {
                 }
                 Button("OK", role: .cancel) {}
             }
+    }
+}
+
+/// MapKit's compass for the map view: it shows only while the map is turned from north.
+private struct MapCompass: UIViewRepresentable {
+    let map: MKMapView
+
+    func makeUIView(context: Context) -> MKCompassButton {
+        let button = MKCompassButton(mapView: map)
+        button.compassVisibility = .adaptive
+        button.accessibilityIdentifier = "map-compass"
+        return button
+    }
+
+    func updateUIView(_ button: MKCompassButton, context: Context) {
+        // Setting it again has the button look at the map's heading afresh.
+        button.compassVisibility = .visible
+        button.compassVisibility = .adaptive
     }
 }
 
