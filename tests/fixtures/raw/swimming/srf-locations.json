@@ -1,0 +1,24 @@
+{
+    "@context": [],
+    "locations": {
+        "BOX": "Boston / Norton, MA",
+        "BRO": "Brownsville/Rio Grande Valley, TX",
+        "CAR": "Caribou, ME",
+        "CRP": "Corpus Christi, TX",
+        "EKA": "Eureka, CA",
+        "GUM": "Tiyan, GU",
+        "HFO": "Honolulu, HI",
+        "JAX": "Jacksonville, FL",
+        "LOX": "Los Angeles, CA",
+        "MFL": "Miami - South Florida",
+        "MFR": "Medford, OR",
+        "MLB": "Melbourne, FL",
+        "MOB": "Mobile/Pensacola",
+        "MTR": "San Francisco Bay Area, CA",
+        "PQR": "Portland, OR",
+        "SGX": "San Diego, CA",
+        "SJU": "San Juan, PR",
+        "TAE": "Tallahassee, FL",
+        "TBW": "Tampa Bay Area, FL"
+    }
+}

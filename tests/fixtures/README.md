@@ -40,6 +40,7 @@ request URL and the recording date:
 - [stocking-ny](raw/stocking-ny/README.md)
 - [gridded-weather](raw/gridded-weather/README.md)
 - [tidal-limit](raw/tidal-limit/README.md) (recorded 2026-11-20; NHD, NWI, VDatum and CO-OPS requests, with the exact URL of each file in the index)
+- [swimming](raw/swimming/README.md) (recorded 2026-11-20; NWS surf zone and beach forecasts, NWPS rip current stations, beach water quality from Chicago, New York City, New York State and the Water Quality Portal, OSM lifeguard tags, UV index, with the exact URL of each file in the index)
 
 ## Conventions
 

@@ -1,0 +1,533 @@
+{
+  "id" : "2xir-kwzz",
+  "name" : "Beach Water Samples",
+  "assetType" : "dataset",
+  "attribution" : "Department of Health and Mental Hygiene (DOHMH)",
+  "attributionLink" : "https://a816-dohbesp.nyc.gov/IndicatorPublic/Beaches/",
+  "averageRating" : 0,
+  "category" : "Health",
+  "createdAt" : 1464807245,
+  "description" : "The DOHMH office of Public Health Engineering administers the Beach Surveillance and Monitoring Program for all permitted New York City beaches. The Beach Water Samples data set contains the enterococci measurements of beach water samples collected while administering the Monitoring Program. Monitoring Program conducts inspections from April through September of each year. For more information on the program, see: https://www.nyc.gov/site/doh/health/health-topics/beach-class.page",
+  "diciBackend" : false,
+  "displayType" : "table",
+  "downloadCount" : 5738,
+  "hideFromCatalog" : false,
+  "hideFromDataJson" : false,
+  "indexUpdatedAt" : 1538403819,
+  "locked" : false,
+  "newBackend" : true,
+  "numberOfComments" : 0,
+  "oid" : 21836050,
+  "provenance" : "official",
+  "publicationAppendEnabled" : false,
+  "publicationDate" : 1466524958,
+  "publicationGroup" : 11073786,
+  "publicationStage" : "published",
+  "rowClass" : "",
+  "rowsUpdatedAt" : 1791209777,
+  "rowsUpdatedBy" : "5fuc-pqz2",
+  "tableId" : 11463856,
+  "totalTimesRated" : 0,
+  "viewCount" : 12924,
+  "viewLastModified" : 1719940000,
+  "viewType" : "tabular",
+  "approvals" : [ {
+    "reviewedAt" : 1466524958,
+    "reviewedAutomatically" : true,
+    "state" : "approved",
+    "submissionId" : 1066540,
+    "submissionObject" : "public_audience_request",
+    "submissionOutcome" : "change_audience",
+    "submittedAt" : 1466524958,
+    "targetAudience" : "public",
+    "workflowId" : 2285,
+    "submissionDetails" : {
+      "permissionType" : "READ"
+    },
+    "submissionOutcomeApplication" : {
+      "failureCount" : 0,
+      "status" : "success"
+    },
+    "submitter" : {
+      "id" : "5fuc-pqz2",
+      "displayName" : "NYC OpenData"
+    }
+  } ],
+  "clientContext" : {
+    "clientContextVariables" : [ ],
+    "inheritedVariables" : { }
+  },
+  "columns" : [ {
+    "id" : 259920411,
+    "name" : "Sample ID",
+    "dataTypeName" : "text",
+    "description" : "Unique identifier consisting of text, date, time, sample subunit number and sample location number",
+    "fieldName" : "sample_id",
+    "position" : 1,
+    "renderTypeName" : "text",
+    "tableColumnId" : 36501424,
+    "width" : 208,
+    "cachedContents" : {
+      "largest" : "YZ2606301150-1.3",
+      "non_null" : "31179",
+      "null" : "0",
+      "top" : [ {
+        "item" : "070709GR16",
+        "count" : "1"
+      }, {
+        "item" : "AC2509150955-1.1",
+        "count" : "1"
+      }, {
+        "item" : "JB2505271220-1.2",
+        "count" : "1"
+      }, {
+        "item" : "JB2407021020-1.2",
+        "count" : "1"
+      }, {
+        "item" : "MA2207180930-1.1",
+        "count" : "1"
+      }, {
+        "item" : "DF1908060900-1.2",
+        "count" : "1"
+      }, {
+        "item" : "JB2605261130-1.2",
+        "count" : "1"
+      }, {
+        "item" : "060115GR01",
+        "count" : "1"
+      }, {
+        "item" : "060607BH13",
+        "count" : "1"
+      }, {
+        "item" : "JB2305230840-1.2",
+        "count" : "1"
+      }, {
+        "item" : "ma1806040920-1.1",
+        "count" : "1"
+      }, {
+        "item" : "052510KB07",
+        "count" : "1"
+      }, {
+        "item" : "KB2405211050-1.2",
+        "count" : "1"
+      }, {
+        "item" : "080409KB01",
+        "count" : "1"
+      }, {
+        "item" : "052305BH10",
+        "count" : "1"
+      }, {
+        "item" : "060210GR08",
+        "count" : "1"
+      }, {
+        "item" : "070506NG09",
+        "count" : "1"
+      }, {
+        "item" : "050310GR03",
+        "count" : "1"
+      }, {
+        "item" : "CP1908130900-1.2",
+        "count" : "1"
+      }, {
+        "item" : "072417MA07",
+        "count" : "1"
+      } ],
+      "smallest" : "041231GR16",
+      "not_null" : "23279",
+      "count" : "31179",
+      "cardinality" : "31179"
+    },
+    "format" : { }
+  }, {
+    "id" : 259920412,
+    "name" : "Sample Date",
+    "dataTypeName" : "calendar_date",
+    "description" : "Date of sampling ",
+    "fieldName" : "sample_date",
+    "position" : 2,
+    "renderTypeName" : "calendar_date",
+    "tableColumnId" : 36501425,
+    "width" : 232,
+    "cachedContents" : {
+      "largest" : "2026-09-29T00:00:00.000",
+      "non_null" : "31179",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2011-08-30T00:00:00.000",
+        "count" : "86"
+      }, {
+        "item" : "2012-07-02T00:00:00.000",
+        "count" : "72"
+      }, {
+        "item" : "2007-07-02T00:00:00.000",
+        "count" : "61"
+      }, {
+        "item" : "2011-08-31T00:00:00.000",
+        "count" : "57"
+      }, {
+        "item" : "2007-06-06T00:00:00.000",
+        "count" : "55"
+      }, {
+        "item" : "2013-07-24T00:00:00.000",
+        "count" : "52"
+      }, {
+        "item" : "2011-07-27T00:00:00.000",
+        "count" : "51"
+      }, {
+        "item" : "2012-06-12T00:00:00.000",
+        "count" : "51"
+      }, {
+        "item" : "2014-06-11T00:00:00.000",
+        "count" : "51"
+      }, {
+        "item" : "2012-06-18T00:00:00.000",
+        "count" : "50"
+      }, {
+        "item" : "2006-07-05T00:00:00.000",
+        "count" : "48"
+      }, {
+        "item" : "2011-07-18T00:00:00.000",
+        "count" : "47"
+      }, {
+        "item" : "2017-07-06T00:00:00.000",
+        "count" : "46"
+      }, {
+        "item" : "2016-05-24T00:00:00.000",
+        "count" : "46"
+      }, {
+        "item" : "2013-07-02T00:00:00.000",
+        "count" : "46"
+      }, {
+        "item" : "2018-07-02T00:00:00.000",
+        "count" : "46"
+      }, {
+        "item" : "2007-08-20T00:00:00.000",
+        "count" : "46"
+      }, {
+        "item" : "2019-07-02T00:00:00.000",
+        "count" : "46"
+      }, {
+        "item" : "2016-07-06T00:00:00.000",
+        "count" : "46"
+      }, {
+        "item" : "2009-08-24T00:00:00.000",
+        "count" : "45"
+      } ],
+      "smallest" : "2005-05-02T00:00:00.000",
+      "not_null" : "23279",
+      "count" : "31179",
+      "cardinality" : "31179"
+    },
+    "format" : {
+      "view" : "date",
+      "align" : "left"
+    }
+  }, {
+    "id" : 259920413,
+    "name" : "Beach Name",
+    "dataTypeName" : "text",
+    "description" : "Simply present name of beach\n",
+    "fieldName" : "beach_name",
+    "position" : 3,
+    "renderTypeName" : "text",
+    "tableColumnId" : 36501426,
+    "width" : 220,
+    "cachedContents" : {
+      "largest" : "WOLFE'S POND PARK",
+      "non_null" : "31179",
+      "null" : "0",
+      "top" : [ {
+        "item" : "SOUTH BEACH",
+        "count" : "1351"
+      }, {
+        "item" : "DOUGLASTON HOMEOWNERS ASSOCIATION",
+        "count" : "1348"
+      }, {
+        "item" : "ORCHARD BEACH",
+        "count" : "1337"
+      }, {
+        "item" : "MORRIS YACHT AND BEACH CLUB",
+        "count" : "1318"
+      }, {
+        "item" : "MIDLAND BEACH",
+        "count" : "1289"
+      }, {
+        "item" : "MANHATTAN BEACH",
+        "count" : "1266"
+      }, {
+        "item" : "SCHUYLER HILL CIVIC ASSOCIATION",
+        "count" : "1255"
+      }, {
+        "item" : "WOLFE'S POND PARK",
+        "count" : "1252"
+      }, {
+        "item" : "AMERICAN TURNERS",
+        "count" : "1251"
+      }, {
+        "item" : "WHITE CROSS FISHING CLUB",
+        "count" : "1250"
+      }, {
+        "item" : "GERRITSEN/KIDDIE BEACH",
+        "count" : "1245"
+      }, {
+        "item" : "DANISH AMERICAN BEACH CLUB",
+        "count" : "1211"
+      }, {
+        "item" : "TRINITY DANISH YOUNG PEOPLE'S SOCIETY",
+        "count" : "1185"
+      }, {
+        "item" : "MANHEM BEACH CLUB",
+        "count" : "1184"
+      }, {
+        "item" : "SEAGATE BEACH - 42ND STREET",
+        "count" : "1176"
+      }, {
+        "item" : "SEAGATE BEACH - 38TH STREET",
+        "count" : "1144"
+      }, {
+        "item" : "KINGSBOROUGH COMMUNITY COLLEGE",
+        "count" : "1103"
+      }, {
+        "item" : "WHITESTONE BOOSTER CIVIC  ASSOCIATION",
+        "count" : "1094"
+      }, {
+        "item" : "WEST FORDHAM STREET ASSOCIATION",
+        "count" : "986"
+      }, {
+        "item" : "CEDAR GROVE",
+        "count" : "966"
+      } ],
+      "smallest" : "658 SUNRISE CLUB INC.",
+      "not_null" : "23279",
+      "count" : "31179",
+      "cardinality" : "31179"
+    },
+    "format" : {
+      "displayStyle" : "plain",
+      "align" : "left"
+    }
+  }, {
+    "id" : 259920414,
+    "name" : "Sample Location",
+    "dataTypeName" : "text",
+    "description" : "Location on the beach where sample was taken",
+    "fieldName" : "sample_location",
+    "position" : 4,
+    "renderTypeName" : "text",
+    "tableColumnId" : 36501427,
+    "width" : 280,
+    "cachedContents" : {
+      "largest" : "Rigth",
+      "non_null" : "31179",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Center",
+        "count" : "13762"
+      }, {
+        "item" : "Left",
+        "count" : "8696"
+      }, {
+        "item" : "Right",
+        "count" : "8683"
+      }, {
+        "item" : "NULL",
+        "count" : "37"
+      }, {
+        "item" : "Rigth",
+        "count" : "1"
+      } ],
+      "smallest" : "Center",
+      "not_null" : "23242",
+      "count" : "31179",
+      "cardinality" : "31179"
+    },
+    "format" : { }
+  }, {
+    "id" : 259920415,
+    "name" : "Enterococci Results",
+    "dataTypeName" : "number",
+    "description" : "Measurement of bacteria present ",
+    "fieldName" : "enterococci_results",
+    "position" : 5,
+    "renderTypeName" : "number",
+    "tableColumnId" : 36501428,
+    "width" : 328,
+    "cachedContents" : {
+      "largest" : "24196",
+      "non_null" : "23714",
+      "average" : "77.27866272030136",
+      "null" : "7465",
+      "top" : [ {
+        "item" : "4.00",
+        "count" : "4581"
+      }, {
+        "item" : "9.90",
+        "count" : "2989"
+      }, {
+        "item" : "8.00",
+        "count" : "2402"
+      }, {
+        "item" : "20.00",
+        "count" : "1533"
+      }, {
+        "item" : "10.00",
+        "count" : "1492"
+      }, {
+        "item" : "12.00",
+        "count" : "1463"
+      }, {
+        "item" : "16.00",
+        "count" : "1036"
+      }, {
+        "item" : "24.00",
+        "count" : "571"
+      }, {
+        "item" : "28.00",
+        "count" : "473"
+      }, {
+        "item" : "31",
+        "count" : "384"
+      }, {
+        "item" : "32.00",
+        "count" : "368"
+      }, {
+        "item" : "52.00",
+        "count" : "346"
+      }, {
+        "item" : "36.00",
+        "count" : "309"
+      }, {
+        "item" : "41.00",
+        "count" : "271"
+      }, {
+        "item" : "40.00",
+        "count" : "242"
+      }, {
+        "item" : "44.00",
+        "count" : "229"
+      }, {
+        "item" : "48.00",
+        "count" : "212"
+      }, {
+        "item" : "120.00",
+        "count" : "170"
+      }, {
+        "item" : "64.00",
+        "count" : "164"
+      }, {
+        "item" : "56.00",
+        "count" : "137"
+      } ],
+      "smallest" : "4",
+      "not_null" : "15949",
+      "count" : "31179",
+      "sum" : "1148824.60",
+      "cardinality" : "31179"
+    },
+    "format" : {
+      "precisionStyle" : "standard",
+      "noCommas" : "true",
+      "precision" : "1",
+      "align" : "left"
+    }
+  }, {
+    "id" : 259920418,
+    "name" : "Units or Notes",
+    "dataTypeName" : "text",
+    "description" : "Unit of measurement",
+    "fieldName" : "units_or_notes",
+    "position" : 6,
+    "renderTypeName" : "text",
+    "tableColumnId" : 36501429,
+    "width" : 268,
+    "cachedContents" : {
+      "largest" : "Result below detection limit",
+      "non_null" : "31179",
+      "null" : "0",
+      "top" : [ {
+        "item" : "MPN/100 ml",
+        "count" : "23734"
+      }, {
+        "item" : "Result below detection limit",
+        "count" : "7445"
+      } ],
+      "smallest" : "MPN/100 ml",
+      "not_null" : "23279",
+      "count" : "31179",
+      "cardinality" : "31179"
+    },
+    "format" : { }
+  } ],
+  "grants" : [ {
+    "inherited" : false,
+    "type" : "viewer",
+    "flags" : [ "public" ]
+  } ],
+  "metadata" : {
+    "rdfSubject" : "0",
+    "rdfClass" : "",
+    "jsonQuery" : {
+      "order" : [ {
+        "columnFieldName" : "sample_date",
+        "ascending" : false
+      } ]
+    },
+    "attachments" : [ {
+      "filename" : "BeachWaterDataset_data_dictionary_May_2024.xlsx",
+      "assetId" : "35bf1105-bdf0-4a38-a0c9-30beee5d5afb",
+      "blobId" : "",
+      "name" : "BeachWaterDataset_data_dictionary.xlsx"
+    } ],
+    "custom_fields" : {
+      "Update" : {
+        "Automation" : "Yes",
+        "Update Frequency Details" : "Between May and September of each year, the data is published weekly while NYC beaches are open\t",
+        "Date Made Public" : "6/14/2016",
+        "Update Frequency" : "As needed",
+        "Data Change Frequency" : "As Needed"
+      },
+      "Dataset Information" : {
+        "Agency" : "Department of Health and Mental Hygiene (DOHMH)"
+      }
+    },
+    "rowLabel" : "reflective of a single sample taken at a New York City permitted beach.",
+    "availableDisplayTypes" : [ "table", "fatrow", "page" ],
+    "renderTypeConfig" : {
+      "visible" : {
+        "table" : true
+      }
+    }
+  },
+  "owner" : {
+    "id" : "5fuc-pqz2",
+    "displayName" : "NYC OpenData",
+    "profileImageUrlLarge" : "/api/users/5fuc-pqz2/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/5fuc-pqz2/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/5fuc-pqz2/profile_images/TINY",
+    "screenName" : "NYC OpenData",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "query" : {
+    "orderBys" : [ {
+      "ascending" : false,
+      "expression" : {
+        "columnId" : 259920412,
+        "type" : "column"
+      }
+    } ]
+  },
+  "rights" : [ "read" ],
+  "tableAuthor" : {
+    "id" : "5fuc-pqz2",
+    "displayName" : "NYC OpenData",
+    "profileImageUrlLarge" : "/api/users/5fuc-pqz2/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/5fuc-pqz2/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/5fuc-pqz2/profile_images/TINY",
+    "screenName" : "NYC OpenData",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "tags" : [ "nyc beaches", "beach water", "beach", "swimming" ],
+  "flags" : [ "default", "ownerMayBeContacted", "restorable", "restorePossibleForType" ]
+}

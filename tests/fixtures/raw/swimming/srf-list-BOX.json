@@ -1,0 +1,125 @@
+{
+    "@context": {
+        "@version": "1.1",
+        "@vocab": "https://api.weather.gov/ontology#"
+    },
+    "@graph": [
+        {
+            "@id": "https://api.weather.gov/products/1a4178fe-91f7-4a78-ae1d-38082c9dbb45",
+            "id": "1a4178fe-91f7-4a78-ae1d-38082c9dbb45",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-20T21:09:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/91c62fd8-233d-4783-a806-a901089560c7",
+            "id": "91c62fd8-233d-4783-a806-a901089560c7",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-20T09:09:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/12cc35f2-9cab-4309-b804-462be96bdce5",
+            "id": "12cc35f2-9cab-4309-b804-462be96bdce5",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-19T09:08:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/132b20f9-7bee-48be-b835-e005b5faa598",
+            "id": "132b20f9-7bee-48be-b835-e005b5faa598",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-18T21:08:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/25944996-eb29-4c66-9341-9b76a3545814",
+            "id": "25944996-eb29-4c66-9341-9b76a3545814",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-18T09:08:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/0b30e249-3419-4f8a-8d93-3242dfb4e290",
+            "id": "0b30e249-3419-4f8a-8d93-3242dfb4e290",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-17T21:09:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/6a327994-3b75-4329-b69d-b31bb3d73f41",
+            "id": "6a327994-3b75-4329-b69d-b31bb3d73f41",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-17T09:08:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/e0bed591-0fd6-42aa-8c4e-766c03194935",
+            "id": "e0bed591-0fd6-42aa-8c4e-766c03194935",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-16T21:08:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/12452fe0-2d81-49bc-8954-af071812a84a",
+            "id": "12452fe0-2d81-49bc-8954-af071812a84a",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-16T09:08:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/2e764cc7-921a-4e70-a84d-79b6dc263308",
+            "id": "2e764cc7-921a-4e70-a84d-79b6dc263308",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-15T21:10:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/5f8308ed-7888-4283-bd71-d71ad4ad3e82",
+            "id": "5f8308ed-7888-4283-bd71-d71ad4ad3e82",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-15T09:08:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/715a247c-0917-4e5b-b398-3c79bbb5a135",
+            "id": "715a247c-0917-4e5b-b398-3c79bbb5a135",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-14T21:10:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        },
+        {
+            "@id": "https://api.weather.gov/products/d1839e1e-c6b0-41e4-ac1b-e25ced2be16e",
+            "id": "d1839e1e-c6b0-41e4-ac1b-e25ced2be16e",
+            "wmoCollectiveId": "FZUS51",
+            "issuingOffice": "KBOX",
+            "issuanceTime": "2026-11-14T09:10:00+00:00",
+            "productCode": "SRF",
+            "productName": "Surf Forecast"
+        }
+    ]
+}

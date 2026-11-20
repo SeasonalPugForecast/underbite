@@ -1,0 +1,1830 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-11-20T22:13:22Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 357545552,
+  "lat": 40.5859380,
+  "lon": -73.7287430,
+  "tags": {
+    "ele": "0",
+    "gnis:feature_id": "942672",
+    "name": "Atlantic Beach",
+    "natural": "beach",
+    "wikidata": "Q34637639"
+  }
+},
+{
+  "type": "node",
+  "id": 357552215,
+  "lat": 40.6287153,
+  "lon": -73.8868028,
+  "tags": {
+    "ele": "1",
+    "gnis:feature_id": "945744",
+    "name": "Canarsie Beach",
+    "natural": "beach",
+    "wikidata": "Q34648102"
+  }
+},
+{
+  "type": "node",
+  "id": 357557431,
+  "lat": 40.5837157,
+  "lon": -73.7034646,
+  "tags": {
+    "ele": "0",
+    "gnis:feature_id": "948966",
+    "name": "East Atlantic Beach",
+    "natural": "beach"
+  }
+},
+{
+  "type": "node",
+  "id": 357582584,
+  "lat": 40.5714942,
+  "lon": -73.8515240,
+  "tags": {
+    "ele": "1",
+    "gnis:feature_id": "962741",
+    "name": "Rockaway Beach",
+    "natural": "beach"
+  }
+},
+{
+  "type": "node",
+  "id": 357614780,
+  "lat": 40.5882103,
+  "lon": -73.7463360,
+  "tags": {
+    "ele": "1",
+    "gnis:feature_id": "2075812",
+    "leisure": "beach_resort",
+    "name": "Silver Point Beach Club",
+    "website": "https://www.silverpointclub.com/index.php",
+    "wikidata": "Q34861772"
+  }
+},
+{
+  "type": "node",
+  "id": 2573797830,
+  "lat": 40.4071803,
+  "lon": -73.9764418,
+  "tags": {
+    "name": "Beach B",
+    "natural": "beach"
+  }
+},
+{
+  "type": "node",
+  "id": 2573934647,
+  "lat": 40.4163693,
+  "lon": -73.9798396,
+  "tags": {
+    "name": "Beach C",
+    "natural": "beach"
+  }
+},
+{
+  "type": "node",
+  "id": 2573934758,
+  "lat": 40.4246925,
+  "lon": -73.9824296,
+  "tags": {
+    "name": "Beach D",
+    "natural": "beach"
+  }
+},
+{
+  "type": "node",
+  "id": 2573955322,
+  "lat": 40.4284903,
+  "lon": -73.9828944,
+  "tags": {
+    "name": "Beach E",
+    "natural": "beach"
+  }
+},
+{
+  "type": "node",
+  "id": 2576359576,
+  "lat": 40.4385908,
+  "lon": -73.9829439,
+  "tags": {
+    "name": "FIshing Beach",
+    "natural": "beach"
+  }
+},
+{
+  "type": "node",
+  "id": 2582392872,
+  "lat": 40.5868280,
+  "lon": -73.7497337,
+  "tags": {
+    "name": "Sun and Surf Beach Club",
+    "natural": "beach"
+  }
+},
+{
+  "type": "node",
+  "id": 3575812477,
+  "lat": 40.5576595,
+  "lon": -73.9020113,
+  "tags": {
+    "fee": "yes",
+    "leisure": "beach_resort",
+    "name": "Silver Gull Beach Club",
+    "website": "https://nysilvergull.com/"
+  }
+},
+{
+  "type": "node",
+  "id": 5775935092,
+  "lat": 40.5830653,
+  "lon": -73.8153690,
+  "tags": {
+    "emergency": "lifeguard"
+  }
+},
+{
+  "type": "node",
+  "id": 5775935093,
+  "lat": 40.5827746,
+  "lon": -73.8164968,
+  "tags": {
+    "emergency": "lifeguard"
+  }
+},
+{
+  "type": "node",
+  "id": 5775935094,
+  "lat": 40.5826295,
+  "lon": -73.8172294,
+  "tags": {
+    "emergency": "lifeguard"
+  }
+},
+{
+  "type": "node",
+  "id": 5775935095,
+  "lat": 40.5824106,
+  "lon": -73.8179997,
+  "tags": {
+    "emergency": "lifeguard"
+  }
+},
+{
+  "type": "node",
+  "id": 5775935096,
+  "lat": 40.5821171,
+  "lon": -73.8189054,
+  "tags": {
+    "emergency": "lifeguard"
+  }
+},
+{
+  "type": "node",
+  "id": 5775935097,
+  "lat": 40.5818601,
+  "lon": -73.8198674,
+  "tags": {
+    "emergency": "lifeguard"
+  }
+},
+{
+  "type": "node",
+  "id": 5775935098,
+  "lat": 40.5803743,
+  "lon": -73.8247745,
+  "tags": {
+    "emergency": "lifeguard"
+  }
+},
+{
+  "type": "node",
+  "id": 10764765209,
+  "lat": 40.5661371,
+  "lon": -73.8694519,
+  "tags": {
+    "emergency": "lifeguard"
+  }
+},
+{
+  "type": "way",
+  "id": 39649349,
+  "center": {
+    "lat": 40.4076221,
+    "lon": -73.9936048
+  },
+  "tags": {
+    "natural": "beach",
+    "source": "NJ2002LULC"
+  }
+},
+{
+  "type": "way",
+  "id": 39680026,
+  "center": {
+    "lat": 40.4031917,
+    "lon": -73.9793541
+  },
+  "tags": {
+    "natural": "beach",
+    "source": "NJ2002LULC"
+  }
+},
+{
+  "type": "way",
+  "id": 39680312,
+  "center": {
+    "lat": 40.4504455,
+    "lon": -74.0024026
+  },
+  "tags": {
+    "natural": "beach",
+    "source": "NJ2002LULC"
+  }
+},
+{
+  "type": "way",
+  "id": 39680437,
+  "center": {
+    "lat": 40.3215675,
+    "lon": -73.9906998
+  },
+  "tags": {
+    "natural": "beach",
+    "nudism": "no",
+    "source": "NJ2002LULC",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 39681389,
+  "center": {
+    "lat": 40.4670646,
+    "lon": -74.0099273
+  },
+  "tags": {
+    "natural": "beach",
+    "source": "NJ2002LULC",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 40139006,
+  "center": {
+    "lat": 40.4214700,
+    "lon": -74.0539509
+  },
+  "tags": {
+    "natural": "beach",
+    "source": "NJ2002LULC"
+  }
+},
+{
+  "type": "way",
+  "id": 56761484,
+  "center": {
+    "lat": 40.5759052,
+    "lon": -73.9440828
+  },
+  "tags": {
+    "dog": "no",
+    "dog:conditional": "leashed @ Oct 1 - May 1",
+    "name": "Manhattan Beach",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 88709433,
+  "center": {
+    "lat": 40.5860487,
+    "lon": -73.6587836
+  },
+  "tags": {
+    "dog": "no",
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 88715924,
+  "center": {
+    "lat": 40.5854944,
+    "lon": -73.7474476
+  },
+  "tags": {
+    "dog": "no",
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 88717124,
+  "center": {
+    "lat": 40.5812023,
+    "lon": -73.8034828
+  },
+  "tags": {
+    "dog": "no",
+    "dog:conditional": "leashed @ Oct 1 - May 1",
+    "name": "Rockaway Beach",
+    "natural": "beach",
+    "surface": "sand",
+    "wikidata": "Q34711903"
+  }
+},
+{
+  "type": "way",
+  "id": 101123081,
+  "center": {
+    "lat": 40.5728312,
+    "lon": -73.9782436
+  },
+  "tags": {
+    "check_date": "2025-03-01",
+    "dog": "no",
+    "dog:conditional": "leashed @ Oct 1 - May 1",
+    "ele": "1",
+    "fee": "no",
+    "fire": "no",
+    "fishing": "no",
+    "gnis:feature_id": "947271",
+    "leisure": "beach_resort",
+    "name": "Coney Island Beach",
+    "natural": "beach",
+    "opening_hours": "May Mo[-1]-Sep Mo[1] 10:00-18:00",
+    "operator:wikidata": "Q1894232",
+    "smoking": "no",
+    "supervised": "10:00-18:00",
+    "surface": "sand",
+    "vehicle": "private",
+    "website": "https://www.nycgovparks.org/parks/coney-island-beach-and-boardwalk/facilities/beaches",
+    "wikidata": "Q628201"
+  }
+},
+{
+  "type": "way",
+  "id": 157893350,
+  "center": {
+    "lat": 40.5534890,
+    "lon": -73.9267693
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 157893556,
+  "center": {
+    "lat": 40.5758791,
+    "lon": -73.9357836
+  },
+  "tags": {
+    "name": "Kingsborough Beach Park",
+    "natural": "beach",
+    "operator:wikidata": "Q6413125",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 183934180,
+  "center": {
+    "lat": 40.5859790,
+    "lon": -73.9234161
+  },
+  "tags": {
+    "name": "Gerritsen Beach",
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 248474788,
+  "center": {
+    "lat": 40.5720825,
+    "lon": -73.9883243
+  },
+  "tags": {
+    "building": "shed",
+    "emergency": "lifeguard",
+    "height": "3.6",
+    "nycdoitt:bin": "3000000"
+  }
+},
+{
+  "type": "way",
+  "id": 248525166,
+  "center": {
+    "lat": 40.5750991,
+    "lon": -73.9590056
+  },
+  "tags": {
+    "building": "shed",
+    "emergency": "lifeguard",
+    "height": "4.8",
+    "nycdoitt:bin": "3000000"
+  }
+},
+{
+  "type": "way",
+  "id": 251597537,
+  "center": {
+    "lat": 40.4486105,
+    "lon": -74.0004705
+  },
+  "tags": {
+    "natural": "beach",
+    "source": "NJ2002LULC",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 251597538,
+  "center": {
+    "lat": 40.4487116,
+    "lon": -74.0027537
+  },
+  "tags": {
+    "natural": "beach",
+    "source": "NJ2002LULC"
+  }
+},
+{
+  "type": "way",
+  "id": 251597539,
+  "center": {
+    "lat": 40.4149118,
+    "lon": -73.9847914
+  },
+  "tags": {
+    "access": "yes",
+    "natural": "beach",
+    "source": "NJ2002LULC",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 253900989,
+  "center": {
+    "lat": 40.4108084,
+    "lon": -74.0041506
+  },
+  "tags": {
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 253900990,
+  "center": {
+    "lat": 40.4175384,
+    "lon": -74.0379637
+  },
+  "tags": {
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 329365972,
+  "center": {
+    "lat": 40.5921175,
+    "lon": -73.7014418
+  },
+  "tags": {
+    "elevation": "0",
+    "gnis:feature_id": "952693",
+    "name": "Hicks Beach",
+    "natural": "beach",
+    "wikidata": "Q49321165"
+  }
+},
+{
+  "type": "way",
+  "id": 371954589,
+  "center": {
+    "lat": 40.6374218,
+    "lon": -73.8329049
+  },
+  "tags": {
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 371954599,
+  "center": {
+    "lat": 40.6382679,
+    "lon": -73.8315221
+  },
+  "tags": {
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 461005610,
+  "center": {
+    "lat": 40.4090987,
+    "lon": -73.9978732
+  },
+  "tags": {
+    "natural": "beach",
+    "source": "NJ2002LULC"
+  }
+},
+{
+  "type": "way",
+  "id": 507823961,
+  "center": {
+    "lat": 40.6148882,
+    "lon": -73.8339663
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 507823962,
+  "center": {
+    "lat": 40.6167467,
+    "lon": -73.8358952
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 562896944,
+  "center": {
+    "lat": 40.4042397,
+    "lon": -73.9861598
+  },
+  "tags": {
+    "natural": "beach",
+    "source": "NJ2002LULC"
+  }
+},
+{
+  "type": "way",
+  "id": 562897622,
+  "center": {
+    "lat": 40.4033859,
+    "lon": -73.9849591
+  },
+  "tags": {
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 681495437,
+  "center": {
+    "lat": 40.5991583,
+    "lon": -73.8125472
+  },
+  "tags": {
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 681495441,
+  "center": {
+    "lat": 40.6008347,
+    "lon": -73.8101367
+  },
+  "tags": {
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 681803368,
+  "center": {
+    "lat": 40.6378452,
+    "lon": -73.8240847
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "mud"
+  }
+},
+{
+  "type": "way",
+  "id": 681899804,
+  "center": {
+    "lat": 40.6132946,
+    "lon": -73.8149466
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "mud"
+  }
+},
+{
+  "type": "way",
+  "id": 681899805,
+  "center": {
+    "lat": 40.6143919,
+    "lon": -73.8149212
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "mud"
+  }
+},
+{
+  "type": "way",
+  "id": 681899807,
+  "center": {
+    "lat": 40.6208641,
+    "lon": -73.8176030
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "mud"
+  }
+},
+{
+  "type": "way",
+  "id": 681899819,
+  "center": {
+    "lat": 40.6249686,
+    "lon": -73.8195190
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "dirt"
+  }
+},
+{
+  "type": "way",
+  "id": 681912371,
+  "center": {
+    "lat": 40.5526124,
+    "lon": -73.9148814
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 783234749,
+  "center": {
+    "lat": 40.5739184,
+    "lon": -73.9716421
+  },
+  "tags": {
+    "building": "toilets",
+    "emergency": "lifeguard"
+  }
+},
+{
+  "type": "way",
+  "id": 783234750,
+  "center": {
+    "lat": 40.5739344,
+    "lon": -73.9715504
+  },
+  "tags": {
+    "building": "toilets",
+    "emergency": "lifeguard"
+  }
+},
+{
+  "type": "way",
+  "id": 833015819,
+  "center": {
+    "lat": 40.4480712,
+    "lon": -73.9969234
+  },
+  "tags": {
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 904163072,
+  "center": {
+    "lat": 40.5643154,
+    "lon": -73.8754424
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 8",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 904178071,
+  "center": {
+    "lat": 40.5643832,
+    "lon": -73.9033682
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 992098337,
+  "center": {
+    "lat": 40.5870469,
+    "lon": -73.7394958
+  },
+  "tags": {
+    "fee": "yes",
+    "leisure": "beach_resort",
+    "name": "Catalina Beach Club",
+    "website": "https://www.catalinabeachclub.com/"
+  }
+},
+{
+  "type": "way",
+  "id": 992098338,
+  "center": {
+    "lat": 40.5869673,
+    "lon": -73.7379524
+  },
+  "tags": {
+    "leisure": "beach_resort",
+    "name": "Sunny Atlantic Beach Club",
+    "website": "https://sunnyatlantic.com/"
+  }
+},
+{
+  "type": "way",
+  "id": 992098340,
+  "center": {
+    "lat": 40.5868171,
+    "lon": -73.7350498
+  },
+  "tags": {
+    "leisure": "beach_resort"
+  }
+},
+{
+  "type": "way",
+  "id": 992098341,
+  "center": {
+    "lat": 40.5867728,
+    "lon": -73.7342681
+  },
+  "tags": {
+    "leisure": "beach_resort"
+  }
+},
+{
+  "type": "way",
+  "id": 992098342,
+  "center": {
+    "lat": 40.5867213,
+    "lon": -73.7326310
+  },
+  "tags": {
+    "leisure": "beach_resort",
+    "name": "Clear Water Beach Club"
+  }
+},
+{
+  "type": "way",
+  "id": 992098343,
+  "center": {
+    "lat": 40.5866020,
+    "lon": -73.7297368
+  },
+  "tags": {
+    "leisure": "beach_resort",
+    "name": "The Shores at Atlantic Beach"
+  }
+},
+{
+  "type": "way",
+  "id": 992098344,
+  "center": {
+    "lat": 40.5865441,
+    "lon": -73.7286373
+  },
+  "tags": {
+    "leisure": "beach_resort",
+    "name": "Atlantic Beach Estates"
+  }
+},
+{
+  "type": "way",
+  "id": 992098345,
+  "center": {
+    "lat": 40.5864684,
+    "lon": -73.7272048
+  },
+  "tags": {
+    "leisure": "beach_resort",
+    "name": "Inwood Beach Club"
+  }
+},
+{
+  "type": "way",
+  "id": 992098346,
+  "center": {
+    "lat": 40.5863502,
+    "lon": -73.7254911
+  },
+  "tags": {
+    "leisure": "beach_resort",
+    "name": "New York Beach Club"
+  }
+},
+{
+  "type": "way",
+  "id": 1002104125,
+  "center": {
+    "lat": 40.5979129,
+    "lon": -73.7357701
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1002112187,
+  "center": {
+    "lat": 40.6327424,
+    "lon": -73.7557389
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1002112195,
+  "center": {
+    "lat": 40.6206868,
+    "lon": -73.7711542
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1002112196,
+  "center": {
+    "lat": 40.6242233,
+    "lon": -73.7722952
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1006451298,
+  "center": {
+    "lat": 40.5812718,
+    "lon": -73.9991685
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1006451302,
+  "center": {
+    "lat": 40.5816757,
+    "lon": -74.0037411
+  },
+  "tags": {
+    "area": "yes",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1006451307,
+  "center": {
+    "lat": 40.5804734,
+    "lon": -74.0095995
+  },
+  "tags": {
+    "area": "yes",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1006458443,
+  "center": {
+    "lat": 40.5737968,
+    "lon": -74.0076219
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1050305653,
+  "center": {
+    "lat": 40.5947112,
+    "lon": -73.7403776
+  },
+  "tags": {
+    "natural": "beach"
+  }
+},
+{
+  "type": "way",
+  "id": 1050305659,
+  "center": {
+    "lat": 40.5946563,
+    "lon": -73.7389187
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "dirt/sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432962,
+  "center": {
+    "lat": 40.5596268,
+    "lon": -73.8901534
+  },
+  "tags": {
+    "name": "Fort Tilden Beach",
+    "natural": "beach",
+    "nudism": "customary",
+    "surface": "sand",
+    "topless": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432963,
+  "center": {
+    "lat": 40.5641455,
+    "lon": -73.8761296
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 9",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432964,
+  "center": {
+    "lat": 40.5639126,
+    "lon": -73.8767986
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 10",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432965,
+  "center": {
+    "lat": 40.5636566,
+    "lon": -73.8775333
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 11",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432966,
+  "center": {
+    "lat": 40.5632998,
+    "lon": -73.8780895
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 12",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432967,
+  "center": {
+    "lat": 40.5629314,
+    "lon": -73.8786280
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 13",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432968,
+  "center": {
+    "lat": 40.5623827,
+    "lon": -73.8793590
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 14",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432969,
+  "center": {
+    "lat": 40.5644714,
+    "lon": -73.8748530
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 7",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432970,
+  "center": {
+    "lat": 40.5645854,
+    "lon": -73.8737665
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 6",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432971,
+  "center": {
+    "lat": 40.5648197,
+    "lon": -73.8719148
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 5",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432972,
+  "center": {
+    "lat": 40.5655309,
+    "lon": -73.8697833
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 4",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432973,
+  "center": {
+    "lat": 40.5662803,
+    "lon": -73.8677506
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 3",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432974,
+  "center": {
+    "lat": 40.5668129,
+    "lon": -73.8660351
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 2",
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1057432975,
+  "center": {
+    "lat": 40.5671620,
+    "lon": -73.8641526
+  },
+  "tags": {
+    "name": "Jacob Riis Park Beach 1",
+    "natural": "beach",
+    "nudism": "customary",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1059445659,
+  "center": {
+    "lat": 40.6005598,
+    "lon": -73.7922959
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1059445663,
+  "center": {
+    "lat": 40.6031487,
+    "lon": -73.7871236
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1059466353,
+  "center": {
+    "lat": 40.5995189,
+    "lon": -73.8239321
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "dirt"
+  }
+},
+{
+  "type": "way",
+  "id": 1059466360,
+  "center": {
+    "lat": 40.5969053,
+    "lon": -73.8201701
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1059635259,
+  "center": {
+    "lat": 40.5985498,
+    "lon": -73.8024118
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1059635260,
+  "center": {
+    "lat": 40.5971461,
+    "lon": -73.8048442
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1059635268,
+  "center": {
+    "lat": 40.5942117,
+    "lon": -73.8065570
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1059655554,
+  "center": {
+    "lat": 40.6125392,
+    "lon": -73.7731244
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1059655564,
+  "center": {
+    "lat": 40.6085773,
+    "lon": -73.7690023
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1059655573,
+  "center": {
+    "lat": 40.5989922,
+    "lon": -73.7703717
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1065245329,
+  "center": {
+    "lat": 40.5521132,
+    "lon": -73.9312216
+  },
+  "tags": {
+    "fee": "yes",
+    "leisure": "beach_resort",
+    "name": "Breezy Point Surf Club",
+    "website": "https://nybreezypoint.com/"
+  }
+},
+{
+  "type": "way",
+  "id": 1069793844,
+  "center": {
+    "lat": 40.6257945,
+    "lon": -73.7859761
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1070098886,
+  "center": {
+    "lat": 40.6486957,
+    "lon": -73.8234475
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1118484347,
+  "center": {
+    "lat": 40.5878174,
+    "lon": -73.8994053
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1119069995,
+  "center": {
+    "lat": 40.5941253,
+    "lon": -73.8806597
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1119069997,
+  "center": {
+    "lat": 40.5914181,
+    "lon": -73.8798646
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1119954092,
+  "center": {
+    "lat": 40.6085971,
+    "lon": -74.0350001
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1120425114,
+  "center": {
+    "lat": 40.6082660,
+    "lon": -74.0346867
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "gravel"
+  }
+},
+{
+  "type": "way",
+  "id": 1122149734,
+  "center": {
+    "lat": 40.6376913,
+    "lon": -73.8785532
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1122154567,
+  "center": {
+    "lat": 40.6284320,
+    "lon": -73.8868944
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1132100901,
+  "center": {
+    "lat": 40.6380055,
+    "lon": -73.8764579
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1218910084,
+  "center": {
+    "lat": 40.4717761,
+    "lon": -74.0005000
+  },
+  "tags": {
+    "name": "North Beach",
+    "natural": "beach",
+    "nudism": "no",
+    "source": "NJ2002LULC",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1218910085,
+  "center": {
+    "lat": 40.4748110,
+    "lon": -74.0150737
+  },
+  "tags": {
+    "natural": "beach",
+    "source": "NJ2002LULC",
+    "surface": "sand"
+  }
+},
+{
+  "type": "way",
+  "id": 1421603142,
+  "center": {
+    "lat": 40.4083126,
+    "lon": -73.9949836
+  },
+  "tags": {
+    "access": "private",
+    "lifeguard": "no",
+    "name": "Gravelly Point Beach",
+    "natural": "beach"
+  }
+},
+{
+  "type": "relation",
+  "id": 222684,
+  "center": {
+    "lat": 40.4339375,
+    "lon": -73.9912434
+  },
+  "tags": {
+    "natural": "beach",
+    "source": "NJ2002LULC",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 6363217,
+  "center": {
+    "lat": 40.4587439,
+    "lon": -73.9913691
+  },
+  "tags": {
+    "access": "yes",
+    "alcohol": "no",
+    "clothing-optional": "yes",
+    "description": "Clothing-optional beach, no alcohol or sexual conduct allowed.",
+    "name": "Gunnison Beach",
+    "natural": "beach",
+    "naturism": "yes",
+    "nudism": "designated",
+    "source": "https://nudebeachmap.com/places/gunnison-beach/",
+    "surface": "sand",
+    "thong": "yes",
+    "topless": "yes",
+    "tourism": "attraction",
+    "type": "multipolygon",
+    "website": "https://nudebeachmap.com/places/gunnison-beach/",
+    "wikidata": "Q5619268",
+    "wikimedia_commons": "File:Nude Beach Warning Sign at Gunnison Beach in Sandy Hook, New Jersey.jpg",
+    "wikipedia": "en:Gunnison Beach"
+  }
+},
+{
+  "type": "relation",
+  "id": 12322627,
+  "center": {
+    "lat": 40.5670885,
+    "lon": -73.8901004
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14131091,
+  "center": {
+    "lat": 40.5952324,
+    "lon": -73.8226873
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14165134,
+  "center": {
+    "lat": 40.6467104,
+    "lon": -73.8442664
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14165218,
+  "center": {
+    "lat": 40.6423692,
+    "lon": -73.8619613
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14253746,
+  "center": {
+    "lat": 40.6296172,
+    "lon": -73.7830365
+  },
+  "tags": {
+    "natural": "beach",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14253758,
+  "center": {
+    "lat": 40.6503225,
+    "lon": -73.8219011
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14533514,
+  "center": {
+    "lat": 40.6219495,
+    "lon": -73.8723184
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14950268,
+  "center": {
+    "lat": 40.6008015,
+    "lon": -73.8897561
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "gravel",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14956090,
+  "center": {
+    "lat": 40.5821501,
+    "lon": -73.8906540
+  },
+  "tags": {
+    "name": "Dead Horse Bay beach",
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14956092,
+  "center": {
+    "lat": 40.5870159,
+    "lon": -73.9055812
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14956095,
+  "center": {
+    "lat": 40.5880854,
+    "lon": -73.9117633
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14956097,
+  "center": {
+    "lat": 40.5980872,
+    "lon": -73.9146360
+  },
+  "tags": {
+    "natural": "beach",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14956126,
+  "center": {
+    "lat": 40.5880865,
+    "lon": -73.8785410
+  },
+  "tags": {
+    "natural": "beach",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14956128,
+  "center": {
+    "lat": 40.5797777,
+    "lon": -73.8808279
+  },
+  "tags": {
+    "natural": "beach",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14956409,
+  "center": {
+    "lat": 40.5826491,
+    "lon": -73.9210683
+  },
+  "tags": {
+    "name": "Plumb Beach",
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14956411,
+  "center": {
+    "lat": 40.5846080,
+    "lon": -73.9126759
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14959034,
+  "center": {
+    "lat": 40.5883364,
+    "lon": -73.9161677
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14959035,
+  "center": {
+    "lat": 40.6020833,
+    "lon": -73.9313121
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14975786,
+  "center": {
+    "lat": 40.6103704,
+    "lon": -73.8911715
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14975787,
+  "center": {
+    "lat": 40.6129872,
+    "lon": -73.8928088
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 14975788,
+  "center": {
+    "lat": 40.6123226,
+    "lon": -73.8912061
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 15006631,
+  "center": {
+    "lat": 40.6337171,
+    "lon": -73.8804678
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 15006636,
+  "center": {
+    "lat": 40.6383021,
+    "lon": -73.8792310
+  },
+  "tags": {
+    "natural": "beach",
+    "surface": "sand",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 15006723,
+  "center": {
+    "lat": 40.6230917,
+    "lon": -73.8951769
+  },
+  "tags": {
+    "natural": "beach",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 15313564,
+  "center": {
+    "lat": 40.6374667,
+    "lon": -73.8712203
+  },
+  "tags": {
+    "natural": "beach",
+    "type": "multipolygon"
+  }
+}
+
+  ]
+}

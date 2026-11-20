@@ -1,0 +1,42 @@
+{
+ 	"beachPoints": [
+ 		["Waukegan Municipal","42.36289410090248","-87.81715649212681"],
+ 		["North Avenue Beach","41.91415186468967","-87.62482812360267"],
+ 		["Lake Street Beach","41.6197056086328","-87.2697679162691"],
+ 		["Indiana Dunes State Park","41.660450","-87.064792"]
+ 	],
+	"title": [
+		"Chicago IL"
+	],
+	"adjacentSites": [
+		["iwx", "e"],
+	    	["mkx", "n"]
+	],
+ 	"sidebar": {
+ 		"links": [{
+ 			"title": "Chicago, IL Radar",
+ 			"url": "https://radar.weather.gov/ridge/standard/KLOT_loop.gif",
+ 			"image": {
+ 				"url": "https://radar.weather.gov/ridge/standard/KLOT_0.gif"
+ 			}
+ 		}, {
+ 			"title": "UV Index Forecast",
+ 			"url": "https://www.cpc.ncep.noaa.gov/products/stratosphere/uv_index/gif_files/uvi_map_big.gif",
+ 			"image": {
+ 				"url": "https://www.cpc.ncep.noaa.gov/products/stratosphere/uv_index/gif_files/uvi_map.gif"
+ 			}
+ 		}]
+ 	},
+ 	"map":{
+ 		"lat":"42.0425",
+ 		"lon":"-87.0509",
+ 		"zoom":"9",
+ 		"height":"450"
+ 	},
+	"status": [
+		"experimental"
+	],
+	"area": [
+		"greatlakes"
+	]
+ }

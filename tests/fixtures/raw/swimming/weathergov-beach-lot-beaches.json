@@ -1,0 +1,18 @@
+{
+	"indianadunesstatepark":{
+		"surftemp": "60",
+		"riprisk": "low"
+	}
+	,"lakestreetbeach":{
+		"surftemp": "60",
+		"riprisk": "low"
+	}
+	,"waukeganmunicipal":{
+		"surftemp": "63",
+		"riprisk": "low"
+	}
+	,"northavenuebeach":{
+		"surftemp": "62",
+		"riprisk": "low"
+	}
+}

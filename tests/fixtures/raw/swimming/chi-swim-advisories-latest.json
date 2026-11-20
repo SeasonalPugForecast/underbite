@@ -1,0 +1,6 @@
+[{"beach_name":"Rainbow","date":"2016-09-22T00:00:00.000","predicted_level":"106.2","probability":"0.284","swim_advisory":"N","recordid":"Rainbow20160922"}
+,{"beach_name":"Osterman","date":"2016-09-22T00:00:00.000","predicted_level":"251.6","probability":"0.521","swim_advisory":"Y","recordid":"Osterman20160922"}
+,{"beach_name":"Ohio","date":"2016-09-22T00:00:00.000","predicted_level":"10.6","probability":"0.01","swim_advisory":"N","recordid":"Ohio20160922"}
+,{"beach_name":"OakStreet","date":"2016-09-22T00:00:00.000","predicted_level":"31.1","probability":"0.046","swim_advisory":"N","recordid":"OakStreet20160922"}
+,{"beach_name":"Montrose","date":"2016-09-22T00:00:00.000","predicted_level":"198.6","probability":"0.453","swim_advisory":"N","recordid":"Montrose20160922"}
+,{"beach_name":"Leone","date":"2016-09-22T00:00:00.000","predicted_level":"106.2","probability":"0.267","swim_advisory":"N","recordid":"Leone20160922"}]

@@ -1,0 +1,753 @@
+{
+  "id" : "wwwd-za77",
+  "name" : "Beach Water Testing: Beginning 2015",
+  "assetType" : "dataset",
+  "attribution" : "Office of Parks, Recreation and Historic Preservation (OPRHP)",
+  "attributionLink" : "https://parks.ny.gov/recreation/swimming/beach-results/documents/results/BeachResults.pdf",
+  "averageRating" : 0,
+  "category" : "Recreation",
+  "createdAt" : 1619123160,
+  "description" : "Samples are collected by trained NY State Parks staff or laboratory technicians, and are analyzed by an environmental laboratory approval program (ELAP) laboratory. The results are shared with the Water Quality Unit within State Park’s Division of Environmental Stewardship and Planning and are saved in the Beach Monitoring Database.",
+  "diciBackend" : false,
+  "displayType" : "table",
+  "downloadCount" : 1700,
+  "hideFromCatalog" : false,
+  "hideFromDataJson" : false,
+  "locked" : false,
+  "newBackend" : true,
+  "numberOfComments" : 0,
+  "oid" : 37200683,
+  "provenance" : "official",
+  "publicationAppendEnabled" : false,
+  "publicationDate" : 1621459246,
+  "publicationGroup" : 18246963,
+  "publicationStage" : "published",
+  "rowClass" : "",
+  "rowsUpdatedAt" : 1794243944,
+  "rowsUpdatedBy" : "xzik-pf59",
+  "tableId" : 18308942,
+  "totalTimesRated" : 0,
+  "viewCount" : 5540,
+  "viewLastModified" : 1794243941,
+  "viewType" : "tabular",
+  "approvals" : [ {
+    "reviewedAt" : 1623171330,
+    "reviewedAutomatically" : true,
+    "state" : "approved",
+    "submissionId" : 3700181,
+    "submissionObject" : "public_audience_request",
+    "submissionOutcome" : "change_audience",
+    "submittedAt" : 1623171330,
+    "targetAudience" : "public",
+    "workflowId" : 2254,
+    "submissionDetails" : {
+      "permissionType" : "READ"
+    },
+    "submissionOutcomeApplication" : {
+      "endedAt" : 1623171330,
+      "failureCount" : 0,
+      "startedAt" : 1623171330,
+      "status" : "success"
+    },
+    "submitter" : {
+      "id" : "28jg-4c4u",
+      "displayName" : "Open Data Administrator 1"
+    }
+  } ],
+  "clientContext" : {
+    "clientContextVariables" : [ ],
+    "inheritedVariables" : { }
+  },
+  "columns" : [ {
+    "id" : 540862976,
+    "name" : "Region",
+    "dataTypeName" : "text",
+    "description" : "Name of State Park Region",
+    "fieldName" : "region",
+    "position" : 1,
+    "renderTypeName" : "text",
+    "tableColumnId" : 136281956,
+    "cachedContents" : {
+      "non_null" : "19332",
+      "largest" : "Thousand Islands",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Long Island",
+        "count" : "3629"
+      }, {
+        "item" : "Finger Lakes",
+        "count" : "2718"
+      }, {
+        "item" : "Central",
+        "count" : "2613"
+      }, {
+        "item" : "Thousand Islands",
+        "count" : "2597"
+      }, {
+        "item" : "Niagara",
+        "count" : "1906"
+      }, {
+        "item" : "Palisades",
+        "count" : "1743"
+      }, {
+        "item" : "Genesee",
+        "count" : "1534"
+      }, {
+        "item" : "Taconic",
+        "count" : "932"
+      }, {
+        "item" : "Allegany",
+        "count" : "915"
+      }, {
+        "item" : "Saratoga-Capital District",
+        "count" : "745"
+      } ],
+      "smallest" : "Allegany",
+      "count" : "19332",
+      "cardinality" : "19332"
+    },
+    "format" : { }
+  }, {
+    "id" : 540862977,
+    "name" : "State Park Beach",
+    "dataTypeName" : "text",
+    "description" : "Name of State Park Beach Station (some parks have multiple beach stations)",
+    "fieldName" : "state_park_beach",
+    "position" : 2,
+    "renderTypeName" : "text",
+    "tableColumnId" : 136281955,
+    "cachedContents" : {
+      "non_null" : "19332",
+      "largest" : "Woodlawn SP (B-3)",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Woodlawn SP (B-3)",
+        "count" : "1293"
+      }, {
+        "item" : "Jones Beach SP Zach's Bay",
+        "count" : "478"
+      }, {
+        "item" : "Hamlin Beach (H3)",
+        "count" : "401"
+      }, {
+        "item" : "Hamlin Beach (H3A)",
+        "count" : "395"
+      }, {
+        "item" : "Hamlin Beach (H4A)",
+        "count" : "387"
+      }, {
+        "item" : "Robert H. Treman SP",
+        "count" : "364"
+      }, {
+        "item" : "Fillmore Glen SP",
+        "count" : "318"
+      }, {
+        "item" : "Allegany SP (Red House)",
+        "count" : "300"
+      }, {
+        "item" : "Buttermilk Falls SP (Falls Swim Area)",
+        "count" : "297"
+      }, {
+        "item" : "Verona Beach SP",
+        "count" : "289"
+      }, {
+        "item" : "Evangola SP",
+        "count" : "276"
+      }, {
+        "item" : "Delta Lake SP",
+        "count" : "259"
+      }, {
+        "item" : "Robert Moses SP (Field 2)",
+        "count" : "256"
+      }, {
+        "item" : "Robert Moses SP (Field 5)",
+        "count" : "255"
+      }, {
+        "item" : "Jones Beach SP Central-Field 6",
+        "count" : "251"
+      }, {
+        "item" : "Sunken Meadow SP",
+        "count" : "251"
+      }, {
+        "item" : "Harriman SP: Lake Welch (Chair 08)",
+        "count" : "250"
+      }, {
+        "item" : "Jones Beach SP Central-Central Mall",
+        "count" : "250"
+      }, {
+        "item" : "Beaver Island SP",
+        "count" : "248"
+      }, {
+        "item" : "Fair Haven Beach SP West Beach (Main)",
+        "count" : "248"
+      } ],
+      "smallest" : "Allegany SP (Quaker Lake)",
+      "count" : "19332",
+      "cardinality" : "19332"
+    },
+    "format" : { }
+  }, {
+    "id" : 540862978,
+    "name" : "Waterbody",
+    "dataTypeName" : "text",
+    "description" : "Name of Waterbody the State Park Beach is located",
+    "fieldName" : "waterbody",
+    "position" : 3,
+    "renderTypeName" : "text",
+    "tableColumnId" : 136281954,
+    "cachedContents" : {
+      "non_null" : "19332",
+      "largest" : "Whetstone Creek",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Lake Ontario",
+        "count" : "2877"
+      }, {
+        "item" : "Atlantic Ocean",
+        "count" : "2412"
+      }, {
+        "item" : "Lake Erie",
+        "count" : "1702"
+      }, {
+        "item" : "St. Lawrence River",
+        "count" : "1089"
+      }, {
+        "item" : "Long Island Sound",
+        "count" : "848"
+      }, {
+        "item" : "Lake Welch",
+        "count" : "740"
+      }, {
+        "item" : "Green Lake",
+        "count" : "666"
+      }, {
+        "item" : "Cayuga Lake",
+        "count" : "551"
+      }, {
+        "item" : "Lake Champlain",
+        "count" : "477"
+      }, {
+        "item" : "Stony Brook",
+        "count" : "457"
+      }, {
+        "item" : "Lake Tiorati",
+        "count" : "453"
+      }, {
+        "item" : "Great South Bay",
+        "count" : "369"
+      }, {
+        "item" : "Enfield Creek",
+        "count" : "364"
+      }, {
+        "item" : "Dry Creek",
+        "count" : "318"
+      }, {
+        "item" : "Red House Lake",
+        "count" : "300"
+      }, {
+        "item" : "Seneca Lake",
+        "count" : "298"
+      }, {
+        "item" : "Buttermilk Creek",
+        "count" : "297"
+      }, {
+        "item" : "Oneida Lake",
+        "count" : "289"
+      }, {
+        "item" : "Delta Lake",
+        "count" : "259"
+      }, {
+        "item" : "Niagara River",
+        "count" : "248"
+      } ],
+      "smallest" : "Arctic Lake",
+      "count" : "19332",
+      "cardinality" : "19332"
+    },
+    "format" : { }
+  }, {
+    "id" : 540862979,
+    "name" : "Category",
+    "dataTypeName" : "number",
+    "description" : "•Category 1: Beaches with low rates of exceedance, satisfactory resample results within 24 hours, and/or wet sampling results. If these beaches are subject to an exceedance, they are immediately resampled. If other water quality factors are satisfactory at the time of resampling, the beach will remain open and the closure decision will be deferred until the resample results are obtained. The beaches are closed following an exceedance if other water quality factors (such as current weather or beach water conditions) are not satisfactory.  •Category 2: Beaches without sufficient resampling data or with unsatisfactory resampling data. At these beaches, an exceedance leads to resampling and an automatic and immediate closure, along with posting a notification of exceedance and alerting appropriate media outlets.  Please see this link for additional information: https://parks.ny.gov/recreation/swimming/beach-results/documents/results/BeachResults.pdf ",
+    "fieldName" : "category",
+    "position" : 4,
+    "renderTypeName" : "number",
+    "tableColumnId" : 136281948,
+    "cachedContents" : {
+      "non_null" : "19332",
+      "largest" : "2",
+      "null" : "0",
+      "top" : [ {
+        "item" : "1",
+        "count" : "11328"
+      }, {
+        "item" : "2",
+        "count" : "8004"
+      } ],
+      "smallest" : "1",
+      "count" : "19332",
+      "cardinality" : "19332"
+    },
+    "format" : {
+      "align" : "center"
+    }
+  }, {
+    "id" : 540862980,
+    "name" : "Date Sample Taken",
+    "dataTypeName" : "calendar_date",
+    "description" : "Date Sample was Taken or Date of notification of beach status change. Results are typically available the day after the samples are taken because it takes time to culture the bacteria in order to obtain an accurate estimate of their abundance. Beach results are posted and the public is notified 18-24 hours after an elevated concentration of bacteria occurs.",
+    "fieldName" : "date_sample_taken",
+    "position" : 5,
+    "renderTypeName" : "calendar_date",
+    "tableColumnId" : 136281950,
+    "cachedContents" : {
+      "non_null" : "19332",
+      "largest" : "2026-10-19T00:00:00.000",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2018-09-04T00:00:00.000",
+        "count" : "91"
+      }, {
+        "item" : "2017-07-05T00:00:00.000",
+        "count" : "71"
+      }, {
+        "item" : "2016-07-05T00:00:00.000",
+        "count" : "70"
+      }, {
+        "item" : "2019-09-03T00:00:00.000",
+        "count" : "69"
+      }, {
+        "item" : "2018-07-02T00:00:00.000",
+        "count" : "64"
+      }, {
+        "item" : "2021-07-06T00:00:00.000",
+        "count" : "62"
+      }, {
+        "item" : "2023-09-05T00:00:00.000",
+        "count" : "62"
+      }, {
+        "item" : "2016-09-06T00:00:00.000",
+        "count" : "61"
+      }, {
+        "item" : "2017-09-04T00:00:00.000",
+        "count" : "60"
+      }, {
+        "item" : "2017-07-25T00:00:00.000",
+        "count" : "60"
+      }, {
+        "item" : "2022-07-05T00:00:00.000",
+        "count" : "59"
+      }, {
+        "item" : "2018-07-24T00:00:00.000",
+        "count" : "58"
+      }, {
+        "item" : "2018-08-14T00:00:00.000",
+        "count" : "58"
+      }, {
+        "item" : "2024-09-03T00:00:00.000",
+        "count" : "57"
+      }, {
+        "item" : "2025-09-02T00:00:00.000",
+        "count" : "56"
+      }, {
+        "item" : "2017-07-18T00:00:00.000",
+        "count" : "56"
+      }, {
+        "item" : "2016-07-26T00:00:00.000",
+        "count" : "55"
+      }, {
+        "item" : "2015-08-11T00:00:00.000",
+        "count" : "55"
+      }, {
+        "item" : "2017-07-11T00:00:00.000",
+        "count" : "55"
+      }, {
+        "item" : "2017-06-27T00:00:00.000",
+        "count" : "55"
+      } ],
+      "smallest" : "2015-05-12T00:00:00.000",
+      "count" : "19332",
+      "cardinality" : "19332"
+    },
+    "format" : {
+      "view" : "date",
+      "align" : "center"
+    }
+  }, {
+    "id" : 540862981,
+    "name" : "Results Modifier",
+    "dataTypeName" : "text",
+    "description" : "=, <, or >; results are equal to, less than or greater than number listed in Results column",
+    "fieldName" : "results_modifier",
+    "position" : 6,
+    "renderTypeName" : "text",
+    "tableColumnId" : 136281949,
+    "cachedContents" : {
+      "non_null" : "18569",
+      "largest" : ">",
+      "null" : "763",
+      "top" : [ {
+        "item" : "=",
+        "count" : "15066"
+      }, {
+        "item" : "<",
+        "count" : "3398"
+      }, {
+        "item" : ">",
+        "count" : "105"
+      } ],
+      "smallest" : "<",
+      "count" : "19332",
+      "cardinality" : "19332"
+    },
+    "format" : {
+      "align" : "right"
+    }
+  }, {
+    "id" : 540862982,
+    "name" : "Results",
+    "dataTypeName" : "number",
+    "description" : "Results\tNumeric\t• Freshwater samples are analyzed for Escherichia coli (E.coli). A result equal to or above 235 E.coli colonies/100 ml represents an exceedance of the state standard. (All regions except Long Island.)  • Ocean (saltwater) samples are analyzed for enterococcus. A result equal to or above 104 enterococci colonies/100 ml represents an exceedance of the state standard. (Applies to Long Island region only.)",
+    "fieldName" : "results",
+    "position" : 7,
+    "renderTypeName" : "number",
+    "tableColumnId" : 136281953,
+    "cachedContents" : {
+      "non_null" : "17657",
+      "largest" : "24200",
+      "null" : "1675",
+      "top" : [ {
+        "item" : "10",
+        "count" : "2971"
+      }, {
+        "item" : "1",
+        "count" : "1754"
+      }, {
+        "item" : "2",
+        "count" : "641"
+      }, {
+        "item" : "20",
+        "count" : "599"
+      }, {
+        "item" : "4",
+        "count" : "488"
+      }, {
+        "item" : "5",
+        "count" : "438"
+      }, {
+        "item" : "30",
+        "count" : "324"
+      }, {
+        "item" : "4.1",
+        "count" : "314"
+      }, {
+        "item" : "3.1",
+        "count" : "284"
+      }, {
+        "item" : "40",
+        "count" : "273"
+      }, {
+        "item" : "5.2",
+        "count" : "226"
+      }, {
+        "item" : "3",
+        "count" : "215"
+      }, {
+        "item" : "50",
+        "count" : "214"
+      }, {
+        "item" : "8",
+        "count" : "202"
+      }, {
+        "item" : "6.3",
+        "count" : "197"
+      }, {
+        "item" : "60",
+        "count" : "194"
+      }, {
+        "item" : "12",
+        "count" : "176"
+      }, {
+        "item" : "70",
+        "count" : "155"
+      }, {
+        "item" : "16",
+        "count" : "137"
+      }, {
+        "item" : "80",
+        "count" : "129"
+      } ],
+      "smallest" : "0",
+      "count" : "19332",
+      "cardinality" : "19332"
+    },
+    "format" : { }
+  }, {
+    "id" : 540862985,
+    "name" : "Indicator Bacteria",
+    "dataTypeName" : "text",
+    "description" : "This field indicates the bacteria that was tested for. Values will be either Escherichia coli, represented in the field as E.coli, or enterococcus. A blank field indicates that the change in beach status reflected a non-bacteria situation as indicated in the “Status Reason” column.",
+    "fieldName" : "indicator_bacteria",
+    "position" : 8,
+    "renderTypeName" : "text",
+    "tableColumnId" : 138019200,
+    "cachedContents" : {
+      "non_null" : "18638",
+      "largest" : "Enterococcus",
+      "null" : "694",
+      "top" : [ {
+        "item" : "E. coli",
+        "count" : "7547"
+      }, {
+        "item" : "E.coli",
+        "count" : "7512"
+      }, {
+        "item" : "Enterococci",
+        "count" : "1929"
+      }, {
+        "item" : "Enterococcus",
+        "count" : "1650"
+      } ],
+      "smallest" : "E.coli",
+      "count" : "19332",
+      "cardinality" : "19332"
+    },
+    "format" : { }
+  }, {
+    "id" : 540862983,
+    "name" : "Beach Status",
+    "dataTypeName" : "text",
+    "description" : "This field  indicates the status of the beach as it relates to water quality data, options are “Open”, “Closed”, “Reopened”, “Open with Advisory”, “Off - Season”. “Open with Advisory” is used for the first exceedance at Category 1 beaches. Based on data from previous seasons and the conditions that day, the likelihood that it was safe to swim at the time was high. Varying operating schedules are not taken into account. ",
+    "fieldName" : "beach_status",
+    "position" : 9,
+    "renderTypeName" : "text",
+    "tableColumnId" : 136281952,
+    "cachedContents" : {
+      "non_null" : "18693",
+      "largest" : "Reopened",
+      "null" : "639",
+      "top" : [ {
+        "item" : "Open",
+        "count" : "11955"
+      }, {
+        "item" : "Closed",
+        "count" : "3458"
+      }, {
+        "item" : "Off - Season",
+        "count" : "1790"
+      }, {
+        "item" : "Reopened",
+        "count" : "1193"
+      }, {
+        "item" : "Open with Advisory",
+        "count" : "274"
+      }, {
+        "item" : "n/a",
+        "count" : "20"
+      }, {
+        "item" : "Open with advisory",
+        "count" : "2"
+      }, {
+        "item" : "Off-Season",
+        "count" : "1"
+      } ],
+      "smallest" : "Closed",
+      "count" : "19332",
+      "cardinality" : "19332"
+    },
+    "format" : { }
+  }, {
+    "id" : 540862984,
+    "name" : "Status Reason",
+    "dataTypeName" : "text",
+    "description" : "Please see this link for a description of some of the common Status Reasons that are used while the beach is operating: https://parks.ny.gov/recreation/swimming/beach-results/documents/results/BeachResults.pdf   Note: For entries without a sample result, \"Beach Status\" and \"Status Reason\" applies to the sample date listed. When a sample result is included in an entry, the \"Beach Status\" and \"Status Reason\" applies to the day following the sample date.",
+    "fieldName" : "status_reason",
+    "position" : 10,
+    "renderTypeName" : "text",
+    "tableColumnId" : 136281951,
+    "cachedContents" : {
+      "non_null" : "9280",
+      "largest" : "Weather",
+      "null" : "10052",
+      "top" : [ {
+        "item" : "n/a",
+        "count" : "2092"
+      }, {
+        "item" : "Closed for end of season",
+        "count" : "1408"
+      }, {
+        "item" : "Exceedance",
+        "count" : "1219"
+      }, {
+        "item" : "Preseason",
+        "count" : "1142"
+      }, {
+        "item" : "Clear after resample",
+        "count" : "938"
+      }, {
+        "item" : "Other",
+        "count" : "412"
+      }, {
+        "item" : "Predicted satisfactory (model)",
+        "count" : "356"
+      }, {
+        "item" : "Harmful Algal Bloom",
+        "count" : "333"
+      }, {
+        "item" : "Preemptive: rainfall",
+        "count" : "268"
+      }, {
+        "item" : "No lifeguard",
+        "count" : "169"
+      }, {
+        "item" : "Blue-green algae",
+        "count" : "165"
+      }, {
+        "item" : "Weather",
+        "count" : "141"
+      }, {
+        "item" : "Harmful Algal Bloom clear",
+        "count" : "131"
+      }, {
+        "item" : "Blue-green algae clear",
+        "count" : "99"
+      }, {
+        "item" : "Predicted exceedance (model)",
+        "count" : "92"
+      }, {
+        "item" : "No model: previous day's E.coli",
+        "count" : "78"
+      }, {
+        "item" : "High waves",
+        "count" : "65"
+      }, {
+        "item" : "Preemptive: sewage overflow",
+        "count" : "55"
+      }, {
+        "item" : "Preemptive: turbidity",
+        "count" : "52"
+      }, {
+        "item" : "Harmful Algal Bloom Clear",
+        "count" : "32"
+      } ],
+      "smallest" : "Blue-green algae",
+      "count" : "19332",
+      "cardinality" : "19332"
+    },
+    "format" : { }
+  } ],
+  "grants" : [ {
+    "inherited" : false,
+    "type" : "viewer",
+    "flags" : [ "public" ]
+  } ],
+  "metadata" : {
+    "rdfSubject" : "0",
+    "rdfClass" : "",
+    "jsonQuery" : {
+      "order" : [ {
+        "columnFieldName" : "state_park_beach",
+        "ascending" : true
+      }, {
+        "columnFieldName" : "waterbody",
+        "ascending" : true
+      }, {
+        "columnFieldName" : "indicator_bacteria",
+        "ascending" : true
+      }, {
+        "columnFieldName" : "beach_status",
+        "ascending" : true
+      } ]
+    },
+    "attachments" : [ {
+      "filename" : "OPRHP_BeachWaterTesting_Overview.pdf",
+      "assetId" : "28dcac21-fcda-43ee-9d81-42e4b45b7c3a",
+      "name" : "OPRHP_BeachWaterTesting_Overview.pdf"
+    }, {
+      "filename" : "OPRHP_BeachWaterTesting_DataDictionary.pdf",
+      "assetId" : "acbbfc05-045f-413c-96be-945d7af5ed14",
+      "name" : "OPRHP_BeachWaterTesting_DataDictionary.pdf"
+    } ],
+    "custom_fields" : {
+      "Dataset Summary" : {
+        "Posting Frequency" : "Annually",
+        "Organization" : "Office of Parks, Recreation and Historic Preservation (OPRHP)",
+        "Contact Information" : "news@parks.ny.gov",
+        "Time Period" : "Beginning 2015",
+        "Coverage" : "Statewide",
+        "Granularity" : "Individual beach",
+        "Dataset Owner" : "Office of Parks, Recreation and Historic Preservation (OPRHP)"
+      },
+      "Additional Resources" : {
+        "See Also " : "https://parks.ny.gov/recreation/swimming/",
+        "See Also" : "https://parks.ny.gov/recreation/swimming/beach-results/"
+      },
+      "Disclaimers" : {
+        "Limitations" : "Data reported may vary by season with operational considerations. This dataset does not include harmful algal bloom reports outside of the beach season or at other waterbodies (without a beach) within State Parks."
+      },
+      "Notes" : {
+        "Notes" : "State Park beaches are closed when there is a known or anticipated risk to public health or safety. Potential reasons for elevated bacteria levels may be related to land uses in the watershed, stormwater runoff, naturally occurring sand or soil bacteria, or other factors"
+      },
+      "Dataset Information" : {
+        "Agency" : "Parks, Recreation and Historic Preservation, Office of"
+      }
+    },
+    "availableDisplayTypes" : [ "table", "fatrow", "page" ],
+    "renderTypeConfig" : {
+      "visible" : {
+        "table" : true
+      }
+    }
+  },
+  "owner" : {
+    "id" : "xzik-pf59",
+    "displayName" : "NY Open Data",
+    "profileImageUrlLarge" : "/api/users/xzik-pf59/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/xzik-pf59/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/xzik-pf59/profile_images/TINY",
+    "screenName" : "NY Open Data",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "query" : {
+    "orderBys" : [ {
+      "ascending" : true,
+      "expression" : {
+        "columnId" : 540862977,
+        "type" : "column"
+      }
+    }, {
+      "ascending" : true,
+      "expression" : {
+        "columnId" : 540862978,
+        "type" : "column"
+      }
+    }, {
+      "ascending" : true,
+      "expression" : {
+        "columnId" : 540862985,
+        "type" : "column"
+      }
+    }, {
+      "ascending" : true,
+      "expression" : {
+        "columnId" : 540862983,
+        "type" : "column"
+      }
+    } ]
+  },
+  "rights" : [ "read" ],
+  "tableAuthor" : {
+    "id" : "xzik-pf59",
+    "displayName" : "NY Open Data",
+    "profileImageUrlLarge" : "/api/users/xzik-pf59/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/xzik-pf59/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/xzik-pf59/profile_images/TINY",
+    "screenName" : "NY Open Data",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "tags" : [ "parks", "beaches", "water quality", "exceedance", "e. coli", "entereococcus" ],
+  "flags" : [ "default", "ownerMayBeContacted", "restorable", "restorePossibleForType" ]
+}

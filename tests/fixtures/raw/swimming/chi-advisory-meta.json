@@ -1,0 +1,706 @@
+{
+  "id" : "xvsz-3xcj",
+  "name" : "Beach E. coli Predictions",
+  "assetType" : "dataset",
+  "attribution" : "City of Chicago",
+  "attributionLink" : "https://www.cityofchicago.org",
+  "averageRating" : 0,
+  "category" : "Parks & Recreation",
+  "createdAt" : 1489530571,
+  "description" : "The Chicago Park District issues swim advisories at beaches along Chicago's Lake Michigan lakefront based on E. coli levels.  This dataset shows predicted E. coli levels based on an experimental analytical modeling approach.",
+  "diciBackend" : false,
+  "displayType" : "table",
+  "downloadCount" : 5559,
+  "hideFromCatalog" : false,
+  "hideFromDataJson" : false,
+  "indexUpdatedAt" : 1536036969,
+  "locked" : false,
+  "newBackend" : true,
+  "numberOfComments" : 0,
+  "oid" : 26443784,
+  "provenance" : "official",
+  "publicationAppendEnabled" : false,
+  "publicationDate" : 1500918799,
+  "publicationGroup" : 14085240,
+  "publicationStage" : "published",
+  "rowClass" : "",
+  "rowIdentifierColumnId" : 312520667,
+  "rowsUpdatedAt" : 1756788907,
+  "rowsUpdatedBy" : "h76r-w5gk",
+  "tableId" : 14350265,
+  "totalTimesRated" : 0,
+  "viewCount" : 44712,
+  "viewLastModified" : 1531410023,
+  "viewType" : "tabular",
+  "approvals" : [ {
+    "reviewedAt" : 1500918799,
+    "reviewedAutomatically" : true,
+    "state" : "approved",
+    "submissionId" : 948513,
+    "submissionObject" : "public_audience_request",
+    "submissionOutcome" : "change_audience",
+    "submittedAt" : 1500918799,
+    "targetAudience" : "public",
+    "workflowId" : 2226,
+    "submissionDetails" : {
+      "permissionType" : "READ"
+    },
+    "submissionOutcomeApplication" : {
+      "failureCount" : 0,
+      "status" : "success"
+    },
+    "submitter" : {
+      "id" : "vewm-vupz",
+      "displayName" : "Jonathan Levy"
+    }
+  } ],
+  "clientContext" : {
+    "clientContextVariables" : [ ],
+    "inheritedVariables" : { }
+  },
+  "columns" : [ {
+    "id" : 312520663,
+    "name" : "Beach Name",
+    "dataTypeName" : "text",
+    "fieldName" : "beach_name",
+    "position" : 1,
+    "renderTypeName" : "text",
+    "tableColumnId" : 44799363,
+    "width" : 188,
+    "cachedContents" : {
+      "largest" : "Rogers",
+      "non_null" : "11385",
+      "null" : "0",
+      "top" : [ {
+        "item" : "12th Street",
+        "count" : "759"
+      }, {
+        "item" : "57th Street",
+        "count" : "759"
+      }, {
+        "item" : "Foster",
+        "count" : "759"
+      }, {
+        "item" : "Hartigan (Albion)",
+        "count" : "759"
+      }, {
+        "item" : "Howard",
+        "count" : "759"
+      }, {
+        "item" : "Juneway",
+        "count" : "759"
+      }, {
+        "item" : "Leone",
+        "count" : "759"
+      }, {
+        "item" : "Margaret T Burroughs (31st)",
+        "count" : "759"
+      }, {
+        "item" : "Marion Mahony Griffin (Jarvis)",
+        "count" : "759"
+      }, {
+        "item" : "North Avenue",
+        "count" : "759"
+      }, {
+        "item" : "Oak Street",
+        "count" : "759"
+      }, {
+        "item" : "Oakwood",
+        "count" : "759"
+      }, {
+        "item" : "Ohio Street",
+        "count" : "759"
+      }, {
+        "item" : "Osterman",
+        "count" : "759"
+      }, {
+        "item" : "Rogers",
+        "count" : "759"
+      } ],
+      "smallest" : "12th Street",
+      "not_null" : "4110",
+      "count" : "11385",
+      "cardinality" : "15"
+    },
+    "format" : {
+      "displayStyle" : "plain",
+      "align" : "left",
+      "aggregate" : "count"
+    }
+  }, {
+    "id" : 312520664,
+    "name" : "Date",
+    "dataTypeName" : "calendar_date",
+    "fieldName" : "date",
+    "position" : 2,
+    "renderTypeName" : "calendar_date",
+    "tableColumnId" : 44799364,
+    "width" : 119,
+    "cachedContents" : {
+      "largest" : "2025-09-01T00:00:00.000",
+      "non_null" : "11385",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2017-05-26T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-05-27T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-05-28T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-05-29T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-05-30T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-05-31T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-01T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-02T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-03T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-04T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-05T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-06T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-07T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-08T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-09T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-10T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-11T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-12T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-13T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2017-06-14T00:00:00.000",
+        "count" : "15"
+      } ],
+      "smallest" : "2017-05-26T00:00:00.000",
+      "not_null" : "4110",
+      "count" : "11385",
+      "cardinality" : "759"
+    },
+    "format" : {
+      "view" : "date",
+      "align" : "left"
+    }
+  }, {
+    "id" : 312520665,
+    "name" : "Prediction Source",
+    "dataTypeName" : "text",
+    "description" : "Which model or source created the prediction",
+    "fieldName" : "prediction_source",
+    "position" : 3,
+    "renderTypeName" : "text",
+    "tableColumnId" : 44799491,
+    "width" : 170,
+    "cachedContents" : {
+      "largest" : "DNA Model",
+      "non_null" : "11385",
+      "null" : "0",
+      "top" : [ {
+        "item" : "DNA Model",
+        "count" : "11385"
+      } ],
+      "smallest" : "DNA Model",
+      "not_null" : "4110",
+      "count" : "11385",
+      "cardinality" : "1"
+    },
+    "format" : {
+      "displayStyle" : "plain",
+      "align" : "left"
+    }
+  }, {
+    "id" : 312520666,
+    "name" : "Predicted Level",
+    "dataTypeName" : "number",
+    "description" : "Predicted E. coli level in Colony Forming Units (CFU) per 100 ml of water",
+    "fieldName" : "predicted_level",
+    "position" : 4,
+    "renderTypeName" : "number",
+    "tableColumnId" : 44799365,
+    "width" : 163,
+    "cachedContents" : {
+      "largest" : "743.3",
+      "non_null" : "11385",
+      "average" : "133.1888278388278",
+      "null" : "0",
+      "top" : [ {
+        "item" : "43.4",
+        "count" : "21"
+      }, {
+        "item" : "36.9",
+        "count" : "21"
+      }, {
+        "item" : "42.7",
+        "count" : "20"
+      }, {
+        "item" : "48.7",
+        "count" : "20"
+      }, {
+        "item" : "45.8",
+        "count" : "20"
+      }, {
+        "item" : "52.3",
+        "count" : "19"
+      }, {
+        "item" : "42.1",
+        "count" : "18"
+      }, {
+        "item" : "62.9",
+        "count" : "18"
+      }, {
+        "item" : "40.8",
+        "count" : "18"
+      }, {
+        "item" : "43.9",
+        "count" : "17"
+      }, {
+        "item" : "45.1",
+        "count" : "17"
+      }, {
+        "item" : "41.6",
+        "count" : "17"
+      }, {
+        "item" : "42.4",
+        "count" : "16"
+      }, {
+        "item" : "79.1",
+        "count" : "16"
+      }, {
+        "item" : "35.6",
+        "count" : "16"
+      }, {
+        "item" : "40.3",
+        "count" : "16"
+      }, {
+        "item" : "50.6",
+        "count" : "16"
+      }, {
+        "item" : "50.3",
+        "count" : "16"
+      }, {
+        "item" : "36.3",
+        "count" : "16"
+      }, {
+        "item" : "47.1",
+        "count" : "16"
+      } ],
+      "smallest" : "11.6",
+      "not_null" : "4110",
+      "count" : "11385",
+      "sum" : "363605.5",
+      "cardinality" : "2670"
+    },
+    "format" : {
+      "precisionStyle" : "standard",
+      "noCommas" : "false",
+      "align" : "right"
+    }
+  }, {
+    "id" : 312520667,
+    "name" : "RecordID",
+    "dataTypeName" : "text",
+    "description" : "A unique identifier of each record in this dataset.",
+    "fieldName" : "recordid",
+    "position" : 5,
+    "renderTypeName" : "text",
+    "tableColumnId" : 44799368,
+    "width" : 141,
+    "cachedContents" : {
+      "largest" : "Rogers20250901",
+      "non_null" : "11385",
+      "null" : "0",
+      "top" : [ {
+        "item" : "12thStreet20170527",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170528",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170529",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170530",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170531",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170601",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170602",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170603",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170604",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170605",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170606",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170607",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170608",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170609",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170610",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170611",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170612",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170613",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170614",
+        "count" : "1"
+      }, {
+        "item" : "12thStreet20170615",
+        "count" : "1"
+      } ],
+      "smallest" : "12thStreet20170526",
+      "not_null" : "4110",
+      "count" : "11385",
+      "cardinality" : "11385"
+    },
+    "format" : {
+      "displayStyle" : "plain",
+      "align" : "left"
+    }
+  }, {
+    "id" : 312520668,
+    "name" : "Latitude",
+    "dataTypeName" : "number",
+    "fieldName" : "latitude",
+    "position" : 6,
+    "renderTypeName" : "number",
+    "tableColumnId" : 46046530,
+    "width" : 100,
+    "cachedContents" : {
+      "largest" : "42.0224",
+      "non_null" : "11385",
+      "average" : "41.93916",
+      "null" : "0",
+      "top" : [ {
+        "item" : "41.7911",
+        "count" : "759"
+      }, {
+        "item" : "41.8211",
+        "count" : "759"
+      }, {
+        "item" : "41.8393",
+        "count" : "759"
+      }, {
+        "item" : "41.8638",
+        "count" : "759"
+      }, {
+        "item" : "41.8935",
+        "count" : "759"
+      }, {
+        "item" : "41.9032",
+        "count" : "759"
+      }, {
+        "item" : "41.9148",
+        "count" : "759"
+      }, {
+        "item" : "41.9785",
+        "count" : "759"
+      }, {
+        "item" : "41.9877",
+        "count" : "759"
+      }, {
+        "item" : "42.0027",
+        "count" : "759"
+      }, {
+        "item" : "42.0131",
+        "count" : "759"
+      }, {
+        "item" : "42.0161",
+        "count" : "759"
+      }, {
+        "item" : "42.0188",
+        "count" : "759"
+      }, {
+        "item" : "42.0213",
+        "count" : "759"
+      }, {
+        "item" : "42.0224",
+        "count" : "759"
+      } ],
+      "smallest" : "41.7911",
+      "not_null" : "4110",
+      "count" : "11385",
+      "sum" : "114493.9068",
+      "cardinality" : "15"
+    },
+    "format" : { }
+  }, {
+    "id" : 312520669,
+    "name" : "Longitude",
+    "dataTypeName" : "number",
+    "fieldName" : "longitude",
+    "position" : 7,
+    "renderTypeName" : "number",
+    "tableColumnId" : 46046543,
+    "width" : 100,
+    "cachedContents" : {
+      "largest" : "-87.5797",
+      "non_null" : "11385",
+      "average" : "-87.63664",
+      "null" : "0",
+      "top" : [ {
+        "item" : "-87.6674",
+        "count" : "759"
+      }, {
+        "item" : "-87.6666",
+        "count" : "759"
+      }, {
+        "item" : "-87.6663",
+        "count" : "759"
+      }, {
+        "item" : "-87.6647",
+        "count" : "759"
+      }, {
+        "item" : "-87.6635",
+        "count" : "759"
+      }, {
+        "item" : "-87.6564",
+        "count" : "759"
+      }, {
+        "item" : "-87.6545",
+        "count" : "759"
+      }, {
+        "item" : "-87.6515",
+        "count" : "759"
+      }, {
+        "item" : "-87.6273",
+        "count" : "759"
+      }, {
+        "item" : "-87.6235",
+        "count" : "759"
+      }, {
+        "item" : "-87.6152",
+        "count" : "759"
+      }, {
+        "item" : "-87.6082",
+        "count" : "759"
+      }, {
+        "item" : "-87.6072",
+        "count" : "759"
+      }, {
+        "item" : "-87.5976",
+        "count" : "759"
+      }, {
+        "item" : "-87.5797",
+        "count" : "759"
+      } ],
+      "smallest" : "-87.6674",
+      "not_null" : "4110",
+      "count" : "11385",
+      "sum" : "-239248.0272",
+      "cardinality" : "15"
+    },
+    "format" : { }
+  }, {
+    "id" : 312520670,
+    "name" : "Location",
+    "dataTypeName" : "location",
+    "fieldName" : "location",
+    "position" : 8,
+    "renderTypeName" : "location",
+    "tableColumnId" : 46046556,
+    "width" : 142,
+    "format" : { }
+  }, {
+    "id" : 303575152,
+    "name" : "Community Areas",
+    "dataTypeName" : "number",
+    "fieldName" : ":@computed_region_vrxf_vc4k",
+    "position" : 13,
+    "renderTypeName" : "number",
+    "tableColumnId" : 48013748,
+    "computationStrategy" : {
+      "source_columns" : [ "location" ],
+      "type" : "georegion_match_on_point",
+      "parameters" : {
+        "region" : "_vrxf-vc4k",
+        "primary_key" : "_feature_id"
+      }
+    },
+    "format" : { }
+  }, {
+    "id" : 303575153,
+    "name" : "Zip Codes",
+    "dataTypeName" : "number",
+    "fieldName" : ":@computed_region_6mkv_f3dw",
+    "position" : 14,
+    "renderTypeName" : "number",
+    "tableColumnId" : 48013749,
+    "computationStrategy" : {
+      "source_columns" : [ "location" ],
+      "type" : "georegion_match_on_point",
+      "parameters" : {
+        "region" : "_6mkv-f3dw",
+        "primary_key" : "_feature_id"
+      }
+    },
+    "format" : { }
+  }, {
+    "id" : 303575154,
+    "name" : "Boundaries - ZIP Codes",
+    "dataTypeName" : "number",
+    "fieldName" : ":@computed_region_rpca_8um6",
+    "position" : 15,
+    "renderTypeName" : "number",
+    "tableColumnId" : 48013750,
+    "computationStrategy" : {
+      "source_columns" : [ "location" ],
+      "type" : "georegion_match_on_point",
+      "parameters" : {
+        "region" : "_rpca-8um6",
+        "primary_key" : "_feature_id"
+      }
+    },
+    "format" : { }
+  }, {
+    "id" : 303575155,
+    "name" : "Census Tracts",
+    "dataTypeName" : "number",
+    "fieldName" : ":@computed_region_bdys_3d7i",
+    "position" : 16,
+    "renderTypeName" : "number",
+    "tableColumnId" : 48013751,
+    "computationStrategy" : {
+      "source_columns" : [ "location" ],
+      "type" : "georegion_match_on_point",
+      "parameters" : {
+        "region" : "_bdys-3d7i",
+        "primary_key" : "_feature_id"
+      }
+    },
+    "format" : { }
+  }, {
+    "id" : 303575156,
+    "name" : "Wards",
+    "dataTypeName" : "number",
+    "fieldName" : ":@computed_region_43wa_7qmu",
+    "position" : 17,
+    "renderTypeName" : "number",
+    "tableColumnId" : 48013752,
+    "computationStrategy" : {
+      "source_columns" : [ "location" ],
+      "type" : "georegion_match_on_point",
+      "parameters" : {
+        "region" : "_43wa-7qmu",
+        "primary_key" : "_feature_id"
+      }
+    },
+    "format" : { }
+  } ],
+  "grants" : [ {
+    "inherited" : false,
+    "type" : "viewer",
+    "flags" : [ "public" ]
+  } ],
+  "metadata" : {
+    "rdfSubject" : "0",
+    "jsonQuery" : {
+      "order" : [ {
+        "columnFieldName" : "date",
+        "ascending" : false
+      }, {
+        "columnFieldName" : "beach_name",
+        "ascending" : true
+      } ]
+    },
+    "rdfClass" : "",
+    "custom_fields" : {
+      "Metadata" : {
+        "Time Period" : "2017 - Current",
+        "Frequency" : "Daily (in season)",
+        "Data Owner" : "Chicago Park District"
+      }
+    },
+    "rowIdentifier" : 312520667,
+    "rowLabel" : "Prediction",
+    "availableDisplayTypes" : [ "table", "fatrow", "page" ],
+    "renderTypeConfig" : {
+      "visible" : {
+        "table" : true
+      }
+    }
+  },
+  "owner" : {
+    "id" : "vewm-vupz",
+    "displayName" : "Jonathan Levy",
+    "screenName" : "Jonathan Levy",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "query" : {
+    "orderBys" : [ {
+      "ascending" : false,
+      "expression" : {
+        "columnId" : 312520664,
+        "type" : "column"
+      }
+    }, {
+      "ascending" : true,
+      "expression" : {
+        "columnId" : 312520663,
+        "type" : "column"
+      }
+    } ]
+  },
+  "rights" : [ "read" ],
+  "tableAuthor" : {
+    "id" : "vewm-vupz",
+    "displayName" : "Jonathan Levy",
+    "screenName" : "Jonathan Levy",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "tags" : [ "beaches", "parks", "chicago park district", "open spaces", "parks & recreation", "recreation", "water" ],
+  "flags" : [ "default", "ownerMayBeContacted", "restorable", "restorePossibleForType" ]
+}

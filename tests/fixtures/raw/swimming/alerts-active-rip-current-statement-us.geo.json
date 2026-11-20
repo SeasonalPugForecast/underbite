@@ -1,0 +1,973 @@
+{
+    "@context": [
+        "https://geojson.org/geojson-ld/geojson-context.jsonld",
+        {
+            "@version": "1.1",
+            "wx": "https://api.weather.gov/ontology#",
+            "@vocab": "https://api.weather.gov/ontology#"
+        }
+    ],
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.90053203ea6d849dd47f6c6df2f14a91ec694206.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.90053203ea6d849dd47f6c6df2f14a91ec694206.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.90053203ea6d849dd47f6c6df2f14a91ec694206.001.1",
+                "areaDesc": "San Juan and Vicinity; Northeast; North Central; Northwest; Mayaguez and Vicinity",
+                "geocode": {
+                    "SAME": [
+                        "072021",
+                        "072031",
+                        "072033",
+                        "072061",
+                        "072127",
+                        "072135",
+                        "072137",
+                        "072139",
+                        "072029",
+                        "072037",
+                        "072053",
+                        "072069",
+                        "072087",
+                        "072089",
+                        "072103",
+                        "072119",
+                        "072013",
+                        "072017",
+                        "072051",
+                        "072054",
+                        "072091",
+                        "072143",
+                        "072145",
+                        "072005",
+                        "072027",
+                        "072065",
+                        "072071",
+                        "072115",
+                        "072003",
+                        "072011",
+                        "072067",
+                        "072097",
+                        "072099",
+                        "072117",
+                        "072125"
+                    ],
+                    "UGC": [
+                        "PRZ001",
+                        "PRZ002",
+                        "PRZ005",
+                        "PRZ008",
+                        "PRZ010"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PRZ001",
+                    "https://api.weather.gov/zones/forecast/PRZ002",
+                    "https://api.weather.gov/zones/forecast/PRZ005",
+                    "https://api.weather.gov/zones/forecast/PRZ008",
+                    "https://api.weather.gov/zones/forecast/PRZ010"
+                ],
+                "references": [],
+                "sent": "2026-11-20T16:26:00-04:00",
+                "effective": "2026-11-20T16:26:00-04:00",
+                "onset": "2026-11-20T16:26:00-04:00",
+                "expires": "2026-11-21T00:30:00-04:00",
+                "ends": "2026-11-21T18:00:00-04:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Rip Current Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS San Juan PR",
+                "headline": "Rip Current Statement issued November 20 at 4:26PM AST until November 21 at 6:00PM AST by NWS San Juan PR",
+                "description": "* WHAT...High Rip Current Risk, life-threatening rip current.\n\n* WHERE...From Rincon to Fajardo\n\n* WHEN...Through Saturday afternoon\n\n* IMPACTS...Rip currents can sweep even the best swimmers away\nfrom shore into deeper water, where it becomes difficult to\nreturn to safety.",
+                "instruction": "There is a high risk of rip currents.\n\nRip currents are powerful channels of water flowing quickly away\nfrom shore, which occur most often at low spots or breaks in the\nsandbar and in the vicinity of structures such as groins, jetties\nand piers. Heed the advice of lifeguards, beach patrol flags and\nsigns.\n\nIf you become caught in a rip current, yell for help. Remain\ncalm, do not exhaust yourself and stay afloat while waiting for\nhelp. If you have to swim out of a rip current, swim parallel to\nshore and back toward the beach when possible. Do not attempt to\nswim directly against a rip current as you will tire quickly.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWSJU"
+                    ],
+                    "WMOidentifier": [
+                        "WHCA42 TJSJ 202026"
+                    ],
+                    "NWSheadline": [
+                        "HIGH RIP CURRENT RISK IN EFFECT THROUGH SATURDAY AFTERNOON"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.TJSJ.RP.S.0027.261120T2026Z-261121T2200Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-21T18:00:00-04:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "RPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.2f505c1cf3f6a7257ff3d33d93b4726094fe7420.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.2f505c1cf3f6a7257ff3d33d93b4726094fe7420.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.2f505c1cf3f6a7257ff3d33d93b4726094fe7420.001.1",
+                "areaDesc": "Mobile Coastal; Baldwin Coastal; Escambia Coastal; Santa Rosa Coastal; Okaloosa Coastal",
+                "geocode": {
+                    "SAME": [
+                        "001097",
+                        "001003",
+                        "012033",
+                        "012113",
+                        "012091"
+                    ],
+                    "UGC": [
+                        "ALZ265",
+                        "ALZ266",
+                        "FLZ202",
+                        "FLZ204",
+                        "FLZ206"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/ALZ265",
+                    "https://api.weather.gov/zones/forecast/ALZ266",
+                    "https://api.weather.gov/zones/forecast/FLZ202",
+                    "https://api.weather.gov/zones/forecast/FLZ204",
+                    "https://api.weather.gov/zones/forecast/FLZ206"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.971452f96c274733cf22fa938bc3e3e28f9309bd.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.971452f96c274733cf22fa938bc3e3e28f9309bd.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-20T05:02:00-06:00"
+                    }
+                ],
+                "sent": "2026-11-20T13:46:00-06:00",
+                "effective": "2026-11-20T13:46:00-06:00",
+                "onset": "2026-11-20T13:46:00-06:00",
+                "expires": "2026-11-20T22:00:00-06:00",
+                "ends": "2026-11-21T06:00:00-06:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Rip Current Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Mobile AL",
+                "headline": "Rip Current Statement issued November 20 at 1:46PM CST until November 21 at 6:00AM CST by NWS Mobile AL",
+                "description": "* WHAT...Dangerous rip currents.\n\n* WHERE...In Alabama, Mobile Coastal and Baldwin Coastal\nCounties. In Florida, Escambia Coastal, Santa Rosa Coastal and\nOkaloosa Coastal Counties.\n\n* WHEN...Through late tonight.\n\n* IMPACTS...Rip currents can sweep even the best swimmers away\nfrom shore into deeper water.",
+                "instruction": "Swim near a lifeguard. If caught in a rip current, relax and\nfloat. Don't swim against the current. If able, swim in a\ndirection following the shoreline. If unable to escape, face the\nshore and call or wave for help.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWMOB"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS44 KMOB 201946"
+                    ],
+                    "NWSheadline": [
+                        "HIGH RIP CURRENT RISK NOW IN EFFECT THROUGH LATE TONIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.EXT.KMOB.RP.S.0031.000000T0000Z-261121T1200Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-21T06:00:00-06:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1b848c8575a6260e231811e76575b653edd2fe90.001.2,2026-11-19T19:38:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.7e9f746dca9c6e69adc35617bfb3296668d7a142.001.2,2026-11-19T11:56:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.0a0078188dc8fb018d6c8e460cc66d5ea3b2fe1e.001.1,2026-11-19T01:53:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.809cc75bc8eb9e389c0bf3d6b7aadfc9dd59348b.001.2,2026-11-18T20:31:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.0bd36d832ce219d99e137466d536e108ff958032.001.1,2026-11-18T12:11:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d943aa973f5a6468d161b1d1ed16a10c41544406.001.1,2026-11-18T05:08:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.63265ac8c0895f51cf2513a07dedc5da0b745a6a.001.2,2026-11-17T21:20:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5aaf381eca04eb02131ad04afeb7ddbb455ca5b4.001.2,2026-11-17T11:15:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.790fc5f2cfc7b28c2211354496f2f6978ec02074.002.2,2026-11-16T18:56:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.790fc5f2cfc7b28c2211354496f2f6978ec02074.001.2,2026-11-16T18:56:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.c00ecc2b6e764ea6bc42b2595ff6ec64231991f6.002.2,2026-11-16T11:27:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.c00ecc2b6e764ea6bc42b2595ff6ec64231991f6.001.2,2026-11-16T11:27:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f42a75029320c76172cde71a3f207e772c3c1a90.002.1,2026-11-16T03:01:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f42a75029320c76172cde71a3f207e772c3c1a90.001.1,2026-11-16T03:01:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.dc7d82f69dac119ad9e159437de3b807aa5ee0cc.001.1,2026-11-15T23:37:00-06:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "RPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.56c3d9cd681b61ce5e4fcac2a6acfb56593cabbe.001.5",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.56c3d9cd681b61ce5e4fcac2a6acfb56593cabbe.001.5",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.56c3d9cd681b61ce5e4fcac2a6acfb56593cabbe.001.5",
+                "areaDesc": "Coastal Flagler",
+                "geocode": {
+                    "SAME": [
+                        "012035"
+                    ],
+                    "UGC": [
+                        "FLZ138"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/FLZ138"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a8094d2fbc22c7077a041b0fe625afec219ee063.001.5",
+                        "identifier": "urn:oid:2.49.0.1.840.0.a8094d2fbc22c7077a041b0fe625afec219ee063.001.5",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-20T11:40:00-05:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.50d34416579a97f2fc160e2d13f6788bb3330b5b.002.3",
+                        "identifier": "urn:oid:2.49.0.1.840.0.50d34416579a97f2fc160e2d13f6788bb3330b5b.002.3",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-20T01:30:00-05:00"
+                    }
+                ],
+                "sent": "2026-11-20T12:37:00-05:00",
+                "effective": "2026-11-20T12:37:00-05:00",
+                "onset": "2026-11-20T12:37:00-05:00",
+                "expires": "2026-11-21T04:00:00-05:00",
+                "ends": "2026-11-22T07:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Rip Current Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Jacksonville FL",
+                "headline": "Rip Current Statement issued November 20 at 12:37PM EST until November 22 at 7:00AM EST by NWS Jacksonville FL",
+                "description": "* WHAT...For the Coastal Flood Warning, significant coastal\nflooding. For the High Surf Advisory, large breaking waves of 8\nto 10 feet. For the High Rip Current Risk, dangerous rip\ncurrents.\n\n* WHERE...Coastal Flagler County.\n\n* WHEN...For the Coastal Flood Warning, until 7 AM EST Sunday.\nFor the High Rip Current Risk, through Sunday morning.\n\n* IMPACTS...Numerous roads may be closed. Low lying property\nincluding homes, businesses, and some critical infrastructure\nwill be inundated. Some shoreline erosion will occur. Dangerous\nswimming and surfing conditions and localized beach erosion. Rip\ncurrents can sweep even the best swimmers away from shore into\ndeeper water.",
+                "instruction": "Take the necessary actions to protect flood-prone property. If\ntravel is required, do not drive around barricades or through\nwater of unknown depth.\n\nInexperienced swimmers should remain out of the water due to\ndangerous surf conditions.\n\nSwim near a lifeguard. If caught in a rip current, relax and\nfloat. Don't swim against the current. If able, swim in a\ndirection following the shoreline. If unable to escape, face the\nshore and call or wave for help.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWJAX"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS42 KJAX 201737"
+                    ],
+                    "NWSheadline": [
+                        "COASTAL FLOOD WARNING IN EFFECT UNTIL 7 AM EST SUNDAY... ...HIGH SURF ADVISORY REMAINS IN EFFECT UNTIL 7 AM EST SUNDAY... ...HIGH RIP CURRENT RISK REMAINS IN EFFECT THROUGH SUNDAY MORNING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KJAX.RP.S.0035.000000T0000Z-261122T1200Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-22T07:00:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d179c53be0d7b2027ff9d03be47df58054b6cfe0.001.3,2026-11-19T08:55:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2e72766f0fdd16056810493e268d07cbf183a290.001.2,2026-11-18T13:41:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.44ade7ded803cc38953fd2140d21878398462cc7.001.2,2026-11-18T00:25:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.88b003515cd0a99919de7a82eac92930799c471a.001.2,2026-11-18T13:39:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.68920350d7f171e42d82422c9aa85eba8b3590f7.001.2,2026-11-17T13:50:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fa1d9ddf55bf92d69c7546daadcf7003eca05e0d.001.2,2026-11-16T23:20:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.0b326ba90ad9e0a4219c4f57043ddc7013904200.001.1,2026-11-16T13:41:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.281230b43448aa6df96f8efbfb09f1b975191d42.002.1,2026-11-16T03:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.39070d22ebe759a75fcfe4661f746f196d7e9233.001.1,2026-11-15T13:23:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "RPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.56c3d9cd681b61ce5e4fcac2a6acfb56593cabbe.006.2",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.56c3d9cd681b61ce5e4fcac2a6acfb56593cabbe.006.2",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.56c3d9cd681b61ce5e4fcac2a6acfb56593cabbe.006.2",
+                "areaDesc": "Coastal Glynn; Coastal Camden",
+                "geocode": {
+                    "SAME": [
+                        "013127",
+                        "013039"
+                    ],
+                    "UGC": [
+                        "GAZ154",
+                        "GAZ166"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/GAZ154",
+                    "https://api.weather.gov/zones/forecast/GAZ166"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a8094d2fbc22c7077a041b0fe625afec219ee063.005.2",
+                        "identifier": "urn:oid:2.49.0.1.840.0.a8094d2fbc22c7077a041b0fe625afec219ee063.005.2",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-20T11:40:00-05:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.50d34416579a97f2fc160e2d13f6788bb3330b5b.004.2",
+                        "identifier": "urn:oid:2.49.0.1.840.0.50d34416579a97f2fc160e2d13f6788bb3330b5b.004.2",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-20T01:30:00-05:00"
+                    }
+                ],
+                "sent": "2026-11-20T12:37:00-05:00",
+                "effective": "2026-11-20T12:37:00-05:00",
+                "onset": "2026-11-20T12:37:00-05:00",
+                "expires": "2026-11-21T04:00:00-05:00",
+                "ends": "2026-11-22T07:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Rip Current Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Jacksonville FL",
+                "headline": "Rip Current Statement issued November 20 at 12:37PM EST until November 22 at 7:00AM EST by NWS Jacksonville FL",
+                "description": "* WHAT...For the High Surf Advisory, large breaking waves of 8 to\n10 feet. For the High Rip Current Risk, dangerous rip currents.\n\n* WHERE...Southeast Georgia Beaches.\n\n* WHEN...For the High Surf Advisory, until 7 AM EST Sunday. For\nthe High Rip Current Risk, through Sunday morning.\n\n* IMPACTS...Dangerous swimming and surfing conditions and\nlocalized beach erosion. Rip currents can sweep even the best\nswimmers away from shore into deeper water.",
+                "instruction": "Inexperienced swimmers should remain out of the water due to\ndangerous surf conditions.\n\nSwim near a lifeguard. If caught in a rip current, relax and\nfloat. Don't swim against the current. If able, swim in a\ndirection following the shoreline. If unable to escape, face the\nshore and call or wave for help.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWJAX"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS42 KJAX 201737"
+                    ],
+                    "NWSheadline": [
+                        "HIGH SURF ADVISORY REMAINS IN EFFECT UNTIL 7 AM EST SUNDAY... ...HIGH RIP CURRENT RISK REMAINS IN EFFECT THROUGH SUNDAY MORNING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KJAX.RP.S.0035.000000T0000Z-261122T1200Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-22T07:00:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d179c53be0d7b2027ff9d03be47df58054b6cfe0.003.2,2026-11-19T08:55:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2e72766f0fdd16056810493e268d07cbf183a290.001.2,2026-11-18T13:41:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.44ade7ded803cc38953fd2140d21878398462cc7.001.2,2026-11-18T00:25:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.88b003515cd0a99919de7a82eac92930799c471a.001.2,2026-11-18T13:39:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.68920350d7f171e42d82422c9aa85eba8b3590f7.002.2,2026-11-17T13:50:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fa1d9ddf55bf92d69c7546daadcf7003eca05e0d.001.2,2026-11-16T23:20:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.0b326ba90ad9e0a4219c4f57043ddc7013904200.001.1,2026-11-16T13:41:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.281230b43448aa6df96f8efbfb09f1b975191d42.001.1,2026-11-16T03:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.39070d22ebe759a75fcfe4661f746f196d7e9233.002.1,2026-11-15T13:23:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "RPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.56c3d9cd681b61ce5e4fcac2a6acfb56593cabbe.005.3",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.56c3d9cd681b61ce5e4fcac2a6acfb56593cabbe.005.3",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.56c3d9cd681b61ce5e4fcac2a6acfb56593cabbe.005.3",
+                "areaDesc": "Coastal Nassau; Coastal Duval; Northeast Coastal St. Johns; Southeast Coastal St. Johns",
+                "geocode": {
+                    "SAME": [
+                        "012089",
+                        "012031",
+                        "012109"
+                    ],
+                    "UGC": [
+                        "FLZ124",
+                        "FLZ125",
+                        "FLZ233",
+                        "FLZ333"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/FLZ124",
+                    "https://api.weather.gov/zones/forecast/FLZ125",
+                    "https://api.weather.gov/zones/forecast/FLZ233",
+                    "https://api.weather.gov/zones/forecast/FLZ333"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a8094d2fbc22c7077a041b0fe625afec219ee063.003.3",
+                        "identifier": "urn:oid:2.49.0.1.840.0.a8094d2fbc22c7077a041b0fe625afec219ee063.003.3",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-20T11:40:00-05:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.50d34416579a97f2fc160e2d13f6788bb3330b5b.004.2",
+                        "identifier": "urn:oid:2.49.0.1.840.0.50d34416579a97f2fc160e2d13f6788bb3330b5b.004.2",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-20T01:30:00-05:00"
+                    }
+                ],
+                "sent": "2026-11-20T12:37:00-05:00",
+                "effective": "2026-11-20T12:37:00-05:00",
+                "onset": "2026-11-20T12:37:00-05:00",
+                "expires": "2026-11-21T04:00:00-05:00",
+                "ends": "2026-11-22T07:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Rip Current Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Jacksonville FL",
+                "headline": "Rip Current Statement issued November 20 at 12:37PM EST until November 22 at 7:00AM EST by NWS Jacksonville FL",
+                "description": "* WHAT...For the High Surf Advisory, large breaking waves of 8 to\n10 feet. For the High Rip Current Risk, dangerous rip currents.\nFor the Coastal Flood Advisory, minor coastal flooding\nexpected.\n\n* WHERE...Coastal Nassau, Coastal Duval, Northeast Coastal St.\nJohns and Southeast Coastal St. Johns Counties.\n\n* WHEN...For the High Surf Advisory, until 7 AM EST Sunday. For\nthe High Rip Current Risk, through Sunday morning. For the\nCoastal Flood Advisory, from 11 PM this evening to 1 PM EST\nSaturday.\n\n* IMPACTS...Flooding of lots, parks, and roads with only\nisolated road closures expected. Dangerous swimming and\nsurfing conditions and localized beach erosion. Rip currents\ncan sweep even the best swimmers away from shore into deeper\nwater.",
+                "instruction": "If travel is required, allow extra time as some roads may be\nclosed. Do not drive around barricades or through water of\nunknown depth. Take the necessary actions to protect flood-prone\nproperty.\n\nInexperienced swimmers should remain out of the water due to\ndangerous surf conditions.\n\nSwim near a lifeguard. If caught in a rip current, relax and\nfloat. Don't swim against the current. If able, swim in a\ndirection following the shoreline. If unable to escape, face the\nshore and call or wave for help.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWJAX"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS42 KJAX 201737"
+                    ],
+                    "NWSheadline": [
+                        "HIGH SURF ADVISORY REMAINS IN EFFECT UNTIL 7 AM EST SUNDAY... ...HIGH RIP CURRENT RISK REMAINS IN EFFECT THROUGH SUNDAY MORNING... ...COASTAL FLOOD ADVISORY REMAINS IN EFFECT FROM 11 PM THIS EVENING TO 1 PM EST SATURDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KJAX.RP.S.0035.000000T0000Z-261122T1200Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-22T07:00:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d179c53be0d7b2027ff9d03be47df58054b6cfe0.003.2,2026-11-19T08:55:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2e72766f0fdd16056810493e268d07cbf183a290.001.2,2026-11-18T13:41:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.44ade7ded803cc38953fd2140d21878398462cc7.001.2,2026-11-18T00:25:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.88b003515cd0a99919de7a82eac92930799c471a.001.2,2026-11-18T13:39:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.68920350d7f171e42d82422c9aa85eba8b3590f7.002.2,2026-11-17T13:50:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.68920350d7f171e42d82422c9aa85eba8b3590f7.001.2,2026-11-17T13:50:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fa1d9ddf55bf92d69c7546daadcf7003eca05e0d.001.2,2026-11-16T23:20:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.0b326ba90ad9e0a4219c4f57043ddc7013904200.001.1,2026-11-16T13:41:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.281230b43448aa6df96f8efbfb09f1b975191d42.002.1,2026-11-16T03:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.39070d22ebe759a75fcfe4661f746f196d7e9233.001.1,2026-11-15T13:23:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "RPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ef2cf1609df4ccaacd0257e7294d1ccf2c1d2855.002.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ef2cf1609df4ccaacd0257e7294d1ccf2c1d2855.002.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.ef2cf1609df4ccaacd0257e7294d1ccf2c1d2855.002.1",
+                "areaDesc": "Coastal Palm Beach County",
+                "geocode": {
+                    "SAME": [
+                        "012099"
+                    ],
+                    "UGC": [
+                        "FLZ168"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/FLZ168"
+                ],
+                "references": [],
+                "sent": "2026-11-20T09:14:00-05:00",
+                "effective": "2026-11-20T09:14:00-05:00",
+                "onset": "2026-11-20T09:14:00-05:00",
+                "expires": "2026-11-20T19:00:00-05:00",
+                "ends": "2026-11-21T19:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Rip Current Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Miami FL",
+                "headline": "Rip Current Statement issued November 20 at 9:14AM EST until November 21 at 7:00PM EST by NWS Miami FL",
+                "description": "* WHAT...Dangerous rip currents.\n\n* WHERE...Coastal Palm Beach County.\n\n* WHEN...Through Saturday evening.\n\n* IMPACTS...Rip currents can sweep even the best swimmers away\nfrom shore into deeper water.",
+                "instruction": "Swim near a lifeguard. If caught in a rip current, relax and\nfloat. Don't swim against the current. If able, swim in a\ndirection following the shoreline. If unable to escape, face the\nshore and call or wave for help.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWMFL"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS42 KMFL 201414"
+                    ],
+                    "NWSheadline": [
+                        "HIGH RIP CURRENT RISK REMAINS IN EFFECT THROUGH SATURDAY EVENING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KMFL.RP.S.0033.000000T0000Z-261122T0000Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-21T19:00:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.3ede6dce89d6f4197a74fd5c6cd0722f2918dbce.001.1,2026-11-20T00:37:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d06c58932df914a93d44b1e5e0b6eae372011ec8.002.2,2026-11-19T16:52:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f5e2af31196e22888e96ea62ad1c3c2c45f6a88c.002.2,2026-11-19T02:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d1c85fe8a8a8094f556763083355a8907cc5a9f7.002.2,2026-11-18T12:45:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d2b2acf25a4a3d130842110080ba86749aff7405.001.2,2026-11-18T02:20:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.30adc7bd83f52158ce6b969cc3f8b1b7313cbb6d.001.2,2026-11-17T16:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.465d2a618eba3d32bc39d27eafaea5f186700dcf.001.2,2026-11-17T08:09:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.644af378dc19013fdc6512fc7cc5699e1cdebf62.001.2,2026-11-17T00:18:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.c04ffec25a74691aef1d1045a51ea1ed34c8cde7.001.2,2026-11-16T15:38:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1afb27938d1ba50e77d0b52846626e0e8165a151.001.1,2026-11-16T12:34:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5121b2661fe9e3d87d633f5bb0585839f17926ba.001.1,2026-11-16T05:18:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.277a1c7682f936432757ccb6e36143cb349d329c.001.1,2026-11-15T22:48:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.af63bf6d621f37e7d58fb3ec8abb7aa20d84d7aa.001.1,2026-11-15T14:21:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "RPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ef2cf1609df4ccaacd0257e7294d1ccf2c1d2855.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ef2cf1609df4ccaacd0257e7294d1ccf2c1d2855.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.ef2cf1609df4ccaacd0257e7294d1ccf2c1d2855.001.1",
+                "areaDesc": "Coastal Broward County; Coastal Miami Dade County",
+                "geocode": {
+                    "SAME": [
+                        "012011",
+                        "012086"
+                    ],
+                    "UGC": [
+                        "FLZ172",
+                        "FLZ173"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/FLZ172",
+                    "https://api.weather.gov/zones/forecast/FLZ173"
+                ],
+                "references": [],
+                "sent": "2026-11-20T09:14:00-05:00",
+                "effective": "2026-11-20T09:14:00-05:00",
+                "onset": "2026-11-20T09:14:00-05:00",
+                "expires": "2026-11-20T19:00:00-05:00",
+                "ends": "2026-11-20T19:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Rip Current Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Miami FL",
+                "headline": "Rip Current Statement issued November 20 at 9:14AM EST until November 20 at 7:00PM EST by NWS Miami FL",
+                "description": "* WHAT...Dangerous rip currents.\n\n* WHERE...Coastal Broward County and Coastal Miami Dade County.\n\n* WHEN...Until 7 PM EST this evening.\n\n* IMPACTS...Rip currents can sweep even the best swimmers away\nfrom shore into deeper water.",
+                "instruction": "Swim near a lifeguard. If caught in a rip current, relax and\nfloat. Don't swim against the current. If able, swim in a\ndirection following the shoreline. If unable to escape, face the\nshore and call or wave for help.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWMFL"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS42 KMFL 201414"
+                    ],
+                    "NWSheadline": [
+                        "HIGH RIP CURRENT RISK REMAINS IN EFFECT UNTIL 7 PM EST THIS EVENING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KMFL.RP.S.0033.000000T0000Z-261121T0000Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-20T19:00:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.3ede6dce89d6f4197a74fd5c6cd0722f2918dbce.002.1,2026-11-20T00:37:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d06c58932df914a93d44b1e5e0b6eae372011ec8.003.1,2026-11-19T16:52:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d06c58932df914a93d44b1e5e0b6eae372011ec8.001.2,2026-11-19T16:52:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f5e2af31196e22888e96ea62ad1c3c2c45f6a88c.003.1,2026-11-19T02:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f5e2af31196e22888e96ea62ad1c3c2c45f6a88c.001.2,2026-11-19T02:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d1c85fe8a8a8094f556763083355a8907cc5a9f7.003.1,2026-11-18T12:45:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d1c85fe8a8a8094f556763083355a8907cc5a9f7.001.2,2026-11-18T12:45:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d2b2acf25a4a3d130842110080ba86749aff7405.003.1,2026-11-18T02:20:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d2b2acf25a4a3d130842110080ba86749aff7405.002.1,2026-11-18T02:20:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.30adc7bd83f52158ce6b969cc3f8b1b7313cbb6d.002.1,2026-11-17T16:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.30adc7bd83f52158ce6b969cc3f8b1b7313cbb6d.001.2,2026-11-17T16:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.465d2a618eba3d32bc39d27eafaea5f186700dcf.002.1,2026-11-17T08:09:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.465d2a618eba3d32bc39d27eafaea5f186700dcf.001.2,2026-11-17T08:09:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.644af378dc19013fdc6512fc7cc5699e1cdebf62.002.1,2026-11-17T00:18:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.644af378dc19013fdc6512fc7cc5699e1cdebf62.001.2,2026-11-17T00:18:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.c04ffec25a74691aef1d1045a51ea1ed34c8cde7.002.1,2026-11-16T15:38:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.c04ffec25a74691aef1d1045a51ea1ed34c8cde7.001.2,2026-11-16T15:38:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1afb27938d1ba50e77d0b52846626e0e8165a151.001.1,2026-11-16T12:34:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5121b2661fe9e3d87d633f5bb0585839f17926ba.001.1,2026-11-16T05:18:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.277a1c7682f936432757ccb6e36143cb349d329c.001.1,2026-11-15T22:48:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.af63bf6d621f37e7d58fb3ec8abb7aa20d84d7aa.001.1,2026-11-15T14:21:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "RPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.29596fb3f326343a341e34a3bbb9d52a29d04df0.001.2",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.29596fb3f326343a341e34a3bbb9d52a29d04df0.001.2",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.29596fb3f326343a341e34a3bbb9d52a29d04df0.001.2",
+                "areaDesc": "Kenedy Island; Willacy Island; Cameron Island",
+                "geocode": {
+                    "SAME": [
+                        "048261",
+                        "048489",
+                        "048061"
+                    ],
+                    "UGC": [
+                        "TXZ451",
+                        "TXZ454",
+                        "TXZ455"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/TXZ451",
+                    "https://api.weather.gov/zones/forecast/TXZ454",
+                    "https://api.weather.gov/zones/forecast/TXZ455"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fc359f252962477b7595c749576ab83bc720d0ee.001.3",
+                        "identifier": "urn:oid:2.49.0.1.840.0.fc359f252962477b7595c749576ab83bc720d0ee.001.3",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-19T18:02:00-06:00"
+                    }
+                ],
+                "sent": "2026-11-20T01:46:00-06:00",
+                "effective": "2026-11-20T01:46:00-06:00",
+                "onset": "2026-11-20T01:46:00-06:00",
+                "expires": "2026-11-20T18:00:00-06:00",
+                "ends": "2026-11-20T18:00:00-06:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Rip Current Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Brownsville TX",
+                "headline": "Rip Current Statement issued November 20 at 1:46AM CST until November 20 at 6:00PM CST by NWS Brownsville TX",
+                "description": "* WHAT...For the Coastal Flood Advisory, minor coastal flooding.\nFor the High Rip Current Risk, dangerous rip currents.\n\n* WHERE...Kenedy Island, Willacy Island and Cameron Island\nCounties.\n\n* WHEN...For the Coastal Flood Advisory, until 6 PM CST this\nevening. For the High Rip Current Risk, through this afternoon.\n\n* IMPACTS...Nuisance flooding is expected, with water reaching\nor pushing into the dunes on South Padre Island. Vehicles,\nexcept those with four wheel drive and high wheel bases, will\nbe unable to be driven on the beach. This includes locations\nnorth of Public Beach Access #3. Minor to moderate beach\nerosion is expected. Rip currents can sweep even the best\nswimmers away from shore into deeper water.",
+                "instruction": "If travel is required, allow extra time as some roads may be\nclosed. Do not drive around barricades or through water of\nunknown depth. Take the necessary actions to protect flood-prone\nproperty.\n\nSwim near a lifeguard. If caught in a rip current, relax and\nfloat. Don't swim against the current. If able, swim in a\ndirection following the shoreline. If unable to escape, face the\nshore and call or wave for help.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWBRO"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS44 KBRO 200746"
+                    ],
+                    "NWSheadline": [
+                        "COASTAL FLOOD ADVISORY REMAINS IN EFFECT UNTIL 6 PM CST THIS EVENING... ...HIGH RIP CURRENT RISK REMAINS IN EFFECT THROUGH THIS AFTERNOON"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KBRO.RP.S.0025.000000T0000Z-261121T0000Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-20T18:00:00-06:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.69a4e9c5b0d41e50fb32b3bc3ea2fb1805cdc202.001.3,2026-11-19T03:43:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.4aa547177515b19bd90358b0b32ca446e27dbb44.001.3,2026-11-19T13:21:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.49d63b8cf936b81f50f4558d637350ae0e5c9059.001.1,2026-11-19T02:31:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.c7ec514d41627ccb2d8314b61af50942c81d6403.001.3,2026-11-18T13:16:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.76de0ad84e7ccb813b56237a562922b2c94edd84.001.2,2026-11-18T02:01:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f1377140adab8a3fb992642463cfaadde772dac2.001.3,2026-11-17T13:44:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8f5e589bec162a88836e7d23370627b92e27eb0a.001.3,2026-11-17T02:53:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.7a8f0eb4633d0cc69b1faeae78fd6657b475ff93.001.3,2026-11-16T13:28:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9e8c1e7b5e90f5be0dfe6d56ae63d33df69e47eb.001.3,2026-11-16T02:34:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.cd7d9dd8c2e060d4075a298f8596605738437178.001.3,2026-11-15T22:48:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.3bedeb93d250cb048c128aed0ffba5eacebe1361.001.3,2026-11-15T02:27:00-06:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "RPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.00ca131e1fe3de6c07a2fe368d7aec48595547ca.003.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.00ca131e1fe3de6c07a2fe368d7aec48595547ca.003.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.00ca131e1fe3de6c07a2fe368d7aec48595547ca.003.1",
+                "areaDesc": "Coastal Franklin",
+                "geocode": {
+                    "SAME": [
+                        "012037"
+                    ],
+                    "UGC": [
+                        "FLZ115"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/FLZ115"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.b0d393bb0934efa42af5672a9b8de3f35793f4cd.002.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.b0d393bb0934efa42af5672a9b8de3f35793f4cd.002.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-19T02:49:00-05:00"
+                    }
+                ],
+                "sent": "2026-11-20T01:04:00-05:00",
+                "effective": "2026-11-20T01:04:00-05:00",
+                "onset": "2026-11-20T01:04:00-05:00",
+                "expires": "2026-11-21T01:00:00-05:00",
+                "ends": "2026-11-21T01:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Rip Current Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Tallahassee FL",
+                "headline": "Rip Current Statement issued November 20 at 1:04AM EST until November 21 at 1:00AM EST by NWS Tallahassee FL",
+                "description": "* WHAT...Dangerous rip currents.\n\n* WHERE...Franklin County Beaches.\n\n* WHEN...Through late Friday night.\n\n* IMPACTS...Rip currents can sweep even the best swimmers away\nfrom shore into deeper water.",
+                "instruction": "Swim near a lifeguard. If caught in a rip current, relax and\nfloat. Don't swim against the current. If able, swim in a\ndirection following the shoreline. If unable to escape, face the\nshore and call or wave for help.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWTAE"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS42 KTAE 200604"
+                    ],
+                    "NWSheadline": [
+                        "HIGH RIP CURRENT RISK REMAINS IN EFFECT THROUGH LATE TONIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KTAE.RP.S.0079.000000T0000Z-261121T0600Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-21T01:00:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.b2a7f24d1b4a997cf025d7734f872363760fc58b.002.1,2026-11-18T02:11:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.e34d5133aa5264d3774ab96d5a40b6d5c8ba6305.002.1,2026-11-17T02:09:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.55150f13c1981b47fd0d37af5c5f4459340517fe.002.1,2026-11-17T02:45:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.e0045d155a68a876c2d192026ca4979aea5489ee.001.1,2026-11-16T01:59:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "RPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.76cb0111f6d24455929e38a6e0ca23b9d9d09e96.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.76cb0111f6d24455929e38a6e0ca23b9d9d09e96.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.76cb0111f6d24455929e38a6e0ca23b9d9d09e96.001.1",
+                "areaDesc": "Coastal Volusia; Coastal Indian River; Coastal St. Lucie; Coastal Martin; Mainland Northern Brevard; Northern Brevard Barrier Islands; Mainland Southern Brevard; Southern Brevard Barrier Islands",
+                "geocode": {
+                    "SAME": [
+                        "012127",
+                        "012061",
+                        "012111",
+                        "012085",
+                        "012009"
+                    ],
+                    "UGC": [
+                        "FLZ141",
+                        "FLZ154",
+                        "FLZ159",
+                        "FLZ164",
+                        "FLZ347",
+                        "FLZ447",
+                        "FLZ647",
+                        "FLZ747"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/FLZ141",
+                    "https://api.weather.gov/zones/forecast/FLZ154",
+                    "https://api.weather.gov/zones/forecast/FLZ159",
+                    "https://api.weather.gov/zones/forecast/FLZ164",
+                    "https://api.weather.gov/zones/forecast/FLZ347",
+                    "https://api.weather.gov/zones/forecast/FLZ447",
+                    "https://api.weather.gov/zones/forecast/FLZ647",
+                    "https://api.weather.gov/zones/forecast/FLZ747"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.2f2659b0e2b026c01b43083f67eb467180d533b8.001.2",
+                        "identifier": "urn:oid:2.49.0.1.840.0.2f2659b0e2b026c01b43083f67eb467180d533b8.001.2",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-18T01:25:00-05:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fc7b104332a216f55c6ab1a79423c50676c86862.001.2",
+                        "identifier": "urn:oid:2.49.0.1.840.0.fc7b104332a216f55c6ab1a79423c50676c86862.001.2",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-19T01:19:00-05:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ff80e8bf1b2b9a3084b069188ba8462455aa9cc2.001.2",
+                        "identifier": "urn:oid:2.49.0.1.840.0.ff80e8bf1b2b9a3084b069188ba8462455aa9cc2.001.2",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-11-17T14:24:00-05:00"
+                    }
+                ],
+                "sent": "2026-11-20T00:58:00-05:00",
+                "effective": "2026-11-20T00:58:00-05:00",
+                "onset": "2026-11-20T00:58:00-05:00",
+                "expires": "2026-11-22T19:00:00-05:00",
+                "ends": "2026-11-22T19:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Rip Current Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Melbourne FL",
+                "headline": "Rip Current Statement issued November 20 at 12:58AM EST until November 22 at 7:00PM EST by NWS Melbourne FL",
+                "description": "* WHAT...For the High Rip Current Risk, dangerous rip currents and\nrough surf. For the High Surf Advisory, large breaking waves of\n5 to 12 feet in the surf zone.\n\n* WHERE...Coastal Volusia, Coastal Indian River, Coastal Saint\nLucie, Coastal Martin, Mainland Northern Brevard, Northern\nBrevard Barrier Islands, Mainland Southern Brevard and\nSouthern Brevard Barrier Islands Counties.\n\n* WHEN...For the High Rip Current Risk, through Sunday evening.\nFor the High Surf Advisory, until 7 PM EST Saturday.\n\n* IMPACTS...Dangerous swimming and surfing conditions and\nlocalized beach erosion. Rip currents can sweep even the best\nswimmers away from shore into deeper water.",
+                "instruction": "High surf will affect the beaches in the advisory area, producing\nlocalized beach erosion and dangerous swimming conditions.\nSwimmers should remain out of the water due to large breaking\nwaves and dangerous surf conditions.\n\nRip currents are powerful channels of water flowing quickly away\nfrom shore, which occur most often at low spots or breaks in the\nsandbar and in the vicinity of structures such as jetties and\npiers. Heed the advice of lifeguards, beach patrol flags and\nsigns.\n\nEntering the surf is strongly discouraged. If caught in a rip\ncurrent, relax and float. Don't swim against the current. If\nable, swim in a direction following the shoreline. If unable to\nescape, face the shore and call or wave for help.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CFWMLB"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS42 KMLB 200558"
+                    ],
+                    "NWSheadline": [
+                        "HIGH RIP CURRENT RISK NOW IN EFFECT THROUGH SUNDAY EVENING... ...HIGH SURF ADVISORY REMAINS IN EFFECT UNTIL 7 PM EST SATURDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.EXT.KMLB.RP.S.0039.000000T0000Z-261123T0000Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-11-22T19:00:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.c641022f18b45f8de49c052e45ed4e602251246e.001.2,2026-11-17T01:28:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.3e1742fb10cde3aae5797008dd2b82ace4ea0375.001.1,2026-11-16T01:25:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.891c9e9c2edf2ce2bf313d0b1399f7943c91d873.001.1,2026-11-15T13:49:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "RPS"
+                    ]
+                }
+            }
+        }
+    ],
+    "title": "Current Rip Current Statement events",
+    "updated": "2026-11-20T22:03:14+00:00"
+}

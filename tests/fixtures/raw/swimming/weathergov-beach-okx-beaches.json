@@ -1,0 +1,92 @@
+{
+	"coneyisland":{
+		"uvindex": "low",
+		"surftemp": "lower 70s",
+		"riprisk": "high"
+	}
+	,"manhattanbeach":{
+		"uvindex": "low",
+		"surftemp": "lower 70s",
+		"riprisk": "high"
+	}
+	,"jacobriispark":{
+		"uvindex": "low",
+		"surftemp": "lower 70s",
+		"riprisk": "high"
+	}
+	,"rockawaybeach":{
+		"uvindex": "low",
+		"surftemp": "lower 70s",
+		"riprisk": "high"
+	}
+	,"atlanticbeach":{
+		"uvindex": "low",
+		"surftemp": "around 70",
+		"riprisk": "high"
+	}
+	,"longbeach":{
+		"uvindex": "low",
+		"surftemp": "around 70",
+		"riprisk": "high"
+	}
+	,"lidobeach":{
+		"uvindex": "low",
+		"surftemp": "around 70",
+		"riprisk": "high"
+	}
+	,"jonesbeach":{
+		"uvindex": "low",
+		"surftemp": "around 70",
+		"riprisk": "high"
+	}
+	,"tobaybeach":{
+		"uvindex": "low",
+		"surftemp": "around 70",
+		"riprisk": "high"
+	}
+	,"gilgobeach":{
+		"uvindex": "low",
+		"surftemp": "upper 60s",
+		"riprisk": "high"
+	}
+	,"robertmoses":{
+		"uvindex": "low",
+		"surftemp": "upper 60s",
+		"riprisk": "high"
+	}
+	,"townofislip-oceanbeach":{
+		"uvindex": "low",
+		"surftemp": "upper 60s",
+		"riprisk": "high"
+	}
+	,"davispark":{
+		"uvindex": "low",
+		"surftemp": "upper 60s",
+		"riprisk": "high"
+	}
+	,"smithpoint":{
+		"uvindex": "low",
+		"surftemp": "upper 60s",
+		"riprisk": "high"
+	}
+	,"cupsoguebeach":{
+		"uvindex": "low",
+		"surftemp": "upper 60s",
+		"riprisk": "high"
+	}
+	,"coopersbeach":{
+		"uvindex": "low",
+		"surftemp": "upper 60s",
+		"riprisk": "high"
+	}
+	,"easthampton-mainbeach":{
+		"uvindex": "low",
+		"surftemp": "upper 60s",
+		"riprisk": "high"
+	}
+	,"hitherhills":{
+		"uvindex": "low",
+		"surftemp": "upper 60s",
+		"riprisk": "high"
+	}
+}

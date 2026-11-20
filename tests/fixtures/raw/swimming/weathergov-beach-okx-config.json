@@ -1,0 +1,57 @@
+{
+ 	"beachPoints": [
+ 		["Jones Beach","40.593760","-73.513189"],
+ 		["Long Beach","40.583227","-73.657239"],
+ 		["Robert Moses","40.622144","-73.274975"],
+ 		["Town of Islip-Ocean Beach","40.643804","-73.156627"],
+ 		["Smith Point","40.732860","-72.864327"],
+ 		["East Hampton - Main Beach","40.943225","-72.194398"],
+ 		["Hither Hills","40.996158","-72.042124"],
+ 		["Coney Island","40.573361","-73.978014"],
+ 		["Manhattan Beach","40.576275","-73.944244"],
+ 		["Jacob Riis Park","40.564836","-73.874354"],
+ 		["Rockaway Beach","40.584490","-73.810195"],
+ 		["Atlantic Beach","40.586519","-73.737947"],
+ 		["Lido Beach","40.586654","-73.621870"],
+ 		["Tobay Beach","40.608909","-73.430708"],
+ 		["Gilgo Beach","40.617929","-73.395040"],
+ 		["Davis Park","40.684037","-73.002884"],
+ 		["Cupsogue Beach","40.771097","-72.730685"],
+ 		["Coopers Beach","40.863927","-72.405865"]
+ 	],
+	"title": [
+		"New York NY"
+	],
+	"adjacentSites": [
+		["box", "ne"],
+		["phi", "sw"]
+	],
+ 	"sidebar": {
+ 		"links": [{
+ 			"title": "Upton NY Radar",
+ 			"url": "https://radar.weather.gov/ridge/standard/KOKX_loop.gif",
+ 			"image": {
+ 				"url": "https://radar.weather.gov/ridge/standard/KOKX_0.gif"
+ 			}
+ 		}, {
+ 			"title": "UV Index Forecast",
+ 			"url": "https://www.cpc.ncep.noaa.gov/products/stratosphere/uv_index/gif_files/uvi_map_big.gif",
+ 			"image": {
+ 				"url": "https://www.cpc.ncep.noaa.gov/products/stratosphere/uv_index/gif_files/uvi_map.gif"
+ 			}
+ 		}, {
+               "title": "&nbsp;"
+               ,"url": "https://www.lightningsafety.noaa.gov/"
+               ,"image": {
+                 "url": "https://www.weather.gov/images/mob/beachforecast/thunder_roars_sm.png"
+               }
+             }
+ 		]
+ 	},
+ 	"map":{
+ 		"lat":"40.7587",
+ 		"lon":"-72.9218",
+ 		"zoom":"9",
+ 		"height":"340"
+ 	}
+ }
