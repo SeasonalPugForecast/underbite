@@ -1033,7 +1033,7 @@ fn compact(
     }
 }
 
-const fn water_of(t: WaterType) -> Water {
+pub(in crate::view) const fn water_of(t: WaterType) -> Water {
     match t {
         WaterType::RiverStream
         | WaterType::LakeReservoir
