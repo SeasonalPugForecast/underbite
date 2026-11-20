@@ -7,14 +7,17 @@
 //! water type for the place ([`infer_water_type`]), refined into the word an angler would use
 //! (stream, lake, pond, reservoir, tidal river, estuary, bay or harbor).
 //!
-//! 3DHP types tidal rivers and estuarine water as plain rivers, so tide is decided from what
-//! the caller knows locally: a tide station on the water nearby (see [`TIDE_STATION_M`]).
+//! 3DHP types tidal rivers and estuarine water as plain rivers, so tide is decided first by the
+//! wetland codes of the National Wetlands Inventory around the point (see [`Tide`]), and only
+//! when they say nothing from what the caller knows locally: a tide station on the water nearby
+//! (see [`TIDE_STATION_M`]).
 
 use super::hydro::{
     Flowline, Hydro, HydroOptions, HydroPosition, Point, SnapBasis, Waterbody, WaterbodyKind,
     infer_water_type,
 };
 use super::rank::distance_m;
+use super::tidal::Tide;
 use crate::model::WaterType;
 use crate::provenance::UsgsSiteType;
 
@@ -84,35 +87,55 @@ pub struct WaterHere {
     pub stream_order: Option<u8>,
     /// Waterbody area, km², for a lake, pond or reservoir.
     pub area_km2: Option<f64>,
+    /// What the wetland inventory said about tide here; when it is known, the inventory decided
+    /// whether the water is tidal and the tide stations did not.
+    pub tide: Tide,
 }
 
 /// The water at `tap`, from the flowlines and waterbodies around it; `None` when none is within
-/// reach (open land, or water the mapping does not hold). `tide_stations` are the places of
-/// tide stations known on the device.
+/// reach (open land, or water the mapping does not hold). `tide` is what the wetland inventory
+/// says; `tide_stations` are the places of tide stations known on the device, used only when it
+/// says nothing.
 pub fn water_here(
     tap: Point,
     flowlines: &[Flowline],
     waterbodies: &[Waterbody],
+    tide: Tide,
     tide_stations: &[Point],
     options: HydroOptions,
 ) -> Option<WaterHere> {
     let position = Hydro::new(flowlines, waterbodies, options).locate_spot(tap);
-    describe(&position, tap, tide_stations, options)
+    describe(&position, tap, tide, tide_stations, options)
+}
+
+/// Whether the water here is worth asking the wetland inventory about: running water or a
+/// waterbody that is not a lake, pond or reservoir (those are never tidal).
+pub const fn may_be_tidal(here: &WaterHere) -> bool {
+    !matches!(
+        here.kind,
+        WaterKind::Lake | WaterKind::Pond | WaterKind::Reservoir
+    )
 }
 
 fn describe(
     position: &HydroPosition,
     tap: Point,
+    tide: Tide,
     tide_stations: &[Point],
     options: HydroOptions,
 ) -> Option<WaterHere> {
     if position.waterbody.is_none() && position.stream.is_none() {
         return None;
     }
-    let tide_near = tide_stations.iter().any(|s| {
-        distance_m(tap.latitude, tap.longitude, s.latitude, s.longitude) <= TIDE_STATION_M
-    });
-    // A tide station on the water is what a tidal USGS site is to the inference.
+    // The inventory decides when it knows; a tide station on the water is the fallback.
+    let tide_near = match tide {
+        Tide::Tidal { .. } => true,
+        Tide::NotTidal => false,
+        Tide::Unknown => tide_stations.iter().any(|s| {
+            distance_m(tap.latitude, tap.longitude, s.latitude, s.longitude) <= TIDE_STATION_M
+        }),
+    };
+    // Tide here is what a tidal USGS site is to the inference.
     let site = tide_near.then_some(UsgsSiteType::TidalStream);
     let water_type = infer_water_type(position, site, None, options)?.water_type;
     let stream = position.stream.as_ref();
@@ -123,6 +146,10 @@ fn describe(
             (WaterbodyKind::Lake, _) => WaterKind::Lake,
             (WaterbodyKind::Reservoir, _) => WaterKind::Reservoir,
             (WaterbodyKind::Estuary, _) => WaterKind::Estuary,
+            // Only estuarine polygons around a river polygon: the water is an estuary.
+            (_, WaterType::TidalRiverEstuary) if tide == (Tide::Tidal { estuarine: true }) => {
+                WaterKind::Estuary
+            }
             (_, WaterType::TidalRiverEstuary) => WaterKind::TidalRiver,
             (WaterbodyKind::River, _) => WaterKind::River,
             (WaterbodyKind::Other, _) => WaterKind::Waterbody,
@@ -152,6 +179,7 @@ fn describe(
                 WaterKind::Lake | WaterKind::Pond | WaterKind::Reservoir
             )
             .then_some(w.area_km2),
+            tide,
         });
     }
     let s = stream?;
@@ -172,6 +200,7 @@ fn describe(
         water_type,
         stream_order: s.stream_order,
         area_km2: None,
+        tide,
     })
 }
 
@@ -218,7 +247,17 @@ mod tests {
         bodies: &[Waterbody],
         stations: &[Point],
     ) -> Option<WaterHere> {
-        water_here(tap, flow, bodies, stations, HydroOptions::default())
+        with_tide(tap, flow, bodies, Tide::Unknown, stations)
+    }
+
+    fn with_tide(
+        tap: Point,
+        flow: &[Flowline],
+        bodies: &[Waterbody],
+        tide: Tide,
+        stations: &[Point],
+    ) -> Option<WaterHere> {
+        water_here(tap, flow, bodies, tide, stations, HydroOptions::default())
     }
 
     #[test]
@@ -326,6 +365,35 @@ mod tests {
             (bay.kind, bay.water_type),
             (WaterKind::Bay, WaterType::BayInshore)
         );
+    }
+
+    #[test]
+    fn the_inventory_overrides_the_tide_stations() {
+        let station = [Point::new(41.006, -72.9975)];
+        let tap = Point::new(41.005, -72.9975);
+        let body = [lake(None, WaterbodyKind::River, 20.0)];
+        // Tidal without any station.
+        let tidal = with_tide(tap, &[], &body, Tide::Tidal { estuarine: false }, &[]).unwrap();
+        assert_eq!(tidal.kind, WaterKind::TidalRiver);
+        assert_eq!(tidal.water_type, WaterType::TidalRiverEstuary);
+        assert!(tidal.tide.is_tidal());
+        let estuary = with_tide(tap, &[], &body, Tide::Tidal { estuarine: true }, &[]).unwrap();
+        assert_eq!(estuary.kind, WaterKind::Estuary);
+        assert_eq!(estuary.water_type, WaterType::TidalRiverEstuary);
+        // Not tidal beats a station beside it.
+        let fresh = with_tide(tap, &[], &body, Tide::NotTidal, &station).unwrap();
+        assert_eq!(fresh.kind, WaterKind::River);
+        assert_eq!(fresh.water_type, WaterType::RiverStream);
+        // Unknown falls back on the station.
+        let pinned = with_tide(tap, &[], &body, Tide::Unknown, &station).unwrap();
+        assert_eq!(pinned.kind, WaterKind::TidalRiver);
+        assert!(!pinned.tide.is_known());
+        // A lake is never tidal, whatever the inventory says.
+        let still = lake(None, WaterbodyKind::Lake, 20.0);
+        let lake = with_tide(tap, &[], &[still], Tide::Tidal { estuarine: true }, &[]).unwrap();
+        assert_eq!(lake.kind, WaterKind::Lake);
+        assert!(!may_be_tidal(&lake));
+        assert!(may_be_tidal(&tidal));
     }
 
     #[test]

@@ -29,6 +29,7 @@ use underbite_config::schema::Config;
 use underbite_config::view_input::view_input;
 use underbite_core::discover::hydro::{Flowline, HydroOptions, Point, Waterbody};
 use underbite_core::discover::states::states_at;
+use underbite_core::discover::tidal::Tide;
 use underbite_core::discover::water_here::{WaterHere, WaterKind, water_here};
 use underbite_core::model::{Spot, SpotSnapshot, StockingEvent};
 use underbite_core::provenance::SourceId;
@@ -401,6 +402,7 @@ impl Inner {
             self.tap,
             &self.flowlines,
             &self.waterbodies,
+            Tide::Unknown,
             &self.tide_stations,
             HydroOptions::default(),
         );

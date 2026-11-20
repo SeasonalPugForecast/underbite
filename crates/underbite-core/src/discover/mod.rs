@@ -5,4 +5,5 @@ pub mod hydro;
 pub mod rank;
 pub mod region;
 pub mod states;
+pub mod tidal;
 pub mod water_here;

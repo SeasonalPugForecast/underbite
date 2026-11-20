@@ -81,7 +81,7 @@ const HAB_PAGE: &str =
     "https://coastalscience.noaa.gov/science-areas/habs/hab-forecasts/gulf-coast/";
 
 /// Every source the settings or a snapshot can name, with its credit, licence and terms.
-pub const SOURCE_TERMS: [SourceTerms; 32] = [
+pub const SOURCE_TERMS: [SourceTerms; 33] = [
     terms(
         "usgs",
         Some(SafetyKey::AttrUsgsCredit),
@@ -145,6 +145,14 @@ pub const SOURCE_TERMS: [SourceTerms; 32] = [
         None,
         "https://hydro.nationalmap.gov/arcgis/rest/services/3DHP_all/MapServer",
         "https://hydro.nationalmap.gov/",
+    ),
+    terms(
+        "usfws-nwi",
+        Some(SafetyKey::AttrUsfwsNwiCredit),
+        SafetyKey::LicenceUsGovernment,
+        Some(SafetyKey::AttrUsfwsNwiConditions),
+        "https://www.fws.gov/wetlands/data/web-map-services.html",
+        "https://doi.org/10.7944/USFWS.NWI",
     ),
     terms(
         "glerl",
@@ -1080,6 +1088,29 @@ mod tests {
         ] {
             assert!(ids.iter().any(|i| i == id.as_str()), "{id}");
         }
+    }
+
+    #[test]
+    fn the_wetlands_inventory_gives_its_citation_and_makes_no_public_domain_claim() {
+        let t = source_terms("usfws-nwi").expect("entry");
+        assert_eq!(
+            credit_text(t, plain()),
+            "Tidal reach: U.S. Fish and Wildlife Service, National Wetlands Inventory"
+        );
+        assert_eq!(
+            licence_text(t, plain()),
+            "U.S. Government data, no licence stated"
+        );
+        let conditions = conditions_text(t, plain()).expect("conditions");
+        assert!(
+            conditions.contains("10.7944/usfws.nwi.202605"),
+            "{conditions}"
+        );
+        assert!(
+            !licence_text(t, plain())
+                .to_lowercase()
+                .contains("public domain")
+        );
     }
 
     #[test]

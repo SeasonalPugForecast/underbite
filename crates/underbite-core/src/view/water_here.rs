@@ -23,6 +23,9 @@ use crate::view::trip::water_of;
 /// The id of the state boundaries' entry in the sources list.
 const CENSUS_BOUNDARIES: &str = "census-boundaries";
 
+/// The id of the National Wetlands Inventory's entry in the sources list.
+const WETLANDS_INVENTORY: &str = "usfws-nwi";
+
 /// The most stocking lines the section shows.
 pub const MAX_STOCKING_LINES: usize = 6;
 
@@ -215,6 +218,10 @@ pub fn build(f: &Formatter, input: &WaterHereInput<'_>) -> WaterHereVm {
     if !stocking.is_empty() {
         credits.extend(credit(s, &SourceId::NY_DEC_STOCKING));
     }
+    // The inventory is credited only when it decided whether the water is tidal.
+    if here.tide.is_known() {
+        credits.extend(credit(s, &SourceId::from_static(WETLANDS_INVENTORY)));
+    }
     if input.from_state_lines {
         credits.extend(credit(s, &SourceId::from_static(CENSUS_BOUNDARIES)));
     }
@@ -279,6 +286,7 @@ pub fn words(f: &Formatter) -> WaterHereWords {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::discover::tidal::Tide;
     use crate::units::{
         DischargeUnit, DistanceUnit, HeightUnit, PressureUnit, SpeedUnit, TempUnit,
     };
@@ -330,6 +338,7 @@ mod tests {
             water_type,
             stream_order: None,
             area_km2: None,
+            tide: Tide::Unknown,
         }
     }
 
@@ -598,6 +607,46 @@ mod tests {
             Strings::new(Voice::Plain).safety(SafetyKey::AttrUsgs3dhpCredit)
         );
         assert_eq!(vm.stocking_title, None);
+    }
+
+    #[test]
+    fn the_wetland_inventory_is_credited_only_when_it_decided() {
+        let f = formatter();
+        let credits = |tide: Tide| {
+            let mut h = here(
+                Some("Hudson River"),
+                WaterKind::TidalRiver,
+                WaterType::TidalRiverEstuary,
+                Reach::On,
+            );
+            h.tide = tide;
+            build(
+                &f,
+                &WaterHereInput {
+                    here: &h,
+                    regions: &[],
+                    stocking: &[],
+                    from_state_lines: false,
+                },
+            )
+            .credits
+        };
+        let unknown = credits(Tide::Unknown);
+        assert_eq!(unknown.len(), 1);
+        assert_eq!(unknown[0].source, "USGS 3DHP");
+        for tide in [Tide::NotTidal, Tide::Tidal { estuarine: false }] {
+            let known = credits(tide);
+            assert_eq!(known.len(), 2);
+            assert_eq!(known[1].source, "USFWS National Wetlands Inventory");
+            assert_eq!(
+                known[1].text,
+                "Tidal reach: U.S. Fish and Wildlife Service, National Wetlands Inventory"
+            );
+            assert_eq!(
+                known[1].licence.as_deref(),
+                Some("U.S. Government data, no licence stated")
+            );
+        }
     }
 
     #[test]
