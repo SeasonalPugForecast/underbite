@@ -181,7 +181,8 @@ private struct PinModeButton: View {
                 }
             }
         } label: {
-            Image(systemName: "mappin.and.ellipse")
+            // Not the pin of the Spots tab: a finger tapping the map.
+            Image(systemName: "hand.tap")
                 .font(.title3)
                 .frame(width: 44, height: 44)
         }
