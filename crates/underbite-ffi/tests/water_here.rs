@@ -214,7 +214,8 @@ mod water_here {
         assert_eq!(card.kind, "river");
         assert_eq!(card.kind_text, "River");
         assert_eq!(card.water_type, "river_stream");
-        assert_eq!(card.water_type_text, "River or stream");
+        // The kind says it already: no second line.
+        assert_eq!(card.water_type_text, "");
         assert_eq!(card.spot_name.as_deref(), Some("Croton River"));
         let titles: Vec<&str> = card.links.iter().map(|l| l.title.as_str()).collect();
         assert!(titles.contains(&"Freshwater regulations"), "{titles:?}");

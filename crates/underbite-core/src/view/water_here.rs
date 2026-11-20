@@ -26,6 +26,9 @@ const CENSUS_BOUNDARIES: &str = "census-boundaries";
 /// The most stocking lines the section shows.
 pub const MAX_STOCKING_LINES: usize = 6;
 
+/// How many stocking lines are shown before "Show all": the newest ones.
+pub const STOCKING_PREVIEW_LINES: usize = 2;
+
 /// One regulation or licence link.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, JsonSchema)]
 pub struct WaterLinkVm {
@@ -53,7 +56,8 @@ pub struct WaterHereVm {
     pub position: String,
     /// The water type "Add as spot" carries.
     pub water_type: WaterType,
-    /// "River or stream", in the user's words.
+    /// "River or stream", in the user's words; empty when the kind above already says it (a
+    /// river and "River or stream").
     pub water_type_text: String,
     /// The name a new spot starts with; none for unnamed water.
     pub spot_name: Option<String>,
@@ -61,6 +65,9 @@ pub struct WaterHereVm {
     pub stocking_title: Option<String>,
     /// The agency's stocking lines for this water, newest first.
     pub stocking: Vec<String>,
+    /// "Show all (6)": the label of the disclosure for the lines beyond the first
+    /// [`STOCKING_PREVIEW_LINES`]; none when they are all shown.
+    pub stocking_show_all: Option<String>,
     /// "Regulations and licence": the title of the links below; none without links.
     pub links_title: Option<String>,
     /// "On the New York–New Jersey line: both states' rules are linked": said when the point
@@ -211,6 +218,13 @@ pub fn build(f: &Formatter, input: &WaterHereInput<'_>) -> WaterHereVm {
     if input.from_state_lines {
         credits.extend(credit(s, &SourceId::from_static(CENSUS_BOUNDARIES)));
     }
+    // The water type is said only when the kind has not already said it.
+    let type_label = f.water_type_label(here.water_type);
+    let water_type_text = if type_label.to_lowercase().contains(&kind.to_lowercase()) {
+        String::new()
+    } else {
+        type_label
+    };
     WaterHereVm {
         named: here.name.is_some(),
         spot_name: here.name.clone(),
@@ -219,7 +233,13 @@ pub fn build(f: &Formatter, input: &WaterHereInput<'_>) -> WaterHereVm {
         kind_text: kind.to_owned(),
         position,
         water_type: here.water_type,
-        water_type_text: f.water_type_label(here.water_type),
+        water_type_text,
+        stocking_show_all: (stocking.len() > STOCKING_PREVIEW_LINES).then(|| {
+            s.fmt(
+                Key::WaterHereShowAll,
+                &[("count", &stocking.len().to_string())],
+            )
+        }),
         stocking_title: (!stocking.is_empty()).then(|| s.get(Key::CardStocking).to_owned()),
         stocking,
         links_title: (!links.is_empty()).then(|| s.get(Key::WaterHereLinksTitle).to_owned()),
@@ -291,6 +311,17 @@ mod tests {
         )
     }
 
+    fn stocking_line(summary: &str) -> StockingVm {
+        StockingVm {
+            waterbody: "Croton River".to_owned(),
+            place: None,
+            species: "Rainbow Trout".to_owned(),
+            when: "Mar 2025".to_owned(),
+            summary: summary.to_owned(),
+            planned: false,
+        }
+    }
+
     fn here(name: Option<&str>, kind: WaterKind, water_type: WaterType, reach: Reach) -> WaterHere {
         WaterHere {
             name: name.map(str::to_owned),
@@ -336,6 +367,73 @@ mod tests {
         );
         assert_eq!(vm.title, "Unnamed tidal river");
         assert_eq!(vm.kind_text, "Tidal river");
+    }
+
+    #[test]
+    fn the_water_type_is_dropped_when_the_kind_says_the_same() {
+        let f = formatter();
+        let input = |h: &WaterHere| {
+            build(
+                &f,
+                &WaterHereInput {
+                    here: h,
+                    regions: &[],
+                    stocking: &[],
+                    from_state_lines: false,
+                },
+            )
+        };
+        let river = input(&here(
+            Some("Croton River"),
+            WaterKind::River,
+            WaterType::RiverStream,
+            Reach::On,
+        ));
+        assert_eq!(river.kind_text, "River");
+        assert_eq!(river.water_type_text, "");
+        // A pond in a lake-or-reservoir type says something the kind does not.
+        let pond = input(&here(
+            Some("Mill Pond"),
+            WaterKind::Pond,
+            WaterType::LakeReservoir,
+            Reach::On,
+        ));
+        assert_ne!(pond.water_type_text, "");
+    }
+
+    #[test]
+    fn long_stocking_lists_offer_show_all_with_the_count() {
+        let f = formatter();
+        let h = here(
+            Some("Croton River"),
+            WaterKind::River,
+            WaterType::RiverStream,
+            Reach::On,
+        );
+        let lines: Vec<StockingVm> = (0..4)
+            .map(|i| stocking_line(&format!("Line {i}")))
+            .collect();
+        let build_with = |n: usize| {
+            build(
+                &f,
+                &WaterHereInput {
+                    here: &h,
+                    regions: &[],
+                    stocking: &lines[..n],
+                    from_state_lines: false,
+                },
+            )
+        };
+        assert_eq!(
+            build_with(4).stocking_show_all.as_deref(),
+            Some("Show all (4)")
+        );
+        assert_eq!(
+            build_with(3).stocking_show_all.as_deref(),
+            Some("Show all (3)")
+        );
+        assert_eq!(build_with(2).stocking_show_all, None);
+        assert_eq!(build_with(0).stocking_show_all, None);
     }
 
     #[test]

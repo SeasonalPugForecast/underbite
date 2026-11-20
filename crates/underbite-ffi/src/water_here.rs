@@ -111,13 +111,15 @@ pub struct WaterHereCard {
     pub position: String,
     /// The water type id a new spot here carries (`river_stream`).
     pub water_type: String,
-    /// The water type in words: "River or stream".
+    /// The water type in words: "River or stream"; empty when the kind already says it.
     pub water_type_text: String,
     /// The name a new spot starts with; none for unnamed water.
     pub spot_name: Option<String>,
     pub stocking_title: Option<String>,
     /// The agency's stocking lines for this water.
     pub stocking: Vec<String>,
+    /// "Show all (6)": the disclosure for the lines beyond the first two; none when all fit.
+    pub stocking_show_all: Option<String>,
     pub links_title: Option<String>,
     /// Said when the links are those of several states: "On the New York–New Jersey line: …".
     pub links_note: Option<String>,
@@ -580,6 +582,7 @@ fn card(vm: WaterHereVm) -> WaterHereCard {
         spot_name: vm.spot_name,
         stocking_title: vm.stocking_title,
         stocking: vm.stocking,
+        stocking_show_all: vm.stocking_show_all,
         links_title: vm.links_title,
         links_note: vm.links_note,
         links: vm

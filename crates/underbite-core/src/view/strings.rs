@@ -1190,6 +1190,8 @@ keys! {
     WaterHereTwoStates => ("On the {first}–{second} line: both states' rules are linked", "On the {first}–{second} line: both states' rules are linked"),
     /// `{states}`: the names, comma-separated.
     WaterHereManyStates => ("On the line of several states ({states}): every state's rules are linked", "On the line of several states ({states}): every state's rules are linked"),
+    /// `{count}`: how many stocking lines there are in all.
+    WaterHereShowAll => ("Show all ({count})", "Show all ({count})"),
     WaterHereOn => ("The marker is on this water", "The marker is on this water"),
     /// `{distance}`: "120 ft".
     WaterHereAway => ("{distance} from the marker", "{distance} from the marker"),
