@@ -75,6 +75,39 @@ nonisolated struct SpotPrefill: Identifiable, Equatable, Sendable {
     }
 }
 
+/// The heights the point card's sheet rests at on the iPhone: a first glance, a middle height
+/// that shows the "water here" section with its buttons and credits, and full height. The card
+/// rises to the middle height by itself when the section appears, unless the person has already
+/// moved the sheet.
+nonisolated struct PointSheetStops: Equatable {
+    enum Stop: Equatable {
+        case glance, water, full
+    }
+
+    private(set) var stop: Stop = .glance
+    private(set) var moved = false
+
+    /// The "water here" section shows or goes: the sheet rises when it appears and the person
+    /// has not touched the sheet; it never moves on its own otherwise.
+    mutating func water(shown: Bool) {
+        guard shown, !moved, stop == .glance else { return }
+        stop = .water
+    }
+
+    /// The sheet came to rest at `new`: if that is not where this logic put it, the person
+    /// moved it.
+    mutating func rested(at new: Stop) {
+        guard new != stop else { return }
+        stop = new
+        moved = true
+    }
+
+    /// A different point is opened, or the card is closed: back to the first glance.
+    mutating func reset() {
+        self = PointSheetStops()
+    }
+}
+
 /// Runs the core's water-here plan (`plan_water_here`): sends each round of the plan's requests
 /// through the app's fetch host, hands the answers back and repeats until the plan holds no more
 /// requests. The core rounds the point before it leaves the phone and places the water here, on

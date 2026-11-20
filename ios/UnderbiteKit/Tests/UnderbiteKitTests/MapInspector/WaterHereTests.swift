@@ -203,6 +203,50 @@ final class WaterHereTests: XCTestCase {
     }
 }
 
+/// The point card's sheet: it starts at the first glance, rises to the middle height when the
+/// "water here" section appears, and stays where the person put it.
+final class PointSheetStopsTests: XCTestCase {
+    func testItStartsAtTheGlanceAndRisesWhenTheSectionAppears() {
+        var stops = PointSheetStops()
+        XCTAssertEqual(stops.stop, .glance)
+        stops.water(shown: false)
+        XCTAssertEqual(stops.stop, .glance)
+        stops.water(shown: true)
+        XCTAssertEqual(stops.stop, .water)
+        XCTAssertFalse(stops.moved)
+        // The sheet reports the height it was sent to: not a move by the person.
+        stops.rested(at: .water)
+        XCTAssertFalse(stops.moved)
+    }
+
+    func testItStaysWhereThePersonPutIt() {
+        var dragged = PointSheetStops()
+        dragged.rested(at: .full)
+        dragged.water(shown: true)
+        XCTAssertEqual(dragged.stop, .full)
+        // Dragged back down to the glance, it stays there too.
+        dragged.rested(at: .glance)
+        dragged.water(shown: true)
+        XCTAssertEqual(dragged.stop, .glance)
+        // Moved by the person after rising, it is theirs.
+        var risen = PointSheetStops()
+        risen.water(shown: true)
+        risen.rested(at: .glance)
+        XCTAssertTrue(risen.moved)
+        risen.water(shown: true)
+        XCTAssertEqual(risen.stop, .glance)
+    }
+
+    func testANewPointStartsAgain() {
+        var stops = PointSheetStops()
+        stops.rested(at: .full)
+        stops.reset()
+        XCTAssertEqual(stops, PointSheetStops())
+        stops.water(shown: true)
+        XCTAssertEqual(stops.stop, .water)
+    }
+}
+
 private actor Log {
     private(set) var urls: [String] = []
 

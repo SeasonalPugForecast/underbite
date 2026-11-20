@@ -27,11 +27,30 @@ private struct InspectorLayer: View {
     let module: InspectorModule
     let controller: MapController
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @State private var stops = PointSheetStops()
 
     /// The room MapKit's own logo and legal link take at the bottom of the map.
     private static let appleLegalHeight: CGFloat = 34
 
     private var panel: Bool { sizeClass == .regular }
+
+    private static let glance = PresentationDetent.height(330)
+    private static let water = PresentationDetent.fraction(0.6)
+
+    /// The sheet's resting height as a detent, and back.
+    private var detent: Binding<PresentationDetent> {
+        Binding(
+            get: {
+                switch stops.stop {
+                case .glance: Self.glance
+                case .water: Self.water
+                case .full: .large
+                }
+            },
+            set: { new in
+                stops.rested(at: new == Self.glance ? .glance : new == Self.water ? .water : .full)
+            })
+    }
 
     var body: some View {
         let pick = Binding(get: { module.pick }, set: { if $0 == nil { module.close() } })
@@ -47,7 +66,7 @@ private struct InspectorLayer: View {
                     .popover(item: pick, attachmentAnchor: .point(.center)) { _ in
                         PointCard(module: module, settingsJSON: controller.settingsJSON)
                             .frame(idealWidth: 400, idealHeight: 520)
-                            .presentationDetents([.medium, .large])
+                            .presentationDetents([Self.glance, Self.water, .large], selection: detent)
                             .presentationDragIndicator(.visible)
                             .presentationCompactAdaptation(.sheet)
                     }
@@ -70,6 +89,11 @@ private struct InspectorLayer: View {
                 .presentationDragIndicator(.visible)
                 // Taps on the map above the sheet move the line's end.
                 .presentationBackgroundInteraction(.enabled(upThrough: .height(330)))
+        }
+        .onChange(of: module.pick?.id) { stops.reset() }
+        .onChange(of: module.pick?.water.card != nil) { _, found in
+            // The buttons come with the water, not with the loading words.
+            stops.water(shown: found)
         }
         .onChange(of: controller.gridRevisions) { module.refresh() }
         .onChange(of: controller.moduleRevision) { module.refresh() }
