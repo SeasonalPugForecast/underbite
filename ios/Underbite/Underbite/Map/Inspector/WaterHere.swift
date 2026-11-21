@@ -62,7 +62,8 @@ nonisolated struct SpotPrefill: Identifiable, Equatable, Sendable {
     init(card: WaterHereCard, at coordinate: CLLocationCoordinate2D) {
         self.init(
             latitude: coordinate.latitude, longitude: coordinate.longitude,
-            name: card.spotName ?? "", waterType: card.waterType)
+            name: card.spotName ?? "",
+            waterType: card.waterType.isEmpty ? nil : card.waterType)
     }
 
     var coordinate: CLLocationCoordinate2D {
