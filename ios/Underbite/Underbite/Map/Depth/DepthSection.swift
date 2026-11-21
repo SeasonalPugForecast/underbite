@@ -41,7 +41,7 @@ struct DepthSection: View {
                     }
                 }
             } header: {
-                Text(info.title)
+                Text(info.title).drawerHeader()
             }
         }
     }

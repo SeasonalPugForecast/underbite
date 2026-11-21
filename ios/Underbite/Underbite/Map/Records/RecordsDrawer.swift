@@ -18,14 +18,14 @@ struct RecordsDrawerSection: View {
             Section {
                 recordsRows(layer: layer, words: words)
             } header: {
-                Text(layer.title)
+                Text(layer.title).drawerHeader()
             }
         }
         if let layer = shown[RecordMarks.beachesLayer] {
             Section {
                 beachRows(layer: layer, words: words)
             } header: {
-                Text(layer.title)
+                Text(layer.title).drawerHeader()
             }
         }
     }

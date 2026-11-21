@@ -54,7 +54,7 @@ struct BeachSection: View {
                     NearbyCreditRow(credit: credit)
                 }
             } header: {
-                Text(layer.title)
+                Text(layer.title).drawerHeader()
             }
         }
     }

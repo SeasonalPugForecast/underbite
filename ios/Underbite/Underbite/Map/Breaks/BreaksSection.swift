@@ -45,7 +45,7 @@ struct BreaksSection: View {
                 }
             }
         } header: {
-            Text(layer.title)
+            Text(layer.title).drawerHeader()
         }
     }
 }

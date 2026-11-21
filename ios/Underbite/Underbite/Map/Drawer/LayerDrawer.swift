@@ -88,7 +88,7 @@ struct LayerDrawer: View {
                         }
                     }
                 } header: {
-                    Text(group.title)
+                    Text(group.title).drawerHeader()
                 }
                 ForEach(modules(after: group, in: groups)) { $0.view }
             }
@@ -149,6 +149,17 @@ extension SpotStore {
         change(&settings.map)
         guard settings.map != before, let json = try? settings.json() else { return }
         try? updateSettings(json)
+    }
+}
+
+extension View {
+    /// A section header of the drawer: in the primary colour, semibold and as written, so that
+    /// on the translucent sheet over a coloured layer it reads as a heading and not as disabled
+    /// text (the sidebar style's default is a small, secondary, upper-cased label).
+    func drawerHeader() -> some View {
+        font(.subheadline.weight(.semibold))
+            .foregroundStyle(.primary)
+            .textCase(nil)
     }
 }
 

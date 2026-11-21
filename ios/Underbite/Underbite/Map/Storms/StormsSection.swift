@@ -34,7 +34,7 @@ struct StormsSection: View {
                     .font(.caption.weight(.bold))
             }
         } header: {
-            Text(module.info?.title ?? "")
+            Text(module.info?.title ?? "").drawerHeader()
         }
     }
 
