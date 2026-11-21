@@ -405,11 +405,8 @@ struct ChartKey: View {
             }
             if !timeMarkers.isEmpty {
                 // Each marker's own words in a wrapping layout: nothing is joined here.
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 12) { ForEach(timeMarkers, id: \.offset) { Text($0.label) } }
-                    VStack(alignment: .leading, spacing: 2) {
-                        ForEach(timeMarkers, id: \.offset) { Text($0.label) }
-                    }
+                WrappingLayout(spacing: 12, lineSpacing: 2) {
+                    ForEach(timeMarkers, id: \.offset) { Text($0.label) }
                 }
             }
             if !facts.isEmpty {
@@ -443,5 +440,50 @@ struct ChartKey: View {
     private var timeMarkers: [(offset: Int, label: String)] {
         chart.markers.filter { ChartPalette.symbol(marker: $0.kind) != nil }
             .enumerated().map { (offset: $0.offset, label: $0.element.label) }
+    }
+}
+
+/// Lays its children out left to right and wraps them onto further lines when the row is full.
+struct WrappingLayout: Layout {
+    var spacing: CGFloat = 8
+    var lineSpacing: CGFloat = 4
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let placed = arrange(width: proposal.width ?? .infinity, subviews: subviews)
+        return CGSize(width: placed.width, height: placed.height)
+    }
+
+    func placeSubviews(
+        in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()
+    ) {
+        let placed = arrange(width: bounds.width, subviews: subviews)
+        for (subview, origin) in zip(subviews, placed.origins) {
+            subview.place(
+                at: CGPoint(x: bounds.minX + origin.x, y: bounds.minY + origin.y),
+                proposal: .unspecified)
+        }
+    }
+
+    private func arrange(width: CGFloat, subviews: Subviews)
+        -> (origins: [CGPoint], width: CGFloat, height: CGFloat)
+    {
+        var origins: [CGPoint] = []
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var lineHeight: CGFloat = 0
+        var widest: CGFloat = 0
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x > 0, x + size.width > width {
+                y += lineHeight + lineSpacing
+                x = 0
+                lineHeight = 0
+            }
+            origins.append(CGPoint(x: x, y: y))
+            x += size.width + spacing
+            widest = max(widest, x - spacing)
+            lineHeight = max(lineHeight, size.height)
+        }
+        return (origins, widest, y + lineHeight)
     }
 }

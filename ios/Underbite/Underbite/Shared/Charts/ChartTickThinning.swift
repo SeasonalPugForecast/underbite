@@ -3,8 +3,8 @@ import UnderbiteKit
 /// Which x-axis ticks to label. Ticks are thinned by position only, never relabelled.
 enum ChartTickThinning {
     /// A rough width of one label character at the axis font, and the least gap between labels.
-    static let characterWidth: Double = 6.5
-    static let gap: Double = 6
+    static let characterWidth: Double = 7.5
+    static let gap: Double = 10
 
     /// A tick that names a day: major, with a label that starts with a word, not an hour number.
     static func isDayMark(_ tick: ViewModel.ChartTick) -> Bool {
