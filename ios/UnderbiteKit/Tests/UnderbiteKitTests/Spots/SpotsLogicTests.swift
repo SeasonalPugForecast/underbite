@@ -218,6 +218,33 @@ final class SpotsLogicTests: XCTestCase {
         XCTAssertEqual(StationChoice.excludeSwitched(on: false), .clear)
     }
 
+    func testTheStationModeIsOneOfThreeAndMapsToTheCoresChoices() {
+        XCTAssertEqual(StationMode(StationSwitches(pinned: false, excluded: false)), .automatic)
+        XCTAssertEqual(StationMode(StationSwitches(pinned: true, excluded: false)), .always)
+        XCTAssertEqual(StationMode(StationSwitches(pinned: false, excluded: true)), .never)
+        XCTAssertEqual(StationMode(StationSwitches(pinned: true, excluded: true)), .always)
+        XCTAssertEqual(StationMode.automatic.choice, .clear)
+        XCTAssertEqual(StationMode.always.choice, .pin)
+        XCTAssertEqual(StationMode.never.choice, .exclude)
+        // Every mode shows as itself once the choice is made, never as two at once.
+        for mode in StationMode.allCases {
+            XCTAssertEqual(StationMode(mode.choice.switches), mode)
+        }
+    }
+
+    func testTheReasonsEveryRowSharesAreSaidOnce() throws {
+        let groups = try stationRows(
+            stationsJson: Self.stations, settingsJson: defaultSettingsJson(), now: 1_800_000_000)
+        let rows = groups[0].rows
+        XCTAssertEqual(rows.count, 2)
+        XCTAssertEqual(
+            StationRow.sharedReasons([rows[0], rows[0]]), rows[0].reasons,
+            "identical rows share every reason")
+        XCTAssertEqual(StationRow.sharedReasons([rows[0]]), [], "one row has nothing to share")
+        XCTAssertEqual(StationRow.sharedReasons([]), [])
+        XCTAssertFalse(StationRow.sharedReasons(rows).contains("Latest value 6 min ago"))
+    }
+
     func testAChoiceNotYetRankedShowsOnItsRow() throws {
         let groups = try stationRows(
             stationsJson: Self.stations, settingsJson: defaultSettingsJson(), now: 1_800_000_000)

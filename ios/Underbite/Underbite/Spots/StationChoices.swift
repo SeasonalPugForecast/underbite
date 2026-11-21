@@ -21,6 +21,36 @@ nonisolated enum StationChoice: Equatable, Sendable {
     }
 }
 
+/// The three ways a station's row can stand, one segment each: left to the ranking, always used
+/// (pinned) or never used (excluded). Exactly one holds, so a pin and an exclusion never
+/// both stand.
+nonisolated enum StationMode: CaseIterable, Equatable, Sendable {
+    case automatic, always, never
+
+    /// The mode the row's switches stand for; a pin wins over an exclusion, as the core ranks.
+    init(_ switches: StationSwitches) {
+        self = switches.pinned ? .always : switches.excluded ? .never : .automatic
+    }
+
+    /// What picking this mode asks the core to remember: leaving a mode forgets it.
+    var choice: StationChoice {
+        switch self {
+        case .automatic: .clear
+        case .always: .pin
+        case .never: .exclude
+        }
+    }
+}
+
+extension StationRow {
+    /// The reasons that hold for every one of `rows` (when there are at least two), in the
+    /// order of the first row: said once under the list instead of on each row.
+    static func sharedReasons(_ rows: [StationRow]) -> [String] {
+        guard let first = rows.first, rows.count > 1 else { return [] }
+        return first.reasons.filter { reason in rows.allSatisfy { $0.reasons.contains(reason) } }
+    }
+}
+
 /// The two switches of a station's row.
 nonisolated struct StationSwitches: Equatable, Sendable {
     var pinned: Bool

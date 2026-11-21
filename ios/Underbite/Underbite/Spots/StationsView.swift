@@ -1,8 +1,8 @@
 import SwiftUI
 import UnderbiteKit
 
-/// The stations around one spot, per measurement in the core's order, each with a switch to
-/// always use it and one to never use it, and the stations left out with why. Every word and
+/// The stations around one spot, per measurement in the core's order, each with a control to
+/// leave it to the ranking, always use it or never use it, and the stations left out with why. Every word and
 /// distance is the core's. The list shows the stations kept from the last lookup at once and
 /// follows the new lookup; the choices go through the store, on its own host, and apply from
 /// the next fetch.
@@ -20,15 +20,25 @@ struct StationsView: View {
         let looking = store.discovering.contains(spotID) || !lookedUp
         List {
             ForEach(groups, id: \.measurement) { group in
-                Section(group.title) {
+                let shared = StationRow.sharedReasons(group.rows)
+                Section {
                     ForEach(group.rows, id: \.key) { row in
-                        stationRow(row)
+                        stationRow(row, hiding: shared)
                     }
                     if let title = group.leftOutTitle {
                         DisclosureGroup(title) {
                             ForEach(group.leftOut, id: \.key) { row in
                                 stationRow(row)
                             }
+                        }
+                    }
+                } header: {
+                    Text(group.title)
+                } footer: {
+                    // What every row would say, said once.
+                    if !shared.isEmpty {
+                        VStack(alignment: .leading, spacing: 2) {
+                            ForEach(shared, id: \.self) { Text($0) }
                         }
                     }
                 }
@@ -77,8 +87,8 @@ struct StationsView: View {
         }
     }
 
-    private func stationRow(_ row: StationRow) -> some View {
-        StationRowView(row: row, switches: StationSwitches.of(row, pending: pending)) { choice in
+    private func stationRow(_ row: StationRow, hiding shared: [String] = []) -> some View {
+        StationRowView(row: row, hiding: shared, switches: StationSwitches.of(row, pending: pending)) { choice in
             apply(choice, to: row)
         }
     }
@@ -100,10 +110,12 @@ struct StationsView: View {
     }
 }
 
-/// One station: its name, where it comes from and how far, why it has its place, and the two
-/// switches.
+/// One station: its name, where it comes from and how far, why it has its place (but for what
+/// the section says once), and a control for automatic, always or never.
 private struct StationRowView: View {
     let row: StationRow
+    /// Reasons the section's footer says for every row.
+    var hiding: [String] = []
     let switches: StationSwitches
     let choose: (StationChoice) -> Void
 
@@ -114,7 +126,7 @@ private struct StationRowView: View {
                 Text(row.detail)
                     .font(.caption)
                     .foregroundStyle(.readableSecondary)
-                ForEach(row.reasons, id: \.self) { reason in
+                ForEach(row.reasons.filter { !hiding.contains($0) }, id: \.self) { reason in
                     Text(reason)
                         .font(.caption)
                         .foregroundStyle(
@@ -123,14 +135,18 @@ private struct StationRowView: View {
                 }
             }
             .accessibilityElement(children: .combine)
-            Toggle(
-                "Always use",
-                isOn: Binding(
-                    get: { switches.pinned }, set: { choose(.pinSwitched(on: $0)) }))
-            Toggle(
-                "Never use",
-                isOn: Binding(
-                    get: { switches.excluded }, set: { choose(.excludeSwitched(on: $0)) }))
+            // The station's name is the label VoiceOver reads for the control.
+            Picker(
+                row.name,
+                selection: Binding(
+                    get: { StationMode(switches) }, set: { choose($0.choice) })
+            ) {
+                Text("Automatic").tag(StationMode.automatic)
+                Text("Always").tag(StationMode.always)
+                Text("Never").tag(StationMode.never)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
         }
         .padding(.vertical, 2)
     }
