@@ -1,0 +1,213 @@
+{
+ "displayFieldName": "sitename",
+ "features": [
+  {
+   "attributes": {
+    "id": "maz016",
+    "beachname": "Eastern Norfolk Area Beaches",
+    "siteid": "box",
+    "productdat": "11/20/2026",
+    "producttim": "409 PM EST",
+    "rip": "Low",
+    "uv": "Low",
+    "surf": "Around 2 feet.",
+    "wtemp": "in the lower 50s",
+    "weather": "Mostly sunny.",
+    "winds": "West 10 to 15 mph.",
+    "period": "Rest of today",
+    "idp_ingestdate": 1795209453000
+   },
+   "geometry": {
+    "rings": [
+     [
+      [
+       -70.95,
+       42.28
+      ],
+      [
+       -70.85,
+       42.33
+      ],
+      [
+       -70.8,
+       42.28
+      ],
+      [
+       -70.7,
+       42.22
+      ],
+      [
+       -70.74,
+       42.17
+      ],
+      [
+       -70.85,
+       42.22
+      ],
+      [
+       -70.95,
+       42.25
+      ],
+      [
+       -70.95,
+       42.28
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "attributes": {
+    "id": "maz007",
+    "beachname": "Eastern Essex Area Beaches",
+    "siteid": "box",
+    "productdat": "11/20/2026",
+    "producttim": "409 PM EST",
+    "rip": "Moderate",
+    "uv": "Moderate",
+    "surf": "2 to 3 feet.",
+    "wtemp": "in the lower 50s",
+    "weather": "Partly cloudy.",
+    "winds": "Northwest 5 to 10 mph.",
+    "period": "Rest of today",
+    "idp_ingestdate": 1795209453000
+   },
+   "geometry": {
+    "rings": [
+     [
+      [
+       -70.85,
+       42.64
+      ],
+      [
+       -70.72,
+       42.7
+      ],
+      [
+       -70.62,
+       42.66
+      ],
+      [
+       -70.66,
+       42.58
+      ],
+      [
+       -70.78,
+       42.55
+      ],
+      [
+       -70.88,
+       42.58
+      ],
+      [
+       -70.85,
+       42.64
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "attributes": {
+    "id": "maz020",
+    "beachname": "Eastern Plymouth Area Beaches",
+    "siteid": "box",
+    "productdat": "11/20/2026",
+    "producttim": "409 PM EST",
+    "rip": "High",
+    "uv": "High",
+    "surf": "3 to 5 feet.",
+    "wtemp": "in the upper 40s",
+    "weather": "Cloudy.",
+    "winds": "East 15 to 20 mph.",
+    "period": "Rest of today",
+    "idp_ingestdate": 1795209453000
+   },
+   "geometry": {
+    "rings": [
+     [
+      [
+       -70.7,
+       42.12
+      ],
+      [
+       -70.6,
+       42.16
+      ],
+      [
+       -70.52,
+       42.1
+      ],
+      [
+       -70.56,
+       42.0
+      ],
+      [
+       -70.66,
+       41.96
+      ],
+      [
+       -70.72,
+       42.04
+      ],
+      [
+       -70.7,
+       42.12
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "attributes": {
+    "id": "maz021",
+    "beachname": "Barnstable Area Beaches",
+    "siteid": "box",
+    "productdat": null,
+    "producttim": null,
+    "rip": null,
+    "uv": null,
+    "surf": null,
+    "wtemp": null,
+    "weather": null,
+    "winds": null,
+    "period": null,
+    "idp_ingestdate": 1795209453000
+   },
+   "geometry": {
+    "rings": [
+     [
+      [
+       -70.5,
+       41.8
+      ],
+      [
+       -70.38,
+       41.84
+      ],
+      [
+       -70.28,
+       41.78
+      ],
+      [
+       -70.34,
+       41.7
+      ],
+      [
+       -70.46,
+       41.68
+      ],
+      [
+       -70.52,
+       41.74
+      ],
+      [
+       -70.5,
+       41.8
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

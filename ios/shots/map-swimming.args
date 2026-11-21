@@ -1,0 +1,3 @@
+-seed -tab map -mapPreset swimming -mapAt 40.58,-73.82,0.3 -mapFindBeaches
+dark
+wait 60

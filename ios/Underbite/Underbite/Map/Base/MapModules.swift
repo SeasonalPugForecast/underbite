@@ -10,6 +10,7 @@ enum MapModules {
             StormsModule(controller: controller),
             StructureModule(controller: controller),
             RecordsModule(controller: controller),
+            BeachForecastModule(controller: controller),
             StationsModule(controller: controller),
             AccessModule(controller: controller),
             MineModule(controller: controller),
