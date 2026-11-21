@@ -103,18 +103,10 @@ struct ChartGeometry {
         let t0 = times.min() ?? 0
         let t1 = times.max() ?? t0 + 1
         xDomain = t0...(t1 > t0 ? t1 : t0 + 1)
-        // The view's ticks, thinned by position only (never relabelled) so the labels fit: the
-        // major ones on a narrow screen, and at most `limit` of them.
-        var offered = compact ? chart.xTicks.filter(\.major) : chart.xTicks
-        let limit = compact ? 5 : 12
-        var stride = max(1, (offered.count + limit - 1) / limit)
-        if !compact, stride > 1 {
-            // Hourly ticks, major every third: keep the stride a whole number of majors and
-            // start on a major so the labels land on regular hours.
-            stride = (stride + 2) / 3 * 3
-            if let first = offered.firstIndex(where: \.major) { offered.removeFirst(first) }
-        }
-        xTicks = offered.enumerated().filter { $0.offset % stride == 0 }.map(\.element)
+        // The view's ticks, thinned by position only (never relabelled) so no two labels collide:
+        // the day marks and the major ticks always survive, the minor ones fill the gaps.
+        xTicks = ChartTickThinning.thinned(
+            chart.xTicks, domain: xDomain, plotWidth: compact ? 300 : 640)
 
         let values = points.map(\.value)
         let lo = values.min() ?? 0
@@ -227,6 +219,10 @@ struct ChartPlot: View {
                 .annotation(position: .top, alignment: .trailing, spacing: 0) {
                     if geometry.thresholdLabelled.contains(index) {
                         Text(threshold.label).font(.caption2).foregroundStyle(.readableSecondary)
+                            .padding(.horizontal, 3)
+                            .background(
+                                Color(.secondarySystemGroupedBackground).opacity(0.9),
+                                in: RoundedRectangle(cornerRadius: 3))
                     }
                 }
         }
@@ -240,6 +236,10 @@ struct ChartPlot: View {
                     StrokeStyle(lineWidth: 1.5 * stroke, dash: ChartPalette.ruleDash(kind: rule.kind)))
                 .annotation(position: .top, alignment: .leading, spacing: 1) {
                     Text(rule.label).font(.caption).foregroundStyle(.readableSecondary)
+                        .padding(.horizontal, 3)
+                        .background(
+                            Color(.secondarySystemGroupedBackground).opacity(0.9),
+                            in: RoundedRectangle(cornerRadius: 3))
                 }
         }
         // Now goes under the curves and the event labels, which sit on a backing of their own
@@ -403,7 +403,15 @@ struct ChartKey: View {
                     Text(band.label)
                 }
             }
-            if !timesLine.isEmpty { Text(timesLine) }
+            if !timeMarkers.isEmpty {
+                // Each marker's own words in a wrapping layout: nothing is joined here.
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 12) { ForEach(timeMarkers, id: \.offset) { Text($0.label) } }
+                    VStack(alignment: .leading, spacing: 2) {
+                        ForEach(timeMarkers, id: \.offset) { Text($0.label) }
+                    }
+                }
+            }
             if !facts.isEmpty {
                 Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 12, verticalSpacing: 2) {
                     ForEach(Array(facts.enumerated()), id: \.offset) { _, fact in
@@ -431,11 +439,9 @@ struct ChartKey: View {
         return chart.bands.filter { !$0.label.isEmpty && seen.insert($0.kind + $0.label).inserted }
     }
 
-    /// The sunrise and sunset markers' own words, in time order.
-    private var timesLine: String {
-        chart.markers
-            .filter { ChartPalette.symbol(marker: $0.kind) != nil }
-            .map(\.label)
-            .joined(separator: " · ")
+    /// The sunrise and sunset markers, in time order.
+    private var timeMarkers: [(offset: Int, label: String)] {
+        chart.markers.filter { ChartPalette.symbol(marker: $0.kind) != nil }
+            .enumerated().map { (offset: $0.offset, label: $0.element.label) }
     }
 }

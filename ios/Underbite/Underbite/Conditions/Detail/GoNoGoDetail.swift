@@ -20,7 +20,8 @@ struct GoNoGoDetail: View {
                     Image(systemName: Self.symbol(day.verdict)).foregroundStyle(Self.color(day.verdict))
                 }
                 .accessibilityElement(children: .combine)
-                ForEach(Array(day.reasons.enumerated()), id: \.offset) { _, reason in
+                let listed = GoNoGoReasons.listed(day.reasons, verdictLine: day.summary)
+                ForEach(Array(listed.enumerated()), id: \.offset) { _, reason in
                     if let link = reason.link.flatMap(URL.init(string:)) {
                         Link(reason.text, destination: link)
                     } else {

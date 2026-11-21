@@ -62,7 +62,7 @@ struct InsightChart: View {
             .foregroundStyle(Palette.tertiaryText.opacity(0.12))
             .cornerRadius(Self.bar / 2, style: .continuous)
             .annotation(position: .top, alignment: .leading, spacing: 3) {
-                Text(bar.label)
+                Text(bar.spoken)
                     .font(.caption)
                     .foregroundStyle(bar.peak ? Color.primary : Palette.secondaryText)
                     .fontWeight(bar.peak ? .semibold : .regular)
