@@ -46,7 +46,7 @@ expression: json
             "text": "Provisional data, subject to revision."
           }
         ],
-        "accessibility": "Now. River flow 12.4 cfs. Sun and moon 1%."
+        "accessibility": "Now. River flow 12.4 cfs. Moon 1%."
       },
       "compact": {
         "headline": {
@@ -55,7 +55,8 @@ expression: json
           "unit": "cfs"
         },
         "lines": [
-          "Sun and moon 1%"
+          "River flow · normal, 45th percentile for Nov 8",
+          "Moon 1%"
         ],
         "spark": []
       },
@@ -76,7 +77,7 @@ expression: json
           },
           {
             "card": "sun_moon",
-            "label": "Sun and moon",
+            "label": "Moon",
             "headline": {
               "value": 0.5171947,
               "text": "1",
@@ -95,7 +96,7 @@ expression: json
       "chrome": {
         "id": "flow",
         "title": "River flow",
-        "footnote": "Flow 12.4 cfs · CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY · 0.0 mi · 45 min ago",
+        "footnote": "CROTON R AT NEW CROTON DAM NR CROTON-ON-HUDSON NY · 0.0 mi · 45 min ago",
         "credits": [
           {
             "source": "USGS",
@@ -9261,7 +9262,7 @@ expression: json
     "x_ticks": [
       {
         "t": 1794114000,
-        "label": "12 AM",
+        "label": "Sun",
         "major": true
       },
       {
@@ -9381,7 +9382,7 @@ expression: json
       },
       {
         "t": 1794200400,
-        "label": "12 AM",
+        "label": "Mon",
         "major": true
       },
       {
@@ -9510,7 +9511,7 @@ expression: json
           "x_ticks": [
             {
               "t": 1794114000,
-              "label": "12 AM",
+              "label": "Sun",
               "major": true
             },
             {
@@ -9630,7 +9631,7 @@ expression: json
             },
             {
               "t": 1794200400,
-              "label": "12 AM",
+              "label": "Mon",
               "major": true
             },
             {
@@ -9768,7 +9769,7 @@ expression: json
           "x_ticks": [
             {
               "t": 1794114000,
-              "label": "12 AM",
+              "label": "Sun",
               "major": true
             },
             {
@@ -9888,7 +9889,7 @@ expression: json
             },
             {
               "t": 1794200400,
-              "label": "12 AM",
+              "label": "Mon",
               "major": true
             },
             {
@@ -10026,7 +10027,7 @@ expression: json
           "x_ticks": [
             {
               "t": 1794114000,
-              "label": "12 AM",
+              "label": "Sun",
               "major": true
             },
             {
@@ -10146,7 +10147,7 @@ expression: json
             },
             {
               "t": 1794200400,
-              "label": "12 AM",
+              "label": "Mon",
               "major": true
             },
             {
@@ -10284,7 +10285,7 @@ expression: json
           "x_ticks": [
             {
               "t": 1794114000,
-              "label": "12 AM",
+              "label": "Sun",
               "major": true
             },
             {
@@ -10404,7 +10405,7 @@ expression: json
             },
             {
               "t": 1794200400,
-              "label": "12 AM",
+              "label": "Mon",
               "major": true
             },
             {
@@ -10542,7 +10543,7 @@ expression: json
           "x_ticks": [
             {
               "t": 1794114000,
-              "label": "12 AM",
+              "label": "Sun",
               "major": true
             },
             {
@@ -10662,7 +10663,7 @@ expression: json
             },
             {
               "t": 1794200400,
-              "label": "12 AM",
+              "label": "Mon",
               "major": true
             },
             {
@@ -10899,7 +10900,7 @@ expression: json
           "x_ticks": [
             {
               "t": 1794114000,
-              "label": "12 AM",
+              "label": "Sun",
               "major": true
             },
             {
@@ -11019,7 +11020,7 @@ expression: json
             },
             {
               "t": 1794200400,
-              "label": "12 AM",
+              "label": "Mon",
               "major": true
             },
             {
@@ -11213,7 +11214,7 @@ expression: json
           "x_ticks": [
             {
               "t": 1794114000,
-              "label": "12 AM",
+              "label": "Sun",
               "major": true
             },
             {
@@ -11333,7 +11334,7 @@ expression: json
             },
             {
               "t": 1794200400,
-              "label": "12 AM",
+              "label": "Mon",
               "major": true
             },
             {
