@@ -58,7 +58,7 @@ Filtering by month is a request parameter (`month=10` or a range such as `month=
 | `scientificName`, `species`, `speciesKey`, `taxonKey`, `taxonRank` | identification |
 | `decimalLatitude`, `decimalLongitude`, `geodeticDatum` | position (WGS84) |
 | `coordinateUncertaintyInMeters` | accuracy (119.0 in the first sample); iNaturalist obscured records carry large values |
-| `eventDate` | local date-time without offset in the sample (`2026-03-31T10:57:35`) |
+| `eventDate` | local date-time without offset in the sample (`2026-03-12T16:20:05`) |
 | `year`, `month`, `day` | integers; missing when not known |
 | `basisOfRecord` | `HUMAN_OBSERVATION` in the sample |
 | `occurrenceStatus` | `DETECTED` |

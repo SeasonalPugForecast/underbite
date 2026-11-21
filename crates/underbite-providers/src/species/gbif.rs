@@ -703,12 +703,12 @@ mod tests {
     #[test]
     fn inaturalist_records_and_partial_dates_and_photos() {
         let body = br#"{"offset":20,"limit":20,"endOfRecords":false,"count":265,"results":[
-          {"key":6235289760,"gbifID":"6235289760","datasetKey":"50c9509d-22c7-4a22-a47d-8c48425ef4a7",
+          {"key":9100000417,"gbifID":"9100000417","datasetKey":"50c9509d-22c7-4a22-a47d-8c48425ef4a7",
            "scientificName":"Morone saxatilis (Walbaum, 1792)","decimalLatitude":40.71,"decimalLongitude":-74.02,
            "coordinateUncertaintyInMeters":27908.0,
            "informationWithheld":"Coordinate uncertainty increased to 27908m to protect threatened taxon",
-           "year":2026,"month":4,"eventDate":"2026-04-11T08:25",
-           "occurrenceID":"https://www.inaturalist.org/observations/348935944",
+           "year":2026,"month":4,"eventDate":"2026-04-19T14:40",
+           "occurrenceID":"https://www.inaturalist.org/observations/9100000523",
            "license":"http://creativecommons.org/licenses/by/4.0/legalcode",
            "media":[{"type":"StillImage","identifier":"https://example.invalid/a.jpg"},
                     {"type":"StillImage","identifier":"https://example.invalid/b.jpg",
@@ -723,7 +723,7 @@ mod tests {
         assert_eq!(page.records.len(), 2);
         assert_eq!(page.next_offset, Some(40));
         let a = &page.records[0];
-        assert_eq!(a.record.id, "6235289760");
+        assert_eq!(a.record.id, "9100000417");
         assert_eq!(a.record.taxon, "Morone saxatilis (Walbaum, 1792)");
         assert_eq!(a.inaturalist_id, Some(348_935_944));
         assert!(a.record.obscured);
@@ -762,7 +762,7 @@ mod tests {
 
         let inat = SpeciesRecord {
             source: SourceId::INATURALIST,
-            id: "348935944".into(),
+            id: "9100000523".into(),
             ..a.record.clone()
         };
         let kept = without_inaturalist_duplicates(page.records.clone(), &[inat]);
@@ -770,7 +770,7 @@ mod tests {
         assert_eq!(kept[0].record.id, "77");
         let other = SpeciesRecord {
             source: SourceId::GBIF,
-            id: "348935944".into(),
+            id: "9100000523".into(),
             ..a.record.clone()
         };
         assert_eq!(

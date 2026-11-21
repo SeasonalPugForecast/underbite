@@ -252,8 +252,8 @@ mod tests {
     fn inaturalist_ids_come_from_observation_urls() {
         for (url, want) in [
             (
-                "https://www.inaturalist.org/observations/351381638",
-                Some(351_381_638),
+                "https://www.inaturalist.org/observations/9100000631",
+                Some(9_100_000_631),
             ),
             ("http://inaturalist.org/observations/12/", Some(12)),
             ("https://www.inaturalist.org/observations/7?x=1", Some(7)),
