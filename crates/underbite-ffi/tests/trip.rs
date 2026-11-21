@@ -661,7 +661,14 @@ fn a_view_without_snapshots_still_has_the_sky_and_says_what_is_unavailable() {
     assert_eq!(v["days"].as_array().unwrap().len(), 2);
     assert_eq!(cell(&v, 0, "sun")["basis"], "certain");
     assert_eq!(cell(&v, 0, "verdict")["basis"], "unavailable");
-    assert_eq!(cell(&v, 0, "flow")["basis"], "unavailable");
+    // The tidal place has no river flow cell to show as unavailable.
+    assert!(
+        v["days"][0]["places"][0]["cells"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|c| c["kind"] != "flow")
+    );
     let err = trip_view(
         trip_json,
         vec![data("battery", Some("{".into()), None)],

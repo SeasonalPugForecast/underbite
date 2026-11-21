@@ -15,7 +15,6 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       High 7:07 AM, 5.6 ft MLLW
       Low 1:34 PM, 0.0 ft MLLW
       High 7:27 PM, 4.7 ft MLLW
-    River flow = — [unavailable: no source here]
     Water temperature = 53 °F [typical for these dates, 2016–2025, reanalysis] (Open-Meteo Marine)
       Colder than the fish like it
       Most years 49 °F to 58 °F
@@ -29,7 +28,7 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       Big nibble 10:28 PM to 12:28 AM
     reason Gust Fails: Luna's not impressed: gusts to 25 mph, your limit is 21 mph
     windows 0
-  acc The Battery, Sun Nov 8: Go or no go, forecast, issued Nov 8, 7:30 AM: No-go. No-go: gusts 25 mph over your 21 mph limit. Luna's not impressed: gusts to 25 mph, your limit is 21 mph; Fishing windows, certain: No fishing windows in this period. From tide, light and solunar only; Tide, certain: Low 12:59 AM, 0.1 ft MLLW. High 7:07 AM, 5.6 ft MLLW. Low 1:34 PM, 0.0 ft MLLW. High 7:27 PM, 4.7 ft MLLW; River flow, unavailable: no source here; Water temperature, typical for these dates, 2016–2025, reanalysis: 53 °F. Below the species' preferred range. Most years 49 °F to 58 °F; Sun, certain: 6:34 AM to 4:45 PM; Moon, certain: Waning crescent. 1% lit; Solunar, certain: Minor 5:31 to 6:31 AM. Major 10:05 AM to 12:05 PM. Minor 3:31 to 4:31 PM. Major 10:28 PM to 12:28 AM
+  acc The Battery, Sun Nov 8: Go or no go, forecast, issued Nov 8, 7:30 AM: No-go. No-go: gusts 25 mph over your 21 mph limit. Luna's not impressed: gusts to 25 mph, your limit is 21 mph; Fishing windows, certain: No fishing windows in this period. From tide, light and solunar only; Tide, certain: Low 12:59 AM, 0.1 ft MLLW. High 7:07 AM, 5.6 ft MLLW. Low 1:34 PM, 0.0 ft MLLW. High 7:27 PM, 4.7 ft MLLW; Water temperature, typical for these dates, 2016–2025, reanalysis: 53 °F. Below the species' preferred range. Most years 49 °F to 58 °F; Sun, certain: 6:34 AM to 4:45 PM; Moon, certain: Waning crescent. 1% lit; Solunar, certain: Minor 5:31 to 6:31 AM. Major 10:05 AM to 12:05 PM. Minor 3:31 to 4:31 PM. Major 10:28 PM to 12:28 AM
 2026-11-09 Mon Nov 9
   spot-battery past false today false verdict Some(Go) storm false
     Luna's verdict = Go [forecast, issued Nov 8, 7:30 AM] (Open-Meteo)
@@ -42,7 +41,6 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       High 7:44 AM, 5.6 ft MLLW
       Low 2:18 PM, 0.0 ft MLLW
       High 8:07 PM, 4.6 ft MLLW
-    River flow = — [unavailable: no source here]
     Water temperature = 53 °F [typical for these dates, 2016–2025, reanalysis] (Open-Meteo Marine)
       Colder than the fish like it
       Most years 49 °F to 58 °F
@@ -56,7 +54,7 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       Small nibble 4:03 to 5:03 PM
       Big nibble 11:17 PM to 1:17 AM
     windows 1
-  acc The Battery, Mon Nov 9: Go or no go, forecast, issued Nov 8, 7:30 AM: Go. Good conditions. Luna approves; Fishing windows, certain: 6:15 to 7:45 AM. Incoming tide, Low light, Solunar. From tide, light and solunar only; Tide, certain: Low 1:40 AM, 0.2 ft MLLW. High 7:44 AM, 5.6 ft MLLW. Low 2:18 PM, 0.0 ft MLLW. High 8:07 PM, 4.6 ft MLLW; River flow, unavailable: no source here; Water temperature, typical for these dates, 2016–2025, reanalysis: 53 °F. Below the species' preferred range. Most years 49 °F to 58 °F; Sun, certain: 6:35 AM to 4:44 PM; Moon, certain: New moon. 0% lit; Solunar, certain: Minor 6:37 to 7:37 AM. Major 10:28 PM to 12:28 AM. Minor 6:37 to 7:37 AM. Major 10:53 AM to 12:53 PM. Minor 4:03 to 5:03 PM. Major 11:17 PM to 1:17 AM
+  acc The Battery, Mon Nov 9: Go or no go, forecast, issued Nov 8, 7:30 AM: Go. Good conditions. Luna approves; Fishing windows, certain: 6:15 to 7:45 AM. Incoming tide, Low light, Solunar. From tide, light and solunar only; Tide, certain: Low 1:40 AM, 0.2 ft MLLW. High 7:44 AM, 5.6 ft MLLW. Low 2:18 PM, 0.0 ft MLLW. High 8:07 PM, 4.6 ft MLLW; Water temperature, typical for these dates, 2016–2025, reanalysis: 53 °F. Below the species' preferred range. Most years 49 °F to 58 °F; Sun, certain: 6:35 AM to 4:44 PM; Moon, certain: New moon. 0% lit; Solunar, certain: Minor 6:37 to 7:37 AM. Major 10:28 PM to 12:28 AM. Minor 6:37 to 7:37 AM. Major 10:53 AM to 12:53 PM. Minor 4:03 to 5:03 PM. Major 11:17 PM to 1:17 AM
 2026-11-10 Tue Nov 10
   spot-battery past false today false verdict None storm false
     Luna's verdict = — [unavailable: outside the forecast]
@@ -68,7 +66,6 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       High 8:21 AM, 5.5 ft MLLW
       Low 3:00 PM, 0.1 ft MLLW
       High 8:47 PM, 4.4 ft MLLW
-    River flow = — [unavailable: no source here]
     Water temperature = 53 °F [typical for these dates, 2016–2025, reanalysis] (Open-Meteo Marine)
       Colder than the fish like it
       Most years 49 °F to 58 °F
@@ -81,7 +78,7 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       Big nibble 11:43 AM to 1:43 PM
       Small nibble 4:41 to 5:41 PM
     windows 1
-  acc The Battery, Tue Nov 10: Go or no go, unavailable: outside the forecast; Fishing windows, certain: 6:30 to 7:45 AM. Incoming tide, Low light. From tide, light and solunar only; Tide, certain: Low 2:19 AM, 0.3 ft MLLW. High 8:21 AM, 5.5 ft MLLW. Low 3:00 PM, 0.1 ft MLLW. High 8:47 PM, 4.4 ft MLLW; River flow, unavailable: no source here; Water temperature, typical for these dates, 2016–2025, reanalysis: 53 °F. Below the species' preferred range. Most years 49 °F to 58 °F; Sun, certain: 6:36 AM to 4:43 PM; Moon, certain: Waxing crescent. 2% lit; Solunar, certain: Minor 7:41 to 8:41 AM. Major 11:17 PM to 1:17 AM. Minor 7:41 to 8:41 AM. Major 11:43 AM to 1:43 PM. Minor 4:41 to 5:41 PM
+  acc The Battery, Tue Nov 10: Go or no go, unavailable: outside the forecast; Fishing windows, certain: 6:30 to 7:45 AM. Incoming tide, Low light. From tide, light and solunar only; Tide, certain: Low 2:19 AM, 0.3 ft MLLW. High 8:21 AM, 5.5 ft MLLW. Low 3:00 PM, 0.1 ft MLLW. High 8:47 PM, 4.4 ft MLLW; Water temperature, typical for these dates, 2016–2025, reanalysis: 53 °F. Below the species' preferred range. Most years 49 °F to 58 °F; Sun, certain: 6:36 AM to 4:43 PM; Moon, certain: Waxing crescent. 2% lit; Solunar, certain: Minor 7:41 to 8:41 AM. Major 11:17 PM to 1:17 AM. Minor 7:41 to 8:41 AM. Major 11:43 AM to 1:43 PM. Minor 4:41 to 5:41 PM
 check Regulations https://dec.ny.gov/things-to-do/saltwater-fishing | Saltwater regulations | Some("New York State Department of Environmental Conservation, link checked 2026-11-16") | None
 check Licence https://dec.ny.gov/regulatory/permits-licenses | Fishing licence | Some("New York State Department of Environmental Conservation, link checked 2026-11-16") | None
 check Regulations https://www.fisheries.noaa.gov/new-england-mid-atlantic/recreational-fishing/recreational-fishing-regulations-species | Federal waters regulations | Some("NOAA Fisheries Greater Atlantic, link checked 2026-11-16") | None

@@ -754,14 +754,11 @@ impl PlaceCtx<'_> {
 }
 
 /// Whether a kind of cell is a measure of this water type: tides need salt water, and river
-/// flow needs fresh water or a tidal river.
+/// flow needs fresh water (a tidal river with a reading keeps its cell).
 const fn applies(kind: TripCellKind, water_type: WaterType) -> bool {
     match kind {
         TripCellKind::Tides => matches!(water_of(water_type), Water::Salt),
-        TripCellKind::Flow => !matches!(
-            water_type,
-            WaterType::BayInshore | WaterType::Surf | WaterType::Nearshore | WaterType::Offshore
-        ),
+        TripCellKind::Flow => matches!(water_of(water_type), Water::Fresh),
         _ => true,
     }
 }
@@ -1786,6 +1783,10 @@ pub(in crate::view) mod tests {
         assert_eq!(
             today.cells.iter().map(|c| c.kind).collect::<Vec<_>>(),
             TripCellKind::ALL
+                .into_iter()
+                .filter(|k| *k != TripCellKind::Flow)
+                .collect::<Vec<_>>(),
+            "no river flow at a tidal place that has none"
         );
         let verdict = cell(today, TripCellKind::Verdict);
         assert_eq!(verdict.basis, CellBasis::Forecast);
@@ -1882,13 +1883,14 @@ pub(in crate::view) mod tests {
         let today = day(&v, 0, 0);
         let kinds: Vec<TripCellKind> = today.cells.iter().map(|c| c.kind).collect();
         assert!(!kinds.contains(&TripCellKind::Flow), "{kinds:?}");
+        assert!(!today.accessibility.contains("River flow"));
         assert!(kinds.contains(&TripCellKind::Tides));
         assert!(!today.accessibility.contains("River flow"));
         // Fresh water has no tides; a tidal river keeps both.
         assert!(!applies(TripCellKind::Tides, WaterType::RiverStream));
         assert!(applies(TripCellKind::Flow, WaterType::RiverStream));
         assert!(applies(TripCellKind::Tides, WaterType::TidalRiverEstuary));
-        assert!(applies(TripCellKind::Flow, WaterType::TidalRiverEstuary));
+        assert!(!applies(TripCellKind::Flow, WaterType::TidalRiverEstuary));
     }
 
     #[test]

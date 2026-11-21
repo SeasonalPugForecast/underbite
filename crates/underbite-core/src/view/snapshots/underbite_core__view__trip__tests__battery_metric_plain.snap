@@ -15,7 +15,6 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       High 07:07, 1.7 m MLLW
       Low 13:34, 0.0 m MLLW
       High 19:27, 1.4 m MLLW
-    River flow = — [unavailable: no source here]
     Water temperature = 11.5 °C [typical for these dates, 2016–2025, reanalysis] (Open-Meteo Marine)
       Below the species' preferred range
       Most years 9.2 °C to 14.4 °C
@@ -29,7 +28,7 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       Major 22:28 to 00:28
     reason Gust Fails: No-go: gusts 40 km/h over your 33 km/h limit
     windows 0
-  acc The Battery, Sun Nov 8: Go or no go, forecast, issued Nov 8, 07:30: No-go. No-go: gusts 40 km/h over your 33 km/h limit; Fishing windows, certain: No fishing windows in this period. From tide, light and solunar only; Tide, certain: Low 00:59, 0.0 m MLLW. High 07:07, 1.7 m MLLW. Low 13:34, 0.0 m MLLW. High 19:27, 1.4 m MLLW; River flow, unavailable: no source here; Water temperature, typical for these dates, 2016–2025, reanalysis: 11.5 °C. Below the species' preferred range. Most years 9.2 °C to 14.4 °C; Sun, certain: 06:34 to 16:45; Moon, certain: Waning crescent. 1% lit; Solunar, certain: Minor 05:31 to 06:31. Major 10:05 to 12:05. Minor 15:31 to 16:31. Major 22:28 to 00:28
+  acc The Battery, Sun Nov 8: Go or no go, forecast, issued Nov 8, 07:30: No-go. No-go: gusts 40 km/h over your 33 km/h limit; Fishing windows, certain: No fishing windows in this period. From tide, light and solunar only; Tide, certain: Low 00:59, 0.0 m MLLW. High 07:07, 1.7 m MLLW. Low 13:34, 0.0 m MLLW. High 19:27, 1.4 m MLLW; Water temperature, typical for these dates, 2016–2025, reanalysis: 11.5 °C. Below the species' preferred range. Most years 9.2 °C to 14.4 °C; Sun, certain: 06:34 to 16:45; Moon, certain: Waning crescent. 1% lit; Solunar, certain: Minor 05:31 to 06:31. Major 10:05 to 12:05. Minor 15:31 to 16:31. Major 22:28 to 00:28
 2026-11-09 Mon Nov 9
   spot-battery past false today false verdict Some(Go) storm false
     Go or no go = Go [forecast, issued Nov 8, 07:30] (Open-Meteo)
@@ -42,7 +41,6 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       High 07:44, 1.7 m MLLW
       Low 14:18, 0.0 m MLLW
       High 20:07, 1.4 m MLLW
-    River flow = — [unavailable: no source here]
     Water temperature = 11.5 °C [typical for these dates, 2016–2025, reanalysis] (Open-Meteo Marine)
       Below the species' preferred range
       Most years 9.2 °C to 14.4 °C
@@ -56,7 +54,7 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       Minor 16:03 to 17:03
       Major 23:17 to 01:17
     windows 1
-  acc The Battery, Mon Nov 9: Go or no go, forecast, issued Nov 8, 07:30: Go. Good conditions; Fishing windows, certain: 06:15 to 07:45. Incoming tide, Low light, Solunar. From tide, light and solunar only; Tide, certain: Low 01:40, 0.1 m MLLW. High 07:44, 1.7 m MLLW. Low 14:18, 0.0 m MLLW. High 20:07, 1.4 m MLLW; River flow, unavailable: no source here; Water temperature, typical for these dates, 2016–2025, reanalysis: 11.5 °C. Below the species' preferred range. Most years 9.2 °C to 14.4 °C; Sun, certain: 06:35 to 16:44; Moon, certain: New moon. 0% lit; Solunar, certain: Minor 06:37 to 07:37. Major 22:28 to 00:28. Minor 06:37 to 07:37. Major 10:53 to 12:53. Minor 16:03 to 17:03. Major 23:17 to 01:17
+  acc The Battery, Mon Nov 9: Go or no go, forecast, issued Nov 8, 07:30: Go. Good conditions; Fishing windows, certain: 06:15 to 07:45. Incoming tide, Low light, Solunar. From tide, light and solunar only; Tide, certain: Low 01:40, 0.1 m MLLW. High 07:44, 1.7 m MLLW. Low 14:18, 0.0 m MLLW. High 20:07, 1.4 m MLLW; Water temperature, typical for these dates, 2016–2025, reanalysis: 11.5 °C. Below the species' preferred range. Most years 9.2 °C to 14.4 °C; Sun, certain: 06:35 to 16:44; Moon, certain: New moon. 0% lit; Solunar, certain: Minor 06:37 to 07:37. Major 22:28 to 00:28. Minor 06:37 to 07:37. Major 10:53 to 12:53. Minor 16:03 to 17:03. Major 23:17 to 01:17
 2026-11-10 Tue Nov 10
   spot-battery past false today false verdict None storm false
     Go or no go = — [unavailable: outside the forecast]
@@ -68,7 +66,6 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       High 08:21, 1.7 m MLLW
       Low 15:00, 0.0 m MLLW
       High 20:47, 1.3 m MLLW
-    River flow = — [unavailable: no source here]
     Water temperature = 11.5 °C [typical for these dates, 2016–2025, reanalysis] (Open-Meteo Marine)
       Below the species' preferred range
       Most years 9.2 °C to 14.4 °C
@@ -81,7 +78,7 @@ column spot-battery | The Battery | Some("Lower Hudson") | Tidal river or estuar
       Major 11:43 to 13:43
       Minor 16:41 to 17:41
     windows 1
-  acc The Battery, Tue Nov 10: Go or no go, unavailable: outside the forecast; Fishing windows, certain: 06:30 to 07:45. Incoming tide, Low light. From tide, light and solunar only; Tide, certain: Low 02:19, 0.1 m MLLW. High 08:21, 1.7 m MLLW. Low 15:00, 0.0 m MLLW. High 20:47, 1.3 m MLLW; River flow, unavailable: no source here; Water temperature, typical for these dates, 2016–2025, reanalysis: 11.5 °C. Below the species' preferred range. Most years 9.2 °C to 14.4 °C; Sun, certain: 06:36 to 16:43; Moon, certain: Waxing crescent. 2% lit; Solunar, certain: Minor 07:41 to 08:41. Major 23:17 to 01:17. Minor 07:41 to 08:41. Major 11:43 to 13:43. Minor 16:41 to 17:41
+  acc The Battery, Tue Nov 10: Go or no go, unavailable: outside the forecast; Fishing windows, certain: 06:30 to 07:45. Incoming tide, Low light. From tide, light and solunar only; Tide, certain: Low 02:19, 0.1 m MLLW. High 08:21, 1.7 m MLLW. Low 15:00, 0.0 m MLLW. High 20:47, 1.3 m MLLW; Water temperature, typical for these dates, 2016–2025, reanalysis: 11.5 °C. Below the species' preferred range. Most years 9.2 °C to 14.4 °C; Sun, certain: 06:36 to 16:43; Moon, certain: Waxing crescent. 2% lit; Solunar, certain: Minor 07:41 to 08:41. Major 23:17 to 01:17. Minor 07:41 to 08:41. Major 11:43 to 13:43. Minor 16:41 to 17:41
 check Regulations https://dec.ny.gov/things-to-do/saltwater-fishing | Saltwater regulations | Some("New York State Department of Environmental Conservation, link checked 2026-11-16") | None
 check Licence https://dec.ny.gov/regulatory/permits-licenses | Fishing licence | Some("New York State Department of Environmental Conservation, link checked 2026-11-16") | None
 check Regulations https://www.fisheries.noaa.gov/new-england-mid-atlantic/recreational-fishing/recreational-fishing-regulations-species | Federal waters regulations | Some("NOAA Fisheries Greater Atlantic, link checked 2026-11-16") | None
