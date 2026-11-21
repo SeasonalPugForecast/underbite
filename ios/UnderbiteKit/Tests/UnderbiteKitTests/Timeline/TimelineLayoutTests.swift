@@ -113,4 +113,30 @@ final class TimelineLayoutTests: XCTestCase {
         XCTAssertLessThan(range.lowerBound, range.upperBound)
         XCTAssertNil(TimelineLayout.range(of: try lane("light", in: try timeline())))
     }
+
+    func testTheFootnoteNamesEachNoticeOnce() throws {
+        let timeline = try timeline()
+        let lanes = timeline.lanes
+        let notices = TimelineLayout.notices(of: lanes)
+        let texts = notices.map(\.text)
+        XCTAssertEqual(Set(texts).count, texts.count)
+        XCTAssertEqual(texts.filter { $0 == "Not for navigation." }.count, 1)
+        // Nothing a lane said is lost.
+        XCTAssertEqual(Set(texts), Set(lanes.flatMap(\.notices).map(\.text)))
+        // Every lane's credits, for the caller to join.
+        XCTAssertEqual(TimelineLayout.credits(of: lanes), lanes.flatMap(\.credits))
+    }
+
+    func testDuplicateNoticesAcrossLanesAreShownOnce() throws {
+        var first = try lane("tide", in: try timeline())
+        var second = try lane("current", in: try timeline())
+        first.notices = [.init(kind: "navigation", text: "Not for navigation.")]
+        second.notices = [
+            .init(kind: "navigation", text: "Not for navigation."),
+            .init(kind: "other", text: "Another."),
+        ]
+        XCTAssertEqual(
+            TimelineLayout.notices(of: [first, second]).map(\.text),
+            ["Not for navigation.", "Another."])
+    }
 }

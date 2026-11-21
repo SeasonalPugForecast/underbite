@@ -2,8 +2,8 @@ import SwiftUI
 import UnderbiteKit
 
 /// The day timeline: one row per lane on one shared time axis, scrolled together. Hours are a
-/// fixed width, so a wider screen shows more of them. Tap an hour to read its values; each lane's
-/// credits and notices sit underneath, whole. The words drawn in the strip stop growing at the
+/// fixed width, so a wider screen shows more of them. Tap an hour to read its values; the lanes'
+/// credits and notices sit underneath once, whole. The words drawn in the strip stop growing at the
 /// largest standard text size (a lane's values are read aloud and are on the card pages); the
 /// lane names, the readings and the credits follow every size.
 struct DayTimelineView: View {
@@ -59,9 +59,7 @@ struct DayTimelineView: View {
                     }
                 }
                 if let selected { readings(at: selected) }
-                ForEach(lanes, id: \.kind) { lane in
-                    LaneFootnote(lane: lane)
-                }
+                TimelineFootnote(lanes: lanes)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
@@ -212,16 +210,18 @@ struct DayTimelineView: View {
     }
 }
 
-/// One lane's sources and notices, under the strip: the timeline stands apart from the cards.
-private struct LaneFootnote: View {
-    let lane: ViewModel.TimelineLane
+/// The lanes' notices (each text once) and sources (one line), under the strip: the timeline
+/// stands apart from the cards.
+private struct TimelineFootnote: View {
+    let lanes: [ViewModel.TimelineLane]
 
     var body: some View {
-        if !lane.credits.isEmpty || !lane.notices.isEmpty {
+        let notices = TimelineLayout.notices(of: lanes)
+        let credits = TimelineLayout.credits(of: lanes)
+        if !credits.isEmpty || !notices.isEmpty {
             VStack(alignment: .leading, spacing: 2) {
-                Text(lane.label).font(.caption.weight(.semibold))
-                NoticeList(notices: lane.notices)
-                CreditsLine(credits: lane.credits)
+                NoticeList(notices: notices)
+                CreditsLine(credits: credits)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -251,7 +251,7 @@ private struct TimelineAxis: View {
                         .foregroundStyle(Color.primary))
                 let width = text.measure(in: size).width
                 let left = x + 3
-                guard left >= lastEnd + 4, left >= shown.lowerBound,
+                guard left >= lastEnd + 8, left >= shown.lowerBound,
                     left + width <= shown.upperBound
                 else { continue }
                 context.draw(text, at: CGPoint(x: left, y: size.height / 2 - 1), anchor: .leading)

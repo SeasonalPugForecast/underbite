@@ -33,6 +33,18 @@ nonisolated enum TimelineLayout {
         }
     }
 
+    /// The notices of every lane, each text once and whole, in lane order: "Not for navigation."
+    /// belongs to several lanes and is shown a single time.
+    static func notices(of lanes: [ViewModel.TimelineLane]) -> [ViewModel.Notice] {
+        var seen = Set<String>()
+        return lanes.flatMap(\.notices).filter { seen.insert($0.text).inserted }
+    }
+
+    /// The credits of every lane, in lane order. The caller joins them, which names each text once.
+    static func credits(of lanes: [ViewModel.TimelineLane]) -> [ViewModel.Credit] {
+        lanes.flatMap(\.credits)
+    }
+
     static func x(_ t: Int64, start: Int64, hourWidth: Double = hourWidth) -> Double {
         Double(t - start) / Double(secondsPerHour) * hourWidth
     }
