@@ -1,5 +1,8 @@
 # Privacy
 
+*Last updated: 21 November 2026.* This policy is for the Underbite iPhone app
+(<https://github.com/SeasonalPugForecast/underbite>).
+
 Underbite has no accounts, no server of its own and no analytics. Nothing in it identifies you, and
 nothing about you is collected by the people who make it. The app shows the same text on its Privacy
 screen, with the rounding you have chosen.
@@ -60,5 +63,6 @@ app's own container.
 
 ## Questions
 
-Open an issue in the project's repository. The source is public, so what is written here can be
-checked against the code.
+Open an issue at <https://github.com/SeasonalPugForecast/underbite/issues>, or email
+<pugforecast@gmail.com>. The source is public, so what is written here can be checked against the
+code.
