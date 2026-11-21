@@ -51,13 +51,14 @@ pub struct Wetlands {
 }
 
 impl Wetlands {
-    /// The rule: tidal when any code starts with `R1` or `E`; not tidal when there are
+    /// The rule: tidal when any code starts with `R1`, `E` or `M` (the marine system: open
+    /// salt water); not tidal when there are
     /// polygons and none matches; unknown when there are none. A truncated answer that has
     /// shown no tidal code says nothing (the missing polygons may hold one), so it is unknown.
     pub fn tide(&self) -> Tide {
         let codes = || self.codes.iter().map(|c| c.trim());
         let river = codes().any(|c| starts_with_ci(c, "R1"));
-        let estuary = codes().any(|c| starts_with_ci(c, "E"));
+        let estuary = codes().any(|c| starts_with_ci(c, "E") || starts_with_ci(c, "M"));
         if river || estuary {
             return Tide::Tidal { estuarine: !river };
         }
@@ -115,6 +116,14 @@ mod tests {
         assert_eq!(
             tide(&["E1UBL6", "R1UBV"], false),
             Tide::Tidal { estuarine: false }
+        );
+    }
+
+    #[test]
+    fn marine_codes_are_tidal_water() {
+        assert_eq!(
+            tide(&["M2AB", "PEM1C"], false),
+            Tide::Tidal { estuarine: true }
         );
     }
 
