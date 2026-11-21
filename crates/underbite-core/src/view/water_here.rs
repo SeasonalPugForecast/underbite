@@ -240,11 +240,9 @@ pub fn build(f: &Formatter, input: &WaterHereInput<'_>) -> WaterHereVm {
         None => s.get(Key::WaterHereTypeUnknown).to_owned(),
         Some(t) => {
             let type_label = f.water_type_label(t);
-            if type_label.to_lowercase().contains(&kind.to_lowercase()) {
-                String::new()
-            } else {
-                type_label
-            }
+            let same = type_label.to_lowercase().contains(&kind.to_lowercase())
+                || (here.kind == WaterKind::Bay && t == WaterType::BayInshore);
+            if same { String::new() } else { type_label }
         }
     };
     WaterHereVm {
@@ -423,6 +421,15 @@ mod tests {
             Reach::On,
         ));
         assert_ne!(pond.water_type_text, "");
+        // A bay or harbor in a bay-or-inshore type is the same thing said twice.
+        let bay = input(&here(
+            Some("Upper Bay"),
+            WaterKind::Bay,
+            WaterType::BayInshore,
+            Reach::On,
+        ));
+        assert_eq!(bay.kind_text, "Bay or harbor");
+        assert_eq!(bay.water_type_text, "");
     }
 
     #[test]
