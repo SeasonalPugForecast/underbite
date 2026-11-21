@@ -43,8 +43,9 @@ final class CatchSeedsTests: XCTestCase {
             XCTAssertTrue(kinds.contains(kind), "\(kind) in \(kinds)")
         }
         XCTAssertTrue(
-            bass.conditions.allSatisfy { $0.footnote.contains("The Battery") },
-            "each condition names its station: \(bass.conditions.map(\.footnote))")
+            bass.conditions.first?.footnote.contains("The Battery") == true,
+            "the first condition names its station: \(bass.conditions.map(\.footnote))")
+        XCTAssertTrue(bass.conditions.allSatisfy { !$0.footnote.contains("Croton") })
 
         let trout = try XCTUnwrap(
             s.detail(CatchSeeds.seeds[0].id, settingsJSON: "{}", places: Self.places))

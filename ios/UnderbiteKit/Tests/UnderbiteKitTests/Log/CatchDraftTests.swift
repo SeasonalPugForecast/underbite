@@ -180,9 +180,11 @@ final class CatchDraftTests: XCTestCase {
         XCTAssertNil(preview.none)
         let kinds = Set(preview.conditions.map(\.kind))
         XCTAssertTrue(kinds.isSuperset(of: ["tide", "water_temperature", "wind"]), "\(kinds)")
+        // The source and station are stated once, on the first reading of a run.
         XCTAssertTrue(
-            preview.conditions.allSatisfy { $0.footnote.contains("The Battery") },
+            preview.conditions.first?.footnote.contains("The Battery") == true,
             "\(preview.conditions.map(\.footnote))")
+        XCTAssertTrue(preview.conditions.allSatisfy { !$0.footnote.contains("Croton") })
         XCTAssertEqual(s.book, before, "the conditions are worked out on a copy")
         XCTAssertEqual(s.count, 0)
     }
