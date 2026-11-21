@@ -2,27 +2,41 @@ import SwiftUI
 @preconcurrency import UnderbiteKit
 
 /// The map's key for the beach forecast zones while that layer is on: a chip like the grid
-/// layers' legend, a swatch and the core's words for each colour. The layer's credit is in the
-/// sources strip below it.
+/// layers' legend, a swatch and the core's words for each colour, two by two. The layer's credit
+/// is in the sources strip below it.
 struct BeachKey: View {
     let module: BeachForecastModule
     let controller: MapController
 
+    private static func entries(
+        _ module: BeachForecastModule, _ controller: MapController
+    ) -> [BeachKeyModel.Entry] {
+        BeachKeyModel.entries(
+            layerOn: controller.plan.shown.contains { $0.id == BeachZones.layer },
+            legend: module.legend.map { (role: $0.role, label: $0.label) })
+    }
+
+    /// Whether the key has anything to show.
+    static func shows(module: BeachForecastModule, controller: MapController) -> Bool {
+        !entries(module, controller).isEmpty
+    }
+
     var body: some View {
-        let on = controller.plan.shown.contains { $0.id == BeachZones.layer }
-        let entries = BeachKeyModel.entries(
-            layerOn: on, legend: module.legend.map { (role: $0.role, label: $0.label) })
+        let entries = Self.entries(module, controller)
         if !entries.isEmpty {
-            VStack(alignment: .leading, spacing: 3) {
+            LazyVGrid(
+                columns: [GridItem(.flexible(), alignment: .topLeading), GridItem(.flexible(), alignment: .topLeading)],
+                alignment: .leading, spacing: 4
+            ) {
                 ForEach(entries, id: \.role) { entry in
-                    HStack(spacing: 6) {
+                    HStack(alignment: .top, spacing: 4) {
                         BeachSwatch(role: entry.role)
                             .scaleEffect(0.6)
                             .frame(width: 14, height: 14)
                         Text(entry.label)
                             .font(.caption2)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }

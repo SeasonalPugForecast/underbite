@@ -104,11 +104,15 @@ private struct MapScreen: View {
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 VStack(alignment: .leading, spacing: 6) {
                     TimeControls(controller: controller)
-                    if let legend = controller.plan.legend {
-                        MapLegend(layer: legend, state: controller.legends[legend.id])
-                    }
-                    if let beach = controller.modules.lazy.compactMap({ $0 as? BeachForecastModule }).first {
-                        BeachKey(module: beach, controller: controller)
+                    let beach = controller.modules.lazy.compactMap { $0 as? BeachForecastModule }.first
+                    let showsKey = beach.map { BeachKey.shows(module: $0, controller: controller) } ?? false
+                    MapLegendRow(count: (controller.plan.legend == nil ? 0 : 1) + (showsKey ? 1 : 0)) {
+                        if let legend = controller.plan.legend {
+                            MapLegend(layer: legend, state: controller.legends[legend.id])
+                        }
+                        if let beach, showsKey {
+                            BeachKey(module: beach, controller: controller)
+                        }
                     }
                     if let sources {
                         MapSourcesStrip(
