@@ -18,7 +18,7 @@
 //! A body that is HTTP 200 with an `error` object is an error.
 //!
 //! Coordinates leave the device only rounded to two decimals (a point), or as a box rounded outward
-//! to two decimals and capped at [`MAX_BOX_SPAN_DEG`] (two degrees).
+//! to two decimals and capped at [`MAX_BOX_SPAN_DEG`] (two and a half degrees).
 
 use std::collections::BTreeMap;
 
@@ -41,7 +41,7 @@ pub const LAYER_LIST_MAX_AGE_S: u32 = 7 * 86_400;
 pub const MAX_AGE_S: u32 = 3_600;
 
 /// The widest box, degrees of latitude or longitude, a request may cover.
-pub const MAX_BOX_SPAN_DEG: f64 = 2.0;
+pub const MAX_BOX_SPAN_DEG: f64 = 2.5;
 
 /// The most zones one answer holds (the service allows 2000; an office has a dozen at most).
 pub const MAX_ZONES: u32 = 200;
@@ -120,12 +120,22 @@ pub struct OfficeLayers {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct LayerList {
     pub offices: BTreeMap<String, OfficeLayers>,
+    /// The place each office is named for, as its layer group says: `New York City`,
+    /// `Philadelphia Mt Holly`.
+    pub names: BTreeMap<String, String>,
 }
 
 impl LayerList {
     /// The layers of an office, by its id in any case.
     pub fn office(&self, id: &str) -> Option<OfficeLayers> {
         self.offices.get(&id.trim().to_ascii_uppercase()).copied()
+    }
+
+    /// The place an office is named for, by its id in any case.
+    pub fn name(&self, id: &str) -> Option<&str> {
+        self.names
+            .get(&id.trim().to_ascii_uppercase())
+            .map(String::as_str)
     }
 }
 
@@ -156,6 +166,16 @@ fn office_day(name: &str) -> Option<(String, u8)> {
     Some((office.to_ascii_uppercase(), day))
 }
 
+/// The place a layer group is named for: `New_York_City_WFO` is `New York City`.
+fn group_place(group: &str) -> String {
+    let g = group.trim();
+    g.strip_suffix("_WFO")
+        .unwrap_or(g)
+        .replace(['_', '-'], " ")
+        .trim()
+        .to_owned()
+}
+
 /// Reads the layer list: every polygon layer named for an office and a day. The last group, of
 /// offices with no beach forecast, names its layers by office alone, so it contributes none.
 ///
@@ -168,6 +188,18 @@ pub fn parse_layer_list(response: &Response<'_>) -> Result<LayerList, BeachError
         .and_then(Value::as_array)
         .ok_or_else(|| BeachError::Parse("no layers".to_owned()))?;
     let mut offices: BTreeMap<String, OfficeLayers> = BTreeMap::new();
+    let mut names: BTreeMap<String, String> = BTreeMap::new();
+    let mut groups: BTreeMap<u64, String> = BTreeMap::new();
+    for l in layers {
+        if l.get("type").and_then(Value::as_str) == Some("Group Layer")
+            && let (Some(id), Some(name)) = (
+                l.get("id").and_then(Value::as_u64),
+                l.get("name").and_then(Value::as_str),
+            )
+        {
+            groups.insert(id, group_place(name));
+        }
+    }
     for l in layers {
         let (Some(id), Some(name)) = (
             l.get("id")
@@ -183,6 +215,14 @@ pub fn parse_layer_list(response: &Response<'_>) -> Result<LayerList, BeachError
         let Some((office, day)) = office_day(name) else {
             continue;
         };
+        if let Some(place) = l
+            .get("parentLayerId")
+            .and_then(Value::as_u64)
+            .and_then(|p| groups.get(&p))
+            .filter(|p| !p.is_empty())
+        {
+            names.entry(office.clone()).or_insert_with(|| place.clone());
+        }
         let entry = offices.entry(office).or_insert(OfficeLayers {
             day1: u32::MAX,
             day2: None,
@@ -197,7 +237,7 @@ pub fn parse_layer_list(response: &Response<'_>) -> Result<LayerList, BeachError
     if offices.is_empty() {
         return Err(BeachError::Parse("no office layers".to_owned()));
     }
-    Ok(LayerList { offices })
+    Ok(LayerList { offices, names })
 }
 
 /// The zone at a point: a search of [`POINT_DISTANCE_M`] around the point rounded to two decimals
@@ -554,6 +594,9 @@ mod tests {
         assert_eq!(list.office("TAE").map(|o| o.day1), Some(115));
         assert_eq!(list.office("AKQ").map(|o| o.day1), Some(121));
         assert!(list.offices.len() > 30, "{}", list.offices.len());
+        assert_eq!(list.name("okx"), Some("New York City"));
+        assert_eq!(list.name("PHI"), Some("Philadelphia Mt Holly"));
+        assert_eq!(list.name("BOX"), Some("Boston Norton"));
     }
 
     #[test]
@@ -824,8 +867,8 @@ mod tests {
         assert!(box_request(bbox(1.0, 0.0, 0.0, 1.0), 1).is_err());
         assert!(box_request(bbox(f64::NAN, 0.0, 1.0, 1.0), 1).is_err());
         assert!(box_request(bbox(0.0, 0.0, 1.0, 91.0), 1).is_err());
-        assert!(box_request(bbox(0.0, 0.0, 2.5, 0.5), 1).is_err());
-        assert!(box_request(bbox(0.0, 0.0, 2.0, 1.0), 1).is_ok());
+        assert!(box_request(bbox(0.0, 0.0, 2.6, 0.5), 1).is_err());
+        assert!(box_request(bbox(0.0, 0.0, 2.5, 1.0), 1).is_ok());
     }
 
     #[test]
