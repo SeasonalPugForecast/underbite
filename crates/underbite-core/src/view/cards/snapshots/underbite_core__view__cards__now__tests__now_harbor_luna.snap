@@ -52,7 +52,7 @@ expression: card
         "text": "Provisional data, subject to revision."
       }
     ],
-    "accessibility": "Now. Tide 4.9 ft MLLW. Water temperature 58 °F. Current 1.6 kn. Wind 13 mph. Sun and moon 75%."
+    "accessibility": "Now. Tide 4.9 ft MLLW. Water temperature 58 °F. Current 1.6 kn. Wind 13 mph. Moon 75%."
   },
   "compact": {
     "headline": {
@@ -61,6 +61,7 @@ expression: card
       "unit": "ft MLLW"
     },
     "lines": [
+      "Tide · High 4:30 PM",
       "Water temperature 58 °F",
       "Current 1.6 kn"
     ],
@@ -122,7 +123,7 @@ expression: card
       },
       {
         "card": "sun_moon",
-        "label": "Sun and moon",
+        "label": "Moon",
         "headline": {
           "value": 75.0,
           "text": "75",

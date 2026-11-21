@@ -58,7 +58,7 @@ expression: card
         "text": "A traditional cue, not a promise."
       }
     ],
-    "accessibility": "Now. Water temperature 58 °F. River flow 12.0 cfs. Wind 13 mph. Sun and moon 75%. Solunar 5.7 h."
+    "accessibility": "Now. Water temperature 58 °F. River flow 12.0 cfs. Wind 13 mph. Moon 75%. Solunar 5.7 h."
   },
   "compact": {
     "headline": {
@@ -67,6 +67,7 @@ expression: card
       "unit": "°F"
     },
     "lines": [
+      "Water temperature · The Battery, 0.4 mi",
       "River flow 12.0 cfs",
       "Wind 13 mph"
     ],
@@ -115,7 +116,7 @@ expression: card
       },
       {
         "card": "sun_moon",
-        "label": "Sun and moon",
+        "label": "Moon",
         "headline": {
           "value": 75.0,
           "text": "75",

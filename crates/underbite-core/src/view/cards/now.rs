@@ -103,6 +103,21 @@ fn part(id: CardId, input: &ViewInput) -> Option<Part> {
     }
 }
 
+/// What an item is called here: the card's title, but the moon for the sun and moon card,
+/// whose headline is the moon's lit share.
+fn name(f: &Formatter, p: &Part) -> String {
+    if p.id == CardId::SunMoon {
+        f.strings.get(Key::Moon).to_owned()
+    } else {
+        p.chrome.title.clone()
+    }
+}
+
+/// A line without a leading unknown part ("— · High 4:30 PM" becomes "High 4:30 PM").
+fn strip_unknown(line: &str) -> &str {
+    line.strip_prefix("— · ").unwrap_or(line)
+}
+
 /// What matters now, gathered from the other cards in a fixed order for the water type. Values
 /// are the cards' own; a card that is not in the user's order, or not built, is skipped and nothing is filled in for it.
 pub fn build(input: &ViewInput) -> Option<NowCard> {
@@ -146,7 +161,7 @@ pub fn build(input: &ViewInput) -> Option<NowCard> {
         .iter()
         .map(|p| NowItem {
             card: p.id,
-            label: p.chrome.title.clone(),
+            label: name(&f, p),
             headline: p.compact.headline.clone(),
             line: p.compact.lines.first().cloned(),
             state: p.chrome.state.clone(),
@@ -168,19 +183,27 @@ pub fn build(input: &ViewInput) -> Option<NowCard> {
         }
     }
 
-    // The compact form leads with the first item and names the next two with their values.
-    let lines = parts
-        .iter()
-        .skip(1)
-        .take(2)
-        .map(|p| format!("{} {}", p.chrome.title, p.compact.headline.full()))
+    // The compact form leads with the first item's title and its own first line (the
+    // headline is its value), then names the next two with their values.
+    let lead = match first.compact.lines.first().map(|l| strip_unknown(l)) {
+        Some(line) if !line.is_empty() => format!("{} · {line}", name(&f, first)),
+        _ => name(&f, first),
+    };
+    let lines = std::iter::once(lead)
+        .chain(
+            parts
+                .iter()
+                .skip(1)
+                .take(2)
+                .map(|p| format!("{} {}", name(&f, p), p.compact.headline.full())),
+        )
         .collect();
     // Plain words only: the lines under the headlines are in the user's voice.
     let accessibility = std::iter::once(format!("{title}."))
         .chain(
             parts
                 .iter()
-                .map(|p| format!("{} {}.", p.chrome.title, p.compact.headline.full())),
+                .map(|p| format!("{} {}.", name(&f, p), p.compact.headline.full())),
         )
         .collect::<Vec<_>>()
         .join(" ");
@@ -221,7 +244,16 @@ mod tests {
         let tide = tide::build(&input).unwrap();
         assert_eq!(card.full.items[0].headline, tide.compact.headline);
         assert_eq!(card.compact.headline, tide.compact.headline);
-        assert!(card.compact.lines.len() <= 2);
+        assert!(card.compact.lines.len() <= 3);
+        assert!(
+            card.compact.lines[0].starts_with("Tide"),
+            "{:?}",
+            card.compact.lines
+        );
+        let moon = card.full.items.iter().find(|i| i.card == CardId::SunMoon);
+        assert_eq!(moon.map(|i| i.label.as_str()), Some("Moon"));
+        assert!(card.chrome.accessibility.contains("Moon "));
+        assert!(!card.chrome.accessibility.contains("Sun and moon"));
         insta::assert_json_snapshot!("now_harbor_luna", card);
     }
 
