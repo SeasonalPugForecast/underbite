@@ -17,11 +17,52 @@ struct TimeControls: View {
         controller.modules.lazy.compactMap { $0 as? SourcesModule }.first
     }
 
+    @State private var fold = TimeControlsFold()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Shots (debug builds): `-mapTimeControls expanded` opens the controls and keeps them open
+    /// while the map settles.
+    private static var startsExpanded: Bool {
+        #if DEBUG
+            LaunchArguments.value(after: "-mapTimeControls") == "expanded"
+        #else
+            false
+        #endif
+    }
+
+    private func send(_ event: TimeControlsFold.Event) {
+        let animation: Animation? = reduceMotion ? nil : .spring(duration: 0.3, bounce: 0.1)
+        withAnimation(animation) { fold.apply(event) }
+    }
+
     var body: some View {
         // The layers drawn from the device's store say so above the controls.
         LayerBadges(controller: controller)
         if let module, let top = DateControl.topmost(controller.plan) {
             let title = top.layer.info.title
+            Group {
+                if fold.expanded {
+                    expanded(module: module, top: top, title: title)
+                } else {
+                    TimeChip(module: module, top: top, title: title, send: send)
+                }
+            }
+            .dynamicTypeSize(...MapChromeType.largest)
+            .environment(\.timeControlsEvent, send)
+            .onChange(of: controller.region) { old, _ in
+                // The first settle is the map finding its place, not the user moving it.
+                if old != nil, fold.expanded, !Self.startsExpanded { send(.pan) }
+            }
+            .task {
+                if Self.startsExpanded { send(.expand) }
+            }
+        }
+    }
+
+    private func expanded(
+        module: SourcesModule, top: (layer: PlannedLayer, control: DateControl), title: String
+    ) -> some View {
+        HStack(alignment: .top, spacing: 4) {
             VStack(alignment: .leading, spacing: 4) {
                 switch top.control {
                 case .satelliteDays:
@@ -34,14 +75,103 @@ struct TimeControls: View {
                     RadarLoopControl(module: module, title: title)
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-            .dynamicTypeSize(...MapChromeType.largest)
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("map-time-controls")
+            Button {
+                send(.collapse)
+            } label: {
+                Image(systemName: "chevron.down")
+                    .font(.body.weight(.semibold))
+                    .frame(width: 36, height: 36)
+            }
+            .buttonStyle(.glass)
+            .accessibilityLabel(String(localized: "Hide date controls", comment: "Accessibility label of the button that folds the map's date controls into a small chip"))
+            .accessibilityIdentifier("map-time-collapse")
         }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .contain)
+        .accessibilityAction(named: String(localized: "Hide date controls", comment: "Accessibility action that folds the map's date controls into a small chip")) {
+            send(.collapse)
+        }
+        .accessibilityIdentifier("map-time-controls")
+    }
+}
+
+extension EnvironmentValues {
+    /// What the date controls report to the chip that holds them: a pick or a step.
+    @Entry fileprivate var timeControlsEvent: (TimeControlsFold.Event) -> Void = { _ in }
+}
+
+/// The compact form: a glass chip, as wide as its content, with a symbol and the date or time
+/// shown; the radar loop's chip keeps play and pause beside it.
+private struct TimeChip: View {
+    let module: SourcesModule
+    let top: (layer: PlannedLayer, control: DateControl)
+    let title: String
+    let send: (TimeControlsFold.Event) -> Void
+
+    /// The core's label of what the layer shows now, when it has one.
+    private var shown: String? {
+        let layer = top.layer
+        switch top.control {
+        case .satelliteDays:
+            return module.days[layer.id]?.asked.label
+        case .gridDays:
+            return module.times(of: layer).flatMap { GridTimes.shown(layer.time, in: $0)?.label }
+        case .gridHours:
+            guard let axis = module.times(of: layer) else { return nil }
+            let offered = GridTimes.offered(axis, dates: .hourly, now: module.now)
+            let at = layer.time.flatMap { t in offered.firstIndex { $0.time == t } } ?? offered.count - 1
+            return offered.indices.contains(at) ? offered[at].label : nil
+        case .radarFrames:
+            let frames = module.frames
+            return frames.isEmpty ? nil : frames[min(module.frameIndex, frames.count - 1)].label
+        }
+    }
+
+    private var symbol: String {
+        switch top.control {
+        case .satelliteDays, .gridDays: "calendar"
+        case .gridHours, .radarFrames: "clock"
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            if top.control == .radarFrames, module.canPlay {
+                Button {
+                    module.playing ? module.pause() : module.play()
+                } label: {
+                    Image(systemName: module.playing ? "pause.fill" : "play.fill")
+                        .frame(width: 44, height: 44)
+                }
+                .buttonStyle(.glass)
+                .accessibilityLabel(module.playing ? "Pause" : "Play")
+            }
+            Button {
+                send(.expand)
+            } label: {
+                if let shown {
+                    Label(shown, systemImage: symbol)
+                        .font(.subheadline.weight(.medium).monospacedDigit())
+                        .foregroundStyle(Color.primary)
+                        .lineLimit(2)
+                        .frame(minHeight: 28)
+                        .padding(.horizontal, 4)
+                        .accessibilityIdentifier("map-date-label")
+                } else {
+                    ProgressView().frame(minHeight: 28)
+                }
+            }
+            .buttonStyle(.glass)
+            .accessibilityLabel(shown.map { "\(title), \($0)" } ?? title)
+            .accessibilityHint(String(localized: "Shows the date controls", comment: "Accessibility hint of the chip that opens the map's date controls"))
+            .accessibilityIdentifier("map-date-picker")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("map-time-controls")
     }
 }
 
@@ -50,10 +180,12 @@ private struct StepButton: View {
     let back: Bool
     let label: String
     let action: (() -> Void)?
+    @Environment(\.timeControlsEvent) private var event
 
     var body: some View {
         Button {
             action?()
+            event(.step)
         } label: {
             Image(systemName: back ? "chevron.backward" : "chevron.forward")
                 .font(.body.weight(.semibold))
@@ -74,12 +206,14 @@ private struct DayMenu<Item: Hashable>: View {
     let label: (Item) -> String
     let isShown: (Item) -> Bool
     let choose: (Item) -> Void
+    @Environment(\.timeControlsEvent) private var event
 
     var body: some View {
         Menu {
             ForEach(items, id: \.self) { item in
                 Button {
                     choose(item)
+                    event(.pick)
                 } label: {
                     if isShown(item) {
                         Label(label(item), systemImage: "checkmark")
@@ -155,6 +289,7 @@ private struct GridDayControl: View {
     let module: SourcesModule
     let layer: PlannedLayer
     let title: String
+    @Environment(\.timeControlsEvent) private var event
 
     var body: some View {
         if let axis = module.times(of: layer), let shown = GridTimes.shown(layer.time, in: axis) {
@@ -203,6 +338,7 @@ private struct GridDayControl: View {
         if layer.kind == .gridRaster {
             Button {
                 module.findClearDay(layer)
+                event(.pick)
             } label: {
                 Label("Last clear day", systemImage: "sun.max")
                     .lineLimit(1)
