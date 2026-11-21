@@ -4,7 +4,7 @@ expression: render(&grid)
 ---
 spot-battery America/New_York today Some(LocalDate { year: 2026, month: 11, day: 7 })
 2026-11-08
-  verdict forecast NoGo reasons 3
+  verdict forecast NoGo reasons 2
   windows forecast certain_only false count 2
   tides certain Computed Some(Mllw) Low@1794117540 0.02 High@1794139560 1.71 Low@1794162900 0.01 High@1794184020 1.43
   flow forecast 21.5 InBest wadeable Some(false)

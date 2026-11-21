@@ -819,15 +819,25 @@ pub fn assess(
     }
 
     let live: Vec<&HourVerdict> = hours.iter().filter(|h| h.start.0 + HOUR > now.0).collect();
-    let mut worst: BTreeMap<(Check, ReasonKind, Option<String>), Reason> = BTreeMap::new();
+    // One reason per measure: a limit that fails in one hour and is only close in another
+    // is reported once, as the failure, at its largest excess. Missing data, the end of
+    // the forecast and past hours stay separate findings.
+    let mut worst: BTreeMap<(Check, Option<String>, ReasonKind), Reason> = BTreeMap::new();
     let everything = live
         .iter()
         .flat_map(|h| h.reasons.iter())
         .chain(storms.iter());
     for reason in everything {
-        let key = (reason.check, reason.kind, reason.subject.clone());
+        let class = match reason.kind {
+            ReasonKind::Fails | ReasonKind::Marginal => ReasonKind::Fails,
+            other => other,
+        };
+        let key = (reason.check, reason.subject.clone(), class);
         match worst.get(&key) {
-            Some(kept) if kept.excess() >= reason.excess() => {}
+            // `Fails` sorts before `Marginal`, so the lower kind is the more severe.
+            Some(kept)
+                if kept.kind < reason.kind
+                    || (kept.kind == reason.kind && kept.excess() >= reason.excess()) => {}
             _ => {
                 worst.insert(key, reason.clone());
             }
@@ -1355,7 +1365,8 @@ mod tests {
         assert_eq!(gust.source, Some(SourceId::new("open-meteo")));
         assert_eq!(day.hours[5].reasons[0].check, Check::Visibility);
         assert_eq!(day.hours[6].reasons[0].check, Check::AirTemperature);
-        // The day keeps one reason per check and outcome.
+        // The day keeps one reason per measure: a measure that fails somewhere is not also
+        // reported as close elsewhere.
         let worst: Vec<_> = day.reasons.iter().map(|r| (r.check, r.kind)).collect();
         assert_eq!(
             worst,
@@ -1364,8 +1375,6 @@ mod tests {
                 (Check::AirTemperature, ReasonKind::Fails),
                 (Check::Visibility, ReasonKind::Fails),
                 (Check::Wind, ReasonKind::Marginal),
-                (Check::AirTemperature, ReasonKind::Marginal),
-                (Check::Visibility, ReasonKind::Marginal),
             ]
         );
         // Of the two cold failures the colder hour is kept.
