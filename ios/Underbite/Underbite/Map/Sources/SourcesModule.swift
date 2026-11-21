@@ -232,6 +232,7 @@ final class SourcesModule: MapModule {
         asking.insert(key)
         let zone = TimeZone.current.identifier
         let axes = axes
+        MapLoad.shared.mark(.axisAsked, layer: key.layer)
         Task { [weak self] in
             let found = await axes.times(key, dates: dates, settingsJSON: json, timeZone: zone)
             guard let self else { return }

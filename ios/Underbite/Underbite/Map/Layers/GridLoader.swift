@@ -127,6 +127,8 @@ final class GridLoader {
     /// One pass: what the cache holds fresh (offline: at any age), then what is still missing
     /// from the network (offline: nothing, and the layer says so).
     private func pass(_ layers: [PlannedLayer], generation current: Int, region: MapRegion) async {
+        let pass = MapLoad.shared.interval("grid-pass")
+        defer { pass.end() }
         var tried: Set<String> = []
         var held: Set<String> = []
         let offline = offline()
@@ -148,6 +150,7 @@ final class GridLoader {
             // The blocks are in the store whatever pass comes next, which will not list them
             // again: say so before giving way to it, or the layer is never drawn again.
             for layer in Set(untried.filter { byKey[$0.request.key] != nil }.map(\.layer)) {
+                MapLoad.shared.mark(.block, layer: layer, source: "cache")
                 onBlock(layer)
             }
             guard current == generation else { return }
@@ -230,6 +233,7 @@ final class GridLoader {
                 case .added:
                     settled.insert(job.request.key)
                     say(job, .current)
+                    MapLoad.shared.mark(.block, layer: job.layer, source: "network")
                     onBlock(job.layer)
                 case .noData:
                     settled.insert(job.request.key)
@@ -275,6 +279,7 @@ final class GridLoader {
             }
         }
         for layer in Set(jobs.filter { byKey[$0.request.key] != nil }.map(\.layer)) {
+            MapLoad.shared.mark(.block, layer: layer, source: "cache-stale")
             onBlock(layer)
         }
     }

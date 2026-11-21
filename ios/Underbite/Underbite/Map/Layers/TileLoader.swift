@@ -97,6 +97,7 @@ actor TileLoader {
         if let hit = cache.kept(key, now: now), !hit.isStale {
             let offline = offline()
             say(key, offline ? .stored(fetchedAt: Self.seconds(hit.fetchedAt)) : .current)
+            MapLoad.shared.mark(.tile, layer: key.layer, source: "memory")
             return hit.data
         }
         if let running = inFlight[key] { return await running.value }
@@ -127,6 +128,8 @@ actor TileLoader {
     }
 
     private func read(_ key: TileCacheKey, _ request: HostRequest) async -> Data? {
+        let span = MapLoad.shared.interval("tile-read", layer: key.layer)
+        defer { span.end() }
         let persists = MapOffline.persists(layer: key.layer, request)
         let held = await kept(key, persists: persists)
         let offline = offline()
@@ -134,6 +137,7 @@ actor TileLoader {
         case .serve:
             guard let held else { return nil }
             say(key, offline ? .stored(fetchedAt: Self.seconds(held.fetchedAt)) : .current)
+            MapLoad.shared.mark(.tile, layer: key.layer, source: "store")
             return held.data
         case .missing:
             say(key, .missing)
@@ -144,11 +148,13 @@ actor TileLoader {
         let (data, outcome) = await fetch(key, request, persists: persists)
         if let data {
             say(key, .current)
+            MapLoad.shared.mark(.tile, layer: key.layer, source: "network")
             return data
         }
         guard ReadThrough.fallsBack(after: outcome) else { return nil }
         if let held {
             say(key, .stored(fetchedAt: Self.seconds(held.fetchedAt)))
+            MapLoad.shared.mark(.tile, layer: key.layer, source: "store-stale")
             return held.data
         }
         // A request that failed at the transport is offline; a server error is not.

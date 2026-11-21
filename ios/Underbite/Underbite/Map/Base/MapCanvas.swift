@@ -419,6 +419,14 @@ struct MapCanvas: UIViewRepresentable {
             return nil
         }
 
+        func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
+            MapLoad.shared.mark(.baseMap)
+        }
+
+        func mapViewDidFinishRenderingMap(_ mapView: MKMapView, fullyRendered: Bool) {
+            if fullyRendered { MapLoad.shared.mark(.baseRendered) }
+        }
+
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
             // Before the first layout the map has no size and no zoom yet.
             guard mapView.bounds.width > 0 else { return }

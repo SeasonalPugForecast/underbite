@@ -89,15 +89,26 @@ actor TimeAxes {
     func times(
         _ key: Key, dates: LayerDates, settingsJSON: String, timeZone: String
     ) async -> [LayerTime]? {
+        let wait = MapLoad.shared.interval("axis", layer: key.layer)
+        defer { wait.end() }
         var held = kept[key]
-        if held == nil { held = await loadKept(key) }
+        var source = "memory"
+        if held == nil {
+            held = await loadKept(key)
+            source = "store"
+        }
         let now = clock()
         let stale = held.map { GridTimes.isStale(fetched: $0.fetched, now: now, dates: dates) }
         let resting = tried[key].map { now >= $0 && now - $0 < Self.retryAfter } ?? false
         if stale ?? true, !resting, !offline() {
             await refresh(key, dates: dates, settingsJSON: settingsJSON, timeZone: timeZone)
         }
-        guard let axis = kept[key] else { return nil }
+        guard let axis = kept[key] else {
+            MapLoad.shared.mark(.axis, layer: key.layer, source: "none")
+            return nil
+        }
+        if axis.fetched != held?.fetched { source = "network" }
+        MapLoad.shared.mark(.axis, layer: key.layer, source: source)
         let times = try? parseTimeAxis(
             layer: key.layer, dataset: key.dataset, response: axis.response,
             settingsJson: settingsJSON, timeZone: timeZone)

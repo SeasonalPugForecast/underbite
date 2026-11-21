@@ -70,6 +70,7 @@ final class MapController {
         clock: @escaping @Sendable () -> Int64 = { Int64(Date().timeIntervalSince1970) },
         lowPower: @escaping () -> Bool = { ProcessInfo.processInfo.isLowPowerModeEnabled }
     ) {
+        MapLoad.shared.begin()
         self.start = start
         self.clock = clock
         self.lowPower = lowPower
@@ -208,6 +209,7 @@ final class MapController {
 
     /// The map settled on `region`.
     func regionDidSettle(_ region: MapRegion) {
+        MapLoad.shared.mark(.regionSettled)
         self.region = region
         loadForRegion()
         scheduleRanges()
