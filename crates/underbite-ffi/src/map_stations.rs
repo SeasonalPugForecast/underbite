@@ -120,6 +120,11 @@ pub struct StationPin {
     /// The pin in words: "River gauge · 412 ft³/s, 25 min ago", "River forecast gauge · No
     /// flooding, 1 h ago", "Tide station".
     pub label: String,
+    /// The station reports live observations (a water-level gauge, a current meter, a buoy, a
+    /// river gauge), not only predictions.
+    pub observed: bool,
+    /// A harmonic (reference) station, not a subordinate one.
+    pub reference: bool,
 }
 
 /// The pins of a view, and the lists or states that could not be had.
@@ -940,6 +945,18 @@ fn flood_state(gauge: &GaugeState, now: UnixTime, f: &Formatter) -> (Role, Optio
 // Pins
 // ---------------------------------------------------------------------------------------------
 
+/// Whether a station of this kind reports live observations.
+const fn observes(kind: StationKind) -> bool {
+    !matches!(
+        kind,
+        StationKind::TideHarmonic
+            | StationKind::TideSubordinate
+            | StationKind::CurrentHarmonic
+            | StationKind::CurrentSubordinate
+            | StationKind::CurrentWeakVariable
+    )
+}
+
 /// The pins of a call, one per station, in layer order then by id.
 #[derive(Debug, Default)]
 struct Pins(BTreeMap<(PinLayer, String), StationPin>);
@@ -962,7 +979,8 @@ impl Pins {
                 .fmt(Key::PinLabel, &[("kind", kind), ("state", &state)]),
             None => kind.to_owned(),
         };
-        self.0.entry((layer, id.clone())).or_insert(StationPin {
+        let observed = observes(station.kind);
+        let pin = self.0.entry((layer, id.clone())).or_insert(StationPin {
             id,
             kind: layer.kind().to_owned(),
             layer: layer_id.to_owned(),
@@ -971,7 +989,14 @@ impl Pins {
             lon: station.longitude,
             state_role: role.name().to_owned(),
             label,
+            observed,
+            reference: matches!(
+                station.kind,
+                StationKind::TideHarmonic | StationKind::CurrentHarmonic
+            ),
         });
+        // A station on a predictions list and on a water-level list is one pin that observes.
+        pin.observed |= observed;
     }
 
     /// The stations of `candidates` in `view`, without state.
@@ -1217,6 +1242,127 @@ pub async fn map_stations(
     Ok(pass.finish())
 }
 
+// ---------------------------------------------------------------------------------------------
+// Thinning
+// ---------------------------------------------------------------------------------------------
+
+/// A pin or saved spot, as thinning needs it.
+#[derive(Clone, Debug, PartialEq, uniffi::Record)]
+pub struct PinSite {
+    /// The pin's id (`coops:8518750`, `spot:<id>`).
+    pub id: String,
+    /// Degrees north.
+    pub lat: f64,
+    /// Degrees east.
+    pub lon: f64,
+    /// See [`StationPin::observed`].
+    pub observed: bool,
+    /// See [`StationPin::reference`].
+    pub reference: bool,
+    /// Always shown, never folded into another pin: a saved spot, or a station at one.
+    pub always: bool,
+}
+
+/// One mark on the map: the pin that is drawn and the pins folded into it.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct PinGroup {
+    /// The pin drawn.
+    pub lead: String,
+    /// Every pin of the mark, the lead first; the count a mark shows is its length.
+    pub members: Vec<String>,
+}
+
+/// The side, in points, of the screen cell that holds one pin.
+pub const PIN_CELL_POINTS: f64 = 56.0;
+
+/// Screen position of a coordinate in points at Web Mercator zoom `zoom` (256 points a tile).
+fn screen_point(lat: f64, lon: f64, zoom: f64) -> (f64, f64) {
+    let world = 256.0 * 2f64.powf(zoom);
+    let x = (lon + 180.0) / 360.0 * world;
+    let sin = lat.to_radians().sin().clamp(-0.9999, 0.9999);
+    let y = (0.5 - ((1.0 + sin) / (1.0 - sin)).ln() / (4.0 * std::f64::consts::PI)) * world;
+    (x, y)
+}
+
+/// A site with its position on screen at the zoom.
+struct Placed<'a> {
+    site: &'a PinSite,
+    x: f64,
+    y: f64,
+    /// Distance from the centre of its cell.
+    centre: f64,
+}
+
+/// Thins `sites` to at most one pin per square screen cell of `cell_points` at zoom `zoom`
+/// (use [`PIN_CELL_POINTS`]). In a cell the pin kept is, by priority: one that is always shown
+/// (every one of those is kept), then one with live observations, then a harmonic station, then
+/// the one nearest the cell's centre, then the lowest id. The others of the cell fold into the
+/// nearest kept pin of it. Marks come in the order of their cells, so the result is the same
+/// for the same sites in any order.
+#[uniffi::export]
+#[must_use]
+#[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
+pub fn thin_pins(sites: Vec<PinSite>, zoom: f64, cell_points: f64) -> Vec<PinGroup> {
+    let zoom = if zoom.is_finite() {
+        zoom.clamp(0.0, 24.0)
+    } else {
+        0.0
+    };
+    let side = if cell_points.is_finite() && cell_points > 0.0 {
+        cell_points
+    } else {
+        PIN_CELL_POINTS
+    };
+    let mut cells: BTreeMap<(i64, i64), Vec<Placed<'_>>> = BTreeMap::new();
+    for site in &sites {
+        if !site.lat.is_finite() || !site.lon.is_finite() {
+            continue;
+        }
+        let (x, y) = screen_point(site.lat, site.lon, zoom);
+        #[allow(clippy::cast_possible_truncation)] // a cell index of a finite position
+        let key = ((x / side).floor() as i64, (y / side).floor() as i64);
+        #[allow(clippy::cast_precision_loss)] // a cell index is far below 2^52
+        let (cx, cy) = ((key.0 as f64 + 0.5) * side, (key.1 as f64 + 0.5) * side);
+        cells.entry(key).or_default().push(Placed {
+            site,
+            x,
+            y,
+            centre: (x - cx).hypot(y - cy),
+        });
+    }
+    let mut groups = Vec::new();
+    for placed in cells.values_mut() {
+        placed.sort_by(|a, b| {
+            b.site
+                .always
+                .cmp(&a.site.always)
+                .then(b.site.observed.cmp(&a.site.observed))
+                .then(b.site.reference.cmp(&a.site.reference))
+                .then(a.centre.total_cmp(&b.centre))
+                .then(a.site.id.cmp(&b.site.id))
+        });
+        let kept = placed.iter().take_while(|p| p.site.always).count().max(1);
+        let mut cell_groups: Vec<(&Placed<'_>, Vec<String>)> = placed[..kept]
+            .iter()
+            .map(|p| (p, vec![p.site.id.clone()]))
+            .collect();
+        for rest in &placed[kept..] {
+            let distance = |lead: &Placed<'_>| (lead.x - rest.x).hypot(lead.y - rest.y);
+            if let Some(nearest) = cell_groups
+                .iter_mut()
+                .min_by(|a, b| distance(a.0).total_cmp(&distance(b.0)))
+            {
+                nearest.1.push(rest.site.id.clone());
+            }
+        }
+        groups.extend(cell_groups.into_iter().map(|(lead, members)| PinGroup {
+            lead: lead.site.id.clone(),
+            members,
+        }));
+    }
+    groups
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1445,6 +1591,164 @@ mod tests {
         assert_eq!(pin.kind, "forecast_gauge");
         assert_eq!(pin.state_role, "normal");
         assert_eq!(pin.label, "River forecast gauge · No flooding, just now");
+    }
+
+    /// A dense harbour: a lattice of stations about 700 m apart over the lower Hudson and the
+    /// bay, alternating what each reports.
+    fn harbour() -> Vec<PinSite> {
+        let mut sites = Vec::new();
+        for i in 0..30 {
+            for j in 0..30 {
+                sites.push(PinSite {
+                    id: format!("coops:{i:02}{j:02}"),
+                    lat: 40.50 + f64::from(i) * 0.0065,
+                    lon: -74.20 + f64::from(j) * 0.0085,
+                    observed: (i + j) % 7 == 0,
+                    reference: (i * j) % 5 == 0,
+                    always: false,
+                });
+            }
+        }
+        sites
+    }
+
+    #[test]
+    fn a_dense_harbour_is_thinned_to_a_bounded_count_at_each_zoom() {
+        let sites = harbour();
+        let mut counts = Vec::new();
+        for zoom in [9.0, 11.0, 13.0] {
+            let groups = thin_pins(sites.clone(), zoom, PIN_CELL_POINTS);
+            // Every station is in exactly one mark.
+            let total: usize = groups.iter().map(|g| g.members.len()).sum();
+            assert_eq!(total, sites.len());
+            for g in &groups {
+                assert_eq!(g.members[0], g.lead);
+            }
+            // The harbour spans about 0.2 by 0.2 degrees: its cells bound the marks.
+            let cells = |degrees: f64| {
+                (degrees / 360.0 * 256.0 * 2f64.powf(zoom) / PIN_CELL_POINTS).ceil() + 1.0
+            };
+            #[allow(clippy::cast_precision_loss)]
+            let marks = groups.len() as f64;
+            assert!(marks <= cells(0.26) * cells(0.26) * 1.3, "{zoom}: {marks}");
+            counts.push(groups.len());
+        }
+        // Zooming in shows more, never fewer, and at harbour zoom far fewer than stations.
+        assert!(counts.windows(2).all(|w| w[0] <= w[1]), "{counts:?}");
+        assert!(counts[0] < 30, "{counts:?}");
+        assert!(counts[1] < sites.len() / 4, "{counts:?}");
+        assert!(counts[2] <= sites.len());
+    }
+
+    #[test]
+    fn spot_and_pinned_stations_always_survive() {
+        let mut sites = harbour();
+        for pick in [3, 211, 480, 899] {
+            sites[pick].always = true;
+        }
+        let always: Vec<String> = [3, 211, 480, 899]
+            .iter()
+            .map(|&i| sites[i].id.clone())
+            .collect();
+        for zoom in [9.0, 11.0, 13.0] {
+            let groups = thin_pins(sites.clone(), zoom, PIN_CELL_POINTS);
+            for id in &always {
+                assert!(groups.iter().any(|g| &g.lead == id), "{id} at {zoom}");
+            }
+        }
+    }
+
+    #[test]
+    fn a_cell_keeps_observed_then_harmonic_then_the_nearest() {
+        let at = |id: &str, dlon: f64, observed: bool, reference: bool| PinSite {
+            id: id.into(),
+            lat: 40.7006,
+            lon: -74.0142 + dlon,
+            observed,
+            reference,
+            always: false,
+        };
+        // About 20 m apart: one cell at any harbour zoom.
+        let sites = vec![
+            at("predicted-sub", 0.0, false, false),
+            at("predicted-ref", 0.0001, false, true),
+            at("observed-sub", 0.0002, true, false),
+        ];
+        let groups = thin_pins(sites.clone(), 10.0, PIN_CELL_POINTS);
+        assert_eq!(groups.len(), 1);
+        assert_eq!(groups[0].lead, "observed-sub");
+        assert_eq!(groups[0].members.len(), 3);
+        let without = thin_pins(sites[..2].to_vec(), 10.0, PIN_CELL_POINTS);
+        assert_eq!(without[0].lead, "predicted-ref");
+        // The same two in one cell, neither first on a flag: the lower id leads when equally
+        // near, and the order of the input changes nothing.
+        let mut reversed = sites;
+        reversed.reverse();
+        assert_eq!(
+            thin_pins(reversed, 10.0, PIN_CELL_POINTS),
+            thin_pins(
+                vec![
+                    at("predicted-sub", 0.0, false, false),
+                    at("predicted-ref", 0.0001, false, true),
+                    at("observed-sub", 0.0002, true, false),
+                ],
+                10.0,
+                PIN_CELL_POINTS
+            )
+        );
+    }
+
+    #[test]
+    fn two_always_shown_pins_in_one_cell_both_stay_and_take_the_rest() {
+        let at = |id: &str, dlon: f64, always: bool| PinSite {
+            id: id.into(),
+            lat: 40.7006,
+            lon: -74.0142 + dlon,
+            observed: false,
+            reference: false,
+            always,
+        };
+        let groups = thin_pins(
+            vec![
+                at("spot:a", 0.0, true),
+                at("spot:b", 0.0004, true),
+                at("coops:1", 0.0003, false),
+            ],
+            10.0,
+            PIN_CELL_POINTS,
+        );
+        assert_eq!(groups.len(), 2);
+        let b = groups.iter().find(|g| g.lead == "spot:b").expect("b");
+        assert_eq!(b.members, ["spot:b", "coops:1"]);
+    }
+
+    #[test]
+    fn a_station_on_both_lists_is_one_pin_that_observes() {
+        let f = formatter();
+        let mut station = gauge(FloodCategory::NoFlooding, Some(0)).station;
+        station.kind = StationKind::TideHarmonic;
+        let mut pins = Pins::default();
+        pins.add(
+            PinLayer::Tide,
+            "tide-stations",
+            &station,
+            Role::None,
+            None,
+            &f,
+        );
+        assert!(!pins.0.values().next().expect("pin").observed);
+        assert!(pins.0.values().next().expect("pin").reference);
+        station.kind = StationKind::WaterLevel;
+        pins.add(
+            PinLayer::Tide,
+            "tide-stations",
+            &station,
+            Role::None,
+            None,
+            &f,
+        );
+        assert_eq!(pins.0.len(), 1);
+        assert!(pins.0.values().next().expect("pin").observed);
     }
 
     #[test]
