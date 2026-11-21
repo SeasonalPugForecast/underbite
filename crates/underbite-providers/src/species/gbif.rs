@@ -725,7 +725,7 @@ mod tests {
         let a = &page.records[0];
         assert_eq!(a.record.id, "9100000417");
         assert_eq!(a.record.taxon, "Morone saxatilis (Walbaum, 1792)");
-        assert_eq!(a.inaturalist_id, Some(348_935_944));
+        assert_eq!(a.inaturalist_id, Some(9_100_000_523));
         assert!(a.record.obscured);
         assert_eq!(a.record.uncertainty_m, Some(27_908.0));
         assert_eq!(
@@ -733,7 +733,7 @@ mod tests {
             Some(LocalDate {
                 year: 2026,
                 month: 4,
-                day: 11
+                day: 19
             })
         );
         assert_eq!(a.month, Some(4));
