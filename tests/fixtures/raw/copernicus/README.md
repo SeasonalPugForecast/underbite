@@ -15,3 +15,13 @@ Recorded without an account, 2026-11-17 unless stated. Base `https://wmts.marine
 - `wmts-error-time-out-of-range.xml`: the OC chlorophyll tile request above with `TIME=2026-11-16T00:00:00.000Z`, one day past the dataset's last time; HTTP 400 (2026-11-17)
 
 The existing Copernicus fixtures from the earlier survey are in `../tier2/README.md`.
+
+## Licence and credit
+
+E.U. Copernicus Marine Service Information. The tiles and capabilities come from these products, each at `https://doi.org/<DOI>`:
+
+- `GLOBAL_ANALYSISFORECAST_PHY_001_024`: 10.48670/moi-00016
+- `OCEANCOLOUR_GLO_BGC_L4_NRT_009_102`: 10.48670/moi-00279
+- `SST_GLO_SST_L4_NRT_OBSERVATIONS_010_001`: 10.48670/moi-00165
+
+The licence and credit forms are in `docs/providers/copernicus.md`.

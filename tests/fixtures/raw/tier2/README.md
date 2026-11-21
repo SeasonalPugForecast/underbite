@@ -29,4 +29,6 @@ Northwest bulletins (PDF or web pages only), and the Water Quality Portal WQX 3.
 
 - `overpass-nyharbor-slipways-piers.json`: data © OpenStreetMap contributors, ODbL 1.0, <https://www.openstreetmap.org/copyright>. The extract remains under the ODbL.
 - `noaa-hab-gulf-rif-currentmodelrun.zip`: a NOAA NCCOS product (public domain) that also carries cell counts from third parties named in docs/providers/hab.md (FWRI, HABscope, Pinellas County, SCCF), whose terms are unstated.
+- `copernicus-marine-*`: E.U. Copernicus Marine Service Information, product `GLOBAL_ANALYSISFORECAST_PHY_001_024`, https://doi.org/10.48670/moi-00016.
+- `eccc-hydrometric-*`: Contains information licenced under the Data Server End-use Licence of Environment and Climate Change Canada.
 - The DFO IWLS, GBIF and iNaturalist files above are synthetic (hand-made, invented values).

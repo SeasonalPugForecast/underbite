@@ -76,4 +76,11 @@ Attribution. The main ones:
 
 ## License
 
-MIT.
+The code is MIT licensed (see `LICENSE`). Data files keep the licences of their sources:
+
+- FishBase species data (`crates/underbite-core/data/species/fishbase/` and `tests/fixtures/raw/fishbase/`) is CC BY-NC 4.0.
+- OpenStreetMap data is © OpenStreetMap contributors, ODbL 1.0.
+- Other sources, such as Open-Meteo, are CC BY; each source's terms are in `docs/providers/`.
+- Copernicus Marine and Environment and Climate Change Canada data carry the credit lines given in the fixture indexes.
+
+The fixtures and their sources are described in [tests/fixtures/README.md](tests/fixtures/README.md).

@@ -348,8 +348,8 @@ Response: `offset`, `limit`, `endOfRecords`, `count` (348), `results[]`. Fields 
 `coordinateUncertaintyInMeters`, `eventDate` (local time without offset), `year`, `month`, `day`,
 `basisOfRecord` (`HUMAN_OBSERVATION`), `datasetKey`, `datasetName`, `license` (a URL), `media[]`
 (each with its own `license`). The three sample records all come from "iNaturalist research-grade
-observations" and are CC BY-NC 4.0. In the fixture, observer and rights-holder names were replaced
-with `REDACTED`.
+observations" and are CC BY-NC 4.0. The fixture is synthetic: its records, identifiers,
+dates and names are invented.
 
 ## iNaturalist API
 

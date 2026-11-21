@@ -66,3 +66,9 @@ Base: `https://mapservices.weather.noaa.gov/vector/rest/services/outlooks/marine
 - `openmeteo-uv-rockaway.json`: `https://api.open-meteo.com/v1/forecast?latitude=40.58&longitude=-73.82&hourly=uv_index,uv_index_clear_sky&daily=uv_index_max&forecast_days=2&timezone=auto` (2026-11-20)
 - `epa-uv-hourly-10001.json`: `https://data.epa.gov/efservice/getEnvirofactsUVHOURLY/ZIP/10001/JSON` (2026-11-20)
 - `epa-uv-daily-nyc.json`: `https://data.epa.gov/efservice/getEnvirofactsUVDAILY/CITY/New%20York/STATE/NY/JSON` (2026-11-20)
+
+## Licences and credits
+
+- `overpass-*.json`: © OpenStreetMap contributors, ODbL 1.0, <https://www.openstreetmap.org/copyright>. Extracts of these files remain under the ODbL.
+- `openmeteo-uv-rockaway.json`: Weather data by Open-Meteo.com, <https://open-meteo.com/>, licensed CC BY 4.0 (<https://open-meteo.com/en/licence>).
+- The other files are responses of US federal, city and state open-data services; each source's terms are in `docs/providers/swimming.md`.

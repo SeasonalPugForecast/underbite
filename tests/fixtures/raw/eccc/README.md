@@ -19,3 +19,7 @@ All recorded 2026-11-17 with `--compressed` (the stored bytes are the decoded bo
 - `daily-mean-05BH004-hits.json`: `/hydrometric-daily-mean/items?STATION_NUMBER=05BH004&f=json&limit=1&resulttype=hits` (count only: 41,305).
 - `daily-mean-05BH004-2023-2025-compact.json`: `/hydrometric-daily-mean/items?STATION_NUMBER=05BH004&f=json&datetime=2023-01-01/2025-12-31&sortby=DATE&limit=1100&skipGeometry=true&properties=DATE,LEVEL,DISCHARGE,DISCHARGE_SYMBOL_EN,LEVEL_SYMBOL_EN` (1,096 days).
 - `error-400-limit.json`: HTTP 400 body for `/hydrometric-daily-mean/items?STATION_NUMBER=05BH004&f=json&limit=abc`.
+
+## Licence
+
+Contains information licenced under the Data Server End-use Licence of Environment and Climate Change Canada (<https://eccc-msc.github.io/open-data/licence/readme_en/>).

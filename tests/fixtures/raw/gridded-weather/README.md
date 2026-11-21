@@ -10,3 +10,9 @@ All recorded on 2026-11-17 (UTC) with `User-Agent: Underbite-scout/0.1 (data sou
 - `copernicus-wmts-wav-vhm0-legend-amp.json`: `https://wmts.marine.copernicus.eu/teroWmts?SERVICE=WMTS&REQUEST=GetLegend&LAYER=GLOBAL_ANALYSISFORECAST_WAV_001_027%2Fcmems_mod_glo_wav_anfc_0.083deg_PT3H-i_202411%2FVHM0&STYLE=cmap%3Aamp&FORMAT=application%2Fjson`
 - `copernicus-wmts-wind-solid-z5-9-12-2026-11-15T12.png`: `https://wmts.marine.copernicus.eu/teroWmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=WIND_GLO_PHY_L4_NRT_012_004/cmems_obs-wind_glo_phy_nrt_l4_0.125deg_PT1H_202207/wind&STYLE=cmap:speed,vectorStyle:solid&FORMAT=image/png&TILEMATRIXSET=EPSG:3857&TILEMATRIX=5&TILEROW=12&TILECOL=9&TIME=2026-11-15T12:00:00.000Z`
 - `copernicus-wmts-wind-vector-z5-9-12-2026-11-15T12.png`: the same with `STYLE=cmap:speed,vectorStyle:vector`.
+
+## Licences and credits
+
+- `open-meteo-*.json`: Weather data by Open-Meteo.com, <https://open-meteo.com/>, licensed CC BY 4.0 (<https://open-meteo.com/en/licence>).
+- `copernicus-wmts-*`: E.U. Copernicus Marine Service Information; product DOIs and credit text are in `docs/providers/copernicus.md`.
+- `pacioos-*.json`: Pacific Islands Ocean Observing System (PacIOOS) datasets, free to use and redistribute under the terms in their `license` attribute, summarised in `docs/providers/gridded-weather.md`.

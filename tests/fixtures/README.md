@@ -50,7 +50,7 @@ request URL and the recording date:
 - Every file is listed in its directory's README with the request URL and the recording date. A
   fixture without an index line does not belong here.
 - No API keys, tokens or personal data in any file, URL or name. Requests are recorded without keys.
-- Biodiversity records are redacted before they are stored.
+- The biodiversity record fixtures (GBIF, iNaturalist) are synthetic: invented records in the sources' shapes.
 - Test places are New York Harbor (The Battery, CO-OPS 8518750; NDBC 44025), the lower Hudson and a
   Croton River USGS site.
 - Live checks against the real services are `#[ignore]` tests named `live_*`, run by hand only.

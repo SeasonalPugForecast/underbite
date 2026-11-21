@@ -21,3 +21,6 @@ on 2026-11-08 with a descriptive `User-Agent` and no API key. Times are UTC unle
 | `marine-42.0_-81.5-lake-erie-hourly-1d.json` | `B?latitude=42.0&longitude=-81.5&hourly=wave_height,wave_period,sea_surface_temperature,ocean_current_velocity,sea_level_height_msl&forecast_days=1&timezone=UTC` (open Lake Erie: waves present, SST, current and sea level null) | 2026-11-08 |
 | `marine-error-invalid-variable.json` | `B?latitude=40.70&longitude=-74.02&hourly=bogus&forecast_days=1` (HTTP 400) | 2026-11-08 |
 | `marine-error-forecast-days.json` | `B?latitude=40.25&longitude=-73.16&hourly=wave_height&forecast_days=20` (HTTP 400) | 2026-11-08 |
+
+Weather data by Open-Meteo.com (<https://open-meteo.com/>), licensed CC BY 4.0 (<https://open-meteo.com/en/licence>).
+Some marine variables are generated using E.U. Copernicus Marine Service Information (https://doi.org/10.48670/moi-00016, https://doi.org/10.48670/moi-00017).
