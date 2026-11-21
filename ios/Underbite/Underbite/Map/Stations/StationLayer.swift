@@ -97,6 +97,7 @@ final class StationsModule: MapModule {
     @ObservationIgnored private var pending: Task<Void, Never>?
     @ObservationIgnored private var generation = 0
     @ObservationIgnored private var launchPinShown = false
+    @ObservationIgnored private var region: MapRegion?
 
     /// How long the map must rest before the pins are asked for.
     static let settle: Duration = .milliseconds(450)
@@ -177,6 +178,7 @@ final class StationsModule: MapModule {
         var changed = layers != shownLayers
         shownLayers = layers
         if let region = context.region {
+            self.region = region
             let perPoint = StationPins.mapPointsPerPoint(zoom: region.zoom)
             if perPoint != mapPointsPerPoint {
                 mapPointsPerPoint = perPoint
@@ -314,6 +316,36 @@ final class StationsModule: MapModule {
             y: tap.point.y + (hit.y - at.y) / mapPointsPerPoint)
         select(PinSelection(cluster: hit, point: point))
         return true
+    }
+
+    // MARK: - Screen readers
+
+    /// The pins on screen for a screen reader's list: what the drawn marks stand for, saved
+    /// spots first, then the nearest the middle of the map.
+    func pinsOnScreen() -> [MapPin] {
+        guard let region else { return [] }
+        return StationPins.onScreen(clusters, in: region)
+    }
+
+    /// The module's drawer section: the list of the pins on screen.
+    func drawerSection() -> AnyView? {
+        guard !shownLayers.isEmpty else { return nil }
+        return AnyView(StationListSection(module: self))
+    }
+
+    /// Picks out the pin `pin` as if it were tapped: its sheet comes up.
+    func open(_ pin: MapPin) {
+        guard let region,
+            let hit = clusters.first(where: { $0.pins.contains { $0.id == pin.id } })
+        else { return }
+        let corner = MKMapPoint(
+            CLLocationCoordinate2D(latitude: region.north, longitude: region.west))
+        select(
+            PinSelection(
+                cluster: PinCluster(pins: [pin], drawn: hit.drawn),
+                point: CGPoint(
+                    x: (hit.x - corner.x) / mapPointsPerPoint,
+                    y: (hit.y - corner.y) / mapPointsPerPoint)))
     }
 
     /// Picks out a pin (its sheet comes up), or none.

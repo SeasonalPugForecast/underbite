@@ -182,10 +182,15 @@ nonisolated struct MapPin: Identifiable, Hashable, Sendable {
     let y: Double
     /// The saved spot's id, for a spot.
     let spotID: String?
+    /// The station reports live observations, not only predictions.
+    let observed: Bool
+    /// A harmonic (reference) station.
+    let reference: Bool
 
     init(
         id: String, kind: PinKind, layer: String, name: String, label: String, role: PinRole,
-        latitude: Double, longitude: Double, spotID: String? = nil
+        latitude: Double, longitude: Double, spotID: String? = nil, observed: Bool = false,
+        reference: Bool = false
     ) {
         self.id = id
         self.kind = kind
@@ -199,6 +204,8 @@ nonisolated struct MapPin: Identifiable, Hashable, Sendable {
         x = point.x
         y = point.y
         self.spotID = spotID
+        self.observed = observed
+        self.reference = reference
     }
 
     /// A station pin as `map_stations` gives it.
@@ -206,7 +213,7 @@ nonisolated struct MapPin: Identifiable, Hashable, Sendable {
         self.init(
             id: pin.id, kind: PinKind(core: pin.kind), layer: pin.layer, name: pin.name,
             label: pin.label, role: PinRole(core: pin.stateRole), latitude: pin.lat,
-            longitude: pin.lon)
+            longitude: pin.lon, observed: pin.observed, reference: pin.reference)
     }
 
     /// A saved spot's pin, at its exact position (it never leaves the device from here).
@@ -237,8 +244,9 @@ nonisolated struct PinCluster: Identifiable, Hashable, Sendable {
 nonisolated enum StationPins {
     /// The catalogue id of the saved spots' layer.
     static let spotsLayer = "spots"
-    /// Pins nearer each other than this, in points, share one mark.
-    static let clusterRadius = 30.0
+    /// One mark at most in a square of this side, in points; the pins in it share the mark (the
+    /// core's `PIN_CELL_POINTS`).
+    static let cellPoints = 56.0
     /// How far from a mark's centre a tap still meets it, in points (a 44-point target).
     static let reach = 22.0
     /// How near a saved spot must be to a station, in metres, to count as at the station.
@@ -260,44 +268,75 @@ nonisolated enum StationPins {
             .map(\.element)
     }
 
-    /// Groups `pins` (in priority order) at the zoom where a point is `mapPointsPerPoint` map
-    /// points: each pin joins the nearest mark within ``clusterRadius`` of it, else starts one at
-    /// its own position. The pin `apart` (the active spot) is never grouped and not drawn.
-    /// Deterministic for the same pins and zoom.
+    /// Thins `pins` to one mark per screen cell of ``cellPoints`` at the zoom where a point is
+    /// `mapPointsPerPoint` map points, and folds the rest into the mark's count. The core decides
+    /// which pin leads a cell (`thinPins`): saved spots and stations at one first, then stations
+    /// with observations, then harmonic ones, then the nearest the cell's centre. The pin `apart`
+    /// (the active spot) is never grouped and not drawn. Deterministic for the same pins and zoom.
     static func clusters(
         _ pins: [MapPin], mapPointsPerPoint: Double, apart: String? = nil,
-        radius: Double = clusterRadius
+        cellPoints: Double = cellPoints
     ) -> [PinCluster] {
-        let cell = max(radius * mapPointsPerPoint, .leastNonzeroMagnitude)
-        var groups: [[MapPin]] = []
-        var grid: [Cell: [Int]] = [:]
+        let zoom = log2(
+            MapRegion.worldMapPoints / 256 / max(mapPointsPerPoint, .leastNonzeroMagnitude))
+        let spots = pins.filter { $0.kind == .spot }
+        var byID: [String: MapPin] = [:]
+        var sites: [PinSite] = []
         var separate: [PinCluster] = []
-        for pin in pins {
+        for pin in pins where byID[pin.id] == nil {
+            byID[pin.id] = pin
             if pin.id == apart {
                 separate.append(PinCluster(pins: [pin], drawn: false))
                 continue
             }
-            let home = Cell(x: Int((pin.x / cell).rounded(.down)), y: Int((pin.y / cell).rounded(.down)))
-            var best: (index: Int, distance: Double)?
-            for dx in -1...1 {
-                for dy in -1...1 {
-                    for index in grid[Cell(x: home.x + dx, y: home.y + dy)] ?? [] {
-                        let seed = groups[index][0]
-                        let distance = hypot(seed.x - pin.x, seed.y - pin.y)
-                        if distance <= cell, distance < (best?.distance ?? .infinity) {
-                            best = (index, distance)
-                        }
-                    }
+            let atSpot =
+                pin.kind == .spot
+                || spots.contains {
+                    MKMapPoint(x: $0.x, y: $0.y).distance(to: MKMapPoint(x: pin.x, y: pin.y))
+                        <= atStationMetres
                 }
-            }
-            if let best {
-                groups[best.index].append(pin)
-            } else {
-                grid[home, default: []].append(groups.count)
-                groups.append([pin])
-            }
+            sites.append(
+                PinSite(
+                    id: pin.id, lat: pin.latitude, lon: pin.longitude, observed: pin.observed,
+                    reference: pin.reference, always: atSpot))
         }
-        return groups.map { PinCluster(pins: $0, drawn: true) } + separate
+        let marks = thinPins(sites: sites, zoom: zoom, cellPoints: cellPoints).compactMap {
+            group -> PinCluster? in
+            let members = group.members.compactMap { byID[$0] }
+            return members.isEmpty ? nil : PinCluster(pins: members, drawn: true)
+        }
+        return marks + separate
+    }
+
+    /// The pins to list for a screen reader: every pin of the marks drawn that lies in `region`,
+    /// saved spots first, then the nearest the region's centre; at most `limit`.
+    static func onScreen(
+        _ clusters: [PinCluster], in region: MapRegion, limit: Int = 100
+    ) -> [MapPin] {
+        func inside(_ pin: MapPin) -> Bool {
+            let lonIn =
+                region.west <= region.east
+                ? (region.west...region.east).contains(pin.longitude)
+                : (pin.longitude >= region.west || pin.longitude <= region.east)
+            return lonIn && (region.south...region.north).contains(pin.latitude)
+        }
+        let centre = MKMapPoint(
+            CLLocationCoordinate2D(
+                latitude: region.centerLatitude, longitude: region.centerLongitude))
+        func distance(_ pin: MapPin) -> Double { hypot(pin.x - centre.x, pin.y - centre.y) }
+        let found = clusters.filter(\.drawn).flatMap(\.pins).filter(inside)
+        let sorted = found.sorted { a, b in
+            if (a.kind == .spot) != (b.kind == .spot) { return a.kind == .spot }
+            let (da, db) = (distance(a), distance(b))
+            return da != db ? da < db : a.id < b.id
+        }
+        return Array(sorted.prefix(limit))
+    }
+
+    /// What a screen reader says of a pin: the station's name, then the core's words for it
+    /// (its kind and state); a saved spot has its name only.
+    static func spoken(_ pin: MapPin) -> String {
+        pin.label.isEmpty ? pin.name : "\(pin.name), \(pin.label)"
     }
 
     /// The mark a tap at map point (`x`, `y`) meets: the nearest within ``reach`` points.
@@ -325,11 +364,6 @@ nonisolated enum StationPins {
             let point = MKMapPoint(CLLocationCoordinate2D(latitude: spot.latitude, longitude: spot.longitude))
             return station.distance(to: point) <= atStationMetres
         }?.id
-    }
-
-    private struct Cell: Hashable {
-        let x: Int
-        let y: Int
     }
 }
 

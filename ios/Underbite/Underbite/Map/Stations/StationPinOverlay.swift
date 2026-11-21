@@ -28,7 +28,7 @@ nonisolated final class StationPinOverlay: NSObject, MKOverlay {
 /// attention); a group of pins as the pin that leads it with their number beside.
 nonisolated final class StationPinRenderer: MKOverlayRenderer {
     /// The pins' size on screen, in points.
-    static let size = 24.0
+    static let size = 22.0
     /// The largest mark's half size with its outline, in points: marks this far outside a tile
     /// still reach into it.
     static let margin = 30.0
@@ -103,14 +103,14 @@ nonisolated enum PinDrawing {
         context.setLineDash(phase: 0, lengths: [])
 
         let tint = kind == .spot ? UIColor.white : (filled ? uiColor(role.glyph) : colour)
-        if let image = cache.image(kind.symbol, tint: tint, pointSize: 11) {
+        if let image = cache.image(kind.symbol, tint: tint, pointSize: 10) {
             let size = image.size
             image.draw(
                 in: CGRect(
                     x: -size.width / 2, y: -size.height / 2 + glyphOffset(kind.shape),
                     width: size.width, height: size.height))
         }
-        if role.mark == .alert { badge(at: CGPoint(x: count > 1 ? -10 : 10, y: -10), in: context) }
+        if role.mark == .alert { badge(at: CGPoint(x: count > 1 ? -9 : 9, y: -9), in: context) }
         if count > 1 { number(count, in: context) }
     }
 
@@ -120,12 +120,12 @@ nonisolated enum PinDrawing {
         let text = NSAttributedString(
             string: String(count),
             attributes: [
-                .font: UIFont.systemFont(ofSize: 10, weight: .bold),
+                .font: UIFont.systemFont(ofSize: 9, weight: .bold),
                 .foregroundColor: UIColor.white,
             ])
         let size = text.size()
-        let width = max(size.width + 7, 16), height = 16.0
-        let capsule = CGRect(x: 14 - width / 2, y: -15 - height / 2, width: width, height: height)
+        let width = max(size.width + 6, 14), height = 14.0
+        let capsule = CGRect(x: 12 - width / 2, y: -13 - height / 2, width: width, height: height)
         let path = CGPath(
             roundedRect: capsule, cornerWidth: height / 2, cornerHeight: height / 2, transform: nil)
         context.addPath(path)

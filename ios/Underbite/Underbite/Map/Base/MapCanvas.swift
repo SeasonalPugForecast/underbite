@@ -325,6 +325,19 @@ struct MapCanvas: UIViewRepresentable {
 
         // MARK: - Modules
 
+        /// The lowest overlay on the map, at `level`, of the modules listed after `module`.
+        private func firstOverlay(above module: any MapModule, at level: MKOverlayLevel)
+            -> (any MKOverlay)?
+        {
+            let modules = controller.modules
+            guard let index = modules.firstIndex(where: { $0 === module }) else { return nil }
+            for later in modules[(index + 1)...] where later.overlayLevel == level {
+                let held = moduleOverlays[ObjectIdentifier(later)] ?? [:]
+                if let overlay = held.values.first { return overlay }
+            }
+            return nil
+        }
+
         private func syncModules(_ map: MKMapView) {
             for module in controller.modules {
                 let id = ObjectIdentifier(module)
@@ -337,7 +350,14 @@ struct MapCanvas: UIViewRepresentable {
                     held[key] = nil
                 }
                 for overlay in wanted where held[ObjectIdentifier(overlay)] == nil {
-                    map.addOverlay(overlay, level: module.overlayLevel)
+                    // Modules are listed bottom first: an overlay that comes late (a forecast
+                    // that has loaded) goes under those of the modules above it, so the pins
+                    // stay on top.
+                    if let above = firstOverlay(above: module, at: module.overlayLevel) {
+                        map.insertOverlay(overlay, below: above)
+                    } else {
+                        map.addOverlay(overlay, level: module.overlayLevel)
+                    }
                     held[ObjectIdentifier(overlay)] = overlay
                 }
                 moduleOverlays[id] = held
