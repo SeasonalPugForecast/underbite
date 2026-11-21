@@ -2743,24 +2743,24 @@
             }
           ],
           "stage_chart": {
-            "accessibility": "Stage: highest 4.6 ft gage datum, lowest 4.6 ft gage datum",
+            "accessibility": "Stage: highest 4.6 ft, lowest 4.6 ft",
             "bands": [],
             "markers": [],
             "now_t": 1794000360,
             "rules": [
               {
                 "kind": "flood_category",
-                "label": "Action 7.9 ft gage datum",
+                "label": "Action 7.9 ft",
                 "value": 7.8740163
               },
               {
                 "kind": "flood_category",
-                "label": "Minor 7.9 ft gage datum",
+                "label": "Minor 7.9 ft",
                 "value": 7.8740163
               },
               {
                 "kind": "flood_category",
-                "label": "Major 9.8 ft gage datum",
+                "label": "Major 9.8 ft",
                 "value": 9.84252
               }
             ],
@@ -2769,7 +2769,7 @@
                 "label": "Forecast",
                 "points": [
                   {
-                    "label": "4.6 ft gage datum",
+                    "label": "4.6 ft",
                     "major": true,
                     "t": 1794000360,
                     "value": 4.593176

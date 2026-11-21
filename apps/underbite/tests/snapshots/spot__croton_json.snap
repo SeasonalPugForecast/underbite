@@ -4095,3697 +4095,3697 @@ expression: json
                 {
                   "t": 1793543400,
                   "value": 2.0,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": true
                 },
                 {
                   "t": 1793544300,
                   "value": 2.01,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": true
                 },
                 {
                   "t": 1793545200,
                   "value": 2.0,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793546100,
                   "value": 1.98,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793547000,
                   "value": 1.97,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793547900,
                   "value": 1.97,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793548800,
                   "value": 1.96,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793549700,
                   "value": 1.97,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793550600,
                   "value": 1.96,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793551500,
                   "value": 1.96,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793552400,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793553300,
                   "value": 1.96,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793554200,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793555100,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793556000,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793556900,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793557800,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793558700,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793559600,
                   "value": 1.93,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793560500,
                   "value": 1.92,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793561400,
                   "value": 1.93,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793562300,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793563200,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793564100,
                   "value": 1.93,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793565000,
                   "value": 1.93,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793565900,
                   "value": 1.92,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793566800,
                   "value": 1.93,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793567700,
                   "value": 1.93,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793568600,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793569500,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793570400,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793571300,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793572200,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793573100,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793574000,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793574900,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793575800,
                   "value": 1.96,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793576700,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793577600,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793578500,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793579400,
                   "value": 1.96,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793580300,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793581200,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793582100,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793583000,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793583900,
                   "value": 1.96,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793584800,
                   "value": 1.93,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793585700,
                   "value": 1.93,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793586600,
                   "value": 1.93,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793587500,
                   "value": 1.9499999,
-                  "label": "2.0 ft gage datum",
+                  "label": "2.0 ft",
                   "major": false
                 },
                 {
                   "t": 1793588400,
                   "value": 1.93,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793589300,
                   "value": 1.9399999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793590200,
                   "value": 1.91,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793591100,
                   "value": 1.92,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793592000,
                   "value": 1.9,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793592900,
                   "value": 1.89,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793593800,
                   "value": 1.8799999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793594700,
                   "value": 1.8699999,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793595600,
                   "value": 1.8600001,
-                  "label": "1.9 ft gage datum",
+                  "label": "1.9 ft",
                   "major": false
                 },
                 {
                   "t": 1793596500,
                   "value": 1.84,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793597400,
                   "value": 1.83,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793598300,
                   "value": 1.84,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793599200,
                   "value": 1.84,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793600100,
                   "value": 1.8099998,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793601000,
                   "value": 1.7900001,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793601900,
                   "value": 1.78,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793602800,
                   "value": 1.7900001,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793603700,
                   "value": 1.77,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793604600,
                   "value": 1.76,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793605500,
                   "value": 1.73,
-                  "label": "1.7 ft gage datum",
+                  "label": "1.7 ft",
                   "major": false
                 },
                 {
                   "t": 1793606400,
                   "value": 1.75,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793607300,
                   "value": 1.75,
-                  "label": "1.8 ft gage datum",
+                  "label": "1.8 ft",
                   "major": false
                 },
                 {
                   "t": 1793608200,
                   "value": 1.72,
-                  "label": "1.7 ft gage datum",
+                  "label": "1.7 ft",
                   "major": false
                 },
                 {
                   "t": 1793609100,
                   "value": 1.6900002,
-                  "label": "1.7 ft gage datum",
+                  "label": "1.7 ft",
                   "major": false
                 },
                 {
                   "t": 1793610000,
                   "value": 1.6999999,
-                  "label": "1.7 ft gage datum",
+                  "label": "1.7 ft",
                   "major": false
                 },
                 {
                   "t": 1793610900,
                   "value": 1.7099999,
-                  "label": "1.7 ft gage datum",
+                  "label": "1.7 ft",
                   "major": false
                 },
                 {
                   "t": 1793611800,
                   "value": 1.7099999,
-                  "label": "1.7 ft gage datum",
+                  "label": "1.7 ft",
                   "major": false
                 },
                 {
                   "t": 1793612700,
                   "value": 1.68,
-                  "label": "1.7 ft gage datum",
+                  "label": "1.7 ft",
                   "major": false
                 },
                 {
                   "t": 1793613600,
                   "value": 1.67,
-                  "label": "1.7 ft gage datum",
+                  "label": "1.7 ft",
                   "major": false
                 },
                 {
                   "t": 1793614500,
                   "value": 1.67,
-                  "label": "1.7 ft gage datum",
+                  "label": "1.7 ft",
                   "major": false
                 },
                 {
                   "t": 1793615400,
                   "value": 1.67,
-                  "label": "1.7 ft gage datum",
+                  "label": "1.7 ft",
                   "major": false
                 },
                 {
                   "t": 1793616300,
                   "value": 1.66,
-                  "label": "1.7 ft gage datum",
+                  "label": "1.7 ft",
                   "major": false
                 },
                 {
                   "t": 1793617200,
                   "value": 1.63,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793618100,
                   "value": 1.64,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793619000,
                   "value": 1.6499999,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793619900,
                   "value": 1.6499999,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793620800,
                   "value": 1.61,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793621700,
                   "value": 1.6,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793622600,
                   "value": 1.6,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793623500,
                   "value": 1.62,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793624400,
                   "value": 1.59,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793625300,
                   "value": 1.57,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793626200,
                   "value": 1.55,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793627100,
                   "value": 1.56,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793628000,
                   "value": 1.56,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793628900,
                   "value": 1.55,
-                  "label": "1.6 ft gage datum",
+                  "label": "1.6 ft",
                   "major": false
                 },
                 {
                   "t": 1793629800,
                   "value": 1.52,
-                  "label": "1.5 ft gage datum",
+                  "label": "1.5 ft",
                   "major": false
                 },
                 {
                   "t": 1793630700,
                   "value": 1.51,
-                  "label": "1.5 ft gage datum",
+                  "label": "1.5 ft",
                   "major": false
                 },
                 {
                   "t": 1793631600,
                   "value": 1.51,
-                  "label": "1.5 ft gage datum",
+                  "label": "1.5 ft",
                   "major": false
                 },
                 {
                   "t": 1793632500,
                   "value": 1.52,
-                  "label": "1.5 ft gage datum",
+                  "label": "1.5 ft",
                   "major": false
                 },
                 {
                   "t": 1793633400,
                   "value": 1.51,
-                  "label": "1.5 ft gage datum",
+                  "label": "1.5 ft",
                   "major": false
                 },
                 {
                   "t": 1793634300,
                   "value": 1.48,
-                  "label": "1.5 ft gage datum",
+                  "label": "1.5 ft",
                   "major": false
                 },
                 {
                   "t": 1793635200,
                   "value": 1.47,
-                  "label": "1.5 ft gage datum",
+                  "label": "1.5 ft",
                   "major": false
                 },
                 {
                   "t": 1793636100,
                   "value": 1.46,
-                  "label": "1.5 ft gage datum",
+                  "label": "1.5 ft",
                   "major": false
                 },
                 {
                   "t": 1793637000,
                   "value": 1.46,
-                  "label": "1.5 ft gage datum",
+                  "label": "1.5 ft",
                   "major": false
                 },
                 {
                   "t": 1793637900,
                   "value": 1.45,
-                  "label": "1.5 ft gage datum",
+                  "label": "1.5 ft",
                   "major": false
                 },
                 {
                   "t": 1793638800,
                   "value": 1.43,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793639700,
                   "value": 1.42,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793640600,
                   "value": 1.42,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793641500,
                   "value": 1.42,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793642400,
                   "value": 1.41,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793643300,
                   "value": 1.4,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793644200,
                   "value": 1.39,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793645100,
                   "value": 1.39,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793646000,
                   "value": 1.39,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793646900,
                   "value": 1.38,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793647800,
                   "value": 1.37,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793648700,
                   "value": 1.36,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793649600,
                   "value": 1.35,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793650500,
                   "value": 1.35,
-                  "label": "1.4 ft gage datum",
+                  "label": "1.4 ft",
                   "major": false
                 },
                 {
                   "t": 1793651400,
                   "value": 1.34,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793652300,
                   "value": 1.34,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793653200,
                   "value": 1.33,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793654100,
                   "value": 1.34,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793655000,
                   "value": 1.33,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793655900,
                   "value": 1.32,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793656800,
                   "value": 1.32,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793657700,
                   "value": 1.32,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793658600,
                   "value": 1.32,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793659500,
                   "value": 1.32,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793660400,
                   "value": 1.31,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793661300,
                   "value": 1.31,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793662200,
                   "value": 1.31,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793663100,
                   "value": 1.31,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793664000,
                   "value": 1.3,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793664900,
                   "value": 1.29,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793665800,
                   "value": 1.29,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793666700,
                   "value": 1.3,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793667600,
                   "value": 1.3,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793668500,
                   "value": 1.28,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793669400,
                   "value": 1.27,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793670300,
                   "value": 1.28,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793671200,
                   "value": 1.29,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793672100,
                   "value": 1.28,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793673000,
                   "value": 1.26,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793673900,
                   "value": 1.25,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793674800,
                   "value": 1.26,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793675700,
                   "value": 1.27,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793676600,
                   "value": 1.26,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793677500,
                   "value": 1.25,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793678400,
                   "value": 1.25,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793679300,
                   "value": 1.25,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793680200,
                   "value": 1.25,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793681100,
                   "value": 1.25,
-                  "label": "1.3 ft gage datum",
+                  "label": "1.3 ft",
                   "major": false
                 },
                 {
                   "t": 1793682000,
                   "value": 1.24,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793682900,
                   "value": 1.23,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793683800,
                   "value": 1.22,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793684700,
                   "value": 1.22,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793685600,
                   "value": 1.22,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793686500,
                   "value": 1.22,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793687400,
                   "value": 1.21,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793688300,
                   "value": 1.21,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793689200,
                   "value": 1.21,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793690100,
                   "value": 1.21,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793691000,
                   "value": 1.2,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793691900,
                   "value": 1.2,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793692800,
                   "value": 1.2,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793693700,
                   "value": 1.2,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793694600,
                   "value": 1.19,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793695500,
                   "value": 1.19,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793696400,
                   "value": 1.19,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793697300,
                   "value": 1.19,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793698200,
                   "value": 1.18,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793699100,
                   "value": 1.17,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793700000,
                   "value": 1.17,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793700900,
                   "value": 1.17,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793701800,
                   "value": 1.17,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793702700,
                   "value": 1.17,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793703600,
                   "value": 1.16,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793704500,
                   "value": 1.16,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793705400,
                   "value": 1.16,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793706300,
                   "value": 1.16,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793707200,
                   "value": 1.16,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793708100,
                   "value": 1.16,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793709000,
                   "value": 1.16,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793709900,
                   "value": 1.16,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793710800,
                   "value": 1.16,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793711700,
                   "value": 1.15,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793712600,
                   "value": 1.15,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793713500,
                   "value": 1.14,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793714400,
                   "value": 1.15,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793715300,
                   "value": 1.15,
-                  "label": "1.2 ft gage datum",
+                  "label": "1.2 ft",
                   "major": false
                 },
                 {
                   "t": 1793716200,
                   "value": 1.14,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793717100,
                   "value": 1.13,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793718000,
                   "value": 1.13,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793718900,
                   "value": 1.14,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793719800,
                   "value": 1.13,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793720700,
                   "value": 1.13,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793721600,
                   "value": 1.12,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793722500,
                   "value": 1.12,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793723400,
                   "value": 1.12,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793724300,
                   "value": 1.12,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793725200,
                   "value": 1.12,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793726100,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793727000,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793727900,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793728800,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793729700,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793730600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793731500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793732400,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793733300,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793734200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793735100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793736000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793736900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793737800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793738700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793739600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793740500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793741400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793742300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793743200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793744100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793745000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793745900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793746800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793747700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793748600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793749500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793750400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793751300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793752200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793753100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793754000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793754900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793755800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793756700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793757600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793758500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793759400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793760300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793761200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793762100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793763000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793763900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793764800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793765700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793766600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793767500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793768400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793769300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793770200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793771100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793772000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793772900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793773800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793774700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793775600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793776500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793777400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793778300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793779200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793780100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793781000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793781900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793782800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793783700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793784600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793785500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793786400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793787300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793788200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793789100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793790000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793790900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793791800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793792700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793793600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793794500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793795400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793796300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793797200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793798100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793799000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793799900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793800800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793801700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793802600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793803500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793804400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793805300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793806200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793807100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793808000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793808900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793809800,
                   "value": 1.08,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": true
                 },
                 {
                   "t": 1793810700,
                   "value": 1.08,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793811600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793812500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793813400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793814300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793815200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793816100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793817000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793817900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793818800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793819700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793820600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793821500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793822400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793823300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793824200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793825100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793826000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793826900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793827800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793828700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793829600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793830500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793831400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793832300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793833200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793834100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793835000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793835900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793836800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793837700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793838600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793839500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793840400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793841300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793842200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793843100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793844000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793844900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793845800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793846700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793847600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793848500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793849400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793850300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793851200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793852100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793853000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793853900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793854800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793855700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793856600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793857500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793858400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793859300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793860200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793861100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793862000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793862900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793863800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793864700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793865600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793866500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793867400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793868300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793869200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793870100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793871000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793871900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793872800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793873700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793874600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793875500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793876400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793877300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793878200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793879100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793880000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793880900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793881800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793882700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793883600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793884500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793885400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793886300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793887200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793888100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793889000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793889900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793890800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793891700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793892600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793893500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793894400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793895300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793896200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793897100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793898000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793898900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793899800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793900700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793901600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793902500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793903400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793904300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793905200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793906100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793907000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793907900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793908800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793909700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793910600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793911500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793912400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793913300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793914200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793915100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793916000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793916900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793917800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793918700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793919600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793920500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793921400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793922300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793923200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793924100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793925000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793925900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793926800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793927700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793928600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793929500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793930400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793931300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793932200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793933100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793934000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793934900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793935800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793936700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793937600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793938500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793939400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793940300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793941200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793942100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793943000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793943900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793944800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793945700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793946600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793947500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793948400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793949300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793950200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793951100,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793952000,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793952900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793953800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793954700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793955600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793956500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793957400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793958300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793959200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793960100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793961000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793961900,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793962800,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793963700,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793964600,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793965500,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793966400,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793967300,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793968200,
                   "value": 1.09,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793969100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793970000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793970900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793971800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793972700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793973600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793974500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793975400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793976300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793977200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793978100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793979000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793979900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793980800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793981700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793982600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793983500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793984400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793985300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793986200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793987100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793988000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793988900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793989800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793990700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793991600,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793992500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793993400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793994300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793995200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793996100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793997000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793997900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793998800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1793999700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794000600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794001500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794002400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794003300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794004200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794005100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794006000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794006900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794007800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794008700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794009600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794010500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794011400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794012300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794013200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794014100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794015000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794015900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794016800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794017700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794018600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794019500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794020400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794021300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794022200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794023100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794024000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794024900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794025800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794026700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794027600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794028500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794029400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794030300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794031200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794032100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794033000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794033900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794034800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794035700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794036600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794037500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794038400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794039300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794040200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794041100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794042000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794042900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794043800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794044700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794045600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794046500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794047400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794048300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794049200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794050100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794051000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794051900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794052800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794053700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794054600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794055500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794056400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794057300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794058200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794059100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794060000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794060900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794061800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794062700,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794063600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794064500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794065400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794066300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794067200,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794068100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794069000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794069900,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794070800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794071700,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794072600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794073500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794074400,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794075300,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794076200,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794077100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794078000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794078900,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794079800,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794080700,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794081600,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794082500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794083400,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794084300,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794085200,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794086100,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794087000,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794087900,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794088800,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794089700,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794090600,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794091500,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794092400,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794093300,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794094200,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794095100,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794096000,
                   "value": 1.11,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": false
                 },
                 {
                   "t": 1794145500,
                   "value": 1.1,
-                  "label": "1.1 ft gage datum",
+                  "label": "1.1 ft",
                   "major": true
                 }
               ]
@@ -7795,7 +7795,7 @@ expression: json
           "rules": [],
           "markers": [],
           "now_t": null,
-          "accessibility": "Stage: now 1.1 ft gage datum, highest 2.0 ft gage datum, lowest 1.1 ft gage datum"
+          "accessibility": "Stage: now 1.1 ft, highest 2.0 ft, lowest 1.1 ft"
         },
         "sections": [
           {
