@@ -305,6 +305,7 @@ pub fn build_trip_view(
                 inputs: inputs.get(&key),
                 key,
                 name: place.name.clone(),
+                water_type: place.water_type,
                 grid,
                 fallback: &input.snapshot,
                 f: formatter(input, zone, input.voice),
@@ -449,6 +450,7 @@ impl When {
 struct PlaceCtx<'a> {
     key: PlaceKey,
     name: String,
+    water_type: WaterType,
     grid: Option<&'a PlaceGrid>,
     inputs: Option<&'a PlaceInputs>,
     /// The view input's snapshot, for credits when the place has none.
@@ -702,7 +704,7 @@ impl PlaceCtx<'_> {
             .as_ref()
             .and_then(|tz| time::local_date_bounds(day.date, tz).ok())
             .map_or(UnixTime(i64::MIN), |(start, _)| start);
-        let cells = vec![
+        let mut cells = vec![
             self.cell(TripCellKind::Verdict, &day.verdict, None, |f, v| {
                 verdict_words(f, day.date, v).0
             }),
@@ -721,6 +723,8 @@ impl PlaceCtx<'_> {
                 solunar_words(f, periods, day_start)
             }),
         ];
+        // A measure the water type does not have is left out, not shown as unavailable.
+        cells.retain(|c| c.basis != CellBasis::Unavailable || applies(c.kind, self.water_type));
         let sentence: Vec<&str> = cells
             .iter()
             .map(|c| c.accessibility.trim_end_matches('.'))
@@ -746,6 +750,19 @@ impl PlaceCtx<'_> {
             }),
             accessibility,
         }
+    }
+}
+
+/// Whether a kind of cell is a measure of this water type: tides need salt water, and river
+/// flow needs fresh water or a tidal river.
+const fn applies(kind: TripCellKind, water_type: WaterType) -> bool {
+    match kind {
+        TripCellKind::Tides => matches!(water_of(water_type), Water::Salt),
+        TripCellKind::Flow => !matches!(
+            water_type,
+            WaterType::BayInshore | WaterType::Surf | WaterType::Nearshore | WaterType::Offshore
+        ),
+        _ => true,
     }
 }
 
@@ -1852,6 +1869,29 @@ pub(in crate::view) mod tests {
     }
 
     #[test]
+    fn cells_that_do_not_apply_to_the_water_type_are_left_out() {
+        let input = view_input();
+        let first = date(2026, 11, 8);
+        let mut t = trip(vec![battery()], first, date(2026, 11, 10));
+        t.places[0].water_type = WaterType::BayInshore;
+        let inputs = BTreeMap::from([(
+            PlaceKey::of(&t.places[0]),
+            battery_inputs(&input, first, false),
+        )]);
+        let v = built(t, inputs, &input).view(&input);
+        let today = day(&v, 0, 0);
+        let kinds: Vec<TripCellKind> = today.cells.iter().map(|c| c.kind).collect();
+        assert!(!kinds.contains(&TripCellKind::Flow), "{kinds:?}");
+        assert!(kinds.contains(&TripCellKind::Tides));
+        assert!(!today.accessibility.contains("River flow"));
+        // Fresh water has no tides; a tidal river keeps both.
+        assert!(!applies(TripCellKind::Tides, WaterType::RiverStream));
+        assert!(applies(TripCellKind::Flow, WaterType::RiverStream));
+        assert!(applies(TripCellKind::Tides, WaterType::TidalRiverEstuary));
+        assert!(applies(TripCellKind::Flow, WaterType::TidalRiverEstuary));
+    }
+
+    #[test]
     fn two_places_are_columns_with_their_own_sources_and_links() {
         let input = view_input();
         let v = two_places(&input).view(&input);
@@ -1874,10 +1914,8 @@ pub(in crate::view) mod tests {
             "typical for these dates, 93 years, station records"
         );
         assert!(flow.lines.contains(&"In your best range".to_owned()));
-        assert_eq!(
-            cell(croton, TripCellKind::Tides).basis_label,
-            "unavailable: no source here"
-        );
+        // A river has no tide to show, and no cell says so.
+        assert!(croton.cells.iter().all(|c| c.kind != TripCellKind::Tides));
         // Salt and fresh water regulations for New York and the licence, then the disclaimer.
         let kinds: Vec<ChecklistKind> = v.checklist.iter().map(|c| c.kind).collect();
         let disclaimer = kinds
