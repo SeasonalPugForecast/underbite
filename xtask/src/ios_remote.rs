@@ -988,7 +988,7 @@ fn shot_devices(remote: &Remote) -> [(&'static str, &str); 2] {
 /// shot, and a dark one of those that ask for it, into `.screens/<iphone|ipad>/`. The app
 /// is removed before it is installed, so a run never starts from data an earlier build
 /// left behind (a lane's simulators are clones that carry the base devices' app data).
-fn shots(remote: &Remote, list: &[Shot]) -> String {
+fn shots(remote: &Remote, list: &[Shot]) -> Vec<String> {
     capture(remote, list, shot_devices(remote), SCREENS, false)
 }
 
@@ -999,7 +999,7 @@ fn store_devices(remote: &Remote) -> [(&'static str, &str); 2] {
 
 /// On the Mac: the light App Store screenshots of `list` in [`STORE_SCREENS`], one directory
 /// per device, with the status bar set to 9:41, full battery and signal (and cleared again).
-fn store_shots(remote: &Remote, list: &[Shot]) -> String {
+fn store_shots(remote: &Remote, list: &[Shot]) -> Vec<String> {
     capture(remote, list, store_devices(remote), STORE_SCREENS, true)
 }
 
@@ -1015,17 +1015,19 @@ fn status_bar_override(sim: &str) -> String {
 
 /// On the Mac: runs the app in each of `devices` (a directory label and a simulator) and takes
 /// the shots of `list` into `<screens>/<label>/`. With `store` the status bar is overridden and
-/// only light shots are taken.
+/// only light shots are taken. One script per device, and one to finish, so that no ssh
+/// argument nears the operating system's limit on one argument.
 fn capture(
     remote: &Remote,
     list: &[Shot],
     devices: [(&str, &str); 2],
     screens: &str,
     store: bool,
-) -> String {
+) -> Vec<String> {
     let app = format!("{DERIVED}/Build/Products/Debug-iphonesimulator/{APP}");
-    let mut steps = vec![format!("rm -rf {screens}")];
+    let mut scripts = vec![in_dir(remote, &format!("rm -rf {screens}"))];
     for (label, name) in devices {
+        let mut steps = Vec::new();
         let sim = quote(name);
         let dir = format!("{screens}/{label}");
         steps.push(format!(
@@ -1069,14 +1071,18 @@ fn capture(
         if store {
             steps.push(format!("xcrun simctl status_bar {sim} clear"));
         }
+        scripts.push(in_dir(remote, &steps.join("; ")));
     }
     if store {
         // The simulator's screenshots carry an alpha channel; App Store Connect refuses it.
-        steps.push(format!(
-            "xcrun swift {DROP_ALPHA} {screens}/*/*.png || echo \"could not drop the alpha channel\" >&2"
+        scripts.push(in_dir(
+            remote,
+            &format!(
+                "xcrun swift {DROP_ALPHA} {screens}/*/*.png || echo \"could not drop the alpha channel\" >&2"
+            ),
         ));
     }
-    in_dir(remote, &steps.join("; "))
+    scripts
 }
 
 /// On the Mac: the command, run in the directory with Xcode selected.
@@ -1494,7 +1500,7 @@ fn plan(args: &Args, remote: &Remote, stage: &str, list: &[Shot]) -> Plan {
         );
     }
     if args.step == Step::Shots {
-        steps.push(ssh(shots(remote, list)));
+        steps.extend(shots(remote, list).into_iter().map(ssh));
         let local = workspace_root().join("target/ios-screens");
         fetches.push((
             "rsync".to_string(),
@@ -1502,7 +1508,7 @@ fn plan(args: &Args, remote: &Remote, stage: &str, list: &[Shot]) -> Plan {
         ));
     }
     if args.step == Step::StoreShots {
-        steps.push(ssh(store_shots(remote, list)));
+        steps.extend(store_shots(remote, list).into_iter().map(ssh));
         let local = workspace_root().join(STORE_LOCAL);
         fetches.push((
             "rsync".to_string(),
@@ -1804,6 +1810,16 @@ mod tests {
         remote(&a, &|_| None, file, lane.map(str::to_owned)).unwrap()
     }
 
+    /// The last `n` ssh scripts of a plan, as one text.
+    fn last_scripts(plan: &Plan, n: usize) -> String {
+        let steps = &plan.0;
+        steps[steps.len() - n..]
+            .iter()
+            .map(|(_, a)| a.last().unwrap().as_str())
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
     fn last_line(plan: &Plan) -> &str {
         plan.0.last().unwrap().1.last().unwrap()
     }
@@ -1910,8 +1926,10 @@ mod tests {
         let programs: Vec<&str> = p.0.iter().map(|(p, _)| p.as_str()).collect();
         assert_eq!(
             programs,
-            ["ssh", "rsync", "rsync", "ssh", "ssh", "ssh", "ssh"],
-            "claim, sync, stage, package, simulators, app, shots"
+            [
+                "ssh", "rsync", "rsync", "ssh", "ssh", "ssh", "ssh", "ssh", "ssh", "ssh"
+            ],
+            "claim, sync, stage, package, simulators, app, cleanup, two devices, alpha"
         );
         let sims = &p.0[4].1[1];
         for clone in [
@@ -1929,7 +1947,8 @@ mod tests {
             "{:?}",
             p.0[5]
         );
-        let line = last_line(&p);
+        let line = last_scripts(&p, 4);
+        let line = line.as_str();
         assert!(line.contains("rm -rf .store-shots"), "{line}");
         for (dir, sim) in [
             (".store-shots/iphone", "'iPhone 17 Pro Max (lane-a)'"),
@@ -2009,6 +2028,27 @@ mod tests {
                 "05-catch-log",
                 "06-widgets"
             ]
+        );
+    }
+
+    #[test]
+    fn shot_scripts_go_one_ssh_argument_per_device_and_stay_small() {
+        let r = lane_remote(None);
+        let list = read_shots(&workspace_root().join(SHOTS_DIR)).unwrap();
+        let scripts = shots(&r, &list);
+        assert_eq!(scripts.len(), 3, "cleanup plus one script per device");
+        // Linux refuses one argument over 128 KiB.
+        for script in scripts.iter().chain(&store_shots(&r, &list)) {
+            assert!(script.len() < 100 * 1024, "{} bytes", script.len());
+        }
+        let a = Args {
+            ..args(Step::Shots)
+        };
+        let (steps, _) = plan(&a, &r, "s", &list);
+        assert!(
+            steps
+                .iter()
+                .all(|(p, v)| p != "ssh" || v[1].len() < 100 * 1024)
         );
     }
 
@@ -2366,7 +2406,8 @@ mod tests {
             .filter(|(_, a)| a.last().is_some_and(|l| l.contains("xcodebuild -quiet")))
             .count();
         assert_eq!(builds, 1, "built once");
-        let line = last_line(&shots);
+        let line = last_scripts(&shots, 3);
+        let line = line.as_str();
         for sim in [
             "'iPhone 17 (underbite-lane-a)'",
             "'iPad Air 11-inch (M4) (underbite-lane-a)'",
