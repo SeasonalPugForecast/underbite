@@ -804,6 +804,20 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         .or(stage.map(|h| h.datum))
         .and_then(|datum| {
             let show = stage_show(datum);
+            // The datum is named once, in the axis title (`show(0.0).unit`); the labels on
+            // the axis, the points and the flood lines carry the plain unit.
+            let plain_unit = f.strings.height_unit(if lake_level {
+                f.units.lake_level
+            } else {
+                f.units.stage
+            });
+            let bare = |v: f32| {
+                let mut q = show(v);
+                if q.value.is_some() {
+                    plain_unit.clone_into(&mut q.unit);
+                }
+                q
+            };
             let mut series = Vec::new();
             if let Some(h) = stage.filter(|h| h.datum == datum) {
                 let pts = observed_after(&h.series, from);
@@ -812,7 +826,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
                         f.strings.get(Key::Observed),
                         SeriesRole::Observed,
                         pts,
-                        &show,
+                        &bare,
                     ));
                 }
             }
@@ -823,7 +837,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
                         f.strings.get(Key::Forecast),
                         SeriesRole::Forecast,
                         pts,
-                        &show,
+                        &bare,
                     ));
                 }
             }
@@ -835,7 +849,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
                     q.value.map(|value| ChartRule {
                         kind: RuleKind::FloodCategory,
                         value,
-                        label: format!("{} {}", f.strings.get(*label), q.full()),
+                        label: format!("{} {} {plain_unit}", f.strings.get(*label), q.text),
                     })
                 })
                 .collect();
@@ -1535,10 +1549,10 @@ pub(in crate::view) mod tests {
         assert_eq!(
             rules,
             [
-                (17.0, "Action 17.0 ft gage datum"),
-                (20.0, "Minor 20.0 ft gage datum"),
-                (21.0, "Moderate 21.0 ft gage datum"),
-                (22.0, "Major 22.0 ft gage datum"),
+                (17.0, "Action 17.0 ft"),
+                (20.0, "Minor 20.0 ft"),
+                (21.0, "Moderate 21.0 ft"),
+                (22.0, "Major 22.0 ft"),
             ]
         );
         assert!(
@@ -1547,7 +1561,17 @@ pub(in crate::view) mod tests {
                 .iter()
                 .all(|r| r.kind == RuleKind::FloodCategory)
         );
+        // The datum is named once, in the axis title; the points carry the plain unit.
         assert_eq!(chart.unit, "ft gage datum");
+        assert!(
+            chart
+                .series
+                .iter()
+                .flat_map(|s| &s.points)
+                .all(|p| !p.label.contains("datum") && p.label.ends_with(" ft")),
+            "{:?}",
+            chart.series[0].points
+        );
         assert_eq!(chart.series.len(), 1);
         assert_eq!(chart.series[0].role, SeriesRole::Forecast);
         let crest = &c
