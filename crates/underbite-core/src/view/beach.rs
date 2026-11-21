@@ -57,6 +57,8 @@ pub struct BeachFacts<'a> {
     pub name: &'a str,
     /// The issuing office's id, "OKX".
     pub office: Option<&'a str>,
+    /// The place the office is named for, "New York City".
+    pub office_name: Option<&'a str>,
     /// The category; none when nothing was issued or the word is no category.
     pub rip: Option<RipCategory>,
     /// The risk as issued, whatever the word.
@@ -241,15 +243,26 @@ pub fn card(f: &Formatter, facts: &BeachFacts<'_>, now: UnixTime) -> BeachCard {
         (Some(t), None) => Some(t.to_owned()),
         _ => None,
     };
-    let issued = match (facts.office, when) {
-        (Some(office), Some(when)) => s.safety_fmt(
+    let nothing = facts.rip_text.is_none() && rows.len() == 1;
+    let place = facts.office.map(|office| match facts.office_name {
+        Some(name) => format!("{name} ({office})"),
+        None => office.to_owned(),
+    });
+    let age = facts.issued.map(|t| f.age(now.0 - t.0));
+    let office = facts.office.unwrap_or_default();
+    let issued = match (&place, when) {
+        (Some(place), _) if nothing => match &age {
+            Some(age) => s.safety_fmt(
+                SafetyKey::BeachNothingFrom,
+                &[("place", place), ("age", age)],
+            ),
+            None => s.safety_fmt(SafetyKey::BeachNothingFromNoAge, &[("place", place)]),
+        },
+        (Some(_), Some(when)) => s.safety_fmt(
             SafetyKey::BeachIssuedByAt,
             &[("office", office), ("when", &when)],
         ),
-        (Some(office), None) if facts.rip_text.is_some() || rows.len() > 1 => {
-            s.safety_fmt(SafetyKey::BeachIssuedBy, &[("office", office)])
-        }
-        (Some(office), None) => s.safety_fmt(SafetyKey::BeachNothingFrom, &[("office", office)]),
+        (Some(_), None) => s.safety_fmt(SafetyKey::BeachIssuedBy, &[("office", office)]),
         (None, _) => s.safety(SafetyKey::BeachNothing).to_owned(),
     };
     BeachCard {
@@ -263,7 +276,8 @@ pub fn card(f: &Formatter, facts: &BeachFacts<'_>, now: UnixTime) -> BeachCard {
         rows,
         period: facts.period.map(str::to_owned),
         issued,
-        age: facts.issued.map(|t| f.age(now.0 - t.0)),
+        // A zone with nothing issued has its age in its words.
+        age: if nothing { None } else { age },
         safety: s.safety(SafetyKey::BeachSafety).to_owned(),
     }
 }
@@ -305,6 +319,7 @@ mod tests {
         BeachFacts {
             name: "Eastern Norfolk Area Beaches",
             office: Some("BOX"),
+            office_name: None,
             rip: Some(RipCategory::Moderate),
             rip_text: Some("Moderate"),
             surf: Some("Around 2 feet."),
@@ -442,8 +457,38 @@ mod tests {
         assert_eq!(c.risk, "No forecast issued");
         assert_eq!(c.rows.len(), 1);
         assert_eq!(c.rows[0].value, "No forecast issued");
-        assert_eq!(c.issued, "NWS OKX has issued no forecast for this zone");
-        assert_eq!(c.age.as_deref(), Some("53 d ago"));
+        assert_eq!(
+            c.issued,
+            "No current forecast for this zone. The last update from NWS OKX was 53 d ago; forecasts run in the beach season."
+        );
+        assert_eq!(c.age, None);
+        let named = card(
+            &f,
+            &BeachFacts {
+                office_name: Some("New York City"),
+                ..facts
+            },
+            UnixTime(1_790_596_678 + 53 * 86_400),
+        );
+        assert!(
+            named
+                .issued
+                .contains("from NWS New York City (OKX) was 53 d ago"),
+            "{}",
+            named.issued
+        );
+        let undated = card(
+            &f,
+            &BeachFacts {
+                issued: None,
+                ..facts
+            },
+            NOW,
+        );
+        assert_eq!(
+            undated.issued,
+            "No current forecast for this zone. NWS OKX issues forecasts in the beach season."
+        );
         assert_eq!(c.period, None);
         // The safety line stays: an unissued zone has rip currents too.
         assert!(
@@ -460,7 +505,7 @@ mod tests {
         );
         assert_eq!(
             no_office.issued,
-            "The National Weather Service has issued no forecast for this zone"
+            "No current forecast for this zone. Forecasts run in the beach season."
         );
     }
 

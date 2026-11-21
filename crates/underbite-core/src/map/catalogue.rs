@@ -211,7 +211,9 @@ pub enum NearbyKind {
     SpeciesRecords,
     /// Bloom forecasts at beaches as points (NOAA NCCOS, Gulf of Mexico).
     BloomBeaches,
-    /// Rip current risk and surf by beach zone as polygons (NWS marine beach forecast).
+    /// Rip current risk and surf by beach zone as polygons (NWS marine beach forecast). Unlike the
+    /// other lookups, the app asks for it by itself while the layer is on and drawn (the service
+    /// is small and has no shared quota); the button only refreshes.
     BeachForecast,
 }
 

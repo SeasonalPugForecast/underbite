@@ -35,6 +35,12 @@ use crate::settings::load;
 
 /// How long an office of a point is kept, seconds: offices change on a scale of years.
 const OFFICE_TTL_S: i64 = 30 * 86_400;
+/// The widest view the lookup takes, degrees: the views of a phone and a tablet at the zoom the
+/// layer starts at. Boxes are snapped outward to [`SNAP_DEG`], so a box is a little wider.
+pub(super) const BEACH_VIEW_MAX_SPAN_DEG: f64 = 2.0;
+/// Boxes are snapped outward to this grid, so a view moved a little asks for the same zones, and
+/// the host's hour-long cache answers.
+const SNAP_DEG: f64 = 0.1;
 /// Most points kept with their office.
 const OFFICE_ENTRIES: usize = 64;
 
@@ -44,6 +50,9 @@ pub(super) struct LayerCache {
     fetched_at: i64,
     /// Office id to its Day 1 layer and, when it has one, its Day 2 layer.
     offices: BTreeMap<String, (u32, Option<u32>)>,
+    /// The place each office is named for.
+    #[serde(default)]
+    names: BTreeMap<String, String>,
 }
 
 /// The forecast office of a rounded point, as the state keeps it.
@@ -156,7 +165,7 @@ pub struct BeachLegendItem {
 /// tap. `state_json` is the last [`super::NearbyResults::state_json`] (empty for none).
 ///
 /// # Errors
-/// [`NearbyError::ZoomIn`] for a view wider than [`bf::MAX_BOX_SPAN_DEG`];
+/// [`NearbyError::ZoomIn`] for a view wider than [`BEACH_VIEW_MAX_SPAN_DEG`];
 /// [`NearbyError::Invalid`] for a view out of range or unreadable settings or state.
 #[uniffi::export]
 #[allow(clippy::needless_pass_by_value)] // UniFFI passes arguments by value
@@ -172,7 +181,7 @@ pub fn plan_beach_forecast(
     let now = UnixTime(now);
     state.prune(now);
     let mut inner = Inner::new(config, area, state, true, now);
-    if !inner.area.fits(bf::MAX_BOX_SPAN_DEG) {
+    if !inner.area.fits(BEACH_VIEW_MAX_SPAN_DEG) {
         return Err(NearbyError::ZoomIn {
             message: inner.f.strings.get(Key::NearbyZoomInBeaches).to_owned(),
         });
@@ -186,6 +195,18 @@ pub fn plan_beach_forecast(
     Ok(Arc::new(NearbyPlan {
         inner: Mutex::new(inner),
     }))
+}
+
+/// `b` widened outward to the grid of [`SNAP_DEG`], inside the world.
+fn snap(b: underbite_core::map::Bbox) -> underbite_core::map::Bbox {
+    let down = |v: f64| (v / SNAP_DEG + 1e-6).floor() * SNAP_DEG;
+    let up = |v: f64| (v / SNAP_DEG - 1e-6).ceil() * SNAP_DEG;
+    underbite_core::map::Bbox {
+        west: down(b.west).max(-180.0),
+        south: down(b.south).max(-90.0),
+        east: up(b.east).min(180.0),
+        north: up(b.north).min(90.0),
+    }
 }
 
 fn key_of(point: RoundedPoint) -> String {
@@ -287,7 +308,7 @@ impl Inner {
                 continue;
             };
             for bbox in self.area.rounded_parts(self.decimals()) {
-                match bf::box_request(bbox, day1) {
+                match bf::box_request(snap(bbox), day1) {
                     Ok(r) => {
                         let p = self.make(
                             SourceId::NWS_BEACH_FORECAST,
@@ -310,14 +331,14 @@ impl Inner {
 
     pub(super) fn read_beach_layers(&mut self, response: &Response<'_>) {
         match bf::parse_layer_list(response) {
-            Ok(list) => {
+            Ok(mut list) => {
                 self.state.beach_layers = Some(LayerCache {
                     fetched_at: self.now.0,
-                    offices: list
-                        .offices
+                    offices: std::mem::take(&mut list.offices)
                         .into_iter()
                         .map(|(k, o)| (k, (o.day1, o.day2)))
                         .collect(),
+                    names: list.names,
                 });
             }
             Err(e) => self.beach_failed(&e),
@@ -397,9 +418,10 @@ impl Inner {
         let f = &self.f;
         let mut zones: Vec<&bf::BeachZone> = self.beach_zones.iter().collect();
         zones.sort_by(|a, b| a.id.cmp(&b.id));
+        let names = self.state.beach_layers.as_ref().map(|l| &l.names);
         let pins = zones
             .into_iter()
-            .filter_map(|z| zone_pin(f, z, self.now))
+            .filter_map(|z| zone_pin(f, z, names, self.now))
             .collect();
         let legend = beach::legend(f)
             .into_iter()
@@ -430,6 +452,7 @@ fn map_point(p: GeoPoint) -> MapPoint {
 fn zone_pin(
     f: &underbite_core::view::format::Formatter,
     z: &bf::BeachZone,
+    names: Option<&BTreeMap<String, String>>,
     now: UnixTime,
 ) -> Option<BeachZonePin> {
     let outer = z
@@ -441,6 +464,11 @@ fn zone_pin(
     let facts = BeachFacts {
         name: &z.name,
         office: z.office.as_deref(),
+        office_name: z
+            .office
+            .as_ref()
+            .and_then(|o| names?.get(o))
+            .map(String::as_str),
         rip: z.rip.map(category),
         rip_text: z.rip_text.as_deref(),
         surf: z.surf.as_deref(),

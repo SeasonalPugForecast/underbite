@@ -1183,7 +1183,7 @@ keys! {
     NearbyFindingBlooms => ("Looking for beach forecasts…", "Looking for beach forecasts…"),
     NearbyBloomsGulfOnly => ("The beach bloom forecast covers the Gulf coast of Florida and Texas only", "The beach bloom forecast covers the Gulf coast of Florida and Texas only"),
     NearbyBloomsNone => ("No forecast beaches in this view", "No forecast beaches in this view"),
-    NearbyFindBeaches => ("Show beach forecasts here", "Show beach forecasts here"),
+    NearbyFindBeaches => ("Refresh beach forecasts", "Refresh beach forecasts"),
     NearbyFindingBeaches => ("Looking for beach forecasts…", "Looking for beach forecasts…"),
     NearbyZoomInBeaches => ("Zoom in to look for beach forecasts", "Zoom in to look for beach forecasts"),
     NearbyBeachesNone => ("No beach forecast zones in this view", "No beach forecast zones in this view"),
@@ -2283,9 +2283,12 @@ safety_keys! {
     BeachIssuedBy => "Issued by NWS {office}",
     /// `{office}`, `{when}`: the product's own date and time, "409 PM EST 11/20/2026".
     BeachIssuedByAt => "Issued by NWS {office}, {when}",
-    /// `{office}`: the office of a zone with nothing issued.
-    BeachNothingFrom => "NWS {office} has issued no forecast for this zone",
-    BeachNothing => "The National Weather Service has issued no forecast for this zone",
+    /// `{place}`, `{age}`: a zone with nothing issued; the office as "New York City (OKX)" or
+    /// "OKX", the age of its last update, "53 d ago".
+    BeachNothingFrom => "No current forecast for this zone. The last update from NWS {place} was {age}; forecasts run in the beach season.",
+    /// `{place}`: as above, when the age is not known.
+    BeachNothingFromNoAge => "No current forecast for this zone. NWS {place} issues forecasts in the beach season.",
+    BeachNothing => "No current forecast for this zone. Forecasts run in the beach season.",
     /// `{value}`: the water temperature in the user's unit, from a forecast in whole degrees
     /// Fahrenheit written as "in the lower 50s".
     BeachWaterAbout => "about {value}",

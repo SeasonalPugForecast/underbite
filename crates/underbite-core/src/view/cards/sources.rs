@@ -81,7 +81,7 @@ const HAB_PAGE: &str =
     "https://coastalscience.noaa.gov/science-areas/habs/hab-forecasts/gulf-coast/";
 
 /// Every source the settings or a snapshot can name, with its credit, licence and terms.
-pub const SOURCE_TERMS: [SourceTerms; 33] = [
+pub const SOURCE_TERMS: [SourceTerms; 34] = [
     terms(
         "usgs",
         Some(SafetyKey::AttrUsgsCredit),

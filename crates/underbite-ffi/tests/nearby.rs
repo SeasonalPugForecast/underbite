@@ -773,7 +773,7 @@ mod nearby {
         assert_eq!(w.finding_records, "Looking for species records\u{2026}");
         assert_eq!(w.find_blooms, "Show beach bloom forecasts here");
         assert_eq!(w.finding_blooms, "Looking for beach forecasts\u{2026}");
-        assert_eq!(w.find_beaches, "Show beach forecasts here");
+        assert_eq!(w.find_beaches, "Refresh beach forecasts");
         assert_eq!(w.finding_beaches, "Looking for beach forecasts\u{2026}");
         // The same words the plans refuse a wide view with.
         let wide = area(-79.8, 40.5, -71.8, 45.0);
@@ -881,7 +881,7 @@ mod nearby {
         );
         let q = pairs(url);
         assert!(
-            q.contains(&"geometry=-73.97,40.43,-73.67,40.73".to_owned()),
+            q.contains(&"geometry=-74.00,40.40,-73.60,40.80".to_owned()),
             "{q:?}"
         );
         assert!(q.contains(&"returnGeometry=true".to_owned()));
@@ -924,6 +924,14 @@ mod nearby {
         let none = &results.beach_zones[1];
         assert_eq!(none.role, "none");
         assert_eq!(none.card.risk, "No forecast issued");
+        assert!(
+            none.card
+                .issued
+                .contains("The last update from NWS New York City (OKX) was 53 d ago"),
+            "{}",
+            none.card.issued
+        );
+        assert_eq!(none.card.age, None);
         assert_eq!(none.polygons.len(), 2);
         assert_eq!(
             none.polygons[1].rings.len(),

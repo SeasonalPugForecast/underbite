@@ -437,7 +437,7 @@ pub fn nearby_limits() -> NearbyLimits {
         access_max_span_deg: ACCESS_MAX_SPAN_DEG,
         records_max_span_deg: RECORDS_MAX_SPAN_DEG,
         stocking_max_span_deg: STOCKING_MAX_SPAN_DEG,
-        beach_max_span_deg: beach_forecast::MAX_BOX_SPAN_DEG,
+        beach_max_span_deg: beaches::BEACH_VIEW_MAX_SPAN_DEG,
         overpass_max_cells: u32::try_from(overpass::MAX_AREAS).unwrap_or(u32::MAX),
         overpass_daily_cap: overpass::DEFAULT_DAILY_CAP,
         overpass_cache_days: u32::try_from(overpass::CACHE_DAYS).unwrap_or(u32::MAX),
