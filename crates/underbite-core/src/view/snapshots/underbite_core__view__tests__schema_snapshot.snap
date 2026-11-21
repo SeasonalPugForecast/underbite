@@ -343,7 +343,7 @@ expression: schema
       ]
     },
     "Card": {
-      "description": "One card. Cards that a later phase adds are not variants yet.",
+      "description": "One card. Further cards are added as variants.",
       "oneOf": [
         {
           "type": "object",

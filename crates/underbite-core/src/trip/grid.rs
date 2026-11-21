@@ -16,7 +16,7 @@
 //!
 //! Windows beyond the forecast use only the certain factors (tide stage, tidal current, low light
 //! and solunar), and say so ([`DayWindows::certain_only`]). Where the only tide source is a model's
-//! sea level (outside CO-OPS coverage, ADR-012) the times are approximate and carry no heights.
+//! sea level (outside CO-OPS coverage) the times are approximate and carry no heights.
 //!
 //! A day is a local calendar day of the place's own zone, so a trip with places in two zones has two
 //! "today"s ([`PlaceGrid::today`]). The module reads no clock: `now` is a parameter. Observed and

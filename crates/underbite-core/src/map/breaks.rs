@@ -457,7 +457,7 @@ mod tests {
     use crate::map::{GridHost, GridSource};
     use crate::time::UnixTime;
 
-    /// The ADR defaults: 0.5 °C per km, and 0.15 log10 per 4 km.
+    /// The defaults: 0.5 °C per km, and 0.15 log10 per 4 km.
     const SST_THRESHOLD: f64 = 0.5;
     const CHL_THRESHOLD: f64 = 0.0375;
 

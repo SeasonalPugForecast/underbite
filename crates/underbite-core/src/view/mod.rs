@@ -252,7 +252,7 @@ impl CardId {
     ];
 }
 
-/// One card. Cards that a later phase adds are not variants yet.
+/// One card. Further cards are added as variants.
 #[derive(Clone, Debug, PartialEq, Serialize, JsonSchema)]
 #[serde(tag = "card", rename_all = "snake_case")]
 // Cards are built once per view and moved whole; boxing would only complicate the bridge.
