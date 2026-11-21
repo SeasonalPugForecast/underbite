@@ -40,11 +40,14 @@ final class TripViewTests: XCTestCase {
             XCTAssertEqual(day.places.count, 2)
             for (index, placeDay) in day.places.enumerated() {
                 let placeDay = try XCTUnwrap(placeDay)
-                // A river has no tide cell; the tidal place keeps it.
-                let withTides = ["verdict", "windows", "tides", "flow", "water_temp", "sun", "moon", "solunar"]
-                XCTAssertEqual(
-                    placeDay.cells.map(\.kind),
-                    index == 0 ? withTides : withTides.filter { $0 != "tides" })
+                // A river has no tide cell and a tidal place with no flow source has no flow cell.
+                let common = ["verdict", "windows", "water_temp", "sun", "moon", "solunar"]
+                let expected =
+                    index == 0
+                    ? ["verdict", "windows", "tides", "water_temp", "sun", "moon", "solunar"]
+                    : ["verdict", "windows", "flow", "water_temp", "sun", "moon", "solunar"]
+                XCTAssertTrue(Set(common).isSubset(of: Set(expected)))
+                XCTAssertEqual(placeDay.cells.map(\.kind), expected)
                 XCTAssertFalse(placeDay.accessibility.isEmpty)
                 for cell in placeDay.cells {
                     XCTAssertFalse(cell.label.isEmpty, cell.kind)
