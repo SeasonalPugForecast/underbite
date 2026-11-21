@@ -19,3 +19,5 @@ or of the whether commit that added the file.
 
 Not recorded: the Battery point request itself (`latitude=40.70&longitude=-74.02`). Open-Meteo
 answered HTTP 429 on 2026-11-15 (daily per-IP limit), see `docs/providers/storms.md`.
+
+Open-Meteo files: weather data by Open-Meteo.com (<https://open-meteo.com/>), licensed CC BY 4.0 (<https://open-meteo.com/en/licence>).
