@@ -1,2 +1,3 @@
 -seed -tab spots -open-spot seed-battery -open-card tide
 dark
+wait 30
