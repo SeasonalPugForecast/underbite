@@ -65,4 +65,11 @@ final class TripGridLayoutTests: XCTestCase {
             TripGridLayout.shownLines(kind: "flow", value: "706 cfs", lines: ["In your range"]),
             ["706 cfs"])
     }
+
+    func testAVerdictCellDoesNotRepeatTheReasonsListedUnderIt() {
+        XCTAssertEqual(
+            TripGridLayout.linesWithoutReasons(["a reason", "other line"], reasons: ["a reason", "b"]),
+            ["other line"])
+        XCTAssertEqual(TripGridLayout.linesWithoutReasons(["x"], reasons: []), ["x"])
+    }
 }

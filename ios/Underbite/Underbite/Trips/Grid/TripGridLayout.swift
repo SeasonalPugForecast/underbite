@@ -61,4 +61,10 @@ nonisolated enum TripGridLayout {
     static func shownLines(kind: String, value: String, lines: [String]) -> [String] {
         allLinesKinds.contains(kind) && !lines.isEmpty ? lines : [value]
     }
+
+    /// The lines of a verdict cell on the day's page without the reasons, which the page lists
+    /// itself under the verdict: no reason is said twice.
+    static func linesWithoutReasons(_ lines: [String], reasons: [String]) -> [String] {
+        lines.filter { !reasons.contains($0) }
+    }
 }

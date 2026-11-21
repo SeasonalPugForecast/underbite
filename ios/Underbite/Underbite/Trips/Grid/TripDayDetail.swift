@@ -40,10 +40,21 @@ private struct PlaceDaySections: View {
     var body: some View {
         Section {
             if let placeDay {
+                // The verdict first, then why, then the rest of the day.
+                let reasons = placeDay.reasons.map(\.text)
+                ForEach(
+                    Array(placeDay.cells.filter { $0.kind == "verdict" }.enumerated()),
+                    id: \.offset
+                ) { _, cell in
+                    CellRow(cell: cell, verdict: placeDay.verdict, reasons: reasons)
+                }
                 ForEach(Array(placeDay.reasons.enumerated()), id: \.offset) { _, reason in
                     ReasonRow(reason: reason)
                 }
-                ForEach(Array(placeDay.cells.enumerated()), id: \.offset) { _, cell in
+                ForEach(
+                    Array(placeDay.cells.filter { $0.kind != "verdict" }.enumerated()),
+                    id: \.offset
+                ) { _, cell in
                     CellRow(cell: cell, verdict: placeDay.verdict)
                 }
             } else if let problem = place.problem {
@@ -99,6 +110,8 @@ private struct ReasonRow: View {
 private struct CellRow: View {
     let cell: ViewModel.TripCell
     let verdict: String?
+    /// The reasons listed under the verdict: the cell does not say them again.
+    var reasons: [String] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -116,7 +129,10 @@ private struct CellRow: View {
                 Text(cell.value).font(.headline).greyed(cell.isUnavailable)
             }
             // The value is the first line of some cells (the first tide): it is not repeated.
-            ForEach(Array(cell.lines.enumerated()), id: \.offset) { index, line in
+            let lines =
+                cell.kind == "verdict"
+                ? TripGridLayout.linesWithoutReasons(cell.lines, reasons: reasons) : cell.lines
+            ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
                 if !(index == 0 && line == cell.value) {
                     Text(line).fixedSize(horizontal: false, vertical: true)
                 }
