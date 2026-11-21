@@ -1205,6 +1205,8 @@ keys! {
     WaterHereManyStates => ("On the line of several states ({states}): every state's rules are linked", "On the line of several states ({states}): every state's rules are linked"),
     /// `{count}`: how many stocking lines there are in all.
     WaterHereShowAll => ("Show all ({count})", "Show all ({count})"),
+    /// The water's type when the mapping does not say (open water without a mapped type).
+    WaterHereTypeUnknown => ("Water type unknown", "Water type unknown"),
     WaterHereOn => ("The marker is on this water", "The marker is on this water"),
     /// `{distance}`: "120 ft".
     WaterHereAway => ("{distance} from the marker", "{distance} from the marker"),

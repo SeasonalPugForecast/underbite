@@ -521,7 +521,10 @@ impl Inner {
             name: placed.waterbody.clone(),
             latitude: placed.latitude,
             longitude: placed.longitude,
-            water_type: here.water_type,
+            // Stocking lines exist only for fresh water, so an unknown type reads as a river.
+            water_type: here
+                .water_type
+                .unwrap_or(underbite_core::model::WaterType::RiverStream),
             water_body: None,
             time_zone: "UTC".to_owned(),
         };

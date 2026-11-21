@@ -81,8 +81,9 @@ pub struct WaterHere {
     pub name: Option<String>,
     pub kind: WaterKind,
     pub reach: Reach,
-    /// The app's water type for a spot here (the type "Add as spot" carries).
-    pub water_type: WaterType,
+    /// The app's water type for a spot here (the type "Add as spot" carries); `None` for a
+    /// waterbody of no mapped type with no word on tide, which could as well be the sea.
+    pub water_type: Option<WaterType>,
     /// The stream's order, for a stream.
     pub stream_order: Option<u8>,
     /// Waterbody area, km², for a lake, pond or reservoir.
@@ -137,20 +138,31 @@ fn describe(
     };
     // Tide here is what a tidal USGS site is to the inference.
     let site = tide_near.then_some(UsgsSiteType::TidalStream);
-    let water_type = infer_water_type(position, site, None, options)?.water_type;
+    let inferred = infer_water_type(position, site, None, options)?.water_type;
+    // A waterbody the mapping gives no type, with no word on tide, is not known to be a
+    // river: open water such as an ocean looks the same.
+    let unknown = position
+        .waterbody
+        .as_ref()
+        .is_some_and(|w| w.kind == WaterbodyKind::Other)
+        && tide == Tide::Unknown
+        && !tide_near;
+    let water_type = (!unknown).then_some(inferred);
     let stream = position.stream.as_ref();
     if let Some(w) = &position.waterbody {
         let kind = match (w.kind, water_type) {
-            (_, WaterType::Pond) => WaterKind::Pond,
-            (_, WaterType::BayInshore) => WaterKind::Bay,
+            (_, Some(WaterType::Pond)) => WaterKind::Pond,
+            (_, Some(WaterType::BayInshore)) => WaterKind::Bay,
             (WaterbodyKind::Lake, _) => WaterKind::Lake,
             (WaterbodyKind::Reservoir, _) => WaterKind::Reservoir,
             (WaterbodyKind::Estuary, _) => WaterKind::Estuary,
             // Only estuarine polygons around a river polygon: the water is an estuary.
-            (_, WaterType::TidalRiverEstuary) if tide == (Tide::Tidal { estuarine: true }) => {
+            (_, Some(WaterType::TidalRiverEstuary))
+                if tide == (Tide::Tidal { estuarine: true }) =>
+            {
                 WaterKind::Estuary
             }
-            (_, WaterType::TidalRiverEstuary) => WaterKind::TidalRiver,
+            (_, Some(WaterType::TidalRiverEstuary)) => WaterKind::TidalRiver,
             (WaterbodyKind::River, _) => WaterKind::River,
             (WaterbodyKind::Other, _) => WaterKind::Waterbody,
         };
@@ -185,7 +197,7 @@ fn describe(
     let s = stream?;
     Some(WaterHere {
         name: s.name.clone(),
-        kind: if water_type == WaterType::TidalRiverEstuary {
+        kind: if water_type == Some(WaterType::TidalRiverEstuary) {
             WaterKind::TidalRiver
         } else {
             WaterKind::Stream
@@ -271,7 +283,7 @@ mod tests {
         assert_eq!(found.name.as_deref(), Some("Mill Creek"));
         assert_eq!(found.kind, WaterKind::Stream);
         assert_eq!(found.reach, Reach::On);
-        assert_eq!(found.water_type, WaterType::RiverStream);
+        assert_eq!(found.water_type, Some(WaterType::RiverStream));
         assert_eq!(found.stream_order, Some(3));
     }
 
@@ -304,7 +316,7 @@ mod tests {
         .unwrap();
         assert_eq!((big.kind, big.reach), (WaterKind::Lake, Reach::On));
         assert_eq!(big.name.as_deref(), Some("Round Lake"));
-        assert_eq!(big.water_type, WaterType::LakeReservoir);
+        assert_eq!(big.water_type, Some(WaterType::LakeReservoir));
         let unnamed = here(
             tap,
             &flow,
@@ -317,7 +329,7 @@ mod tests {
         let small = here(tap, &flow, &[lake(None, WaterbodyKind::Lake, 0.01)], &[]).unwrap();
         assert_eq!(
             (small.kind, small.water_type),
-            (WaterKind::Pond, WaterType::Pond)
+            (WaterKind::Pond, Some(WaterType::Pond))
         );
     }
 
@@ -351,7 +363,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(river.kind, WaterKind::TidalRiver);
-        assert_eq!(river.water_type, WaterType::TidalRiverEstuary);
+        assert_eq!(river.water_type, Some(WaterType::TidalRiverEstuary));
         let still = here(tap, &[], &[lake(None, WaterbodyKind::Lake, 20.0)], &station).unwrap();
         assert_eq!(still.kind, WaterKind::Lake);
         let bay = here(
@@ -363,7 +375,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             (bay.kind, bay.water_type),
-            (WaterKind::Bay, WaterType::BayInshore)
+            (WaterKind::Bay, Some(WaterType::BayInshore))
         );
     }
 
@@ -375,15 +387,15 @@ mod tests {
         // Tidal without any station.
         let tidal = with_tide(tap, &[], &body, Tide::Tidal { estuarine: false }, &[]).unwrap();
         assert_eq!(tidal.kind, WaterKind::TidalRiver);
-        assert_eq!(tidal.water_type, WaterType::TidalRiverEstuary);
+        assert_eq!(tidal.water_type, Some(WaterType::TidalRiverEstuary));
         assert!(tidal.tide.is_tidal());
         let estuary = with_tide(tap, &[], &body, Tide::Tidal { estuarine: true }, &[]).unwrap();
         assert_eq!(estuary.kind, WaterKind::Estuary);
-        assert_eq!(estuary.water_type, WaterType::TidalRiverEstuary);
+        assert_eq!(estuary.water_type, Some(WaterType::TidalRiverEstuary));
         // Not tidal beats a station beside it.
         let fresh = with_tide(tap, &[], &body, Tide::NotTidal, &station).unwrap();
         assert_eq!(fresh.kind, WaterKind::River);
-        assert_eq!(fresh.water_type, WaterType::RiverStream);
+        assert_eq!(fresh.water_type, Some(WaterType::RiverStream));
         // Unknown falls back on the station.
         let pinned = with_tide(tap, &[], &body, Tide::Unknown, &station).unwrap();
         assert_eq!(pinned.kind, WaterKind::TidalRiver);
@@ -394,6 +406,24 @@ mod tests {
         assert_eq!(lake.kind, WaterKind::Lake);
         assert!(!may_be_tidal(&lake));
         assert!(may_be_tidal(&tidal));
+    }
+
+    #[test]
+    fn an_unmapped_waterbody_without_a_tide_answer_is_not_a_river() {
+        let tap = Point::new(41.005, -72.9975);
+        let sea = [lake(None, WaterbodyKind::Other, 20.0)];
+        let open = with_tide(tap, &[], &sea, Tide::Unknown, &[]).unwrap();
+        assert_eq!(open.kind, WaterKind::Waterbody);
+        assert_eq!(open.water_type, None);
+        // Any answer on tide settles it.
+        let fresh = with_tide(tap, &[], &sea, Tide::NotTidal, &[]).unwrap();
+        assert_eq!(fresh.water_type, Some(WaterType::RiverStream));
+        let tidal = with_tide(tap, &[], &sea, Tide::Tidal { estuarine: false }, &[]).unwrap();
+        assert_eq!(tidal.water_type, Some(WaterType::TidalRiverEstuary));
+        // So does a tide station on it.
+        let station = [Point::new(41.006, -72.9975)];
+        let pinned = with_tide(tap, &[], &sea, Tide::Unknown, &station).unwrap();
+        assert_eq!(pinned.water_type, Some(WaterType::TidalRiverEstuary));
     }
 
     #[test]

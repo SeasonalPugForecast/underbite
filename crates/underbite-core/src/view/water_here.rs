@@ -57,10 +57,10 @@ pub struct WaterHereVm {
     pub kind_text: String,
     /// "The marker is on this water" or "120 ft from the marker".
     pub position: String,
-    /// The water type "Add as spot" carries.
-    pub water_type: WaterType,
+    /// The water type "Add as spot" carries; none when the water's type is not known.
+    pub water_type: Option<WaterType>,
     /// "River or stream", in the user's words; empty when the kind above already says it (a
-    /// river and "River or stream").
+    /// river and "River or stream"); "Water type unknown" when it is not known.
     pub water_type_text: String,
     /// The name a new spot starts with; none for unnamed water.
     pub spot_name: Option<String>,
@@ -202,11 +202,21 @@ pub fn build(f: &Formatter, input: &WaterHereInput<'_>) -> WaterHereVm {
         .map(|r| r.trim())
         .filter(|r| !r.is_empty())
         .collect();
-    let links: Vec<WaterLinkVm> =
-        regulations::links_for_regions(&regions, water_of(here.water_type), "en")
-            .into_iter()
-            .map(|l| link_vm(s, l))
-            .collect();
+    // Water of an unknown type gets every page of the jurisdiction, not the fresh ones.
+    let reg_links = if let Some(t) = here.water_type {
+        regulations::links_for_regions(&regions, water_of(t), "en")
+    } else {
+        let mut all = Vec::new();
+        for r in &regions {
+            for l in regulations::all_links_in(r, "en") {
+                if !all.contains(&l) {
+                    all.push(l);
+                }
+            }
+        }
+        all
+    };
+    let links: Vec<WaterLinkVm> = reg_links.into_iter().map(|l| link_vm(s, l)).collect();
     let links_note = links_note(s, &regions).filter(|_| !links.is_empty());
     let stocking: Vec<String> = input
         .stocking
@@ -226,11 +236,16 @@ pub fn build(f: &Formatter, input: &WaterHereInput<'_>) -> WaterHereVm {
         credits.extend(credit(s, &SourceId::from_static(CENSUS_BOUNDARIES)));
     }
     // The water type is said only when the kind has not already said it.
-    let type_label = f.water_type_label(here.water_type);
-    let water_type_text = if type_label.to_lowercase().contains(&kind.to_lowercase()) {
-        String::new()
-    } else {
-        type_label
+    let water_type_text = match here.water_type {
+        None => s.get(Key::WaterHereTypeUnknown).to_owned(),
+        Some(t) => {
+            let type_label = f.water_type_label(t);
+            if type_label.to_lowercase().contains(&kind.to_lowercase()) {
+                String::new()
+            } else {
+                type_label
+            }
+        }
     };
     WaterHereVm {
         named: here.name.is_some(),
@@ -335,7 +350,7 @@ mod tests {
             name: name.map(str::to_owned),
             kind,
             reach,
-            water_type,
+            water_type: Some(water_type),
             stream_order: None,
             area_km2: None,
             tide: Tide::Unknown,
@@ -408,6 +423,32 @@ mod tests {
             Reach::On,
         ));
         assert_ne!(pond.water_type_text, "");
+    }
+
+    #[test]
+    fn water_of_an_unknown_type_says_so_and_links_every_page() {
+        let f = formatter();
+        let mut h = here(
+            None,
+            WaterKind::Waterbody,
+            WaterType::RiverStream,
+            Reach::On,
+        );
+        h.water_type = None;
+        let vm = build(
+            &f,
+            &WaterHereInput {
+                here: &h,
+                regions: &["US-NY".to_owned()],
+                stocking: &[],
+                from_state_lines: false,
+            },
+        );
+        assert_eq!(vm.water_type, None);
+        assert_eq!(vm.water_type_text, "Water type unknown");
+        let titles: Vec<&str> = vm.links.iter().map(|l| l.title.as_str()).collect();
+        assert!(titles.contains(&"Freshwater regulations"), "{titles:?}");
+        assert!(titles.contains(&"Saltwater regulations"), "{titles:?}");
     }
 
     #[test]
