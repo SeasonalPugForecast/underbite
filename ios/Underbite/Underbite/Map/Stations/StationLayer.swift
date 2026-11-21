@@ -179,10 +179,12 @@ final class StationsModule: MapModule {
         let layers = Set(context.layers.map(\.id))
         var changed = layers != shownLayers
         shownLayers = layers
+        // Every layer on screen, not only this module's: the area layers are other modules'.
+        let shownAll = controller?.plan.shown ?? []
         let dims = StationPins.dimsStations(
-            shown: layers,
+            shown: Set(shownAll.map(\.id)),
             areaFilling: Set(
-                context.layers.filter { $0.draw == .gridRaster || $0.id == BeachZones.layer }
+                shownAll.filter { $0.draw == .gridRaster || $0.id == BeachZones.layer }
                     .map(\.id)))
         if dims != dimsStations {
             dimsStations = dims
