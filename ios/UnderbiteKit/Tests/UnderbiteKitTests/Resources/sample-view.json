@@ -20,7 +20,7 @@
       {
         "card": "now",
         "chrome": {
-          "accessibility": "Now. Tide 5.2 ft MLLW. Water temperature 58 °F. Current 0.0 kn. Wind 12 kn. Sun and moon 75%.",
+          "accessibility": "Now. Tide 5.2 ft MLLW. Water temperature 58 °F. Current 0.0 kn. Wind 12 kn. Moon 75%.",
           "credits": [
             {
               "licence": null,
@@ -77,6 +77,7 @@
             "value": 5.249344
           },
           "lines": [
+            "Tide · High 4:30 PM",
             "Water temperature 58 °F",
             "Current 0.0 kn"
           ],
@@ -143,7 +144,7 @@
                 "unit": "%",
                 "value": 75.0
               },
-              "label": "Sun and moon",
+              "label": "Moon",
               "line": "Sunrise 4:40 PM · Sunset 1:40 AM",
               "state": {
                 "state": "fresh"
@@ -290,7 +291,7 @@
               "text": "NOAA CO-OPS"
             }
           ],
-          "footnote": "Tide 5.2 ft MLLW · The Battery · 0.4 mi",
+          "footnote": "The Battery · 0.4 mi",
           "id": "tide",
           "notices": [
             {
@@ -394,8 +395,8 @@
             "unit": "ft",
             "x_ticks": [
               {
-                "label": "2 PM",
-                "major": false,
+                "label": "Fri 2 PM",
+                "major": true,
                 "t": 1793991600
               },
               {
@@ -444,7 +445,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -564,7 +565,7 @@
                 "t": 1794110400
               },
               {
-                "label": "12 AM",
+                "label": "Sun",
                 "major": true,
                 "t": 1794114000
               },
@@ -746,7 +747,7 @@
               "text": "NOAA CO-OPS"
             }
           ],
-          "footnote": "Current Slack · The Battery · 0.4 mi",
+          "footnote": "The Battery · 0.4 mi",
           "id": "current",
           "notices": [
             {
@@ -842,8 +843,8 @@
             "unit": "kn",
             "x_ticks": [
               {
-                "label": "2 PM",
-                "major": false,
+                "label": "Fri 2 PM",
+                "major": true,
                 "t": 1793991600
               },
               {
@@ -892,7 +893,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -1012,7 +1013,7 @@
                 "t": 1794110400
               },
               {
-                "label": "12 AM",
+                "label": "Sun",
                 "major": true,
                 "t": 1794114000
               },
@@ -1166,7 +1167,7 @@
               "text": "Observations: NOAA National Data Buoy Center"
             }
           ],
-          "footnote": "Wind 12 kn · The Battery · 0.4 mi · 6 min ago",
+          "footnote": "The Battery · 0.4 mi · 6 min ago",
           "id": "wind",
           "notices": [],
           "state": {
@@ -1228,8 +1229,8 @@
             "unit": "kn",
             "x_ticks": [
               {
-                "label": "2 PM",
-                "major": false,
+                "label": "Fri 2 PM",
+                "major": true,
                 "t": 1793991600
               },
               {
@@ -1278,7 +1279,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -1398,7 +1399,7 @@
                 "t": 1794110400
               },
               {
-                "label": "12 AM",
+                "label": "Sun",
                 "major": true,
                 "t": 1794114000
               },
@@ -1546,7 +1547,7 @@
               "text": "Provisional data statement"
             }
           ],
-          "footnote": "Water 58 °F · The Battery · 0.4 mi · just now",
+          "footnote": "The Battery · 0.4 mi · just now",
           "id": "water_temp",
           "notices": [
             {
@@ -1650,7 +1651,7 @@
               "text": "Wave model: Open-Meteo.com"
             }
           ],
-          "footnote": "Waves 3.0 ft · The Battery · 0.4 mi · just now",
+          "footnote": "The Battery · 0.4 mi · just now",
           "id": "waves",
           "notices": [],
           "state": {
@@ -1775,8 +1776,8 @@
             "unit": "ft",
             "x_ticks": [
               {
-                "label": "2 PM",
-                "major": false,
+                "label": "Fri 2 PM",
+                "major": true,
                 "t": 1793991600
               },
               {
@@ -1825,7 +1826,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -1945,7 +1946,7 @@
                 "t": 1794110400
               },
               {
-                "label": "12 AM",
+                "label": "Sun",
                 "major": true,
                 "t": 1794114000
               },
@@ -2132,8 +2133,8 @@
             "unit": "s",
             "x_ticks": [
               {
-                "label": "2 PM",
-                "major": false,
+                "label": "Fri 2 PM",
+                "major": true,
                 "t": 1793991600
               },
               {
@@ -2182,7 +2183,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -2302,7 +2303,7 @@
                 "t": 1794110400
               },
               {
-                "label": "12 AM",
+                "label": "Sun",
                 "major": true,
                 "t": 1794114000
               },
@@ -2488,7 +2489,7 @@
               "text": "US Army Corps of Engineers"
             }
           ],
-          "footnote": "Flow 12.0 cfs · The Battery · 0.4 mi · just now",
+          "footnote": "The Battery · 0.4 mi · just now",
           "id": "flow",
           "notices": [
             {
@@ -3271,7 +3272,7 @@
             "unit": "ft",
             "x_ticks": [
               {
-                "label": "12 AM",
+                "label": "Fri",
                 "major": true,
                 "t": 1793941200
               },
@@ -3391,7 +3392,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -3599,7 +3600,7 @@
             "unit": "kn",
             "x_ticks": [
               {
-                "label": "12 AM",
+                "label": "Fri",
                 "major": true,
                 "t": 1793941200
               },
@@ -3719,7 +3720,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -3869,7 +3870,7 @@
             "unit": "",
             "x_ticks": [
               {
-                "label": "12 AM",
+                "label": "Fri",
                 "major": true,
                 "t": 1793941200
               },
@@ -3989,7 +3990,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -4127,7 +4128,7 @@
             "unit": "",
             "x_ticks": [
               {
-                "label": "12 AM",
+                "label": "Fri",
                 "major": true,
                 "t": 1793941200
               },
@@ -4247,7 +4248,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -4435,7 +4436,7 @@
             "unit": "",
             "x_ticks": [
               {
-                "label": "12 AM",
+                "label": "Fri",
                 "major": true,
                 "t": 1793941200
               },
@@ -4555,7 +4556,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -4707,7 +4708,7 @@
             "unit": "",
             "x_ticks": [
               {
-                "label": "12 AM",
+                "label": "Fri",
                 "major": true,
                 "t": 1793941200
               },
@@ -4827,7 +4828,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -4979,7 +4980,7 @@
             "unit": "",
             "x_ticks": [
               {
-                "label": "12 AM",
+                "label": "Fri",
                 "major": true,
                 "t": 1793941200
               },
@@ -5099,7 +5100,7 @@
                 "t": 1794024000
               },
               {
-                "label": "12 AM",
+                "label": "Sat",
                 "major": true,
                 "t": 1794027600
               },
@@ -5243,7 +5244,7 @@
       "step_minutes": 30,
       "x_ticks": [
         {
-          "label": "12 AM",
+          "label": "Fri",
           "major": true,
           "t": 1793941200
         },
@@ -5363,7 +5364,7 @@
           "t": 1794024000
         },
         {
-          "label": "12 AM",
+          "label": "Sat",
           "major": true,
           "t": 1794027600
         },

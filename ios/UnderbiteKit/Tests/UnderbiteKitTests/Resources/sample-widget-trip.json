@@ -2107,8 +2107,8 @@
         "unit": "ft",
         "x_ticks": [
           {
-            "label": "4 AM",
-            "major": false,
+            "label": "Sun 4 AM",
+            "major": true,
             "t": 1794128400
           },
           {
@@ -2207,7 +2207,7 @@
             "t": 1794196800
           },
           {
-            "label": "12 AM",
+            "label": "Mon",
             "major": true,
             "t": 1794200400
           },
