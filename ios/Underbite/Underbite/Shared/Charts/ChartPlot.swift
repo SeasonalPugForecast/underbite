@@ -8,6 +8,9 @@ struct ChartValueBand: Hashable {
     var low: Double
     var high: Double
     var label: String
+    /// The thresholds the view gives for the day, in the same units: the value axis reaches the
+    /// nearest of them below and above the data, so a quiet series is not stretched into noise.
+    var thresholds: [Double] = []
 }
 
 /// What a chart's marks look like. Colours carry the series' role; the line style and weight
@@ -109,11 +112,8 @@ struct ChartGeometry {
         // A rule far from the data would flatten it: it stays in the key below the chart.
         let near = chart.rules.filter { $0.value >= lo - span && $0.value <= hi + span }
         rules = near
-        let all = values + near.map(\.value)
-        let low = all.min() ?? 0
-        let high = all.max() ?? low + 1
-        let pad = max(high - low, 1e-6) * 0.12
-        yDomain = (low - pad)...(high + pad)
+        yDomain = ChartDomain.y(
+            values: values, rules: near.map(\.value), thresholds: band?.thresholds ?? [])
         drawsZero = yDomain.contains(0) && lo < 0
 
         var labels: [Double: String] = [:]
@@ -125,11 +125,11 @@ struct ChartGeometry {
             labels[most.value] = most.label
         }
         yLabels = labels
-        if let band, band.high >= yDomain.lowerBound, band.low <= yDomain.upperBound {
+        if let band, ChartDomain.bandShows(low: band.low, high: band.high, in: yDomain) {
             self.band = ChartValueBand(
                 low: max(band.low, yDomain.lowerBound),
                 high: min(band.high, yDomain.upperBound),
-                label: band.label)
+                label: band.label, thresholds: band.thresholds)
         } else {
             self.band = nil
         }

@@ -78,7 +78,10 @@ enum CardCharts {
         let label =
             (try? percentileBandLabel(
                 low: low.label, high: high.label, settingsJson: settingsJSON)) ?? ""
-        return ChartValueBand(low: lowValue, high: highValue, label: label)
+        let all = percentile.thresholds.compactMap { threshold in
+            threshold.value.unit == chart.unit ? threshold.value.value : nil
+        }
+        return ChartValueBand(low: lowValue, high: highValue, label: label, thresholds: all)
     }
 
     /// "5th percentile 0.6 cfs · 50th percentile 15.0 cfs · …", then where the numbers come from.
