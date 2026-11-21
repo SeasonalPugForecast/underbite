@@ -107,6 +107,9 @@ private struct MapScreen: View {
                     if let legend = controller.plan.legend {
                         MapLegend(layer: legend, state: controller.legends[legend.id])
                     }
+                    if let beach = controller.modules.lazy.compactMap({ $0 as? BeachForecastModule }).first {
+                        BeachKey(module: beach, controller: controller)
+                    }
                     if let sources {
                         MapSourcesStrip(
                             line: sources.line, infoLabel: sources.infoLabel,
