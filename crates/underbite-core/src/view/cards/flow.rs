@@ -1028,13 +1028,6 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         Some(p) if latest_t.is_some() => card_state(input, &f, measurement, p, latest_t),
         _ => CardState::Fresh,
     };
-    let label = f.strings.get(if discharge.is_some() {
-        Key::FlowWord
-    } else if lake_level {
-        Key::Level
-    } else {
-        Key::Stage
-    });
     // The age is that of the newest sample at or before now in the series that leads.
     let shown_at = if let Some(s) = discharge {
         latest_at(s, now)
@@ -1046,8 +1039,7 @@ pub fn build(input: &ViewInput) -> Option<FlowCard> {
         s_forecast.and_then(|h| latest_at(&h.series, now))
     }
     .map(|x| x.time);
-    let footnote = main_prov
-        .map(|p| f.footnote_aged(&format!("{label} {}", headline.full()), p, now, shown_at));
+    let footnote = main_prov.map(|p| f.footnote_aged(p, now, shown_at));
     let title = if lake_level {
         f.strings.get(Key::LakeLevel).to_owned()
     } else {

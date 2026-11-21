@@ -533,26 +533,17 @@ impl Formatter {
         parts
     }
 
-    /// The provenance footnote, always plain: "Water 54 °F · Hudson R at Battery, NY · 0.4 mi ·
-    /// 6 min ago". `value` is the label and value ("Water 54 °F").
-    pub fn footnote(&self, value: &str, p: &Provenance, now: UnixTime) -> String {
-        let mut parts = vec![value.to_owned()];
-        parts.extend(self.provenance_parts(p, now, Some(p.observed_at)));
-        parts.join(" · ")
+    /// The provenance footnote, always plain: "Hudson R at Battery, NY · 0.4 mi · 6 min ago".
+    /// It never repeats the value the card shows.
+    pub fn footnote(&self, p: &Provenance, now: UnixTime) -> String {
+        self.provenance_parts(p, now, Some(p.observed_at))
+            .join(" · ")
     }
 
     /// Like [`Self::footnote`], but the age is that of the sample shown (`sample`); without one
     /// (a series with nothing at or before `now`) there is no age.
-    pub fn footnote_aged(
-        &self,
-        value: &str,
-        p: &Provenance,
-        now: UnixTime,
-        sample: Option<UnixTime>,
-    ) -> String {
-        let mut parts = vec![value.to_owned()];
-        parts.extend(self.provenance_parts(p, now, sample));
-        parts.join(" · ")
+    pub fn footnote_aged(&self, p: &Provenance, now: UnixTime, sample: Option<UnixTime>) -> String {
+        self.provenance_parts(p, now, sample).join(" · ")
     }
 
     /// The station footer in the user's voice ("Luna's watching Hudson R at Battery, 0.4 mi"),
@@ -927,8 +918,8 @@ mod tests {
         let p = battery(Some(644.0), Relation::SameWaterBody, 10_000 - 360);
         let f = fmt(us(), Voice::Luna, TimeFormat::H12);
         assert_eq!(
-            f.footnote("Water 54 °F", &p, now),
-            "Water 54 °F · Hudson R at Battery, NY · 0.4 mi · 6 min ago"
+            f.footnote(&p, now),
+            "Hudson R at Battery, NY · 0.4 mi · 6 min ago"
         );
         let footer = f.station_footer(&p);
         assert_eq!(
@@ -940,8 +931,8 @@ mod tests {
         assert_eq!(plain.text, plain.accessibility);
         let up = battery(Some(6_437.0), Relation::Upstream, 10_000);
         assert_eq!(
-            f.footnote("Flow 1,200 cfs", &up, now),
-            "Flow 1,200 cfs · Hudson R at Battery, NY · 4.0 mi upstream · just now"
+            f.footnote(&up, now),
+            "Hudson R at Battery, NY · 4.0 mi upstream · just now"
         );
         let grid = Provenance {
             station: None,
@@ -952,8 +943,8 @@ mod tests {
             ..p
         };
         assert_eq!(
-            f.footnote("Waves 3.3 ft", &grid, now),
-            "Waves 3.3 ft · Open-Meteo Marine · modelled · 6 min ago"
+            f.footnote(&grid, now),
+            "Open-Meteo Marine · modelled · 6 min ago"
         );
     }
 
@@ -1026,11 +1017,7 @@ mod tests {
             let wind = f.direction(Some(225.0));
             let block = format!(
                 "[{name}]\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n",
-                f.footnote(
-                    &format!("Water {}", f.temperature(Some(12.2)).full()),
-                    &p,
-                    now
-                ),
+                f.footnote(&p, now),
                 f.station_footer(&p).text,
                 f.discharge(Some(34.0)).full(),
                 f.height(Some(Height {

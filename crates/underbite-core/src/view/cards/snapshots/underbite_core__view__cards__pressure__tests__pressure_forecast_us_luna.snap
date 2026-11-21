@@ -6,7 +6,7 @@ expression: card
   "chrome": {
     "id": "pressure",
     "title": "Pressure",
-    "footnote": "Pressure 30.11 inHg · Open-Meteo · modelled · just now",
+    "footnote": "Open-Meteo · modelled · just now",
     "credits": [
       {
         "source": "Open-Meteo",

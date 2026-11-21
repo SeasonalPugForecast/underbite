@@ -6,7 +6,7 @@ expression: card
   "chrome": {
     "id": "waves",
     "title": "Waves",
-    "footnote": "Waves 3.9 ft · NOAA NDBC · 19 mi · 15 min ago",
+    "footnote": "NOAA NDBC · 19 mi · 15 min ago",
     "credits": [
       {
         "source": "NOAA NDBC",

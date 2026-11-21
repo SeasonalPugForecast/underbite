@@ -6,7 +6,7 @@ expression: "card(&lake(metric(), stale_composite()))"
   "chrome": {
     "id": "bloom",
     "title": "Algal bloom",
-    "footnote": "No recent satellite data (last composite Mar 28) · Oneida Lake · 2.4 km · 225 d ago",
+    "footnote": "Oneida Lake · 2.4 km · 225 d ago",
     "credits": [
       {
         "source": "EPA CyAN",

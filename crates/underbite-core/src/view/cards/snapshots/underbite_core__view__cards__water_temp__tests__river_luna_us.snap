@@ -6,7 +6,7 @@ expression: "card(&river(us(), Voice::Luna, 19.0, 21.0))"
   "chrome": {
     "id": "water_temp",
     "title": "Water temperature",
-    "footnote": "Water 70 °F · Croton River at New Croton Dam · 1.5 mi · just now",
+    "footnote": "Croton River at New Croton Dam · 1.5 mi · just now",
     "credits": [
       {
         "source": "USGS",

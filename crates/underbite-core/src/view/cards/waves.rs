@@ -373,7 +373,7 @@ pub fn build(input: &ViewInput) -> Option<WavesCard> {
         chrome: CardChrome {
             id: CardId::Waves,
             title: f.strings.card_title(CardId::Waves).to_owned(),
-            footnote: Some(f.footnote_aged(&value, p, now, shown_at.filter(|t| *t <= now))),
+            footnote: Some(f.footnote_aged(p, now, shown_at.filter(|t| *t <= now))),
             credits: card_credits,
             state: card_state,
             notices: if is_observed {
@@ -609,7 +609,7 @@ pub(in crate::view) mod tests {
                 .footnote
                 .as_deref()
                 .unwrap()
-                .starts_with("Modelled waves")
+                .contains("modelled")
         );
         assert_eq!(card.chrome.state, CardState::Fresh);
         assert!(

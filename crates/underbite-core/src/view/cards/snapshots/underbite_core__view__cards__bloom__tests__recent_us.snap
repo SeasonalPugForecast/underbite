@@ -6,7 +6,7 @@ expression: "card(&lake(us(), recent_composite()))"
   "chrome": {
     "id": "bloom",
     "title": "Algal bloom",
-    "footnote": "Satellite estimate up to 108,643 cells/mL (composite of Nov 2) · Oneida Lake · 1.5 mi · 3 d ago",
+    "footnote": "Oneida Lake · 1.5 mi · 3 d ago",
     "credits": [
       {
         "source": "EPA CyAN",

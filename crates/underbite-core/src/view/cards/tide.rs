@@ -470,9 +470,6 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
     }
 
     let next_all = upcoming.first().map(|e| event_vm(&f, tide, shown, e));
-    let value_text = height_now
-        .as_ref()
-        .map_or_else(|| f.strings.get(Key::TimesOnly).to_owned(), Quantity::full);
     let mut lines = Vec::new();
     if let Some(n) = &next_all {
         lines.push(format!("{stage_label} · {} {}", n.label, n.time));
@@ -539,7 +536,6 @@ pub fn build(input: &ViewInput) -> Option<TideCard> {
             title: f.strings.card_title(CardId::Tide).to_owned(),
             footnote: Some(
                 f.footnote_aged(
-                    &format!("{} {value_text}", f.strings.card_title(CardId::Tide)),
                     p,
                     now,
                     tide.curve

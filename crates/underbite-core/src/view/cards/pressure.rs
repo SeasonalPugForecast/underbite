@@ -173,20 +173,12 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
     let change = delta.map(|d| change_quantity(&f, input.units.pressure, d, hpa));
     let trend = trend.map(|t| trend_vm(&f, t, change.as_ref()));
 
-    let headline = format!(
-        "{} {}",
-        f.strings.card_title(CardId::Pressure),
-        value.full()
-    );
     let footnote = match (basis, observed, weather) {
         (Basis::Observed, Some(o), _) => {
-            f.footnote_aged(&headline, o.provenance(), now, newest.map(|s| s.time))
+            Some(f.footnote_aged(o.provenance(), now, newest.map(|s| s.time)))
         }
-        (_, _, Some(w)) => match forecast {
-            Some((_, _, t)) => weather_footnote(&f, &headline, w, now, t),
-            None => headline.clone(),
-        },
-        _ => headline.clone(),
+        (_, _, Some(w)) => forecast.map(|(_, _, t)| weather_footnote(&f, w, now, t)),
+        _ => None,
     };
 
     // The chart: observed past and forecast, as separate series.
@@ -300,7 +292,7 @@ pub fn build(input: &ViewInput) -> Option<PressureCard> {
         chrome: CardChrome {
             id: CardId::Pressure,
             title: f.strings.card_title(CardId::Pressure).to_owned(),
-            footnote: Some(footnote),
+            footnote,
             credits: chart_credits,
             state: card_state,
             notices: if basis == Basis::Forecast {

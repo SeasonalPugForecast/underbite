@@ -201,22 +201,12 @@ pub fn build(input: &ViewInput) -> Option<ClarityCard> {
     } else {
         Measurement::Clarity
     };
-    let label = f.strings.get(if turbidity.is_some() {
-        Key::Turbidity
-    } else {
-        Key::ClarityWord
-    });
 
     Some(ClarityCard {
         chrome: CardChrome {
             id: CardId::Clarity,
             title,
-            footnote: Some(f.footnote_aged(
-                &format!("{label} {}", headline.full()),
-                main,
-                now,
-                shown_at,
-            )),
+            footnote: Some(f.footnote_aged(main, now, shown_at)),
             credits: credits(input, &provs),
             state: card_state(input, &f, measurement, main, latest),
             notices: quality_notices(&f, &qualities),

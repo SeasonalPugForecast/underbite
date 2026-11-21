@@ -259,12 +259,7 @@ pub fn build(input: &ViewInput) -> Option<WaterTempCard> {
         chrome: CardChrome {
             id: CardId::WaterTemp,
             title,
-            footnote: Some(f.footnote_aged(
-                &format!("{} {}", f.strings.get(Key::WaterWord), value.full()),
-                prov,
-                now,
-                Some(latest.time).filter(|t| *t <= now),
-            )),
+            footnote: Some(f.footnote_aged(prov, now, Some(latest.time).filter(|t| *t <= now))),
             credits: credits(input, &[prov]),
             state: card_state(input, &f, measurement, prov, Some(latest.time)),
             notices: {

@@ -6,7 +6,7 @@ expression: luna
   "chrome": {
     "id": "tide",
     "title": "Tide",
-    "footnote": "Tide 3.8 ft MLLW · The Battery · 0.4 mi",
+    "footnote": "The Battery · 0.4 mi",
     "credits": [
       {
         "source": "NOAA CO-OPS",

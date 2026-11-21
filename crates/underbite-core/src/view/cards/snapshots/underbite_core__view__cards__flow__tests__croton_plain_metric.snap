@@ -6,7 +6,7 @@ expression: "card(&croton_input(metric(), Voice::Plain))"
   "chrome": {
     "id": "flow",
     "title": "River flow",
-    "footnote": "Flow 0.4 m³/s · Croton River at New Croton Dam · 2.4 km · just now",
+    "footnote": "Croton River at New Croton Dam · 2.4 km · just now",
     "credits": [
       {
         "source": "USGS",

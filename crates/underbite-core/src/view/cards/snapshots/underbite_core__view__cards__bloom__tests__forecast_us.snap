@@ -6,7 +6,7 @@ expression: "card(&lake(us(), info))"
   "chrome": {
     "id": "bloom",
     "title": "Algal bloom",
-    "footnote": "Respiratory irritation low at Clearwater Beach, 2.0 mi · Clearwater Beach · 1.5 mi · just now",
+    "footnote": "Clearwater Beach · 1.5 mi · just now",
     "credits": [
       {
         "source": "NOAA NCCOS bloom forecast",

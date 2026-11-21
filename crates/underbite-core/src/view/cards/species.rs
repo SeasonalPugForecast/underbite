@@ -373,11 +373,6 @@ pub fn build(input: &ViewInput, species: &[SpeciesProfile]) -> Option<SpeciesCar
     let (footnote, state) = match &water {
         Some(w) => (
             Some(f.footnote_aged(
-                &format!(
-                    "{} {}",
-                    s.get(Key::WaterWord),
-                    f.temperature(Some(w.celsius)).full()
-                ),
                 w.provenance,
                 input.now,
                 Some(w.time).filter(|t| *t <= input.now),

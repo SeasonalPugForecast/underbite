@@ -301,7 +301,7 @@ pub fn build(input: &ViewInput) -> Option<BloomCard> {
         chrome: CardChrome {
             id: CardId::Bloom,
             title,
-            footnote: main.map(|p| f.footnote_aged(&first, p, now, shown_at)),
+            footnote: main.map(|p| f.footnote_aged(p, now, shown_at)),
             credits: credits(input, &provs),
             state,
             notices,

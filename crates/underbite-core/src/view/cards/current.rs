@@ -347,7 +347,6 @@ pub fn build(input: &ViewInput) -> Option<CurrentCard> {
             title: f.strings.card_title(CardId::Current).to_owned(),
             footnote: Some(
                 f.footnote_aged(
-                    &format!("{} {line}", f.strings.card_title(CardId::Current)),
                     p,
                     now,
                     series

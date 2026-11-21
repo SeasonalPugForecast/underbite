@@ -6,7 +6,7 @@ expression: build(&nyh1927()).unwrap()
   "chrome": {
     "id": "current",
     "title": "Current",
-    "footnote": "Current Flood 1.1 kn toward N 11° · The Narrows, bin 13 · 2.5 mi",
+    "footnote": "The Narrows, bin 13 · 2.5 mi",
     "credits": [
       {
         "source": "NOAA CO-OPS",

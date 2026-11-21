@@ -6,7 +6,7 @@ expression: card
   "chrome": {
     "id": "tide",
     "title": "Tide",
-    "footnote": "Tide 1.2 m MLLW · The Battery · 0.4 mi",
+    "footnote": "The Battery · 0.4 mi",
     "credits": [
       {
         "source": "NOAA CO-OPS",

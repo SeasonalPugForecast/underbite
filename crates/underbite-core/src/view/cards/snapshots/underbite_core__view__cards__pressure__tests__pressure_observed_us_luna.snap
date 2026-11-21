@@ -6,7 +6,7 @@ expression: card
   "chrome": {
     "id": "pressure",
     "title": "Pressure",
-    "footnote": "Pressure 1012 hPa · NOAA NDBC · 2.5 mi · 10 min ago",
+    "footnote": "NOAA NDBC · 2.5 mi · 10 min ago",
     "credits": [
       {
         "source": "NOAA NDBC",

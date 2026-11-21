@@ -134,17 +134,16 @@ pub(super) fn weather_credit(weather: &WeatherSnapshot) -> CreditVm {
     }
 }
 
-/// "Wind 12 mph · Open-Meteo · modelled · 6 min ago"; the age is that of the forecast value
+/// "Open-Meteo · modelled · 6 min ago"; the age is that of the forecast value
 /// shown (`valid_at`), not of the download.
 pub(super) fn weather_footnote(
     f: &Formatter,
-    value: &str,
     weather: &WeatherSnapshot,
     now: UnixTime,
     valid_at: UnixTime,
 ) -> String {
     format!(
-        "{value} · {} · {} · {}",
+        "{} · {} · {}",
         weather.provider.display_name(),
         f.strings.get(Key::Modelled),
         f.age(now.0 - valid_at.0),
@@ -345,12 +344,11 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
     let speed = f.wind_speed(Some(fix.0));
     let gust = fix.1.map(|g| f.wind_speed(Some(g)));
     let direction = fix.2.map(|d| f.direction(Some(d)));
-    let headline = format!("{} {}", f.strings.card_title(CardId::Wind), speed.full());
     let forecast_time = forecast.map(|(_, t)| t);
     let footnote = match (station, weather, forecast_time) {
-        (Some((p, t)), _, _) => f.footnote_aged(&headline, p, now, Some(t)),
-        (None, Some(w), Some(t)) => weather_footnote(&f, &headline, w, now, t),
-        _ => headline.clone(),
+        (Some((p, t)), _, _) => Some(f.footnote_aged(p, now, Some(t))),
+        (None, Some(w), Some(t)) => Some(weather_footnote(&f, w, now, t)),
+        _ => None,
     };
 
     // The chart: past observations and the forecast ahead, as separate series.
@@ -489,7 +487,7 @@ pub fn build(input: &ViewInput) -> Option<WindCard> {
         chrome: CardChrome {
             id: CardId::Wind,
             title: f.strings.card_title(CardId::Wind).to_owned(),
-            footnote: Some(footnote),
+            footnote,
             credits: chart_credits,
             state: card_state,
             notices: if basis == WindBasis::Forecast {
@@ -578,6 +576,10 @@ pub(in crate::view) mod tests {
                 .unwrap()
                 .contains("Open-Meteo")
         );
+        // The footnote is the provenance alone: the value is the headline's.
+        let note = card.chrome.footnote.as_deref().unwrap();
+        assert!(!note.contains(&card.compact.headline.text), "{note}");
+        assert!(!note.starts_with("Wind"), "{note}");
         assert_eq!(card.chrome.credits.len(), 1);
         assert_eq!(card.chrome.state, CardState::Fresh);
         insta::assert_json_snapshot!("wind_forecast_us_luna", card);
@@ -719,7 +721,7 @@ pub(in crate::view) mod tests {
             .as_ref()
             .unwrap()
             .provenance();
-        let text = f.footnote_aged("Wind 13 mph", p, input.now, None);
+        let text = f.footnote_aged(p, input.now, None);
         assert!(
             !text.contains("ago") && !text.contains("just now"),
             "{text}"

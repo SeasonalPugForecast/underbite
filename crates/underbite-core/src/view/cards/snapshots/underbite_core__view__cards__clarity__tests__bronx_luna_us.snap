@@ -6,7 +6,7 @@ expression: "card(&bronx(us(), Voice::Luna))"
   "chrome": {
     "id": "clarity",
     "title": "Water clarity",
-    "footnote": "Turbidity 2.1 FNU · Bronx River at NY Botanical Garden · 1.5 mi · just now",
+    "footnote": "Bronx River at NY Botanical Garden · 1.5 mi · just now",
     "credits": [
       {
         "source": "USGS",
