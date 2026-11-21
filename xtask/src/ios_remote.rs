@@ -46,6 +46,10 @@ const DERIVED: &str = ".derived";
 const SCREENS: &str = ".screens";
 /// App Store screenshots on the Mac, inside the directory.
 const STORE_SCREENS: &str = ".store-shots";
+/// Map load timings on the Mac, inside the directory.
+const TIMINGS: &str = ".timing";
+/// Where `load-timing` puts its logs here.
+const TIMING_LOCAL: &str = "target/ios-load-timing";
 /// The Release archive on the Mac, inside the directory.
 const ARCHIVE_DIR: &str = ".archive";
 /// The archive's file name.
@@ -100,6 +104,7 @@ usage: cargo xtask ios remote <step> [--host user@mac] [--dir path] [--debug] [-
                                [--iphone name] [--release] [--local] [--simulator name]
                                [--unsigned]
        cargo xtask ios remote ui [--on iphone|ipad] [--only Class/test] [--host user@mac] [--dry-run]
+       cargo xtask ios remote load-timing [--name label] [--runs n] [--wait seconds] -- launch-args…
        cargo xtask ios remote exec [--fetch path]… [--host user@mac] [--dir path] [--dry-run] -- command…
        cargo xtask ios remote clean (--lane <name> | --all-lanes) [--host user@mac] [--dry-run]
 
@@ -126,6 +131,12 @@ steps:
            iPhone and then the iPad simulator, each with its accessibility switched on first
            (else the runner can time out waiting for it); --on iphone|ipad tests on one,
            --only runs one class or test (AccessibilityAuditTests/testConditions)
+  load-timing
+           app, then launch it on the iPhone simulator with the launch arguments after `--`,
+           `--runs` times cold (the app removed and installed again each time) and as many
+           times warm (the app stopped and launched again), `--wait` seconds each (default 40),
+           and copy the map's `map-load` log lines of every launch to
+           target/ios-load-timing/<label>.log (`--name`, default `load`)
   exec     sync, then run a command in the lane's directory on the Mac (Xcode selected
            through DEVELOPER_DIR); --fetch copies a path (relative to the repository) back
   device   build, sign and install the app on the iPhone named `iphone` in
@@ -163,6 +174,7 @@ enum Step {
     StoreShots,
     Archive,
     Ui,
+    LoadTiming,
     Exec,
     Device,
     Clean,
@@ -180,6 +192,7 @@ impl Step {
                 | Self::StoreShots
                 | Self::Archive
                 | Self::Ui
+                | Self::LoadTiming
                 | Self::Device
         )
     }
@@ -214,8 +227,14 @@ struct Args {
     only: Option<String>,
     /// `exec`: paths to copy back afterwards.
     fetch: Vec<String>,
-    /// `exec`: the command to run on the Mac.
+    /// `exec`: the command to run on the Mac; `load-timing`: the app's launch arguments.
     command: Vec<String>,
+    /// `load-timing`: the name of the log file.
+    name: Option<String>,
+    /// `load-timing`: launches per kind (cold, warm).
+    runs: u32,
+    /// `load-timing`: seconds to wait after each launch.
+    wait: u32,
 }
 
 fn parse(args: &[&str]) -> Result<Args, String> {
@@ -230,6 +249,7 @@ fn parse(args: &[&str]) -> Result<Args, String> {
         Some(&"store-shots") => Step::StoreShots,
         Some(&"archive") => Step::Archive,
         Some(&"ui") => Step::Ui,
+        Some(&"load-timing") => Step::LoadTiming,
         Some(&"exec") => Step::Exec,
         Some(&"device") => Step::Device,
         Some(&"clean") => Step::Clean,
@@ -252,6 +272,9 @@ fn parse(args: &[&str]) -> Result<Args, String> {
         only: None,
         fetch: Vec::new(),
         command: Vec::new(),
+        name: None,
+        runs: 3,
+        wait: DEFAULT_TIMING_WAIT,
     };
     while let Some(arg) = iter.next() {
         match *arg {
@@ -290,6 +313,9 @@ fn parse(args: &[&str]) -> Result<Args, String> {
                     ));
                 }
             },
+            "--name" => out.name = Some(timing_name(iter.next().copied())?),
+            "--runs" => out.runs = timing_number("--runs", iter.next().copied(), 10)?,
+            "--wait" => out.wait = timing_number("--wait", iter.next().copied(), MAX_SHOT_WAIT)?,
             "--fetch" => match iter.next() {
                 Some(path) => out.fetch.push(fetchable(path)?),
                 None => return Err(format!("--fetch needs a path\n\n{USAGE}")),
@@ -298,14 +324,30 @@ fn parse(args: &[&str]) -> Result<Args, String> {
             other => return Err(format!("unknown argument `{other}`\n\n{USAGE}")),
         }
     }
+    check_flags(step, &out)?;
+    Ok(out)
+}
+
+/// Refuses a flag the step does not take.
+fn check_flags(step: Step, out: &Args) -> Result<(), String> {
     if step != Step::Clean && (out.lane.is_some() || out.all_lanes) {
         return Err(format!("--lane and --all-lanes belong to clean\n\n{USAGE}"));
     }
     if step == Step::Clean {
         lane::which(out.lane.as_deref(), out.all_lanes)?;
     }
-    if step != Step::Exec && !(out.fetch.is_empty() && out.command.is_empty()) {
-        return Err(format!("--fetch and a command belong to exec\n\n{USAGE}"));
+    if !matches!(step, Step::Exec | Step::LoadTiming) && !out.command.is_empty() {
+        return Err(format!("a command belongs to exec\n\n{USAGE}"));
+    }
+    if step != Step::Exec && !out.fetch.is_empty() {
+        return Err(format!("--fetch belongs to exec\n\n{USAGE}"));
+    }
+    if step != Step::LoadTiming
+        && (out.name.is_some() || out.runs != 3 || out.wait != DEFAULT_TIMING_WAIT)
+    {
+        return Err(format!(
+            "--name, --runs and --wait belong to load-timing\n\n{USAGE}"
+        ));
     }
     if step != Step::Archive && out.unsigned {
         return Err(format!("--unsigned belongs to archive\n\n{USAGE}"));
@@ -316,8 +358,34 @@ fn parse(args: &[&str]) -> Result<Args, String> {
     if step == Step::Exec && out.command.is_empty() {
         return Err(format!("exec needs a command after `--`\n\n{USAGE}"));
     }
-    Ok(out)
+    Ok(())
 }
+
+/// `--name`'s value: letters, digits, `-` and `_`.
+fn timing_name(text: Option<&str>) -> Result<String, String> {
+    match text {
+        Some(name)
+            if !name.is_empty()
+                && name
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_') =>
+        {
+            Ok(name.to_owned())
+        }
+        _ => Err(format!("--name needs letters, digits, - and _\n\n{USAGE}")),
+    }
+}
+
+/// A number from 1 to `most`, the value of `flag`.
+fn timing_number(flag: &str, text: Option<&str>, most: u32) -> Result<u32, String> {
+    match text.and_then(|n| n.parse::<u32>().ok()) {
+        Some(n) if (1..=most).contains(&n) => Ok(n),
+        _ => Err(format!("{flag} needs a number from 1 to {most}\n\n{USAGE}")),
+    }
+}
+
+/// Seconds `load-timing` waits after each launch when `--wait` is not given.
+const DEFAULT_TIMING_WAIT: u32 = 40;
 
 /// A test class or test of the UI test target: letters, digits and `_`, with at most one `/`
 /// between a class and a test.
@@ -1085,6 +1153,66 @@ fn capture(
     scripts
 }
 
+/// On the Mac: launches the app with `launch` on the iPhone simulator `runs` times cold (the app
+/// removed and installed again before each) and `runs` times warm (stopped and launched again,
+/// with what the cold ones kept), waits `wait` seconds after each, and writes the `map-load` lines
+/// the launch logged to `.timing/<name>.log`, each launch under a `== <kind> <n> ==` line. Only
+/// this lane's simulator and the app are touched.
+fn load_timing(remote: &Remote, name: &str, launch: &[String], runs: u32, wait: u32) -> String {
+    let sim = quote(&remote.simulator);
+    let app = format!("{DERIVED}/Build/Products/Debug-iphonesimulator/{APP}");
+    let args = launch.iter().fold(String::new(), |mut all, a| {
+        let _ = write!(all, " {}", quote(a));
+        all
+    });
+    let file = format!("{TIMINGS}/{name}.log");
+    let predicate = quote(&format!(
+        "subsystem == \"{BUNDLE_ID}\" AND category == \"map-load\""
+    ));
+    // One launch: the time before it, the launch (tried again, as for a shot), the wait, then
+    // the lines logged since.
+    let one = |kind: &str, install: bool| {
+        let fresh = if install {
+            format!(
+                "xcrun simctl uninstall {sim} {BUNDLE_ID} 2>/dev/null || true; \
+                 xcrun simctl install {sim} {app}; "
+            )
+        } else {
+            String::new()
+        };
+        format!(
+            "echo \"== {kind} $i ==\" >> {file}; xcrun simctl terminate {sim} {BUNDLE_ID} 2>/dev/null || true; \
+             {fresh}t=$(date '+%Y-%m-%d %H:%M:%S'); l=0; \
+             until xcrun simctl launch {sim} {BUNDLE_ID}{args} >/dev/null; do l=$((l+1)); \
+             [ $l -ge 3 ] && break; sleep 6; done; sleep {wait}; \
+             xcrun simctl spawn {sim} log show --start \"$t\" --info --style compact \
+             --predicate {predicate} >> {file} 2>&1 || true"
+        )
+    };
+    format!(
+        "mkdir -p {TIMINGS}; : > {file}; xcrun simctl boot {sim} 2>/dev/null || true; \
+         xcrun simctl bootstatus {sim} -b >/dev/null; xcrun simctl ui {sim} appearance light; \
+         for i in $(seq 1 {runs}); do {cold}; done; for i in $(seq 1 {runs}); do {warm}; done; \
+         xcrun simctl terminate {sim} {BUNDLE_ID} 2>/dev/null || true; echo wrote {file}",
+        cold = one("cold", true),
+        warm = one("warm", false),
+    )
+}
+
+/// The scripts of `load-timing` after the sync: this lane's iPhone simulator (made on first use),
+/// the app, then the launches.
+fn load_timing_steps(args: &Args, remote: &Remote) -> Vec<String> {
+    let name = args.name.as_deref().unwrap_or("load");
+    vec![
+        ensure_pairs(remote, &[(&remote.simulator, &remote.base_simulator)]),
+        app(remote, &remote.simulator),
+        in_dir(
+            remote,
+            &load_timing(remote, name, &args.command, args.runs, args.wait),
+        ),
+    ]
+}
+
 /// On the Mac: the command, run in the directory with Xcode selected.
 fn exec(remote: &Remote, command: &[String]) -> String {
     let words: Vec<String> = command.iter().map(|a| quote(a)).collect();
@@ -1448,6 +1576,14 @@ fn plan(args: &Args, remote: &Remote, stage: &str, list: &[Shot]) -> Plan {
     if args.step == Step::Test {
         steps.push(ssh(in_dir(remote, &format!("cd {KIT}; swift test"))));
     }
+    if args.step == Step::LoadTiming {
+        let local = workspace_root().join(TIMING_LOCAL);
+        steps.extend(load_timing_steps(args, remote).into_iter().map(ssh));
+        // Without `--delete`: the logs of an earlier run under another name stay.
+        let mut fetch = fetch_screens(remote, TIMINGS, &local.to_string_lossy());
+        fetch.retain(|a| a != "--delete");
+        fetches.push(("rsync".to_string(), fetch));
+    }
     if matches!(args.step, Step::App | Step::Shots) {
         // The lane's own simulators, cloned on first use (and a missing one made).
         steps.push(ssh(ensure_simulators(remote)));
@@ -1618,7 +1754,12 @@ pub(crate) fn run(args: &[&str]) -> Result<(), String> {
         }
         if matches!(
             args.step,
-            Step::App | Step::Shots | Step::StoreShots | Step::Archive | Step::Ui
+            Step::App
+                | Step::Shots
+                | Step::StoreShots
+                | Step::Archive
+                | Step::Ui
+                | Step::LoadTiming
         ) {
             println!("project: {PROJECT}, scheme {SCHEME}, app {APP}, bundle {BUNDLE_ID}");
             let devices = if args.step == Step::StoreShots {
@@ -1684,6 +1825,10 @@ pub(crate) fn run(args: &[&str]) -> Result<(), String> {
             args.dry_run,
         )?
     };
+    if args.step == Step::LoadTiming && !args.dry_run {
+        let dir = workspace_root().join(TIMING_LOCAL);
+        std::fs::create_dir_all(&dir).map_err(|e| format!("creating {}: {e}", dir.display()))?;
+    }
     if matches!(args.step, Step::Shots | Step::StoreShots) && !args.dry_run {
         let dir = workspace_root().join(if args.step == Step::Shots {
             "target/ios-screens"
@@ -1785,6 +1930,9 @@ mod tests {
             only: None,
             fetch: Vec::new(),
             command: Vec::new(),
+            name: None,
+            runs: 3,
+            wait: DEFAULT_TIMING_WAIT,
         }
     }
 
@@ -2222,6 +2370,72 @@ mod tests {
                 "./"
             ]
         );
+    }
+
+    #[test]
+    fn load_timing_takes_launch_arguments_after_two_dashes() {
+        let a = parse(&[
+            "load-timing",
+            "--name",
+            "swimming",
+            "--runs",
+            "2",
+            "--wait",
+            "30",
+            "--",
+            "-seed",
+            "-tab",
+            "map",
+        ])
+        .unwrap();
+        assert_eq!(a.step, Step::LoadTiming);
+        assert_eq!(a.name.as_deref(), Some("swimming"));
+        assert_eq!((a.runs, a.wait), (2, 30));
+        assert_eq!(a.command, ["-seed", "-tab", "map"]);
+        assert!(parse(&["load-timing", "--runs", "0"]).is_err());
+        assert!(parse(&["load-timing", "--name", "a/b"]).is_err());
+        assert!(parse(&["app", "--runs", "2"]).is_err());
+        assert!(parse(&["app", "--", "-seed"]).is_err());
+    }
+
+    #[test]
+    fn load_timing_runs_cold_then_warm_on_the_lanes_iphone_only() {
+        let r = lane_remote(Some("lane-a"));
+        let a = Args {
+            name: Some("swimming".into()),
+            command: vec!["-seed".into(), "-mapAt".into(), "40.58,-73.82,0.3".into()],
+            ..args(Step::LoadTiming)
+        };
+        let (steps, fetches) = plan(&a, &r, "s", &[]);
+        let script = steps.last().unwrap().1.last().unwrap();
+        assert!(script.contains("'iPhone 17 (lane-a)'"), "{script}");
+        assert!(!script.contains("iPad"), "{script}");
+        let (cold, rest) = script.split_once("for i in $(seq 1 3); do").unwrap();
+        assert!(!cold.contains("uninstall"), "{script}");
+        let (cold, warm) = rest.split_once("for i in $(seq 1 3); do").unwrap();
+        assert!(
+            cold.contains("== cold $i ==") && cold.contains("uninstall"),
+            "{script}"
+        );
+        assert!(warm.contains("== warm $i =="), "{script}");
+        assert!(
+            !warm.contains("uninstall"),
+            "warm launches keep the data: {script}"
+        );
+        assert!(
+            script.contains("'-seed' '-mapAt' '40.58,-73.82,0.3'"),
+            "{script}"
+        );
+        assert!(script.contains("category == \"map-load\""), "{script}");
+        assert!(script.contains(".timing/swimming.log"), "{script}");
+        assert!(
+            steps
+                .iter()
+                .any(|(_, a)| a.last().unwrap().contains("simctl clone"))
+        );
+        assert_eq!(fetches.len(), 1);
+        assert!(fetches[0].1[1].ends_with("/.timing/"), "{:?}", fetches[0]);
+        assert!(!fetches[0].1.contains(&"--delete".to_string()));
     }
 
     #[test]

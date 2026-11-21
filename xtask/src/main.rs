@@ -36,6 +36,9 @@ commands:
   ios remote ui [--on iphone|ipad] [--only Class/test]
                       the UI and accessibility tests on the iPhone and iPad simulators,
                       accessibility switched on and each simulator booted again
+  ios remote load-timing [--name label] [--runs n] [--wait s] -- <launch args>
+                      launch the app cold and warm on the iPhone simulator and copy back the
+                      map's load-timing log lines
   ios remote exec [--fetch path] -- <command>
                       run a command in the lane's directory on the Mac, Xcode selected
   ios remote clean --lane <name> | --all-lanes
