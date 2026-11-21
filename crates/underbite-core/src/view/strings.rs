@@ -2287,10 +2287,10 @@ safety_keys! {
     BeachIssuedByAt => "Issued by NWS {office}, {when}",
     /// `{place}`, `{age}`: a zone with nothing issued; the office as "New York City (OKX)" or
     /// "OKX", the age of its last update, "53 d ago".
-    BeachNothingFrom => "No current forecast for this zone. The last update from NWS {place} was {age}; forecasts run in the beach season.",
+    BeachNothingFrom => "The last update from NWS {place} was {age}. Forecasts run in the beach season.",
     /// `{place}`: as above, when the age is not known.
-    BeachNothingFromNoAge => "No current forecast for this zone. NWS {place} issues forecasts in the beach season.",
-    BeachNothing => "No current forecast for this zone. Forecasts run in the beach season.",
+    BeachNothingFromNoAge => "NWS {place} issues forecasts in the beach season.",
+    BeachNothing => "Forecasts run in the beach season.",
     /// `{value}`: the water temperature in the user's unit, from a forecast in whole degrees
     /// Fahrenheit written as "in the lower 50s".
     BeachWaterAbout => "about {value}",

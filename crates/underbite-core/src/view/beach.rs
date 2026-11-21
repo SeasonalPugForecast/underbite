@@ -219,10 +219,14 @@ pub fn water_temperature(f: &Formatter, issued: &str) -> String {
 pub fn card(f: &Formatter, facts: &BeachFacts<'_>, now: UnixTime) -> BeachCard {
     let s = f.strings;
     let risk = risk_words(f, facts.rip, facts.rip_text);
-    let mut rows = vec![BeachRow {
-        label: s.get(Key::BeachRowRip).to_owned(),
-        value: risk.clone(),
-    }];
+    // A zone with nothing issued says so in its risk, once; a row would repeat it.
+    let mut rows = Vec::new();
+    if facts.rip.is_some() || facts.rip_text.is_some() {
+        rows.push(BeachRow {
+            label: s.get(Key::BeachRowRip).to_owned(),
+            value: risk.clone(),
+        });
+    }
     let water = facts.water_temperature.map(|t| water_temperature(f, t));
     for (key, value) in [
         (Key::BeachRowSurf, facts.surf.map(str::to_owned)),
@@ -243,7 +247,7 @@ pub fn card(f: &Formatter, facts: &BeachFacts<'_>, now: UnixTime) -> BeachCard {
         (Some(t), None) => Some(t.to_owned()),
         _ => None,
     };
-    let nothing = facts.rip_text.is_none() && rows.len() == 1;
+    let nothing = facts.rip.is_none() && facts.rip_text.is_none() && rows.is_empty();
     let place = facts.office.map(|office| match facts.office_name {
         Some(name) => format!("{name} ({office})"),
         None => office.to_owned(),
@@ -455,12 +459,13 @@ mod tests {
         let c = card(&f, &facts, UnixTime(1_790_596_678 + 53 * 86_400));
         assert_eq!(c.role, ROLE_NONE);
         assert_eq!(c.risk, "No forecast issued");
-        assert_eq!(c.rows.len(), 1);
-        assert_eq!(c.rows[0].value, "No forecast issued");
+        // Said once, in the risk: no row and no sentence repeats it.
+        assert_eq!(c.rows, Vec::<BeachRow>::new());
         assert_eq!(
             c.issued,
-            "No current forecast for this zone. The last update from NWS OKX was 53 d ago; forecasts run in the beach season."
+            "The last update from NWS OKX was 53 d ago. Forecasts run in the beach season."
         );
+        assert!(!c.issued.to_lowercase().contains("no current forecast"));
         assert_eq!(c.age, None);
         let named = card(
             &f,
@@ -487,7 +492,7 @@ mod tests {
         );
         assert_eq!(
             undated.issued,
-            "No current forecast for this zone. NWS OKX issues forecasts in the beach season."
+            "NWS OKX issues forecasts in the beach season."
         );
         assert_eq!(c.period, None);
         // The safety line stays: an unissued zone has rip currents too.
@@ -503,10 +508,7 @@ mod tests {
             },
             NOW,
         );
-        assert_eq!(
-            no_office.issued,
-            "No current forecast for this zone. Forecasts run in the beach season."
-        );
+        assert_eq!(no_office.issued, "Forecasts run in the beach season.");
     }
 
     #[test]
