@@ -1,2 +1,2 @@
--seed -tab map -mapPreset swimming -mapAt 40.58,-73.82,0.3 -mapFindBeaches -mapBeachOpen
+-seed -tab map -mapPreset swimming -mapAt 40.58,-73.82,0.3 -mapBeachOpen
 wait 60

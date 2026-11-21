@@ -5,7 +5,8 @@ import Foundation
 /// build reads none and nothing is saved. The layer itself is shown with `-mapLayers
 /// beach-forecast`, or with `-mapPreset swimming`.
 ///
-/// - `-mapFindBeaches` presses the lookup button once, when the map has settled with the layer on.
+/// - `-mapFindBeaches` presses the refresh button once, when the map has settled with the layer on
+///   (the layer looks itself up a second after the map settles, so shots need none).
 /// - `-mapBeachOpen` then picks out the first zone as if tapped, once.
 /// - `-mapBeachSample boston` answers the lookup with a hand-made forecast for the Boston area
 ///   (`beach-sample-boston.synthetic.json`: a low, a moderate and a high risk and a zone with no

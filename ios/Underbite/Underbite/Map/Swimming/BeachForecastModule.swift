@@ -5,11 +5,12 @@ import SwiftUI
 /// The beach forecast layer of the "Water" group: the shore zones of the National Weather
 /// Service's marine beach forecast in the view, filled by the rip current risk the forecast office
 /// issued (a zone with nothing issued is outlined, never drawn as a low risk). Nothing is asked
-/// when the layer is switched on or the map moves: the drawer's "Show beach forecasts here" looks
-/// the zones up for the view on screen through the core's `plan_beach_forecast` and the app's
-/// fetch host, and is the only way the services are asked. What the lookup said (zoom in, no
-/// zones, a failure) shows under the button with the key of the colours, the layer's words and
-/// the credit.
+/// The zones are looked up by themselves, through the core's `plan_beach_forecast` and the app's
+/// fetch host, once the map has rested for a second with the layer on and at a zoom it is asked
+/// at, and not again for the same view (snapped outward to a tenth of a degree) within an hour:
+/// the services are small and have no shared quota. The drawer's button refreshes. What the
+/// lookup said (no zones, a failure) shows under the button with the key of the colours, the
+/// layer's words and the credit.
 ///
 /// The zones are one overlay with one renderer. A tap inside a zone picks it out (its edge is
 /// heavier) and opens its card, a popover on the iPad and a sheet on the iPhone. Every word and
@@ -43,6 +44,9 @@ final class BeachForecastModule: MapModule {
     @ObservationIgnored private var presentPending = false
     @ObservationIgnored private weak var presented: UIViewController?
     @ObservationIgnored private var launchPressed = false
+    /// The view last looked up by itself and when, to ask again only for another view or an hour on.
+    @ObservationIgnored private var lastAuto: (key: String, at: Int64)?
+    @ObservationIgnored private var autoTask: Task<Void, Never>?
     @ObservationIgnored private var launchOpen = BeachLaunch.open
 
     init(
@@ -108,6 +112,7 @@ final class BeachForecastModule: MapModule {
 
     func regionDidSettle(_ context: MapModuleContext) {
         follow(context)
+        scheduleAuto()
         #if DEBUG
             pressAtLaunch()
         #endif
@@ -123,6 +128,7 @@ final class BeachForecastModule: MapModule {
         }
         guard now != drawn else { return }
         drawn = now
+        if now != nil { scheduleAuto() }
         if let now, let renderer, renderer.alpha != CGFloat(now) {
             renderer.alpha = CGFloat(now)
             renderer.setNeedsDisplay()
@@ -143,13 +149,44 @@ final class BeachForecastModule: MapModule {
 
     // MARK: - Looking up
 
-    /// "Show beach forecasts here": looks the zones up for the view on screen. With the layer
+    /// How long a view's zones are kept before they are asked for again, seconds.
+    static let refreshAfter: Int64 = 3_600
+
+    /// The view on a grid of a tenth of a degree, outward, as the core snaps its boxes.
+    nonisolated static func gridKey(_ region: MapRegion) -> String {
+        func down(_ v: Double) -> Int { Int((v * 10 + 1e-6).rounded(.down)) }
+        func up(_ v: Double) -> Int { Int((v * 10 - 1e-6).rounded(.up)) }
+        return "\(down(region.west)),\(down(region.south)),\(up(region.east)),\(up(region.north))"
+    }
+
+    /// Looks the view up a second after the map settles, when it is a view not looked up in the
+    /// last hour; a later settle takes the place of this one.
+    private func scheduleAuto() {
+        autoTask?.cancel()
+        guard drawn != nil, canLookUp else { return }
+        autoTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(1))
+            guard let self, !Task.isCancelled else { return }
+            self.autoFind()
+        }
+    }
+
+    private func autoFind() {
+        guard !busy, drawn != nil, canLookUp, let region = controller?.region else { return }
+        let key = Self.gridKey(region)
+        let now = clock()
+        if let last = lastAuto, last.key == key, now - last.at < Self.refreshAfter { return }
+        find()
+    }
+
+    /// Looks the zones up for the view on screen now ("Refresh beach forecasts"). With the layer
     /// off, it turns it on first.
     func find() {
         guard !busy, let controller, let region = controller.region else { return }
         if drawn == nil, layerIDs.contains(BeachZones.layer) {
             controller.setShown(BeachZones.layer, true)
         }
+        lastAuto = (Self.gridKey(region), clock())
         let area = RecordsLookup.area(region)
         let json = controller.settingsJSON
         let sample = BeachLaunch.sample
@@ -193,6 +230,8 @@ final class BeachForecastModule: MapModule {
             if sample == nil, let kept = results.stateJson { self.state.save(kept, base: made.base) }
             self.busy = false
             self.show(results)
+            // The map may have moved on while this ran.
+            self.scheduleAuto()
         }
     }
 

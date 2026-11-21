@@ -1,2 +1,2 @@
--seed -tab map -mapBase apple-standard -mapLayers beach-forecast -mapAt 42.2,-70.65,1.1 -mapFindBeaches -mapBeachSample boston -mapBeachOpen
+-seed -tab map -mapBase apple-standard -mapLayers beach-forecast -mapAt 42.2,-70.65,1.1 -mapBeachSample boston -mapBeachOpen
 wait 40
