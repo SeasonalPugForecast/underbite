@@ -139,7 +139,7 @@ GET /vdatumweb/api/convert?s_x=-73.75&s_y=42.65&s_z=0&s_h_frame=NAD83_2011&s_coo
   The API is the one the VDatum web application uses; the page does not promise availability.
 - It is a datum tool: it says "inside the tidal model", which hugs the water. A 2-decimal rounded point can fall on
   land and answer -999999 on a narrow river. Coverage on a river is therefore a necessary but unreliable signal.
-- Region polygons (a coverage map): no ArcGIS REST layer was found. A web search showed only unrelated NOAA layers
+- Region polygons (a coverage map): no ArcGIS REST layer was found. A search of public sources showed only unrelated NOAA layers
   (VPASS polygons, an Alaska proposal); **unverified** whether one exists.
 
 ## 3. NHD (National Hydrography Dataset, `nhd` MapServer)

@@ -1,6 +1,6 @@
 # USGS Nonindigenous Aquatic Species (NAS) occurrence API
 
-Verified on 2026-11-17 (UTC) with `curl` against `nas.er.usgs.gov`. An earlier survey is in `docs/providers/tier2.md`. The documentation page `https://nas.er.usgs.gov/api/documentation.aspx` answered 403 to a fetch tool and 200 to `curl` with a plain user agent; the parameter names below come from it. Fixtures: `tests/fixtures/raw/nas/` (index in its `README.md`).
+Verified on 2026-11-17 (UTC) with `curl` against `nas.er.usgs.gov`. An earlier survey is in `docs/providers/tier2.md`. The documentation page `https://nas.er.usgs.gov/api/documentation.aspx` answered 403 to a plain HTTP client and 200 to `curl` with a plain user agent; the parameter names below come from it. Fixtures: `tests/fixtures/raw/nas/` (index in its `README.md`).
 
 ## Endpoint
 

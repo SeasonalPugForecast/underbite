@@ -22,7 +22,7 @@ On 2026-11-17 the newest record in every response was in March 2026:
 - Oneida Lake, daily: newest 03-27-2026 (`L2026086.L3m_DAY_...`, day 86), then 09-08-2025.
 - No record for April to November 2026 at any point queried, although summer 2025 has weekly records (2025-08-16, 08-23, 08-30, 09-06, 09-13).
 
-A web search snippet reported an EPA notice dated 2026-03-25 that the CyAN web application was temporarily unavailable; that notice was not found on the EPA pages fetched on 2026-11-17 (**unverified**) and the web application answered HTTP 200. Whether the March 2026 end is a lapse in processing, the end of the Sentinel-3 series, or a seasonal absence of retrievals (ice and cloud) could not be established. The feed therefore appears **stale for seven and a half months**. Treat CyAN as unavailable when the newest record is more than 14 days old and say "no recent satellite data", never "no bloom". Re-check before the 2027 season.
+A third-party report said an EPA notice dated 2026-03-25 that the CyAN web application was temporarily unavailable; that notice was not found on the EPA pages fetched on 2026-11-17 (**unverified**) and the web application answered HTTP 200. Whether the March 2026 end is a lapse in processing, the end of the Sentinel-3 series, or a seasonal absence of retrievals (ice and cloud) could not be established. The feed therefore appears **stale for seven and a half months**. Treat CyAN as unavailable when the newest record is more than 14 days old and say "no recent satellite data", never "no bloom". Re-check before the 2027 season.
 
 ## Record fields (fixtures `cyan-oneida-lake-weekly-2026-11-17.json`, `-daily-`, `cyan-the-battery-weekly-2026-11-17.json`)
 

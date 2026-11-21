@@ -124,7 +124,7 @@ for safety decisions. A display of live values should say "provisional" for thos
 identifier (logo) is trademarked and needs separate permission; do not use it. Contact for questions:
 `wdfn@usgs.gov`.
 
-Re-checked 2026-11-18: public-domain and credit wording unchanged (`https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits`: "Credit: U.S. Geological Survey" as a suggested form; the USGS identifier is trademarked and must be used under the Visual Identity System rules). The provisional data statement (`https://waterdata.usgs.gov/provisional-data-statement/`) answered HTTP 403 (a CloudFront block) to `curl` and to a fetch tool on 2026-11-18, so its current text is **unverified**; the wording above is from the earlier read.
+Re-checked 2026-11-18: public-domain and credit wording unchanged (`https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits`: "Credit: U.S. Geological Survey" as a suggested form; the USGS identifier is trademarked and must be used under the Visual Identity System rules). The provisional data statement (`https://waterdata.usgs.gov/provisional-data-statement/`) answered HTTP 403 (a CloudFront block) to `curl` and to a plain HTTP client on 2026-11-18, so its current text is **unverified**; the wording above is from the earlier read.
 
 ## Fields
 
@@ -378,7 +378,7 @@ percentile into classes. WaterWatch (`https://waterwatch.usgs.gov`) defined seve
 its documentation page `https://waterwatch.usgs.gov/htmls/ptile_table_a.html` (read from the Internet Archive
 copy of 2017-05-01, `http://web.archive.org/web/20170501151620/https://waterwatch.usgs.gov/htmls/ptile_table_a.html`,
 because the live host now answers HTTP 301 to `https://waterdata.usgs.gov/blog/wdfn-stats-delivery/` and that
-blog page and the old help pages return HTTP 403 to `curl` and the fetch tool used here) says:
+blog page and the old help pages return HTTP 403 to `curl` and a plain HTTP client) says:
 
 ```text
 1 = Lowest ever at a streamgage

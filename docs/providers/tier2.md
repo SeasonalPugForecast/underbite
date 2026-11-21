@@ -140,7 +140,7 @@ Verdict: **not usable** (2026-11-08).
 - `https://www.tva.com/environment/lake-levels` and every other `www.tva.com` path tried, including
   `/robots.txt`, returned HTTP 403 with a Cloudflare "Just a moment..." challenge page to a scripted
   client. `https://api.tva.gov/` returned HTTP 526. The challenge was not worked around.
-- A web search for a documented API, ArcGIS service or data download found none. TVA publishes
+- A search of public sources for a documented API, ArcGIS service or data download found none. TVA publishes
   elevations, outflows and planned release schedules through the lake levels web page, the TVA Lake Info
   phone app and a telephone line. Search snippets of the page state that next-day release schedules are
   usually available by 6 p.m. local time, that lake-level data are unavailable 6-8 p.m. Eastern on the
