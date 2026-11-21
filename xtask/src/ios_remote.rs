@@ -102,7 +102,7 @@ const MIN_FREE_GIB: u64 = 15;
 const USAGE: &str = "\
 usage: cargo xtask ios remote <step> [--host user@mac] [--dir path] [--debug] [--dry-run]
                                [--iphone name] [--release] [--local] [--simulator name]
-                               [--unsigned]
+                               [--unsigned] [--build n]
        cargo xtask ios remote ui [--on iphone|ipad] [--only Class/test] [--host user@mac] [--dry-run]
        cargo xtask ios remote load-timing [--name label] [--runs n] [--wait seconds] -- launch-args…
        cargo xtask ios remote exec [--fetch path]… [--host user@mac] [--dir path] [--dry-run] -- command…
@@ -126,7 +126,9 @@ steps:
            target/ios-store-shots/<iphone|ipad>/; --simulator picks another iPhone
   archive  build, then a Release archive in the lane's directory on the Mac
            (.archive/Underbite.xcarchive), signed with the team of ios/remote.local.toml
-           (`team`) unless --unsigned. Nothing is exported or uploaded
+           (`team`) unless --unsigned. Nothing is exported or uploaded. The build number
+           (CFBundleVersion, shared by the app and its widget) is the UTC time, YYYYMMDD.HHMM;
+           --build n sets it (one to three period-separated integers)
   ui       build, then run the UI tests (UnderbiteUITests: the accessibility audits) on the
            iPhone and then the iPad simulator, each with its accessibility switched on first
            (else the runner can time out waiting for it); --on iphone|ipad tests on one,
@@ -221,6 +223,8 @@ struct Args {
     simulator: Option<String>,
     /// `archive`: do not sign.
     unsigned: bool,
+    /// `archive`: the build number; the UTC time when absent.
+    build: Option<String>,
     /// `ui`: the one simulator to test on (`iphone` or `ipad`), else both.
     on: Option<String>,
     /// `ui`: the one test class or test to run (`AccessibilityAuditTests/testConditions`).
@@ -268,6 +272,7 @@ fn parse(args: &[&str]) -> Result<Args, String> {
         all_lanes: false,
         simulator: None,
         unsigned: false,
+        build: None,
         on: None,
         only: None,
         fetch: Vec::new(),
@@ -286,6 +291,10 @@ fn parse(args: &[&str]) -> Result<Args, String> {
             "--local" => out.local = true,
             "--unsigned" => out.unsigned = true,
             "--all-lanes" => out.all_lanes = true,
+            "--build" => match iter.next() {
+                Some(number) => out.build = Some(build_number(number)?),
+                None => return Err(format!("--build needs a build number\n\n{USAGE}")),
+            },
             "--lane" => match iter.next() {
                 Some(name) => out.lane = Some((*name).to_owned()),
                 None => return Err(format!("--lane needs a lane name\n\n{USAGE}")),
@@ -351,6 +360,9 @@ fn check_flags(step: Step, out: &Args) -> Result<(), String> {
     }
     if step != Step::Archive && out.unsigned {
         return Err(format!("--unsigned belongs to archive\n\n{USAGE}"));
+    }
+    if step != Step::Archive && out.build.is_some() {
+        return Err(format!("--build belongs to archive\n\n{USAGE}"));
     }
     if step != Step::Ui && (out.on.is_some() || out.only.is_some()) {
         return Err(format!("--on and --only belong to ui\n\n{USAGE}"));
@@ -1323,11 +1335,65 @@ fn device(remote: &Remote, iphone: &str, release: bool) -> String {
     )
 }
 
+/// Where the app's version is set.
+const VERSION_FILE: &str = "ios/Underbite/Version.xcconfig";
+
+/// The most digits in one integer of a build number.
+const MAX_BUILD_DIGITS: usize = 9;
+
+/// A build number the App Store takes as `CFBundleVersion`: one to three integers (digits only)
+/// separated by periods, each of at most nine digits.
+fn build_number(text: &str) -> Result<String, String> {
+    let parts: Vec<&str> = text.split('.').collect();
+    let fine = parts.len() <= 3
+        && parts.iter().all(|p| {
+            !p.is_empty() && p.len() <= MAX_BUILD_DIGITS && p.bytes().all(|b| b.is_ascii_digit())
+        });
+    if fine {
+        Ok(text.to_owned())
+    } else {
+        Err(format!(
+            "--build needs one to three integers of digits separated by periods \
+             (like 20261121.0930), each up to {MAX_BUILD_DIGITS} digits, not `{text}`\n\n{USAGE}"
+        ))
+    }
+}
+
+/// The default build number: the UTC date and time, `YYYYMMDD.HHMM`. It rises with the clock, so
+/// every archive is higher than the one before.
+fn utc_build(now: std::time::SystemTime) -> String {
+    let secs = now
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs());
+    build_from_unix(secs)
+}
+
+fn build_from_unix(secs: u64) -> String {
+    let days = i64::try_from(secs / 86_400).unwrap_or(0);
+    let minutes = secs % 86_400 / 60;
+    // Civil date from days since 1970-01-01 (proleptic Gregorian).
+    let z = days + 719_468;
+    let era = z.div_euclid(146_097);
+    let doe = z.rem_euclid(146_097);
+    let yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let day = doy - (153 * mp + 2) / 5 + 1;
+    let month = if mp < 10 { mp + 3 } else { mp - 9 };
+    let year = yoe + era * 400 + i64::from(month <= 2);
+    format!(
+        "{year:04}{month:02}{day:02}.{:02}{:02}",
+        minutes / 60,
+        minutes % 60
+    )
+}
+
 /// On the Mac: a Release archive of the app (`.archive/Underbite.xcarchive`). Signed (with the
 /// team from the configuration, through automatic signing, like `device`) unless `unsigned`.
 /// Nothing is exported or uploaded: the archive stays in the lane's directory, and its size is
 /// printed.
-fn archive(remote: &Remote, unsigned: bool) -> String {
+fn archive(remote: &Remote, args: &Args) -> String {
+    let (unsigned, build) = (args.unsigned, args.build.as_deref().unwrap_or_default());
     let path = format!("{ARCHIVE_DIR}/{ARCHIVE_NAME}");
     let (prefix, signing) = if unsigned {
         (String::new(), "CODE_SIGNING_ALLOWED=NO")
@@ -1342,8 +1408,10 @@ fn archive(remote: &Remote, unsigned: bool) -> String {
         &format!(
             "{prefix}rm -rf {ARCHIVE_DIR}; xcodebuild -quiet -project {PROJECT} -scheme {SCHEME} \
              -configuration Release -destination generic/platform=iOS -derivedDataPath {DERIVED} \
-             -archivePath {path} {signing} archive || exit 1; \
-             du -sh {path}; echo \"archive: $PWD/{path} ({})\"",
+             -archivePath {path} CURRENT_PROJECT_VERSION={build} {signing} archive || exit 1; \
+             du -sh {path}; \
+             echo \"archive: $PWD/{path} ({}), version $(sed -n 's/^MARKETING_VERSION *= *//p' \
+             {VERSION_FILE}), build {build}\"",
             if unsigned { "unsigned" } else { "signed" }
         ),
     )
@@ -1594,7 +1662,7 @@ fn plan(args: &Args, remote: &Remote, stage: &str, list: &[Shot]) -> Plan {
         steps.push(ssh(app(remote, &remote.store)));
     }
     if args.step == Step::Archive {
-        let mut line = vec![remote.host.clone(), archive(remote, args.unsigned)];
+        let mut line = vec![remote.host.clone(), archive(remote, args)];
         if !args.unsigned && remote.keychain_password_command.is_none() {
             // A terminal, so the keychain can ask for the password.
             line.insert(0, "-t".into());
@@ -1735,7 +1803,10 @@ fn stage_on_host(release: bool) -> Result<PathBuf, String> {
 }
 
 pub(crate) fn run(args: &[&str]) -> Result<(), String> {
-    let args = parse(args)?;
+    let mut args = parse(args)?;
+    if args.step == Step::Archive && args.build.is_none() {
+        args.build = Some(utc_build(std::time::SystemTime::now()));
+    }
     let file = local_file()?;
     if args.dry_run {
         match &file.path {
@@ -1926,6 +1997,7 @@ mod tests {
             all_lanes: false,
             simulator: None,
             unsigned: false,
+            build: None,
             on: None,
             only: None,
             fetch: Vec::new(),
@@ -2010,6 +2082,11 @@ mod tests {
         let a = parse(&["archive", "--unsigned", "--dry-run"]).unwrap();
         assert!(a.step == Step::Archive && a.unsigned && a.dry_run);
         assert!(!parse(&["archive"]).unwrap().unsigned);
+        assert_eq!(parse(&["archive"]).unwrap().build, None);
+        let b = parse(&["archive", "--build", "7.2"]).unwrap();
+        assert_eq!(b.build.as_deref(), Some("7.2"));
+        assert!(parse(&["shots", "--build", "7"]).is_err());
+        assert!(parse(&["archive", "--build"]).is_err());
         assert!(parse(&["shots", "--unsigned"]).is_err());
         assert!(parse(&["store-shots", "--unsigned"]).is_err());
         // Nothing here exports or uploads.
@@ -2305,6 +2382,76 @@ mod tests {
         }
         // The signed archive may run in a lane: it installs nothing.
         assert_eq!(check_lane(Step::Archive, Some("lane-a")), Ok(()));
+    }
+
+    #[test]
+    fn the_default_build_number_is_the_utc_time() {
+        assert_eq!(build_from_unix(0), "19700101.0000");
+        assert_eq!(build_from_unix(1_763_717_400), "20251121.0930");
+        // A leap day, and the last minute of a year.
+        assert_eq!(build_from_unix(1_709_164_800 - 1), "20240228.2359");
+        assert_eq!(build_from_unix(1_709_164_800), "20240229.0000");
+        assert_eq!(build_from_unix(1_767_225_540), "20251231.2359");
+        // It rises with the clock, and Apple accepts its form.
+        let (a, b) = (
+            build_from_unix(1_763_717_400),
+            build_from_unix(1_763_717_460),
+        );
+        assert!(b > a);
+        assert_eq!(build_number(&a), Ok(a));
+    }
+
+    #[test]
+    fn a_build_number_is_one_to_three_integers() {
+        for good in ["1", "42", "20261121.0930", "1.2", "1.2.3", "000.1"] {
+            assert_eq!(build_number(good).as_deref(), Ok(good));
+        }
+        for bad in [
+            "",
+            ".",
+            "1.",
+            ".1",
+            "1..2",
+            "1.2.3.4",
+            "a",
+            "1a",
+            "-1",
+            "1.5b",
+            " 1",
+            "1 ",
+            "1,2",
+            "1234567890",
+            "+1",
+        ] {
+            assert!(build_number(bad).is_err(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn archive_sets_the_build_for_every_target() {
+        let r = Remote {
+            team: Some("ABCDE12345".into()),
+            ..lane_remote(Some("lane-a"))
+        };
+        let with = |build: Option<&str>, unsigned| Args {
+            unsigned,
+            build: build.map(str::to_owned),
+            ..args(Step::Archive)
+        };
+        for unsigned in [true, false] {
+            let p = plan(&with(Some("20261121.0930"), unsigned), &r, "s", &[]);
+            let line = last_line(&p);
+            assert!(
+                line.contains("CURRENT_PROJECT_VERSION=20261121.0930"),
+                "{line}"
+            );
+            assert!(line.contains("build 20261121.0930"), "{line}");
+            assert!(line.contains("MARKETING_VERSION"), "{line}");
+        }
+        // The override goes through to the command line.
+        let a = parse(&["archive", "--build", "5", "--dry-run"]).unwrap();
+        let p = plan(&a, &r, "s", &[]);
+        assert!(last_line(&p).contains("CURRENT_PROJECT_VERSION=5 "));
     }
 
     #[test]
