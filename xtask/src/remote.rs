@@ -7,8 +7,8 @@
 //! ignored by the copy, so its builds stay warm between runs. `--fetch` copies
 //! results (`target/release/…`) back to the same path here.
 //!
-//! The hosts cannot reach the git server the workspace's git dependency comes
-//! from, so every sync also ships the vendored dependencies ([`crate::vendor`])
+//! The hosts build offline from vendored sources, including the workspace's
+//! git dependency, so every sync also ships the vendored dependencies ([`crate::vendor`])
 //! to `<dir>/vendor` and writes a Cargo config for the host at
 //! `<dir>/.cargo/config.toml` that builds from them offline. That config replaces
 //! the repository's own, which is never copied.
@@ -66,7 +66,7 @@ A linked git worktree is a lane: its directory on the host is `<dir>-<lane>`
 --fetch copies a path (relative to the workspace) back here after the step,
 whether or not it succeeded; repeat it for more paths.
 The host is --host, else UNDERBITE_BUILD_HOST, else `host` in remote.local.toml, else
-the first of its `hosts = [\"a\", \"b\"]` that answers. Never build on robot.local.";
+the first of its `hosts = [\"a\", \"b\"]` that answers.";
 
 /// What to do.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -991,14 +991,17 @@ mod tests {
     fn doctor_looks_at_every_listed_host_unless_one_is_named() {
         let none = |_: &str| None;
         let file = LocalFile {
-            hosts: vec!["nas".into(), "nv".into()],
+            hosts: vec!["host-a".into(), "host-b".into()],
             ..LocalFile::default()
         };
         let bare = Args {
             host: None,
             ..args(Step::Doctor)
         };
-        assert_eq!(doctor_hosts(&bare, &none, &file).unwrap(), ["nas", "nv"]);
+        assert_eq!(
+            doctor_hosts(&bare, &none, &file).unwrap(),
+            ["host-a", "host-b"]
+        );
         assert_eq!(
             doctor_hosts(&args(Step::Doctor), &none, &file).unwrap(),
             ["me@box"]
@@ -1012,7 +1015,7 @@ mod tests {
     fn doctor_skips_unreachable_hosts_and_fails_only_when_none_answers() {
         let none = |_: &str| None;
         let file = LocalFile {
-            hosts: vec!["nas".into(), "nv".into()],
+            hosts: vec!["host-a".into(), "host-b".into()],
             ..LocalFile::default()
         };
         let bare = Args {

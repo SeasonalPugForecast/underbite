@@ -1,7 +1,7 @@
 //! Vendored dependencies for the build hosts.
 //!
-//! The hosts have no access to the git server the workspace's git dependency
-//! lives on, so `cargo xtask remote sync` runs `cargo vendor` here, ships the
+//! The hosts build offline from vendored sources, including the workspace's
+//! git dependency, so `cargo xtask remote sync` runs `cargo vendor` here, ships the
 //! result with the working tree and writes a Cargo config on the host that
 //! replaces crates.io and the git source with that directory. The vendored
 //! sources are rebuilt only when `Cargo.lock` changes: a stamp file next to them

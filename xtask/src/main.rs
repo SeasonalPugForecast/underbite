@@ -20,8 +20,8 @@ commands:
                       install a git pre-push hook that runs `cargo xtask remote ci --or-local`
   remote doctor|sync|ci|run [--host user@host] [--fetch path]… [-- command…]
                       build on a faster Linux machine over SSH (hosts: remote.local.toml);
-                      dependencies are vendored here and shipped, so the host needs no
-                      access to the git server
+                      dependencies are vendored here and shipped, so the host builds
+                      offline from vendored sources
   remote clean --lane <name> | --all-lanes
                       delete a lane's directory on the build host
                       (a linked git worktree is a lane with its own directories)
