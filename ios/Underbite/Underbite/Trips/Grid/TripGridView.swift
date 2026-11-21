@@ -262,7 +262,7 @@ private struct PlaceDayButton: View {
                             lineWidth: 2)
                 }
             }
-            .opacity(placeDay.isPast ? 0.6 : 1)
+            .greyed(placeDay.isPast)
             .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -305,16 +305,19 @@ private struct TripDayCards: View {
 
 // MARK: - A place's day
 
-/// The cells of one place on one day, two side by side (one at the accessibility sizes), each
+/// The cells of one place on one day, two side by side (one at the accessibility sizes, and in a column too narrow for two), each
 /// with its label, its value and what it rests on. The verdict is a symbol and a colour as well
 /// as its word; a storm's reasons are shown whole.
 struct PlaceDayCells: View {
     let placeDay: ViewModel.TripPlaceDay
     @Environment(\.dynamicTypeSize) private var typeSize
+    /// The width the cells have, measured once laid out (0 until then).
+    @State private var width: CGFloat = 0
 
     var body: some View {
         let cells = placeDay.cells
-        let columns = typeSize.isAccessibilitySize ? 1 : 2
+        let columns = TripGridLayout.cellColumns(
+            accessibilitySize: typeSize.isAccessibilitySize, width: Double(width))
         let rows = TripGridLayout.rows(cells.map(\.kind), columns: columns)
         VStack(alignment: .leading, spacing: 10) {
             if placeDay.storm {
@@ -332,6 +335,7 @@ struct PlaceDayCells: View {
                 }
             }
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
     }
 }
 

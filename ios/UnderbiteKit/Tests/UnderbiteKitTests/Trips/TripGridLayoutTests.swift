@@ -66,6 +66,16 @@ final class TripGridLayoutTests: XCTestCase {
             ["706 cfs"])
     }
 
+    func testANarrowColumnShowsOneCellPerRow() {
+        let narrow = TripGridLayout.cellColumns(accessibilitySize: false, width: 146)
+        XCTAssertEqual(narrow, 1, "an iPad place column")
+        XCTAssertEqual(TripGridLayout.cellColumns(accessibilitySize: false, width: 315), 1)
+        XCTAssertEqual(TripGridLayout.cellColumns(accessibilitySize: false, width: 316), 2)
+        XCTAssertEqual(TripGridLayout.cellColumns(accessibilitySize: false, width: 700), 2)
+        XCTAssertEqual(TripGridLayout.cellColumns(accessibilitySize: false, width: 0), 2, "not measured yet")
+        XCTAssertEqual(TripGridLayout.cellColumns(accessibilitySize: true, width: 700), 1)
+    }
+
     func testAVerdictCellDoesNotRepeatTheReasonsListedUnderIt() {
         XCTAssertEqual(
             TripGridLayout.linesWithoutReasons(["a reason", "other line"], reasons: ["a reason", "b"]),

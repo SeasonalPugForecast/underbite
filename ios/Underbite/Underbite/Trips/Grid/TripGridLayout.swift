@@ -26,6 +26,18 @@ nonisolated enum TripGridLayout {
         return needed <= width ? .grid : .stacked
     }
 
+    /// The narrowest width of a place's cells, in points, that still pairs two cells side by
+    /// side: about 340 pt for the tile, less its 24 pt of padding. A narrower column (a
+    /// place column on an iPad, a small phone) shows one cell per row.
+    static let minimumPairWidth: Double = 316
+
+    /// How many cells a row holds in a column `width` points wide (0 while it is not measured
+    /// yet, which keeps the pair). The accessibility sizes always show one.
+    static func cellColumns(accessibilitySize: Bool, width: Double) -> Int {
+        if accessibilitySize { return 1 }
+        return width > 0 && width < minimumPairWidth ? 1 : 2
+    }
+
     /// The kinds whose value is long or comes as several lines (every high and low, every
     /// solunar period): they take a row of their own.
     static let wideKinds: Set<String> = ["tides", "solunar"]
