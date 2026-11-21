@@ -269,9 +269,11 @@ struct CatchEditorView: View {
                         } label: {
                             Text(line.label)
                         }
-                        Text(line.footnote)
-                            .font(.caption)
-                            .foregroundStyle(.readableSecondary)
+                        if !line.footnote.isEmpty {
+                            Text(line.footnote)
+                                .font(.caption)
+                                .foregroundStyle(.readableSecondary)
+                        }
                     }
                     .accessibilityElement(children: .combine)
                 }
