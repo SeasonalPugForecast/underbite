@@ -356,18 +356,25 @@ pub fn catch_list(
     CatchList { rows, empty }
 }
 
-fn footnote(ef: &Formatter, source: &SourceId, station_name: Option<&str>, age_s: i64) -> String {
+/// Where a reading came from, and how far it was from the catch: "NOAA CO-OPS · The Battery"
+/// and "6 min before the catch".
+fn footnote_parts(
+    ef: &Formatter,
+    source: &SourceId,
+    station_name: Option<&str>,
+    age_s: i64,
+) -> (String, String) {
     let s = ef.strings;
-    let mut parts = vec![s.source_name(source)];
-    parts.extend(station_name.map(str::to_owned));
-    parts.push(if age_s.abs() < 60 {
+    let mut head = vec![s.source_name(source)];
+    head.extend(station_name.map(str::to_owned));
+    let age = if age_s.abs() < 60 {
         s.get(Key::LogAgeNow).to_owned()
     } else if age_s > 0 {
         s.fmt(Key::LogAgeBefore, &[("age", &ef.duration(age_s))])
     } else {
         s.fmt(Key::LogAgeAfter, &[("age", &ef.duration(-age_s))])
-    });
-    parts.join(" · ")
+    };
+    (head.join(" · "), age)
 }
 
 fn hours_text(s: Strings, hours: f32) -> String {
@@ -421,17 +428,27 @@ fn condition_lines(c: &CatchConditions, entry: &CatchEntry, f: &Formatter) -> Ve
     let s = ef.strings;
     let date = local_date(c.at, &zone_of(&entry.time_zone)).ok();
     let mut out = Vec::new();
+    // The source and station are stated once, on the first of a run of readings from the same
+    // station; the later ones keep only what differs, and say nothing when it is the same.
+    let mut previous: Option<(String, String)> = None;
     let mut push_sourced = |kind: ConditionKind,
                             label: &str,
                             value: String,
                             src: &SourceId,
                             station: Option<&str>,
                             age_s: i64| {
+        let (head, age) = footnote_parts(&ef, src, station, age_s);
+        let footnote = match &previous {
+            Some((last_head, last_age)) if *last_head == head && *last_age == age => String::new(),
+            Some((last_head, _)) if *last_head == head => age.clone(),
+            _ => format!("{head} · {age}"),
+        };
+        previous = Some((head, age));
         out.push(ConditionLine {
             kind,
             label: label.to_owned(),
             value,
-            footnote: footnote(&ef, src, station, age_s),
+            footnote,
         });
     };
 
@@ -608,6 +625,7 @@ fn condition_lines(c: &CatchConditions, entry: &CatchEntry, f: &Formatter) -> Ve
             footnote: computed.to_owned(),
         });
     }
+    let said_computed = c.moon.is_some();
     if let Some(p) = &c.solunar {
         let label = s.get(match p.kind {
             SolunarKind::Major => Key::LogSolunarMajor,
@@ -620,7 +638,11 @@ fn condition_lines(c: &CatchConditions, entry: &CatchEntry, f: &Formatter) -> Ve
                 Key::LogSolunarPeriod,
                 &[("label", label), ("range", &ef.clock_range(p.start, p.end))],
             ),
-            footnote: computed.to_owned(),
+            footnote: if said_computed {
+                String::new()
+            } else {
+                computed.to_owned()
+            },
         });
     }
     if let Some(l) = c.light {
@@ -628,7 +650,11 @@ fn condition_lines(c: &CatchConditions, entry: &CatchEntry, f: &Formatter) -> Ve
             kind: ConditionKind::Light,
             label: s.get(Key::LogLabelLight).to_owned(),
             value: light_word(s, l).to_owned(),
-            footnote: computed.to_owned(),
+            footnote: if c.moon.is_some() || c.solunar.is_some() {
+                String::new()
+            } else {
+                computed.to_owned()
+            },
         });
     }
     out
@@ -1496,6 +1522,32 @@ pub(in crate::view) mod tests {
 
     fn all_text(value: &impl Serialize) -> String {
         serde_json::to_string_pretty(value).unwrap()
+    }
+
+    #[test]
+    fn a_source_is_stated_once_for_a_run_of_readings_from_one_station() {
+        let d = catch_detail(
+            &full_entry(),
+            &formatter(us(), Voice::Plain),
+            &catalogue(),
+            &places(),
+        );
+        let notes: Vec<&str> = d.conditions.iter().map(|c| c.footnote.as_str()).collect();
+        let first = notes
+            .iter()
+            .position(|n| n.starts_with("NOAA CO-OPS · The Battery"))
+            .unwrap();
+        // The same station again, at the same moment: nothing more to say.
+        assert_eq!(d.conditions[first + 1].kind, ConditionKind::TideHeight);
+        assert_eq!(notes[first + 1], "");
+        // Each source and station is named at most once in a row of the same ones.
+        for pair in d.conditions.windows(2) {
+            let (a, b) = (&pair[0].footnote, &pair[1].footnote);
+            assert!(a.is_empty() || b.is_empty() || a != b, "{a} / {b}");
+        }
+        // The computed lines say so once.
+        let computed = notes.iter().filter(|n| **n == "Computed on this device");
+        assert_eq!(computed.count(), 1);
     }
 
     #[test]

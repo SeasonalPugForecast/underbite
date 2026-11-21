@@ -43,7 +43,7 @@ expression: "all_text(&catch_detail(&e, &formatter(metric(), Voice::Plain), &c, 
       "kind": "tide_height",
       "label": "Tide height",
       "value": "0.9 m MLLW",
-      "footnote": "NOAA CO-OPS · The Battery · 4 min before the catch"
+      "footnote": ""
     },
     {
       "kind": "current",
@@ -85,7 +85,7 @@ expression: "all_text(&catch_detail(&e, &formatter(metric(), Voice::Plain), &c, 
       "kind": "pressure_trend",
       "label": "Pressure trend",
       "value": "Falling",
-      "footnote": "NOAA CO-OPS · The Battery · 6 min before the catch"
+      "footnote": ""
     },
     {
       "kind": "wind",
@@ -97,7 +97,7 @@ expression: "all_text(&catch_detail(&e, &formatter(metric(), Voice::Plain), &c, 
       "kind": "air_temperature",
       "label": "Air temperature",
       "value": "9.0 °C",
-      "footnote": "NOAA CO-OPS · 2 h before the catch"
+      "footnote": ""
     },
     {
       "kind": "moon",
@@ -109,13 +109,13 @@ expression: "all_text(&catch_detail(&e, &formatter(metric(), Voice::Plain), &c, 
       "kind": "solunar",
       "label": "Solunar",
       "value": "Major period, 5:40 to 7:40 AM",
-      "footnote": "Computed on this device"
+      "footnote": ""
     },
     {
       "kind": "light",
       "label": "Light",
       "value": "Dawn",
-      "footnote": "Computed on this device"
+      "footnote": ""
     }
   ],
   "no_conditions": null
