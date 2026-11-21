@@ -1145,9 +1145,9 @@ mod tests {
         assert_eq!(t.provenance.source, SourceId::DFO_IWLS);
         assert_eq!(t.provenance.observed_at, NOW);
         assert!(t.events.len() > 4);
-        assert_eq!(t.events[0].time, UnixTime(DAY0 + 6 * 3_600 + 30 * 60));
+        assert_eq!(t.events[0].time, UnixTime(DAY0 + 5 * 3_600 + 45 * 60));
         assert_eq!(t.events[0].kind, TideKind::Low);
-        assert_eq!(t.events[0].height_m, Some(1.02));
+        assert_eq!(t.events[0].height_m, Some(1.28));
         assert_eq!(t.events[1].kind, TideKind::High);
         for pair in t.events.windows(2) {
             assert_ne!(pair[0].kind, pair[1].kind);
@@ -1205,8 +1205,8 @@ mod tests {
         let observed = t.observed.as_ref().expect("observed");
         assert_eq!(observed.samples().len(), 5);
         assert_eq!(observed.provenance().kind, ValueKind::Observed);
-        let nine = parse_rfc3339("2026-11-17T09:00:00Z").expect("time");
-        assert_eq!(observed.provenance().observed_at, nine);
+        let eleven = parse_rfc3339("2026-11-17T11:00:00Z").expect("time");
+        assert_eq!(observed.provenance().observed_at, eleven);
         assert!(t.curve.is_none());
         assert_eq!(t.events.len(), 0);
     }
