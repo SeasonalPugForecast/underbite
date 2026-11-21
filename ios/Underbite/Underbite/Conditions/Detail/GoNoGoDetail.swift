@@ -57,9 +57,12 @@ struct GoNoGoDetail: View {
 /// the label, the verdict's word through the symbol and the leading reason.
 private struct HoursStrip: View {
     let hours: [ViewModel.GoNoGoHourVm]
+    /// Which sides have more hours out of view; the strip fades on those sides and shows its
+    /// scroll indicator, so it reads as something to swipe.
+    @State private var more = HoursOutOfView(before: false, after: true)
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        ScrollView(.horizontal) {
             HStack(alignment: .top, spacing: 12) {
                 ForEach(hours, id: \.startT) { hour in
                     VStack(spacing: 2) {
@@ -77,5 +80,35 @@ private struct HoursStrip: View {
             }
             .padding(.vertical, 4)
         }
+        .scrollIndicators(.visible)
+        .onScrollGeometryChange(for: HoursOutOfView.self) { geometry in
+            HoursOutOfView(
+                before: geometry.contentOffset.x > 1,
+                after: geometry.contentOffset.x + geometry.containerSize.width
+                    < geometry.contentSize.width - 1)
+        } action: { _, new in
+            more = new
+        }
+        .mask {
+            HStack(spacing: 0) {
+                LinearGradient(
+                    colors: [more.before ? .clear : .black, .black],
+                    startPoint: .leading, endPoint: .trailing
+                )
+                .frame(width: 28)
+                Rectangle()
+                LinearGradient(
+                    colors: [.black, more.after ? .clear : .black],
+                    startPoint: .leading, endPoint: .trailing
+                )
+                .frame(width: 28)
+            }
+        }
     }
+}
+
+/// Whether hours of the strip lie out of view before and after the part shown.
+private struct HoursOutOfView: Equatable {
+    var before: Bool
+    var after: Bool
 }
