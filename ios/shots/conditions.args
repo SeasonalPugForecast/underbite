@@ -1,2 +1,3 @@
 -seed -tab spots -open-spot seed-battery
 dark
+wait 30
