@@ -41,7 +41,9 @@ struct CardDetailView: View {
         if !blocks.isEmpty {
             Section {
                 ForEach(blocks) { block in
-                    ChartBlock(chart: block.chart, valueBand: block.band, notes: block.notes)
+                    ChartBlock(
+                        chart: block.chart, valueBand: block.band, notes: block.notes,
+                        facts: block.facts)
                 }
             }
         }
@@ -254,7 +256,11 @@ struct CardDetailView: View {
     private func forecastRows(_ full: ViewModel.MarineForecastFull) -> some View {
         Section {
             Text(full.zoneName).font(.headline)
-            Text(verbatim: "\(full.product) · \(full.issued)").foregroundStyle(.readableSecondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(full.product)
+                Text(full.issued)
+            }
+            .foregroundStyle(.readableSecondary)
             ForEach(Array(full.periods.enumerated()), id: \.offset) { _, period in
                 VStack(alignment: .leading, spacing: 2) {
                     Text(period.name).font(.subheadline.weight(.semibold))
@@ -297,7 +303,11 @@ struct CardDetailView: View {
                 if let description = alert.description { Text(description) }
                 if let instruction = alert.instruction { Text(instruction) }
                 if !alert.zones.isEmpty {
-                    Text(alert.zones.joined(separator: ", ")).font(.caption).foregroundStyle(.readableSecondary)
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(alert.zones, id: \.self) { Text($0) }
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.readableSecondary)
                 }
             }
         }
@@ -308,9 +318,13 @@ struct CardDetailView: View {
             ForEach(Array(full.stations.enumerated()), id: \.offset) { _, use in
                 VStack(alignment: .leading, spacing: 2) {
                     LabeledContent(use.measurement, value: use.station)
-                    Text([use.distance, use.age, use.relation].compactMap { $0 }.joined(separator: " · "))
-                        .font(.caption)
-                        .foregroundStyle(.readableSecondary)
+                    VStack(alignment: .leading, spacing: 0) {
+                        if let distance = use.distance { Text(distance) }
+                        if !use.age.isEmpty { Text(use.age) }
+                        if !use.relation.isEmpty { Text(use.relation) }
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.readableSecondary)
                     StateReason(state: use.state)
                 }
                 .greyed(CardStyle.isGreyed(use.state))

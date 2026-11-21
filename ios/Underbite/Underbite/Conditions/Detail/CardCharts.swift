@@ -6,6 +6,8 @@ struct CardChartBlock: Identifiable {
     var chart: ViewModel.Chart
     var band: ChartValueBand?
     var notes: [String] = []
+    /// Labelled values under the chart (the moon's illumination, the percentile thresholds).
+    var facts: [ChartFact] = []
 }
 
 /// Which charts each card carries, and the words that sit under them. Only the view model's text
@@ -30,10 +32,10 @@ enum CardCharts {
         }
     }
 
-    private static func single(_ id: String, _ chart: ViewModel.Chart?, notes: [String] = [])
-        -> [CardChartBlock]
-    {
-        chart.map { [CardChartBlock(id: id, chart: $0, notes: notes)] } ?? []
+    private static func single(
+        _ id: String, _ chart: ViewModel.Chart?, notes: [String] = [], facts: [ChartFact] = []
+    ) -> [CardChartBlock] {
+        chart.map { [CardChartBlock(id: id, chart: $0, notes: notes, facts: facts)] } ?? []
     }
 
     /// Heights show their datum ("above MLLW"); a modelled curve has no heights and no datum, and
@@ -41,10 +43,11 @@ enum CardCharts {
     private static func tide(_ full: ViewModel.TideFull) -> [CardChartBlock] {
         var notes: [String] = []
         if full.heightsShown, let datum = full.datumLabel { notes.append(datum) }
+        var facts: [ChartFact] = []
         if let moon = full.days.compactMap(\.moon).first {
-            notes.append("\(moon.label) \(moon.illumination.text)\(moon.illumination.unit)")
+            facts.append(ChartFact(label: moon.label, value: moon.illumination))
         }
-        return single("tide", full.chart, notes: notes)
+        return single("tide", full.chart, notes: notes, facts: facts)
     }
 
     /// The percentile band for the date goes on the chart whose unit it is in (discharge, or the
@@ -58,7 +61,8 @@ enum CardCharts {
                 return CardChartBlock(id: id, chart: chart)
             }
             return CardChartBlock(
-                id: id, chart: chart, band: band, notes: thresholds(percentile))
+                id: id, chart: chart, band: band, notes: [percentile.basis, percentile.sample],
+                facts: thresholds(percentile))
         }
         return [("flow", full.chart), ("stage", full.stageChart)].compactMap { id, chart in
             chart.map { block(id, $0) }
@@ -86,14 +90,8 @@ enum CardCharts {
         return ChartValueBand(low: lowValue, high: highValue, label: label, thresholds: all)
     }
 
-    /// "5th percentile 0.6 cfs · 50th percentile 15.0 cfs · …", then where the numbers come from.
-    private static func thresholds(_ percentile: ViewModel.Percentile) -> [String] {
-        let list = percentile.thresholds
-            .map { "\($0.label) \($0.value.text) \($0.value.unit)" }
-            .joined(separator: " · ")
-        var lines: [String] = []
-        if !list.isEmpty { lines.append(list) }
-        lines.append("\(percentile.basis) · \(percentile.sample)")
-        return lines
+    /// One row per threshold ("5th percentile", "0.6 cfs"), in the view's order.
+    private static func thresholds(_ percentile: ViewModel.Percentile) -> [ChartFact] {
+        percentile.thresholds.map { ChartFact(label: $0.label, value: $0.value) }
     }
 }

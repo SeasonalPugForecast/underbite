@@ -337,6 +337,8 @@ struct ChartBlock: View {
     var valueBand: ChartValueBand?
     /// Further lines of words under the key (the datum, the percentile thresholds).
     var notes: [String] = []
+    /// Labelled values under the key, one row each (the moon's illumination, the thresholds).
+    var facts: [ChartFact] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -348,16 +350,24 @@ struct ChartBlock: View {
             }
             .accessibilityHidden(true)
             ChartPlot(chart: chart, valueBand: valueBand)
-            ChartKey(chart: chart, valueBand: valueBand, notes: notes)
+            ChartKey(chart: chart, valueBand: valueBand, notes: notes, facts: facts)
         }
         .padding(.vertical, 4)
     }
+}
+
+/// A label and its value, as the view model gives them: shown as a row, the value and its unit
+/// in separate texts.
+struct ChartFact: Hashable {
+    var label: String
+    var value: ViewModel.Quantity
 }
 
 struct ChartKey: View {
     let chart: ViewModel.Chart
     var valueBand: ChartValueBand?
     var notes: [String] = []
+    var facts: [ChartFact] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -394,6 +404,19 @@ struct ChartKey: View {
                 }
             }
             if !timesLine.isEmpty { Text(timesLine) }
+            if !facts.isEmpty {
+                Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 12, verticalSpacing: 2) {
+                    ForEach(Array(facts.enumerated()), id: \.offset) { _, fact in
+                        GridRow {
+                            Text(fact.label)
+                            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                Text(fact.value.text)
+                                if !fact.value.unit.isEmpty { Text(fact.value.unit) }
+                            }
+                        }
+                    }
+                }
+            }
             ForEach(Array(notes.enumerated()), id: \.offset) { _, note in Text(note) }
         }
         .font(.caption)
