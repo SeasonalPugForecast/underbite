@@ -145,26 +145,35 @@ struct ConditionsView: View {
                 }
                 .buttonStyle(.plain)
             }
+            // On a phone the first card (the Now card by default) comes before the timeline, so
+            // the current values are on the first screen; a wide screen keeps the timeline on top.
+            let entries = LoadedPage.entries(in: view)
+            let leading = sizeClass == .regular || view.timeline == nil ? [] : Array(entries.prefix(1))
+            ForEach(leading) { entry in cardLink(entry, choices: loaded.choices) }
             if let timeline = view.timeline {
                 DayTimelineView(
                     timeline: timeline,
                     shownCards: Set(view.cards.compactMap { $0.chrome?.id }))
             }
             LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(LoadedPage.entries(in: view)) { entry in
-                    NavigationLink(value: entry.card) {
-                        CardView(card: entry.card)
-                    }
-                    .buttonStyle(.plain)
-                    .contextMenu {
-                        if preview == nil { menu(for: entry, choices: loaded.choices) }
-                    }
+                ForEach(entries.dropFirst(leading.count)) { entry in
+                    cardLink(entry, choices: loaded.choices)
                 }
             }
         }
         .padding()
         .frame(maxWidth: 1180)
         .frame(maxWidth: .infinity)
+    }
+
+    private func cardLink(_ entry: CardEntry, choices: CardChoices?) -> some View {
+        NavigationLink(value: entry.card) {
+            CardView(card: entry.card)
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            if preview == nil { menu(for: entry, choices: choices) }
+        }
     }
 
     /// Touch and hold: hide the card, switch any card on or off, or open Customize.
@@ -313,6 +322,9 @@ private struct PageHeader: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        // The header is a line of context: at accessibility sizes it stops growing so the
+        // cards stay in reach of the first screen.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
     }
 }
 
