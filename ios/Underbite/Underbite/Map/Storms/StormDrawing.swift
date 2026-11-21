@@ -74,6 +74,9 @@ nonisolated struct StormDrawing: Equatable, Sendable {
         var kind: MarkKind
         var text: String
         var colour: Colour
+        /// Which label survives when two overlap: lower first (the hurricane and the consensus or
+        /// official low, then the day marks, then the other lows).
+        var rank = 2
     }
 
     var shapes: [Shape] = []
@@ -127,7 +130,7 @@ nonisolated struct StormDrawing: Equatable, Sendable {
                 out.marks.append(
                     Mark(
                         at: Point(MKMapPoint(at: point.latitude, point.longitude)), kind: .day,
-                        text: point.label, colour: Colour(h.trackColour)))
+                        text: point.label, colour: Colour(h.trackColour), rank: 1))
             }
         }
         if layer.steps.indices.contains(step) {
@@ -140,14 +143,15 @@ nonisolated struct StormDrawing: Equatable, Sendable {
                     Mark(
                         at: Point(MKMapPoint(at: point.latitude, point.longitude)),
                         kind: .low(storm: track.isStorm, right: slot.right, up: slot.up),
-                        text: point.label, colour: Colour(track.colour)))
+                        text: point.label, colour: Colour(track.colour),
+                        rank: track.role == "consensus" || track.role == "official" ? 0 : 2))
             }
         }
         for h in layer.hurricanes {
             out.marks.append(
                 Mark(
                     at: Point(MKMapPoint(at: h.latitude, h.longitude)), kind: .hurricane,
-                    text: h.title, colour: Colour(h.colour)))
+                    text: h.title, colour: Colour(h.colour), rank: 0))
         }
         return out
     }

@@ -46,7 +46,8 @@ nonisolated final class StormRenderer: MKOverlayRenderer {
         let margin = Self.markMargin * perPoint
         UIGraphicsPushContext(context)
         defer { UIGraphicsPopContext() }
-        for mark in drawing.marks {
+        let kept = StormMarkDrawing.keptLabels(drawing.marks, perPoint: perPoint)
+        for (index, mark) in drawing.marks.enumerated() {
             for shift in [-world, 0, world] {
                 let at = MKMapPoint(x: mark.at.x + shift, y: mark.at.y)
                 guard mapRect.insetBy(dx: -margin, dy: -margin).contains(at) else { continue }
@@ -55,7 +56,7 @@ nonisolated final class StormRenderer: MKOverlayRenderer {
                 // From here on, one unit is one point on screen, centred on the mark.
                 context.translateBy(x: p.x, y: p.y)
                 context.scaleBy(x: CGFloat(perPoint), y: CGFloat(perPoint))
-                StormMarkDrawing.draw(mark, in: context)
+                StormMarkDrawing.draw(mark, labelled: kept[index], in: context)
                 context.restoreGState()
             }
         }
@@ -175,31 +176,61 @@ nonisolated enum StormMarkDrawing {
         context.strokeEllipse(in: rect)
     }
 
-    static func draw(_ mark: StormDrawing.Mark, in context: CGContext) {
-        let colour = UIColor(mark.colour)
+    /// Where a mark's label plate lies, in points from the mark's own point.
+    static func labelRect(_ mark: StormDrawing.Mark) -> CGRect {
         switch mark.kind {
         case .low(let storm, let right, let up):
             let radius: CGFloat = storm ? 7 : 5
-            dot(radius: radius, colour: colour, edge: .white, in: context)
-            let font = labelFont(12)
-            let size = plateSize(mark.text, font: font)
+            let size = plateSize(mark.text, font: labelFont(12))
             let gap: CGFloat = 4
             let x = right ? radius + gap : -radius - gap - size.width
             let y = up ? -size.height - 1 : 1
-            plate(mark.text, colour: colour, font: font, origin: CGPoint(x: x, y: y), in: context)
+            return CGRect(origin: CGPoint(x: x, y: y), size: size)
+        case .day:
+            return CGRect(
+                origin: CGPoint(x: 7, y: 2), size: plateSize(mark.text, font: labelFont(11)))
+        case .hurricane:
+            return CGRect(
+                origin: CGPoint(x: CGFloat(StormMapRules.symbolSize) / 2 + 4, y: 2),
+                size: plateSize(mark.text, font: labelFont(13)))
+        }
+    }
+
+    /// The marks' labels to draw at `perPoint` map points per screen point: those that do not
+    /// overlap a label of a higher rank (see ``StormMapRules/keptLabels(_:ranks:gap:)``).
+    static func keptLabels(_ marks: [StormDrawing.Mark], perPoint: Double) -> [Bool] {
+        let rects = marks.map { mark -> CGRect in
+            labelRect(mark).offsetBy(
+                dx: CGFloat(mark.at.x / perPoint), dy: CGFloat(mark.at.y / perPoint))
+        }
+        return StormMapRules.keptLabels(rects, ranks: marks.map(\.rank))
+    }
+
+    /// Draws a mark; its label only when `labelled`.
+    static func draw(_ mark: StormDrawing.Mark, labelled: Bool = true, in context: CGContext) {
+        let colour = UIColor(mark.colour)
+        let rect = labelRect(mark)
+        switch mark.kind {
+        case .low(let storm, _, _):
+            dot(radius: storm ? 7 : 5, colour: colour, edge: .white, in: context)
+            if labelled {
+                plate(
+                    mark.text, colour: colour, font: labelFont(12), origin: rect.origin, in: context)
+            }
         case .day:
             dot(radius: 4, colour: colour, edge: .white, in: context)
-            plate(
-                mark.text, colour: colour, font: labelFont(11), origin: CGPoint(x: 7, y: 2),
-                in: context)
+            if labelled {
+                plate(
+                    mark.text, colour: colour, font: labelFont(11), origin: rect.origin, in: context)
+            }
         case .hurricane:
             let side = CGFloat(StormMapRules.symbolSize)
-            let rect = CGRect(x: -side / 2, y: -side / 2, width: side, height: side)
+            let ring = CGRect(x: -side / 2, y: -side / 2, width: side, height: side)
             context.setFillColor(UIColor.white.withAlphaComponent(0.95).cgColor)
-            context.fillEllipse(in: rect)
+            context.fillEllipse(in: ring)
             context.setStrokeColor(colour.cgColor)
             context.setLineWidth(2.5)
-            context.strokeEllipse(in: rect)
+            context.strokeEllipse(in: ring)
             let configuration = UIImage.SymbolConfiguration(pointSize: side * 0.55, weight: .bold)
             if let symbol = UIImage(systemName: "hurricane", withConfiguration: configuration)?
                 .withTintColor(colour, renderingMode: .alwaysOriginal)
@@ -210,9 +241,10 @@ nonisolated enum StormMarkDrawing {
                         x: -size.width / 2, y: -size.height / 2, width: size.width,
                         height: size.height))
             }
-            plate(
-                mark.text, colour: colour, font: labelFont(13),
-                origin: CGPoint(x: side / 2 + 4, y: 2), in: context)
+            if labelled {
+                plate(
+                    mark.text, colour: colour, font: labelFont(13), origin: rect.origin, in: context)
+            }
         }
     }
 }

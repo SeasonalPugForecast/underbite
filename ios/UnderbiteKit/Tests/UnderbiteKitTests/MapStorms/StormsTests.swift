@@ -168,6 +168,53 @@ final class StormsTests: XCTestCase {
         XCTAssertEqual(StormMapRules.continuous([179, -179, -170]), [179, 181, 190])
     }
 
+    func testALabelOverlappingOneAlreadyPlacedIsLeftOut() {
+        let a = CGRect(x: 0, y: 0, width: 80, height: 18)
+        let b = CGRect(x: 60, y: 4, width: 80, height: 18)
+        let c = CGRect(x: 200, y: 0, width: 80, height: 18)
+        XCTAssertEqual(StormMapRules.keptLabels([a, b, c], ranks: [2, 2, 2]), [true, false, true])
+    }
+
+    func testTheHigherRankKeepsItsLabelWhateverTheOrder() {
+        let other = CGRect(x: 0, y: 0, width: 80, height: 18)
+        let consensus = CGRect(x: 40, y: 0, width: 80, height: 18)
+        XCTAssertEqual(
+            StormMapRules.keptLabels([other, consensus], ranks: [2, 0]), [false, true])
+    }
+
+    func testLabelsOfEqualRankKeepTheOrderGiven() {
+        let a = CGRect(x: 0, y: 0, width: 50, height: 18)
+        let b = CGRect(x: 10, y: 0, width: 50, height: 18)
+        let c = CGRect(x: 20, y: 0, width: 50, height: 18)
+        XCTAssertEqual(StormMapRules.keptLabels([a, b, c], ranks: [1, 1, 1]), [true, false, false])
+        // A dropped label does not hide the ones beyond it.
+        let d = CGRect(x: 100, y: 0, width: 50, height: 18)
+        XCTAssertEqual(StormMapRules.keptLabels([a, b, d], ranks: [1, 1, 1]), [true, false, true])
+    }
+
+    func testLabelsThatOnlyTouchAreBothKeptNoCloserThanTheGap() {
+        let a = CGRect(x: 0, y: 0, width: 50, height: 18)
+        let apart = CGRect(x: 53, y: 0, width: 50, height: 18)
+        let near = CGRect(x: 51, y: 0, width: 50, height: 18)
+        XCTAssertEqual(StormMapRules.keptLabels([a, apart], ranks: [1, 1]), [true, true])
+        XCTAssertEqual(StormMapRules.keptLabels([a, near], ranks: [1, 1]), [true, false])
+    }
+
+    func testNoLabelsAndMissingRanksAreHandled() {
+        XCTAssertEqual(StormMapRules.keptLabels([], ranks: []), [])
+        XCTAssertEqual(
+            StormMapRules.keptLabels([CGRect(x: 0, y: 0, width: 5, height: 5)], ranks: []), [true])
+    }
+
+    func testTheNoreasterSampleGivesTheConsensusLabelsTheFirstRank() throws {
+        let drawing = StormDrawing.make(try layer("noreaster"), step: 8)
+        let lows = drawing.marks.filter {
+            if case .low = $0.kind { return true } else { return false }
+        }
+        XCTAssertFalse(lows.isEmpty)
+        XCTAssertTrue(lows.allSatisfy { $0.rank == 0 || $0.rank == 2 })
+    }
+
     func testATapNearAHurricaneSymbolOpensIt() throws {
         let layer = try layer("josephine")
         let h = try XCTUnwrap(layer.hurricanes.first)

@@ -77,6 +77,27 @@ nonisolated enum StormMapRules {
         return (right: i < 2, up: i % 2 == 0)
     }
 
+    /// Which labels to draw: `rects` are the labels' plates in screen space, each paired with its
+    /// rank (lower first). Labels are placed in order of rank, then in the order given, and one
+    /// that overlaps a label already placed (within `gap` points) is left out. Returns, for each
+    /// rect in the order given, whether its label is kept. A label's dot is always drawn: only the
+    /// words are dropped, and the legend carries the values.
+    static func keptLabels(_ rects: [CGRect], ranks: [Int], gap: CGFloat = 2) -> [Bool] {
+        let order = rects.indices.sorted {
+            let (a, b) = (ranks.indices.contains($0) ? ranks[$0] : 0, ranks.indices.contains($1) ? ranks[$1] : 0)
+            return a == b ? $0 < $1 : a < b
+        }
+        var kept = [Bool](repeating: false, count: rects.count)
+        var placed: [CGRect] = []
+        for i in order {
+            let rect = rects[i].insetBy(dx: -gap / 2, dy: -gap / 2)
+            if placed.contains(where: { $0.intersects(rect) }) { continue }
+            placed.append(rect)
+            kept[i] = true
+        }
+        return kept
+    }
+
     /// The official forecast points that get a labelled mark: one a day, every 24 hours after
     /// the first (within an hour), so the labels do not crowd. The first is the storm itself,
     /// marked with its symbol.
