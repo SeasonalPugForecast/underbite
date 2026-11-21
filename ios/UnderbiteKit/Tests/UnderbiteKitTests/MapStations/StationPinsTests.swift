@@ -94,6 +94,13 @@ final class StationPinsTests: XCTestCase {
         XCTAssertNil(made.spotID)
     }
 
+    func testStationMarksAreDimmedOnlyUnderALayerThatFillsAreas() {
+        let area: Set = ["sst", "beach-forecast"]
+        XCTAssertTrue(StationPins.dimsStations(shown: ["tide-stations", "sst"], areaFilling: area))
+        XCTAssertFalse(StationPins.dimsStations(shown: ["tide-stations"], areaFilling: area))
+        XCTAssertFalse(StationPins.dimsStations(shown: ["sst"], areaFilling: []))
+    }
+
     func testTheZoomGivesMapKitsScale() {
         // A view 390 points wide showing 1/1024 of the world.
         let mapPoints = MapRegion.worldMapPoints / 1024

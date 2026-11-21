@@ -10,10 +10,18 @@ nonisolated final class StationPinOverlay: NSObject, MKOverlay {
     private let lock = NSLock()
     private var clusters: [PinCluster] = []
 
-    /// Replaces the marks; the renderer is told to draw again by its owner.
-    func set(_ clusters: [PinCluster]) {
-        lock.withLock { self.clusters = clusters }
+    private var dimmed = false
+
+    /// Replaces the marks; the renderer is told to draw again by its owner. `dimmed` draws the
+    /// stations lighter (see ``StationPins/dimsStations(shown:areaFilling:)``).
+    func set(_ clusters: [PinCluster], dimmed: Bool = false) {
+        lock.withLock {
+            self.clusters = clusters
+            self.dimmed = dimmed
+        }
     }
+
+    var isDimmed: Bool { lock.withLock { dimmed } }
 
     /// The marks drawn whose centre lies in `rect`.
     func clusters(in rect: MKMapRect) -> [PinCluster] {
@@ -47,6 +55,7 @@ nonisolated final class StationPinRenderer: MKOverlayRenderer {
         guard !marks.isEmpty else { return }
         UIGraphicsPushContext(context)
         defer { UIGraphicsPopContext() }
+        let dimmed = pins.isDimmed
         for mark in marks {
             let at = point(for: MKMapPoint(x: mark.x, y: mark.y))
             context.saveGState()
@@ -54,7 +63,14 @@ nonisolated final class StationPinRenderer: MKOverlayRenderer {
             context.translateBy(x: at.x, y: at.y)
             context.scaleBy(x: CGFloat(perPoint), y: CGFloat(perPoint))
             if let lead = mark.pins.first {
+                let light = dimmed && lead.kind != .spot
+                if light {
+                    context.scaleBy(x: StationPins.dimmedScale, y: StationPins.dimmedScale)
+                    context.setAlpha(StationPins.dimmedAlpha)
+                    context.beginTransparencyLayer(auxiliaryInfo: nil)
+                }
                 PinDrawing.pin(lead.kind, lead.role, count: mark.pins.count, in: context)
+                if light { context.endTransparencyLayer() }
             }
             context.restoreGState()
         }

@@ -91,6 +91,8 @@ final class StationsModule: MapModule {
     @ObservationIgnored private var activeSpot: (pin: MapPin, mark: ActiveSpotAnnotation)?
     @ObservationIgnored private var selectionMark: PinSelectionAnnotation?
     @ObservationIgnored private var shownLayers: Set<String> = []
+    /// Whether a layer that fills areas is on, so the station marks are drawn lighter.
+    @ObservationIgnored private var dimsStations = false
     @ObservationIgnored private var clusters: [PinCluster] = []
     @ObservationIgnored private var mapPointsPerPoint = StationPins.mapPointsPerPoint(zoom: 3)
     @ObservationIgnored private var asked: PinQuery?
@@ -177,6 +179,15 @@ final class StationsModule: MapModule {
         let layers = Set(context.layers.map(\.id))
         var changed = layers != shownLayers
         shownLayers = layers
+        let dims = StationPins.dimsStations(
+            shown: layers,
+            areaFilling: Set(
+                context.layers.filter { $0.draw == .gridRaster || $0.id == BeachZones.layer }
+                    .map(\.id)))
+        if dims != dimsStations {
+            dimsStations = dims
+            changed = true
+        }
         if let region = context.region {
             self.region = region
             let perPoint = StationPins.mapPointsPerPoint(zoom: region.zoom)
@@ -193,7 +204,7 @@ final class StationsModule: MapModule {
         let pins = StationPins.shown(stations: stationPins, spots: spotPins, layers: shownLayers)
         clusters = StationPins.clusters(
             pins, mapPointsPerPoint: mapPointsPerPoint, apart: activeSpot?.pin.id)
-        overlay.set(clusters)
+        overlay.set(clusters, dimmed: dimsStations)
         renderer?.setNeedsDisplay()
     }
 

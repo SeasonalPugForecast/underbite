@@ -257,6 +257,17 @@ nonisolated enum StationPins {
         MapRegion.worldMapPoints / 256 / pow(2, zoom)
     }
 
+    /// How a station's mark is drawn while a layer that fills areas (a raster, the beach zones) is
+    /// on: smaller and translucent, so the cells and zones under it show. Spots keep their full
+    /// mark. The tap target is the pins' own and does not change.
+    static let dimmedScale = 0.75
+    static let dimmedAlpha = 0.6
+
+    /// Whether the station marks are dimmed: some layer shown is one that fills areas.
+    static func dimsStations(shown: Set<String>, areaFilling: Set<String>) -> Bool {
+        !shown.isDisjoint(with: areaFilling)
+    }
+
     /// The pins of the layers shown, in the order they lead groups: saved spots, then the
     /// stations by ``PinKind/precedence``, each kind in the core's order.
     static func shown(stations: [MapPin], spots: [MapPin], layers: Set<String>) -> [MapPin] {
