@@ -9,8 +9,15 @@ struct ChartValueBand: Hashable {
     var high: Double
     var label: String
     /// The thresholds the view gives for the day, in the same units: the value axis reaches the
-    /// nearest of them below and above the data, so a quiet series is not stretched into noise.
-    var thresholds: [Double] = []
+    /// nearest of them below and above the data, so a quiet series is not stretched into noise,
+    /// and each one inside the axis is drawn as a thin rule with the view's own words.
+    var thresholds: [ChartThreshold] = []
+}
+
+/// One percentile threshold: its value on the axis and the view's label for it.
+struct ChartThreshold: Hashable {
+    var value: Double
+    var label: String
 }
 
 /// What a chart's marks look like. Colours carry the series' role; the line style and weight
@@ -82,6 +89,10 @@ struct ChartGeometry {
     /// The rules near enough to the data to be drawn; the key lists every rule.
     var rules: [ViewModel.ChartRule]
     var band: ChartValueBand?
+    /// The thresholds that fall inside the axis, drawn as rules, and the indices of those that
+    /// have room for their words.
+    var thresholdRules: [ChartThreshold]
+    var thresholdLabelled: Set<Int>
     var drawsZero: Bool
 
     init(chart: ViewModel.Chart, compact: Bool, band: ChartValueBand?) {
@@ -112,9 +123,13 @@ struct ChartGeometry {
         // A rule far from the data would flatten it: it stays in the key below the chart.
         let near = chart.rules.filter { $0.value >= lo - span && $0.value <= hi + span }
         rules = near
-        yDomain = ChartDomain.y(
-            values: values, rules: near.map(\.value), thresholds: band?.thresholds ?? [])
-        drawsZero = yDomain.contains(0) && lo < 0
+        let domain = ChartDomain.y(
+            values: values, rules: near.map(\.value), thresholds: (band?.thresholds ?? []).map(\.value))
+        yDomain = domain
+        drawsZero = domain.contains(0) && lo < 0
+        let inside = (band?.thresholds ?? []).filter { domain.contains($0.value) }
+        thresholdRules = inside
+        thresholdLabelled = ChartDomain.labelled(inside.map(\.value), in: domain)
 
         var labels: [Double: String] = [:]
         if let first = chart.series.first,
@@ -125,7 +140,7 @@ struct ChartGeometry {
             labels[most.value] = most.label
         }
         yLabels = labels
-        if let band, ChartDomain.bandShows(low: band.low, high: band.high, in: yDomain) {
+        if let band, ChartDomain.fills(low: band.low, high: band.high, in: yDomain) {
             self.band = ChartValueBand(
                 low: max(band.low, yDomain.lowerBound),
                 high: min(band.high, yDomain.upperBound),
@@ -204,6 +219,16 @@ struct ChartPlot: View {
                 yEnd: .value("High", band.high)
             )
             .foregroundStyle(Color.mint.opacity(0.16 * Palette.fillScale(sunMode)))
+        }
+        ForEach(Array(geometry.thresholdRules.enumerated()), id: \.offset) { index, threshold in
+            RuleMark(y: .value("Threshold", threshold.value))
+                .foregroundStyle(Color.mint.opacity(0.9))
+                .lineStyle(StrokeStyle(lineWidth: 0.75 * stroke))
+                .annotation(position: .top, alignment: .trailing, spacing: 0) {
+                    if geometry.thresholdLabelled.contains(index) {
+                        Text(threshold.label).font(.caption2).foregroundStyle(.readableSecondary)
+                    }
+                }
         }
         if geometry.drawsZero {
             RuleMark(y: .value("Zero", 0.0)).foregroundStyle(.secondary.opacity(0.6))

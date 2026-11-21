@@ -16,9 +16,30 @@ nonisolated enum ChartDomain {
         return (low - pad)...(high + pad)
     }
 
-    /// Whether a shaded span reaches into the domain by one of its own edges. A span that covers
-    /// the whole axis says nothing and is not drawn.
-    static func bandShows(low: Double, high: Double, in domain: ClosedRange<Double>) -> Bool {
-        domain.contains(low) || domain.contains(high)
+    /// The most of the axis a shaded span may cover and still be filled.
+    static let widestFill = 0.85
+
+    /// Whether a shaded span is filled: one of its own edges is inside the domain and it does not
+    /// cover (nearly) the whole axis, where a fill says nothing.
+    static func fills(low: Double, high: Double, in domain: ClosedRange<Double>) -> Bool {
+        guard domain.contains(low) || domain.contains(high) else { return false }
+        let covered = min(high, domain.upperBound) - max(low, domain.lowerBound)
+        return covered < widestFill * (domain.upperBound - domain.lowerBound)
+    }
+
+    /// Which rules (by index) get their words: from the top down, a rule is named only when it is
+    /// at least `gap` of the axis below the last one named, so labels never print over each other.
+    static func labelled(_ values: [Double], in domain: ClosedRange<Double>, gap: Double = 0.07)
+        -> Set<Int>
+    {
+        let span = domain.upperBound - domain.lowerBound
+        var named = Set<Int>()
+        var last: Double?
+        for index in values.indices.sorted(by: { values[$0] > values[$1] }) {
+            if let last, last - values[index] < gap * span { continue }
+            named.insert(index)
+            last = values[index]
+        }
+        return named
     }
 }

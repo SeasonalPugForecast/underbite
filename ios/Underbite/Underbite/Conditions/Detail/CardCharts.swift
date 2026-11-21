@@ -78,8 +78,10 @@ enum CardCharts {
         let label =
             (try? percentileBandLabel(
                 low: low.label, high: high.label, settingsJson: settingsJSON)) ?? ""
-        let all = percentile.thresholds.compactMap { threshold in
-            threshold.value.unit == chart.unit ? threshold.value.value : nil
+        let all = percentile.thresholds.compactMap { threshold -> ChartThreshold? in
+            guard threshold.value.unit == chart.unit, let value = threshold.value.value
+            else { return nil }
+            return ChartThreshold(value: value, label: "\(threshold.label) \(threshold.value.text)")
         }
         return ChartValueBand(low: lowValue, high: highValue, label: label, thresholds: all)
     }
