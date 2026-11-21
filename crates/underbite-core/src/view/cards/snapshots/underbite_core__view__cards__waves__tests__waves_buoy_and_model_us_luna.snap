@@ -141,8 +141,8 @@ expression: card
       "x_ticks": [
         {
           "t": 1793991600,
-          "label": "2 PM",
-          "major": false
+          "label": "Fri 2 PM",
+          "major": true
         },
         {
           "t": 1793995200,
@@ -191,7 +191,7 @@ expression: card
         },
         {
           "t": 1794027600,
-          "label": "12 AM",
+          "label": "Sat",
           "major": true
         },
         {
@@ -345,8 +345,8 @@ expression: card
       "x_ticks": [
         {
           "t": 1793991600,
-          "label": "2 PM",
-          "major": false
+          "label": "Fri 2 PM",
+          "major": true
         },
         {
           "t": 1793995200,
@@ -395,7 +395,7 @@ expression: card
         },
         {
           "t": 1794027600,
-          "label": "12 AM",
+          "label": "Sat",
           "major": true
         },
         {

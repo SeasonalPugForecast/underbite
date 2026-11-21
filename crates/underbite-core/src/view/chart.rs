@@ -57,15 +57,42 @@ pub(super) fn grid(start: i64, end: i64, step_minutes: u16) -> Vec<i64> {
         .collect()
 }
 
-/// An axis tick on every local hour, major every third.
+/// An axis tick on every local hour, major every third. The first tick of each local day
+/// is major and names the weekday: "Sat" at midnight, "Sat 9 PM" where the chart starts
+/// part-way through a day. A chart inside one local day has no day names.
 pub(super) fn ticks(z: &Zoned, f: &Formatter, start: i64, end: i64) -> Vec<ChartTick> {
-    grid(start, end, 15)
+    let hours: Vec<i64> = grid(start, end, 15)
         .into_iter()
         .filter(|t| z.on_the_hour(*t))
-        .map(|t| ChartTick {
-            t,
-            label: f.hour_label(UnixTime(t)),
-            major: z.local(UnixTime(t)).hour.is_multiple_of(3),
+        .collect();
+    // A chart inside one local day needs no day names.
+    let several_days = hours.first().map(|t| z.local(UnixTime(*t)).date)
+        != hours.last().map(|t| z.local(UnixTime(*t)).date);
+    let mut last_day = None;
+    hours
+        .into_iter()
+        .map(|t| {
+            let local = z.local(UnixTime(t));
+            let first_of_day = several_days && last_day != Some(local.date);
+            last_day = Some(local.date);
+            if first_of_day {
+                let day = f.strings.weekday(local.weekday);
+                let label = if local.hour == 0 {
+                    day.to_owned()
+                } else {
+                    format!("{day} {}", f.hour_label(UnixTime(t)))
+                };
+                return ChartTick {
+                    t,
+                    label,
+                    major: true,
+                };
+            }
+            ChartTick {
+                t,
+                label: f.hour_label(UnixTime(t)),
+                major: local.hour.is_multiple_of(3),
+            }
         })
         .collect()
 }
@@ -108,4 +135,33 @@ pub(super) fn speed_at(
     }
     let (before, after, fraction) = neighbours(events, |e| e.time, t)?;
     Some(cosine(before.speed_ms, after.speed_ms, fraction))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::view::tests::sample_input;
+
+    #[test]
+    fn the_first_tick_of_each_local_day_names_the_weekday_and_is_major() {
+        let input = sample_input();
+        let f = Formatter::for_input(&input);
+        let z = Zoned::new(&input.snapshot.spot.time_zone);
+        let (start, end) = (input.now.0, input.now.0 + 72 * 3_600);
+        let ticks = ticks(&z, &f, start, end);
+        let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        let named: Vec<&ChartTick> = ticks
+            .iter()
+            .filter(|t| days.iter().any(|d| t.label.starts_with(d)))
+            .collect();
+        // The window's first part-day, then one per midnight.
+        assert_eq!(named.len(), 4, "{ticks:?}");
+        assert!(named.iter().all(|t| t.major));
+        for t in &named[1..] {
+            assert_eq!(z.local(UnixTime(t.t)).hour, 0);
+            assert!(!t.label.contains(' '), "{}", t.label);
+        }
+        // The hours between carry the hour alone.
+        assert!(ticks.iter().any(|t| t.label.ends_with(" AM") && !t.major));
+    }
 }

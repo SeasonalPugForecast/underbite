@@ -505,8 +505,8 @@ expression: card
       "x_ticks": [
         {
           "t": 1791201600,
-          "label": "8 AM",
-          "major": false
+          "label": "Mon 8 AM",
+          "major": true
         },
         {
           "t": 1791205200,
@@ -585,7 +585,7 @@ expression: card
         },
         {
           "t": 1791259200,
-          "label": "12 AM",
+          "label": "Tue",
           "major": true
         },
         {

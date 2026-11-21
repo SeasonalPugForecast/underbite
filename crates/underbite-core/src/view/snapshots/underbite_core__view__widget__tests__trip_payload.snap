@@ -17,8 +17,8 @@ expression: first_entry(&p)
         "x_ticks": [
           {
             "t": 1794132000,
-            "label": "5 AM",
-            "major": false
+            "label": "Sun 5 AM",
+            "major": true
           },
           {
             "t": 1794135600,
@@ -112,7 +112,7 @@ expression: first_entry(&p)
           },
           {
             "t": 1794200400,
-            "label": "12 AM",
+            "label": "Mon",
             "major": true
           },
           {

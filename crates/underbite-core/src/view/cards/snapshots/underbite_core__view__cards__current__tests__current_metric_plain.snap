@@ -137,8 +137,8 @@ expression: card
       "x_ticks": [
         {
           "t": 1794139200,
-          "label": "07:00",
-          "major": false
+          "label": "Sun 07:00",
+          "major": true
         },
         {
           "t": 1794142800,
@@ -222,7 +222,7 @@ expression: card
         },
         {
           "t": 1794200400,
-          "label": "00:00",
+          "label": "Mon",
           "major": true
         },
         {
